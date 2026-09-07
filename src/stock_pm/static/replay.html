@@ -2,122 +2,225 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stock PM · 盘面回放</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<title>Stock PM · 个股盘面回放</title>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-.shell{max-width:1500px;margin:auto;padding:16px}
-.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.top h1{margin:0;font-size:20px}
-.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
-.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
-.panel h2{margin:0 0 8px;font-size:15px}
-.hint{color:var(--muted);font-size:12px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-.up{color:var(--green)}.down{color:var(--red)}
-select,input,button{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
-button{background:var(--blue);color:#fff;border:none;cursor:pointer}
-.impact-item{border-left:3px solid var(--blue);padding:6px 10px;margin:8px 0;background:#f8fafc;border-radius:0 8px 8px 0}
-.table-wrap{overflow-x:auto}
-.chart-box{height:320px}
-.badge{display:inline-block;background:#eef2f7;border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px}
+.shell{max-width:1600px;margin:auto;padding:16px}.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.top h1{margin:0;font-size:20px}.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
+.panel,.stock-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}.panel h2,.stock-card h2{margin:0;font-size:16px}.hint{color:var(--muted);font-size:12px}
+.controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:3px}.field span{font-size:11px;color:var(--muted)}
+select,input,button{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}button{background:var(--blue);color:#fff;border:none;cursor:pointer;height:34px}
+.compare{display:grid;grid-template-columns:1fr;gap:14px}.compare.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:1050px){.compare.two{grid-template-columns:1fr}}
+.card-head{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:8px}.return{font-size:18px;font-weight:700}.up{color:var(--green)}.down{color:var(--red)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:9px 0}.kpi{background:#f7f9fc;border-radius:8px;padding:7px 9px;min-width:0}.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{font-size:14px}
+.chart{height:430px;width:100%;position:relative}.chart-label{position:absolute;z-index:2;left:10px;top:7px;background:#ffffffd9;padding:2px 7px;border-radius:6px;font-size:11px;color:var(--muted);pointer-events:none}
+.analysis{border-top:1px solid var(--line);padding-top:10px;margin-top:6px}.conclusion{border-left:3px solid var(--blue);background:#f7f9fc;border-radius:0 8px 8px 0;padding:7px 10px;margin-bottom:8px;font-weight:600}
+.analysis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.analysis-item{border:1px solid var(--line);border-radius:8px;padding:6px 8px}.analysis-item span{display:block;color:var(--muted);font-size:11px}.analysis-item b{font-size:13px}
+.patterns{margin:8px 0}.badge{display:inline-block;background:#eef2f7;border-radius:10px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th:first-child,td:first-child{text-align:left}.table-wrap{overflow-x:auto}
+.event{padding:5px 0;border-bottom:1px solid var(--line)}.macro{border-left:3px solid #9333ea;padding:6px 10px;margin:6px 0;background:#faf7ff;border-radius:0 8px 8px 0}
+.empty{height:320px;display:grid;place-items:center;color:var(--muted);background:#fafbfc;border-radius:8px}.error{color:var(--red)}
+.review-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;background:#f8fafc}
+.review-card h3{margin:0;font-size:14px}.review-summary{margin:8px 0;font-size:13px;line-height:1.55}
+.section-title{margin:14px 0 6px;font-size:14px}
 </style>
 </head>
 <body><main class="shell">
 <header class="top">
-  <div><h1>盘面回放</h1><div class="hint" style="color:#ffffffaa">按日期看当天全自选的分段量价与事件，或按区间看走势与事件叠加</div></div>
-  <nav class="nav"><a href="/">总览</a><a class="active" href="/replay">盘面回放</a><a href="/settings">设置</a></nav>
+  <div><h1>个股盘面回放</h1><div class="hint" style="color:#ffffffaa">一个标的一张回放卡 · 最多两个并排对比 · 始终为美股常规时段 1 分钟 K 线 · 含当日复盘</div></div>
+  <nav class="nav"><a href="/">总览</a><a class="active" href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a></nav>
 </header>
 
 <section class="panel">
-  <h2>单日回放 <input type="date" id="day"> <button id="load-day">查看</button></h2>
-  <div id="day-macro"></div>
-  <div class="table-wrap"><table>
-    <thead><tr><th>标的</th><th>复盘评分</th><th>突破状态</th><th>分段数</th><th>最大上行段</th><th>最大下行段</th><th>大单买(推断)</th><th>大单卖(推断)</th></tr></thead>
-    <tbody id="day-rows"></tbody>
-  </table></div>
-  <div id="day-empty" class="hint" style="display:none">该日无复盘与分段数据（周末/未回填）。分段数据用 stock-pm-flow 回填，复盘用 stock-pm-review 生成。</div>
-  <div id="day-events" style="margin-top:8px"></div>
+  <div class="controls">
+    <label class="field"><span>标的一（必选）</span><select id="symbol-1"></select></label>
+    <label class="field"><span>标的二（可选，最多两个）</span><select id="symbol-2"><option value="">不对比</option></select></label>
+    <label class="field"><span>开始日期</span><input type="date" id="from"></label>
+    <label class="field"><span>结束日期</span><input type="date" id="to"></label>
+    <button id="load">生成回放</button>
+  </div>
+  <div class="hint" style="margin-top:6px">K 线固定为纽约 09:30–16:00 的 1 分钟线，区间最多 10 个自然日。复盘与日内分段显示在图表下方。两只股票使用独立价格轴。</div>
 </section>
 
-<section class="panel">
-  <h2>区间分析
-    <select id="range-symbol"></select>
-    <input type="date" id="from"> 至 <input type="date" id="to">
-    <button id="load-range">查看</button>
-  </h2>
-  <div id="range-stats" class="hint"></div>
-  <div class="chart-box"><canvas id="range-chart"></canvas></div>
-  <div id="range-events" style="margin-top:8px"></div>
+<section id="macro-panel" class="panel" style="display:none">
+  <h2>区间宏观事件</h2><div id="macro"></div>
 </section>
+<div id="compare" class="compare"></div>
 </main>
+
 <script>
 const $=id=>document.getElementById(id);
-const j=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json()});
+const j=u=>fetch(u).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.detail||`${u} ${r.status}`);return body});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const num=v=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
-const pct=v=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';
+const num=(v,d=2)=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:d});
+const compact=v=>v==null?'—':Number(v).toLocaleString(undefined,{notation:'compact',maximumFractionDigits:2});
+const pct=v=>v==null?'—':`${v>0?'+':''}${Number(v).toFixed(2)}%`;
 const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
-const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:0});
-let rangeChart;
+const charts=[];
 
-function segCell(s){return s?`<span class="${cls(s.change_pct)}">${pct(s.change_pct)}</span> <span class="hint">${new Date(s.start_time).toLocaleTimeString()}起 量${s.rel_volume==null?'—':num(s.rel_volume)+'x'}</span>`:'—'}
+function destroyCharts(){while(charts.length)charts.pop().remove()}
+function localDate(value){
+  return new Date(value).toLocaleString('zh-CN',{
+    timeZone:'America/New_York',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false
+  });
+}
+function nyClock(value){
+  return new Date(value).toLocaleTimeString('zh-CN',{
+    timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:false
+  });
+}
+function barTime(bar){return Math.floor(new Date(bar.bar_time).getTime()/1000)}
+function nyTick(time, tickMarkType){
+  const date=new Date((typeof time==='number'?(time>1e12?time:time*1000):Date.parse(time)));
+  if(tickMarkType<=2){
+    return date.toLocaleDateString('en-US',{timeZone:'America/New_York',month:'2-digit',day:'2-digit'});
+  }
+  return date.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function nyCrosshair(time){
+  const date=new Date((typeof time==='number'?(time>1e12?time:time*1000):Date.parse(time)));
+  return date.toLocaleString('en-US',{timeZone:'America/New_York',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function lastWeekday(){
+  const d=new Date();
+  const day=d.getDay();
+  d.setDate(d.getDate()-(day===0?2:day===6?1:day===1?3:0));
+  return d.toISOString().slice(0,10);
+}
+function vwapText(value){return value==='above'?'VWAP上方':value==='below'?'VWAP下方':'—'}
 
-async function loadDay(){
-  const d=$('day').value;if(!d)return;
-  const data=await j('/api/replay/day?date='+d);
-  const reviews=Object.fromEntries(data.reviews.map(r=>[r.symbol,r]));
-  const summary=data.segments_summary;
-  const symbols=[...new Set([...Object.keys(reviews),...summary.map(s=>s.symbol)])].sort();
-  $('day-empty').style.display=symbols.length?'none':'';
-  const sm=Object.fromEntries(summary.map(s=>[s.symbol,s]));
-  $('day-rows').innerHTML=symbols.map(sym=>{const r=reviews[sym],s=sm[sym];
-    return `<tr><td><a href="/stock/${esc(sym)}"><b>${esc(sym)}</b></a></td>
-      <td>${r?num(r.score):'—'}</td><td>${r?esc(r.breakout_status||'—'):'—'}</td>
-      <td>${s?s.segments:'—'}</td><td>${segCell(s&&s.largest_up)}</td><td>${segCell(s&&s.largest_down)}</td>
-      <td class="up">${s?money(s.large_buy_notional):'—'}</td><td class="down">${s?money(s.large_sell_notional):'—'}</td></tr>`}).join('');
-  $('day-macro').innerHTML=data.macro.map(m=>`<div class="impact-item"><b>${esc(m.name)}</b>
-    <span class="hint">${new Date(m.event_time).toLocaleString()} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')} · ${esc(m.surprise)}</span></div>`).join('');
-  $('day-events').innerHTML=data.events.length?'<b>当日事件：</b>'+data.events.map(e=>`<span class="badge">${esc(e.symbol)} ${esc(e.title)} <span class="hint">${new Date(e.event_time).toLocaleTimeString()}</span></span>`).join(' '):'';
+function reviewBlock(reviews){
+  if(!reviews||!reviews.length){
+    return '<div class="hint">该区间暂无复盘。运行 <code>stock-pm-review</code> 生成后刷新。</div>';
+  }
+  return reviews.map(row=>`<div class="review-card">
+    <div class="card-head"><div><h3>复盘 · ${esc(String(row.review_date).slice(0,10))}</h3>
+      <div class="hint">${esc(row.short_trend||'—')} · ${esc(row.medium_trend||'—')} · ${esc(row.long_trend||'—')}</div></div>
+      <div class="return">${num(row.score,0)} 分</div></div>
+    <p class="review-summary">${esc(row.summary)}</p>
+    <div class="analysis-grid">
+      <div class="analysis-item"><span>收盘</span><b>$${num(row.close_price)}</b></div>
+      <div class="analysis-item"><span>支撑</span><b>$${num(row.support_price)}</b></div>
+      <div class="analysis-item"><span>压力</span><b>$${num(row.resistance_price)}</b></div>
+      <div class="analysis-item"><span>突破状态</span><b>${esc(row.breakout_status||'—')}</b></div>
+    </div>
+  </div>`).join('');
 }
 
-async function loadRange(){
-  const s=$('range-symbol').value,f=$('from').value,t=$('to').value;
-  if(!s||!f||!t)return;
-  const data=await j(`/api/replay/range?symbol=${s}&from=${f}&to=${t}`);
-  const st=data.stats;
-  $('range-stats').innerHTML=st?`<b>${esc(s)}</b> ${f} → ${t}：区间 <span class="${cls(st.return_pct)}">${pct(st.return_pct)}</span> · 最高 ${num(st.high)} · 最低 ${num(st.low)} · ${st.bars} 个交易日 · 总量 ${num(st.total_volume)}`:'区间内无日线数据';
-  const eventDates=new Set(data.events.map(e=>String(e.event_time).slice(0,10)));
-  const macroDates=new Set(data.macro.map(e=>String(e.event_time).slice(0,10)));
-  if(rangeChart)rangeChart.destroy();
-  rangeChart=new Chart($('range-chart'),{type:'line',
-    data:{labels:data.bars.map(b=>String(b.bar_time).slice(0,10)),
-      datasets:[{label:'收盘',data:data.bars.map(b=>Number(b.close_price)),borderColor:'#12283f',borderWidth:2,tension:.1,
-        pointRadius:data.bars.map(b=>{const d=String(b.bar_time).slice(0,10);return macroDates.has(d)?6:eventDates.has(d)?4:0}),
-        pointBackgroundColor:data.bars.map(b=>{const d=String(b.bar_time).slice(0,10);return macroDates.has(d)?'#9333ea':eventDates.has(d)?'#f59e0b':'#12283f'})}]},
-    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:'收盘价 ($)'}}},
-      plugins:{title:{display:true,text:'紫点=宏观事件日 · 橙点=个股事件日'}}}});
-  $('range-events').innerHTML=[
-    data.macro.length?'<b>宏观事件：</b>'+data.macro.map(m=>`<span class="badge">${String(m.event_time).slice(0,10)} ${esc(m.name)}（${esc(m.surprise)}）</span>`).join(' '):'',
-    data.events.length?'<div style="margin-top:4px"><b>个股事件：</b>'+data.events.map(e=>`<span class="badge">${String(e.event_time).slice(0,10)} ${esc(e.title)}</span>`).join(' ')+'</div>':''
-  ].join('');
+function segmentTable(segments){
+  if(!segments||!segments.length){
+    return '<div class="hint">该区间暂无日内分段。运行 <code>stock-pm-flow</code> 回填后刷新。</div>';
+  }
+  return `<div class="table-wrap"><table><thead><tr><th>日期/时段</th><th>方向</th><th>涨跌</th><th>量比</th><th>VWAP</th><th>大单买(推断)</th><th>大单卖(推断)</th><th>笔数</th></tr></thead>
+    <tbody>${segments.map(row=>`<tr>
+      <td>#${esc(row.seg_no)} ${localDate(row.start_time)}–${nyClock(row.end_time)}</td>
+      <td class="${row.direction==='up'?'up':row.direction==='down'?'down':''}">${esc(row.direction||'—')}</td>
+      <td class="${cls(row.change_pct)}">${pct(row.change_pct)}</td>
+      <td>${row.rel_volume==null?'—':num(row.rel_volume)+'x'}</td>
+      <td>${esc(vwapText(row.vwap_side))}</td>
+      <td class="up">${compact(row.large_buy_notional)}</td>
+      <td class="down">${compact(row.large_sell_notional)}</td>
+      <td>${num(row.large_trade_count,0)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function cardShell(data,index){
+  const st=data.stats,va=data.volume_analysis;
+  if(!st)return `<article class="stock-card"><h2>${esc(data.symbol)}</h2><div class="empty">所选时间内没有分钟K线</div>${reviewBlock(data.reviews)}</article>`;
+  return `<article class="stock-card">
+    <div class="card-head"><div><h2><a href="/stock/${esc(data.symbol)}" style="color:inherit">${esc(data.symbol)}</a> · 分钟回放</h2>
+      <div class="hint">${esc($('from').value)} → ${esc($('to').value)} · 纽约时间 09:30–16:00 · ${st.bars} 根 1 分钟 K 线</div></div>
+      <div class="return ${cls(st.return_pct)}">${pct(st.return_pct)}</div></div>
+    <div class="kpis">
+      <div class="kpi"><span>区间最高</span><b>$${num(st.high)}</b></div>
+      <div class="kpi"><span>区间最低</span><b>$${num(st.low)}</b></div>
+      <div class="kpi"><span>总成交量</span><b>${compact(st.total_volume)}</b></div>
+      <div class="kpi"><span>平均每根成交量</span><b>${compact(va.average)}</b></div>
+    </div>
+    <h3 class="section-title">复盘</h3>
+    ${reviewBlock(data.reviews)}
+    <div class="chart"><span class="chart-label">上：1 分钟 K 线　下：成交量（绿=上涨，红=下跌）· 时间轴为纽约时间</span><div id="chart-${index}" style="height:100%"></div></div>
+    <div class="analysis">
+      <h3 class="section-title">日内分段</h3>
+      ${segmentTable(data.segments)}
+      <div class="conclusion">${esc(va.conclusion)}</div>
+      <div class="analysis-grid">
+        <div class="analysis-item"><span>最新量 / 均量</span><b>${num(va.latest_ratio)}x</b></div>
+        <div class="analysis-item"><span>上涨量 / 下跌量</span><b>${num(va.up_down_ratio)}x</b></div>
+        <div class="analysis-item"><span>上涨成交量</span><b class="up">${compact(va.up_volume)}</b></div>
+        <div class="analysis-item"><span>下跌成交量</span><b class="down">${compact(va.down_volume)}</b></div>
+      </div>
+      <div class="patterns">${Object.entries(va.patterns||{}).map(([name,count])=>`<span class="badge">${esc(name)} ${count}</span>`).join('')}</div>
+      <div class="table-wrap"><table><thead><tr><th>最大成交量时点</th><th>成交量</th><th>相对均量</th><th>价格变化</th><th>量价形态</th></tr></thead>
+        <tbody>${(va.top_bars||[]).map(row=>`<tr><td>${localDate(row.time)}</td><td>${compact(row.volume)}</td><td>${num(row.volume_ratio)}x</td><td class="${cls(row.change_pct)}">${pct(row.change_pct)}</td><td>${esc(row.pattern)}</td></tr>`).join('')}</tbody></table></div>
+      <div id="events-${index}" style="margin-top:8px"></div>
+    </div>
+  </article>`;
+}
+
+function renderChart(data,index){
+  if(!data.stats)return;
+  const node=$(`chart-${index}`);
+  const chart=LightweightCharts.createChart(node,{
+    width:node.clientWidth,height:430,layout:{background:{color:'#fff'},textColor:'#526070'},
+    grid:{vertLines:{color:'#eef1f5'},horzLines:{color:'#eef1f5'}},
+    rightPriceScale:{borderColor:'#d8dee7',scaleMargins:{top:.08,bottom:.30}},
+    timeScale:{
+      borderColor:'#d8dee7',timeVisible:true,secondsVisible:false,
+      tickMarkFormatter:(time,tickMarkType)=>nyTick(time,tickMarkType)
+    },
+    localization:{locale:'en-US',timeFormatter:nyCrosshair}
+  });
+  charts.push(chart);
+  const candle=chart.addCandlestickSeries({upColor:'#0f9d72',downColor:'#d14343',borderVisible:false,wickUpColor:'#0f9d72',wickDownColor:'#d14343'});
+  candle.setData(data.bars.map(b=>({time:barTime(b),open:Number(b.open_price),high:Number(b.high_price),low:Number(b.low_price),close:Number(b.close_price)})));
+  const volume=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'',lastValueVisible:false,priceLineVisible:false});
+  volume.priceScale().applyOptions({scaleMargins:{top:.76,bottom:0}});
+  volume.setData(data.bars.map(b=>({time:barTime(b),value:Number(b.volume||0),color:Number(b.close_price)>=Number(b.open_price)?'#0f9d7280':'#d1434380'})));
+  chart.timeScale().fitContent();
+  new ResizeObserver(entries=>{for(const entry of entries)chart.applyOptions({width:entry.contentRect.width})}).observe(node);
+}
+
+function renderEvents(data,index){
+  const node=$(`events-${index}`);if(!node)return;
+  node.innerHTML=data.events.length?`<b>区间个股事件</b>${data.events.slice(0,12).map(e=>`<div class="event"><span class="badge">${localDate(e.event_time)}</span> ${esc(e.title)}</div>`).join('')}`:'<span class="hint">区间内无个股事件</span>';
+}
+
+async function loadReplay(){
+  const first=$('symbol-1').value,second=$('symbol-2').value,from=$('from').value,to=$('to').value;
+  if(!first||!from||!to)return;
+  if(first===second){$('symbol-2').value='';return loadReplay()}
+  $('load').disabled=true;$('load').textContent='加载中…';
+  try{
+    destroyCharts();
+    const symbols=[first,...(second?[second]:[])];
+    const results=await Promise.all(symbols.map(symbol=>j(`/api/replay/range?symbol=${encodeURIComponent(symbol)}&from=${from}&to=${to}`)));
+    $('compare').className=`compare ${results.length===2?'two':''}`;
+    $('compare').innerHTML=results.map(cardShell).join('');
+    results.forEach((data,index)=>{renderChart(data,index);renderEvents(data,index)});
+    const macro=results[0].macro||[];
+    $('macro-panel').style.display=macro.length?'':'none';
+    $('macro').innerHTML=macro.map(m=>`<div class="macro"><b>${esc(m.name)}</b> <span class="hint">${localDate(m.event_time)} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')} · ${esc(m.surprise)}</span></div>`).join('');
+    const params=new URLSearchParams({symbol:first,from,to});if(second)params.set('compare',second);
+    history.replaceState(null,'',`/replay?${params}`);
+  }catch(e){$('compare').innerHTML=`<div class="panel error">${esc(e.message)}</div>`}
+  finally{$('load').disabled=false;$('load').textContent='生成回放'}
 }
 
 async function main(){
-  const watch=await j('/api/watchlist');
-  $('range-symbol').innerHTML=watch.map(w=>`<option>${esc(w.symbol)}</option>`).join('');
-  const today=new Date(),prior=new Date(Date.now()-7*864e5);
-  const iso=d=>d.toISOString().slice(0,10);
-  $('day').value=iso(today);$('from').value=iso(prior);$('to').value=iso(today);
-  $('load-day').onclick=()=>loadDay().catch(alertErr);
-  $('load-range').onclick=()=>loadRange().catch(alertErr);
-  await loadDay().catch(()=>{});
+  const watch=await j('/api/watchlist'),params=new URLSearchParams(location.search);
+  $('symbol-1').innerHTML=watch.map(w=>`<option value="${esc(w.symbol)}">${esc(w.symbol)} · ${esc(w.name)}</option>`).join('');
+  $('symbol-2').innerHTML='<option value="">不对比</option>'+watch.map(w=>`<option value="${esc(w.symbol)}">${esc(w.symbol)} · ${esc(w.name)}</option>`).join('');
+  const session=lastWeekday();
+  $('symbol-1').value=params.get('symbol')||watch[0]?.symbol||'';
+  $('symbol-2').value=params.get('compare')||'';
+  $('from').value=params.get('from')||session;$('to').value=params.get('to')||session;
+  $('load').onclick=loadReplay;
+  await loadReplay();
 }
-const alertErr=e=>document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>');
-main().catch(alertErr);
+main().catch(e=>$('compare').innerHTML=`<div class="panel error">${esc(e.message)}</div>`);
 </script>
 </body></html>

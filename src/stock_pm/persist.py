@@ -166,6 +166,23 @@ class PersistMixin:
             raise DatabaseError(f"Failed to store market event: {exc}") from exc
 
     def store_review(self, review: dict[str, Any]) -> None:
+        payload = {
+            "rule_bias": None,
+            "watch_low": None,
+            "watch_high": None,
+            "llm_why": None,
+            "llm_outlook": None,
+            "llm_bias": None,
+            "llm_model": None,
+            "llm_status": "missing_key",
+            "llm_context_hash": None,
+            "llm_generated_at": None,
+            "llm_error": None,
+            **review,
+            "metrics": Jsonb(review.get("metrics", {})),
+            "context": Jsonb(review.get("context", {})),
+            "llm_status": review.get("llm_status") or "missing_key",
+        }
         try:
             with self.pool.connection() as conn:
                 conn.execute(
@@ -174,14 +191,19 @@ class PersistMixin:
                         symbol, review_date, close_price, short_trend,
                         medium_trend, long_trend, support_price, resistance_price,
                         breakout_status, large_trade_count, unusual_option_count,
-                        score, summary, metrics
+                        score, summary, metrics, rule_bias, watch_low, watch_high,
+                        context, llm_why, llm_outlook, llm_bias, llm_model, llm_status,
+                        llm_context_hash, llm_generated_at, llm_error
                     ) VALUES (
                         %(symbol)s, %(review_date)s, %(close_price)s,
                         %(short_trend)s, %(medium_trend)s, %(long_trend)s,
                         %(support_price)s, %(resistance_price)s,
                         %(breakout_status)s, %(large_trade_count)s,
                         %(unusual_option_count)s, %(score)s, %(summary)s,
-                        %(metrics)s
+                        %(metrics)s, %(rule_bias)s, %(watch_low)s, %(watch_high)s,
+                        %(context)s, %(llm_why)s, %(llm_outlook)s, %(llm_bias)s,
+                        %(llm_model)s, %(llm_status)s, %(llm_context_hash)s,
+                        %(llm_generated_at)s, %(llm_error)s
                     ) ON CONFLICT (symbol, review_date) DO UPDATE SET
                         close_price = EXCLUDED.close_price,
                         short_trend = EXCLUDED.short_trend,
@@ -195,12 +217,106 @@ class PersistMixin:
                         score = EXCLUDED.score,
                         summary = EXCLUDED.summary,
                         metrics = EXCLUDED.metrics,
+                        rule_bias = EXCLUDED.rule_bias,
+                        watch_low = EXCLUDED.watch_low,
+                        watch_high = EXCLUDED.watch_high,
+                        context = EXCLUDED.context,
+                        llm_why = EXCLUDED.llm_why,
+                        llm_outlook = EXCLUDED.llm_outlook,
+                        llm_bias = EXCLUDED.llm_bias,
+                        llm_model = EXCLUDED.llm_model,
+                        llm_status = EXCLUDED.llm_status,
+                        llm_context_hash = EXCLUDED.llm_context_hash,
+                        llm_generated_at = EXCLUDED.llm_generated_at,
+                        llm_error = EXCLUDED.llm_error,
                         created_at = CURRENT_TIMESTAMP
                     """,
-                    {**review, "metrics": Jsonb(review.get("metrics", {}))},
+                    payload,
                 )
         except Exception as exc:
             raise DatabaseError(f"Failed to store daily review: {exc}") from exc
+
+    def update_review_user(self, symbol: str, review_date: str, body: dict[str, Any]) -> dict:
+        from datetime import datetime, timezone
+
+        from .analytics import VALID_BIASES
+
+        bias = body.get("user_bias")
+        if bias not in {None, "", *VALID_BIASES, "观望"}:
+            raise ValueError("user_bias must be 偏多, 中性, 偏空 or 观望")
+        outlook = body.get("user_outlook")
+        note = body.get("user_note")
+        confirmed = datetime.now(timezone.utc)
+        try:
+            with self.pool.connection() as conn:
+                rows = list(
+                    conn.execute(
+                        """
+                        UPDATE daily_reviews SET
+                            user_bias = %s,
+                            user_outlook = %s,
+                            user_note = %s,
+                            user_confirmed_at = %s
+                        WHERE symbol = %s AND review_date = %s
+                        RETURNING *
+                        """,
+                        (
+                            bias or None,
+                            outlook,
+                            note,
+                            confirmed if (bias or outlook or note) else None,
+                            symbol,
+                            review_date,
+                        ),
+                    )
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to update review notes: {exc}") from exc
+        if not rows:
+            raise ValueError(f"No review for {symbol} on {review_date}")
+        return rows[0]
+
+    def fill_review_outcome(self, symbol: str, review_date: str, actual: dict[str, Any]) -> None:
+        from .analytics import judge_outcome, pick_outlook_bias
+
+        try:
+            with self.pool.connection() as conn:
+                existing = conn.execute(
+                    """SELECT * FROM daily_reviews
+                       WHERE symbol = %s AND review_date = %s""",
+                    (symbol, review_date),
+                ).fetchone()
+                if not existing:
+                    return
+                bias, source = pick_outlook_bias(existing)
+                vs_bias = judge_outcome(
+                    bias,
+                    actual.get("outcome_return_pct"),
+                    bool(actual.get("outcome_broke_support")),
+                    bool(actual.get("broke_resistance")),
+                )
+                conn.execute(
+                    """
+                    UPDATE daily_reviews SET
+                        outcome_return_pct = %s,
+                        outcome_volume_ratio = %s,
+                        outcome_broke_support = %s,
+                        outcome_vs_bias = %s,
+                        outcome_bias_source = %s
+                    WHERE symbol = %s AND review_date = %s
+                    """,
+                    (
+                        actual.get("outcome_return_pct"),
+                        actual.get("outcome_volume_ratio"),
+                        actual.get("outcome_broke_support"),
+                        vs_bias,
+                        source,
+                        symbol,
+                        review_date,
+                    ),
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to fill review outcome: {exc}") from exc
 
     def ingest(self, payload: dict[str, Any]) -> dict[str, int]:
         captured_at = payload["captured_at"]
@@ -462,6 +578,10 @@ class PersistMixin:
                             "revenue_actual": row.get("revenue_actual"),
                             "revenue_estimate": row.get("revenue_estimate"),
                             "revenue_surprise_pct": row.get("revenue_surprise_pct"),
+                            "net_income_actual": row.get("net_income_actual"),
+                            "net_income_estimate": row.get("net_income_estimate"),
+                            "net_income_surprise_pct": row.get("net_income_surprise_pct"),
+                            "provider_fields": Jsonb(row.get("provider_fields", {})),
                             "source": row.get("source", "earnings_feed"),
                             "synced_at": captured_at,
                             "raw_data": Jsonb(row),
@@ -472,14 +592,18 @@ class PersistMixin:
                                 symbol, report_date, report_timing, fiscal_period,
                                 fiscal_year, period_end, currency, eps_actual,
                                 eps_estimate, eps_surprise_pct, revenue_actual,
-                                revenue_estimate, revenue_surprise_pct, source,
-                                synced_at, raw_data
+                                revenue_estimate, revenue_surprise_pct,
+                                net_income_actual, net_income_estimate,
+                                net_income_surprise_pct, provider_fields,
+                                source, synced_at, raw_data
                             ) VALUES (
                                 %(symbol)s, %(report_date)s, %(report_timing)s,
                                 %(fiscal_period)s, %(fiscal_year)s, %(period_end)s,
                                 %(currency)s, %(eps_actual)s, %(eps_estimate)s,
                                 %(eps_surprise_pct)s, %(revenue_actual)s,
                                 %(revenue_estimate)s, %(revenue_surprise_pct)s,
+                                %(net_income_actual)s, %(net_income_estimate)s,
+                                %(net_income_surprise_pct)s, %(provider_fields)s,
                                 %(source)s, %(synced_at)s, %(raw_data)s
                             ) ON CONFLICT (symbol, report_date, fiscal_period) DO UPDATE SET
                                 eps_actual = EXCLUDED.eps_actual,
@@ -488,6 +612,10 @@ class PersistMixin:
                                 revenue_actual = EXCLUDED.revenue_actual,
                                 revenue_estimate = EXCLUDED.revenue_estimate,
                                 revenue_surprise_pct = EXCLUDED.revenue_surprise_pct,
+                                net_income_actual = EXCLUDED.net_income_actual,
+                                net_income_estimate = EXCLUDED.net_income_estimate,
+                                net_income_surprise_pct = EXCLUDED.net_income_surprise_pct,
+                                provider_fields = EXCLUDED.provider_fields,
                                 report_timing = EXCLUDED.report_timing,
                                 source = EXCLUDED.source,
                                 synced_at = EXCLUDED.synced_at,
@@ -510,3 +638,50 @@ class PersistMixin:
             return counts
         except Exception as exc:
             raise DatabaseError(f"PostgreSQL ingestion failed: {exc}") from exc
+
+    def store_cboe_option_stats(self, snapshot: dict[str, Any]) -> None:
+        payload = {
+            "trade_date": snapshot["trade_date"],
+            "total_volume": snapshot.get("total_volume"),
+            "total_call_volume": snapshot.get("total_call_volume"),
+            "total_put_volume": snapshot.get("total_put_volume"),
+            "total_put_call": snapshot.get("total_put_call"),
+            "total_call_put": snapshot.get("total_call_put"),
+            "buckets": Jsonb(snapshot.get("buckets") or []),
+            "vix_put_call": snapshot.get("vix_put_call"),
+            "spx_put_call": snapshot.get("spx_put_call"),
+            "source": snapshot.get("source") or "cboe",
+            "disclaimer": snapshot.get("disclaimer"),
+            "raw": Jsonb(snapshot.get("raw") or {}),
+        }
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO cboe_option_stats (
+                        trade_date, total_volume, total_call_volume, total_put_volume,
+                        total_put_call, total_call_put, buckets, vix_put_call,
+                        spx_put_call, source, disclaimer, raw
+                    ) VALUES (
+                        %(trade_date)s, %(total_volume)s, %(total_call_volume)s,
+                        %(total_put_volume)s, %(total_put_call)s, %(total_call_put)s,
+                        %(buckets)s, %(vix_put_call)s, %(spx_put_call)s,
+                        %(source)s, %(disclaimer)s, %(raw)s
+                    ) ON CONFLICT (trade_date) DO UPDATE SET
+                        total_volume = EXCLUDED.total_volume,
+                        total_call_volume = EXCLUDED.total_call_volume,
+                        total_put_volume = EXCLUDED.total_put_volume,
+                        total_put_call = EXCLUDED.total_put_call,
+                        total_call_put = EXCLUDED.total_call_put,
+                        buckets = EXCLUDED.buckets,
+                        vix_put_call = EXCLUDED.vix_put_call,
+                        spx_put_call = EXCLUDED.spx_put_call,
+                        source = EXCLUDED.source,
+                        disclaimer = EXCLUDED.disclaimer,
+                        raw = EXCLUDED.raw,
+                        captured_at = CURRENT_TIMESTAMP
+                    """,
+                    payload,
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to store Cboe option stats: {exc}") from exc

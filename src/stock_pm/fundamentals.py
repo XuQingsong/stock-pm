@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 
 from .database import Database
 from .impact import news_sentiment, tag_news
+from .providers import get_fundamentals_provider
 
 
 NASDAQ_API = "https://api.nasdaq.com/api"
@@ -167,18 +168,19 @@ def collect(symbols: list[str] | None = None) -> tuple[dict, dict[str, str]]:
     finally:
         database.close()
 
+    provider = get_fundamentals_provider()
     payload = {
-        "source": "nasdaq_fundamentals",
+        "source": f"{provider.name}_fundamentals",
         "captured_at": captured_at,
         "fundamentals": [],
         "earnings": [],
         "news": [],
     }
     errors: dict[str, str] = {}
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         futures = {
             executor.submit(
-                fetch_symbol,
+                provider.fetch,
                 symbol,
                 prices.get(symbol),
                 captured_at,
@@ -200,7 +202,7 @@ def collect(symbols: list[str] | None = None) -> tuple[dict, dict[str, str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Sync valuation and earnings history from Nasdaq"
+        description="Sync valuation and earnings history from the configured provider"
     )
     parser.add_argument("--symbols", nargs="*", help="Optional watchlist symbols")
     parser.add_argument("--dry-run", action="store_true")

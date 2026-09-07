@@ -28,12 +28,13 @@ stock-pm-review = "stock_pm.review:main"
 stock-pm-alpaca = "stock_pm.alpaca:main"
 stock-pm-flow = "stock_pm.flow:main"
 stock-pm-macro = "stock_pm.macro:main"
+stock-pm-cboe = "stock_pm.cboe:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-stock_pm = ["sql/*.sql", "static/*.html", "data/*.json"]
+stock_pm = ["sql/*.sql", "static/*", "data/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

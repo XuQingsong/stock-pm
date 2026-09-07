@@ -13,4 +13,6 @@ dist/
 *.egg-info/
 tools/
 flow-backfill.log
+pytest-deploy.err
+pytest-deploy.log
 sync_payload*.json

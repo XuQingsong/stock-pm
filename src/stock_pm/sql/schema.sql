@@ -198,6 +198,10 @@ CREATE TABLE IF NOT EXISTS earnings_reports (
     revenue_actual NUMERIC,
     revenue_estimate NUMERIC,
     revenue_surprise_pct NUMERIC,
+    net_income_actual NUMERIC,
+    net_income_estimate NUMERIC,
+    net_income_surprise_pct NUMERIC,
+    provider_fields JSONB NOT NULL DEFAULT '{}'::jsonb,
     source TEXT NOT NULL,
     synced_at TIMESTAMPTZ NOT NULL,
     raw_data JSONB NOT NULL,
@@ -206,6 +210,12 @@ CREATE TABLE IF NOT EXISTS earnings_reports (
 
 CREATE INDEX IF NOT EXISTS idx_earnings_symbol_date
     ON earnings_reports (symbol, report_date DESC);
+
+ALTER TABLE earnings_reports
+    ADD COLUMN IF NOT EXISTS net_income_actual NUMERIC,
+    ADD COLUMN IF NOT EXISTS net_income_estimate NUMERIC,
+    ADD COLUMN IF NOT EXISTS net_income_surprise_pct NUMERIC,
+    ADD COLUMN IF NOT EXISTS provider_fields JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS market_events (
     id BIGSERIAL PRIMARY KEY,
@@ -315,3 +325,41 @@ CREATE TABLE IF NOT EXISTS daily_reviews (
 
 CREATE INDEX IF NOT EXISTS idx_daily_reviews_date
     ON daily_reviews (review_date DESC, symbol);
+
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS rule_bias TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS watch_low NUMERIC;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS watch_high NUMERIC;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS context JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_why TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_outlook TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_bias TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_model TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_status TEXT NOT NULL DEFAULT 'missing_key';
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_context_hash TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_generated_at TIMESTAMPTZ;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS llm_error TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS user_bias TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS user_outlook TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS user_note TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS user_confirmed_at TIMESTAMPTZ;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS outcome_return_pct NUMERIC;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS outcome_volume_ratio NUMERIC;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS outcome_broke_support BOOLEAN;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS outcome_vs_bias TEXT;
+ALTER TABLE daily_reviews ADD COLUMN IF NOT EXISTS outcome_bias_source TEXT;
+
+CREATE TABLE IF NOT EXISTS cboe_option_stats (
+    trade_date DATE PRIMARY KEY,
+    total_volume NUMERIC,
+    total_call_volume NUMERIC,
+    total_put_volume NUMERIC,
+    total_put_call NUMERIC,
+    total_call_put NUMERIC,
+    buckets JSONB NOT NULL DEFAULT '[]'::jsonb,
+    vix_put_call NUMERIC,
+    spx_put_call NUMERIC,
+    source TEXT NOT NULL DEFAULT 'cboe',
+    disclaimer TEXT,
+    raw JSONB NOT NULL DEFAULT '{}'::jsonb,
+    captured_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

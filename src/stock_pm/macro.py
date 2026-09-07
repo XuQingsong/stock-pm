@@ -11,6 +11,7 @@ numeric actual and are maintained manually or via POST /api/macro/events.
 
 import argparse
 import json
+from datetime import datetime, timezone
 from importlib.resources import files
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -87,11 +88,13 @@ def sync(fill_actuals: bool = True) -> dict:
         database.initialize()
         for event in events:
             actual = event.get("actual")
+            event_time = datetime.fromisoformat(event["event_time"].replace("Z", "+00:00"))
             if (
                 fill_actuals
                 and actual is None
                 and settings.fred_api_key
                 and event["event_type"] in FRED_SERIES
+                and event_time <= datetime.now(timezone.utc)
             ):
                 try:
                     actual = fred_actual(event["event_type"], settings.fred_api_key)

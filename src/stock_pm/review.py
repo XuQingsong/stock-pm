@@ -1,10 +1,21 @@
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import datetime, timezone
 from typing import Any
 
+from .analytics import money_flow, rule_next_day_draft, volume_profile
+from .config import Settings
 from .database import Database
+from .impact import macro_impact, news_impacts
+from .llm import (
+    QUOTA_EXHAUSTED,
+    RETRY_ON_REFRESH_STATUSES,
+    complete_review,
+    llm_status_message,
+    reuse_llm_if_unchanged,
+)
 
 
 def _mean(values: list[float]) -> float | None:
@@ -17,68 +28,6 @@ def _pct(value: float | None) -> str:
 
 def _price(value: float | None) -> str:
     return "—" if value is None else f"${value:,.2f}"
-
-
-def _volume_profile(bars: list[dict], periods: int = 60, bins: int = 24) -> dict[str, float | None]:
-    sample = bars[:periods]
-    points = []
-    for row in sample:
-        high, low, close, volume = (float(row.get(key) or 0) for key in ("high_price", "low_price", "close_price", "volume"))
-        if close > 0 and volume > 0:
-            points.append(((high + low + close) / 3, volume))
-    if not points:
-        return {"poc": None, "value_low": None, "value_high": None, "volume_below_pct": None}
-    low_price, high_price = min(p[0] for p in points), max(p[0] for p in points)
-    if high_price == low_price:
-        return {"poc": low_price, "value_low": low_price, "value_high": high_price, "volume_below_pct": 100.0}
-    width = (high_price - low_price) / bins
-    buckets = [0.0] * bins
-    for price, volume in points:
-        index = min(bins - 1, int((price - low_price) / width))
-        buckets[index] += volume
-    poc_index = max(range(bins), key=buckets.__getitem__)
-    left = right = poc_index
-    selected_volume = buckets[poc_index]
-    target = sum(buckets) * 0.70
-    while selected_volume < target and (left > 0 or right < bins - 1):
-        left_volume = buckets[left - 1] if left > 0 else -1
-        right_volume = buckets[right + 1] if right < bins - 1 else -1
-        if right_volume >= left_volume:
-            right += 1
-            selected_volume += buckets[right]
-        else:
-            left -= 1
-            selected_volume += buckets[left]
-    latest_close = float(sample[0]["close_price"])
-    below = sum(volume for price, volume in points if price <= latest_close)
-    total = sum(volume for _, volume in points)
-    return {
-        "poc": low_price + (poc_index + 0.5) * width,
-        "value_low": low_price + left * width,
-        "value_high": low_price + (right + 1) * width,
-        "volume_below_pct": below / total * 100 if total else None,
-    }
-
-
-def _money_flow(bars: list[dict], periods: int = 20) -> tuple[float | None, float | None]:
-    sample = bars[:periods]
-    mfv_total = volume_total = 0.0
-    for row in sample:
-        high, low, close, volume = (float(row.get(key) or 0) for key in ("high_price", "low_price", "close_price", "volume"))
-        if high > low and volume > 0:
-            mfv_total += ((2 * close - high - low) / (high - low)) * volume
-            volume_total += volume
-    cmf = mfv_total / volume_total if volume_total else None
-
-    chronological = list(reversed(bars[:30]))
-    obv = [0.0]
-    for prior, current in zip(chronological, chronological[1:]):
-        volume = float(current.get("volume") or 0)
-        direction = 1 if current["close_price"] > prior["close_price"] else -1 if current["close_price"] < prior["close_price"] else 0
-        obv.append(obv[-1] + direction * volume)
-    recent_volume = sum(float(row.get("volume") or 0) for row in bars[:5])
-    obv_change = (obv[-1] - obv[-6]) / recent_volume if len(obv) >= 6 and recent_volume else None
-    return cmf, obv_change
 
 
 def _option_position(database: Database, symbol: str) -> dict[str, Any]:
@@ -150,7 +99,9 @@ def analyze_bars(bars: list[dict]) -> dict[str, Any]:
     else:
         tape = "量价未出现显著单边失衡"
 
-    cmf20, obv_change = _money_flow(bars)
+    flow_data = money_flow(bars)
+    cmf20 = flow_data.get("cmf20")
+    obv_change = flow_data.get("obv_5d_normalized")
     if cmf20 is not None and cmf20 >= 0.10 and (obv_change or 0) > 0:
         flow = "持续吸筹代理信号"
     elif cmf20 is not None and cmf20 <= -0.10 and (obv_change or 0) < 0:
@@ -162,13 +113,13 @@ def analyze_bars(bars: list[dict]) -> dict[str, Any]:
     else:
         flow = "资金流中性"
 
-    profile = _volume_profile(bars)
+    profile = volume_profile(bars[:60], latest_first=True)
     def typical_vwap(sample: list[dict]) -> float | None:
         total_volume = sum(float(row.get("volume") or 0) for row in sample)
         return sum(((float(row["high_price"]) + float(row["low_price"]) + float(row["close_price"])) / 3) * float(row.get("volume") or 0) for row in sample) / total_volume if total_volume else None
     avwap20, avwap60 = typical_vwap(bars[:20]), typical_vwap(bars[:60])
     moving_average = lambda n: _mean([float(row["close_price"]) for row in bars[:n]]) if len(bars) >= n else None
-    ma20, ma50, ma200 = moving_average(20), moving_average(50), moving_average(200)
+    ma5, ma20, ma50, ma200 = moving_average(5), moving_average(20), moving_average(50), moving_average(200)
 
     candidate_supports = [prior_low, profile["value_low"], profile["poc"], avwap20, ma20, ma50]
     candidate_resistances = [prior_high, profile["value_high"], profile["poc"], avwap20, ma20, ma50]
@@ -209,14 +160,119 @@ def analyze_bars(bars: list[dict]) -> dict[str, Any]:
         "obv_5d_normalized": obv_change, "flow": flow,
         "poc_60d": profile["poc"], "value_area_low": profile["value_low"],
         "value_area_high": profile["value_high"], "volume_below_price_pct": volume_below,
-        "avwap20": avwap20, "avwap60": avwap60, "ma20": ma20, "ma50": ma50, "ma200": ma200,
+        "avwap20": avwap20, "avwap60": avwap60,
+        "ma5": ma5, "ma20": ma20, "ma50": ma50, "ma200": ma200,
         "support": support, "resistance": resistance, "support_test": support_test,
         "support_levels": supports[:3], "resistance_levels": resistances[:3],
         "position": position, "score": score, "bias": bias,
     }
 
 
-def generate_review(database: Database, symbol: str) -> dict | None:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    try:
+        json.dumps(value)
+        return value
+    except TypeError:
+        return str(value)
+
+
+def pack_review_context(
+    symbol: str,
+    review_date,
+    metrics: dict,
+    news: list[dict],
+    macro: list[dict],
+    segments: list[dict],
+) -> dict[str, Any]:
+    compact_news = []
+    for article in news[:8]:
+        compact_news.append(
+            {
+                "headline": article.get("headline"),
+                "summary": (article.get("summary") or "")[:280],
+                "themes": article.get("theme_names") or article.get("themes") or [],
+                "impacts": [
+                    {
+                        "direction": item.get("direction"),
+                        "theme_name": item.get("theme_name"),
+                        "rationale": item.get("rationale"),
+                    }
+                    for item in (article.get("impacts") or [])
+                ],
+            }
+        )
+    compact_macro = [
+        {
+            "name": event.get("name"),
+            "narrative": event.get("narrative"),
+            "surprise": event.get("surprise"),
+            "impacts": [
+                {
+                    "direction": item.get("direction"),
+                    "theme_name": item.get("theme_name"),
+                    "rationale": item.get("rationale"),
+                }
+                for item in (event.get("impacts") or [])
+            ],
+        }
+        for event in macro
+        if event
+    ]
+    largest_up = max(
+        (float(row.get("change_pct") or 0) for row in segments),
+        default=None,
+    )
+    largest_down = min(
+        (float(row.get("change_pct") or 0) for row in segments),
+        default=None,
+    )
+    return _json_safe(
+        {
+            "symbol": symbol,
+            "review_date": str(review_date),
+            "tape": {
+                "close": metrics.get("close"),
+                "day_change_pct": metrics.get("day_change_pct"),
+                "relative_volume": metrics.get("relative_volume"),
+                "breakout": metrics.get("breakout"),
+                "tape": metrics.get("tape"),
+                "support": metrics.get("support"),
+                "resistance": metrics.get("resistance"),
+                "support_test": metrics.get("support_test"),
+                "ma5": metrics.get("ma5"),
+                "ma20": metrics.get("ma20"),
+                "ma50": metrics.get("ma50"),
+                "ma200": metrics.get("ma200"),
+                "score": metrics.get("score"),
+                "bias": metrics.get("bias"),
+            },
+            "news": compact_news,
+            "macro": compact_macro,
+            "segments": {
+                "count": len(segments),
+                "largest_up_pct": largest_up,
+                "largest_down_pct": largest_down,
+            },
+        }
+    )
+
+
+def generate_review(
+    database: Database,
+    symbol: str,
+    llm_fn=None,
+    *,
+    force_llm: bool = False,
+    settings: Settings | None = None,
+) -> dict | None:
     bars = database.fetch_all(
         """SELECT bar_time, open_price, high_price, low_price, close_price, volume
            FROM daily_price_bars
@@ -231,6 +287,7 @@ def generate_review(database: Database, symbol: str) -> dict | None:
     review_date = complete[0]["bar_time"].date()
     options = _option_position(database, symbol)
     metrics["options"] = {key: value for key, value in options.items() if key != "rows"}
+    draft = rule_next_day_draft(metrics)
 
     unusual = []
     for row in options["rows"]:
@@ -251,13 +308,50 @@ def generate_review(database: Database, symbol: str) -> dict | None:
             }
         )
 
+    theme_map = database.theme_symbols()
+    news_rows = database.news_on_date(symbol, str(review_date))
+    for article in news_rows:
+        article["impacts"] = news_impacts(article, theme_map)
+    macro_rows = [
+        mapped
+        for event in database.macro_events_between(str(review_date), str(review_date))
+        if (mapped := macro_impact(event, theme_map))
+    ]
+    segments = database.segments(symbol, str(review_date))
+    context = pack_review_context(symbol, review_date, metrics, news_rows, macro_rows, segments)
+    config = settings or Settings()
+    existing = database.review_row(symbol, str(review_date))
+    fingerprint, cached = reuse_llm_if_unchanged(
+        context,
+        existing,
+        model=config.llm_model or None,
+        force=force_llm,
+    )
+    if cached:
+        llm_result = cached
+    else:
+        llm_result = llm_fn(context) if llm_fn else complete_review(context, config)
+        llm_result = {
+            **llm_result,
+            "llm_cached": False,
+            "llm_generated_at": (
+                datetime.now(timezone.utc)
+                if llm_result.get("llm_status") == "ok"
+                else None
+            ),
+        }
+
     option_text = "期权数据不足"
     if options.get("call_wall") is not None:
         ratio = options.get("put_call_ratio")
         option_text = f"近月Put墙 {_price(options['put_wall'])}、Call墙 {_price(options['call_wall'])}" + (f"，Put/Call持仓代理比 {ratio:.2f}" if ratio is not None else "")
+    rel = metrics["relative_volume"]
+    cmf = metrics["cmf20"]
+    rel_text = "—" if rel is None else f"{rel:.2f}"
+    cmf_text = "—" if cmf is None else f"{cmf:+.2f}"
     summary = (
-        f"{metrics['bias']}（{metrics['score']:+.0f}分）。当日{_pct(metrics['day_change_pct'])}、量比{metrics['relative_volume']:.2f}，{metrics['tape']}；"
-        f"20日资金流：{metrics['flow']}（CMF {metrics['cmf20']:+.2f}）。60日成交密集成本 {_price(metrics['poc_60d'])}，"
+        f"{metrics['bias']}（{metrics['score']:+.0f}分）。当日{_pct(metrics['day_change_pct'])}、量比{rel_text}，{metrics['tape']}；"
+        f"20日资金流：{metrics['flow']}（CMF {cmf_text}）。60日成交密集成本 {_price(metrics['poc_60d'])}，"
         f"价值区 {_price(metrics['value_area_low'])}–{_price(metrics['value_area_high'])}；{metrics['position']}。"
         f"最近支撑 {_price(metrics['support'])}、压力 {_price(metrics['resistance'])}，状态为“{metrics['breakout']}”，{metrics['support_test']}。{option_text}。"
     )
@@ -268,23 +362,128 @@ def generate_review(database: Database, symbol: str) -> dict | None:
         "resistance_price": metrics["resistance"], "breakout_status": metrics["breakout"],
         "large_trade_count": 0, "unusual_option_count": len(unusual),
         "score": metrics["score"], "summary": summary, "metrics": metrics,
+        "rule_bias": draft["rule_bias"],
+        "watch_low": draft["watch_low"],
+        "watch_high": draft["watch_high"],
+        "context": context,
+        "llm_why": llm_result.get("llm_why"),
+        "llm_outlook": llm_result.get("llm_outlook"),
+        "llm_bias": llm_result.get("llm_bias"),
+        "llm_model": llm_result.get("llm_model"),
+        "llm_status": llm_result.get("llm_status") or "missing_key",
+        "llm_context_hash": fingerprint,
+        "llm_generated_at": llm_result.get("llm_generated_at"),
+        "llm_cached": bool(llm_result.get("llm_cached")),
+        "llm_error": (
+            None
+            if (llm_result.get("llm_status") or "missing_key") == "ok"
+            else llm_result.get("llm_error") or llm_status_message(llm_result.get("llm_status"))
+        ),
     }
     database.store_review(review)
+    if len(complete) >= 2:
+        prior_date = complete[1]["bar_time"].date()
+        broke_support = (
+            metrics["breakout"] in {"放量有效跌破", "缩量跌破待确认"}
+            or metrics["support_test"] == "收盘跌破最近支撑"
+        )
+        broke_resistance = metrics["breakout"] in {"放量有效突破", "缩量突破待确认"}
+        database.fill_review_outcome(
+            symbol,
+            str(prior_date),
+            {
+                "outcome_return_pct": metrics["day_change_pct"],
+                "outcome_volume_ratio": metrics["relative_volume"],
+                "outcome_broke_support": broke_support,
+                "broke_resistance": broke_resistance,
+            },
+        )
     return review
 
 
+def retry_reviews_for_llm(
+    database: Database,
+    review_date: str | None = None,
+    symbol: str | None = None,
+    llm_fn=None,
+) -> dict[str, Any]:
+    date_value = review_date or database.latest_review_date()
+    if not date_value:
+        return {
+            "date": None,
+            "retried": [],
+            "quota_exhausted": False,
+            "ok": 0,
+        }
+    rows = database.reviews_by_date(date_value)
+    if symbol:
+        wanted = symbol.upper()
+        rows = [row for row in rows if str(row.get("symbol") or "").upper() == wanted]
+    targets = [
+        row for row in rows if row.get("llm_status") in RETRY_ON_REFRESH_STATUSES
+    ]
+    retried: list[dict[str, Any]] = []
+    for row in targets:
+        review = generate_review(database, row["symbol"], llm_fn=llm_fn)
+        if not review:
+            continue
+        retried.append(
+            {
+                "symbol": review["symbol"],
+                "llm_status": review.get("llm_status"),
+                "llm_error": review.get("llm_error"),
+            }
+        )
+        if review.get("llm_status") == QUOTA_EXHAUSTED:
+            break
+    remaining = database.reviews_by_date(date_value)
+    if symbol:
+        remaining = [
+            row for row in remaining if str(row.get("symbol") or "").upper() == symbol.upper()
+        ]
+    return {
+        "date": date_value,
+        "retried": retried,
+        "quota_exhausted": any(
+            row.get("llm_status") == QUOTA_EXHAUSTED for row in remaining
+        ),
+        "ok": sum(1 for row in remaining if row.get("llm_status") == "ok"),
+    }
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Generate daily reviews; call the LLM only when inputs change"
+    )
+    parser.add_argument("--symbols", nargs="*", help="Optional watchlist symbols")
+    parser.add_argument(
+        "--force-llm",
+        action="store_true",
+        help="Ignore cached model output and call the LLM again",
+    )
+    args = parser.parse_args()
     database = Database()
     try:
         database.initialize()
+        symbols = args.symbols or database.active_symbols()
         reviews = [
             review
-            for symbol in database.active_symbols()
-            if (review := generate_review(database, symbol))
+            for symbol in symbols
+            if (review := generate_review(database, symbol, force_llm=args.force_llm))
         ]
     finally:
         database.close()
-    print(json.dumps({"reviews": reviews}, ensure_ascii=False, default=str))
+    print(
+        json.dumps(
+            {
+                "reviews": reviews,
+                "llm_called": sum(1 for row in reviews if not row.get("llm_cached")),
+                "llm_cached": sum(1 for row in reviews if row.get("llm_cached")),
+            },
+            ensure_ascii=False,
+            default=str,
+        )
+    )
 
 
 if __name__ == "__main__":

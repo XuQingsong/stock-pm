@@ -1,0 +1,15 @@
+---
+description: After each requested code change, commit and push to GitHub
+alwaysApply: true
+---
+
+# Sync to GitHub after changes
+
+When you finish a code change the user asked for, sync `origin` on the current branch. Do not wait to be asked again.
+
+1. Review `git status` / `git diff` / recent `git log`.
+2. Commit only the relevant project files. Never commit `.env`, `.env.server`, credentials, or local logs.
+3. Push to the tracked remote (`git push -u origin HEAD` if the branch has no upstream).
+4. Reply with the GitHub repo or commit URL.
+
+Do not `git add -i`, `--no-verify`, force-push, or amend a commit that is already on the remote.

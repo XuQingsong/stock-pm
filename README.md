@@ -14,9 +14,10 @@ Alpaca 延迟行情 -> 云端定时采集 -> PostgreSQL -> FastAPI / 分析程�
 
 | 页面 | 范围 | 内容 |
 | --- | --- | --- |
-| `/` 市场总览 | 全部自选 | 宏观事件与板块影响、快照+技术信号统一表、今日异动、近期财报、新闻（带主题标签） |
-| `/stock/{symbol}` 个股分析 | 单标的 | 日线K线+均线、日内分段量价与大额成交、估值、期权墙、财报反应、复盘、个股新闻 |
-| `/replay` 盘面回放 | 按日期/区间 | 单日全列表分段量价摘要+当日事件；区间走势与宏观/个股事件叠加 |
+| `/` 市场总览 | 全部自选 | 宏观事件与板块影响、最新复盘摘要、快照+技术信号、异动、财报、新闻→板块影响 |
+| `/stock/{symbol}` 个股分析 | 单标的 | 顶部报价 + 六个标签：图表、复盘、财报、估值、筹码与资金、资讯与期权 |
+| `/replay` 盘面回放 | 单标的（最多两个对比） | 美股常规时段 1 分钟 K 线 + 量价分析 + 复盘与日内分段 |
+| `/review` 每日复盘 | 全部自选 | 按交易日查看日终复盘卡片、分段摘要和宏观事件 |
 | `/settings` 设置 | 配置 | 自选新增（Alpaca 校验+自动回填）与停用 |
 
 ## 功能
@@ -65,7 +66,7 @@ stock-pm
 
 - 管理：`GET/POST /api/watchlist`、`DELETE /api/watchlist/{symbol}`、`GET /api/sync/status`、`GET /health`
 - 全列表：`/api/market/snapshot | signals | technicals | events | news | earnings/recent | impact`
-- 单标的：`/api/stock/{symbol}/chart | intraday | segments | large-trades | overview | fundamentals | earnings | sentiment | options | news | reviews | history`
+- 单标的：`/api/stock/{symbol}/chart?interval=`、`earnings/summary`、`valuation/history`、`volume-profile`、`capital-flow`，以及既有的 `intraday | segments | large-trades | overview | fundamentals | earnings | sentiment | options | news | reviews | history`
 - 回放：`/api/replay/day?date=`、`/api/replay/range?symbol=&from=&to=`
 - 宏观：`GET/POST /api/macro/events`（POST 用于补录实际值或 FOMC 结果）
 
@@ -86,13 +87,26 @@ stock-pm-alpaca --mode daily
 
 ## 基本面与财报同步
 
+在 `.env` 中配置 `FMP_API_KEY` 后，`stock-pm-fundamentals` 使用 Financial Modeling Prep 拉取估值 TTM 与财报实际值；未配置时回退到 Nasdaq 免费接口（仅 EPS 一致预期）。
+
 ```powershell
 stock-pm-fundamentals
 ```
 
-该命令从 Nasdaq 公共接口同步估值快照、分析师目标价和最近四次财报 EPS，并结合数据库中的日线计算 TTM / Forward PE 与财报前后 1、5、20 个交易日的涨跌。ETF（例如 QQQ）或数据源未覆盖的字段会显示为空，不用估算值填充。
+FMP 可提供：公司资料、PE/PB/PS、毛利率等 TTM 比率、季度利润表净利润、以及已公布的 EPS/营收实际值与预期。当前套餐不要传 `limit`（该查询参数会 402）。`analyst-estimates` 以及部分标的的部分接口也可能 402，因此**净利润预期、分析师目标价、Forward PE 一律留空**，页面显示「数据源暂未提供」，不会用估算值填补。未来财报行若尚无 actual 也会跳过。新闻仍来自 Nasdaq。
 
-云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → Nasdaq 估值/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → 复盘。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
+ETF（例如 QQQ）或供应商未覆盖的字段同样显示为空。
+
+云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → 复盘。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
+
+## 个股页指标定义
+
+- **K 线周期**：`1m / 5m / 15m / 60m` 由分钟线重采样；`1d / 1w / 1M` 由日线重采样。分钟线为 Alpaca 免费层约 15 分钟延迟。
+- **均线**：所选周期收盘价的 MA5 / MA10 / MA20 / MA30；不足窗口长度时该均线为空。
+- **KDJ**：RSV(9)，K/D 平滑 3（初始值 50），`J = 3K - 2D`。
+- **成交量价位分布（估算）**：把每根日 K 的成交量在高低价区间内均摊到 32 个价位桶，POC 为最大桶，价值区覆盖约 70% 成交量。这不是交易所披露的持仓成本或主力筹码。
+- **资金流**：大额成交分层（20–50 万 / 50–100 万 / 100 万+）只统计单笔金额 ≥ `LARGE_TRADE_NOTIONAL` 的成交；买卖方向由 tick rule **推断**，不能识别机构或散户。CMF(20) 与 OBV 为日 K 代理指标。
+- **支撑/压力线**：来自上述成交量分布中低于/高于现价的高成交价位，叠加在图表上作为参考，不是订单簿。
 
 ## 大额成交与宏观事件
 
@@ -100,6 +114,7 @@ stock-pm-fundamentals
 stock-pm-flow --days 7        # 回填过去一周的分段量价与大额成交
 stock-pm-flow --date 2026-09-04
 stock-pm-macro                # 同步宏观日历；配置 FRED_API_KEY 后自动补非农/CPI/PCE 实际值
+stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
 ```
 
 - 大额成交阈值默认 $200,000（`LARGE_TRADE_NOTIONAL`）；方向由 tick rule 推断，页面上均标注"推断"。

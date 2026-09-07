@@ -6,5 +6,5 @@ __pycache__
 *.py[cod]
 *.egg-info
 tests
-data
+/data
 sync_payload*.json

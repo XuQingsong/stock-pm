@@ -4,14 +4,17 @@ import re
 from contextlib import asynccontextmanager
 from datetime import date
 from importlib.resources import files
+from pathlib import Path
 from typing import Annotated
 
 import uvicorn
 from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from .database import Database
 from .errors import DatabaseError
+from .review import retry_reviews_for_llm
 
 SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 
@@ -70,9 +73,9 @@ def legacy_live() -> RedirectResponse:
     return RedirectResponse("/", status_code=307)
 
 
-@app.get("/review", include_in_schema=False)
-def legacy_review() -> RedirectResponse:
-    return RedirectResponse("/replay", status_code=307)
+@app.get("/review", response_class=HTMLResponse, include_in_schema=False)
+def review_page() -> str:
+    return _page("review.html")
 
 
 # ---------------------------------------------------------------- health & watchlist
@@ -238,6 +241,23 @@ def market_impact(days: int = Query(14, ge=1, le=90)) -> dict:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/market/options-overview")
+def options_overview(
+    date_: Annotated[str | None, Query(alias="date")] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        row = database.cboe_option_stats(date_)
+        if not row:
+            return {"status": "missing", "trade_date": date_}
+        return {"status": "ok", **row}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
 # ---------------------------------------------------------------- single stock
 
 @app.get("/api/stock/{symbol}/history")
@@ -253,9 +273,13 @@ def stock_history(
 
 
 @app.get("/api/stock/{symbol}/chart")
-def stock_chart(symbol: str, limit: int = Query(260, ge=50, le=1000)) -> list[dict]:
+def stock_chart(
+    symbol: str,
+    limit: int = Query(260, ge=50, le=1000),
+    interval: str = Query("1d"),
+) -> dict:
     try:
-        return database.chart_history(symbol, limit)
+        return database.chart_history(symbol, limit, interval)
     except (DatabaseError, ValueError) as exc:
         raise _http_error(exc) from exc
 
@@ -310,10 +334,51 @@ def stock_fundamentals(symbol: str) -> dict:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/stock/{symbol}/earnings/summary")
+def stock_earnings_summary(symbol: str) -> dict:
+    try:
+        return database.earnings_summary_view(symbol)
+    except (DatabaseError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
 @app.get("/api/stock/{symbol}/earnings")
 def stock_earnings(symbol: str) -> list[dict]:
     try:
         return database.earnings_history(symbol)
+    except (DatabaseError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/valuation/history")
+def stock_valuation_history(
+    symbol: str,
+    limit: int = Query(260, ge=8, le=1000),
+) -> dict:
+    try:
+        return database.valuation_history(symbol, limit)
+    except (DatabaseError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/volume-profile")
+def stock_volume_profile(
+    symbol: str,
+    lookback: int = Query(60, ge=10, le=250),
+) -> dict:
+    try:
+        return database.volume_profile_view(symbol, lookback)
+    except (DatabaseError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/capital-flow")
+def stock_capital_flow(
+    symbol: str,
+    days: int = Query(5, ge=1, le=30),
+) -> dict:
+    try:
+        return database.capital_flow_view(symbol, days)
     except (DatabaseError, ValueError) as exc:
         raise _http_error(exc) from exc
 
@@ -358,6 +423,49 @@ def reviews(symbol: str | None = None) -> list[dict]:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/briefing")
+def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        return database.briefing(date_)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.post("/api/reviews/retry-llm")
+def retry_llm(
+    date_: Annotated[str | None, Query(alias="date")] = None,
+    symbol: Annotated[str | None, Query()] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if symbol and not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        result = retry_reviews_for_llm(database, date_, symbol.upper() if symbol else None)
+        result["briefing"] = database.briefing(result.get("date"))
+        return result
+    except ValueError as exc:
+        raise _http_error(exc) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.patch("/api/reviews/{symbol}/{review_date}")
+def patch_review(symbol: str, review_date: str, body: Annotated[dict, Body()]) -> dict:
+    try:
+        date.fromisoformat(review_date)
+        normalized = database._watchlist_symbol(symbol)
+        return database.update_review_user(normalized, review_date, body)
+    except ValueError as exc:
+        raise _http_error(exc) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
 # ---------------------------------------------------------------- replay
 
 @app.get("/api/replay/day")
@@ -378,10 +486,15 @@ def replay_range(
     end: Annotated[str, Query(alias="to")],
 ) -> dict:
     try:
-        date.fromisoformat(start), date.fromisoformat(end)
+        start_day = date.fromisoformat(start)
+        end_day = date.fromisoformat(end)
+        if (end_day - start_day).days > 10:
+            raise ValueError("分钟回放区间不能超过 10 个自然日")
         result = database.daily_range(symbol, start, end)
         result["events"] = database.events_between(start, end, symbol)
         result["macro"] = database.macro_events_between(start, end)
+        result["reviews"] = database.reviews_between(symbol, start, end)
+        result["segments"] = database.segments_between(symbol, start, end)
         return result
     except ValueError as exc:
         raise _http_error(exc) from exc
@@ -413,6 +526,13 @@ def upsert_macro_event(body: Annotated[dict, Body()]) -> dict:
     except DatabaseError as exc:
         raise _http_error(exc) from exc
     return {"status": "ok"}
+
+
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).resolve().parent / "static"),
+    name="static",
+)
 
 
 def run() -> None:

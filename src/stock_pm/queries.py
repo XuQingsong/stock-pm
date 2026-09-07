@@ -3,7 +3,25 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from .impact import macro_impact, THEME_NAMES
+from .analytics import (
+    INTRADAY_MINUTES,
+    SUPPORTED_INTERVALS,
+    earnings_scorecard,
+    earnings_summary,
+    enrich_chart_bars,
+    growth_phase_label,
+    ma_position_text,
+    money_flow,
+    percentile,
+    quantile,
+    reconstructed_pe_view,
+    resample_bars,
+    return_1y_pct,
+    tape_health,
+    volume_profile,
+    yoy_from_rows,
+)
+from .impact import macro_impact, news_impacts, THEME_NAMES
 from .scoring import sentiment_from_components
 
 
@@ -15,7 +33,9 @@ EARNINGS_SQL = """
                 e.symbol, e.report_date, e.report_timing, e.fiscal_period,
                 e.fiscal_year, e.period_end, e.currency, e.eps_actual,
                 e.eps_estimate, e.eps_surprise_pct, e.revenue_actual,
-                e.revenue_estimate, e.revenue_surprise_pct, e.source,
+                e.revenue_estimate, e.revenue_surprise_pct,
+                e.net_income_actual, e.net_income_estimate,
+                e.net_income_surprise_pct, e.provider_fields, e.source,
                 before_5.close_price AS price_5d_before,
                 before_1.close_price AS price_before,
                 after_1.close_price AS price_after_1d,
@@ -87,7 +107,10 @@ TECHNICAL_SQL = """
                     ) AS close_20d_ago,
                     LAG(close_price, 50) OVER (
                         PARTITION BY symbol ORDER BY bar_time
-                    ) AS close_50d_ago
+                    ) AS close_50d_ago,
+                    LAG(close_price, 251) OVER (
+                        PARTITION BY symbol ORDER BY bar_time
+                    ) AS close_252d_ago
                 FROM daily_price_bars
                 WHERE bar_size = '1d' AND symbol = ANY(%s)
             ), averages AS (
@@ -167,6 +190,7 @@ TECHNICAL_SQL = """
                 ROUND(100 * (close_price / NULLIF(close_5d_ago, 0) - 1), 2) AS return_5d_pct,
                 ROUND(100 * (close_price / NULLIF(close_20d_ago, 0) - 1), 2) AS return_20d_pct,
                 ROUND(100 * (close_price / NULLIF(close_50d_ago, 0) - 1), 2) AS return_50d_pct,
+                ROUND(100 * (close_price / NULLIF(close_252d_ago, 0) - 1), 2) AS return_1y_pct,
                 ROUND(
                     CASE
                         WHEN avg_loss_14 = 0 AND avg_gain_14 > 0 THEN 100
@@ -447,32 +471,277 @@ class QueryMixin:
             "sentiment": self.sentiment_summary(normalized),
             "valuation": self.latest_fundamentals(normalized),
             "earnings": self.earnings_history(normalized),
+            "thesis": self.fundamentals_thesis_view(normalized),
         }
 
-    def chart_history(self, symbol: str, limit: int = 260) -> list[dict]:
+    def chart_history(
+        self, symbol: str, limit: int = 260, interval: str = "1d"
+    ) -> dict:
         normalized = self._watchlist_symbol(symbol)
-        rows = self.fetch_all(
-            """
-            SELECT * FROM (
-                SELECT
-                    symbol, bar_time, close_price, volume,
-                    AVG(close_price) OVER (ORDER BY bar_time ROWS BETWEEN 4 PRECEDING AND CURRENT ROW) AS ma5,
-                    AVG(close_price) OVER (ORDER BY bar_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS ma20,
-                    AVG(close_price) OVER (ORDER BY bar_time ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS ma50,
-                    CASE WHEN COUNT(*) OVER (
-                        ORDER BY bar_time ROWS BETWEEN 199 PRECEDING AND CURRENT ROW
-                    ) >= 200 THEN AVG(close_price) OVER (
-                        ORDER BY bar_time ROWS BETWEEN 199 PRECEDING AND CURRENT ROW
-                    ) END AS ma200
+        if interval not in SUPPORTED_INTERVALS:
+            raise ValueError(
+                "interval must be one of 1m, 5m, 15m, 60m, 1d, 1w, 1M"
+            )
+        if interval in INTRADAY_MINUTES:
+            factor = INTRADAY_MINUTES[interval]
+            raw_limit = min(5000, max(limit * factor, 120))
+            rows = self.fetch_all(
+                """
+                SELECT symbol, bar_time, open_price, high_price, low_price,
+                       close_price, volume, source
+                FROM price_bars
+                WHERE symbol = %s AND bar_size = '1m'
+                ORDER BY bar_time DESC
+                LIMIT %s
+                """,
+                (normalized, raw_limit),
+            )
+        else:
+            factor = 1 if interval == "1d" else 7 if interval == "1w" else 31
+            raw_limit = min(1500, max(limit * factor, 60))
+            rows = self.fetch_all(
+                """
+                SELECT symbol, bar_time, open_price, high_price, low_price,
+                       close_price, volume, source
                 FROM daily_price_bars
                 WHERE symbol = %s AND bar_size = '1d'
-            ) data
-            ORDER BY bar_time DESC
+                ORDER BY bar_time DESC
+                LIMIT %s
+                """,
+                (normalized, raw_limit),
+            )
+        chronological = list(reversed(rows))
+        sampled = resample_bars(chronological, interval)[-limit:]
+        enriched = enrich_chart_bars(sampled)
+        latest = enriched[-1] if enriched else None
+        technical = self.technical_summary([normalized])
+        daily_ma = None
+        if technical:
+            daily_ma = {
+                "ma5": technical[0].get("ma5"),
+                "ma20": technical[0].get("ma20"),
+                "ma50": technical[0].get("ma50"),
+                "ma200": technical[0].get("ma200"),
+            }
+        return {
+            "symbol": normalized,
+            "interval": interval,
+            "bars": enriched,
+            "as_of": latest["bar_time"] if latest else None,
+            "source": latest.get("source") if latest else None,
+            "delayed": interval in INTRADAY_MINUTES,
+            "daily_ma": daily_ma,
+        }
+
+    def earnings_summary_view(self, symbol: str) -> dict:
+        rows = self._prefer_earnings_rows(self.earnings_history(symbol))
+        reported = [
+            row for row in rows
+            if row.get("eps_actual") is not None or row.get("revenue_actual") is not None
+        ]
+        summary = earnings_summary(reported)
+        latest = summary["latest"]
+        from .config import Settings
+
+        provider_name = "fmp" if Settings().fmp_api_key else "nasdaq"
+        source = str((latest or {}).get("source") or "")
+        missing = []
+        if latest:
+            if latest.get("revenue_actual") is None:
+                missing.append("营收")
+            if latest.get("net_income_actual") is None:
+                missing.append("净利润")
+            if provider_name != "fmp" and latest.get("net_income_estimate") is None:
+                missing.append("净利润预期")
+        status = "ok" if provider_name == "fmp" else "partial"
+        if provider_name == "fmp" and latest and "FMP" not in source:
+            status = "stale"
+        message = (
+            "营收/EPS 来自 FMP；净利润实际值来自利润表，净利润预期需更高套餐，未作估算"
+            if provider_name == "fmp"
+            else "当前使用 Nasdaq 免费源，营收与净利润显示为未提供"
+        )
+        if missing:
+            message += f"。缺失：{'、'.join(missing)}"
+        return {
+            **summary,
+            "provider": {"name": provider_name, "status": status, "message": message},
+            "thesis": self.fundamentals_thesis_view(symbol),
+        }
+
+    def _prefer_earnings_rows(self, rows: list[dict]) -> list[dict]:
+        """Keep one row per report date, preferring FMP and more complete fields."""
+        chosen: dict[str, dict] = {}
+        for row in rows:
+            key = str(row.get("report_date") or "")[:10]
+            if not key:
+                continue
+            existing = chosen.get(key)
+            if existing is None or self._earnings_row_score(row) > self._earnings_row_score(existing):
+                chosen[key] = row
+        return sorted(
+            chosen.values(),
+            key=lambda item: str(item.get("report_date")),
+            reverse=True,
+        )
+
+    @staticmethod
+    def _earnings_row_score(row: dict) -> tuple:
+        source = str(row.get("source") or "")
+        filled = sum(
+            row.get(key) is not None
+            for key in ("revenue_actual", "net_income_actual", "eps_actual", "eps_estimate")
+        )
+        return (1 if "FMP" in source else 0, filled)
+
+    def valuation_history(self, symbol: str, limit: int = 260) -> dict:
+        normalized = self._watchlist_symbol(symbol)
+        series = self.fetch_all(
+            """
+            SELECT captured_at, pe_ttm, pe_forward, price_to_book, price_to_sales
+            FROM fundamentals_snapshots
+            WHERE symbol = %s
+            ORDER BY captured_at
             LIMIT %s
             """,
             (normalized, limit),
         )
-        return list(reversed(rows))
+        pe_values = [float(row["pe_ttm"]) for row in series if row.get("pe_ttm") is not None]
+        current = self.latest_fundamentals(normalized)
+        pe_current = float(current["pe_ttm"]) if current and current.get("pe_ttm") is not None else (
+            pe_values[-1] if pe_values else None
+        )
+        enough = len(pe_values) >= 8
+        thesis = self.fundamentals_thesis_view(normalized)
+        reconstructed = thesis.get("valuation") or {}
+        return {
+            "current": current,
+            "series": series,
+            "metrics": {
+                "pe_percentile": reconstructed.get("pe_percentile")
+                if reconstructed.get("pe_percentile") is not None
+                else (percentile(pe_values, pe_current) if pe_current is not None else None),
+                "pe_low": reconstructed.get("pe_low") if reconstructed.get("pe_low") is not None else (
+                    quantile(pe_values, 0.1) if enough else None
+                ),
+                "pe_high": reconstructed.get("pe_high") if reconstructed.get("pe_high") is not None else (
+                    quantile(pe_values, 0.9) if enough else None
+                ),
+                "samples": reconstructed.get("samples") or len(pe_values),
+                "label": reconstructed.get("label"),
+                "basis": reconstructed.get("basis"),
+            },
+            "coverage": {
+                "from": series[0]["captured_at"] if series else None,
+                "to": series[-1]["captured_at"] if series else None,
+                "count": len(series),
+                "band_ready": enough or (reconstructed.get("samples") or 0) >= 8,
+            },
+            "thesis": thesis,
+        }
+
+    def volume_profile_view(self, symbol: str, lookback: int = 60) -> dict:
+        normalized = self._watchlist_symbol(symbol)
+        bars = self.fetch_all(
+            """
+            SELECT bar_time, open_price, high_price, low_price, close_price, volume
+            FROM daily_price_bars
+            WHERE symbol = %s
+            ORDER BY bar_time DESC
+            LIMIT %s
+            """,
+            (normalized, lookback),
+        )
+        profile = volume_profile(bars, latest_first=True)
+        return {
+            **profile,
+            "lookback": lookback,
+            "basis": "OHLCV估算",
+            "disclaimer": "按日K高低价区间分摊成交量，不是交易所披露的持仓成本或主力筹码。",
+        }
+
+    def capital_flow_view(self, symbol: str, days: int = 5) -> dict:
+        from .config import Settings
+
+        normalized = self._watchlist_symbol(symbol)
+        trades = self.fetch_all(
+            """
+            SELECT trade_time, notional, side_inferred
+            FROM large_trades
+            WHERE symbol = %s
+              AND trade_time >= CURRENT_TIMESTAMP - make_interval(days => %s)
+            ORDER BY trade_time
+            """,
+            (normalized, days),
+        )
+        tiers = [
+            {"name": "20–50万", "min_notional": 200_000, "max_notional": 500_000},
+            {"name": "50–100万", "min_notional": 500_000, "max_notional": 1_000_000},
+            {"name": "100万以上", "min_notional": 1_000_000, "max_notional": None},
+        ]
+        summarized = []
+        for tier in tiers:
+            buy = sell = 0.0
+            count = 0
+            for trade in trades:
+                notional = float(trade["notional"] or 0)
+                if notional < tier["min_notional"]:
+                    continue
+                if tier["max_notional"] is not None and notional >= tier["max_notional"]:
+                    continue
+                count += 1
+                if trade["side_inferred"] == "buy":
+                    buy += notional
+                elif trade["side_inferred"] == "sell":
+                    sell += notional
+            summarized.append(
+                {
+                    **tier,
+                    "buy_notional": round(buy, 2),
+                    "sell_notional": round(sell, 2),
+                    "net_notional": round(buy - sell, 2),
+                    "count": count,
+                }
+            )
+        by_day: dict[str, dict] = {}
+        for trade in trades:
+            day = str(trade["trade_time"])[:10]
+            entry = by_day.setdefault(day, {"date": day, "buy_notional": 0.0, "sell_notional": 0.0})
+            notional = float(trade["notional"] or 0)
+            if trade["side_inferred"] == "buy":
+                entry["buy_notional"] += notional
+            elif trade["side_inferred"] == "sell":
+                entry["sell_notional"] += notional
+        timeline = [
+            {
+                **row,
+                "buy_notional": round(row["buy_notional"], 2),
+                "sell_notional": round(row["sell_notional"], 2),
+                "net_notional": round(row["buy_notional"] - row["sell_notional"], 2),
+            }
+            for row in sorted(by_day.values(), key=lambda item: item["date"])
+        ]
+        daily = self.fetch_all(
+            """
+            SELECT bar_time, open_price, high_price, low_price, close_price, volume
+            FROM daily_price_bars
+            WHERE symbol = %s
+            ORDER BY bar_time DESC
+            LIMIT 40
+            """,
+            (normalized,),
+        )
+        flow = money_flow(daily)
+        threshold = Settings().large_trade_notional
+        return {
+            "tiers": summarized,
+            "timeline": timeline,
+            **flow,
+            "disclaimer": (
+                f"仅统计单笔金额 ≥ ${threshold:,.0f} 的成交；买卖方向由 tick rule 推断，"
+                "不能识别机构或散户身份，普通小单不计入方向统计。"
+            ),
+        }
 
     def intraday_history(self, symbol: str, limit: int = 600) -> list[dict]:
         normalized = self._watchlist_symbol(symbol)
@@ -559,7 +828,7 @@ class QueryMixin:
 
     def news(self, symbols: list[str] | None = None, limit: int = 60) -> list[dict]:
         requested = self._watchlist_symbols(symbols)
-        return self.fetch_all(
+        rows = self.fetch_all(
             """
             SELECT symbol, headline, summary, source, published_at, url,
                    sentiment, themes
@@ -570,6 +839,12 @@ class QueryMixin:
             """,
             (requested, limit),
         )
+        mapping = self.theme_symbols()
+        for row in rows:
+            themes = list(row.get("themes") or [])
+            row["theme_names"] = [THEME_NAMES.get(theme, theme) for theme in themes]
+            row["impacts"] = news_impacts(row, mapping)
+        return rows
 
     def segments(self, symbol: str, date: str | None = None) -> list[dict]:
         normalized = self._watchlist_symbol(symbol)
@@ -601,6 +876,28 @@ class QueryMixin:
             ORDER BY symbol, seg_no
             """,
             (date,),
+        )
+
+    def segments_between(self, symbol: str, start: str, end: str) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        return self.fetch_all(
+            """
+            SELECT * FROM intraday_segments
+            WHERE symbol = %s AND trade_date >= %s AND trade_date <= %s
+            ORDER BY trade_date, seg_no
+            """,
+            (normalized, start, end),
+        )
+
+    def reviews_between(self, symbol: str, start: str, end: str) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        return self.fetch_all(
+            """
+            SELECT * FROM daily_reviews
+            WHERE symbol = %s AND review_date >= %s AND review_date <= %s
+            ORDER BY review_date DESC
+            """,
+            (normalized, start, end),
         )
 
     def segment_dates(self, symbol: str) -> list[dict]:
@@ -647,6 +944,238 @@ class QueryMixin:
             (date,),
         )
 
+    def latest_review_date(self) -> str | None:
+        rows = self.fetch_all("SELECT MAX(review_date) AS review_date FROM daily_reviews")
+        value = rows[0]["review_date"] if rows else None
+        return str(value) if value else None
+
+    def review_row(self, symbol: str, review_date: str) -> dict | None:
+        rows = self.fetch_all(
+            """SELECT * FROM daily_reviews
+               WHERE symbol = %s AND review_date = %s""",
+            (self._watchlist_symbol(symbol), review_date),
+        )
+        return rows[0] if rows else None
+
+    def news_on_date(self, symbol: str, date: str) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT symbol, headline, summary, source, published_at, url,
+                   sentiment, themes
+            FROM news_articles
+            WHERE symbol = %s
+              AND COALESCE((published_at AT TIME ZONE 'America/New_York')::date,
+                           published_at::date) = %s
+            ORDER BY published_at DESC NULLS LAST
+            """,
+            (normalized, date),
+        )
+        mapping = self.theme_symbols()
+        for row in rows:
+            themes = list(row.get("themes") or [])
+            row["theme_names"] = [THEME_NAMES.get(theme, theme) for theme in themes]
+            row["impacts"] = news_impacts(row, mapping)
+        return rows
+
+    def fundamentals_thesis_view(self, symbol: str) -> dict:
+        normalized = self._watchlist_symbol(symbol)
+        bars = self.history(normalized, 260, "1d")
+        earnings = self._prefer_earnings_rows(self.earnings_history(normalized))
+        current = self.latest_fundamentals(normalized) or {}
+        watch = next(
+            (row for row in self.watchlist_rows() if row["symbol"] == normalized),
+            {},
+        )
+        own_rev = yoy_from_rows(earnings, "revenue_actual")
+        own_eps = yoy_from_rows(earnings, "eps_actual")
+        if own_rev is None:
+            own_rev = current.get("revenue_growth_yoy_pct")
+        if own_eps is None:
+            own_eps = current.get("eps_growth_yoy_pct")
+        prior_rev = yoy_from_rows(earnings[1:], "revenue_actual") if len(earnings) > 1 else None
+        peer_values = []
+        peer_symbols = []
+        themes = list(watch.get("themes") or [])
+        theme_map = self.theme_symbols()
+        for theme in themes:
+            for peer in theme_map.get(theme, []):
+                if peer == normalized or peer in peer_symbols:
+                    continue
+                peer_symbols.append(peer)
+                peer_rows = self._prefer_earnings_rows(self.earnings_history(peer))
+                value = yoy_from_rows(peer_rows, "revenue_actual")
+                if value is not None:
+                    peer_values.append(value)
+        peer_median = (
+            round(sorted(peer_values)[len(peer_values) // 2], 2) if peer_values else None
+        )
+        closes = [
+            float(row["close_price"])
+            for row in bars
+            if row.get("close_price") is not None
+        ]
+        valuation = reconstructed_pe_view(
+            closes,
+            float(current["eps_ttm"]) if current.get("eps_ttm") is not None else None,
+            float(current["pe_ttm"]) if current.get("pe_ttm") is not None else None,
+        )
+        vs_peers = "样本不足"
+        if own_rev is not None and peer_median is not None:
+            vs_peers = "高于同主题中位" if own_rev >= peer_median else "低于同主题中位"
+        tech = self.technical_summary([normalized])
+        tech_row = tech[0] if tech else {}
+        return {
+            "symbol": normalized,
+            "return_1y_pct": return_1y_pct(bars) or tech_row.get("return_1y_pct"),
+            "distance_52w_high_pct": tech_row.get("distance_52w_high_pct"),
+            "distance_52w_low_pct": tech_row.get("distance_52w_low_pct"),
+            "earnings_year": earnings_scorecard(earnings),
+            "growth": {
+                "revenue_yoy_pct": own_rev,
+                "eps_yoy_pct": own_eps,
+                "phase": growth_phase_label(
+                    float(own_rev) if own_rev is not None else None,
+                    float(prior_rev) if prior_rev is not None else None,
+                ),
+                "peer_theme": themes[0] if themes else None,
+                "peer_symbols": peer_symbols,
+                "peer_revenue_yoy_median": peer_median,
+                "vs_peers": vs_peers,
+            },
+            "valuation": valuation,
+        }
+
+    def review_hit_rate(self, days: int = 14) -> dict:
+        rows = self.fetch_all(
+            """
+            SELECT symbol, outcome_vs_bias, user_confirmed_at IS NOT NULL AS confirmed
+            FROM daily_reviews
+            WHERE review_date >= CURRENT_DATE - make_interval(days => %s)
+              AND outcome_vs_bias IS NOT NULL
+            """,
+            (days,),
+        )
+        def _rate(sample: list[dict]) -> dict:
+            total = len(sample)
+            hits = sum(1 for row in sample if row["outcome_vs_bias"] == "符合")
+            return {
+                "samples": total,
+                "hits": hits,
+                "rate_pct": round(100 * hits / total, 1) if total else None,
+            }
+
+        by_symbol = {}
+        for row in rows:
+            by_symbol.setdefault(row["symbol"], []).append(row)
+        return {
+            "days": days,
+            "all": _rate(rows),
+            "confirmed": _rate([row for row in rows if row["confirmed"]]),
+            "by_symbol": {
+                symbol: _rate(sample) for symbol, sample in sorted(by_symbol.items())
+            },
+        }
+
+    def briefing(self, date: str | None = None) -> dict:
+        if not date:
+            latest = self.fetch_all(
+                "SELECT MAX(review_date) AS review_date FROM daily_reviews"
+            )
+            date = str(latest[0]["review_date"]) if latest and latest[0]["review_date"] else None
+        watch = self.watchlist_rows()
+        technicals = {row["symbol"]: row for row in self.technical_summary()}
+        reviews = {row["symbol"]: row for row in (self.reviews_by_date(date) if date else [])}
+        prior_rows = self.fetch_all(
+            """
+            SELECT DISTINCT ON (symbol) *
+            FROM daily_reviews
+            WHERE review_date < %s AND outcome_vs_bias IS NOT NULL
+            ORDER BY symbol, review_date DESC
+            """,
+            (date or "1970-01-01",),
+        ) if date else []
+        prior = {row["symbol"]: row for row in prior_rows}
+        snapshots = {row["symbol"]: row for row in self.latest_snapshots()}
+        rows = []
+        for item in watch:
+            symbol = item["symbol"]
+            tech = technicals.get(symbol) or {}
+            review = reviews.get(symbol)
+            snap = snapshots.get(symbol) or {}
+            metrics = (review or {}).get("metrics") or {}
+            if isinstance(metrics, str):
+                metrics = {}
+            health = tape_health(tech, review)
+            day_change = None
+            if snap.get("last_price") and snap.get("prior_close"):
+                day_change = round(
+                    100 * (float(snap["last_price"]) / float(snap["prior_close"]) - 1), 2
+                )
+            elif tech.get("close_price") and review:
+                day_change = metrics.get("day_change_pct")
+            prior_review = prior.get(symbol)
+            rows.append(
+                {
+                    "symbol": symbol,
+                    "name": item.get("name"),
+                    "sector": item.get("sector"),
+                    "last_price": snap.get("last_price") or tech.get("close_price"),
+                    "day_change_pct": day_change,
+                    "volume_ratio_20d": tech.get("volume_ratio_20d")
+                    or metrics.get("relative_volume"),
+                    "return_5d_pct": tech.get("return_5d_pct"),
+                    "return_1y_pct": tech.get("return_1y_pct"),
+                    "rsi14": tech.get("rsi14"),
+                    "ma5": tech.get("ma5"),
+                    "ma20": tech.get("ma20"),
+                    "ma50": tech.get("ma50"),
+                    "ma200": tech.get("ma200"),
+                    "distance_ma20_pct": tech.get("distance_ma20_pct"),
+                    "distance_ma200_pct": tech.get("distance_ma200_pct"),
+                    "ma_position": ma_position_text(tech),
+                    "health": health,
+                    "support_price": (review or {}).get("support_price"),
+                    "resistance_price": (review or {}).get("resistance_price"),
+                    "breakout_status": (review or {}).get("breakout_status"),
+                    "support_test": metrics.get("support_test"),
+                    "tape": (review or {}).get("short_trend"),
+                    "score": (review or {}).get("score"),
+                    "rule_bias": (review or {}).get("rule_bias"),
+                    "watch_low": (review or {}).get("watch_low"),
+                    "watch_high": (review or {}).get("watch_high"),
+                    "llm_status": (review or {}).get("llm_status"),
+                    "llm_why": (review or {}).get("llm_why"),
+                    "llm_outlook": (review or {}).get("llm_outlook"),
+                    "llm_bias": (review or {}).get("llm_bias"),
+                    "llm_generated_at": (review or {}).get("llm_generated_at"),
+                    "llm_error": (review or {}).get("llm_error"),
+                    "user_bias": (review or {}).get("user_bias"),
+                    "user_outlook": (review or {}).get("user_outlook"),
+                    "user_note": (review or {}).get("user_note"),
+                    "user_confirmed_at": (review or {}).get("user_confirmed_at"),
+                    "summary": (review or {}).get("summary"),
+                    "context": (review or {}).get("context") or {},
+                    "review_date": (review or {}).get("review_date") or date,
+                    "prior_outcome": {
+                        "review_date": prior_review.get("review_date"),
+                        "outcome_vs_bias": prior_review.get("outcome_vs_bias"),
+                        "outcome_return_pct": prior_review.get("outcome_return_pct"),
+                        "outcome_bias_source": prior_review.get("outcome_bias_source"),
+                        "bias": prior_review.get("user_bias")
+                        or prior_review.get("llm_bias")
+                        or prior_review.get("rule_bias"),
+                    }
+                    if prior_review
+                    else None,
+                }
+            )
+        return {
+            "date": date,
+            "rows": rows,
+            "hit_rate": self.review_hit_rate(),
+        }
+
     def events_between(
         self, start: str, end: str, symbol: str | None = None, limit: int = 300
     ) -> list[dict]:
@@ -681,28 +1210,135 @@ class QueryMixin:
 
     def daily_range(self, symbol: str, start: str, end: str) -> dict:
         normalized = self._watchlist_symbol(symbol)
+        if start > end:
+            raise ValueError("from must be earlier than or equal to to")
         bars = self.fetch_all(
             """
-            SELECT DISTINCT ON (bar_time::date)
-                   bar_time, open_price, high_price, low_price, close_price, volume
+            SELECT bar_time, open_price, high_price, low_price,
+                   close_price, volume
             FROM price_bars
-            WHERE symbol = %s AND bar_size = '1d'
-              AND bar_time >= %s AND bar_time < %s::date + 1
-            ORDER BY bar_time::date, bar_time DESC
+            WHERE symbol = %s AND bar_size = '1m'
+              AND (bar_time AT TIME ZONE 'America/New_York')::date >= %s
+              AND (bar_time AT TIME ZONE 'America/New_York')::date <= %s
+              AND (bar_time AT TIME ZONE 'America/New_York')::time
+                  BETWEEN TIME '09:30' AND TIME '16:00'
+            ORDER BY bar_time
             """,
             (normalized, start, end),
         )
         stats = None
+        volume = None
         if bars:
-            first, last = float(bars[0]["close_price"]), float(bars[-1]["close_price"])
+            first = float(bars[0]["open_price"] or bars[0]["close_price"])
+            last = float(bars[-1]["close_price"])
+            volumes = [float(bar["volume"] or 0) for bar in bars]
+            average_volume = sum(volumes) / len(volumes)
+            sorted_volumes = sorted(volumes)
+            middle = len(sorted_volumes) // 2
+            median_volume = (
+                sorted_volumes[middle]
+                if len(sorted_volumes) % 2
+                else (sorted_volumes[middle - 1] + sorted_volumes[middle]) / 2
+            )
+            up_volume = down_volume = 0.0
+            returns: list[float] = []
+            patterns = {
+                "放量上涨": 0,
+                "放量下跌": 0,
+                "缩量上涨": 0,
+                "缩量下跌": 0,
+                "量价平稳": 0,
+            }
+            enriched = []
+            for bar, bar_volume in zip(bars, volumes):
+                open_price = float(bar["open_price"] or bar["close_price"])
+                close_price = float(bar["close_price"])
+                change = 100 * (close_price / open_price - 1) if open_price else 0.0
+                returns.append(change)
+                if change >= 0:
+                    up_volume += bar_volume
+                else:
+                    down_volume += bar_volume
+                if bar_volume >= average_volume * 1.2 and change > 0:
+                    pattern = "放量上涨"
+                elif bar_volume >= average_volume * 1.2 and change < 0:
+                    pattern = "放量下跌"
+                elif bar_volume <= average_volume * 0.8 and change > 0:
+                    pattern = "缩量上涨"
+                elif bar_volume <= average_volume * 0.8 and change < 0:
+                    pattern = "缩量下跌"
+                else:
+                    pattern = "量价平稳"
+                patterns[pattern] += 1
+                enriched.append(
+                    {
+                        "time": bar["bar_time"],
+                        "volume": bar_volume,
+                        "change_pct": round(change, 3),
+                        "volume_ratio": (
+                            round(bar_volume / average_volume, 2)
+                            if average_volume
+                            else None
+                        ),
+                        "pattern": pattern,
+                    }
+                )
+
+            mean_return = sum(returns) / len(returns)
+            covariance = sum(
+                (ret - mean_return) * (bar_volume - average_volume)
+                for ret, bar_volume in zip(returns, volumes)
+            )
+            return_variance = sum((ret - mean_return) ** 2 for ret in returns)
+            volume_variance = sum(
+                (bar_volume - average_volume) ** 2 for bar_volume in volumes
+            )
+            denominator = (return_variance * volume_variance) ** 0.5
+            correlation = covariance / denominator if denominator else 0.0
+            if correlation >= 0.25:
+                conclusion = "量价偏多：较大成交量更多伴随价格上涨"
+            elif correlation <= -0.25:
+                conclusion = "量价偏空：较大成交量更多伴随价格下跌"
+            else:
+                conclusion = "量价中性：成交量与价格方向暂未形成明显共振"
+
             stats = {
                 "bars": len(bars),
                 "return_pct": round(100 * (last / first - 1), 2) if first else None,
                 "high": max(float(b["high_price"]) for b in bars if b["high_price"] is not None),
                 "low": min(float(b["low_price"]) for b in bars if b["low_price"] is not None),
-                "total_volume": sum(float(b["volume"] or 0) for b in bars),
+                "total_volume": sum(volumes),
             }
-        return {"symbol": normalized, "bars": bars, "stats": stats}
+            volume = {
+                "average": round(average_volume, 2),
+                "median": round(median_volume, 2),
+                "latest": volumes[-1],
+                "latest_ratio": (
+                    round(volumes[-1] / average_volume, 2)
+                    if average_volume
+                    else None
+                ),
+                "up_volume": round(up_volume, 2),
+                "down_volume": round(down_volume, 2),
+                "up_down_ratio": (
+                    round(up_volume / down_volume, 2)
+                    if down_volume
+                    else None
+                ),
+                "price_volume_correlation": round(correlation, 3),
+                "conclusion": conclusion,
+                "patterns": patterns,
+                "top_bars": sorted(
+                    enriched, key=lambda item: item["volume"], reverse=True
+                )[:5],
+            }
+        return {
+            "symbol": normalized,
+            "interval": "1m",
+            "bars": bars,
+            "stats": stats,
+            "volume_analysis": volume,
+        }
 
     def market_impact(self, days: int = 14) -> dict:
         events = self.fetch_all(
@@ -798,3 +1434,26 @@ class QueryMixin:
             "events": self.events_between(date, date),
             "macro": self.macro_events_between(date, date),
         }
+
+    def cboe_option_stats(self, trade_date: str | None = None) -> dict | None:
+        if trade_date:
+            rows = self.fetch_all(
+                """SELECT trade_date, total_volume, total_call_volume, total_put_volume,
+                          total_put_call, total_call_put, buckets, vix_put_call,
+                          spx_put_call, source, disclaimer, captured_at
+                   FROM cboe_option_stats WHERE trade_date = %s""",
+                (trade_date,),
+            )
+        else:
+            rows = self.fetch_all(
+                """SELECT trade_date, total_volume, total_call_volume, total_put_volume,
+                          total_put_call, total_call_put, buckets, vix_put_call,
+                          spx_put_call, source, disclaimer, captured_at
+                   FROM cboe_option_stats
+                   ORDER BY trade_date DESC LIMIT 1"""
+            )
+        if not rows:
+            return None
+        row = dict(rows[0])
+        row["trade_date"] = str(row["trade_date"]) if row.get("trade_date") else None
+        return row

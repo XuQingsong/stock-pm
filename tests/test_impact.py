@@ -1,4 +1,4 @@
-from stock_pm.impact import macro_impact, news_sentiment, tag_news
+from stock_pm.impact import macro_impact, news_impacts, news_sentiment, tag_news
 
 
 def test_tag_news_detects_rates_theme() -> None:
@@ -37,3 +37,24 @@ def test_macro_impact_maps_weak_nfp_to_growth_and_gold() -> None:
 def test_macro_impact_returns_none_without_rule() -> None:
     event = {"event_type": "gdp", "surprise": "above", "event_time": "", "name": "GDP"}
     assert macro_impact(event, {}) is None
+
+
+def test_news_impacts_maps_dovish_rates_to_growth() -> None:
+    article = {
+        "headline": "Fed signals rate cut as inflation cools",
+        "summary": "",
+        "themes": ["rates"],
+        "sentiment": "positive",
+    }
+    impacts = news_impacts(
+        article,
+        {"high_valuation_growth": ["NVDA", "QQQ"], "gold": [], "index": ["QQQ"]},
+    )
+    by_theme = {row["theme"]: row for row in impacts}
+    assert by_theme["high_valuation_growth"]["direction"] == "利多"
+    assert by_theme["high_valuation_growth"]["symbols"] == ["NVDA", "QQQ"]
+    assert by_theme["gold"]["direction"] == "利多"
+
+
+def test_news_impacts_leave_untagged_empty() -> None:
+    assert news_impacts({"headline": "Local bakery wins award", "themes": []}, {}) == []

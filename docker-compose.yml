@@ -25,6 +25,12 @@ services:
       ALPACA_DATA_FEED: ${ALPACA_DATA_FEED:-iex}
       ALPACA_BARS_FEED: ${ALPACA_BARS_FEED:-sip}
       ALPACA_OPTIONS_FEED: ${ALPACA_OPTIONS_FEED:-indicative}
+      FRED_API_KEY: ${FRED_API_KEY:-}
+      FMP_API_KEY: ${FMP_API_KEY:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
     ports:
       - "${BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8000}:8000"
     depends_on:

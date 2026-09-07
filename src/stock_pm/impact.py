@@ -148,6 +148,91 @@ MACRO_RULES: dict[tuple[str, str], dict[str, Any]] = {
 }
 
 
+def _impact_row(
+    theme: str,
+    direction: str,
+    rationale: str,
+    theme_symbols: dict[str, list[str]],
+) -> dict[str, Any]:
+    return {
+        "theme": theme,
+        "theme_name": THEME_NAMES.get(theme, theme),
+        "direction": direction,
+        "rationale": rationale,
+        "symbols": theme_symbols.get(theme, []),
+    }
+
+
+EASING_HINTS = (
+    "rate cut", "cuts rates", "dovish", "cooling inflation", "inflation cools",
+    "weaker jobs", "jobs miss", "payrolls miss", "below forecast", "softer cpi",
+    "pce cools", "unemployment rises", "trims rates",
+)
+TIGHTENING_HINTS = (
+    "rate hike", "hikes rates", "hawkish", "hot inflation", "inflation jumps",
+    "strong jobs", "payrolls beat", "above forecast", "hotter cpi",
+    "sticky inflation", "holds rates high",
+)
+
+
+def _rates_tilt(text: str) -> str | None:
+    lowered = (text or "").lower()
+    easing = sum(hint in lowered for hint in EASING_HINTS)
+    tightening = sum(hint in lowered for hint in TIGHTENING_HINTS)
+    if easing > tightening:
+        return "easing"
+    if tightening > easing:
+        return "tightening"
+    return None
+
+
+def news_impacts(article: dict, theme_symbols: dict[str, list[str]]) -> list[dict]:
+    """Map one tagged article to watchlist themes. Untagged articles return []."""
+    text = f"{article.get('headline') or ''} {article.get('summary') or ''}"
+    themes = list(article.get("themes") or [])
+    if not themes:
+        return []
+    results: list[dict] = []
+    seen: set[str] = set()
+    if "rates" in themes:
+        tilt = _rates_tilt(text)
+        if tilt == "easing":
+            mapped = [
+                ("high_valuation_growth", "利多", "利率新闻偏向宽松/降息预期"),
+                ("gold", "利多", "实际利率预期下行"),
+                ("index", "利多", "流动性预期改善"),
+            ]
+        elif tilt == "tightening":
+            mapped = [
+                ("high_valuation_growth", "利空", "利率新闻偏向收紧/加息预期"),
+                ("gold", "利空", "实际利率预期上行"),
+                ("index", "偏空", "流动性预期收紧"),
+            ]
+        else:
+            mapped = [
+                ("high_valuation_growth", "中性", "命中利率主题，但标题无法判断宽松或收紧"),
+            ]
+        for theme, direction, rationale in mapped:
+            seen.add(theme)
+            results.append(_impact_row(theme, direction, rationale, theme_symbols))
+        seen.add("rates")
+    sentiment = article.get("sentiment") or "neutral"
+    sentiment_dir = {"positive": "利多", "negative": "利空"}.get(sentiment, "中性")
+    for theme in themes:
+        if theme in seen:
+            continue
+        seen.add(theme)
+        results.append(
+            _impact_row(
+                theme,
+                sentiment_dir,
+                f"命中「{THEME_NAMES.get(theme, theme)}」关键词，情绪为{sentiment}（规则标注，不是因果）",
+                theme_symbols,
+            )
+        )
+    return results
+
+
 def macro_impact(event: dict, theme_symbols: dict[str, list[str]]) -> dict | None:
     """Map one macro event row to the affected watchlist symbols.
 
