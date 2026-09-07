@@ -1,0 +1,10 @@
+.env
+.env.server
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+*.egg-info
+tests
+data
+sync_payload*.json

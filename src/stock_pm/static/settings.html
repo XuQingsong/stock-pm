@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock PM · 设置</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.shell{max-width:1100px;margin:auto;padding:16px}
+.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.top h1{margin:0;font-size:20px}
+.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
+.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.hint{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line)}
+select,input,button{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;margin:2px}
+button{background:var(--blue);color:#fff;border:none;cursor:pointer}
+button.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+.chip{display:inline-block;background:#eef2f7;border-radius:10px;padding:1px 8px;font-size:12px;margin:1px 3px 1px 0}
+.inactive{opacity:.45}
+#msg{margin-top:8px}
+</style>
+</head>
+<body><main class="shell">
+<header class="top">
+  <div><h1>设置 · 自选管理</h1></div>
+  <nav class="nav"><a href="/">总览</a><a href="/replay">盘面回放</a><a class="active" href="/settings">设置</a></nav>
+</header>
+
+<section class="panel">
+  <h2>新增自选</h2>
+  <div class="hint">提交后经 Alpaca 校验（未配置 API key 时直接接受），并在后台回填一年日线与基本面</div>
+  <div>
+    <input id="n-symbol" placeholder="代码，如 AMD" style="width:110px;text-transform:uppercase">
+    <input id="n-sector" placeholder="板块（可选）" style="width:130px">
+    <input id="n-themes" placeholder="主题，逗号分隔：semis,high_valuation_growth" style="width:300px">
+    <select id="n-class"><option value="stocks">股票</option><option value="etf">ETF</option></select>
+    <select id="n-rate"><option value="low">利率敏感度低</option><option value="medium" selected>利率敏感度中</option><option value="high">利率敏感度高</option></select>
+    <button id="add">新增</button>
+  </div>
+  <div class="hint" style="margin-top:6px">可用主题：rates, high_valuation_growth, semis, consumer_electronics, telecom, index, gold, geopolitics</div>
+  <div id="msg"></div>
+</section>
+
+<section class="panel">
+  <h2>当前自选</h2>
+  <table>
+    <thead><tr><th>代码</th><th>名称</th><th>交易所</th><th>类型</th><th>板块</th><th>主题</th><th>利率敏感</th><th>状态</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="hint" style="margin-top:6px">停用为软删除：历史数据保留，采集与页面不再包含该标的。大额成交阈值通过环境变量 LARGE_TRADE_NOTIONAL 调整（当前默认 $200,000）。</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const j=(u,opt)=>fetch(u,opt).then(async r=>{const b=await r.json().catch(()=>({}));if(!r.ok)throw new Error(b.detail||u+" "+r.status);return b});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function refresh(){
+  const rows=await j('/api/watchlist?include_inactive=true');
+  $('rows').innerHTML=rows.map(w=>`<tr class="${w.active?'':'inactive'}">
+    <td><b>${esc(w.symbol)}</b></td><td>${esc(w.name)}</td><td>${esc(w.primary_exchange)}</td>
+    <td>${esc(w.asset_class)}</td><td>${esc(w.sector||'—')}</td>
+    <td>${(w.themes||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')||'—'}</td>
+    <td>${esc(w.rate_sensitivity)}</td><td>${w.active?'启用':'已停用'}</td>
+    <td>${w.active?`<button class="danger" onclick="deactivate('${esc(w.symbol)}')">停用</button>`:''}</td></tr>`).join('');
+}
+async function deactivate(symbol){
+  if(!confirm(`停用 ${symbol}？历史数据保留，可重新添加恢复。`))return;
+  await j('/api/watchlist/'+symbol,{method:'DELETE'});
+  await refresh();
+}
+$('add').onclick=async()=>{
+  const symbol=$('n-symbol').value.trim().toUpperCase();
+  if(!symbol){$('msg').textContent='请输入代码';return}
+  $('msg').textContent='提交中…';
+  try{
+    const body={symbol,asset_class:$('n-class').value,rate_sensitivity:$('n-rate').value,
+      sector:$('n-sector').value.trim()||null,
+      themes:$('n-themes').value.split(',').map(s=>s.trim()).filter(Boolean)};
+    const res=await j('/api/watchlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    $('msg').innerHTML=`<span style="color:var(--green)">已添加 ${esc(res.symbol)}，历史数据回填已排队（约1-2分钟）</span>`;
+    $('n-symbol').value='';
+    await refresh();
+  }catch(e){$('msg').innerHTML=`<span style="color:var(--red)">${esc(e.message)}</span>`}
+};
+refresh().catch(e=>{$('rows').innerHTML=`<tr><td colspan="9" style="color:var(--red)">${esc(e.message)}</td></tr>`});
+</script>
+</body></html>

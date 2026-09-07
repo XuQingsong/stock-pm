@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock PM · 个股分析</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.shell{max-width:1500px;margin:auto;padding:16px}
+.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.top h1{margin:0;font-size:20px}.top .sub{opacity:.7;font-size:12px}
+.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
+.nav select{padding:7px;border-radius:8px;border:none;margin-left:8px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.hint{color:var(--muted);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.kpi b{font-size:18px;display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.up{color:var(--green)}.down{color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+.chart-box{height:340px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:13px}
+.metrics div{background:#f8fafc;border-radius:8px;padding:6px 10px}
+.metrics span{display:block;color:var(--muted);font-size:11px}
+.chip{display:inline-block;background:#eef2f7;border-radius:10px;padding:1px 8px;font-size:12px;margin:1px 3px 1px 0}
+.news-item{padding:7px 0;border-bottom:1px solid var(--line)}
+.news-item a{color:var(--ink);text-decoration:none;font-weight:600}
+.table-wrap{overflow-x:auto}
+select,input{padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+</style>
+</head>
+<body><main class="shell">
+<header class="top">
+  <div><h1 id="title">个股分析</h1><div class="sub" id="subtitle">—</div></div>
+  <nav class="nav">
+    <a href="/">总览</a><a href="/replay">盘面回放</a><a href="/settings">设置</a>
+    <select id="switcher"></select>
+  </nav>
+</header>
+
+<section class="kpis">
+  <div class="kpi"><span class="hint">最新收盘</span><b id="k-close">—</b><small id="k-chg" class="hint">—</small></div>
+  <div class="kpi"><span class="hint">日线信号</span><b id="k-signal" style="font-size:15px">—</b><small id="k-dist" class="hint">—</small></div>
+  <div class="kpi"><span class="hint">RSI14 / 波动</span><b id="k-rsi">—</b><small id="k-vol" class="hint">—</small></div>
+  <div class="kpi"><span class="hint">复盘评分</span><b id="k-score">—</b><small id="k-bias" class="hint">—</small></div>
+  <div class="kpi"><span class="hint">情绪参考</span><b id="k-sent" style="font-size:15px">—</b><small id="k-sent-d" class="hint">新闻/期权/动量合成，仅参考</small></div>
+</section>
+
+<section class="panel">
+  <h2>日线走势与均线（近一年）</h2>
+  <div class="chart-box"><canvas id="daily-chart"></canvas></div>
+</section>
+
+<section class="panel">
+  <h2>日内分段量价与大额成交 <select id="seg-date" style="margin-left:10px"></select></h2>
+  <div class="hint">大单方向为 tick rule 推断；气泡大小=成交金额。数据来自 Alpaca SIP 逐笔（延迟≥15分钟）</div>
+  <div class="chart-box" style="height:300px"><canvas id="intraday-chart"></canvas></div>
+  <div class="table-wrap" style="margin-top:8px"><table>
+    <thead><tr><th>段</th><th>时间</th><th>方向</th><th>涨跌</th><th>量比(段/日均)</th><th>VWAP位置</th><th>大单买入(推断)</th><th>大单卖出(推断)</th><th>笔数</th></tr></thead>
+    <tbody id="seg-rows"></tbody>
+  </table></div>
+  <div id="seg-empty" class="hint" style="display:none">该日暂无分段数据。运行 <code>stock-pm-flow --days 7</code> 回填。</div>
+</section>
+
+<div class="grid2">
+  <section class="panel"><h2>估值与基本面</h2><div class="metrics" id="valuation"></div></section>
+  <section class="panel"><h2>最近到期期权墙</h2><div class="chart-box" style="height:260px"><canvas id="wall-chart"></canvas></div></section>
+</div>
+
+<section class="panel">
+  <h2>最近一年财报与股价反应</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>报告日</th><th>财季</th><th>EPS实际</th><th>EPS预期</th><th>惊喜</th><th>前5日</th><th>后1日</th><th>后5日</th><th>后20日</th></tr></thead>
+    <tbody id="earnings-rows"></tbody>
+  </table></div>
+</section>
+
+<div class="grid2">
+  <section class="panel"><h2>最近复盘</h2><div id="review" class="hint">加载中…</div></section>
+  <section class="panel"><h2>个股新闻</h2><div id="news"></div></section>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const j=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json()});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+const pct=v=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';
+const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
+const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+const kfmt=v=>v==null?'—':Math.abs(v)>=1e12?(v/1e12).toFixed(2)+'万亿':Math.abs(v)>=1e8?(v/1e8).toFixed(1)+'亿':Number(v).toLocaleString();
+const SYMBOL=decodeURIComponent(location.pathname.split('/')[2]||'').toUpperCase();
+let dailyChart,intraChart,wallChart;
+
+async function loadSegments(date){
+  const q=date?('?date='+date):'';
+  const [seg,large,intraday]=await Promise.all([
+    j(`/api/stock/${SYMBOL}/segments${q}`).catch(()=>({segments:[],dates:[]})),
+    j(`/api/stock/${SYMBOL}/large-trades${q||''}${q?'&':'?'}min_notional=0`).catch(()=>[]),
+    j(`/api/stock/${SYMBOL}/history?bar_size=1m&limit=5000`).catch(()=>[])]);
+  if(!date){
+    $('seg-date').innerHTML=seg.dates.map(d=>`<option>${esc(d)}</option>`).join('')||'<option value="">无数据</option>';
+    $('seg-date').onchange=e=>loadSegments(e.target.value);
+  }
+  const rows=seg.segments;
+  $('seg-empty').style.display=rows.length?'none':'';
+  $('seg-rows').innerHTML=rows.map(s=>`<tr><td>${s.seg_no}</td>
+    <td>${new Date(s.start_time).toLocaleTimeString()}–${new Date(s.end_time).toLocaleTimeString()}</td>
+    <td class="${s.direction==='up'?'up':s.direction==='down'?'down':''}">${esc(s.direction)}</td>
+    <td class="${cls(s.change_pct)}">${pct(s.change_pct)}</td>
+    <td>${s.rel_volume==null?'—':num(s.rel_volume)+'x'}</td><td>${esc(s.vwap_side||'—')}</td>
+    <td class="up">${money(s.large_buy_notional)}</td><td class="down">${money(s.large_sell_notional)}</td>
+    <td>${s.large_trade_count}</td></tr>`).join('');
+  const segDate=rows.length?String(rows[0].start_time).slice(0,10):(date||null);
+  const dayBars=segDate?intraday.filter(b=>String(b.bar_time).slice(0,10)===segDate):intraday;
+  const dayLarge=segDate?large.filter(t=>String(t.trade_time).slice(0,10)===segDate):large;
+  if(intraChart)intraChart.destroy();
+  intraChart=new Chart($('intraday-chart'),{data:{
+    datasets:[
+      {type:'line',label:'1分钟收盘',data:dayBars.map(b=>({x:+new Date(b.bar_time),y:Number(b.close_price)})),borderColor:'#2563eb',pointRadius:0,borderWidth:1.5,tension:.1},
+      {type:'bubble',label:'大额成交(推断买)',data:dayLarge.filter(t=>t.side_inferred==='buy').map(t=>({x:+new Date(t.trade_time),y:Number(t.price),r:Math.min(16,4+Math.sqrt(Number(t.notional)/2e5))})),backgroundColor:'#0f9d7288'},
+      {type:'bubble',label:'大额成交(推断卖)',data:dayLarge.filter(t=>t.side_inferred==='sell').map(t=>({x:+new Date(t.trade_time),y:Number(t.price),r:Math.min(16,4+Math.sqrt(Number(t.notional)/2e5))})),backgroundColor:'#d1434388'},
+      {type:'bubble',label:'大额成交(方向未知)',data:dayLarge.filter(t=>t.side_inferred==='unknown').map(t=>({x:+new Date(t.trade_time),y:Number(t.price),r:Math.min(16,4+Math.sqrt(Number(t.notional)/2e5))})),backgroundColor:'#6b728088'}
+    ]},
+    options:{maintainAspectRatio:false,scales:{x:{type:'linear',ticks:{callback:v=>new Date(v).toLocaleTimeString()}},y:{title:{display:true,text:'价格 ($)'}}},
+      plugins:{tooltip:{callbacks:{label:c=>c.dataset.type==='bubble'?`${c.dataset.label} $${Number(dayLarge[0]?1:0)&&''}${c.parsed.y}`:`$${c.parsed.y}`}}}}});
+}
+
+async function main(){
+  if(!SYMBOL){location.href='/';return}
+  document.title=`Stock PM · ${SYMBOL}`;
+  const watch=await j('/api/watchlist');
+  const meta=watch.find(w=>w.symbol===SYMBOL);
+  $('switcher').innerHTML=watch.map(w=>`<option ${w.symbol===SYMBOL?'selected':''}>${esc(w.symbol)}</option>`).join('');
+  $('switcher').onchange=e=>location.href='/stock/'+e.target.value;
+  $('title').textContent=`${SYMBOL} · ${meta?meta.name:''}`;
+  $('subtitle').textContent=meta?`${meta.primary_exchange} · ${meta.sector||''} · 主题: ${(meta.themes||[]).join(', ')||'—'}`:'不在自选中';
+
+  const [chart,overview,options,reviews,news]=await Promise.all([
+    j(`/api/stock/${SYMBOL}/chart`).catch(()=>[]),
+    j(`/api/stock/${SYMBOL}/overview`).catch(()=>({})),
+    j(`/api/stock/${SYMBOL}/options`).catch(()=>[]),
+    j(`/api/stock/${SYMBOL}/reviews`).catch(()=>[]),
+    j(`/api/stock/${SYMBOL}/news`).catch(()=>[])]);
+
+  const t=overview.technical||{},v=overview.valuation||{},sent=overview.sentiment||{};
+  $('k-close').textContent=money(t.close_price);
+  $('k-chg').textContent=t.bar_time?new Date(t.bar_time).toLocaleDateString():'—';
+  $('k-signal').textContent=t.signal||'—';
+  $('k-dist').textContent=`距MA20 ${pct(t.distance_ma20_pct)} · 距52周高 ${pct(t.distance_52w_high_pct)}`;
+  $('k-rsi').textContent=num(t.rsi14);
+  $('k-vol').textContent=`年化波动 ${pct(t.annualized_volatility_pct)} · 量比 ${num(t.volume_ratio_20d)}x`;
+  const review=reviews[0];
+  $('k-score').textContent=review?num(review.score):'—';
+  $('k-bias').textContent=review?`${esc(review.breakout_status||'')} · ${review.review_date}`:'暂无复盘';
+  $('k-sent').textContent=sent.label||'—';
+  if(sent.score!=null)$('k-sent-d').textContent=`${sent.score>0?'+':''}${sent.score} · ${sent.method||''}`;
+
+  if(dailyChart)dailyChart.destroy();
+  const L=(key,color,w)=>({label:key,data:chart.map(b=>b[key.toLowerCase()]==null?null:Number(b[key.toLowerCase()])),borderColor:color,pointRadius:0,borderWidth:w,tension:.1,spanGaps:true});
+  dailyChart=new Chart($('daily-chart'),{type:'line',
+    data:{labels:chart.map(b=>String(b.bar_time).slice(0,10)),
+      datasets:[{label:'收盘',data:chart.map(b=>Number(b.close_price)),borderColor:'#12283f',pointRadius:0,borderWidth:2,tension:.1},
+        L('MA5','#f59e0b',1),L('MA20','#2563eb',1),L('MA50','#0f9d72',1),L('MA200','#9333ea',1)]},
+    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:'价格 ($)'}}},interaction:{mode:'index',intersect:false}}});
+
+  const wall=options||[];
+  if(wallChart)wallChart.destroy();
+  if(wall.length){
+    wallChart=new Chart($('wall-chart'),{type:'bar',
+      data:{labels:wall.map(x=>num(x.strike)),datasets:[
+        {label:'Call 未平仓',data:wall.map(x=>Number(x.call_open_interest||0)),backgroundColor:'#0f9d7299'},
+        {label:'Put 未平仓',data:wall.map(x=>-Number(x.put_open_interest||0)),backgroundColor:'#d1434399'}]},
+      options:{maintainAspectRatio:false,indexAxis:'y',scales:{x:{ticks:{callback:v=>Math.abs(v)}}},
+        plugins:{title:{display:true,text:`到期 ${wall[0].expiration_date} · 现价 ${money(wall[0].spot_price)}`}}}});
+  }
+
+  const V=[['市值',kfmt(v.market_cap)],['PE(TTM)',num(v.pe_ttm)],['PE(前瞻)',num(v.pe_forward)],['EPS(TTM)',num(v.eps_ttm)],['股息率',v.dividend_yield_pct==null?'—':num(v.dividend_yield_pct)+'%'],['目标价',money(v.analyst_target_price)]];
+  $('valuation').innerHTML=V.map(([k,val])=>`<div><span>${k}</span><b>${val}</b></div>`).join('')+(v.source?`<div style="grid-column:1/-1"><span>来源</span>${esc(v.source)} · ${v.captured_at?new Date(v.captured_at).toLocaleDateString():''}</div>`:'');
+
+  $('earnings-rows').innerHTML=(overview.earnings||[]).map(e=>`<tr><td>${esc(e.report_date)}</td><td>${esc(e.fiscal_period)}</td>
+    <td>${num(e.eps_actual)}</td><td>${num(e.eps_estimate)}</td><td class="${cls(e.eps_surprise_pct)}">${pct(e.eps_surprise_pct)}</td>
+    <td class="${cls(e.pre_5d_return_pct)}">${pct(e.pre_5d_return_pct)}</td><td class="${cls(e.post_1d_return_pct)}">${pct(e.post_1d_return_pct)}</td>
+    <td class="${cls(e.post_5d_return_pct)}">${pct(e.post_5d_return_pct)}</td><td class="${cls(e.post_20d_return_pct)}">${pct(e.post_20d_return_pct)}</td></tr>`).join('')||'<tr><td colspan="9" class="hint">暂无财报记录</td></tr>';
+
+  $('review').innerHTML=review?`<div><b>${esc(review.review_date)}</b> 评分 ${num(review.score)}</div><p style="margin:6px 0">${esc(review.summary)}</p>
+    <div class="hint">支撑 ${money(review.support_price)} · 压力 ${money(review.resistance_price)} · ${esc(review.breakout_status||'')}</div>`:'暂无复盘，运行 stock-pm-review 生成';
+
+  $('news').innerHTML=news.map(n=>`<div class="news-item"><a href="${esc(n.url)}" target="_blank">${esc(n.headline)}</a>
+    ${(n.themes||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}
+    <div class="hint">${n.published_at?new Date(n.published_at).toLocaleDateString():''} · ${esc(n.sentiment)}</div></div>`).join('')||'<div class="hint">暂无新闻</div>';
+
+  await loadSegments(null);
+}
+main().catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>')});
+</script>
+</body></html>

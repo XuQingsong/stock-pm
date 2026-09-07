@@ -1,0 +1,32 @@
+[
+  {
+    "event_type": "nfp",
+    "event_time": "2026-09-04T12:30:00+00:00",
+    "name": "美国8月非农就业报告",
+    "consensus": 160,
+    "prior": 147,
+    "unit": "千人",
+    "confirmed": true,
+    "notes": "北京时间 9/4 20:30 公布"
+  },
+  {
+    "event_type": "cpi",
+    "event_time": "2026-09-10T12:30:00+00:00",
+    "name": "美国8月CPI（同比）",
+    "consensus": null,
+    "prior": null,
+    "unit": "%",
+    "confirmed": false,
+    "notes": "日期为惯例估计，公布前请核对并补充一致预期"
+  },
+  {
+    "event_type": "fomc",
+    "event_time": "2026-09-16T18:00:00+00:00",
+    "name": "FOMC 利率决议",
+    "consensus": null,
+    "prior": null,
+    "unit": null,
+    "confirmed": false,
+    "notes": "日期为惯例估计；结果(cut/hold/hike)公布后通过 POST /api/macro/events 更新 surprise 字段"
+  }
+]

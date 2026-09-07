@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock PM · 市场总览</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.shell{max-width:1500px;margin:auto;padding:16px}
+.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.top h1{margin:0;font-size:20px}.top .sub{opacity:.7;font-size:12px}
+.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
+.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.hint{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
+.up{color:var(--green)}.down{color:var(--red)}
+.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+.impact-item{border-left:3px solid var(--blue);padding:6px 10px;margin:8px 0;background:#f8fafc;border-radius:0 8px 8px 0}
+.impact-item .narr{font-weight:600}
+.chip{display:inline-block;background:#eef2f7;border-radius:10px;padding:1px 8px;font-size:12px;margin:1px 3px 1px 0}
+.chip.bull{background:#e3f6ee;color:var(--green)}.chip.bear{background:#fbeaea;color:var(--red)}
+.news-item{padding:7px 0;border-bottom:1px solid var(--line)}
+.news-item a{color:var(--ink);text-decoration:none;font-weight:600}
+.badge{display:inline-block;background:#eef2f7;border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px}
+.table-wrap{overflow-x:auto}
+</style>
+</head>
+<body><main class="shell">
+<header class="top">
+  <div><h1>市场总览</h1><div class="sub" id="sync">同步状态加载中…</div></div>
+  <nav class="nav">
+    <a class="active" href="/">总览</a><a href="/replay">盘面回放</a><a href="/settings">设置</a>
+    <select id="jump" style="margin-left:8px;padding:7px;border-radius:8px;border:none"></select>
+  </nav>
+</header>
+
+<section class="panel" id="impact-panel" style="display:none">
+  <h2>宏观事件与板块影响</h2>
+  <div class="hint">近14天事件 · 规则映射，仅覆盖预设事件类型；方向为推断非建议</div>
+  <div id="impact-macro"></div>
+  <div id="impact-upcoming"></div>
+  <div id="impact-news"></div>
+</section>
+
+<section class="panel">
+  <h2>自选总表</h2>
+  <div class="hint">点击行进入个股页 · 日线信号来自每日复盘，分钟信号来自盘中采集</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>标的</th><th>最新价</th><th>日涨跌</th><th>RSI14</th><th>量比20日</th><th>距52周高</th><th>日线信号</th><th>盘中信号</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</section>
+
+<div class="grid2">
+  <section class="panel">
+    <h2>今日异动（大额成交 / 期权异动）</h2>
+    <div id="events" class="hint">加载中…</div>
+  </section>
+  <section class="panel">
+    <h2>近期财报</h2>
+    <div id="earnings" class="hint">加载中…</div>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>新闻（带主题标签）</h2>
+  <div id="news"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const j=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json()});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+const pct=v=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';
+const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
+const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+
+async function main(){
+  const [watch,snaps,signals,tech,events,news,earnings,sync]=await Promise.all([
+    j('/api/watchlist'),j('/api/market/snapshot'),j('/api/market/signals').catch(()=>[]),
+    j('/api/market/technicals').catch(()=>[]),j('/api/market/events?limit=30').catch(()=>[]),
+    j('/api/market/news?limit=30').catch(()=>[]),j('/api/market/earnings/recent?limit=8').catch(()=>[]),
+    j('/api/sync/status').catch(()=>null)]);
+  $('sync').textContent=sync&&sync.completed_at?`最近同步 ${new Date(sync.completed_at).toLocaleString()} · ${esc(sync.source||'')}`:'尚未同步';
+  $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
+  $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};
+  const sn=Object.fromEntries(snaps.map(x=>[x.symbol,x])),sg=Object.fromEntries(signals.map(x=>[x.symbol,x])),te=Object.fromEntries(tech.map(x=>[x.symbol,x]));
+  $('rows').innerHTML=watch.map(w=>{const q=sn[w.symbol]||{},k=sg[w.symbol]||{},t=te[w.symbol]||{};
+    const chg=q.prior_close&&q.last_price?(q.last_price/q.prior_close-1)*100:null;
+    return `<tr onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
+      <td>${money(q.last_price)}</td><td class="${cls(chg)}">${pct(chg)}</td><td>${num(t.rsi14)}</td>
+      <td>${t.volume_ratio_20d==null?'—':num(t.volume_ratio_20d)+'x'}</td><td class="${cls(t.distance_52w_high_pct)}">${pct(t.distance_52w_high_pct)}</td>
+      <td>${esc(t.signal||'—')}</td><td>${esc(k.signal||'—')}</td></tr>`}).join('');
+  $('events').innerHTML=events.length?events.map(e=>`<div class="news-item"><b>${esc(e.symbol)}</b> ${esc(e.title)}<div class="hint">${new Date(e.event_time).toLocaleString()} · ${esc(e.source)}</div></div>`).join(''):'近期无异动记录';
+  $('earnings').innerHTML=earnings.length?earnings.map(x=>`<span class="badge"><b>${esc(x.symbol)}</b> ${esc(x.report_date)} · EPS ${num(x.eps_actual)}/预期${num(x.eps_estimate)} · 后1日 <span class="${cls(x.post_1d_return_pct)}">${pct(x.post_1d_return_pct)}</span></span>`).join(' '):'暂无财报记录';
+  $('news').innerHTML=news.map(n=>`<div class="news-item"><a href="${esc(n.url)}" target="_blank">${esc(n.headline)}</a>
+    <span class="chip">${esc(n.symbol)}</span>${(n.themes||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}
+    <span class="chip ${n.sentiment==='positive'?'bull':n.sentiment==='negative'?'bear':''}">${esc(n.sentiment)}</span>
+    <div class="hint">${n.published_at?new Date(n.published_at).toLocaleDateString():''} · ${esc(n.source)}</div></div>`).join('')||'<div class="hint">暂无新闻</div>';
+  try{
+    const impact=await j('/api/market/impact');
+    const hasMacro=impact.macro.length||impact.macro_unanalyzed.length||impact.upcoming.length||impact.news_themes.length;
+    if(hasMacro){$('impact-panel').style.display='';
+      $('impact-macro').innerHTML=impact.macro.map(m=>`<div class="impact-item"><div class="narr">${esc(m.name)} · ${esc(m.narrative)}</div>
+        <div class="hint">${new Date(m.event_time).toLocaleString()} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')}</div>
+        ${m.impacts.map(i=>`<div><span class="chip ${i.direction.includes('多')?'bull':i.direction.includes('空')?'bear':''}">${esc(i.direction)}</span> <b>${esc(i.theme_name)}</b>（${i.symbols.map(esc).join('、')||'自选中无'}）<span class="hint">${esc(i.rationale)}</span></div>`).join('')}</div>`).join('')
+        +impact.macro_unanalyzed.map(e=>`<div class="impact-item" style="border-color:#9ca3af"><div class="narr">${esc(e.name)}</div><div class="hint">${new Date(e.event_time).toLocaleString()} · 无匹配规则，仅展示原始事件（surprise=${esc(e.surprise)}）</div></div>`).join('');
+      $('impact-upcoming').innerHTML=impact.upcoming.length?'<div class="hint" style="margin-top:8px">即将公布：'+impact.upcoming.map(u=>`<span class="badge">${new Date(u.event_time).toLocaleDateString()} ${esc(u.name)}${u.confirmed?'':'（日期待确认）'}</span>`).join(' ')+'</div>':'';
+      $('impact-news').innerHTML=impact.news_themes.length?'<div style="margin-top:8px">近3日新闻主题：'+impact.news_themes.map(t=>`<span class="badge"><b>${esc(t.theme_name)}</b> ${t.positive}正/${t.neutral}中/${t.negative}负${t.symbols.length?'（'+t.symbols.map(esc).join('、')+'）':''}</span>`).join(' ')+'</div>':'';
+    }
+  }catch(e){/* impact 数据缺失时整个面板不显示 */}
+}
+main().catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>')});
+</script>
+</main></body></html>

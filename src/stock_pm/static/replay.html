@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock PM · 盘面回放</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.shell{max-width:1500px;margin:auto;padding:16px}
+.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.top h1{margin:0;font-size:20px}
+.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
+.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.panel h2{margin:0 0 8px;font-size:15px}
+.hint{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.up{color:var(--green)}.down{color:var(--red)}
+select,input,button{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+button{background:var(--blue);color:#fff;border:none;cursor:pointer}
+.impact-item{border-left:3px solid var(--blue);padding:6px 10px;margin:8px 0;background:#f8fafc;border-radius:0 8px 8px 0}
+.table-wrap{overflow-x:auto}
+.chart-box{height:320px}
+.badge{display:inline-block;background:#eef2f7;border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px}
+</style>
+</head>
+<body><main class="shell">
+<header class="top">
+  <div><h1>盘面回放</h1><div class="hint" style="color:#ffffffaa">按日期看当天全自选的分段量价与事件，或按区间看走势与事件叠加</div></div>
+  <nav class="nav"><a href="/">总览</a><a class="active" href="/replay">盘面回放</a><a href="/settings">设置</a></nav>
+</header>
+
+<section class="panel">
+  <h2>单日回放 <input type="date" id="day"> <button id="load-day">查看</button></h2>
+  <div id="day-macro"></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>标的</th><th>复盘评分</th><th>突破状态</th><th>分段数</th><th>最大上行段</th><th>最大下行段</th><th>大单买(推断)</th><th>大单卖(推断)</th></tr></thead>
+    <tbody id="day-rows"></tbody>
+  </table></div>
+  <div id="day-empty" class="hint" style="display:none">该日无复盘与分段数据（周末/未回填）。分段数据用 stock-pm-flow 回填，复盘用 stock-pm-review 生成。</div>
+  <div id="day-events" style="margin-top:8px"></div>
+</section>
+
+<section class="panel">
+  <h2>区间分析
+    <select id="range-symbol"></select>
+    <input type="date" id="from"> 至 <input type="date" id="to">
+    <button id="load-range">查看</button>
+  </h2>
+  <div id="range-stats" class="hint"></div>
+  <div class="chart-box"><canvas id="range-chart"></canvas></div>
+  <div id="range-events" style="margin-top:8px"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const j=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u+" "+r.status);return r.json()});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+const pct=v=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';
+const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
+const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:0});
+let rangeChart;
+
+function segCell(s){return s?`<span class="${cls(s.change_pct)}">${pct(s.change_pct)}</span> <span class="hint">${new Date(s.start_time).toLocaleTimeString()}起 量${s.rel_volume==null?'—':num(s.rel_volume)+'x'}</span>`:'—'}
+
+async function loadDay(){
+  const d=$('day').value;if(!d)return;
+  const data=await j('/api/replay/day?date='+d);
+  const reviews=Object.fromEntries(data.reviews.map(r=>[r.symbol,r]));
+  const summary=data.segments_summary;
+  const symbols=[...new Set([...Object.keys(reviews),...summary.map(s=>s.symbol)])].sort();
+  $('day-empty').style.display=symbols.length?'none':'';
+  const sm=Object.fromEntries(summary.map(s=>[s.symbol,s]));
+  $('day-rows').innerHTML=symbols.map(sym=>{const r=reviews[sym],s=sm[sym];
+    return `<tr><td><a href="/stock/${esc(sym)}"><b>${esc(sym)}</b></a></td>
+      <td>${r?num(r.score):'—'}</td><td>${r?esc(r.breakout_status||'—'):'—'}</td>
+      <td>${s?s.segments:'—'}</td><td>${segCell(s&&s.largest_up)}</td><td>${segCell(s&&s.largest_down)}</td>
+      <td class="up">${s?money(s.large_buy_notional):'—'}</td><td class="down">${s?money(s.large_sell_notional):'—'}</td></tr>`}).join('');
+  $('day-macro').innerHTML=data.macro.map(m=>`<div class="impact-item"><b>${esc(m.name)}</b>
+    <span class="hint">${new Date(m.event_time).toLocaleString()} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')} · ${esc(m.surprise)}</span></div>`).join('');
+  $('day-events').innerHTML=data.events.length?'<b>当日事件：</b>'+data.events.map(e=>`<span class="badge">${esc(e.symbol)} ${esc(e.title)} <span class="hint">${new Date(e.event_time).toLocaleTimeString()}</span></span>`).join(' '):'';
+}
+
+async function loadRange(){
+  const s=$('range-symbol').value,f=$('from').value,t=$('to').value;
+  if(!s||!f||!t)return;
+  const data=await j(`/api/replay/range?symbol=${s}&from=${f}&to=${t}`);
+  const st=data.stats;
+  $('range-stats').innerHTML=st?`<b>${esc(s)}</b> ${f} → ${t}：区间 <span class="${cls(st.return_pct)}">${pct(st.return_pct)}</span> · 最高 ${num(st.high)} · 最低 ${num(st.low)} · ${st.bars} 个交易日 · 总量 ${num(st.total_volume)}`:'区间内无日线数据';
+  const eventDates=new Set(data.events.map(e=>String(e.event_time).slice(0,10)));
+  const macroDates=new Set(data.macro.map(e=>String(e.event_time).slice(0,10)));
+  if(rangeChart)rangeChart.destroy();
+  rangeChart=new Chart($('range-chart'),{type:'line',
+    data:{labels:data.bars.map(b=>String(b.bar_time).slice(0,10)),
+      datasets:[{label:'收盘',data:data.bars.map(b=>Number(b.close_price)),borderColor:'#12283f',borderWidth:2,tension:.1,
+        pointRadius:data.bars.map(b=>{const d=String(b.bar_time).slice(0,10);return macroDates.has(d)?6:eventDates.has(d)?4:0}),
+        pointBackgroundColor:data.bars.map(b=>{const d=String(b.bar_time).slice(0,10);return macroDates.has(d)?'#9333ea':eventDates.has(d)?'#f59e0b':'#12283f'})}]},
+    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:'收盘价 ($)'}}},
+      plugins:{title:{display:true,text:'紫点=宏观事件日 · 橙点=个股事件日'}}}});
+  $('range-events').innerHTML=[
+    data.macro.length?'<b>宏观事件：</b>'+data.macro.map(m=>`<span class="badge">${String(m.event_time).slice(0,10)} ${esc(m.name)}（${esc(m.surprise)}）</span>`).join(' '):'',
+    data.events.length?'<div style="margin-top:4px"><b>个股事件：</b>'+data.events.map(e=>`<span class="badge">${String(e.event_time).slice(0,10)} ${esc(e.title)}</span>`).join(' ')+'</div>':''
+  ].join('');
+}
+
+async function main(){
+  const watch=await j('/api/watchlist');
+  $('range-symbol').innerHTML=watch.map(w=>`<option>${esc(w.symbol)}</option>`).join('');
+  const today=new Date(),prior=new Date(Date.now()-7*864e5);
+  const iso=d=>d.toISOString().slice(0,10);
+  $('day').value=iso(today);$('from').value=iso(prior);$('to').value=iso(today);
+  $('load-day').onclick=()=>loadDay().catch(alertErr);
+  $('load-range').onclick=()=>loadRange().catch(alertErr);
+  await loadDay().catch(()=>{});
+}
+const alertErr=e=>document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>');
+main().catch(alertErr);
+</script>
+</body></html>

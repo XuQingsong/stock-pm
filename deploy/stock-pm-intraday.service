@@ -1,0 +1,9 @@
+[Unit]
+Description=Stock PM Alpaca delayed intraday collection
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/stock-pm
+ExecStart=/usr/bin/docker compose --env-file /opt/stock-pm/.env.server run --rm app python -m stock_pm.alpaca --mode intraday

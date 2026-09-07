@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect Alpaca delayed intraday data every five minutes
+
+[Timer]
+OnCalendar=*-*-* *:0/5:00
+Persistent=false
+RandomizedDelaySec=15s
+Unit=stock-pm-intraday.service
+
+[Install]
+WantedBy=timers.target

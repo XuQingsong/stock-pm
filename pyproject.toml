@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stock-pm"
+version = "0.6.0"
+description = "Market analysis and position management with Alpaca data"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "psycopg[binary]>=3.2,<4",
+  "psycopg-pool>=3.2,<4",
+  "python-dotenv>=1,<2",
+  "uvicorn[standard]>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+]
+
+[project.scripts]
+stock-pm = "stock_pm.api:run"
+stock-pm-ingest = "stock_pm.ingest:main"
+stock-pm-fundamentals = "stock_pm.fundamentals:main"
+stock-pm-review = "stock_pm.review:main"
+stock-pm-alpaca = "stock_pm.alpaca:main"
+stock-pm-flow = "stock_pm.flow:main"
+stock-pm-macro = "stock_pm.macro:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+stock_pm = ["sql/*.sql", "static/*.html", "data/*.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
