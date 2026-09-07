@@ -123,6 +123,10 @@ stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
   FOMC 结果需公布后通过 `POST /api/macro/events` 更新 `surprise`（cut/hold/hike）。
 - 期权异动依据成交量、未平仓量与两者比例识别；公开期权链不能判断主动买卖方向。
 
+## 过程文档
+
+讨论中的评估和方案（Product Fit Evaluation、重构方案、代码评估、数据源对照）在 [`docs/`](docs/README.md)。
+
 ## 测试
 
 ```powershell
