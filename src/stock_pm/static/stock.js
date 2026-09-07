@@ -384,7 +384,7 @@
     const date = String(review.review_date || "").slice(0, 10);
     let briefing = await softApi(`/api/briefing?date=${encodeURIComponent(date)}`, { rows: [] });
     let row = (briefing.rows || []).find((item) => String(item.symbol).toUpperCase() === SYMBOL) || review;
-    const status = row.llm_status || review.llm_status || "missing_key";
+    const status = row.llm_status || review.llm_status || null;
     if (!didRetry && status === "quota_exhausted") {
       $("tab-content").innerHTML = '<div class="state loading"><span class="spinner"></span>模型额度已用尽，正在重新请求生成…充值后刷新即可。</div>';
       await fetch(`/api/reviews/retry-llm?date=${encodeURIComponent(date)}&symbol=${encodeURIComponent(SYMBOL)}`, {
@@ -393,18 +393,20 @@
       }).catch(() => null);
       return renderReview(true);
     }
-    const llmMissing = status !== "ok";
     const quota = status === "quota_exhausted";
+    const llmMissing = Boolean(status) && status !== "ok";
     const draftBias = row.user_bias || row.llm_bias || row.rule_bias || "中性";
     const context = row.context || review.context || {};
     const news = context.news || [];
     const macro = context.macro || [];
     const prior = row.prior_outcome;
-    const llmNote = quota
-      ? `<div class="disclaimer prominent">模型额度已用尽。请充值后刷新本页，系统会自动重新生成「为何走」和明日看法。</div>`
-      : llmMissing
-        ? `<div class="disclaimer prominent">${esc(row.llm_error || review.llm_error || `解释与明日看法未生成（${status}）`)}</div>`
-        : `<div class="subline">模型结果已写入数据库，打开本页不会重新调用。${row.llm_generated_at ? `上次生成 ${esc(String(row.llm_generated_at).replace("T", " ").slice(0, 16))} UTC。` : ""}量价、新闻或宏观变化后才会再生成。</div>`;
+    const llmNote = !status
+      ? ""
+      : quota
+        ? `<div class="disclaimer prominent">模型额度已用尽。请充值后刷新本页，系统会自动重新生成「为何走」和明日看法。</div>`
+        : llmMissing
+          ? `<div class="disclaimer prominent">${esc(row.llm_error || review.llm_error || `解释与明日看法未生成（${status}）`)}</div>`
+          : `<div class="subline">模型结果已写入数据库，打开本页不会重新调用。${row.llm_generated_at ? `上次生成 ${esc(String(row.llm_generated_at).replace("T", " ").slice(0, 16))} UTC。` : ""}量价、新闻或宏观变化后才会再生成。</div>`;
     $("tab-content").innerHTML = `
       <section class="panel hero">
         <div class="muted">日终复盘 · ${dateText(review.review_date)}</div>

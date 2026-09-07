@@ -166,3 +166,21 @@ def test_retry_reviews_after_quota_exhausted() -> None:
     assert result["quota_exhausted"] is False
     assert database.saved["llm_why"] == "充值后重试成功"
     assert database.saved["llm_error"] is None
+
+
+def test_retry_reviews_skips_closed_market() -> None:
+    database = _StubDatabase()
+    database.saved = {
+        "symbol": "AAPL",
+        "review_date": "2026-09-07",
+        "llm_status": "quota_exhausted",
+    }
+    calls = []
+    result = retry_reviews_for_llm(
+        database,
+        "2026-09-07",
+        llm_fn=lambda context: calls.append(context) or {"llm_status": "ok"},
+    )
+    assert result["skipped"] == "market_closed"
+    assert result["retried"] == []
+    assert calls == []

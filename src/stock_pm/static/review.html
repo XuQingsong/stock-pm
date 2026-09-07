@@ -66,12 +66,6 @@ const num=(v,d=2)=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFrac
 const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
 const pct=v=>v==null?'—':`${v>0?'+':''}${Number(v).toFixed(2)}%`;
 const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
-function lastWeekday(){
-  const d=new Date();
-  const day=d.getDay();
-  d.setDate(d.getDate()-(day===0?2:day===6?1:day===1?3:0));
-  return d.toISOString().slice(0,10);
-}
 function compact(v){return v==null?'—':Number(v).toLocaleString(undefined,{notation:'compact',maximumFractionDigits:2})}
 function wanZhang(v){return v==null?'—':(Number(v)/10000).toLocaleString('zh-CN',{maximumFractionDigits:2})+'万张'}
 function renderOptionsOverview(opt){
@@ -91,12 +85,14 @@ function renderOptionsOverview(opt){
     <div class="mix-legend">${legend}</div>`;
 }
 function llmBanner(row){
-  const status=row.llm_status||'missing_key';
+  const status=row.llm_status;
+  if(!status) return '';
   if(status==='ok') return llmStamp(row);
   if(status==='quota_exhausted')
     return `<div class="quota"><b>模型额度已用尽。</b>请充值后刷新本页，系统会自动重新生成「为何走」和明日看法。</div>`;
-  const text=row.llm_error||(status==='missing_key'?'解释与明日看法未生成：未配置 LLM_API_KEY':'解释与明日看法未生成：模型调用失败');
-  return `<div class="warn">${esc(text)}</div>`;
+  if(status==='missing_key')
+    return `<div class="warn">${esc(row.llm_error||'解释与明日看法未生成：未配置 LLM_API_KEY')}</div>`;
+  return `<div class="warn">${esc(row.llm_error||'解释与明日看法未生成：模型调用失败')}</div>`;
 }
 function llmStamp(row){
   const t=row.llm_generated_at?String(row.llm_generated_at).replace('T',' ').slice(0,16)+' UTC':'已保存';
@@ -169,12 +165,38 @@ async function saveCard(cardEl){
   }catch(e){status.textContent=e.message}
 }
 
+function closedMessage(session, date){
+  const last=session&&session.last_trading_date;
+  const label=session&&session.label?session.label:'美股休市';
+  const link=last?` <a href="/review?date=${esc(last)}">查看最近交易日 ${esc(last)}</a>`:'';
+  return `<div class="empty"><b>当日休市，暂无复盘。</b><div class="hint" style="margin-top:8px">${esc(date)} ${esc(label)}。复盘的是上一交易日收盘结果。${link}</div></div>`;
+}
+function emptyReviewMessage(date){
+  return `<div class="empty">当日尚无复盘。<div class="hint" style="margin-top:8px">${esc(date)} 没有入库的日终复盘，不会调用模型。</div></div>`;
+}
 async function loadReview(){
   const date=$('date').value; if(!date)return;
   $('load').disabled=true; $('load').textContent='加载中…';
   $('quota-panel').style.display='none';
   try{
     let briefing=await j(`/api/briefing?date=${date}`);
+    const session=briefing.session||{};
+    if(session.is_trading_day===false){
+      $('reviews').innerHTML=closedMessage(session, date);
+      $('segments').innerHTML='<div class="hint">休市日没有日内分段。</div>';
+      $('options-overview').innerHTML=renderOptionsOverview(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
+      $('hit-rate').innerHTML='休市日不统计当日命中率。';
+      $('macro-panel').style.display='none';
+      history.replaceState(null,'',`/review?date=${date}`);
+      return;
+    }
+    if(!briefing.has_reviews || !(briefing.rows||[]).length){
+      $('reviews').innerHTML=emptyReviewMessage(date);
+      $('segments').innerHTML='<div class="hint">当日暂无分段。</div>';
+      $('options-overview').innerHTML=renderOptionsOverview(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
+      history.replaceState(null,'',`/review?date=${date}`);
+      return;
+    }
     const needsRetry=(briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted');
     if(needsRetry){
       $('quota-panel').style.display='';
@@ -202,7 +224,7 @@ async function loadReview(){
     const confirmed=hit.confirmed||{};
     const all=hit.all||{};
     $('hit-rate').innerHTML=`你确认过的记录 ${num(confirmed.hits,0)}/${num(confirmed.samples,0)} 符合（${confirmed.rate_pct==null?'—':confirmed.rate_pct+'%'}）；全部对照 ${num(all.hits,0)}/${num(all.samples,0)}。`;
-    $('reviews').innerHTML=(briefing.rows||[]).length?(briefing.rows||[]).map(card).join(''):'<div class="empty">自选为空</div>';
+    $('reviews').innerHTML=(briefing.rows||[]).map(card).join('');
     $('reviews').querySelectorAll('.save').forEach(btn=>btn.onclick=()=>saveCard(btn.closest('.card')));
     const segs=day.segments_summary||[];
     $('segments').innerHTML=segs.length?`<div class="table-wrap"><table><thead><tr><th>标的</th><th>段数</th><th>推断买入</th><th>推断卖出</th><th>最大上涨段</th><th>最大下跌段</th></tr></thead><tbody>${
@@ -218,10 +240,19 @@ async function loadReview(){
   }catch(e){$('reviews').innerHTML=`<div class="error">${esc(e.message)}</div>`}
   finally{$('load').disabled=false;$('load').textContent='加载复盘'}
 }
-const params=new URLSearchParams(location.search);
-$('date').value=params.get('date')||lastWeekday();
-$('load').onclick=loadReview;
-loadReview();
+async function boot(){
+  const params=new URLSearchParams(location.search);
+  const asked=params.get('date');
+  try{
+    const session=await j(asked?`/api/market/session?date=${encodeURIComponent(asked)}`:'/api/market/session');
+    $('date').value=asked||session.default_review_date||session.last_trading_date||'';
+  }catch(_){
+    $('date').value=asked||'';
+  }
+  $('load').onclick=loadReview;
+  if($('date').value) await loadReview();
+}
+boot();
 </script>
 </body>
 </html>

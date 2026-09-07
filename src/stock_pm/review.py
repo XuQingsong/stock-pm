@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 from .analytics import money_flow, rule_next_day_draft, volume_profile
+from .calendar import is_trading_day
 from .config import Settings
 from .database import Database
 from .impact import macro_impact, news_impacts
@@ -414,6 +415,19 @@ def retry_reviews_for_llm(
             "retried": [],
             "quota_exhausted": False,
             "ok": 0,
+            "skipped": "no_review_date",
+        }
+    try:
+        closed = not is_trading_day(date.fromisoformat(str(date_value)[:10]))
+    except ValueError:
+        closed = False
+    if closed:
+        return {
+            "date": date_value,
+            "retried": [],
+            "quota_exhausted": False,
+            "ok": 0,
+            "skipped": "market_closed",
         }
     rows = database.reviews_by_date(date_value)
     if symbol:

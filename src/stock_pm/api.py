@@ -241,6 +241,20 @@ def market_impact(days: int = Query(14, ge=1, le=90)) -> dict:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/market/session")
+def market_session(
+    date_: Annotated[str | None, Query(alias="date")] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        return database.market_session(date_)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
 @app.get("/api/market/options-overview")
 def options_overview(
     date_: Annotated[str | None, Query(alias="date")] = None,

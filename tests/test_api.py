@@ -184,6 +184,28 @@ class FakeDatabase:
     def latest_review_date(self):
         return "2026-09-04"
 
+    def latest_bar_date(self):
+        return "2026-09-04"
+
+    def default_review_date(self):
+        return "2026-09-04"
+
+    def market_session(self, trade_date=None):
+        day = trade_date or "2026-09-04"
+        closed = day in {"2026-09-05", "2026-09-06", "2026-09-07"}
+        return {
+            "date": day,
+            "is_trading_day": not closed,
+            "status": "closed" if closed else "reviewed",
+            "reason": "holiday" if day == "2026-09-07" else ("weekend" if closed else "trading"),
+            "holiday_name": "劳动节" if day == "2026-09-07" else None,
+            "label": "劳动节，美股休市" if day == "2026-09-07" else None,
+            "last_trading_date": "2026-09-04",
+            "default_review_date": "2026-09-04",
+            "has_reviews": not closed,
+            "review_count": 0 if closed else 9,
+        }
+
     def reviews_by_date(self, date):
         return []
 
@@ -205,8 +227,21 @@ class FakeDatabase:
         }
 
     def briefing(self, date=None):
+        session = self.market_session(date)
+        if not session["is_trading_day"]:
+            return {
+                "date": date or session["date"],
+                "session": session,
+                "has_reviews": False,
+                "rows": [],
+                "hit_rate": {"all": {"samples": 0, "hits": 0, "rate_pct": None},
+                             "confirmed": {"samples": 0, "hits": 0, "rate_pct": None},
+                             "by_symbol": {}},
+            }
         return {
             "date": date or "2026-09-04",
+            "session": session,
+            "has_reviews": True,
             "rows": [{
                 "symbol": "NVDA",
                 "health": "趋势健康",
@@ -214,6 +249,7 @@ class FakeDatabase:
                 "volume_ratio_20d": 1.2,
                 "return_5d_pct": 3.1,
                 "breakout_status": "区间内",
+                "has_review": True,
                 "llm_status": "missing_key",
                 "prior_outcome": {"outcome_vs_bias": "符合", "bias": "偏多"},
             }],
@@ -244,8 +280,11 @@ def test_pages_render(monkeypatch):
     c = client(monkeypatch)
     for path in ("/", "/stock/NVDA", "/replay", "/review", "/settings"):
         assert c.get(path).status_code == 200, path
-    assert "每日复盘" in c.get("/review").text
-    assert "模型额度已用尽" in c.get("/review").text
+    review_page = c.get("/review").text
+    assert "每日复盘" in review_page
+    assert "模型额度已用尽" in review_page
+    assert "当日休市，暂无复盘" in review_page
+    assert "toISOString" not in review_page
     assert "Cboe 期权市场概览" in c.get("/").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
@@ -299,6 +338,16 @@ def test_stock_group(monkeypatch):
     assert c.get("/api/stock/NVDA/reviews").json()[0]["score"] == 45
     briefing = c.get("/api/briefing?date=2026-09-04").json()
     assert briefing["rows"][0]["health"] == "趋势健康"
+    assert briefing["has_reviews"] is True
+    holiday = c.get("/api/briefing?date=2026-09-07").json()
+    assert holiday["rows"] == []
+    assert holiday["has_reviews"] is False
+    assert holiday["session"]["reason"] == "holiday"
+    assert holiday["session"]["last_trading_date"] == "2026-09-04"
+    session = c.get("/api/market/session?date=2026-09-07").json()
+    assert session["is_trading_day"] is False
+    assert session["default_review_date"] == "2026-09-04"
+    assert c.get("/api/market/session?date=bad").status_code == 400
     chart = c.get("/api/stock/NVDA/chart?interval=1m").json()
     assert chart["daily_ma"]["ma50"] == 240
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import time
+from datetime import date as date_cls
 from typing import Any
 
+from .calendar import last_trading_day, ny_today, session_status
 from .analytics import (
     INTRADAY_MINUTES,
     SUPPORTED_INTERVALS,
@@ -949,6 +951,45 @@ class QueryMixin:
         value = rows[0]["review_date"] if rows else None
         return str(value) if value else None
 
+    def latest_bar_date(self) -> str | None:
+        rows = self.fetch_all(
+            """
+            SELECT MAX((bar_time AT TIME ZONE 'America/New_York')::date) AS bar_date
+            FROM price_bars
+            WHERE bar_size = '1d'
+            """
+        )
+        value = rows[0]["bar_date"] if rows else None
+        return str(value) if value else None
+
+    def default_review_date(self) -> str:
+        return (
+            self.latest_review_date()
+            or self.latest_bar_date()
+            or last_trading_day(ny_today()).isoformat()
+        )
+
+    def market_session(self, trade_date: str | None = None) -> dict:
+        requested = date_cls.fromisoformat(trade_date) if trade_date else ny_today()
+        info = session_status(requested)
+        review_count = len(self.reviews_by_date(requested.isoformat()))
+        previous = last_trading_day(requested)
+        status = "closed"
+        if info["is_trading_day"]:
+            status = "reviewed" if review_count else "open"
+        return {
+            "date": requested.isoformat(),
+            "is_trading_day": bool(info["is_trading_day"]),
+            "status": status,
+            "reason": info["reason"],
+            "holiday_name": info["holiday_name"],
+            "label": info["label"],
+            "last_trading_date": previous.isoformat(),
+            "default_review_date": self.default_review_date(),
+            "has_reviews": review_count > 0,
+            "review_count": review_count,
+        }
+
     def review_row(self, symbol: str, review_date: str) -> dict | None:
         rows = self.fetch_all(
             """SELECT * FROM daily_reviews
@@ -1078,14 +1119,22 @@ class QueryMixin:
         }
 
     def briefing(self, date: str | None = None) -> dict:
+        session = self.market_session(date)
         if not date:
-            latest = self.fetch_all(
-                "SELECT MAX(review_date) AS review_date FROM daily_reviews"
-            )
-            date = str(latest[0]["review_date"]) if latest and latest[0]["review_date"] else None
+            date = session["default_review_date"]
+            session = self.market_session(date)
         watch = self.watchlist_rows()
         technicals = {row["symbol"]: row for row in self.technical_summary()}
-        reviews = {row["symbol"]: row for row in (self.reviews_by_date(date) if date else [])}
+        stored = self.reviews_by_date(date) if date else []
+        reviews = {row["symbol"]: row for row in stored}
+        if not session["is_trading_day"] or not stored:
+            return {
+                "date": date,
+                "session": session,
+                "has_reviews": False,
+                "rows": [],
+                "hit_rate": self.review_hit_rate(),
+            }
         prior_rows = self.fetch_all(
             """
             SELECT DISTINCT ON (symbol) *
@@ -1100,20 +1149,20 @@ class QueryMixin:
         rows = []
         for item in watch:
             symbol = item["symbol"]
-            tech = technicals.get(symbol) or {}
             review = reviews.get(symbol)
+            if not review:
+                continue
+            tech = technicals.get(symbol) or {}
             snap = snapshots.get(symbol) or {}
             metrics = (review or {}).get("metrics") or {}
             if isinstance(metrics, str):
                 metrics = {}
             health = tape_health(tech, review)
-            day_change = None
-            if snap.get("last_price") and snap.get("prior_close"):
+            day_change = metrics.get("day_change_pct")
+            if day_change is None and snap.get("last_price") and snap.get("prior_close"):
                 day_change = round(
                     100 * (float(snap["last_price"]) / float(snap["prior_close"]) - 1), 2
                 )
-            elif tech.get("close_price") and review:
-                day_change = metrics.get("day_change_pct")
             prior_review = prior.get(symbol)
             rows.append(
                 {
@@ -1144,6 +1193,7 @@ class QueryMixin:
                     "rule_bias": (review or {}).get("rule_bias"),
                     "watch_low": (review or {}).get("watch_low"),
                     "watch_high": (review or {}).get("watch_high"),
+                    "has_review": review is not None,
                     "llm_status": (review or {}).get("llm_status"),
                     "llm_why": (review or {}).get("llm_why"),
                     "llm_outlook": (review or {}).get("llm_outlook"),
@@ -1172,6 +1222,8 @@ class QueryMixin:
             )
         return {
             "date": date,
+            "session": session,
+            "has_reviews": True,
             "rows": rows,
             "hit_rate": self.review_hit_rate(),
         }
