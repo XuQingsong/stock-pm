@@ -125,7 +125,7 @@ stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
 
 ## 过程文档
 
-讨论中的评估和方案（Product Fit Evaluation、重构方案、代码评估、数据源对照）在 [`docs/`](docs/README.md)。
+讨论中的评估和方案（Product Fit Evaluation、重构方案、代码评估、数据源对照）在 [`docs/`](docs/README.md)。产品切片与哲学见 [`CURSOR_BRIEF.md`](CURSOR_BRIEF.md)：同一仓库连续四刀（A/P0 → 环境 → 盘面 → 预测打脸），不是「只做 M1」。
 
 ## 测试
 

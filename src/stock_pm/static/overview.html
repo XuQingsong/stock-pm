@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stock PM · 市场总览</title>
+<link rel="stylesheet" href="/static/shell.css">
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -16,7 +17,8 @@
 .hint{color:var(--muted);font-size:12px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
+th:first-child,td:first-child,td.row-thesis{text-align:left}
+td.row-thesis{white-space:normal;max-width:420px}
 tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
 .up{color:var(--green)}.down{color:var(--red)}
 .grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
@@ -48,11 +50,12 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
     <select id="jump" style="margin-left:8px;padding:7px;border-radius:8px;border:none"></select>
   </nav>
 </header>
+<div id="stock-pm-shell"></div>
 
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 
-<section class="panel" id="options-panel">
-  <h2>Cboe 期权市场概览</h2>
+<section class="panel" id="options-panel" style="display:none">
+  <h2>期权市场概览</h2>
   <div class="hint">Cboe 一家交易所日终统计，不是 OCC 全市场。C/P = 认购÷认沽，P/C = 认沽÷认购。</div>
   <div id="options-overview" class="hint">加载中…</div>
 </section>
@@ -66,25 +69,28 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
 </section>
 
 <section class="panel">
-  <h2>最新复盘</h2>
-  <div class="hint">日终规则摘要 · 完整列表见 <a href="/review">复盘</a></div>
-  <div id="reviews"></div>
-</section>
-
-<section class="panel">
+  <div class="zone-label">展开</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">量、5日方向、均线位置、支撑压力与健康度 · 完整复盘见 <a href="/review">复盘</a></div>
+  <div class="hint">结论价用复盘收盘或昨收；延迟现价不作为晨间结论。半句优先写因果，不并排两套结论。</div>
   <div class="table-wrap"><table>
     <thead><tr>
-      <th>标的</th><th>最新价</th><th>日涨跌</th><th>量比</th><th>5日</th><th>均线位置</th>
-      <th>支撑/压力</th><th>健康度</th><th>昨日判断</th>
+      <th>标的</th><th>结论价</th><th>日涨跌</th><th>半句</th><th>量比</th><th>5日</th>
+      <th>均线位置</th><th>支撑/压力</th>
     </tr></thead>
     <tbody id="rows"></tbody>
   </table></div>
 </section>
 
+<section class="panel">
+  <div class="zone-label">展开</div>
+  <h2>最新复盘</h2>
+  <div class="hint">日终规则摘要 · 完整列表见 <a href="/review">复盘</a></div>
+  <div id="reviews"></div>
+</section>
+
 <div class="grid2">
   <section class="panel">
+    <div class="zone-label">折叠</div>
     <h2>今日异动（大额成交 / 期权异动）</h2>
     <div id="events" class="hint">加载中…</div>
   </section>
@@ -101,6 +107,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
   <div id="news-unmapped"></div>
 </section>
 </main>
+<script src="/static/shell.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const j=(u,opt)=>fetch(u,opt).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.detail||u+" "+r.status);return body});
@@ -111,12 +118,12 @@ const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
 const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
 const wanZhang=v=>v==null?'—':(Number(v)/10000).toLocaleString('zh-CN',{maximumFractionDigits:2})+'万张';
 function renderOptionsOverview(opt){
-  if(!opt||opt.status==='missing') return '暂无 Cboe 日终统计。运行 <code>stock-pm-cboe</code> 后刷新。';
+  if(!opt||opt.status==='missing') return null;
   const buckets=opt.buckets||[];
   const colors={index:'#2563eb',equity:'#0f9d72',etp:'#b45309'};
   const mix=buckets.map(b=>`<i style="width:${Number(b.volume_pct||0)}%;background:${colors[b.key]||'#94a3b8'}"></i>`).join('');
   const legend=buckets.map(b=>`<span>${esc(b.label)} <b>${b.volume_pct==null?'—':Number(b.volume_pct)+'%'}</b> · C/P ${b.call_put==null?'—':Number(b.call_put).toFixed(2)} · P/C ${b.put_call==null?'—':Number(b.put_call).toFixed(2)}</span>`).join('');
-  return `<div class="hint">${esc(String(opt.trade_date||'').slice(0,10))} · ${esc(opt.disclaimer||'')}</div>
+  return `<div class="hint">${esc(String(opt.trade_date||'').slice(0,10))} · ${esc(opt.disclaimer||'Cboe 一家交易所日终统计')}</div>
     <div class="opt-metrics">
       <div><span>总成交量</span><b>${wanZhang(opt.total_volume)}</b></div>
       <div><span>总 C/P（认购÷认沽）</span><b>${opt.total_call_put==null?'—':Number(opt.total_call_put).toFixed(3)}</b></div>
@@ -157,24 +164,31 @@ async function main(){
   }
   $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
   $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};
-  $('options-overview').innerHTML=renderOptionsOverview(options);
+  const optionsHtml=renderOptionsOverview(options);
+  if(optionsHtml){
+    $('options-panel').style.display='';
+    $('options-overview').innerHTML=optionsHtml;
+  }
   const sn=Object.fromEntries(snaps.map(x=>[x.symbol,x])),sg=Object.fromEntries(signals.map(x=>[x.symbol,x]));
   const br=Object.fromEntries((briefing.rows||[]).map(x=>[x.symbol,x]));
   $('rows').innerHTML=watch.map(w=>{const q=sn[w.symbol]||{},k=sg[w.symbol]||{},b=br[w.symbol]||{};
-    const chg=b.day_change_pct!=null?b.day_change_pct:(q.prior_close&&q.last_price?(q.last_price/q.prior_close-1)*100:null);
-    const prior=b.prior_outcome;
+    const quality=b.quote_quality||q.quote_quality||{};
+    const price=b.conclusion_price!=null?b.conclusion_price:(quality.hide_last_price?null:(q.prior_close||q.last_price||b.last_price));
+    const delayed=quality.status==='delayed'||quality.delayed;
+    const chg=b.day_change_pct!=null?b.day_change_pct:null;
+    const thesis=b.row_thesis||b.health||k.signal||'数据暂缺';
     return `<tr onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
-      <td>${money(q.last_price||b.last_price)}</td><td class="${cls(chg)}">${pct(chg)}</td>
+      <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||'数据暂缺')+'</div>':''}</td>
+      <td class="${cls(chg)}">${pct(chg)}</td>
+      <td class="row-thesis">${esc(thesis)}</td>
       <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
       <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>
       <td class="hint">${esc(b.ma_position||'—')}</td>
-      <td>${esc(b.breakout_status||'—')}<div class="hint">${b.support_price!=null?('S '+money(b.support_price)+' / R '+money(b.resistance_price)):'—'}</div></td>
-      <td>${esc(b.health||'—')}</td>
-      <td>${prior?`${esc(prior.outcome_vs_bias||'—')} <span class="hint">${esc(prior.bias||'')}</span>`:(k.signal||'—')}</td></tr>`}).join('');
+      <td>${esc(b.breakout_status||'—')}<div class="hint">${b.support_price!=null?('S '+money(b.support_price)+' / R '+money(b.resistance_price)):'—'}</div></td></tr>`}).join('');
   $('events').innerHTML=events.length?events.map(e=>`<div class="news-item"><b>${esc(e.symbol)}</b> ${esc(e.title)}<div class="hint">${new Date(e.event_time).toLocaleString()} · ${esc(e.source)}</div></div>`).join(''):'近期无异动记录';
   $('earnings').innerHTML=earnings.length?earnings.map(x=>`<span class="badge"><b>${esc(x.symbol)}</b> ${esc(x.report_date)} · EPS ${num(x.eps_actual)}/预期${num(x.eps_estimate)} · 后1日 <span class="${cls(x.post_1d_return_pct)}">${pct(x.post_1d_return_pct)}</span></span>`).join(' '):'暂无财报记录';
   $('reviews').innerHTML=reviewRows.length?reviewRows.map(row=>`<div class="news-item"><a href="/stock/${esc(row.symbol)}#review"><b>${esc(row.symbol)}</b></a> ${num(row.score)}分 · ${esc(row.breakout_status||'')}
-    <div class="hint">${esc(String(row.review_date||'').slice(0,10))} · ${esc(row.summary||'')}</div></div>`).join('')+'<div class="hint" style="margin-top:8px"><a href="/review">打开每日复盘</a></div>':'<div class="hint">暂无复盘。运行 stock-pm-review 后刷新。</div>';
+    <div class="hint">${esc(String(row.review_date||'').slice(0,10))} · ${esc(row.summary||'')}</div></div>`).join('')+'<div class="hint" style="margin-top:8px"><a href="/review">打开每日复盘</a></div>':'<div class="hint">当日复盘尚未生成。</div>';
   const mapped=news.filter(n=>(n.impacts||[]).length);
   const unmapped=news.filter(n=>(n.impacts||[]).length===0);
   $('news-mapped').innerHTML=mapped.length?mapped.map(n=>`<div class="impact-item"><div class="narr"><a href="${esc(n.url||'#')}" target="_blank">${esc(n.headline)}</a></div>
@@ -185,14 +199,17 @@ async function main(){
     const impact=await j('/api/market/impact');
     const hasMacro=impact.macro.length||impact.macro_unanalyzed.length||impact.upcoming.length||impact.news_themes.length;
     if(hasMacro){$('impact-panel').style.display='';
-      $('impact-macro').innerHTML=impact.macro.map(m=>`<div class="impact-item"><div class="narr">${esc(m.name)} · ${esc(m.narrative)}</div>
+      $('impact-macro').innerHTML=impact.macro.map(m=>`<div class="impact-item"><div class="narr">${esc(m.row_thesis||m.narrative||m.name)}</div>
         <div class="hint">${new Date(m.event_time).toLocaleString()} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')}</div>
-        ${m.impacts.map(i=>`<div><span class="chip ${i.direction.includes('多')?'bull':i.direction.includes('空')?'bear':''}">${esc(i.direction)}</span> <b>${esc(i.theme_name)}</b>（${i.symbols.map(esc).join('、')||'自选中无'}）<span class="hint">${esc(i.rationale)}</span></div>`).join('')}</div>`).join('')
+        </div>`).join('')
         +impact.macro_unanalyzed.map(e=>`<div class="impact-item" style="border-color:#9ca3af"><div class="narr">${esc(e.name)}</div><div class="hint">${new Date(e.event_time).toLocaleString()} · 无匹配规则，仅展示原始事件（surprise=${esc(e.surprise)}）</div></div>`).join('');
       $('impact-upcoming').innerHTML=impact.upcoming.length?'<div class="hint" style="margin-top:8px">即将公布：'+impact.upcoming.map(u=>`<span class="badge">${new Date(u.event_time).toLocaleDateString()} ${esc(u.name)}${u.confirmed?'':'（日期待确认）'}</span>`).join(' ')+'</div>':'';
       $('impact-news').innerHTML=impact.news_themes.length?'<div style="margin-top:8px">近3日新闻主题：'+impact.news_themes.map(t=>`<span class="badge"><b>${esc(t.theme_name)}</b> ${t.positive}正/${t.neutral}中/${t.negative}负${t.symbols.length?'（'+t.symbols.map(esc).join('、')+'）':''}</span>`).join(' ')+'</div>':'';
     }
   }catch(e){/* impact 数据缺失时整个面板不显示 */}
+  try{
+    if(window.mountStockPmShell) await window.mountStockPmShell({date:briefing.date});
+  }catch(_){}
 }
 main().catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>')});
 </script>

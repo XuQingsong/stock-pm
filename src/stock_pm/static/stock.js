@@ -91,6 +91,7 @@
     const snapshot = snapshots.find((row) => String(row.symbol).toUpperCase() === SYMBOL) || snapshots[0] || {};
     const technical = overview.technical || {};
     const valuation = overview.valuation || {};
+    const quality = snapshot.quote_quality || {};
     const switcher = $("symbol-switcher");
     switcher.innerHTML = watch.length
       ? watch.map((row) => `<option value="${esc(row.symbol)}"${String(row.symbol).toUpperCase() === SYMBOL ? " selected" : ""}>${esc(row.symbol)}</option>`).join("")
@@ -102,17 +103,22 @@
     $("metadata").textContent = [metadata.primary_exchange, metadata.sector].filter(Boolean).join(" · ") || "交易所与行业信息暂缺";
     $("themes").innerHTML = (metadata.themes || []).map((theme) => `<span class="chip">${esc(theme)}</span>`).join("");
 
-    const price = first(snapshot, ["last_price", "price", "close_price"]) ?? technical.close_price;
-    const prior = first(snapshot, ["prior_close", "previous_close"]);
-    const change = first(snapshot, ["change", "price_change"]);
-    const changePct = first(snapshot, ["change_pct", "price_change_pct"])
-      ?? (finite(price) && finite(prior) && Number(prior) !== 0 ? (Number(price) / Number(prior) - 1) * 100 : null);
+    const conclusion = quality.conclusion_price;
+    const liveHidden = quality.hide_last_price;
+    const price = liveHidden ? conclusion : (first(snapshot, ["displayed_last_price", "last_price", "price", "close_price"]) ?? conclusion ?? technical.close_price);
+    const prior = first(snapshot, ["prior_close", "previous_close"]) ?? quality.prior_close;
+    const change = liveHidden ? null : first(snapshot, ["change", "price_change"]);
+    const changePct = liveHidden ? null : (first(snapshot, ["change_pct", "price_change_pct"])
+      ?? (finite(price) && finite(prior) && Number(prior) !== 0 ? (Number(price) / Number(prior) - 1) * 100 : null));
     $("last-price").textContent = money(price);
     $("last-price").className = cls(changePct);
     $("price-change").className = cls(changePct);
-    $("price-change").textContent = finite(change)
-      ? `${Number(change) > 0 ? "+" : ""}${num(change)}  ${pct(changePct)}`
-      : pct(changePct);
+    const delayMark = quality.status === "delayed" || quality.delayed ? "延迟行情" : (quality.label || "");
+    $("price-change").textContent = liveHidden
+      ? (quality.label || MISSING)
+      : finite(change)
+        ? `${Number(change) > 0 ? "+" : ""}${num(change)}  ${pct(changePct)}`
+        : `${pct(changePct)}${delayMark ? ` · ${delayMark}` : ""}`;
     const highDistance = first(technical, ["distance_52w_high_pct"]) ?? first(snapshot, ["distance_52w_high_pct"]);
     const lowDistance = first(technical, ["distance_52w_low_pct"]) ?? first(snapshot, ["distance_52w_low_pct"]);
     const asOf = first(snapshot, ["as_of", "updated_at", "bar_time"]) ?? technical.bar_time;
@@ -126,6 +132,8 @@
       ["距52周高", pct(highDistance, false)],
       ["距52周低", pct(lowDistance, false)],
       ["数据时间", dateText(asOf, true), true],
+      ["报价质量", quality.label || MISSING],
+      ["结论价来源", quality.conclusion_source === "review_close" ? "复盘收盘" : quality.conclusion_source === "prior_close" ? "昨收" : quality.conclusion_source === "last_price" ? "现价" : MISSING],
       ["数据源", source || MISSING]
     ];
     $("quote-grid").innerHTML = cells.map(([label, value, wide]) =>
@@ -378,7 +386,7 @@
     const rows = await softApi(endpoint("reviews"), []);
     const review = rows[0];
     if (!review) {
-      $("tab-content").innerHTML = `${empty("暂无复盘记录")} <div class="disclaimer">运行 stock-pm-review 生成日终复盘后刷新。也可打开 <a href="/review">每日复盘</a>。</div>`;
+      $("tab-content").innerHTML = `${empty("当日复盘尚未生成")} <div class="disclaimer">也可打开 <a href="/review">每日复盘</a>。</div>`;
       return;
     }
     const date = String(review.review_date || "").slice(0, 10);
@@ -395,7 +403,6 @@
     }
     const quota = status === "quota_exhausted";
     const llmMissing = Boolean(status) && status !== "ok";
-    const draftBias = row.user_bias || row.llm_bias || row.rule_bias || "中性";
     const context = row.context || review.context || {};
     const news = context.news || [];
     const macro = context.macro || [];
@@ -410,9 +417,9 @@
     $("tab-content").innerHTML = `
       <section class="panel hero">
         <div class="muted">日终复盘 · ${dateText(review.review_date)}</div>
-        <h2>${esc(row.health || review.breakout_status || MISSING)} · ${num(review.score, 0)} 分</h2>
+        <h2>${esc(row.row_thesis || row.health || review.breakout_status || MISSING)}</h2>
         <div class="hero-stats">
-          <div><span>收盘</span><b>${money(review.close_price)}</b></div>
+          <div><span>结论价</span><b>${money(row.conclusion_price ?? review.close_price)}</b></div>
           <div><span>盘面</span><b>${esc(review.short_trend || MISSING)}</b></div>
           <div><span>均线</span><b>${esc(row.ma_position || MISSING)}</b></div>
           <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
@@ -427,12 +434,12 @@
         ${news.length || macro.length ? news.map((item) => `<div class="news-item"><b>${esc(item.headline || MISSING)}</b>${(item.impacts || []).map((impact) => `<div class="subline">${esc(impact.direction)} ${esc(impact.theme_name)} · ${esc(impact.rationale)}</div>`).join("")}</div>`).join("") + macro.map((item) => `<div class="news-item"><b>${esc(item.name || MISSING)}</b><div class="subline">${esc(item.narrative || "")}</div></div>`).join("") : empty("当日没有可挂上的新闻或宏观")}
       </section>
       <section class="panel"><h2>模型：为何这样走</h2><p class="review-body">${esc(row.llm_why || review.llm_why || "未生成")}</p></section>
-      <section class="panel"><h2>模型明日看法</h2><p class="review-body">${esc(row.llm_outlook || review.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.llm_bias || MISSING)}</div></section>
-      <section class="panel"><h2>我的明日看法</h2>
-        <div class="toolbar"><select id="user-bias">${["偏多", "中性", "偏空", "观望"].map((value) => `<option value="${value}"${draftBias === value ? " selected" : ""}>${value}</option>`).join("")}</select>
-          <button class="btn" id="save-review">保存确认</button><span class="muted" id="save-status">${row.user_confirmed_at ? "已确认" : "尚未确认"}</span></div>
-        <p class="subline" style="margin-top:8px">看法</p>
-        <textarea id="user-outlook" style="width:100%;min-height:72px">${esc(row.user_outlook || row.llm_outlook || "")}</textarea>
+      <section class="panel"><h2>自动明日看法</h2><p class="review-body">${esc(row.llm_outlook || review.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.active_bias || row.llm_bias || MISSING)} · 来源 ${esc(row.active_bias_source || "rule")} · 不需要每日确认</div></section>
+      <section class="panel"><h2>折叠：可选备注</h2>
+        <div class="toolbar"><select id="user-bias"><option value=""${row.user_bias ? "" : " selected"}>沿用自动判断</option>${["偏多", "中性", "偏空", "观望"].map((value) => `<option value="${value}"${row.user_bias === value ? " selected" : ""}>${value}</option>`).join("")}</select>
+          <button class="btn" id="save-review">保存备注</button><span class="muted" id="save-status">${row.user_note || row.user_outlook || row.user_bias ? "已有备注" : "未写备注"}</span></div>
+        <p class="subline" style="margin-top:8px">看法（留空则沿用模型/规则）</p>
+        <textarea id="user-outlook" style="width:100%;min-height:72px">${esc(row.user_outlook || "")}</textarea>
         <p class="subline">备注</p>
         <textarea id="user-note" style="width:100%;min-height:56px">${esc(row.user_note || "")}</textarea>
         <div class="subline" style="margin-top:8px">上一判断：${prior ? `${esc(prior.bias || "—")} → ${esc(prior.outcome_vs_bias || "—")}（${pct(prior.outcome_return_pct)}）` : "暂无对照"}</div>
@@ -444,7 +451,7 @@
           method: "PATCH",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
-            user_bias: $("user-bias").value,
+            user_bias: $("user-bias").value || null,
             user_outlook: $("user-outlook").value,
             user_note: $("user-note").value
           })
@@ -482,7 +489,7 @@
           <section class="panel"><div class="panel-head"><div><h2>未覆盖资讯</h2><div class="subline">${rest.length} 条未强制归类</div></div></div>
             ${rest.length ? rest.map(newsImpactBlock).join("") : empty("没有未覆盖新闻")}
           </section>
-          <section class="panel"><div class="panel-head"><div><h2>最近到期期权墙</h2><div class="subline">未平仓量仅供结构观察</div></div></div>${optionWall(options)}</section>
+          <section class="panel"><div class="panel-head"><div><h2>最近到期期权墙</h2><div class="subline">个股墙与全市场期权不是同一口径，不并排当结论</div></div></div>${options.length ? optionWall(options) : empty("期权墙数据暂缺")}</section>
         </div>
       </div>`;
   }
@@ -513,5 +520,8 @@
   });
   window.addEventListener("hashchange", () => activate(location.hash.slice(1)));
   window.addEventListener("beforeunload", disposeCharts);
-  loadHeader().finally(() => activate(location.hash.slice(1) || "chart"));
+  Promise.all([
+    loadHeader(),
+    window.mountStockPmShell ? window.mountStockPmShell({ symbol: SYMBOL }) : Promise.resolve()
+  ]).finally(() => activate(location.hash.slice(1) || "chart"));
 })();

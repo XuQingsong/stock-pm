@@ -127,6 +127,17 @@ def test_reuse_llm_if_unchanged() -> None:
     assert context_fingerprint(context, model="a") != context_fingerprint(context, model="b")
 
 
+def test_environment_snapshot_sql_is_append_only() -> None:
+    import inspect
+
+    source = inspect.getsource(PersistMixin.append_environment_snapshot)
+    assert "INSERT INTO environment_snapshots" in source
+    assert "ON CONFLICT" not in source
+    source = inspect.getsource(PersistMixin.append_severity_alerts)
+    assert "INSERT INTO severity_alerts" in source
+    assert "ON CONFLICT" not in source
+
+
 def test_store_review_sql_preserves_user_fields() -> None:
     import inspect
 

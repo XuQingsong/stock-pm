@@ -88,7 +88,7 @@ function vwapText(value){return value==='above'?'VWAP上方':value==='below'?'VW
 
 function reviewBlock(reviews){
   if(!reviews||!reviews.length){
-    return '<div class="hint">该区间暂无复盘。运行 <code>stock-pm-review</code> 生成后刷新。</div>';
+    return '<div class="hint">该区间复盘数据暂缺。</div>';
   }
   return reviews.map(row=>`<div class="review-card">
     <div class="card-head"><div><h3>复盘 · ${esc(String(row.review_date).slice(0,10))}</h3>
@@ -106,7 +106,7 @@ function reviewBlock(reviews){
 
 function segmentTable(segments){
   if(!segments||!segments.length){
-    return '<div class="hint">该区间暂无日内分段。运行 <code>stock-pm-flow</code> 回填后刷新。</div>';
+    return '<div class="hint">该区间日内分段数据暂缺。</div>';
   }
   return `<div class="table-wrap"><table><thead><tr><th>日期/时段</th><th>方向</th><th>涨跌</th><th>量比</th><th>VWAP</th><th>大单买(推断)</th><th>大单卖(推断)</th><th>笔数</th></tr></thead>
     <tbody>${segments.map(row=>`<tr>

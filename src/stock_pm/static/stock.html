@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Stock PM · 个股详情</title>
   <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/shell.css">
   <script defer src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+  <script defer src="/static/shell.js"></script>
   <script defer src="/static/stock.js"></script>
 </head>
 <body>
@@ -34,6 +36,7 @@
     </div>
   </header>
   <main class="page-shell">
+    <div id="stock-pm-shell"></div>
     <div class="tabs" role="tablist" aria-label="个股详情">
       <button role="tab" data-tab="chart">图表</button>
       <button role="tab" data-tab="review">复盘</button>

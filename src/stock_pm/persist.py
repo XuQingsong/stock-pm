@@ -237,6 +237,11 @@ class PersistMixin:
             raise DatabaseError(f"Failed to store daily review: {exc}") from exc
 
     def update_review_user(self, symbol: str, review_date: str, body: dict[str, Any]) -> dict:
+        """Save optional user notes. This is not a daily confirm gate.
+
+        Empty bias/outlook/note clears the saved note timestamp so the auto
+        loop (rule/llm) remains the default outlook source.
+        """
         from datetime import datetime, timezone
 
         from .analytics import VALID_BIASES
@@ -685,3 +690,78 @@ class PersistMixin:
                 )
         except Exception as exc:
             raise DatabaseError(f"Failed to store Cboe option stats: {exc}") from exc
+
+    def append_environment_snapshot(self, snapshot: dict[str, Any]) -> None:
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO environment_snapshots (
+                        as_of_date, scope, symbol, one_liner, row_thesis,
+                        struct, missing_flags, publish_state
+                    ) VALUES (
+                        %(as_of_date)s, %(scope)s, %(symbol)s, %(one_liner)s,
+                        %(row_thesis)s, %(struct)s, %(missing_flags)s,
+                        %(publish_state)s
+                    )
+                    """,
+                    {
+                        "as_of_date": snapshot.get("as_of_date"),
+                        "scope": snapshot.get("scope") or "market",
+                        "symbol": snapshot.get("symbol"),
+                        "one_liner": snapshot.get("one_liner"),
+                        "row_thesis": snapshot.get("row_thesis"),
+                        "struct": Jsonb(snapshot.get("struct") or {}),
+                        "missing_flags": Jsonb(snapshot.get("missingFlags") or []),
+                        "publish_state": snapshot.get("publishState") or "draft",
+                    },
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append environment snapshot: {exc}") from exc
+
+    def append_severity_alerts(self, alerts: list[dict[str, Any]]) -> None:
+        if not alerts:
+            return
+        try:
+            with self.pool.connection() as conn:
+                for alert in alerts:
+                    conn.execute(
+                        """
+                        INSERT INTO severity_alerts (
+                            alert_key, severity, title, message, symbol, active
+                        ) VALUES (%s, %s, %s, %s, %s, TRUE)
+                        """,
+                        (
+                            alert.get("alert_key"),
+                            alert.get("severity") or "severe",
+                            alert.get("title") or "",
+                            alert.get("message") or "",
+                            alert.get("symbol"),
+                        ),
+                    )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append severity alerts: {exc}") from exc
+
+    def append_job_run(self, job: dict[str, Any]) -> None:
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO job_runs (
+                        job_name, started_at, completed_at, status, item_counts, error
+                    ) VALUES (
+                        %(job_name)s, COALESCE(%(started_at)s, CURRENT_TIMESTAMP),
+                        %(completed_at)s, %(status)s, %(item_counts)s, %(error)s
+                    )
+                    """,
+                    {
+                        "job_name": job.get("job_name") or "unknown",
+                        "started_at": job.get("started_at"),
+                        "completed_at": job.get("completed_at"),
+                        "status": job.get("status") or "success",
+                        "item_counts": Jsonb(job.get("item_counts") or {}),
+                        "error": job.get("error"),
+                    },
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append job run: {exc}") from exc

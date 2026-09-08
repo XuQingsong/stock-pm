@@ -1,0 +1,21 @@
+.alert-strip{background:#7f1d1d;color:#fff;border-radius:10px;padding:10px 14px;margin:12px 0 0;display:none}
+.alert-strip.visible{display:block}
+.alert-strip .alert-item+.alert-item{margin-top:6px;padding-top:6px;border-top:1px solid #ffffff33}
+.alert-strip b{display:block}
+.zone{margin-top:14px}
+.zone-label{font-size:11px;letter-spacing:.08em;text-transform:none;color:#6b7280;margin-bottom:6px}
+.zone-a{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px}
+.zone-a .env-line{margin:8px 0 0;font-size:16px;line-height:1.45;font-weight:650}
+.zone-a .env-meta{color:#6b7280;font-size:12px;margin-top:6px}
+.state-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.state-chip{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;background:#eef2f7}
+.state-chip.face_slap{background:#fee2e2;color:#991b1b}
+.state-chip.overdue{background:#ffedd5;color:#9a3412}
+.state-chip.missing{background:#e5e7eb;color:#374151}
+.state-chip.clear{background:#dcfce7;color:#166534}
+.missing-flags{color:#6b7280;font-size:12px;margin-top:4px}
+.quote-delayed{display:inline-block;margin-left:8px;font-size:11px;background:#fff7ed;color:#9a3412;border-radius:8px;padding:1px 7px}
+.quote-bad,.quote-missing{opacity:.7}
+details.fold{margin-top:10px}
+details.fold summary{cursor:pointer;color:#6b7280;font-size:12px}
+.row-thesis{font-size:12px;color:#374151;max-width:420px;white-space:normal;text-align:left}
