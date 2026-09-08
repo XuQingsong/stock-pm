@@ -10,7 +10,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .analytics import _number, pick_outlook_bias
-from .environment import FLAG_LABELS
+from .environment import (
+    FLAG_LABELS,
+    causal_one_liner,
+    flag_labels,
+    news_stance,
+    tape_stance,
+)
 
 EXPLICIT_STATES = ("face_slap", "overdue", "missing", "clear")
 EXPLICIT_STATE_PRIORITY = {
@@ -150,7 +156,7 @@ def impact_row_thesis(mapped: dict | None) -> str | None:
 
 
 def stock_row_thesis(row: dict | None) -> str:
-    """Morning-scan half-sentence for one symbol. Names conflicts instead of two columns."""
+    """Morning-scan sentence: 盘面 → 消息 → 因此. Not two pretty columns."""
     row = row or {}
     health = (row.get("health") or "").strip()
     breakout = (row.get("breakout_status") or "").strip()
@@ -163,15 +169,15 @@ def stock_row_thesis(row: dict | None) -> str:
         for item in news
         for impact in (item.get("impacts") or [])
     ]
-    news_bull = any("多" in item for item in news_dirs)
-    news_bear = any("空" in item for item in news_dirs)
+    for event in macro:
+        news_dirs.extend(
+            str(impact.get("direction") or "") for impact in (event.get("impacts") or [])
+        )
     headline = (news[0].get("headline") if news else None) or (
-        macro[0].get("name") if macro else None
+        (macro[0].get("row_thesis") or macro[0].get("narrative") or macro[0].get("name"))
+        if macro
+        else None
     )
-    tape_bad = health == "走坏" or "跌破" in breakout
-    tape_good = health == "趋势健康" or "突破" in breakout
-    conflict = (tape_bad and news_bull) or (tape_good and news_bear)
-
     parts: list[str] = []
     if health:
         parts.append(health)
@@ -179,14 +185,20 @@ def stock_row_thesis(row: dict | None) -> str:
         parts.append(breakout)
     elif tape and tape not in parts:
         parts.append(tape)
-    core = "，".join(parts) if parts else "盘面结论不足"
-    if conflict and headline:
-        return f"{core}；消息面却偏反向（{headline}），先以盘面收盘为准，不当成两套并列结论。"
+    tape_text = "，".join(parts) if parts else None
+    stance_n = news_stance(news_dirs)
+    news_text = None
     if headline:
-        return f"{core}。可能相关：{headline}。"
-    if not parts:
-        return "个股半句暂缺：缺少收盘复盘。"
-    return f"{core}。"
+        if stance_n == "bull":
+            news_text = f"偏多（{headline}）"
+        elif stance_n == "bear":
+            news_text = f"偏空（{headline}）"
+        elif stance_n == "mixed":
+            news_text = f"分歧（{headline}）"
+        else:
+            news_text = f"未映射方向（{headline}），不编影响"
+            stance_n = None
+    return causal_one_liner(tape_text, news_text, tape_stance(health, breakout), stance_n)
 
 
 def _options_clause(options: dict | None) -> tuple[str | None, bool]:
@@ -249,20 +261,32 @@ def synthesize_environment(
     if tape_missing:
         missing.append("reviews")
 
-    clauses = [item for item in (option_text, tape_text, macro_text) if item]
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
         one_liner = f"{as_of_date or ''} {label}，隔夜环境沿用最近交易日，不编造当日盘面。".strip()
         publish_state = "stale"
-    elif not clauses:
-        one_liner = "隔夜环境半句暂缺：期权、宏观与复盘都还没有可引用的事实。"
+    elif tape_missing and macro_missing:
+        one_liner = causal_one_liner(None, None, None, None)
         publish_state = "missing"
-    elif len(missing) >= 2:
-        one_liner = "；".join(clauses) + "。其余输入标记为数据暂缺，不补假结论。"
-        publish_state = "draft"
     else:
-        one_liner = "；".join(clauses) + "。"
-        publish_state = "published"
+        healthy = sum(1 for row in rows if (row.get("health") or "") == "趋势健康")
+        broken = sum(1 for row in rows if (row.get("health") or "") == "走坏")
+        market_tape = "bear" if broken > healthy else "bull" if healthy > broken else tape_stance(
+            (rows[0].get("health") if rows else None)
+        )
+        macro_dirs = [
+            str(impact.get("direction") or "")
+            for event in (impact or {}).get("macro") or []
+            for impact in (event.get("impacts") or [])
+        ]
+        one_liner = causal_one_liner(
+            tape_text,
+            macro_text,
+            None if tape_missing else market_tape,
+            None if macro_missing else news_stance(macro_dirs),
+            missing_note=flag_labels(missing) if len(missing) >= 2 else None,
+        )
+        publish_state = "draft" if len(missing) >= 2 else "published"
 
     row_thesis = one_liner
     if symbol and rows:

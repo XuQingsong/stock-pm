@@ -51,6 +51,75 @@ def flag_labels(flags: list[str]) -> str:
     return "、".join(FLAG_LABELS.get(flag, flag) for flag in flags)
 
 
+def tape_stance(health: str | None, breakout: str | None = None) -> str | None:
+    health = (health or "").strip()
+    breakout = (breakout or "").strip()
+    if health == "走坏" or "跌破" in breakout:
+        return "bear"
+    if health == "趋势健康" or ("突破" in breakout and "跌" not in breakout and "失败" not in breakout):
+        return "bull"
+    if health == "过热":
+        return "hot"
+    if health or breakout:
+        return "watch"
+    return None
+
+
+def news_stance(directions: list[str] | None) -> str | None:
+    dirs = [str(item) for item in (directions or []) if item]
+    bull = any("多" in item for item in dirs)
+    bear = any("空" in item for item in dirs)
+    if bull and bear:
+        return "mixed"
+    if bull:
+        return "bull"
+    if bear:
+        return "bear"
+    return None
+
+
+def conclusion_from_stances(tape: str | None, news: str | None) -> str:
+    """Environment conclusion only. Never a prediction bound or face-slap rewrite."""
+    if tape is None and news is None:
+        return "盘面与消息都暂缺，不编结论，也不编预测。"
+    if tape is None:
+        return "盘面不足，不把消息标题当成盘面结论，也不编预测。"
+    if news is None:
+        return "消息不足，只按盘面读，不编影响，也不编预测。"
+    if news == "mixed":
+        return "消息内部分歧，先按盘面读，不把标题墙当成两套结论。"
+    if (tape == "bear" and news == "bull") or (tape == "bull" and news == "bear"):
+        return "盘面与消息反向，先以收盘盘面为准，不当成两套并列结论。"
+    if tape == "hot" and news == "bull":
+        return "盘面过热而消息仍偏多，先按盘面过热读，不把利多加成预测。"
+    return "盘面与消息同向，只作环境理解，不写成预测或打脸。"
+
+
+def causal_one_liner(
+    tape_text: str | None,
+    news_text: str | None,
+    tape: str | None,
+    news: str | None,
+    *,
+    missing_note: str | None = None,
+) -> str:
+    """A-line: 盘面 → 消息 → 因此. Not juxtaposed slogans."""
+    tape_disp = (tape_text or "").strip() or "结论不足"
+    news_disp = (news_text or "").strip() or "暂缺，不编方向"
+    text = (
+        f"盘面：{tape_disp}；"
+        f"消息：{news_disp}；"
+        f"因此：{conclusion_from_stances(tape, news)}"
+    )
+    if missing_note:
+        text += f"缺口：{missing_note}，不补假数。"
+    return text
+
+
+def is_conflict_sentence(text: str | None) -> bool:
+    return "不当成两套并列结论" in (text or "")
+
+
 def snapshot_from_row(row: dict | None) -> dict | None:
     if not row:
         return None
@@ -387,13 +456,58 @@ def _publish_state(
     return "published"
 
 
-def _join_synthesis(parts: list[str], missing: list[str]) -> str:
-    if not parts:
-        return "这只票的环境结论暂缺：基本面、三层消息和情绪氛围都没有可引用的事实。"
-    text = "；".join(parts) + "。"
-    if missing:
-        text += f"缺口：{flag_labels(missing)}，不补假数。"
-    return text
+def _tape_scan_text(
+    *,
+    briefing_row: dict | None,
+    technical: dict | None,
+    year: dict | None,
+    sentiment: dict | None,
+) -> tuple[str | None, str | None]:
+    row = briefing_row or {}
+    tech = technical or {}
+    health = (row.get("health") or tech.get("health") or "").strip()
+    breakout = (row.get("breakout_status") or "").strip()
+    tape = (row.get("tape") or row.get("short_trend") or "").strip()
+    bits: list[str] = []
+    if health:
+        bits.append(health)
+    if breakout and breakout not in bits:
+        bits.append(breakout)
+    elif tape and tape not in bits:
+        bits.append(tape)
+    r20 = _number(tech.get("return_20d_pct") or row.get("return_20d_pct"))
+    if r20 is not None:
+        bits.append(f"近20日{_pct(r20)}")
+    if year and year.get("clause"):
+        bits.append(year["clause"])
+    if sentiment and sentiment.get("atmosphere"):
+        bits.append(f"氛围{sentiment['atmosphere']}")
+    return ("，".join(bits) if bits else None), tape_stance(health, breakout)
+
+
+def _news_scan_text(
+    macro: dict | None,
+    sector: dict | None,
+    company: dict | None,
+) -> tuple[str | None, str | None]:
+    bits: list[str] = []
+    dirs: list[str] = []
+    for layer, label in ((macro, "宏观"), (sector, "行业"), (company, "公司")):
+        if not layer:
+            continue
+        bias = layer.get("bias")
+        headline = layer.get("headline")
+        if bias:
+            dirs.append(bias)
+            piece = f"{label}{bias}"
+            if headline:
+                piece += f"（{headline}）"
+            bits.append(piece)
+        elif layer.get("clause"):
+            bits.append(f"{label}有标题未映射，不编方向")
+    if not bits:
+        return None, None
+    return "，".join(bits), news_stance(dirs)
 
 
 def synthesize_symbol_environment(
@@ -459,37 +573,31 @@ def synthesize_symbol_environment(
     if sentiment_missing:
         missing.append("sentiment")
 
-    fund_parts = [
-        item["clause"]
-        for item in (year, earnings, industry, valuation)
-        if item and item.get("clause")
-    ]
-    news_parts = [
-        item["clause"]
-        for item in (macro, sector, company)
-        if item and item.get("clause")
-    ]
-    sent_parts = [sentiment["clause"]] if sentiment and sentiment.get("clause") else []
-    synthesis = _join_synthesis(fund_parts + news_parts + sent_parts, missing)
-    has_synthesis = bool(fund_parts or news_parts or sent_parts)
-
-    from .philosophy import stock_row_thesis
-
-    row = dict(briefing_row or {})
-    row.setdefault("symbol", symbol_u)
-    if not row.get("context"):
-        row["context"] = {
-            "news": articles,
-            "macro": (impact or {}).get("macro") or [],
-        }
-    row_thesis = stock_row_thesis(row)
-    conflict = "不当成两套并列结论" in row_thesis
-    one_liner = row_thesis if conflict else synthesis
+    tape_text, tape_st = _tape_scan_text(
+        briefing_row=briefing_row,
+        technical=tech,
+        year=year,
+        sentiment=sentiment,
+    )
+    news_text, news_st = _news_scan_text(macro, sector, company)
+    has_synthesis = bool(tape_text or news_text)
+    synthesis = causal_one_liner(
+        tape_text,
+        news_text,
+        tape_st,
+        news_st,
+        missing_note=flag_labels(missing) if missing else None,
+    )
+    row_thesis = synthesis
+    one_liner = synthesis
+    conflict = is_conflict_sentence(synthesis)
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
         synthesis = f"{as_of_date or ''} {label}，隔夜环境沿用最近交易日，不编造当日盘面。".strip()
         one_liner = synthesis
+        row_thesis = synthesis
         has_synthesis = True
+        conflict = False
 
     publish_state = _publish_state(
         missing=missing, has_synthesis=has_synthesis, session=session

@@ -109,9 +109,12 @@ def test_environment_one_liner_joins_facts() -> None:
     )
     assert env["publishState"] == "published"
     assert env["missingFlags"] == []
-    assert "认沽偏多" in env["one_liner"]
-    assert "趋势健康" in env["one_liner"]
-    assert "降息预期升温" in env["one_liner"]
+    line = env["one_liner"]
+    assert line.index("盘面") < line.index("消息") < line.index("因此")
+    assert "趋势健康" in line
+    assert "降息预期升温" in line
+    assert "认沽偏多" in (env["struct"]["options"] or {}).get("clause", "")
+    assert not line.startswith("期权")
 
 
 def test_conflict_row_is_one_sentence() -> None:
@@ -129,8 +132,10 @@ def test_conflict_row_is_one_sentence() -> None:
             },
         }
     )
+    assert thesis.index("盘面") < thesis.index("消息") < thesis.index("因此")
     assert "不当成两套并列结论" in thesis
     assert "芯片股获上调" in thesis
+    assert "可能相关" not in thesis
     mapped = impact_row_thesis(
         {
             "narrative": "非农弱于预期 → 降息预期升温",

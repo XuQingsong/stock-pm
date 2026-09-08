@@ -126,8 +126,11 @@ def test_snapshot_answers_acceptance_environment_questions() -> None:
     assert "标题" in struct["sentiment"]["clause"]
     assert "42.5%" in env["synthesis"]
     assert env["conflict"] is True
+    line = env["one_liner"]
+    assert line.index("盘面") < line.index("消息") < line.index("因此")
     assert "不当成两套并列结论" in env["row_thesis"]
-    assert env["one_liner"] == env["row_thesis"]
+    assert env["one_liner"] == env["row_thesis"] == env["synthesis"]
+    assert "可能相关" not in line
 
 
 def test_empty_inputs_are_honest_missing() -> None:
@@ -236,6 +239,30 @@ def test_failed_snapshot_has_no_fabricated_numbers() -> None:
     dumped = str(snap["struct"])
     assert "return_1y" not in dumped
     assert "pe_current" not in dumped
+
+
+def test_aligned_tape_and_news_still_not_a_prediction() -> None:
+    env = synthesize_symbol_environment(
+        as_of_date="2026-09-04",
+        symbol="AVGO",
+        watch={"themes": ["semis"]},
+        technical={"health": "趋势健康", "return_20d_pct": 6.0},
+        news=[
+            {
+                "symbol": "AVGO",
+                "headline": "行业缺货延续",
+                "themes": ["semis"],
+                "impacts": [{"theme": "semis", "direction": "利多", "symbols": ["AVGO"]}],
+            }
+        ],
+        briefing_row={"symbol": "AVGO", "health": "趋势健康"},
+    )
+    line = env["one_liner"]
+    assert line.index("盘面") < line.index("消息") < line.index("因此")
+    assert "同向" in line
+    assert "不写成预测" in line
+    assert env["prediction_ready"] is False
+    assert env["conflict"] is False
 
 
 def test_holiday_publish_state_is_stale() -> None:
