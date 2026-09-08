@@ -95,20 +95,26 @@ def publish_environment_snapshots(
             f"{item.get('symbol') or item.get('scope')}: {item.get('error')}"
             for item in errors
         )
-    store.append_job_run(
-        {
-            "job_name": "environment",
-            "started_at": started,
-            "completed_at": datetime.now(timezone.utc),
-            "status": status,
-            "item_counts": {
-                "written": len(written),
-                "failed": len(errors),
-                "symbols": len(symbols),
-            },
-            "error": error_text,
-        }
-    )
+    job = {
+        "job_name": "environment",
+        "started_at": started,
+        "completed_at": datetime.now(timezone.utc),
+        "status": status,
+        "item_counts": {
+            "written": len(written),
+            "failed": len(errors),
+            "symbols": len(symbols),
+        },
+        "error": error_text,
+    }
+    try:
+        store.append_job_run(job)
+    except Exception as exc:
+        errors.append({"scope": "job_run", "error": str(exc)})
+        if status == "success":
+            status = "partial"
+        job["status"] = status
+        job["error"] = "; ".join(filter(None, [error_text, f"job_run: {exc}"]))
     return {
         "date": date,
         "status": status,
@@ -116,6 +122,30 @@ def publish_environment_snapshots(
         "errors": errors,
         "publishState": "missing" if status == "failed" else status,
     }
+
+
+def publish_if_missing(
+    store: Any,
+    as_of_date: str | None = None,
+    symbols: list[str] | None = None,
+) -> dict[str, Any]:
+    """Append today's snapshots unless symbol-scoped rows already exist.
+
+    Used on API boot and compose one-shot so history is not silently empty
+    between image deploy and the next 23:30 UTC daily timer.
+    """
+    date = as_of_date
+    existing: list[dict] = []
+    try:
+        session = store.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        if hasattr(store, "latest_environment_snapshots"):
+            existing = store.latest_environment_snapshots(date) or []
+    except Exception:
+        existing = []
+    if any((item or {}).get("scope") == "symbol" for item in existing):
+        return {"date": date, "status": "skipped", "reason": "already_published"}
+    return publish_environment_snapshots(store, as_of_date=date, symbols=symbols)
 
 
 def main() -> None:

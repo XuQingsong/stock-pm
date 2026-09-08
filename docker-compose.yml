@@ -43,5 +43,27 @@ services:
       retries: 5
       start_period: 10s
 
+  environment-job:
+    build: .
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://stock_pm:${POSTGRES_PASSWORD}@postgres:5432/stock_pm
+      DATABASE_POOL_SIZE: 4
+      ALPACA_API_KEY_ID: ${ALPACA_API_KEY_ID:-}
+      ALPACA_API_SECRET_KEY: ${ALPACA_API_SECRET_KEY:-}
+      ALPACA_DATA_FEED: ${ALPACA_DATA_FEED:-iex}
+      ALPACA_BARS_FEED: ${ALPACA_BARS_FEED:-sip}
+      ALPACA_OPTIONS_FEED: ${ALPACA_OPTIONS_FEED:-indicative}
+      FRED_API_KEY: ${FRED_API_KEY:-}
+      FMP_API_KEY: ${FMP_API_KEY:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python -m stock_pm.environment_job
+
 volumes:
   stock_pm_postgres:

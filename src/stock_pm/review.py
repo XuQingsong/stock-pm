@@ -483,11 +483,21 @@ def main() -> None:
     try:
         database.initialize()
         symbols = args.symbols or database.active_symbols()
-        reviews = [
-            review
-            for symbol in symbols
-            if (review := generate_review(database, symbol, force_llm=args.force_llm))
-        ]
+        for symbol in symbols:
+            try:
+                review = generate_review(
+                    database, symbol, force_llm=args.force_llm
+                )
+            except Exception as exc:
+                print(
+                    json.dumps(
+                        {"review_generate_error": symbol, "error": str(exc)},
+                        ensure_ascii=False,
+                    )
+                )
+                continue
+            if review:
+                reviews.append(review)
         from .environment_job import publish_environment_snapshots
 
         try:

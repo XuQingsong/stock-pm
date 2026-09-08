@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import re
+import threading
 from contextlib import asynccontextmanager
 from datetime import date
 from importlib.resources import files
@@ -21,9 +23,33 @@ SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 database = Database()
 
 
+def _backfill_environment_snapshots() -> None:
+    try:
+        if not hasattr(database, "append_environment_snapshot"):
+            return
+        from .environment_job import publish_if_missing
+
+        result = publish_if_missing(database)
+        if result.get("status") != "skipped":
+            print(
+                json.dumps(
+                    {"environment_backfill": result},
+                    ensure_ascii=False,
+                    default=str,
+                )
+            )
+    except Exception as exc:
+        print(json.dumps({"environment_backfill_error": str(exc)}, ensure_ascii=False))
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     database.initialize()
+    threading.Thread(
+        target=_backfill_environment_snapshots,
+        name="environment-backfill",
+        daemon=True,
+    ).start()
     yield
     database.close()
 

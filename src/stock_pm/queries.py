@@ -28,6 +28,7 @@ from .environment import (
     snapshot_from_row,
     synthesize_symbol_environment,
 )
+from .errors import DatabaseError
 from .tape import (
     env_tape_conflict_sentence,
     failed_review_note,
@@ -1826,29 +1827,22 @@ class QueryMixin:
                 row["env_tape_conflict"] = False
 
     def job_runs(self, limit: int = 20) -> list[dict]:
-        rows = self.fetch_all(
-            """
-            SELECT id, job_name, started_at, completed_at, status, item_counts, error
-            FROM job_runs
-            ORDER BY started_at DESC
-            LIMIT %s
-            """,
-            (limit,),
-        )
-        if rows:
-            return rows
-        # Honest stub: surface collector sync_runs until dedicated jobs are written.
-        return [
-            {
-                "job_name": row.get("source") or "sync",
-                "started_at": row.get("started_at"),
-                "completed_at": row.get("completed_at"),
-                "status": row.get("status"),
-                "item_counts": row.get("item_counts") or {},
-                "error": row.get("error"),
-                "source_table": "sync_runs",
-            }
-            for row in self.fetch_all(
+        dedicated: list[dict] = []
+        try:
+            dedicated = self.fetch_all(
+                """
+                SELECT id, job_name, started_at, completed_at, status, item_counts, error
+                FROM job_runs
+                ORDER BY started_at DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+        except DatabaseError:
+            dedicated = []
+        sync: list[dict] = []
+        try:
+            sync = self.fetch_all(
                 """
                 SELECT source, started_at, completed_at, status, item_counts, error
                 FROM sync_runs
@@ -1857,7 +1851,26 @@ class QueryMixin:
                 """,
                 (limit,),
             )
-        ]
+        except DatabaseError:
+            sync = []
+        merged: list[dict] = [{**row, "source_table": "job_runs"} for row in dedicated]
+        for row in sync:
+            merged.append(
+                {
+                    "job_name": row.get("source") or "sync",
+                    "started_at": row.get("started_at"),
+                    "completed_at": row.get("completed_at"),
+                    "status": row.get("status"),
+                    "item_counts": row.get("item_counts") or {},
+                    "error": row.get("error"),
+                    "source_table": "sync_runs",
+                }
+            )
+        merged.sort(
+            key=lambda row: str(row.get("started_at") or row.get("completed_at") or ""),
+            reverse=True,
+        )
+        return merged[:limit]
 
     def events_between(
         self, start: str, end: str, symbol: str | None = None, limit: int = 300
