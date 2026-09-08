@@ -40,6 +40,11 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
 .mix i{display:block;height:100%}
 .mix-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .mix-legend b{color:var(--ink)}
+details.materials{margin-top:14px;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px 16px}
+details.materials>summary{cursor:pointer;font-weight:650;color:var(--ink)}
+details.materials .zone-label{margin-top:4px}
+details.materials .panel{border:0;padding:12px 0;margin-top:8px;box-shadow:none}
+details.materials .grid2{margin-top:8px}
 </style>
 </head>
 <body><main class="shell">
@@ -54,24 +59,10 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
 
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 
-<section class="panel" id="options-panel" style="display:none">
-  <h2>期权市场概览</h2>
-  <div class="hint">Cboe 一家交易所日终统计，不是 OCC 全市场。C/P = 认购÷认沽，P/C = 认沽÷认购。</div>
-  <div id="options-overview" class="hint">加载中…</div>
-</section>
-
-<section class="panel" id="impact-panel" style="display:none">
-  <h2>宏观事件与板块影响</h2>
-  <div class="hint">近14天事件 · 规则映射，仅覆盖预设事件类型；方向为推断非建议</div>
-  <div id="impact-macro"></div>
-  <div id="impact-upcoming"></div>
-  <div id="impact-news"></div>
-</section>
-
-<section class="panel">
-  <div class="zone-label">展开</div>
+<section class="panel" id="briefing-panel">
+  <div class="zone-label">结论</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">结论价用复盘收盘或昨收。半句是环境合成（一年涨跌 / 三层消息 / 氛围）；盘面与消息冲突时改写成一句因果，不并排两套结论，也不在总览铺材料。</div>
+  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。半句是环境合成（一年涨跌 / 三层消息 / 氛围）；盘面与消息冲突时改写成一句因果，不并排两套结论。期权与新闻在下方折叠，不和结论抢位置。预测状态机尚未接入，这里不编边界。</div>
   <div class="table-wrap"><table>
     <thead><tr>
       <th>标的</th><th>结论价</th><th>日涨跌</th><th>半句</th><th>量比</th><th>5日</th>
@@ -88,24 +79,43 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
   <div id="reviews"></div>
 </section>
 
-<div class="grid2">
-  <section class="panel">
-    <div class="zone-label">折叠</div>
-    <h2>今日异动（大额成交 / 期权异动）</h2>
-    <div id="events" class="hint">加载中…</div>
-  </section>
-  <section class="panel">
-    <h2>近期财报</h2>
-    <div id="earnings" class="hint">加载中…</div>
-  </section>
-</div>
+<details class="fold zone-c materials" data-zone="C">
+  <summary>折叠材料（期权 / 宏观 / 新闻 / 异动）</summary>
+  <div class="zone-label">折叠</div>
+  <p class="hint">这些是支撑材料，不是晨间结论。缺数就藏或写「数据暂缺」，不编影响。</p>
 
-<section class="panel">
-  <h2>新闻与板块影响</h2>
-  <div class="hint">只展示规则能映射到自选主题的条目；未命中主题的新闻单独列出，不编造影响</div>
-  <div id="news-mapped"></div>
-  <div id="news-unmapped"></div>
-</section>
+  <section class="panel" id="options-panel" style="display:none">
+    <h2>期权市场概览</h2>
+    <div class="hint">Cboe 一家交易所日终统计，不是 OCC 全市场。C/P = 认购÷认沽，P/C = 认沽÷认购。</div>
+    <div id="options-overview" class="hint">加载中…</div>
+  </section>
+
+  <section class="panel" id="impact-panel" style="display:none">
+    <h2>宏观事件与板块影响</h2>
+    <div class="hint">近14天事件 · 规则映射，仅覆盖预设事件类型；方向为推断非建议</div>
+    <div id="impact-macro"></div>
+    <div id="impact-upcoming"></div>
+    <div id="impact-news"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel">
+      <h2>今日异动（大额成交 / 期权异动）</h2>
+      <div id="events" class="hint">加载中…</div>
+    </section>
+    <section class="panel">
+      <h2>近期财报</h2>
+      <div id="earnings" class="hint">加载中…</div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>新闻与板块影响</h2>
+    <div class="hint">只展示规则能映射到自选主题的条目；未命中主题的新闻单独列出，不编造影响</div>
+    <div id="news-mapped"></div>
+    <div id="news-unmapped"></div>
+  </section>
+</details>
 </main>
 <script src="/static/shell.js"></script>
 <script>
@@ -164,6 +174,9 @@ async function main(){
   }
   $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
   $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};
+  try{
+    if(window.mountStockPmShell) await window.mountStockPmShell({date:briefing.date});
+  }catch(_){}
   const optionsHtml=renderOptionsOverview(options);
   if(optionsHtml){
     $('options-panel').style.display='';
@@ -207,10 +220,7 @@ async function main(){
       $('impact-news').innerHTML=impact.news_themes.length?'<div style="margin-top:8px">近3日新闻主题：'+impact.news_themes.map(t=>`<span class="badge"><b>${esc(t.theme_name)}</b> ${t.positive}正/${t.neutral}中/${t.negative}负${t.symbols.length?'（'+t.symbols.map(esc).join('、')+'）':''}</span>`).join(' ')+'</div>':'';
     }
   }catch(e){/* impact 数据缺失时整个面板不显示 */}
-  try{
-    if(window.mountStockPmShell) await window.mountStockPmShell({date:briefing.date});
-  }catch(_){}
 }
 main().catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>')});
 </script>
-</main></body></html>
+</body></html>

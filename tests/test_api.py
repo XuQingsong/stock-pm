@@ -526,3 +526,14 @@ def test_static_shell_assets(monkeypatch):
     home = c.get("/").text
     assert 'id="stock-pm-shell"' in home
     assert "/static/shell.js" in home
+    assert home.index('id="stock-pm-shell"') < home.index('id="rows"')
+    assert home.index('id="rows"') < home.index('id="options-panel"')
+    assert home.index('id="rows"') < home.index('id="news-mapped"')
+    assert home.index('id="rows"') < home.index('id="impact-panel"')
+    assert '折叠材料' in home
+    options_at = home.index('id="options-panel"')
+    fold_at = home.index('data-zone="C"')
+    assert fold_at < options_at
+    assert '预测状态机尚未接入' in home
+    assert "watch_low" not in home
+    assert "face_slap" not in home
