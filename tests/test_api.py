@@ -284,6 +284,7 @@ class FakeDatabase:
         if symbol:
             payload["tape"] = self.tape_payload(date, symbol)
             payload["review_note"] = self.review_note_payload(date, symbol)
+            payload["prediction"] = self.prediction_payload(date, symbol)
         return payload
 
     def environment_payload(self, date=None, symbol=None):
@@ -373,6 +374,97 @@ class FakeDatabase:
     def review_note_history(self, symbol, limit=30):
         return []
 
+    def _sample_prediction(self, symbol, date=None):
+        from stock_pm.prediction import synthesize_prediction
+
+        tape = self.tape_payload(date, symbol)
+        return synthesize_prediction(
+            as_of_date=date or "2026-09-04",
+            symbol=symbol or "NVDA",
+            environment=self.environment_payload(date, symbol),
+            tape=tape,
+            review_note=self.review_note_payload(date, symbol),
+            entry_price=122,
+            support=116,
+            resistance=128,
+            session=self.market_session(date),
+            source="test",
+        )
+
+    def prediction_payload(self, date=None, symbol=None):
+        return self._sample_prediction(symbol or "NVDA", date)
+
+    def prediction_history(self, symbol, limit=30):
+        return []
+
+    def prediction_checks(self, prediction_id, limit=60):
+        return []
+
+    def prediction_by_id(self, prediction_id):
+        pred = self._sample_prediction("NVDA", "2026-09-04")
+        pred["id"] = prediction_id
+        return pred
+
+    def severity_alert(self, alert_id):
+        from stock_pm.prediction import parse_alert_id
+
+        parsed = parse_alert_id(alert_id)
+        if parsed == 11:
+            return {
+                "id": 11,
+                "severity": "severe",
+                "symbol": "NVDA",
+                "prediction_id": 3,
+                "alert_key": "face_slap:NVDA:3",
+                "title": "打脸待核验",
+                "active": True,
+            }
+        if parsed == 12:
+            return {
+                "id": 12,
+                "severity": "warning",
+                "symbol": "NVDA",
+                "prediction_id": 3,
+                "alert_key": "face_slap:NVDA:3",
+                "active": True,
+            }
+        if parsed == 13:
+            return {
+                "id": 13,
+                "severity": "severe",
+                "symbol": "AAPL",
+                "prediction_id": 9,
+                "alert_key": "face_slap:AAPL:9",
+                "active": True,
+            }
+        return None
+
+    def latest_judgment_alert(self, symbol, prediction_id):
+        if symbol == "NVDA" and prediction_id == 3:
+            return self.severity_alert(11)
+        return None
+
+    def supersede_prediction(self, prediction_id, body):
+        from stock_pm.prediction import apply_supersede, require_judgment_alert
+
+        old = self.prediction_by_id(prediction_id)
+        alert_id = (body or {}).get("alert_id")
+        alert = self.severity_alert(alert_id)
+        require_judgment_alert(
+            alert, symbol=old["symbol"], prediction_id=old.get("id"), alert_id=alert_id
+        )
+        new = self._sample_prediction(old["symbol"], body.get("as_of_date") or old["as_of_date"])
+        superseded, replacement = apply_supersede(
+            old,
+            new,
+            change_reason=body.get("change_reason") or body.get("reason") or "",
+            alert_id=alert_id,
+            alert=alert,
+        )
+        replacement["id"] = prediction_id + 1
+        self.superseded = {"old": superseded, "new": replacement}
+        return {"superseded": superseded, "prediction": replacement}
+
     def job_runs(self, limit=20):
         return []
 
@@ -409,6 +501,8 @@ def test_pages_render(monkeypatch):
     assert "尚未确认" not in c.get("/review").text
     assert "保存备注" in c.get("/review").text
     assert "自动循环" in c.get("/review").text
+    assert "旧口径" in c.get("/review").text
+    assert "旧口径" in c.get("/static/stock.js").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
 
@@ -576,6 +670,12 @@ def test_shell_and_environment_endpoints(monkeypatch):
     assert symbol_shell["tape"]["volume_price"]["form"]
     assert symbol_shell["review_note"]["summary"]
     assert symbol_shell["review_note"]["prediction_ready"] is False
+    pred = symbol_shell["prediction"]
+    assert pred["prediction_ready"] is True
+    assert pred["window_start"]
+    assert pred["upside_bound_pct"] is not None
+    assert pred["downside_bound_pct"] is not None
+    assert pred["state"] in {"pending", "active", "auto_gen"}
     assert c.get("/api/shell?date=bad").status_code == 400
 
 
@@ -603,7 +703,7 @@ def test_static_shell_assets(monkeypatch):
     assert "<details open" not in js.text
     assert "→ 支撑结论" in js.text
     assert 'data-zone="A"' in js.text
-    assert '预测状态机尚未接入' in home
+    assert "预测徽章绑真实 Prediction" in home or "不编假边界" in home
     assert "watch_low" not in home
     assert "face_slap" not in home
     assert "昨盘半句" in home
@@ -617,7 +717,12 @@ def test_static_shell_assets(monkeypatch):
     assert "无法判定" in js
     assert "不编造偏弱" in js
     assert 'data-zone="review"' in js
-    assert "预测状态机尚未接入，不编时间窗口或涨跌边界" in js
+    assert "judgment-change" in js
+    assert "改口（留痕）" in js
+    assert "data-alert-id" in js
+    assert "alert_id" in js
+    assert "judgment_alert" in js
+    assert "到期未产出" in js
     assert "MA5/20/50/200" in js
     stock = c.get("/stock/NVDA").text
     assert 'id="stock-pm-shell"' in stock
@@ -632,6 +737,41 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     }
     assert tape["prediction_ready"] is False
     assert "missingFlags" in tape
+    pred = c.get("/api/stock/NVDA/prediction?date=2026-09-04").json()
+    assert pred["prediction_ready"] is True
+    assert pred["window_label"]
+    assert pred["upside_bound_pct"] is not None
+    assert pred["downside_bound_pct"] is not None
+    assert "10%" not in (pred.get("badge") or "") or pred["upside_bound_pct"] == 10
+    assert c.get("/api/stock/NVDA/predictions").json() == []
+    assert c.get("/api/stock/NVDA/prediction/checks").json() == []
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用"},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 99},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 12},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 13},
+    ).status_code == 400
+    slap = c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 11},
+    )
+    assert slap.status_code == 200
+    assert slap.json()["prediction"]["supersedes_id"] == 3
+    assert slap.json()["prediction"]["alert_id"] == 11
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "  ", "alert_id": 11},
+    ).status_code == 400
     weak = tape["weak_vs_env"]
     assert weak
     assert "conflict" not in weak

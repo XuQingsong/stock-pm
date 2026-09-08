@@ -429,7 +429,7 @@
           <div><span>均线</span><b>${esc(row.ma_position || MISSING)}</b></div>
           <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
         </div>
-        <div class="subline">白话总结来自昨盘，不是指标表。预测状态机尚未接入，不编时间窗口或涨跌边界。完整列表见 <a href="/review?date=${encodeURIComponent(date)}" style="color:inherit">每日复盘</a>。</div>
+        <div class="subline">白话总结来自昨盘。预测见上方壳：时间窗口 + 涨跌边界，或诚实「到期未产出/缺数」。完整列表见 <a href="/review?date=${encodeURIComponent(date)}" style="color:inherit">每日复盘</a>。</div>
       </section>
       ${llmNote}
       <details class="fold" data-zone="C"><summary>折叠材料（规则摘要 / 新闻原句 / 模型草稿，不代替结论）</summary>
@@ -440,7 +440,7 @@
         ${news.length || macro.length ? news.map((item) => `<div class="news-item"><b>${esc(item.headline || MISSING)}</b>${(item.impacts || []).map((impact) => `<div class="subline">${esc(impact.direction)} ${esc(impact.theme_name)} · ${esc(impact.rationale)}</div>`).join("")}</div>`).join("") + macro.map((item) => `<div class="news-item"><b>${esc(item.name || MISSING)}</b><div class="subline">${esc(item.narrative || "")}</div></div>`).join("") : empty("当日没有可挂上的新闻或宏观")}
       </section>
       <section class="panel"><h2>模型：为何这样走</h2><p class="review-body">${esc(row.llm_why || reviewSafe.llm_why || "未生成")}</p></section>
-      <section class="panel"><h2>自动明日看法（占位，不是量化预测）</h2><p class="review-body">${esc(row.llm_outlook || reviewSafe.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.active_bias || row.llm_bias || MISSING)} · 来源 ${esc(row.active_bias_source || "rule")} · 不需要每日确认 · 不编涨跌边界</div></section>
+      <section class="panel"><h2>自动明日看法 <span class="legacy-tag">旧口径</span></h2><p class="review-body">${esc(row.llm_outlook || reviewSafe.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.active_bias || row.llm_bias || MISSING)} · 来源 ${esc(row.active_bias_source || "rule")} · 不是新 Prediction 时间窗口或涨跌边界</div></section>
       </details>
       <section class="panel"><h2>折叠：可选备注</h2>
         <div class="toolbar"><select id="user-bias"><option value=""${row.user_bias ? "" : " selected"}>沿用自动判断</option>${["偏多", "中性", "偏空", "观望"].map((value) => `<option value="${value}"${row.user_bias === value ? " selected" : ""}>${value}</option>`).join("")}</select>

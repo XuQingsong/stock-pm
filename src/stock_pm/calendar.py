@@ -94,6 +94,26 @@ def last_trading_day(as_of: date) -> date:
     return cursor
 
 
+def next_trading_day(as_of: date) -> date:
+    cursor = as_of + timedelta(days=1)
+    while not is_trading_day(cursor):
+        cursor += timedelta(days=1)
+    return cursor
+
+
+def add_trading_days(start: date, days: int) -> date:
+    """Move `days` trading sessions after `start` (start itself is not counted)."""
+    if days <= 0:
+        return start
+    cursor = start
+    remaining = days
+    while remaining > 0:
+        cursor += timedelta(days=1)
+        if is_trading_day(cursor):
+            remaining -= 1
+    return cursor
+
+
 def session_status(day: date) -> dict[str, object]:
     if day.weekday() >= 5:
         return {

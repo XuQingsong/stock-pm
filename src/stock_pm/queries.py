@@ -48,6 +48,19 @@ from .philosophy import (
     impact_row_thesis,
     quote_quality,
 )
+from .prediction import (
+    OPEN_STATES,
+    apply_supersede,
+    check_from_row,
+    failed_prediction,
+    mark_legacy_hit_rate,
+    parse_alert_id,
+    prediction_badge,
+    prediction_hit_rate,
+    require_judgment_alert,
+    snapshot_from_row as prediction_from_row,
+    synthesize_prediction,
+)
 from .scoring import sentiment_from_components
 
 
@@ -1147,17 +1160,35 @@ class QueryMixin:
             by_symbol.setdefault(row["symbol"], []).append(row)
         auto = _rate(rows)
         notes = _rate([row for row in rows if row["confirmed"]])
-        return {
-            "days": days,
-            "all": auto,
-            "loop": auto,
-            "confirmed": notes,
-            "notes_saved": notes,
-            "confirm_required": False,
-            "by_symbol": {
-                symbol: _rate(sample) for symbol, sample in sorted(by_symbol.items())
-            },
-        }
+        return mark_legacy_hit_rate(
+            {
+                "days": days,
+                "all": auto,
+                "loop": auto,
+                "confirmed": notes,
+                "notes_saved": notes,
+                "confirm_required": False,
+                "by_symbol": {
+                    symbol: _rate(sample) for symbol, sample in sorted(by_symbol.items())
+                },
+            }
+        )
+
+    def prediction_scorecard(self, days: int = 14) -> dict:
+        try:
+            rows = self.fetch_all(
+                """
+                SELECT DISTINCT ON (symbol, as_of_date)
+                       symbol, state, as_of_date
+                FROM predictions
+                WHERE as_of_date >= CURRENT_DATE - make_interval(days => %s)
+                ORDER BY symbol, as_of_date DESC, created_at DESC
+                """,
+                (days,),
+            )
+        except DatabaseError:
+            rows = []
+        return prediction_hit_rate(rows)
 
     def briefing(self, date: str | None = None) -> dict:
         session = self.market_session(date)
@@ -1200,6 +1231,7 @@ class QueryMixin:
                 "has_reviews": False,
                 "rows": rows,
                 "hit_rate": self.review_hit_rate(),
+                "prediction_hit_rate": self.prediction_scorecard(),
                 "confirm_required": False,
             }
             return self._with_shell(payload, snapshots=list(snapshots.values()))
@@ -1309,6 +1341,7 @@ class QueryMixin:
             "has_reviews": True,
             "rows": rows,
             "hit_rate": self.review_hit_rate(),
+            "prediction_hit_rate": self.prediction_scorecard(),
             "confirm_required": False,
         }
         return self._with_shell(payload, snapshots=list(snapshots.values()))
@@ -1530,6 +1563,7 @@ class QueryMixin:
                 snapshots = []
         symbol_tape = None
         symbol_note = None
+        symbol_prediction = None
         if symbol and symbol_environment is None:
             match = next(
                 (
@@ -1560,11 +1594,21 @@ class QueryMixin:
             symbol_note = (match_row or {}).get("review_note") or self.review_note_payload(
                 date, symbol
             )
+            symbol_prediction = (match_row or {}).get("prediction") or self.prediction_payload(
+                date, symbol
+            )
         if not symbol and symbol_environment is None:
             try:
                 symbol_environment = self.latest_environment_snapshot(date, "market", None)
             except Exception:
                 symbol_environment = None
+        pred_list = [
+            row.get("prediction")
+            for row in briefing.get("rows") or []
+            if row.get("prediction")
+        ]
+        if symbol and symbol_prediction and symbol_prediction not in pred_list:
+            pred_list.append(symbol_prediction)
         shell = build_shell(
             briefing=briefing,
             options=options_payload,
@@ -1573,11 +1617,13 @@ class QueryMixin:
             sync=sync,
             symbol=symbol,
             symbol_environment=symbol_environment,
+            predictions=pred_list,
         )
         extra = {}
         if symbol:
             extra["tape"] = symbol_tape
             extra["review_note"] = symbol_note
+            extra["prediction"] = symbol_prediction
         return {**briefing, **shell, **extra}
 
     def shell_state(self, date: str | None = None, symbol: str | None = None) -> dict:
@@ -1881,6 +1927,361 @@ class QueryMixin:
                 row["row_thesis"] = env_tape_conflict_sentence(env, tape)
             else:
                 row["env_tape_conflict"] = False
+        self._attach_row_predictions(rows, as_of_date, session=session)
+
+    def latest_predictions(self, as_of_date: str | None) -> list[dict]:
+        if not as_of_date:
+            return []
+        rows = self.fetch_all(
+            """
+            SELECT DISTINCT ON (symbol)
+                   id, as_of_date, symbol, state, window_start, window_end,
+                   window_days, window_label, thesis, entry_price,
+                   upside_bound_pct, downside_bound_pct, upside_price,
+                   downside_price, struct, missing_flags, publish_state,
+                   supersedes_id, superseded_by_id, change_reason, created_at
+            FROM predictions
+            WHERE as_of_date = %s
+            ORDER BY symbol, created_at DESC
+            """,
+            (as_of_date,),
+        )
+        return [prediction_from_row(row) for row in rows if prediction_from_row(row)]
+
+    def latest_open_prediction(self, symbol: str) -> dict | None:
+        normalized = symbol.upper()
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, state, window_start, window_end,
+                   window_days, window_label, thesis, entry_price,
+                   upside_bound_pct, downside_bound_pct, upside_price,
+                   downside_price, struct, missing_flags, publish_state,
+                   supersedes_id, superseded_by_id, change_reason, created_at
+            FROM predictions
+            WHERE symbol = %s AND state = ANY(%s)
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """,
+            (normalized, list(OPEN_STATES)),
+        )
+        return prediction_from_row(rows[0]) if rows else None
+
+    def latest_prediction(
+        self,
+        as_of_date: str | None,
+        symbol: str,
+        *,
+        open_only: bool = False,
+    ) -> dict | None:
+        if open_only:
+            return self.latest_open_prediction(symbol)
+        if not as_of_date:
+            return self.latest_open_prediction(symbol)
+        open_pred = self.latest_open_prediction(symbol)
+        if open_pred:
+            return open_pred
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, state, window_start, window_end,
+                   window_days, window_label, thesis, entry_price,
+                   upside_bound_pct, downside_bound_pct, upside_price,
+                   downside_price, struct, missing_flags, publish_state,
+                   supersedes_id, superseded_by_id, change_reason, created_at
+            FROM predictions
+            WHERE as_of_date = %s AND symbol = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, symbol.upper()),
+        )
+        return self._attach_judgment_alert(prediction_from_row(rows[0]) if rows else None)
+
+    def prediction_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, state, window_start, window_end,
+                   window_days, window_label, thesis, entry_price,
+                   upside_bound_pct, downside_bound_pct, upside_price,
+                   downside_price, struct, missing_flags, publish_state,
+                   supersedes_id, superseded_by_id, change_reason, created_at
+            FROM predictions
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s
+            """,
+            (normalized, limit),
+        )
+        return [prediction_from_row(row) for row in rows if prediction_from_row(row)]
+
+    def prediction_checks(self, prediction_id: int, limit: int = 60) -> list[dict]:
+        rows = self.fetch_all(
+            """
+            SELECT id, prediction_id, as_of_date, symbol, close_price,
+                   high_price, low_price, max_gain_pct, max_drawdown_pct,
+                   in_bounds, outcome, reason, struct, created_at
+            FROM prediction_checks
+            WHERE prediction_id = %s
+            ORDER BY as_of_date DESC, created_at DESC
+            LIMIT %s
+            """,
+            (prediction_id, limit),
+        )
+        return [check_from_row(row) for row in rows if check_from_row(row)]
+
+    def prediction_by_id(self, prediction_id: int) -> dict | None:
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, state, window_start, window_end,
+                   window_days, window_label, thesis, entry_price,
+                   upside_bound_pct, downside_bound_pct, upside_price,
+                   downside_price, struct, missing_flags, publish_state,
+                   supersedes_id, superseded_by_id, change_reason, created_at
+            FROM predictions
+            WHERE id = %s
+            """,
+            (prediction_id,),
+        )
+        return prediction_from_row(rows[0]) if rows else None
+
+    def _entry_price_for(self, symbol: str, as_of_date: str | None, tape: dict | None) -> float | None:
+        chips = (tape or {}).get("chips") or {}
+        entry = _number(chips.get("close"))
+        if entry is not None:
+            return entry
+        if as_of_date:
+            try:
+                reviews = self.reviews_by_date(as_of_date)
+                match = next(
+                    (
+                        row
+                        for row in reviews
+                        if str(row.get("symbol") or "").upper() == symbol.upper()
+                    ),
+                    None,
+                )
+                if match and match.get("close_price") is not None:
+                    return _number(match.get("close_price"))
+            except Exception:
+                pass
+        try:
+            bars = self.history(symbol, 5, "1d")
+        except Exception:
+            bars = []
+        if as_of_date:
+            day = next(
+                (
+                    row
+                    for row in reversed(bars)
+                    if str(row.get("bar_time") or "")[:10] == str(as_of_date)[:10]
+                ),
+                None,
+            )
+            if day:
+                return _number(day.get("close_price"))
+        if bars:
+            return _number(bars[-1].get("close_price"))
+        return None
+
+    def build_live_prediction(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        *,
+        environment: dict | None = None,
+        tape: dict | None = None,
+        review_note: dict | None = None,
+        entry_price: float | None = None,
+        session: dict | None = None,
+        source: str = "live",
+    ) -> dict:
+        normalized = symbol.upper()
+        session = session or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        try:
+            tape = tape or self.tape_payload(date, normalized)
+            environment = environment or self.environment_payload(date, normalized)
+            review_note = review_note or self.review_note_payload(date, normalized)
+            entry = entry_price or self._entry_price_for(normalized, date, tape)
+            return synthesize_prediction(
+                as_of_date=date,
+                symbol=normalized,
+                environment=environment,
+                tape=tape,
+                review_note=review_note,
+                entry_price=entry,
+                session=session,
+                source=source,
+            )
+        except Exception as exc:
+            return failed_prediction(normalized, date, str(exc))
+
+    def prediction_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if not symbol:
+            raise ValueError("symbol is required")
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date")
+        stored = None
+        try:
+            stored = self.latest_prediction(as_of, symbol.upper())
+        except DatabaseError:
+            stored = None
+        pred = stored or self.build_live_prediction(symbol, as_of)
+        return self._attach_judgment_alert(pred) or pred
+
+    def _attach_row_predictions(
+        self,
+        rows: list[dict],
+        as_of_date: str | None,
+        *,
+        session: dict | None = None,
+    ) -> None:
+        stored: dict[str, dict] = {}
+        try:
+            for item in self.latest_predictions(as_of_date):
+                if item and item.get("symbol"):
+                    stored[item["symbol"]] = item
+            for row in rows:
+                symbol = row.get("symbol")
+                if not symbol or symbol in stored:
+                    continue
+                open_pred = self.latest_open_prediction(symbol)
+                if open_pred:
+                    stored[symbol] = open_pred
+        except Exception:
+            stored = {}
+        for row in rows:
+            symbol = row.get("symbol")
+            if not symbol:
+                continue
+            pred = stored.get(symbol)
+            if not pred:
+                pred = self.build_live_prediction(
+                    symbol,
+                    as_of_date,
+                    environment=row.get("environment"),
+                    tape=row.get("tape_analysis"),
+                    review_note=row.get("review_note"),
+                    entry_price=_number(row.get("close_price") or row.get("conclusion_price")),
+                    session=session,
+                    source="live",
+                )
+            row["prediction"] = self._attach_judgment_alert(pred) or pred
+            row["prediction_half"] = prediction_badge(pred)
+
+    def severity_alert(self, alert_id: int | None) -> dict | None:
+        parsed = parse_alert_id(alert_id)
+        if parsed is None:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, alert_key, severity, title, message, symbol, active,
+                   prediction_id, created_at, resolved_at
+            FROM severity_alerts
+            WHERE id = %s
+            """,
+            (parsed,),
+        )
+        return rows[0] if rows else None
+
+    def latest_judgment_alert(self, symbol: str, prediction_id: int | None) -> dict | None:
+        if not prediction_id:
+            return None
+        normalized = symbol.upper()
+        key = f"face_slap:{normalized}:{int(prediction_id)}"
+        rows = self.fetch_all(
+            """
+            SELECT id, alert_key, severity, title, message, symbol, active,
+                   prediction_id, created_at, resolved_at
+            FROM severity_alerts
+            WHERE severity = 'severe' AND active = TRUE
+              AND (
+                    prediction_id = %s
+                 OR alert_key = %s
+              )
+              AND (symbol IS NULL OR symbol = %s)
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """,
+            (int(prediction_id), key, normalized),
+        )
+        return rows[0] if rows else None
+
+    def _attach_judgment_alert(self, pred: dict | None) -> dict | None:
+        if not pred:
+            return pred
+        attached = dict(pred)
+        if attached.get("state") != "invalidated" or not attached.get("id"):
+            attached["judgment_alert"] = None
+            return attached
+        try:
+            attached["judgment_alert"] = self.latest_judgment_alert(
+                attached.get("symbol") or "", attached.get("id")
+            )
+        except DatabaseError:
+            attached["judgment_alert"] = None
+        return attached
+
+    def supersede_prediction(self, prediction_id: int, body: dict[str, Any]) -> dict:
+        old = self.prediction_by_id(prediction_id)
+        if not old:
+            raise ValueError(f"No prediction {prediction_id}")
+        alert_id = parse_alert_id((body or {}).get("alert_id"))
+        alert = self.severity_alert(alert_id)
+        require_judgment_alert(
+            alert,
+            symbol=old["symbol"],
+            prediction_id=old.get("id"),
+            alert_id=(body or {}).get("alert_id"),
+        )
+        reason = (body.get("change_reason") or body.get("reason") or "").strip()
+        symbol = old["symbol"]
+        session = self.market_session(body.get("as_of_date") or old.get("as_of_date"))
+        date = body.get("as_of_date") or session.get("default_review_date")
+        new = synthesize_prediction(
+            as_of_date=date,
+            symbol=symbol,
+            environment=self.environment_payload(date, symbol),
+            tape=self.tape_payload(date, symbol),
+            review_note=self.review_note_payload(date, symbol),
+            entry_price=_number(body.get("entry_price"))
+            or self._entry_price_for(symbol, date, self.tape_payload(date, symbol)),
+            support=_number(body.get("support") or body.get("downside_price")),
+            resistance=_number(body.get("resistance") or body.get("upside_price")),
+            session=session,
+            source="human",
+            supersedes_id=old.get("id"),
+            change_reason=reason,
+        )
+        if body.get("upside_bound_pct") is not None and body.get("downside_bound_pct") is not None:
+            entry = _number(new.get("entry_price")) or _number(body.get("entry_price"))
+            up = _number(body.get("upside_bound_pct"))
+            down = _number(body.get("downside_bound_pct"))
+            if entry and up is not None and down is not None:
+                new["upside_bound_pct"] = up
+                new["downside_bound_pct"] = down
+                new["upside_price"] = round(entry * (1 + up / 100.0), 4)
+                new["downside_price"] = round(entry * (1 + down / 100.0), 4)
+                new["prediction_ready"] = True
+                new["state"] = "pending"
+                new["one_liner"] = (
+                    f"{new.get('window_label') or '窗口'}改口约{up:g}%，"
+                    f"期间跌幅不超过{abs(down):g}%。"
+                )
+        superseded, replacement = apply_supersede(
+            old,
+            new,
+            change_reason=reason,
+            alert_id=alert_id,
+            alert=alert,
+        )
+        written = self.append_prediction(replacement)
+        superseded["superseded_by_id"] = written.get("id")
+        self.update_prediction_state(superseded)
+        return {
+            "superseded": {**old, "state": "superseded", "superseded_by_id": written.get("id")},
+            "prediction": written,
+        }
 
     def job_runs(self, limit: int = 20) -> list[dict]:
         dedicated: list[dict] = []

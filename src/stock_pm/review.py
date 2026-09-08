@@ -480,6 +480,7 @@ def main() -> None:
     reviews: list[dict] = []
     env_result: dict = {"status": "missing"}
     tape_result: dict = {"status": "missing"}
+    pred_result: dict = {"status": "missing"}
     try:
         database.initialize()
         symbols = args.symbols or database.active_symbols()
@@ -541,6 +542,18 @@ def main() -> None:
                     ensure_ascii=False,
                 )
             )
+        try:
+            from .prediction_job import publish_predictions_and_checks
+
+            pred_result = publish_predictions_and_checks(database, symbols=symbols)
+        except Exception as exc:
+            pred_result = {"status": "failed", "error": str(exc), "publishState": "missing"}
+            print(
+                json.dumps(
+                    {"prediction_publish_error": str(exc)},
+                    ensure_ascii=False,
+                )
+            )
     finally:
         database.close()
     print(
@@ -558,6 +571,11 @@ def main() -> None:
                     "status": tape_result.get("status"),
                     "written": tape_result.get("written"),
                     "errors": tape_result.get("errors"),
+                },
+                "prediction": {
+                    "status": pred_result.get("status"),
+                    "written": pred_result.get("written"),
+                    "errors": pred_result.get("errors"),
                 },
             },
             ensure_ascii=False,

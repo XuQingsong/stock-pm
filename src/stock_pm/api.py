@@ -56,12 +56,12 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Stock PM",
-    version="0.8.0",
+    version="0.9.0",
     description=(
-        "Watchlist analysis API. Knife 3: TapeAnalysis "
-        "(/api/stock/{symbol}/tape, /tape/history) and ReviewNote "
-        "(/api/stock/{symbol}/review-notes) with append-only publishState. "
-        "Knife 2 EnvironmentSnapshot remains at /api/environment."
+        "Watchlist analysis API. Knife 4: Prediction "
+        "(/api/stock/{symbol}/prediction, /predictions, /prediction/checks) "
+        "and judgment-change supersede. Knife 3 TapeAnalysis and Knife 2 "
+        "EnvironmentSnapshot remain as premises."
     ),
     lifespan=lifespan,
 )
@@ -488,6 +488,81 @@ def stock_tape_history(
         return database.tape_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/prediction")
+def stock_prediction(
+    symbol: str,
+    date_: Annotated[str | None, Query(alias="date")] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.prediction_payload(date_, symbol.upper())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/predictions")
+def stock_prediction_history(
+    symbol: str,
+    limit: int = Query(30, ge=1, le=120),
+) -> list[dict]:
+    try:
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.prediction_history(symbol.upper(), limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/prediction/checks")
+def stock_prediction_checks(
+    symbol: str,
+    date_: Annotated[str | None, Query(alias="date")] = None,
+    limit: int = Query(60, ge=1, le=180),
+) -> list[dict]:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        pred = database.prediction_payload(date_, symbol.upper())
+        pred_id = pred.get("id")
+        if not pred_id:
+            return []
+        return database.prediction_checks(pred_id, limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.post("/api/stock/{symbol}/predictions/{prediction_id}/supersede")
+def stock_prediction_supersede(
+    symbol: str,
+    prediction_id: int,
+    body: Annotated[dict, Body()],
+) -> dict:
+    try:
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        existing = database.prediction_by_id(prediction_id)
+        if not existing:
+            raise ValueError(f"No prediction {prediction_id}")
+        if existing.get("symbol") != symbol.upper():
+            raise ValueError("prediction does not belong to symbol")
+        return database.supersede_prediction(prediction_id, body or {})
+    except ValueError as exc:
+        raise _http_error(exc) from exc
     except DatabaseError as exc:
         raise _http_error(exc) from exc
 
