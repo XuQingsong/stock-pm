@@ -141,7 +141,10 @@ def test_tape_env_link_is_not_tape_restatement() -> None:
     assert "环境" in clause
     assert "诱多" in clause
     assert clause != tape["volume_price"]["clause"]
-    assert tape["weak_vs_env"]["conflict"] is True
+    assert tape["conflict"] is True
+    assert tape["weak_vs_env"]["status"] == "missing"
+    assert "不编造偏弱" in tape["weak_vs_env"]["clause"]
+    assert "推断" not in (tape["weak_vs_env"]["clause"] or "")
 
 
 def test_honest_missing_chips_and_env() -> None:
@@ -257,3 +260,119 @@ def test_tape_half_display_never_fakes_form() -> None:
     assert tape_half_display({"publishState": "missing", "one_liner": TAPE_MISSING_LINE}) == TAPE_MISSING_LINE
     real = {"publishState": "published", "one_liner": "放量跌，续杀，逃跑（推断）"}
     assert tape_half_display(real) == "放量跌，续杀，逃跑（推断）"
+
+
+def _relative(**overrides) -> dict:
+    base = _metrics(
+        benchmark_kind="sector",
+        benchmark_name="板块（半导体/AI）",
+        benchmark_day_change_pct=-1.0,
+        return_5d_pct=-6.0,
+        benchmark_return_5d_pct=-2.0,
+    )
+    base.update(overrides)
+    return base
+
+
+def test_weak_vs_env_requires_lag_and_break_or_volume_down() -> None:
+    tape = synthesize_tape_analysis(
+        as_of_date="2026-09-04",
+        symbol="MU",
+        metrics=_relative(day_change_pct=-4.2, relative_volume=1.8),
+        environment=_bear_env(),
+    )
+    weak = tape["weak_vs_env"]
+    assert weak is not None
+    assert "weak_vs_env" not in tape["missingFlags"]
+    assert weak["status"] == "weak"
+    assert weak["inferred"] is False
+    assert weak["benchmark"] == "板块（半导体/AI）"
+    assert weak["benchmark_kind"] == "sector"
+    assert weak["prior_relative_return_pct"] == -3.2
+    assert weak["lags_significantly"] is True
+    assert weak["volume_down"] is True
+    assert weak["structure_or_volume_down"] is True
+    assert "推断" not in weak["clause"]
+    assert "弱于环境" in weak["clause"]
+    assert tape["struct"]["answers"]["q5_weak_vs_env"] == weak["clause"]
+
+
+def test_weak_vs_env_same_direction_beta_is_not_weak() -> None:
+    tape = synthesize_tape_analysis(
+        as_of_date="2026-09-04",
+        symbol="MU",
+        metrics=_relative(
+            day_change_pct=-3.2,
+            benchmark_day_change_pct=-3.0,
+            return_5d_pct=-5.0,
+            benchmark_return_5d_pct=-4.8,
+            relative_volume=1.8,
+        ),
+        environment=_bear_env(),
+    )
+    weak = tape["weak_vs_env"]
+    assert weak["status"] == "not_weak"
+    assert weak["lags_significantly"] is False
+    assert weak["volume_down"] is True
+    assert "同向贝塔" in weak["clause"]
+    assert "不等于弱于环境" in weak["clause"]
+    assert "偏弱" not in weak["clause"]
+
+
+def test_weak_vs_env_form_vs_env_conflict_is_not_the_field() -> None:
+    tape = synthesize_tape_analysis(
+        as_of_date="2026-09-04",
+        symbol="NVDA",
+        metrics=_relative(
+            day_change_pct=4.5,
+            relative_volume=1.9,
+            benchmark_day_change_pct=-1.0,
+            return_5d_pct=2.0,
+            benchmark_return_5d_pct=-1.0,
+            breakout="放量有效突破",
+            support_test="未测试最近支撑",
+            close_location=0.86,
+        ),
+        environment=_bear_env(),
+    )
+    assert tape["volume_price"]["form"] == "放量涨"
+    assert tape["env_link"]["judgment"] == "诱多"
+    assert tape["conflict"] is True
+    assert tape["weak_vs_env"]["status"] != "weak"
+    assert tape["weak_vs_env"]["inferred"] is False
+
+
+def test_weak_vs_env_missing_relative_is_honest() -> None:
+    tape = synthesize_tape_analysis(
+        as_of_date="2026-09-04",
+        symbol="INTC",
+        metrics=_metrics(),
+        environment=_bear_env(),
+    )
+    weak = tape["weak_vs_env"]
+    assert "weak_vs_env" in tape["missingFlags"]
+    assert weak["status"] == "missing"
+    assert "不编造偏弱" in weak["clause"]
+    assert "推断" not in weak["clause"]
+    assert weak["prior_relative_return_pct"] is None
+
+
+def test_weak_vs_env_lag_without_break_or_volume_down_is_not_weak() -> None:
+    tape = synthesize_tape_analysis(
+        as_of_date="2026-09-04",
+        symbol="AAPL",
+        metrics=_relative(
+            day_change_pct=-2.5,
+            benchmark_day_change_pct=-0.4,
+            relative_volume=0.9,
+            breakout="未破位",
+            support_test="",
+            close_location=0.5,
+        ),
+        environment=_bear_env(),
+    )
+    weak = tape["weak_vs_env"]
+    assert weak["status"] == "not_weak"
+    assert weak["lags_significantly"] is True
+    assert weak["volume_down"] is False
+    assert "不判定弱于环境" in weak["clause"]

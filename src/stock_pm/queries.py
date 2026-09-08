@@ -8,6 +8,7 @@ from .calendar import last_trading_day, ny_today, session_status
 from .analytics import (
     INTRADAY_MINUTES,
     SUPPORTED_INTERVALS,
+    _number,
     earnings_scorecard,
     earnings_summary,
     enrich_chart_bars,
@@ -30,6 +31,7 @@ from .environment import (
 )
 from .errors import DatabaseError
 from .tape import (
+    SECTOR_THEMES,
     env_tape_conflict_sentence,
     failed_review_note,
     failed_tape,
@@ -211,6 +213,7 @@ TECHNICAL_SQL = """
                 CASE WHEN observations >= 200
                     THEN ROUND(100 * (close_price / NULLIF(ma200, 0) - 1), 2)
                 END AS distance_ma200_pct,
+                ROUND(100 * (close_price / NULLIF(previous_close, 0) - 1), 2) AS return_1d_pct,
                 ROUND(100 * (close_price / NULLIF(close_5d_ago, 0) - 1), 2) AS return_5d_pct,
                 ROUND(100 * (close_price / NULLIF(close_20d_ago, 0) - 1), 2) AS return_20d_pct,
                 ROUND(100 * (close_price / NULLIF(close_50d_ago, 0) - 1), 2) AS return_50d_pct,
@@ -1676,6 +1679,58 @@ class QueryMixin:
         )
         return [review_note_from_row(row) for row in rows if review_note_from_row(row)]
 
+    def _tape_relative_inputs(self, symbol: str, metrics: dict) -> dict:
+        extra: dict[str, Any] = {}
+        try:
+            watch = next(
+                (row for row in self.watchlist_rows() if row["symbol"] == symbol),
+                {"symbol": symbol, "themes": []},
+            )
+            tech_rows = {row["symbol"]: row for row in self.technical_summary()}
+            own = tech_rows.get(symbol) or {}
+            own_5d = _number(own.get("return_5d_pct"))
+            if own_5d is not None:
+                extra["return_5d_pct"] = own_5d
+            themes = list(watch.get("themes") or [])
+            sector_theme = next((item for item in themes if item in SECTOR_THEMES), None)
+            if sector_theme:
+                peer_days: list[float] = []
+                peer_fives: list[float] = []
+                for row in self.watchlist_rows():
+                    if row["symbol"] == symbol:
+                        continue
+                    if sector_theme not in (row.get("themes") or []):
+                        continue
+                    peer = tech_rows.get(row["symbol"]) or {}
+                    day = _number(peer.get("return_1d_pct"))
+                    five = _number(peer.get("return_5d_pct"))
+                    if day is not None:
+                        peer_days.append(day)
+                    if five is not None:
+                        peer_fives.append(five)
+                if peer_days:
+                    extra["benchmark_kind"] = "sector"
+                    extra["benchmark_name"] = (
+                        f"板块（{THEME_NAMES.get(sector_theme, sector_theme)}）"
+                    )
+                    extra["benchmark_theme"] = sector_theme
+                    extra["benchmark_day_change_pct"] = round(
+                        sorted(peer_days)[len(peer_days) // 2], 2
+                    )
+                    if peer_fives:
+                        extra["benchmark_return_5d_pct"] = round(
+                            sorted(peer_fives)[len(peer_fives) // 2], 2
+                        )
+                    return extra
+            market = tech_rows.get("QQQ") or {}
+            extra["benchmark_kind"] = "market"
+            extra["benchmark_name"] = "大盘（QQQ）"
+            extra["benchmark_day_change_pct"] = _number(market.get("return_1d_pct"))
+            extra["benchmark_return_5d_pct"] = _number(market.get("return_5d_pct"))
+        except Exception:
+            return extra
+        return extra
+
     def build_live_tape(
         self,
         symbol: str,
@@ -1710,6 +1765,7 @@ class QueryMixin:
             if len(complete) < 20:
                 return failed_tape(normalized, date, "need 20 daily bars")
             metrics = analyze_bars(complete)
+            metrics.update(self._tape_relative_inputs(normalized, metrics))
             environment = preloaded.get("environment")
             if environment is None:
                 environment = self.environment_payload(date, normalized)

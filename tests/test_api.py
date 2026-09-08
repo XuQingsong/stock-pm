@@ -611,6 +611,8 @@ def test_static_shell_assets(monkeypatch):
     assert "折叠材料" in home
     js = c.get("/static/shell.js").text
     assert 'data-zone="tape"' in js
+    assert "弱于环境" in js
+    assert "不编造偏弱" in js
     assert 'data-zone="review"' in js
     assert "预测状态机尚未接入，不编时间窗口或涨跌边界" in js
     assert "MA5/20/50/200" in js

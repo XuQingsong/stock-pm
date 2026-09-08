@@ -69,7 +69,8 @@
       { title: "量价形态", clause: tapeAnswers.q1_volume_price || (tape.volume_price && tape.volume_price.clause) || "量价形态暂缺，不编放量缩量" },
       { title: "筹码与支撑压力", clause: tapeAnswers.q2_chips || (tape.chips && tape.chips.clause) || "筹码带与支撑压力暂缺，不编价位" },
       { title: "破位走法", clause: tapeAnswers.q3_break || (tape.break && tape.break.clause) || "破位走法暂缺，不编拉回续杀" },
-      { title: "对照环境", clause: tapeAnswers.q4_env_link || (tape.env_link && tape.env_link.clause) || "环境依据不足，不编诱多/转势/吸筹/逃跑" }
+      { title: "对照环境", clause: tapeAnswers.q4_env_link || (tape.env_link && tape.env_link.clause) || "环境依据不足，不编诱多/转势/吸筹/逃跑" },
+      { title: "弱于环境", clause: tapeAnswers.q5_weak_vs_env || (tape.weak_vs_env && tape.weak_vs_env.clause) || "相对收益或破位路径暂缺，无法判定弱于环境，不编造偏弱。", missing: tapeFlags.indexOf("weak_vs_env") >= 0 || (tape.weak_vs_env && tape.weak_vs_env.status === "missing") }
     ];
     const zoneB = (options && options.symbol)
       ? `<section class="zone zone-b" data-zone="B">
@@ -88,7 +89,7 @@
         <div class="env-meta">${esc(tape.publishState ? `发布态 ${tape.publishState}` : "")}${tape.prediction_ready ? "" : " · 不编预测边界"}</div>
         ${tapeFlagText ? `<div class="missing-flags">${esc(tapeFlagText)}</div>` : ""}
         <ul class="env-bullets">${tapeItems.map((item) =>
-          `<li><b>${esc(item.title)}</b> ${esc(item.clause)}</li>`
+          `<li class="${item.missing ? "missing" : ""}"><b>${esc(item.title)}</b> ${esc(item.clause)}</li>`
         ).join("")}</ul>
       </section>
       <section class="zone zone-review" data-zone="review">

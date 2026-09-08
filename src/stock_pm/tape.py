@@ -43,6 +43,9 @@ REVIEW_UNEXPLAINED = "解释不了：消息与情绪依据不足，不硬编诱�
 
 EXPAND_VOL = 1.2
 SHRINK_VOL = 0.8
+SIGNIFICANT_LAG_PP = 1.0
+SECTOR_THEMES = frozenset({"semis", "consumer_electronics", "telecom"})
+WEAK_MISSING_CLAUSE = "相对收益或破位路径暂缺，无法判定弱于环境，不编造偏弱。"
 
 
 def flag_labels(flags: list[str]) -> str:
@@ -303,27 +306,121 @@ def _env_link_block(
     }, False
 
 
-def _weak_vs_env(
-    form: str | None,
-    env_stance: str | None,
-) -> tuple[dict | None, bool]:
-    direction = _form_direction(form)
-    if direction is None or env_stance is None:
-        return None, True
-    conflict = (direction == "up" and env_stance == "bear") or (
-        direction == "down" and env_stance == "bull"
-    )
-    if conflict:
-        return {
-            "status": "weak",
-            "conflict": True,
-            "clause": "昨盘方向与环境反向，量价结论弱于环境叙事，不当成两套并列结论",
-        }, False
+def _structure_break(break_block: dict | None) -> bool | None:
+    if not break_block:
+        return None
+    status = str(break_block.get("status") or "")
+    aftermath = str(break_block.get("aftermath") or "")
+    if "跌破" in status or aftermath == "续杀":
+        return True
+    return False
+
+
+def _missing_weak_block(**extra: Any) -> dict:
     return {
-        "status": "aligned",
-        "conflict": False,
-        "clause": "昨盘与环境同向，只作对照，不加成预测",
-    }, False
+        "status": "missing",
+        "inferred": False,
+        "lags_significantly": extra.get("lags_significantly"),
+        "structure_break": extra.get("structure_break"),
+        "volume_down": extra.get("volume_down"),
+        "structure_or_volume_down": extra.get("structure_or_volume_down"),
+        "benchmark": extra.get("benchmark"),
+        "benchmark_kind": extra.get("benchmark_kind"),
+        "prior_stock_return_pct": extra.get("prior_stock_return_pct"),
+        "prior_benchmark_return_pct": extra.get("prior_benchmark_return_pct"),
+        "prior_relative_return_pct": extra.get("prior_relative_return_pct"),
+        "confirm_5d_relative_return_pct": extra.get("confirm_5d_relative_return_pct"),
+        "lag_threshold_pp": SIGNIFICANT_LAG_PP,
+        "clause": extra.get("clause") or WEAK_MISSING_CLAUSE,
+    }
+
+
+def _weak_vs_env(
+    metrics: dict | None,
+    form: str | None,
+    break_block: dict | None,
+) -> tuple[dict, bool]:
+    """METRIC_LOGIC §0.3: relative lag vs sector/market + (break OR 放量跌).
+
+    Tape-form vs env-stance conflict is not 弱于环境. Same-direction beta
+    is not 弱于环境. Missing inputs stay missing — never invent 偏弱, never 推断.
+    """
+    metrics = metrics or {}
+    stock_1d = _number(metrics.get("day_change_pct"))
+    bench_1d = _number(metrics.get("benchmark_day_change_pct"))
+    stock_5d = _number(metrics.get("return_5d_pct"))
+    bench_5d = _number(metrics.get("benchmark_return_5d_pct"))
+    name = metrics.get("benchmark_name")
+    kind = metrics.get("benchmark_kind")
+    relative_1d = (
+        None if stock_1d is None or bench_1d is None else round(stock_1d - bench_1d, 2)
+    )
+    relative_5d = (
+        None if stock_5d is None or bench_5d is None else round(stock_5d - bench_5d, 2)
+    )
+    volume_down = None if form is None else form == "放量跌"
+    structure = _structure_break(break_block)
+    lags = None if relative_1d is None else relative_1d <= -SIGNIFICANT_LAG_PP
+    path_true = structure is True or volume_down is True
+    path_false = structure is False and volume_down is False
+    facts = {
+        "benchmark": name,
+        "benchmark_kind": kind,
+        "prior_stock_return_pct": stock_1d,
+        "prior_benchmark_return_pct": bench_1d,
+        "prior_relative_return_pct": relative_1d,
+        "confirm_5d_relative_return_pct": relative_5d,
+        "lags_significantly": lags,
+        "structure_break": structure,
+        "volume_down": volume_down,
+        "structure_or_volume_down": True if path_true else False if path_false else None,
+        "lag_threshold_pp": SIGNIFICANT_LAG_PP,
+        "inferred": False,
+    }
+    if relative_1d is None or not name:
+        return _missing_weak_block(**facts), True
+    if lags and not path_true and not path_false:
+        return _missing_weak_block(
+            **facts,
+            clause="破位路径或放量下跌材料暂缺，无法判定弱于环境，不编造偏弱。",
+        ), True
+    five_led = relative_5d is not None and relative_5d > 0
+    if lags and path_true and not five_led:
+        bits = [f"相对{name}昨收{_pct(relative_1d)}，显著落后"]
+        if structure:
+            bits.append("结构破位")
+        if volume_down:
+            bits.append("放量下跌")
+        if relative_5d is not None:
+            bits.append(f"近5日相对{_pct(relative_5d)}确认落后")
+        clause = "；".join(bits) + "；判定弱于环境。"
+        return {**facts, "status": "weak", "clause": clause}, False
+    if (
+        not lags
+        and stock_1d is not None
+        and bench_1d is not None
+        and stock_1d < 0
+        and bench_1d < 0
+    ):
+        clause = (
+            f"相对{name}昨收{_pct(relative_1d)}，未显著落后；"
+            "与基准同向下跌只是同向贝塔，不等于弱于环境。"
+        )
+    elif lags and five_led:
+        clause = (
+            f"昨收相对{name}落后，但近5日相对{_pct(relative_5d)}未确认，"
+            "不判定弱于环境。"
+        )
+    elif lags and not path_true:
+        clause = (
+            f"相对{name}昨收落后，但无结构破位也无放量下跌，不判定弱于环境。"
+        )
+    else:
+        clause = (
+            f"相对{name}昨收{_pct(relative_1d)}，"
+            "不满足显著落后且（破位或放量跌），不判定弱于环境。"
+        )
+    return {**facts, "status": "not_weak", "clause": clause}, False
 
 
 def env_tape_conflict_sentence(environment: dict | None, tape: dict | None) -> str:
@@ -430,13 +527,13 @@ def failed_tape(symbol: str, as_of_date: str | None, error: str) -> dict:
         "chips": None,
         "break": None,
         "env_link": None,
-        "weak_vs_env": None,
+        "weak_vs_env": _missing_weak_block(),
         "struct": {
             "volume_price": None,
             "chips": None,
             "break": None,
             "env_link": None,
-            "weak_vs_env": None,
+            "weak_vs_env": _missing_weak_block(),
             "error": error,
             "conflict": False,
         },
@@ -510,11 +607,15 @@ def synthesize_tape_analysis(
     )
     if env_missing:
         missing.append("env_link")
-    weak, weak_missing = _weak_vs_env(form, (env_link or {}).get("env_stance"))
+    weak, weak_missing = _weak_vs_env(metrics, form, brk)
     if weak_missing:
         missing.append("weak_vs_env")
 
-    conflict = bool((weak or {}).get("conflict"))
+    env_stance = (env_link or {}).get("env_stance")
+    direction = _form_direction(form)
+    conflict = (direction == "up" and env_stance == "bear") or (
+        direction == "down" and env_stance == "bull"
+    )
     has_form = volume_block is not None
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
@@ -548,6 +649,7 @@ def synthesize_tape_analysis(
         "q3_break": (brk or {}).get("clause") or "破位走法暂缺，不编拉回续杀",
         "q4_env_link": (env_link or {}).get("clause")
         or "环境依据不足，不编诱多/转势/吸筹/逃跑",
+        "q5_weak_vs_env": (weak or {}).get("clause") or WEAK_MISSING_CLAUSE,
     }
     struct = {
         "volume_price": volume_block,
