@@ -1,5 +1,7 @@
 from stock_pm.environment import (
+    SYMBOL_FIELD_FLAGS,
     failed_snapshot,
+    is_causal_chain,
     synthesize_symbol_environment,
 )
 
@@ -130,7 +132,16 @@ def test_snapshot_answers_acceptance_environment_questions() -> None:
     assert line.index("盘面") < line.index("消息") < line.index("因此")
     assert "不当成两套并列结论" in env["row_thesis"]
     assert env["one_liner"] == env["row_thesis"] == env["synthesis"]
+    assert is_causal_chain(line)
     assert "可能相关" not in line
+    assert all(item.get("points_to") == "A" for item in struct["bullets"])
+    covered = set(env["missingFlags"])
+    for flag in SYMBOL_FIELD_FLAGS:
+        path = flag.split(".")
+        node = struct
+        for key in path:
+            node = (node or {}).get(key) if isinstance(node, dict) else None
+        assert flag in covered or node is not None
 
 
 def test_empty_inputs_are_honest_missing() -> None:
@@ -229,6 +240,27 @@ def test_unmapped_news_does_not_invent_bias() -> None:
     assert "不编方向" in env["struct"]["news"]["company"]["clause"]
 
 
+def test_causal_chain_rejects_slogan_halves() -> None:
+    from stock_pm.environment import causal_one_liner, is_causal_chain
+
+    good = causal_one_liner("走坏，放量有效跌破", "偏多（芯片股获上调）", "bear", "bull")
+    assert is_causal_chain(good)
+    assert "先以收盘盘面为准" in good
+    assert good.count("因此") == 1
+    stripped = causal_one_liner(
+        "走坏",
+        "非农弱于预期 → 降息预期升温，因此利多高估值成长（NVDA）。",
+        "bear",
+        "bull",
+    )
+    assert is_causal_chain(stripped)
+    assert stripped.count("因此") == 1
+    assert "。" not in stripped.split("因此")[0]
+    assert not is_causal_chain("走坏。可能相关：芯片股获上调。")
+    assert not is_causal_chain("期权认沽偏多；自选趋势健康；宏观降息。")
+    assert not is_causal_chain("盘面走坏。消息却偏多。两套并列。")
+
+
 def test_failed_snapshot_has_no_fabricated_numbers() -> None:
     snap = failed_snapshot("NVDA", "2026-09-04", "thesis exploded")
     assert snap["publishState"] == "missing"
@@ -259,6 +291,7 @@ def test_aligned_tape_and_news_still_not_a_prediction() -> None:
     )
     line = env["one_liner"]
     assert line.index("盘面") < line.index("消息") < line.index("因此")
+    assert is_causal_chain(line)
     assert "同向" in line
     assert "不写成预测" in line
     assert env["prediction_ready"] is False

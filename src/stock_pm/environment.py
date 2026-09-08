@@ -95,6 +95,16 @@ def conclusion_from_stances(tape: str | None, news: str | None) -> str:
     return "盘面与消息同向，只作环境理解，不写成预测或打脸。"
 
 
+def _as_clause(text: str | None, fallback: str) -> str:
+    """Keep fragments from stealing the A-line 因此 / ending the sentence early."""
+    cleaned = (text or "").strip()
+    if not cleaned:
+        return fallback
+    cleaned = cleaned.replace("，因此", "，").replace("因此", "")
+    cleaned = cleaned.replace("。", "").rstrip("； ")
+    return " ".join(cleaned.split()) or fallback
+
+
 def causal_one_liner(
     tape_text: str | None,
     news_text: str | None,
@@ -104,8 +114,8 @@ def causal_one_liner(
     missing_note: str | None = None,
 ) -> str:
     """A-line: 盘面 → 消息 → 因此. Not juxtaposed slogans."""
-    tape_disp = (tape_text or "").strip() or "结论不足"
-    news_disp = (news_text or "").strip() or "暂缺，不编方向"
+    tape_disp = _as_clause(tape_text, "结论不足")
+    news_disp = _as_clause(news_text, "暂缺，不编方向")
     text = (
         f"盘面：{tape_disp}；"
         f"消息：{news_disp}；"
@@ -118,6 +128,23 @@ def causal_one_liner(
 
 def is_conflict_sentence(text: str | None) -> bool:
     return "不当成两套并列结论" in (text or "")
+
+
+def is_causal_chain(text: str | None) -> bool:
+    """True when A-line is one 盘面→消息→因此 sentence, not two pretty halves."""
+    if not text:
+        return False
+    if "可能相关" in text:
+        return False
+    i_tape = text.find("盘面")
+    i_news = text.find("消息")
+    i_so = text.find("因此")
+    if min(i_tape, i_news, i_so) < 0 or not (i_tape < i_news < i_so):
+        return False
+    first_stop = text.find("。")
+    if first_stop != -1 and first_stop < i_so:
+        return False
+    return True
 
 
 def snapshot_from_row(row: dict | None) -> dict | None:
@@ -501,7 +528,7 @@ def _news_scan_text(
             dirs.append(bias)
             piece = f"{label}{bias}"
             if headline:
-                piece += f"（{headline}）"
+                piece += f"（{_as_clause(str(headline), '')}）"
             bits.append(piece)
         elif layer.get("clause"):
             bits.append(f"{label}有标题未映射，不编方向")

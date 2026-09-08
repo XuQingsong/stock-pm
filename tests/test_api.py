@@ -534,6 +534,12 @@ def test_static_shell_assets(monkeypatch):
     options_at = home.index('id="options-panel"')
     fold_at = home.index('data-zone="C"')
     assert fold_at < options_at
+    tag_end = home.index(">", home.index('<details class="fold zone-c materials"'))
+    assert "open" not in home[home.index("<details class=\"fold zone-c materials\"") : tag_end]
+    assert "<details" in js.text and 'data-zone="C"' in js.text
+    assert "<details open" not in js.text
+    assert "→ 支撑结论" in js.text
+    assert 'data-zone="A"' in js.text
     assert '预测状态机尚未接入' in home
     assert "watch_low" not in home
     assert "face_slap" not in home
