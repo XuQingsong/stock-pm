@@ -13,6 +13,7 @@
 | --- | --- |
 | [../CURSOR_BRIEF.md](../CURSOR_BRIEF.md) | 连续切片说明：A/P0 → 环境（刀 2 已落地）→ 盘面 → 预测打脸；主路径无每日确认门槛 |
 | [DESIGN_CHECK_刀2_PR3.md](DESIGN_CHECK_刀2_PR3.md) | PR #3 三条核验：因果半句、材料折叠 C、环境 A/B/C；含证据路径与中文样句 |
+| [DESIGN_CHECK_刀3.md](DESIGN_CHECK_刀3.md) | 刀 3 ACCEPTANCE_M2：昨盘四问、复盘总结/解释、自动发布、材料折叠 C |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |

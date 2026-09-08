@@ -385,14 +385,18 @@
   async function renderReview(didRetry) {
     const rows = await softApi(endpoint("reviews"), []);
     const review = rows[0];
-    if (!review) {
+    const notes = await softApi(endpoint("review-notes"), []);
+    const note = notes[0];
+    if (!review && !note) {
       $("tab-content").innerHTML = `${empty("当日复盘尚未生成")} <div class="disclaimer">也可打开 <a href="/review">每日复盘</a>。</div>`;
       return;
     }
-    const date = String(review.review_date || "").slice(0, 10);
+    const date = String((review && review.review_date) || (note && note.as_of_date) || "").slice(0, 10);
     let briefing = await softApi(`/api/briefing?date=${encodeURIComponent(date)}`, { rows: [] });
-    let row = (briefing.rows || []).find((item) => String(item.symbol).toUpperCase() === SYMBOL) || review;
-    const status = row.llm_status || review.llm_status || null;
+    let row = (briefing.rows || []).find((item) => String(item.symbol).toUpperCase() === SYMBOL) || review || {};
+    const reviewSafe = review || {};
+    const noteSafe = note || row.review_note || {};
+    const status = row.llm_status || reviewSafe.llm_status || null;
     if (!didRetry && status === "quota_exhausted") {
       $("tab-content").innerHTML = '<div class="state loading"><span class="spinner"></span>模型额度已用尽，正在重新请求生成…充值后刷新即可。</div>';
       await fetch(`/api/reviews/retry-llm?date=${encodeURIComponent(date)}&symbol=${encodeURIComponent(SYMBOL)}`, {
@@ -403,7 +407,7 @@
     }
     const quota = status === "quota_exhausted";
     const llmMissing = Boolean(status) && status !== "ok";
-    const context = row.context || review.context || {};
+    const context = row.context || reviewSafe.context || {};
     const news = context.news || [];
     const macro = context.macro || [];
     const prior = row.prior_outcome;
@@ -412,29 +416,32 @@
       : quota
         ? `<div class="disclaimer prominent">模型额度已用尽。请充值后刷新本页，系统会自动重新生成「为何走」和明日看法。</div>`
         : llmMissing
-          ? `<div class="disclaimer prominent">${esc(row.llm_error || review.llm_error || `解释与明日看法未生成（${status}）`)}</div>`
+          ? `<div class="disclaimer prominent">${esc(row.llm_error || reviewSafe.llm_error || `解释与明日看法未生成（${status}）`)}</div>`
           : `<div class="subline">模型结果已写入数据库，打开本页不会重新调用。${row.llm_generated_at ? `上次生成 ${esc(String(row.llm_generated_at).replace("T", " ").slice(0, 16))} UTC。` : ""}量价、新闻或宏观变化后才会再生成。</div>`;
     $("tab-content").innerHTML = `
       <section class="panel hero">
-        <div class="muted">日终复盘 · ${dateText(review.review_date)}</div>
-        <h2>${esc(row.row_thesis || row.health || review.breakout_status || MISSING)}</h2>
+        <div class="muted">复盘总结 · ${dateText(noteSafe.as_of_date || reviewSafe.review_date)}</div>
+        <h2>${esc(noteSafe.summary || row.row_thesis || row.health || reviewSafe.breakout_status || MISSING)}</h2>
+        <p class="review-body">${esc(noteSafe.explanation || "解释不了：消息与情绪依据不足，不硬编诱多、转势、吸筹或逃跑。")}</p>
         <div class="hero-stats">
-          <div><span>结论价</span><b>${money(row.conclusion_price ?? review.close_price)}</b></div>
-          <div><span>盘面</span><b>${esc(review.short_trend || MISSING)}</b></div>
+          <div><span>结论价</span><b>${money(row.conclusion_price ?? reviewSafe.close_price)}</b></div>
+          <div><span>昨盘</span><b>${esc((row.tape_analysis && row.tape_analysis.one_liner) || row.tape_half || reviewSafe.short_trend || MISSING)}</b></div>
           <div><span>均线</span><b>${esc(row.ma_position || MISSING)}</b></div>
           <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
         </div>
-        <div class="subline">规则摘要不是交易建议。完整列表见 <a href="/review?date=${encodeURIComponent(date)}" style="color:inherit">每日复盘</a>。</div>
+        <div class="subline">白话总结来自昨盘，不是指标表。预测状态机尚未接入，不编时间窗口或涨跌边界。完整列表见 <a href="/review?date=${encodeURIComponent(date)}" style="color:inherit">每日复盘</a>。</div>
       </section>
       ${llmNote}
-      <section class="panel"><p class="review-body">${esc(review.summary || MISSING)}</p>
-        <div class="metric-grid">${metric("支撑", money(review.support_price))}${metric("压力", money(review.resistance_price))}${metric("突破状态", review.breakout_status || MISSING)}${metric("规则偏向", row.rule_bias || MISSING)}</div>
+      <details class="fold" data-zone="C"><summary>折叠材料（规则摘要 / 新闻原句 / 模型草稿，不代替结论）</summary>
+      <section class="panel"><p class="review-body">${esc(reviewSafe.summary || MISSING)}</p>
+        <div class="metric-grid">${metric("支撑", money(reviewSafe.support_price))}${metric("压力", money(reviewSafe.resistance_price))}${metric("突破状态", reviewSafe.breakout_status || MISSING)}${metric("规则偏向", row.rule_bias || MISSING)}</div>
       </section>
       <section class="panel"><h2>可能解释走势的资料</h2>
         ${news.length || macro.length ? news.map((item) => `<div class="news-item"><b>${esc(item.headline || MISSING)}</b>${(item.impacts || []).map((impact) => `<div class="subline">${esc(impact.direction)} ${esc(impact.theme_name)} · ${esc(impact.rationale)}</div>`).join("")}</div>`).join("") + macro.map((item) => `<div class="news-item"><b>${esc(item.name || MISSING)}</b><div class="subline">${esc(item.narrative || "")}</div></div>`).join("") : empty("当日没有可挂上的新闻或宏观")}
       </section>
-      <section class="panel"><h2>模型：为何这样走</h2><p class="review-body">${esc(row.llm_why || review.llm_why || "未生成")}</p></section>
-      <section class="panel"><h2>自动明日看法</h2><p class="review-body">${esc(row.llm_outlook || review.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.active_bias || row.llm_bias || MISSING)} · 来源 ${esc(row.active_bias_source || "rule")} · 不需要每日确认</div></section>
+      <section class="panel"><h2>模型：为何这样走</h2><p class="review-body">${esc(row.llm_why || reviewSafe.llm_why || "未生成")}</p></section>
+      <section class="panel"><h2>自动明日看法（占位，不是量化预测）</h2><p class="review-body">${esc(row.llm_outlook || reviewSafe.llm_outlook || "未生成")}</p><div class="subline">偏向 ${esc(row.active_bias || row.llm_bias || MISSING)} · 来源 ${esc(row.active_bias_source || "rule")} · 不需要每日确认 · 不编涨跌边界</div></section>
+      </details>
       <section class="panel"><h2>折叠：可选备注</h2>
         <div class="toolbar"><select id="user-bias"><option value=""${row.user_bias ? "" : " selected"}>沿用自动判断</option>${["偏多", "中性", "偏空", "观望"].map((value) => `<option value="${value}"${row.user_bias === value ? " selected" : ""}>${value}</option>`).join("")}</select>
           <button class="btn" id="save-review">保存备注</button><span class="muted" id="save-status">${row.user_note || row.user_outlook || row.user_bias ? "已有备注" : "未写备注"}</span></div>

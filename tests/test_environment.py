@@ -1,9 +1,48 @@
+import inspect
+import re
+
+from fastapi.testclient import TestClient
+
+from stock_pm import api
 from stock_pm.environment import (
     SYMBOL_FIELD_FLAGS,
     failed_snapshot,
     is_causal_chain,
     synthesize_symbol_environment,
 )
+from stock_pm.errors import DatabaseError
+from stock_pm.queries import QueryMixin
+
+_UNTYPED_IS_NULL = re.compile(
+    r"%s(?!::)\s+IS\s+NULL",
+    re.IGNORECASE,
+)
+
+
+class _TypedSnapshotHarness(QueryMixin):
+    """Runs the real symbol-scoped snapshot SQL path without a live database.
+
+    PostgreSQL cannot infer a type for a bare ``%s IS NULL`` bind (production
+    503: could not determine data type of parameter $3). This harness rejects
+    that shape so the regression fails if the cast is reverted.
+    """
+
+    def fetch_all(self, query, params=()):
+        if _UNTYPED_IS_NULL.search(query):
+            raise DatabaseError(
+                "PostgreSQL query failed: could not determine data type of parameter $3"
+            )
+        return []
+
+    def market_session(self, trade_date=None):
+        return {
+            "date": trade_date or "2026-09-04",
+            "default_review_date": "2026-09-04",
+            "is_trading_day": True,
+        }
+
+    def build_live_environment(self, symbol, as_of_date=None, **kwargs):
+        return failed_snapshot(symbol, as_of_date, "no stored snapshot")
 
 
 def _full_inputs() -> dict:
@@ -308,3 +347,28 @@ def test_holiday_publish_state_is_stale() -> None:
     )
     assert env["publishState"] == "stale"
     assert "不编造当日盘面" in env["one_liner"]
+
+
+def test_latest_environment_snapshot_sql_casts_nullable_symbol() -> None:
+    source = inspect.getsource(QueryMixin.latest_environment_snapshot)
+    assert "%s::text IS NULL" in source
+    assert "symbol = %s::text" in source
+    assert _UNTYPED_IS_NULL.search(source) is None
+
+
+def test_latest_environment_snapshot_typed_binds_do_not_raise() -> None:
+    harness = _TypedSnapshotHarness()
+    assert harness.latest_environment_snapshot("2026-09-04", "symbol", "AAPL") is None
+    assert harness.latest_environment_snapshot("2026-09-04", "market", None) is None
+
+
+def test_get_environment_symbol_is_not_503(monkeypatch) -> None:
+    monkeypatch.setattr(api, "database", _TypedSnapshotHarness())
+    response = TestClient(api.app).get("/api/environment?symbol=AAPL")
+    assert response.status_code != 503
+    assert response.status_code == 200
+    body = response.json()
+    assert "could not determine data type" not in str(body).lower()
+    assert body["symbol"] == "AAPL"
+    assert body["scope"] == "symbol"
+    assert body["publishState"] in {"published", "draft", "stale", "missing"}

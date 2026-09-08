@@ -8,6 +8,7 @@ from .calendar import last_trading_day, ny_today, session_status
 from .analytics import (
     INTRADAY_MINUTES,
     SUPPORTED_INTERVALS,
+    _number,
     earnings_scorecard,
     earnings_summary,
     enrich_chart_bars,
@@ -27,6 +28,18 @@ from .environment import (
     failed_snapshot,
     snapshot_from_row,
     synthesize_symbol_environment,
+)
+from .errors import DatabaseError
+from .tape import (
+    SECTOR_THEMES,
+    env_tape_conflict_sentence,
+    failed_review_note,
+    failed_tape,
+    review_note_from_row,
+    snapshot_from_row as tape_from_row,
+    synthesize_review_note,
+    synthesize_tape_analysis,
+    tape_half_display,
 )
 from .impact import macro_impact, news_impacts, THEME_NAMES
 from .philosophy import (
@@ -200,6 +213,7 @@ TECHNICAL_SQL = """
                 CASE WHEN observations >= 200
                     THEN ROUND(100 * (close_price / NULLIF(ma200, 0) - 1), 2)
                 END AS distance_ma200_pct,
+                ROUND(100 * (close_price / NULLIF(previous_close, 0) - 1), 2) AS return_1d_pct,
                 ROUND(100 * (close_price / NULLIF(close_5d_ago, 0) - 1), 2) AS return_5d_pct,
                 ROUND(100 * (close_price / NULLIF(close_20d_ago, 0) - 1), 2) AS return_20d_pct,
                 ROUND(100 * (close_price / NULLIF(close_50d_ago, 0) - 1), 2) AS return_50d_pct,
@@ -1329,7 +1343,7 @@ class QueryMixin:
                    struct, missing_flags, publish_state, created_at
             FROM environment_snapshots
             WHERE as_of_date = %s AND scope = %s
-              AND ((%s IS NULL AND symbol IS NULL) OR symbol = %s)
+              AND ((%s::text IS NULL AND symbol IS NULL) OR symbol = %s::text)
             ORDER BY created_at DESC
             LIMIT 1
             """,
@@ -1486,6 +1500,7 @@ class QueryMixin:
                 row["row_thesis"] = env.get("row_thesis") or row.get("row_thesis")
             else:
                 row["row_thesis"] = env.get("one_liner") or row.get("row_thesis")
+        self._attach_row_tapes(rows, as_of_date, session=session)
 
     def _with_shell(
         self,
@@ -1513,6 +1528,8 @@ class QueryMixin:
                 snapshots = self.latest_snapshots([symbol] if symbol else None)
             except Exception:
                 snapshots = []
+        symbol_tape = None
+        symbol_note = None
         if symbol and symbol_environment is None:
             match = next(
                 (
@@ -1528,6 +1545,21 @@ class QueryMixin:
             )
             if symbol_environment is None:
                 symbol_environment = self.build_live_environment(symbol, date)
+        if symbol:
+            match_row = next(
+                (
+                    row
+                    for row in briefing.get("rows") or []
+                    if str(row.get("symbol") or "").upper() == symbol.upper()
+                ),
+                None,
+            )
+            symbol_tape = (match_row or {}).get("tape_analysis") or self.tape_payload(
+                date, symbol
+            )
+            symbol_note = (match_row or {}).get("review_note") or self.review_note_payload(
+                date, symbol
+            )
         if not symbol and symbol_environment is None:
             try:
                 symbol_environment = self.latest_environment_snapshot(date, "market", None)
@@ -1542,7 +1574,11 @@ class QueryMixin:
             symbol=symbol,
             symbol_environment=symbol_environment,
         )
-        return {**briefing, **shell}
+        extra = {}
+        if symbol:
+            extra["tape"] = symbol_tape
+            extra["review_note"] = symbol_note
+        return {**briefing, **shell, **extra}
 
     def shell_state(self, date: str | None = None, symbol: str | None = None) -> dict:
         briefing = self.briefing(date)
@@ -1565,30 +1601,304 @@ class QueryMixin:
         payload = self.shell_state(date)
         return payload.get("environment") or failed_snapshot(None, date, "environment missing")
 
-    def job_runs(self, limit: int = 20) -> list[dict]:
+    def latest_tape_analyses(self, as_of_date: str | None) -> list[dict]:
+        if not as_of_date:
+            return []
         rows = self.fetch_all(
             """
-            SELECT id, job_name, started_at, completed_at, status, item_counts, error
-            FROM job_runs
-            ORDER BY started_at DESC
+            SELECT DISTINCT ON (symbol)
+                   id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE as_of_date = %s
+            ORDER BY symbol, created_at DESC
+            """,
+            (as_of_date,),
+        )
+        return [tape_from_row(row) for row in rows if tape_from_row(row)]
+
+    def latest_tape_analysis(self, as_of_date: str | None, symbol: str) -> dict | None:
+        if not as_of_date:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE as_of_date = %s AND symbol = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, symbol),
+        )
+        return tape_from_row(rows[0]) if rows else None
+
+    def tape_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
             LIMIT %s
             """,
-            (limit,),
+            (normalized, limit),
         )
-        if rows:
-            return rows
-        # Honest stub: surface collector sync_runs until dedicated jobs are written.
-        return [
-            {
-                "job_name": row.get("source") or "sync",
-                "started_at": row.get("started_at"),
-                "completed_at": row.get("completed_at"),
-                "status": row.get("status"),
-                "item_counts": row.get("item_counts") or {},
-                "error": row.get("error"),
-                "source_table": "sync_runs",
-            }
-            for row in self.fetch_all(
+        return [tape_from_row(row) for row in rows if tape_from_row(row)]
+
+    def latest_review_note(self, as_of_date: str | None, symbol: str) -> dict | None:
+        if not as_of_date:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, summary, explanation, unexplained,
+                   struct, missing_flags, publish_state, created_at
+            FROM review_notes
+            WHERE as_of_date = %s AND symbol = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, symbol),
+        )
+        return review_note_from_row(rows[0]) if rows else None
+
+    def review_note_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, summary, explanation, unexplained,
+                   struct, missing_flags, publish_state, created_at
+            FROM review_notes
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s
+            """,
+            (normalized, limit),
+        )
+        return [review_note_from_row(row) for row in rows if review_note_from_row(row)]
+
+    def _tape_relative_inputs(self, symbol: str, metrics: dict) -> dict:
+        extra: dict[str, Any] = {}
+        try:
+            watch = next(
+                (row for row in self.watchlist_rows() if row["symbol"] == symbol),
+                {"symbol": symbol, "themes": []},
+            )
+            tech_rows = {row["symbol"]: row for row in self.technical_summary()}
+            own = tech_rows.get(symbol) or {}
+            own_5d = _number(own.get("return_5d_pct"))
+            if own_5d is not None:
+                extra["return_5d_pct"] = own_5d
+            themes = list(watch.get("themes") or [])
+            sector_theme = next((item for item in themes if item in SECTOR_THEMES), None)
+            if sector_theme:
+                peer_days: list[float] = []
+                peer_fives: list[float] = []
+                for row in self.watchlist_rows():
+                    if row["symbol"] == symbol:
+                        continue
+                    if sector_theme not in (row.get("themes") or []):
+                        continue
+                    peer = tech_rows.get(row["symbol"]) or {}
+                    day = _number(peer.get("return_1d_pct"))
+                    five = _number(peer.get("return_5d_pct"))
+                    if day is not None:
+                        peer_days.append(day)
+                    if five is not None:
+                        peer_fives.append(five)
+                if peer_days:
+                    extra["benchmark_kind"] = "sector"
+                    extra["benchmark_name"] = (
+                        f"板块（{THEME_NAMES.get(sector_theme, sector_theme)}）"
+                    )
+                    extra["benchmark_theme"] = sector_theme
+                    extra["benchmark_day_change_pct"] = round(
+                        sorted(peer_days)[len(peer_days) // 2], 2
+                    )
+                    if peer_fives:
+                        extra["benchmark_return_5d_pct"] = round(
+                            sorted(peer_fives)[len(peer_fives) // 2], 2
+                        )
+                    return extra
+            market = tech_rows.get("QQQ") or {}
+            extra["benchmark_kind"] = "market"
+            extra["benchmark_name"] = "大盘（QQQ）"
+            extra["benchmark_day_change_pct"] = _number(market.get("return_1d_pct"))
+            extra["benchmark_return_5d_pct"] = _number(market.get("return_5d_pct"))
+        except Exception:
+            return extra
+        return extra
+
+    def build_live_tape(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        **preloaded: Any,
+    ) -> dict:
+        from .review import analyze_bars
+
+        normalized = symbol.upper()
+        session = preloaded.get("session") or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        try:
+            bars = preloaded.get("bars")
+            if bars is None:
+                bars = self.history(normalized, 260, "1d")
+            complete = [
+                row
+                for row in bars
+                if all(
+                    row.get(key) is not None
+                    for key in ("open_price", "high_price", "low_price", "close_price")
+                )
+            ]
+            if date:
+                dated = [
+                    row
+                    for row in complete
+                    if str(row.get("bar_time") or "")[:10] <= str(date)[:10]
+                ]
+                if dated:
+                    complete = dated
+            if len(complete) < 20:
+                return failed_tape(normalized, date, "need 20 daily bars")
+            metrics = analyze_bars(complete)
+            metrics.update(self._tape_relative_inputs(normalized, metrics))
+            environment = preloaded.get("environment")
+            if environment is None:
+                environment = self.environment_payload(date, normalized)
+            segments = preloaded.get("segments")
+            if segments is None:
+                try:
+                    segments = self.segments(normalized, date)
+                except Exception:
+                    segments = []
+            return synthesize_tape_analysis(
+                as_of_date=date,
+                symbol=normalized,
+                metrics=metrics,
+                environment=environment,
+                segments=segments,
+                session=session,
+                source=preloaded.get("source") or "live",
+            )
+        except Exception as exc:
+            return failed_tape(normalized, date, str(exc))
+
+    def build_live_review_note(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        *,
+        tape: dict | None = None,
+        environment: dict | None = None,
+        session: dict | None = None,
+        source: str = "live",
+    ) -> dict:
+        normalized = symbol.upper()
+        session = session or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        try:
+            tape = tape or self.tape_payload(date, normalized)
+            environment = environment or self.environment_payload(date, normalized)
+            return synthesize_review_note(
+                as_of_date=date,
+                symbol=normalized,
+                tape=tape,
+                environment=environment,
+                session=session,
+                source=source,
+            )
+        except Exception as exc:
+            return failed_review_note(normalized, date, str(exc))
+
+    def tape_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if not symbol:
+            raise ValueError("symbol is required")
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date")
+        stored = self.latest_tape_analysis(as_of, symbol.upper())
+        return stored or self.build_live_tape(symbol, as_of)
+
+    def review_note_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if not symbol:
+            raise ValueError("symbol is required")
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date")
+        stored = self.latest_review_note(as_of, symbol.upper())
+        return stored or self.build_live_review_note(symbol, as_of)
+
+    def _attach_row_tapes(
+        self,
+        rows: list[dict],
+        as_of_date: str | None,
+        *,
+        session: dict | None = None,
+    ) -> None:
+        stored: dict[str, dict] = {}
+        try:
+            for item in self.latest_tape_analyses(as_of_date):
+                if item and item.get("symbol"):
+                    stored[item["symbol"]] = item
+        except Exception:
+            stored = {}
+        for row in rows:
+            symbol = row.get("symbol")
+            if not symbol:
+                continue
+            tape = stored.get(symbol)
+            if not tape:
+                tape = self.build_live_tape(
+                    symbol,
+                    as_of_date,
+                    environment=row.get("environment"),
+                    session=session,
+                    source="live",
+                )
+            note = None
+            try:
+                note = self.latest_review_note(as_of_date, symbol)
+            except Exception:
+                note = None
+            if not note:
+                note = synthesize_review_note(
+                    as_of_date=as_of_date,
+                    symbol=symbol,
+                    tape=tape,
+                    environment=row.get("environment"),
+                    session=session,
+                    source="live",
+                )
+            row["tape_analysis"] = tape
+            row["tape_half"] = tape_half_display(tape)
+            row["review_note"] = note
+            env = row.get("environment") or {}
+            conflict = bool((tape or {}).get("conflict"))
+            if conflict:
+                row["env_tape_conflict"] = True
+                row["row_thesis"] = env_tape_conflict_sentence(env, tape)
+            else:
+                row["env_tape_conflict"] = False
+
+    def job_runs(self, limit: int = 20) -> list[dict]:
+        dedicated: list[dict] = []
+        try:
+            dedicated = self.fetch_all(
+                """
+                SELECT id, job_name, started_at, completed_at, status, item_counts, error
+                FROM job_runs
+                ORDER BY started_at DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+        except DatabaseError:
+            dedicated = []
+        sync: list[dict] = []
+        try:
+            sync = self.fetch_all(
                 """
                 SELECT source, started_at, completed_at, status, item_counts, error
                 FROM sync_runs
@@ -1597,7 +1907,26 @@ class QueryMixin:
                 """,
                 (limit,),
             )
-        ]
+        except DatabaseError:
+            sync = []
+        merged: list[dict] = [{**row, "source_table": "job_runs"} for row in dedicated]
+        for row in sync:
+            merged.append(
+                {
+                    "job_name": row.get("source") or "sync",
+                    "started_at": row.get("started_at"),
+                    "completed_at": row.get("completed_at"),
+                    "status": row.get("status"),
+                    "item_counts": row.get("item_counts") or {},
+                    "error": row.get("error"),
+                    "source_table": "sync_runs",
+                }
+            )
+        merged.sort(
+            key=lambda row: str(row.get("started_at") or row.get("completed_at") or ""),
+            reverse=True,
+        )
+        return merged[:limit]
 
     def events_between(
         self, start: str, end: str, symbol: str | None = None, limit: int = 300

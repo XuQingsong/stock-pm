@@ -62,10 +62,10 @@ details.materials .grid2{margin-top:8px}
 <section class="panel" id="briefing-panel">
   <div class="zone-label">结论</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。半句是环境合成（一年涨跌 / 三层消息 / 氛围）；盘面与消息冲突时改写成一句因果，不并排两套结论。期权与新闻在下方折叠，不和结论抢位置。预测状态机尚未接入，这里不编边界。</div>
+  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。环境与昨盘冲突时只留一句因果，不并排两套结论。期权、新闻、K 线材料在下方折叠。预测状态机尚未接入，这里不编边界。</div>
   <div class="table-wrap"><table>
     <thead><tr>
-      <th>标的</th><th>结论价</th><th>日涨跌</th><th>半句</th><th>量比</th><th>5日</th>
+      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>量比</th><th>5日</th>
       <th>均线位置</th><th>支撑/压力</th>
     </tr></thead>
     <tbody id="rows"></tbody>
@@ -189,11 +189,17 @@ async function main(){
     const price=b.conclusion_price!=null?b.conclusion_price:(quality.hide_last_price?null:(q.prior_close||q.last_price||b.last_price));
     const delayed=quality.status==='delayed'||quality.delayed;
     const chg=b.day_change_pct!=null?b.day_change_pct:null;
-    const thesis=b.env_half||b.row_thesis||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||b.health||k.signal||'数据暂缺';
+    const envHalf=b.env_half||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||'数据暂缺';
+    const tapeHalf=b.tape_half||(b.tape_analysis&&b.tape_analysis.one_liner)||'昨盘结论未就绪（M2）';
+    const conflict=b.env_tape_conflict||(b.tape_analysis&&b.tape_analysis.conflict);
+    const thesis=conflict?(b.row_thesis||envHalf):null;
+    const halfCells=conflict
+      ? `<td class="row-thesis" colspan="2">${esc(thesis)}</td>`
+      : `<td class="row-thesis">${esc(envHalf)}</td><td class="row-thesis">${esc(tapeHalf)}</td>`;
     return `<tr onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
       <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||'数据暂缺')+'</div>':''}</td>
       <td class="${cls(chg)}">${pct(chg)}</td>
-      <td class="row-thesis">${esc(thesis)}</td>
+      ${halfCells}
       <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
       <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>
       <td class="hint">${esc(b.ma_position||'—')}</td>

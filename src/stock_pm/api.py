@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import re
+import threading
 from contextlib import asynccontextmanager
 from datetime import date
 from importlib.resources import files
@@ -21,20 +23,45 @@ SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 database = Database()
 
 
+def _backfill_environment_snapshots() -> None:
+    try:
+        if not hasattr(database, "append_environment_snapshot"):
+            return
+        from .environment_job import publish_if_missing
+
+        result = publish_if_missing(database)
+        if result.get("status") != "skipped":
+            print(
+                json.dumps(
+                    {"environment_backfill": result},
+                    ensure_ascii=False,
+                    default=str,
+                )
+            )
+    except Exception as exc:
+        print(json.dumps({"environment_backfill_error": str(exc)}, ensure_ascii=False))
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     database.initialize()
+    threading.Thread(
+        target=_backfill_environment_snapshots,
+        name="environment-backfill",
+        daemon=True,
+    ).start()
     yield
     database.close()
 
 
 app = FastAPI(
     title="Stock PM",
-    version="0.7.0",
+    version="0.8.0",
     description=(
-        "Watchlist analysis API. Knife 2: per-symbol EnvironmentSnapshot "
-        "(/api/environment, /api/environment/history) with field-level "
-        "missingFlags and append-only publishState."
+        "Watchlist analysis API. Knife 3: TapeAnalysis "
+        "(/api/stock/{symbol}/tape, /tape/history) and ReviewNote "
+        "(/api/stock/{symbol}/review-notes) with append-only publishState. "
+        "Knife 2 EnvironmentSnapshot remains at /api/environment."
     ),
     lifespan=lifespan,
 )
@@ -430,6 +457,59 @@ def stock_reviews(symbol: str) -> list[dict]:
     try:
         return database.latest_reviews(symbol)
     except (DatabaseError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/tape")
+def stock_tape(
+    symbol: str,
+    date_: Annotated[str | None, Query(alias="date")] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.tape_payload(date_, symbol.upper())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/tape/history")
+def stock_tape_history(
+    symbol: str,
+    limit: int = Query(30, ge=1, le=120),
+) -> list[dict]:
+    try:
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.tape_history(symbol.upper(), limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/review-notes")
+def stock_review_notes(
+    symbol: str,
+    date_: Annotated[str | None, Query(alias="date")] = None,
+    limit: int = Query(30, ge=1, le=120),
+) -> list[dict]:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        if date_:
+            note = database.review_note_payload(date_, symbol.upper())
+            return [note] if note else []
+        return database.review_note_history(symbol.upper(), limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
         raise _http_error(exc) from exc
 
 

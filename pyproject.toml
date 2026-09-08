@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stock-pm"
-version = "0.7.0"
+version = "0.8.0"
 description = "Market analysis and position management with Alpaca data"
 requires-python = ">=3.11"
 dependencies = [
@@ -30,6 +30,7 @@ stock-pm-flow = "stock_pm.flow:main"
 stock-pm-macro = "stock_pm.macro:main"
 stock-pm-cboe = "stock_pm.cboe:main"
 stock-pm-environment = "stock_pm.environment_job:main"
+stock-pm-tape = "stock_pm.tape_job:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

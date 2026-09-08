@@ -132,7 +132,8 @@ function card(row){
       <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
       <div><span>支撑 / 压力</span><b>${money(row.support_price)} / ${money(row.resistance_price)}</b></div>
     </div>
-    <p class="summary">${esc(row.row_thesis||row.tape||row.summary||'—')}</p>
+    <p class="summary">${esc((row.review_note&&row.review_note.summary)||row.row_thesis||row.tape||row.summary||'—')}</p>
+    <p class="summary hint">${esc((row.review_note&&row.review_note.explanation)||'')}</p>
     ${llmBanner(row)}
     <h3 style="margin:12px 0 4px;font-size:13px">可能解释走势的资料</h3>
     ${newsBlock(row.context)}

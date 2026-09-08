@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | **A / P0** | 哲学与信任 | 去掉确认门槛、EmptyHonest、预警条、显式状态壳、环境半句第一刀。ACCEPTANCE_M1 的 P0/架构红线在此验收。 |
 | **B / 环境** | EnvironmentSnapshot 加深 | 刀 2 已落地：每标的 fundamentals / 三层消息 / 氛围合成 + field-level missingFlags + 盘后追加。同仓下一切片分支。 |
-| **C / 盘面** | M2 tape/review 闭环 | 完整盘面—复盘闭环，不是新前端。 |
+| **C / 盘面** | M2 tape/review 闭环 | 刀 3 已落地：昨盘 TapeAnalysis + ReviewNote 总结/解释。同仓下一切片分支。 |
 | **D / 预测打脸** | M3 Prediction | 状态机、自动打脸、判断变更。切片 A 只提供非假壳。 |
 | M4 | 周洞察 | 可选薄做。 |
 
@@ -41,3 +41,11 @@ FastAPI + PostgreSQL + 多页 HTML/JS。可加表：`environment_snapshots`、`s
 - `stock-pm-environment` 盘后追加写入；失败落 missing，不覆盖旧快照、不编数字。
 - 晨间总览先结论行（预警 / 显式状态 / 环境半句），期权与新闻下沉为折叠 C，不与 A 抢位置。不编预测边界。
 - A 半句按 盘面 → 消息 → 因此 写因果，不再并排口号。收口清单见 `docs/DESIGN_CHECK_刀2_PR3.md`。
+
+## 切片 C / 刀 3 进度
+
+- 每只活跃自选有结构化 `TapeAnalysis`：量价形态（放量涨/缩量涨/放量跌/缩量跌）、筹码带+支撑压力、破位后走法、对照 EnvironmentSnapshot 的诱多/转势/吸筹/逃跑（标推断）、`weak_vs_env`、字段级 `missingFlags`、`publishState`。
+- `ReviewNote`：白话总结来自昨盘；解释是 环境 → 昨盘 → 因此，或诚实「解释不了」。不编预测边界。
+- 晨间总览 `昨盘半句` 用真实 `one_liner`；缺失写暂缺，不编量价。环境与昨盘冲突时只留一句因果，不并排两列。
+- `stock-pm-tape` 盘后追加写入；失败落 missing，不覆盖旧行、不编放量缩量。主路径仍无每日确认门槛。
+- 个股壳三区：环境 | 昨盘 | 复盘与预测。K 线 MA5/20/50/200 与原接口留在折叠 C。预测区仍是非假占位。
