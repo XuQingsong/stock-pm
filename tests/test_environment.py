@@ -232,7 +232,10 @@ def test_failed_snapshot_has_no_fabricated_numbers() -> None:
     assert snap["struct"]["fundamentals"] is None
     assert snap["struct"]["sentiment"] is None
     assert "未编造数字" in snap["one_liner"]
-    assert not any(isinstance(value, (int, float)) for value in snap["struct"].values())
+    assert snap["struct"]["news"] == {"macro": None, "sector": None, "company": None}
+    dumped = str(snap["struct"])
+    assert "return_1y" not in dumped
+    assert "pe_current" not in dumped
 
 
 def test_holiday_publish_state_is_stale() -> None:
