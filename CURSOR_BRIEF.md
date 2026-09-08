@@ -15,7 +15,7 @@
 | 切片 | 焦点 | 说明 |
 | --- | --- | --- |
 | **A / P0** | 哲学与信任 | 去掉确认门槛、EmptyHonest、预警条、显式状态壳、环境半句第一刀。ACCEPTANCE_M1 的 P0/架构红线在此验收。 |
-| **B / 环境** | EnvironmentSnapshot 加深 | 合成、冲突半句、发布态。同仓下一切片分支。 |
+| **B / 环境** | EnvironmentSnapshot 加深 | 刀 2 已落地：每标的 fundamentals / 三层消息 / 氛围合成 + field-level missingFlags + 盘后追加。同仓下一切片分支。 |
 | **C / 盘面** | M2 tape/review 闭环 | 完整盘面—复盘闭环，不是新前端。 |
 | **D / 预测打脸** | M3 Prediction | 状态机、自动打脸、判断变更。切片 A 只提供非假壳。 |
 | M4 | 周洞察 | 可选薄做。 |
@@ -33,3 +33,9 @@ FastAPI + PostgreSQL + 多页 HTML/JS。可加表：`environment_snapshots`、`s
 - 严重预警条：有则显示，无则隐藏
 - 显式状态优先级：打脸 > 逾期 > 缺失（完整预测状态机未接入时不得假装已有边界）
 - 晨间总览 / 个股有环境半句或诚实缺失标记（`struct` + `missingFlags` + `publishState`）
+
+## 切片 B / 刀 2 进度
+
+- 每只活跃自选有结构化 `EnvironmentSnapshot`：一年涨跌、财报/营收、行业与估值、宏观·行业·公司消息、路径氛围（不是标题情绪分）、合成句、字段级 `missingFlags`、`publishState`。
+- 晨间总览半句可扫；冲突仍是一句因果 `row_thesis`。个股 A 结论 / B 指向 A 的要点 / C 折叠原接口。
+- `stock-pm-environment` 盘后追加写入；失败落 missing，不覆盖旧快照、不编数字。

@@ -11,7 +11,7 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| [../CURSOR_BRIEF.md](../CURSOR_BRIEF.md) | 连续切片说明：A/P0 → 环境 → 盘面 → 预测打脸；主路径无每日确认门槛 |
+| [../CURSOR_BRIEF.md](../CURSOR_BRIEF.md) | 连续切片说明：A/P0 → 环境（刀 2 已落地）→ 盘面 → 预测打脸；主路径无每日确认门槛 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |

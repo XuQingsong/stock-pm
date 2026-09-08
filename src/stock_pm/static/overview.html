@@ -71,7 +71,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
 <section class="panel">
   <div class="zone-label">展开</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">结论价用复盘收盘或昨收；延迟现价不作为晨间结论。半句优先写因果，不并排两套结论。</div>
+  <div class="hint">结论价用复盘收盘或昨收。半句是环境合成（一年涨跌 / 三层消息 / 氛围）；盘面与消息冲突时改写成一句因果，不并排两套结论，也不在总览铺材料。</div>
   <div class="table-wrap"><table>
     <thead><tr>
       <th>标的</th><th>结论价</th><th>日涨跌</th><th>半句</th><th>量比</th><th>5日</th>
@@ -176,7 +176,7 @@ async function main(){
     const price=b.conclusion_price!=null?b.conclusion_price:(quality.hide_last_price?null:(q.prior_close||q.last_price||b.last_price));
     const delayed=quality.status==='delayed'||quality.delayed;
     const chg=b.day_change_pct!=null?b.day_change_pct:null;
-    const thesis=b.row_thesis||b.health||k.signal||'数据暂缺';
+    const thesis=b.env_half||b.row_thesis||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||b.health||k.signal||'数据暂缺';
     return `<tr onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
       <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||'数据暂缺')+'</div>':''}</td>
       <td class="${cls(chg)}">${pct(chg)}</td>
