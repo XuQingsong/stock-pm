@@ -24,6 +24,12 @@ from .analytics import (
     yoy_from_rows,
 )
 from .impact import macro_impact, news_impacts, THEME_NAMES
+from .philosophy import (
+    build_shell,
+    enrich_briefing_row,
+    impact_row_thesis,
+    quote_quality,
+)
 from .scoring import sentiment_from_components
 
 
@@ -284,7 +290,18 @@ class QueryMixin:
             (requested,),
         )
         by_symbol = {row["symbol"]: row for row in rows}
-        return [by_symbol[symbol] for symbol in requested if symbol in by_symbol]
+        result = []
+        for symbol in requested:
+            row = by_symbol.get(symbol)
+            if not row:
+                continue
+            quality = quote_quality(row)
+            row["quote_quality"] = quality
+            row["displayed_last_price"] = (
+                None if quality["hide_last_price"] else row.get("last_price")
+            )
+            result.append(row)
+        return result
 
     def live_signals(self, symbols: list[str] | None = None) -> list[dict]:
         requested = self._watchlist_symbols(symbols)
@@ -1109,10 +1126,15 @@ class QueryMixin:
         by_symbol = {}
         for row in rows:
             by_symbol.setdefault(row["symbol"], []).append(row)
+        auto = _rate(rows)
+        notes = _rate([row for row in rows if row["confirmed"]])
         return {
             "days": days,
-            "all": _rate(rows),
-            "confirmed": _rate([row for row in rows if row["confirmed"]]),
+            "all": auto,
+            "loop": auto,
+            "confirmed": notes,
+            "notes_saved": notes,
+            "confirm_required": False,
             "by_symbol": {
                 symbol: _rate(sample) for symbol, sample in sorted(by_symbol.items())
             },
@@ -1128,13 +1150,15 @@ class QueryMixin:
         stored = self.reviews_by_date(date) if date else []
         reviews = {row["symbol"]: row for row in stored}
         if not session["is_trading_day"] or not stored:
-            return {
+            payload = {
                 "date": date,
                 "session": session,
                 "has_reviews": False,
                 "rows": [],
                 "hit_rate": self.review_hit_rate(),
+                "confirm_required": False,
             }
+            return self._with_shell(payload)
         prior_rows = self.fetch_all(
             """
             SELECT DISTINCT ON (symbol) *
@@ -1159,17 +1183,27 @@ class QueryMixin:
                 metrics = {}
             health = tape_health(tech, review)
             day_change = metrics.get("day_change_pct")
-            if day_change is None and snap.get("last_price") and snap.get("prior_close"):
+            quality = snap.get("quote_quality") or quote_quality(snap, review)
+            if (
+                day_change is None
+                and not quality.get("hide_last_price")
+                and snap.get("last_price")
+                and snap.get("prior_close")
+            ):
                 day_change = round(
                     100 * (float(snap["last_price"]) / float(snap["prior_close"]) - 1), 2
                 )
             prior_review = prior.get(symbol)
             rows.append(
-                {
+                enrich_briefing_row(
+                    {
                     "symbol": symbol,
                     "name": item.get("name"),
                     "sector": item.get("sector"),
-                    "last_price": snap.get("last_price") or tech.get("close_price"),
+                    "close_price": (review or {}).get("close_price"),
+                    "last_price": snap.get("displayed_last_price")
+                    if snap.get("quote_quality")
+                    else snap.get("last_price") or tech.get("close_price"),
                     "day_change_pct": day_change,
                     "volume_ratio_20d": tech.get("volume_ratio_20d")
                     or metrics.get("relative_volume"),
@@ -1218,15 +1252,100 @@ class QueryMixin:
                     }
                     if prior_review
                     else None,
-                }
+                    },
+                    snap,
+                )
             )
-        return {
+        payload = {
             "date": date,
             "session": session,
             "has_reviews": True,
             "rows": rows,
             "hit_rate": self.review_hit_rate(),
+            "confirm_required": False,
         }
+        return self._with_shell(payload, snapshots=list(snapshots.values()))
+
+    def _with_shell(
+        self,
+        briefing: dict,
+        snapshots: list[dict] | None = None,
+        symbol: str | None = None,
+    ) -> dict:
+        date = briefing.get("date")
+        options = self.cboe_option_stats(date)
+        options_payload = {"status": "ok", **options} if options else {
+            "status": "missing",
+            "trade_date": date,
+        }
+        try:
+            impact = self.market_impact()
+        except Exception:
+            impact = {"macro": []}
+        try:
+            sync = self.sync_status()
+        except Exception:
+            sync = None
+        if snapshots is None:
+            try:
+                snapshots = self.latest_snapshots([symbol] if symbol else None)
+            except Exception:
+                snapshots = []
+        shell = build_shell(
+            briefing=briefing,
+            options=options_payload,
+            snapshots=snapshots,
+            impact=impact,
+            sync=sync,
+            symbol=symbol,
+        )
+        return {**briefing, **shell}
+
+    def shell_state(self, date: str | None = None, symbol: str | None = None) -> dict:
+        briefing = self.briefing(date)
+        if symbol:
+            return self._with_shell(briefing, symbol=symbol)
+        return {
+            "as_of": briefing.get("as_of") or briefing.get("date"),
+            "explicit_state": briefing.get("explicit_state"),
+            "alerts": briefing.get("alerts") or [],
+            "environment": briefing.get("environment"),
+            "quote_quality": briefing.get("quote_quality") or {},
+        }
+
+    def job_runs(self, limit: int = 20) -> list[dict]:
+        rows = self.fetch_all(
+            """
+            SELECT id, job_name, started_at, completed_at, status, item_counts, error
+            FROM job_runs
+            ORDER BY started_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        if rows:
+            return rows
+        # Honest stub: surface collector sync_runs until dedicated jobs are written.
+        return [
+            {
+                "job_name": row.get("source") or "sync",
+                "started_at": row.get("started_at"),
+                "completed_at": row.get("completed_at"),
+                "status": row.get("status"),
+                "item_counts": row.get("item_counts") or {},
+                "error": row.get("error"),
+                "source_table": "sync_runs",
+            }
+            for row in self.fetch_all(
+                """
+                SELECT source, started_at, completed_at, status, item_counts, error
+                FROM sync_runs
+                ORDER BY completed_at DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+        ]
 
     def events_between(
         self, start: str, end: str, symbol: str | None = None, limit: int = 300
@@ -1418,6 +1537,7 @@ class QueryMixin:
         for event in events:
             mapped = macro_impact(event, themes)
             if mapped:
+                mapped["row_thesis"] = impact_row_thesis(mapped)
                 analyzed.append(mapped)
             else:
                 unanalyzed.append(event)

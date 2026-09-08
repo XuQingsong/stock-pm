@@ -485,6 +485,23 @@ def main() -> None:
             for symbol in symbols
             if (review := generate_review(database, symbol, force_llm=args.force_llm))
         ]
+        try:
+            briefing = database.briefing()
+            env = briefing.get("environment")
+            if env:
+                database.append_environment_snapshot(env)
+            alerts = briefing.get("alerts") or []
+            if alerts:
+                database.append_severity_alerts(alerts)
+            database.append_job_run(
+                {
+                    "job_name": "review",
+                    "status": "success",
+                    "item_counts": {"reviews": len(reviews)},
+                }
+            )
+        except Exception:
+            pass
     finally:
         database.close()
     print(

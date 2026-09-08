@@ -235,8 +235,11 @@ class FakeDatabase:
                 "has_reviews": False,
                 "rows": [],
                 "hit_rate": {"all": {"samples": 0, "hits": 0, "rate_pct": None},
+                             "loop": {"samples": 0, "hits": 0, "rate_pct": None},
                              "confirmed": {"samples": 0, "hits": 0, "rate_pct": None},
+                             "confirm_required": False,
                              "by_symbol": {}},
+                "confirm_required": False,
             }
         return {
             "date": date or "2026-09-04",
@@ -255,10 +258,30 @@ class FakeDatabase:
             }],
             "hit_rate": {
                 "all": {"samples": 2, "hits": 1, "rate_pct": 50.0},
+                "loop": {"samples": 2, "hits": 1, "rate_pct": 50.0},
                 "confirmed": {"samples": 0, "hits": 0, "rate_pct": None},
+                "confirm_required": False,
                 "by_symbol": {},
             },
+            "confirm_required": False,
         }
+
+    def shell_state(self, date=None, symbol=None):
+        from stock_pm.philosophy import build_shell
+
+        briefing = self.briefing(date)
+        options = self.cboe_option_stats(date)
+        return build_shell(
+            briefing=briefing,
+            options={"status": "ok", **options} if options else {"status": "missing"},
+            snapshots=self.latest_snapshots([symbol] if symbol else None),
+            impact=self.market_impact(),
+            sync=self.sync_status(),
+            symbol=symbol,
+        )
+
+    def job_runs(self, limit=20):
+        return []
 
     def update_review_user(self, symbol, review_date, body):
         self.patched = {"symbol": symbol, "review_date": review_date, **body}
@@ -285,7 +308,14 @@ def test_pages_render(monkeypatch):
     assert "模型额度已用尽" in review_page
     assert "当日休市，暂无复盘" in review_page
     assert "toISOString" not in review_page
-    assert "Cboe 期权市场概览" in c.get("/").text
+    assert "期权市场概览" in c.get("/").text
+    assert "stock-pm-cboe" not in c.get("/").text
+    assert "stock-pm-review" not in c.get("/").text
+    assert "stock-pm-flow" not in c.get("/review").text
+    assert "保存确认" not in c.get("/review").text
+    assert "尚未确认" not in c.get("/review").text
+    assert "保存备注" in c.get("/review").text
+    assert "自动循环" in c.get("/review").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
 
@@ -339,6 +369,7 @@ def test_stock_group(monkeypatch):
     briefing = c.get("/api/briefing?date=2026-09-04").json()
     assert briefing["rows"][0]["health"] == "趋势健康"
     assert briefing["has_reviews"] is True
+    assert briefing["confirm_required"] is False
     holiday = c.get("/api/briefing?date=2026-09-07").json()
     assert holiday["rows"] == []
     assert holiday["has_reviews"] is False
@@ -424,3 +455,28 @@ def test_macro_events(monkeypatch):
     )
     assert response.status_code == 200
     assert c.get("/api/macro/events").json()[0]["name"] == "非农"
+
+
+def test_shell_and_environment_endpoints(monkeypatch):
+    c = client(monkeypatch)
+    shell = c.get("/api/shell?date=2026-09-04").json()
+    assert "explicit_state" in shell
+    assert shell["explicit_state"]["code"] in {"face_slap", "overdue", "missing", "clear"}
+    assert shell["explicit_state"]["prediction_ready"] is False
+    assert "environment" in shell
+    assert shell["environment"]["publishState"] in {"published", "draft", "stale", "missing"}
+    assert "missingFlags" in shell["environment"]
+    env = c.get("/api/environment?date=2026-09-04").json()
+    assert env["one_liner"]
+    assert env["prediction_ready"] is False
+    assert c.get("/api/jobs").status_code == 200
+    assert c.get("/api/shell?date=bad").status_code == 400
+
+
+def test_static_shell_assets(monkeypatch):
+    c = client(monkeypatch)
+    assert c.get("/static/shell.js").status_code == 200
+    assert c.get("/static/shell.css").status_code == 200
+    home = c.get("/").text
+    assert 'id="stock-pm-shell"' in home
+    assert "/static/shell.js" in home

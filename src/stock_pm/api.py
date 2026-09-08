@@ -30,7 +30,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Stock PM",
-    version="0.6.0",
+    version="0.7.0",
     description="Watchlist analysis API backed by Alpaca data in PostgreSQL.",
     lifespan=lifespan,
 )
@@ -445,6 +445,54 @@ def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
         return database.briefing(date_)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/shell")
+def shell_state(
+    date_: Annotated[str | None, Query(alias="date")] = None,
+    symbol: str | None = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if symbol and not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.shell_state(date_, symbol.upper() if symbol else None)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/environment")
+def environment_snapshot(
+    date_: Annotated[str | None, Query(alias="date")] = None,
+    symbol: str | None = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if symbol and not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        payload = database.shell_state(date_, symbol.upper() if symbol else None)
+        return payload.get("environment") or {
+            "publishState": "missing",
+            "missingFlags": ["environment"],
+            "one_liner": "隔夜环境半句暂缺。",
+            "prediction_ready": False,
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/jobs")
+def job_runs(limit: int = Query(20, ge=1, le=100)) -> list[dict]:
+    try:
+        return database.job_runs(limit)
     except DatabaseError as exc:
         raise _http_error(exc) from exc
 

@@ -363,3 +363,53 @@ CREATE TABLE IF NOT EXISTS cboe_option_stats (
     raw JSONB NOT NULL DEFAULT '{}'::jsonb,
     captured_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Slice A: append-only environment half-sentences. Never upsert a date away.
+CREATE TABLE IF NOT EXISTS environment_snapshots (
+    id BIGSERIAL PRIMARY KEY,
+    as_of_date DATE NOT NULL,
+    scope TEXT NOT NULL DEFAULT 'market'
+        CHECK (scope IN ('market', 'symbol')),
+    symbol TEXT,
+    one_liner TEXT,
+    row_thesis TEXT,
+    struct JSONB NOT NULL DEFAULT '{}'::jsonb,
+    missing_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    publish_state TEXT NOT NULL DEFAULT 'draft'
+        CHECK (publish_state IN ('draft', 'published', 'stale', 'missing')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_environment_snapshots_date
+    ON environment_snapshots (as_of_date DESC, scope, symbol, created_at DESC);
+
+-- Slice A: severe alerts. History is append-only; hide by resolving, do not delete.
+CREATE TABLE IF NOT EXISTS severity_alerts (
+    id BIGSERIAL PRIMARY KEY,
+    alert_key TEXT NOT NULL,
+    severity TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'severe')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    symbol TEXT,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_severity_alerts_active
+    ON severity_alerts (active, severity, created_at DESC);
+
+-- Slice A stub: dedicated job log. sync_runs remains the live Alpaca collector.
+CREATE TABLE IF NOT EXISTS job_runs (
+    id BIGSERIAL PRIMARY KEY,
+    job_name TEXT NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMPTZ,
+    status TEXT NOT NULL DEFAULT 'running'
+        CHECK (status IN ('running', 'success', 'partial', 'failed', 'skipped')),
+    item_counts JSONB NOT NULL DEFAULT '{}'::jsonb,
+    error TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_job_runs_name_time
+    ON job_runs (job_name, started_at DESC);
