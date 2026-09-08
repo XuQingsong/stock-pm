@@ -67,6 +67,7 @@ stock-pm
 - 管理：`GET/POST /api/watchlist`、`DELETE /api/watchlist/{symbol}`、`GET /api/sync/status`、`GET /health`
 - 全列表：`/api/market/snapshot | signals | technicals | events | news | earnings/recent | impact`
 - 单标的：`/api/stock/{symbol}/chart?interval=`、`earnings/summary`、`valuation/history`、`volume-profile`、`capital-flow`，以及既有的 `intraday | segments | large-trades | overview | fundamentals | earnings | sentiment | options | news | reviews | history`
+- 环境：`GET /api/environment`、`GET /api/environment?symbol=`、`GET /api/environment/history?symbol=`（只追加，不覆盖旧半句）
 - 回放：`/api/replay/day?date=`、`/api/replay/range?symbol=&from=&to=`
 - 宏观：`GET/POST /api/macro/events`（POST 用于补录实际值或 FOMC 结果）
 
@@ -115,6 +116,7 @@ stock-pm-flow --days 7        # 回填过去一周的分段量价与大额成交
 stock-pm-flow --date 2026-09-04
 stock-pm-macro                # 同步宏观日历；配置 FRED_API_KEY 后自动补非农/CPI/PCE 实际值
 stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
+stock-pm-environment          # 盘后追加 EnvironmentSnapshot（失败写 missing，不覆盖旧行）
 ```
 
 - 大额成交阈值默认 $200,000（`LARGE_TRADE_NOTIONAL`）；方向由 tick rule 推断，页面上均标注"推断"。

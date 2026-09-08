@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from stock_pm.environment import is_causal_chain
 from stock_pm.philosophy import (
     build_shell,
     derive_explicit_state,
@@ -109,9 +110,12 @@ def test_environment_one_liner_joins_facts() -> None:
     )
     assert env["publishState"] == "published"
     assert env["missingFlags"] == []
-    assert "认沽偏多" in env["one_liner"]
-    assert "趋势健康" in env["one_liner"]
-    assert "降息预期升温" in env["one_liner"]
+    line = env["one_liner"]
+    assert is_causal_chain(line)
+    assert "趋势健康" in line
+    assert "降息预期升温" in line
+    assert "认沽偏多" in (env["struct"]["options"] or {}).get("clause", "")
+    assert not line.startswith("期权")
 
 
 def test_conflict_row_is_one_sentence() -> None:
@@ -129,8 +133,11 @@ def test_conflict_row_is_one_sentence() -> None:
             },
         }
     )
+    assert is_causal_chain(thesis)
     assert "不当成两套并列结论" in thesis
     assert "芯片股获上调" in thesis
+    assert "可能相关" not in thesis
+    assert thesis.find("。") > thesis.find("因此")
     mapped = impact_row_thesis(
         {
             "narrative": "非农弱于预期 → 降息预期升温",
