@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Stock PM · 每日复盘</title>
+<link rel="stylesheet" href="/static/shell.css">
 <style>
 :root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb;--amber:#b45309}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -41,9 +42,10 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;t
 </head>
 <body><main class="shell">
 <header class="top">
-  <div><h1>每日复盘</h1><div class="hint" style="color:#ffffffaa">隔日简报 · 模型解释 · 确认明日看法 · 次日对照</div></div>
+  <div><h1>每日复盘</h1><div class="hint" style="color:#ffffffaa">隔日简报 · 自动循环 · 可选备注 · 次日对照</div></div>
   <nav class="nav"><a href="/">总览</a><a href="/replay">盘面回放</a><a class="active" href="/review">复盘</a><a href="/settings">设置</a></nav>
 </header>
+<div id="stock-pm-shell"></div>
 <section class="panel">
   <div class="controls">
     <label class="field"><span>复盘日期</span><input type="date" id="date"></label>
@@ -52,12 +54,13 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;t
   <div class="hint" style="margin-top:6px">打开页面只读数据库，不会调用模型。若上次因额度不足失败，刷新本页会自动再请求一次。量价、新闻、宏观没变时会复用已保存的解释。</div>
 </section>
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
-<section class="panel" id="options-panel"><h2>Cboe 期权市场概览</h2><div id="options-overview" class="hint">加载中…</div></section>
-<section class="panel" id="hit-panel"><h2>近两周命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
+<section class="panel" id="options-panel" style="display:none"><h2>期权市场概览</h2><div id="options-overview" class="hint">加载中…</div></section>
+<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周自动循环命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
 <section class="panel" id="macro-panel" style="display:none"><h2>当日宏观</h2><div id="macro"></div></section>
 <section class="panel"><h2>自选复盘</h2><div id="reviews" class="grid"></div></section>
 <section class="panel"><h2>日内分段摘要</h2><div id="segments"></div></section>
 </main>
+<script src="/static/shell.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const j=(u,opt)=>fetch(u,opt).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.detail||`${u} ${r.status}`);return body});
@@ -69,7 +72,7 @@ const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
 function compact(v){return v==null?'—':Number(v).toLocaleString(undefined,{notation:'compact',maximumFractionDigits:2})}
 function wanZhang(v){return v==null?'—':(Number(v)/10000).toLocaleString('zh-CN',{maximumFractionDigits:2})+'万张'}
 function renderOptionsOverview(opt){
-  if(!opt||opt.status==='missing') return '暂无 Cboe 日终统计。运行 <code>stock-pm-cboe</code> 后刷新。';
+  if(!opt||opt.status==='missing') return null;
   const buckets=opt.buckets||[];
   const colors={index:'#2563eb',equity:'#0f9d72',etp:'#b45309'};
   const mix=buckets.map(b=>`<i style="width:${Number(b.volume_pct||0)}%;background:${colors[b.key]||'#94a3b8'}"></i>`).join('');
@@ -83,6 +86,16 @@ function renderOptionsOverview(opt){
     </div>
     <div class="mix">${mix}</div>
     <div class="mix-legend">${legend}</div>`;
+}
+function showOptions(opt){
+  const html=renderOptionsOverview(opt);
+  if(html){
+    $('options-panel').style.display='';
+    $('options-overview').innerHTML=html;
+  }else{
+    $('options-panel').style.display='none';
+    $('options-overview').innerHTML='';
+  }
 }
 function llmBanner(row){
   const status=row.llm_status;
@@ -109,7 +122,6 @@ function newsBlock(context){
 function card(row){
   const date=String(row.review_date||$('date').value).slice(0,10);
   const prior=row.prior_outcome;
-  const draftBias=row.user_bias||row.llm_bias||row.rule_bias||'中性';
   return `<article class="card" data-symbol="${esc(row.symbol)}" data-date="${esc(date)}">
     <div class="card-head"><div><b><a href="/stock/${esc(row.symbol)}#review" style="color:inherit">${esc(row.symbol)}</a></b>
       <div class="hint">${esc(row.health||'—')} · ${esc(row.ma_position||'—')} · ${esc(row.breakout_status||'—')}</div></div>
@@ -120,7 +132,7 @@ function card(row){
       <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
       <div><span>支撑 / 压力</span><b>${money(row.support_price)} / ${money(row.resistance_price)}</b></div>
     </div>
-    <p class="summary">${esc(row.tape||row.summary||'—')}</p>
+    <p class="summary">${esc(row.row_thesis||row.tape||row.summary||'—')}</p>
     ${llmBanner(row)}
     <h3 style="margin:12px 0 4px;font-size:13px">可能解释走势的资料</h3>
     ${newsBlock(row.context)}
@@ -128,17 +140,21 @@ function card(row){
     <p class="summary">${esc(row.llm_why||'未生成')}</p>
     <h3 style="margin:12px 0 4px;font-size:13px">规则拟稿</h3>
     <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}</div>
-    <h3 style="margin:12px 0 4px;font-size:13px">模型明日看法</h3>
-    <p class="summary">${esc(row.llm_outlook||'未生成')} <span class="chip">${esc(row.llm_bias||'—')}</span></p>
-    <h3 style="margin:12px 0 4px;font-size:13px">我的明日看法</h3>
-    <div class="form-row">
-      <select class="user-bias">
-        ${['偏多','中性','偏空','观望'].map(v=>`<option value="${v}"${draftBias===v?' selected':''}>${v}</option>`).join('')}
-      </select>
-    </div>
-    <textarea class="user-outlook" placeholder="确认或改写明日看法">${esc(row.user_outlook||row.llm_outlook||'')}</textarea>
-    <textarea class="user-note" placeholder="原因假设或备注">${esc(row.user_note||'')}</textarea>
-    <div class="form-row"><button class="save">保存确认</button><span class="hint save-status">${row.user_confirmed_at?'已确认 '+esc(String(row.user_confirmed_at).slice(0,16)):'尚未确认'}</span></div>
+    <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法</h3>
+    <p class="summary">${esc(row.llm_outlook||'未生成')} <span class="chip">${esc(row.active_bias||row.llm_bias||row.rule_bias||'—')}</span>
+      <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不需要每日确认</span></p>
+    <details class="fold" ${row.user_bias||row.user_outlook||row.user_note?'open':''}>
+      <summary>折叠：可选备注（不写则沿用自动判断）</summary>
+      <div class="form-row">
+        <select class="user-bias">
+          <option value=""${row.user_bias?'':' selected'}>沿用自动判断</option>
+          ${['偏多','中性','偏空','观望'].map(v=>`<option value="${v}"${row.user_bias===v?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <textarea class="user-outlook" placeholder="可选改写明日看法，留空则沿用模型/规则">${esc(row.user_outlook||'')}</textarea>
+      <textarea class="user-note" placeholder="原因假设或备注">${esc(row.user_note||'')}</textarea>
+      <div class="form-row"><button class="save">保存备注</button><span class="hint save-status">${row.user_note||row.user_outlook||row.user_bias?'已有备注':'未写备注'}</span></div>
+    </details>
     <div class="hint" style="margin-top:8px">上一判断：${prior?`${esc(prior.bias||'—')} → ${esc(prior.outcome_vs_bias||'—')}（${pct(prior.outcome_return_pct)}）`:'暂无对照'}</div>
     <div class="links" style="margin-top:8px">
       <a href="/replay?symbol=${esc(row.symbol)}&from=${esc(date)}&to=${esc(date)}">分钟回放</a>
@@ -156,7 +172,7 @@ async function saveCard(cardEl){
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        user_bias:cardEl.querySelector('.user-bias').value,
+        user_bias:cardEl.querySelector('.user-bias').value||null,
         user_outlook:cardEl.querySelector('.user-outlook').value,
         user_note:cardEl.querySelector('.user-note').value
       })
@@ -184,17 +200,19 @@ async function loadReview(){
     if(session.is_trading_day===false){
       $('reviews').innerHTML=closedMessage(session, date);
       $('segments').innerHTML='<div class="hint">休市日没有日内分段。</div>';
-      $('options-overview').innerHTML=renderOptionsOverview(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
+      showOptions(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
       $('hit-rate').innerHTML='休市日不统计当日命中率。';
       $('macro-panel').style.display='none';
       history.replaceState(null,'',`/review?date=${date}`);
+      if(window.mountStockPmShell) await window.mountStockPmShell({date});
       return;
     }
     if(!briefing.has_reviews || !(briefing.rows||[]).length){
       $('reviews').innerHTML=emptyReviewMessage(date);
       $('segments').innerHTML='<div class="hint">当日暂无分段。</div>';
-      $('options-overview').innerHTML=renderOptionsOverview(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
+      showOptions(await j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'})));
       history.replaceState(null,'',`/review?date=${date}`);
+      if(window.mountStockPmShell) await window.mountStockPmShell({date});
       return;
     }
     const needsRetry=(briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted');
@@ -219,11 +237,11 @@ async function loadReview(){
       j(`/api/replay/day?date=${date}`),
       j(`/api/market/options-overview?date=${date}`).catch(()=>({status:'missing'}))
     ]);
-    $('options-overview').innerHTML=renderOptionsOverview(options);
+    showOptions(options);
     const hit=briefing.hit_rate||{};
-    const confirmed=hit.confirmed||{};
-    const all=hit.all||{};
-    $('hit-rate').innerHTML=`你确认过的记录 ${num(confirmed.hits,0)}/${num(confirmed.samples,0)} 符合（${confirmed.rate_pct==null?'—':confirmed.rate_pct+'%'}）；全部对照 ${num(all.hits,0)}/${num(all.samples,0)}。`;
+    const all=hit.loop||hit.all||{};
+    const notes=hit.notes_saved||hit.confirmed||{};
+    $('hit-rate').innerHTML=`自动循环对照 ${num(all.hits,0)}/${num(all.samples,0)} 符合（${all.rate_pct==null?'—':all.rate_pct+'%'}）。无需每日确认。历史备注记录 ${num(notes.hits,0)}/${num(notes.samples,0)}。`;
     $('reviews').innerHTML=(briefing.rows||[]).map(card).join('');
     $('reviews').querySelectorAll('.save').forEach(btn=>btn.onclick=()=>saveCard(btn.closest('.card')));
     const segs=day.segments_summary||[];
@@ -232,11 +250,12 @@ async function loadReview(){
         <td class="up">${compact(row.large_buy_notional)}</td><td class="down">${compact(row.large_sell_notional)}</td>
         <td class="up">${pct(row.largest_up&&row.largest_up.change_pct)}</td>
         <td class="down">${pct(row.largest_down&&row.largest_down.change_pct)}</td></tr>`).join('')
-    }</tbody></table></div>`:'<div class="hint">当日暂无分段。运行 stock-pm-flow 后刷新。</div>';
+    }</tbody></table></div>`:'<div class="hint">日内分段数据暂缺。</div>';
     const macro=day.macro||[];
     $('macro-panel').style.display=macro.length?'':'none';
     $('macro').innerHTML=macro.map(m=>`<div class="macro"><b>${esc(m.name)}</b> <span class="hint">${new Date(m.event_time).toLocaleString('zh-CN')} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')} · ${esc(m.surprise)}</span></div>`).join('');
     history.replaceState(null,'',`/review?date=${date}`);
+    if(window.mountStockPmShell) await window.mountStockPmShell({date});
   }catch(e){$('reviews').innerHTML=`<div class="error">${esc(e.message)}</div>`}
   finally{$('load').disabled=false;$('load').textContent='加载复盘'}
 }
