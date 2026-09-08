@@ -1,11 +1,19 @@
 # 过程文档（中间产物）
 
+产品需求见 [requirements.md](requirements.md)。只写描述过的目标，用来评审成品是否答得上基本面/消息/情绪、盘面关联判断、以及带预测与迭代的复盘；不是现行实现说明书。
+
 讨论里生成的评估、方案、对照表会同时留两份：
 
 1. **仓库里（跟代码一起上 GitHub）**：本目录。换电脑或过几个月，打开这个仓库就能找到。
 2. **Cursor 里可交互打开**：`C:\Users\11737\.cursor\projects\d-workspace-stock-pm\canvases\`。在 Cursor 中点开 `.canvas.tsx` 可在聊天旁渲染。
 
 聊天记录本身在 `C:\Users\11737\.cursor\projects\d-workspace-stock-pm\agent-transcripts\`，不是这些评估文件。
+
+## 现行规格
+
+| 文件 | 内容 |
+| --- | --- |
+| [requirements.md](requirements.md) | 按描述整理的产品需求：基本面/消息面/情绪面、盘面关联判断、带量化预测与打脸跟踪的复盘 |
 
 ## canvases/
 
