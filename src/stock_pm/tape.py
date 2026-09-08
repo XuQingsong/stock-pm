@@ -317,22 +317,52 @@ def _structure_break(break_block: dict | None) -> bool | None:
 
 
 def _missing_weak_block(**extra: Any) -> dict:
-    return {
-        "status": "missing",
-        "inferred": False,
-        "lags_significantly": extra.get("lags_significantly"),
-        "structure_break": extra.get("structure_break"),
-        "volume_down": extra.get("volume_down"),
-        "structure_or_volume_down": extra.get("structure_or_volume_down"),
-        "benchmark": extra.get("benchmark"),
-        "benchmark_kind": extra.get("benchmark_kind"),
-        "prior_stock_return_pct": extra.get("prior_stock_return_pct"),
-        "prior_benchmark_return_pct": extra.get("prior_benchmark_return_pct"),
-        "prior_relative_return_pct": extra.get("prior_relative_return_pct"),
-        "confirm_5d_relative_return_pct": extra.get("confirm_5d_relative_return_pct"),
-        "lag_threshold_pp": SIGNIFICANT_LAG_PP,
-        "clause": extra.get("clause") or WEAK_MISSING_CLAUSE,
-    }
+    return _with_weak_facts(
+        {
+            "status": "missing",
+            "inferred": False,
+            "lags_significantly": extra.get("lags_significantly"),
+            "structure_break": extra.get("structure_break"),
+            "volume_down": extra.get("volume_down"),
+            "structure_or_volume_down": extra.get("structure_or_volume_down"),
+            "benchmark": extra.get("benchmark"),
+            "benchmark_kind": extra.get("benchmark_kind"),
+            "prior_stock_return_pct": extra.get("prior_stock_return_pct"),
+            "prior_benchmark_return_pct": extra.get("prior_benchmark_return_pct"),
+            "prior_relative_return_pct": extra.get("prior_relative_return_pct"),
+            "confirm_5d_relative_return_pct": extra.get("confirm_5d_relative_return_pct"),
+            "lag_threshold_pp": SIGNIFICANT_LAG_PP,
+            "clause": extra.get("clause") or WEAK_MISSING_CLAUSE,
+        }
+    )
+
+
+def weak_vs_env_facts_line(weak: dict | None) -> str:
+    """UI/API contract: benchmark, prior relative, break-or-volume, conclusion."""
+    weak = weak or {}
+    bench = weak.get("benchmark") or "暂缺"
+    rel = weak.get("prior_relative_return_pct")
+    rel_s = "暂缺" if rel is None else f"{rel:+.1f}%"
+    path = weak.get("structure_or_volume_down")
+    if path is True:
+        path_s = "是"
+    elif path is False:
+        path_s = "否"
+    else:
+        path_s = "暂缺"
+    status = weak.get("status")
+    if status == "weak":
+        conc = "弱于环境"
+    elif status == "not_weak":
+        conc = "并非弱于环境"
+    else:
+        conc = "无法判定"
+    return f"基准 {bench} · 昨收相对 {rel_s} · 破位或放量跌 {path_s} · 结论 {conc}"
+
+
+def _with_weak_facts(block: dict) -> dict:
+    block["facts_line"] = weak_vs_env_facts_line(block)
+    return block
 
 
 def _weak_vs_env(
@@ -394,7 +424,7 @@ def _weak_vs_env(
         if relative_5d is not None:
             bits.append(f"近5日相对{_pct(relative_5d)}确认落后")
         clause = "；".join(bits) + "；判定弱于环境。"
-        return {**facts, "status": "weak", "clause": clause}, False
+        return _with_weak_facts({**facts, "status": "weak", "clause": clause}), False
     if (
         not lags
         and stock_1d is not None
@@ -420,7 +450,7 @@ def _weak_vs_env(
             f"相对{name}昨收{_pct(relative_1d)}，"
             "不满足显著落后且（破位或放量跌），不判定弱于环境。"
         )
-    return {**facts, "status": "not_weak", "clause": clause}, False
+    return _with_weak_facts({**facts, "status": "not_weak", "clause": clause}), False
 
 
 def env_tape_conflict_sentence(environment: dict | None, tape: dict | None) -> str:

@@ -5,6 +5,21 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   })[c]);
 
+  function weakVsEnvDisplay(weak, fallbackClause) {
+    const row = weak || {};
+    const bench = row.benchmark || "暂缺";
+    const rel = row.prior_relative_return_pct;
+    const relText = (rel === null || rel === undefined) ? "暂缺" : `${Number(rel) > 0 ? "+" : ""}${rel}%`;
+    const path = row.structure_or_volume_down;
+    const pathText = path === true ? "是" : path === false ? "否" : "暂缺";
+    let conc = "无法判定";
+    if (row.status === "weak") conc = "弱于环境";
+    else if (row.status === "not_weak") conc = "并非弱于环境";
+    const facts = `基准 ${bench} · 昨收相对 ${relText} · 破位或放量跌 ${pathText} · 结论 ${conc}`;
+    const clause = row.clause || fallbackClause || "相对收益或破位路径暂缺，无法判定弱于环境，不编造偏弱。";
+    return `${clause} ${facts}`;
+  }
+
   const FLAG_LABELS = {
     options: "期权概览",
     macro: "宏观",
@@ -70,7 +85,7 @@
       { title: "筹码与支撑压力", clause: tapeAnswers.q2_chips || (tape.chips && tape.chips.clause) || "筹码带与支撑压力暂缺，不编价位" },
       { title: "破位走法", clause: tapeAnswers.q3_break || (tape.break && tape.break.clause) || "破位走法暂缺，不编拉回续杀" },
       { title: "对照环境", clause: tapeAnswers.q4_env_link || (tape.env_link && tape.env_link.clause) || "环境依据不足，不编诱多/转势/吸筹/逃跑" },
-      { title: "弱于环境", clause: tapeAnswers.q5_weak_vs_env || (tape.weak_vs_env && tape.weak_vs_env.clause) || "相对收益或破位路径暂缺，无法判定弱于环境，不编造偏弱。", missing: tapeFlags.indexOf("weak_vs_env") >= 0 || (tape.weak_vs_env && tape.weak_vs_env.status === "missing") }
+      { title: "弱于环境", clause: weakVsEnvDisplay(tape.weak_vs_env, tapeAnswers.q5_weak_vs_env), missing: tapeFlags.indexOf("weak_vs_env") >= 0 || (tape.weak_vs_env && tape.weak_vs_env.status === "missing") }
     ];
     const zoneB = (options && options.symbol)
       ? `<section class="zone zone-b" data-zone="B">

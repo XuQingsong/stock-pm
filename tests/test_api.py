@@ -612,6 +612,9 @@ def test_static_shell_assets(monkeypatch):
     js = c.get("/static/shell.js").text
     assert 'data-zone="tape"' in js
     assert "弱于环境" in js
+    assert "昨收相对" in js
+    assert "破位或放量跌" in js
+    assert "无法判定" in js
     assert "不编造偏弱" in js
     assert 'data-zone="review"' in js
     assert "预测状态机尚未接入，不编时间窗口或涨跌边界" in js
@@ -629,6 +632,15 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     }
     assert tape["prediction_ready"] is False
     assert "missingFlags" in tape
+    weak = tape["weak_vs_env"]
+    assert weak
+    assert "conflict" not in weak
+    assert "benchmark" in weak
+    assert "prior_relative_return_pct" in weak
+    assert "structure_or_volume_down" in weak
+    assert weak["status"] in {"weak", "not_weak", "missing"}
+    assert weak["inferred"] is False
+    assert "昨收相对" in (weak.get("facts_line") or "")
     assert c.get("/api/stock/NVDA/tape/history").json() == []
     notes = c.get("/api/stock/NVDA/review-notes?date=2026-09-04").json()
     assert notes and notes[0]["summary"]

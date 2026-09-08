@@ -294,6 +294,11 @@ def test_weak_vs_env_requires_lag_and_break_or_volume_down() -> None:
     assert weak["structure_or_volume_down"] is True
     assert "推断" not in weak["clause"]
     assert "弱于环境" in weak["clause"]
+    assert "conflict" not in weak
+    assert weak["facts_line"].startswith("基准 ")
+    assert "昨收相对" in weak["facts_line"]
+    assert "破位或放量跌" in weak["facts_line"]
+    assert "结论 弱于环境" in weak["facts_line"]
     assert tape["struct"]["answers"]["q5_weak_vs_env"] == weak["clause"]
 
 
@@ -355,6 +360,8 @@ def test_weak_vs_env_missing_relative_is_honest() -> None:
     assert "不编造偏弱" in weak["clause"]
     assert "推断" not in weak["clause"]
     assert weak["prior_relative_return_pct"] is None
+    assert "结论 无法判定" in weak["facts_line"]
+    assert "conflict" not in weak
 
 
 def test_weak_vs_env_lag_without_break_or_volume_down_is_not_weak() -> None:
