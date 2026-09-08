@@ -31,7 +31,11 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Stock PM",
     version="0.7.0",
-    description="Watchlist analysis API backed by Alpaca data in PostgreSQL.",
+    description=(
+        "Watchlist analysis API. Knife 2: per-symbol EnvironmentSnapshot "
+        "(/api/environment, /api/environment/history) with field-level "
+        "missingFlags and append-only publishState."
+    ),
     lifespan=lifespan,
 )
 
@@ -476,13 +480,22 @@ def environment_snapshot(
             date.fromisoformat(date_)
         if symbol and not SYMBOL_PATTERN.fullmatch(symbol.upper()):
             raise ValueError("invalid symbol")
-        payload = database.shell_state(date_, symbol.upper() if symbol else None)
-        return payload.get("environment") or {
-            "publishState": "missing",
-            "missingFlags": ["environment"],
-            "one_liner": "隔夜环境半句暂缺。",
-            "prediction_ready": False,
-        }
+        return database.environment_payload(date_, symbol.upper() if symbol else None)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/environment/history")
+def environment_history(
+    symbol: str,
+    limit: int = Query(30, ge=1, le=120),
+) -> list[dict]:
+    try:
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.environment_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except DatabaseError as exc:

@@ -477,6 +477,8 @@ def main() -> None:
     )
     args = parser.parse_args()
     database = Database()
+    reviews: list[dict] = []
+    env_result: dict = {"status": "missing"}
     try:
         database.initialize()
         symbols = args.symbols or database.active_symbols()
@@ -485,11 +487,10 @@ def main() -> None:
             for symbol in symbols
             if (review := generate_review(database, symbol, force_llm=args.force_llm))
         ]
+        from .environment_job import publish_environment_snapshots
+
         try:
             briefing = database.briefing()
-            env = briefing.get("environment")
-            if env:
-                database.append_environment_snapshot(env)
             alerts = briefing.get("alerts") or []
             if alerts:
                 database.append_severity_alerts(alerts)
@@ -500,8 +501,23 @@ def main() -> None:
                     "item_counts": {"reviews": len(reviews)},
                 }
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            print(
+                json.dumps(
+                    {"review_shell_error": str(exc)},
+                    ensure_ascii=False,
+                )
+            )
+        try:
+            env_result = publish_environment_snapshots(database, symbols=symbols)
+        except Exception as exc:
+            env_result = {"status": "failed", "error": str(exc), "publishState": "missing"}
+            print(
+                json.dumps(
+                    {"environment_publish_error": str(exc)},
+                    ensure_ascii=False,
+                )
+            )
     finally:
         database.close()
     print(
@@ -510,6 +526,11 @@ def main() -> None:
                 "reviews": reviews,
                 "llm_called": sum(1 for row in reviews if not row.get("llm_cached")),
                 "llm_cached": sum(1 for row in reviews if row.get("llm_cached")),
+                "environment": {
+                    "status": env_result.get("status"),
+                    "written": env_result.get("written"),
+                    "errors": env_result.get("errors"),
+                },
             },
             ensure_ascii=False,
             default=str,

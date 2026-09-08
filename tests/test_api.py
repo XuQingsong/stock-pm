@@ -271,6 +271,7 @@ class FakeDatabase:
 
         briefing = self.briefing(date)
         options = self.cboe_option_stats(date)
+        symbol_env = self.environment_payload(date, symbol) if symbol else None
         return build_shell(
             briefing=briefing,
             options={"status": "ok", **options} if options else {"status": "missing"},
@@ -278,7 +279,41 @@ class FakeDatabase:
             impact=self.market_impact(),
             sync=self.sync_status(),
             symbol=symbol,
+            symbol_environment=symbol_env,
         )
+
+    def environment_payload(self, date=None, symbol=None):
+        from stock_pm.environment import synthesize_symbol_environment
+        from stock_pm.philosophy import synthesize_environment
+
+        briefing = self.briefing(date)
+        if not symbol:
+            options = self.cboe_option_stats(date)
+            return synthesize_environment(
+                as_of_date=date or briefing.get("date"),
+                briefing_rows=briefing.get("rows") or [],
+                options={"status": "ok", **options} if options else {"status": "missing"},
+                impact=self.market_impact(),
+                session=briefing.get("session"),
+            )
+        row = next(
+            (
+                item
+                for item in briefing.get("rows") or []
+                if str(item.get("symbol") or "").upper() == symbol.upper()
+            ),
+            {"symbol": symbol, "health": "观察"},
+        )
+        return synthesize_symbol_environment(
+            as_of_date=date or briefing.get("date") or "2026-09-04",
+            symbol=symbol,
+            technical=row,
+            briefing_row=row,
+            session=self.market_session(date),
+        )
+
+    def environment_history(self, symbol, limit=30):
+        return []
 
     def job_runs(self, limit=20):
         return []
@@ -469,13 +504,24 @@ def test_shell_and_environment_endpoints(monkeypatch):
     env = c.get("/api/environment?date=2026-09-04").json()
     assert env["one_liner"]
     assert env["prediction_ready"] is False
+    symbol_env = c.get("/api/environment?date=2026-09-04&symbol=NVDA").json()
+    assert symbol_env["scope"] == "symbol"
+    assert symbol_env["symbol"] == "NVDA"
+    assert "struct" in symbol_env
+    assert "missingFlags" in symbol_env
+    history = c.get("/api/environment/history?symbol=NVDA")
+    assert history.status_code == 200
+    assert history.json() == []
     assert c.get("/api/jobs").status_code == 200
     assert c.get("/api/shell?date=bad").status_code == 400
 
 
 def test_static_shell_assets(monkeypatch):
     c = client(monkeypatch)
-    assert c.get("/static/shell.js").status_code == 200
+    js = c.get("/static/shell.js")
+    assert js.status_code == 200
+    assert "zone-b" in js.text
+    assert "折叠材料" in js.text
     assert c.get("/static/shell.css").status_code == 200
     home = c.get("/").text
     assert 'id="stock-pm-shell"' in home

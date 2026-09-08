@@ -23,6 +23,11 @@ from .analytics import (
     volume_profile,
     yoy_from_rows,
 )
+from .environment import (
+    failed_snapshot,
+    snapshot_from_row,
+    synthesize_symbol_environment,
+)
 from .impact import macro_impact, news_impacts, THEME_NAMES
 from .philosophy import (
     build_shell,
@@ -1150,15 +1155,40 @@ class QueryMixin:
         stored = self.reviews_by_date(date) if date else []
         reviews = {row["symbol"]: row for row in stored}
         if not session["is_trading_day"] or not stored:
+            snapshots = {row["symbol"]: row for row in self.latest_snapshots()}
+            rows = []
+            for item in watch:
+                symbol = item["symbol"]
+                tech = technicals.get(symbol) or {}
+                rows.append(
+                    enrich_briefing_row(
+                        {
+                            "symbol": symbol,
+                            "name": item.get("name"),
+                            "sector": item.get("sector"),
+                            "has_review": False,
+                            "health": tape_health(tech) if tech else None,
+                            "return_5d_pct": tech.get("return_5d_pct"),
+                            "return_20d_pct": tech.get("return_20d_pct"),
+                            "return_1y_pct": tech.get("return_1y_pct"),
+                            "rsi14": tech.get("rsi14"),
+                            "volume_ratio_20d": tech.get("volume_ratio_20d"),
+                            "distance_52w_high_pct": tech.get("distance_52w_high_pct"),
+                            "ma_position": ma_position_text(tech) if tech else None,
+                        },
+                        snapshots.get(symbol),
+                    )
+                )
+            self._attach_row_environments(rows, date, session=session, watch=watch)
             payload = {
                 "date": date,
                 "session": session,
                 "has_reviews": False,
-                "rows": [],
+                "rows": rows,
                 "hit_rate": self.review_hit_rate(),
                 "confirm_required": False,
             }
-            return self._with_shell(payload)
+            return self._with_shell(payload, snapshots=list(snapshots.values()))
         prior_rows = self.fetch_all(
             """
             SELECT DISTINCT ON (symbol) *
@@ -1208,7 +1238,9 @@ class QueryMixin:
                     "volume_ratio_20d": tech.get("volume_ratio_20d")
                     or metrics.get("relative_volume"),
                     "return_5d_pct": tech.get("return_5d_pct"),
+                    "return_20d_pct": tech.get("return_20d_pct"),
                     "return_1y_pct": tech.get("return_1y_pct"),
+                    "distance_52w_high_pct": tech.get("distance_52w_high_pct"),
                     "rsi14": tech.get("rsi14"),
                     "ma5": tech.get("ma5"),
                     "ma20": tech.get("ma20"),
@@ -1256,6 +1288,7 @@ class QueryMixin:
                     snap,
                 )
             )
+        self._attach_row_environments(rows, date, session=session, watch=watch)
         payload = {
             "date": date,
             "session": session,
@@ -1266,11 +1299,200 @@ class QueryMixin:
         }
         return self._with_shell(payload, snapshots=list(snapshots.values()))
 
+    def latest_environment_snapshots(self, as_of_date: str | None) -> list[dict]:
+        if not as_of_date:
+            return []
+        rows = self.fetch_all(
+            """
+            SELECT DISTINCT ON (scope, symbol)
+                   id, as_of_date, scope, symbol, one_liner, row_thesis,
+                   struct, missing_flags, publish_state, created_at
+            FROM environment_snapshots
+            WHERE as_of_date = %s
+            ORDER BY scope, symbol, created_at DESC
+            """,
+            (as_of_date,),
+        )
+        return [snapshot_from_row(row) for row in rows if snapshot_from_row(row)]
+
+    def latest_environment_snapshot(
+        self,
+        as_of_date: str | None,
+        scope: str,
+        symbol: str | None = None,
+    ) -> dict | None:
+        if not as_of_date:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, scope, symbol, one_liner, row_thesis,
+                   struct, missing_flags, publish_state, created_at
+            FROM environment_snapshots
+            WHERE as_of_date = %s AND scope = %s
+              AND ((%s IS NULL AND symbol IS NULL) OR symbol = %s)
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, scope, symbol, symbol),
+        )
+        return snapshot_from_row(rows[0]) if rows else None
+
+    def environment_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, scope, symbol, one_liner, row_thesis,
+                   struct, missing_flags, publish_state, created_at
+            FROM environment_snapshots
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s
+            """,
+            (normalized, limit),
+        )
+        return [snapshot_from_row(row) for row in rows if snapshot_from_row(row)]
+
+    def assemble_environment_inputs(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        *,
+        technical: dict | None = None,
+        thesis: dict | None = None,
+        review: dict | None = None,
+        impact: dict | None = None,
+        news: list[dict] | None = None,
+        peer_news: list[dict] | None = None,
+        session: dict | None = None,
+        watch: dict | None = None,
+        briefing_row: dict | None = None,
+    ) -> dict:
+        normalized = self._watchlist_symbol(symbol)
+        session = session or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        watch = watch or next(
+            (row for row in self.watchlist_rows() if row["symbol"] == normalized),
+            {"symbol": normalized},
+        )
+        if technical is None:
+            tech_rows = self.technical_summary([normalized])
+            technical = tech_rows[0] if tech_rows else {}
+        if thesis is None:
+            try:
+                thesis = self.fundamentals_thesis_view(normalized)
+            except Exception:
+                thesis = {}
+        if impact is None:
+            try:
+                impact = self.market_impact()
+            except Exception:
+                impact = {"macro": []}
+        if news is None:
+            try:
+                news = self.news([normalized], limit=24)
+            except Exception:
+                news = []
+        if peer_news is None:
+            peers: list[str] = []
+            theme_map = self.theme_symbols()
+            for theme in watch.get("themes") or []:
+                for peer in theme_map.get(theme, []):
+                    if peer != normalized and peer not in peers:
+                        peers.append(peer)
+            try:
+                peer_news = self.news(peers[:6], limit=24) if peers else []
+            except Exception:
+                peer_news = []
+        if review is None and date:
+            try:
+                review = self.review_row(normalized, date)
+            except Exception:
+                review = None
+        return {
+            "as_of_date": date,
+            "symbol": normalized,
+            "watch": watch,
+            "thesis": thesis or {},
+            "technical": technical or {},
+            "news": news or [],
+            "peer_news": peer_news or [],
+            "impact": impact or {"macro": []},
+            "briefing_row": briefing_row or review,
+            "session": session,
+        }
+
+    def build_live_environment(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        **preloaded: Any,
+    ) -> dict:
+        try:
+            inputs = self.assemble_environment_inputs(symbol, as_of_date, **preloaded)
+            return synthesize_symbol_environment(**inputs, source="live")
+        except Exception as exc:
+            session = preloaded.get("session")
+            date = as_of_date or (session or {}).get("default_review_date")
+            return failed_snapshot(symbol, date, str(exc))
+
+    def _attach_row_environments(
+        self,
+        rows: list[dict],
+        as_of_date: str | None,
+        *,
+        session: dict | None = None,
+        watch: list[dict] | None = None,
+    ) -> None:
+        stored: dict[str, dict] = {}
+        try:
+            for item in self.latest_environment_snapshots(as_of_date):
+                if item and item.get("scope") == "symbol" and item.get("symbol"):
+                    stored[item["symbol"]] = item
+        except Exception:
+            stored = {}
+        watch_map = {item["symbol"]: item for item in (watch or [])}
+        impact = None
+        try:
+            impact = self.market_impact()
+        except Exception:
+            impact = {"macro": []}
+        for row in rows:
+            symbol = row.get("symbol")
+            if not symbol:
+                continue
+            env = stored.get(symbol)
+            if not env:
+                env = self.build_live_environment(
+                    symbol,
+                    as_of_date,
+                    technical={
+                        "health": row.get("health"),
+                        "return_5d_pct": row.get("return_5d_pct"),
+                        "return_20d_pct": row.get("return_20d_pct"),
+                        "return_1y_pct": row.get("return_1y_pct"),
+                        "rsi14": row.get("rsi14"),
+                        "volume_ratio_20d": row.get("volume_ratio_20d"),
+                        "distance_52w_high_pct": row.get("distance_52w_high_pct"),
+                    },
+                    review=row,
+                    impact=impact,
+                    session=session,
+                    watch=watch_map.get(symbol),
+                    briefing_row=row,
+                )
+            row["environment"] = env
+            row["env_half"] = env.get("one_liner")
+            if env.get("conflict"):
+                row["row_thesis"] = env.get("row_thesis") or row.get("row_thesis")
+            else:
+                row["row_thesis"] = env.get("one_liner") or row.get("row_thesis")
+
     def _with_shell(
         self,
         briefing: dict,
         snapshots: list[dict] | None = None,
         symbol: str | None = None,
+        symbol_environment: dict | None = None,
     ) -> dict:
         date = briefing.get("date")
         options = self.cboe_option_stats(date)
@@ -1291,6 +1513,26 @@ class QueryMixin:
                 snapshots = self.latest_snapshots([symbol] if symbol else None)
             except Exception:
                 snapshots = []
+        if symbol and symbol_environment is None:
+            match = next(
+                (
+                    row.get("environment")
+                    for row in briefing.get("rows") or []
+                    if str(row.get("symbol") or "").upper() == symbol.upper()
+                    and row.get("environment")
+                ),
+                None,
+            )
+            symbol_environment = match or self.latest_environment_snapshot(
+                date, "symbol", symbol.upper()
+            )
+            if symbol_environment is None:
+                symbol_environment = self.build_live_environment(symbol, date)
+        if not symbol and symbol_environment is None:
+            try:
+                symbol_environment = self.latest_environment_snapshot(date, "market", None)
+            except Exception:
+                symbol_environment = None
         shell = build_shell(
             briefing=briefing,
             options=options_payload,
@@ -1298,6 +1540,7 @@ class QueryMixin:
             impact=impact,
             sync=sync,
             symbol=symbol,
+            symbol_environment=symbol_environment,
         )
         return {**briefing, **shell}
 
@@ -1312,6 +1555,15 @@ class QueryMixin:
             "environment": briefing.get("environment"),
             "quote_quality": briefing.get("quote_quality") or {},
         }
+
+    def environment_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if symbol:
+            session = self.market_session(date)
+            as_of = date or session.get("default_review_date")
+            stored = self.latest_environment_snapshot(as_of, "symbol", symbol.upper())
+            return stored or self.build_live_environment(symbol, as_of)
+        payload = self.shell_state(date)
+        return payload.get("environment") or failed_snapshot(None, date, "environment missing")
 
     def job_runs(self, limit: int = 20) -> list[dict]:
         rows = self.fetch_all(

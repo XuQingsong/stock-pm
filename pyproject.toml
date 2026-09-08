@@ -29,6 +29,7 @@ stock-pm-alpaca = "stock_pm.alpaca:main"
 stock-pm-flow = "stock_pm.flow:main"
 stock-pm-macro = "stock_pm.macro:main"
 stock-pm-cboe = "stock_pm.cboe:main"
+stock-pm-environment = "stock_pm.environment_job:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

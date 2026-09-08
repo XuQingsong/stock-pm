@@ -364,7 +364,7 @@ CREATE TABLE IF NOT EXISTS cboe_option_stats (
     captured_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Slice A: append-only environment half-sentences. Never upsert a date away.
+-- Slice A/B: append-only environment snapshots. Never upsert a date away.
 CREATE TABLE IF NOT EXISTS environment_snapshots (
     id BIGSERIAL PRIMARY KEY,
     as_of_date DATE NOT NULL,

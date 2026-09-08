@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .analytics import _number, pick_outlook_bias
+from .environment import FLAG_LABELS
 
 EXPLICIT_STATES = ("face_slap", "overdue", "missing", "clear")
 EXPLICIT_STATE_PRIORITY = {
@@ -345,8 +346,7 @@ def derive_explicit_state(
     if publish in {"missing", "draft"} or missing_flags:
         candidates.append("missing")
         if missing_flags:
-            labels = {"options": "期权概览", "macro": "宏观", "reviews": "复盘"}
-            shown = "、".join(labels.get(flag, flag) for flag in missing_flags)
+            shown = "、".join(FLAG_LABELS.get(flag, flag) for flag in missing_flags)
             details.append(f"数据暂缺：{shown}。")
 
     code = pick_explicit_state(candidates)
@@ -440,8 +440,9 @@ def build_shell(
     impact: dict | None = None,
     sync: dict | None = None,
     symbol: str | None = None,
+    symbol_environment: dict | None = None,
 ) -> dict:
-    env = synthesize_environment(
+    env = symbol_environment or synthesize_environment(
         as_of_date=briefing.get("date"),
         briefing_rows=briefing.get("rows") or [],
         options=options,
