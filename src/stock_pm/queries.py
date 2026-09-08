@@ -1339,7 +1339,7 @@ class QueryMixin:
                    struct, missing_flags, publish_state, created_at
             FROM environment_snapshots
             WHERE as_of_date = %s AND scope = %s
-              AND ((%s IS NULL AND symbol IS NULL) OR symbol = %s)
+              AND ((%s::text IS NULL AND symbol IS NULL) OR symbol = %s::text)
             ORDER BY created_at DESC
             LIMIT 1
             """,
