@@ -62,10 +62,10 @@ details.materials .grid2{margin-top:8px}
 <section class="panel" id="briefing-panel">
   <div class="zone-label">结论</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。环境与昨盘冲突时只留一句因果，不并排两套结论。期权、新闻、K 线材料在下方折叠。预测状态机尚未接入，这里不编边界。</div>
+  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。预测徽章绑真实 Prediction（时间窗口 + 涨跌边界），缺则写到期未产出/缺数，不编假边界。环境与昨盘冲突时只留一句因果。期权、新闻、K 线材料在下方折叠。旧口径偏向命中率不冒充新预测。</div>
   <div class="table-wrap"><table>
     <thead><tr>
-      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>量比</th><th>5日</th>
+      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>预测</th><th>量比</th><th>5日</th>
       <th>均线位置</th><th>支撑/压力</th>
     </tr></thead>
     <tbody id="rows"></tbody>
@@ -200,6 +200,7 @@ async function main(){
       <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||'数据暂缺')+'</div>':''}</td>
       <td class="${cls(chg)}">${pct(chg)}</td>
       ${halfCells}
+      <td class="row-thesis">${esc(b.prediction_half||(b.prediction&&b.prediction.badge)||'到期未产出')}</td>
       <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
       <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>
       <td class="hint">${esc(b.ma_position||'—')}</td>

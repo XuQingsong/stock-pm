@@ -28,4 +28,10 @@ details.fold summary{cursor:pointer;color:#6b7280;font-size:12px}
 .zone-tape,.zone-review{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-top:14px}
 .zone-tape .env-line,.zone-review .env-line{margin:8px 0 0;font-size:16px;line-height:1.45;font-weight:650}
 .review-explain{margin:8px 0 0;font-size:14px;line-height:1.55}
-.prediction-placeholder{margin-top:10px;padding:8px 10px;background:#f8fafc;border-radius:8px;color:#6b7280;font-size:12px}
+.prediction-placeholder,.prediction-card{margin-top:10px;padding:8px 10px;background:#f8fafc;border-radius:8px;color:#6b7280;font-size:12px}
+.prediction-card.ready{background:#f0fdf4;color:#14532d}
+.prediction-card.missing{background:#f8fafc;color:#6b7280}
+.prediction-card .env-line{color:inherit}
+.judgment-change{margin-top:8px;padding-top:8px;border-top:1px solid #fecaca}
+.judgment-change textarea{width:100%;min-height:56px;margin:6px 0;border:1px solid #fecaca;border-radius:8px;padding:6px 8px}
+.legacy-tag{display:inline-block;background:#fff7ed;color:#9a3412;border-radius:8px;padding:1px 7px;font-size:11px;margin-left:6px}

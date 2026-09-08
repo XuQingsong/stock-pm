@@ -39,8 +39,66 @@
     env_link: "环境对照",
     weak_vs_env: "弱于环境",
     tape: "昨盘",
-    review_note: "复盘总结"
+    review_note: "复盘总结",
+    entry_price: "入场价",
+    support: "下跌边界",
+    resistance: "上涨边界",
+    window: "时间窗口",
+    price: "对照价格"
   };
+
+  const STATE_LABELS = {
+    auto_gen: "已自动生成",
+    pending: "待生效",
+    active: "跟踪中",
+    hit: "已兑现",
+    invalidated: "已打脸",
+    superseded: "已改口",
+    missing: "到期未产出"
+  };
+
+  function predictionDisplay(pred) {
+    if (!pred || pred.state === "missing" || !pred.prediction_ready) {
+      return pred && (pred.missing_label || pred.one_liner || pred.badge) || "到期未产出";
+    }
+    return pred.badge || pred.one_liner || pred.thesis || "到期未产出";
+  }
+
+  function predictionCard(pred, options) {
+    const ready = pred && pred.prediction_ready && pred.state !== "missing";
+    const flags = (pred && pred.missingFlags) || [];
+    const flagText = flags.length
+      ? `数据暂缺：${flags.map((flag) => FLAG_LABELS[flag] || flag).join("、")}`
+      : "";
+    const state = pred && pred.state;
+    const slap = ready && state === "invalidated";
+    const cta = slap
+      ? `<div class="judgment-change">
+          <p>打脸已自动写入。改口必须留痕，小噪声不要改。</p>
+          <textarea class="change-reason" placeholder="改口原因（必填）"></textarea>
+          <button type="button" class="btn supersede-btn" data-prediction-id="${esc(pred.id || "")}" data-symbol="${esc((options && options.symbol) || pred.symbol || "")}">改口（留痕）</button>
+          <span class="muted supersede-status"></span>
+        </div>`
+      : "";
+    const bounds = ready
+      ? `<div class="env-meta">窗口 ${esc(pred.window_start || "")} → ${esc(pred.window_end || "")} · 上 ${_escPct(pred.upside_bound_pct)} / 下 ${_escPct(pred.downside_bound_pct)}</div>`
+      : "";
+    return `<div class="prediction-card ${ready ? "ready" : "missing"}">
+      <div class="zone-label">预测</div>
+      <p class="env-line">${esc(predictionDisplay(pred))}</p>
+      <div class="env-meta">${esc(STATE_LABELS[state] || state || "到期未产出")}${pred && pred.publishState ? ` · 发布态 ${esc(pred.publishState)}` : ""}</div>
+      ${bounds}
+      ${pred && pred.thesis && ready ? `<p class="review-explain">${esc(pred.thesis)}</p>` : ""}
+      ${flagText ? `<div class="missing-flags">${esc(flagText)}</div>` : ""}
+      ${cta}
+    </div>`;
+  }
+
+  function _escPct(value) {
+    if (value === null || value === undefined) return "—";
+    const n = Number(value);
+    return `${n > 0 ? "+" : ""}${n}%`;
+  }
 
   async function mountStockPmShell(options) {
     const host = document.getElementById("stock-pm-shell");
@@ -66,7 +124,7 @@
       : env.one_liner;
     const alertHtml = alerts.length
       ? `<div class="alert-strip visible" role="alert">${alerts.map((item) =>
-        `<div class="alert-item"><b>${esc(item.title || "严重提醒")}</b><span>${esc(item.message || "")}</span></div>`
+        `<div class="alert-item"><b>${esc(item.title || "严重提醒")}</b><span>${esc(item.message || "")}</span>${item.cta === "judgment_change" ? `<div class="env-meta">改口（留痕）在个股预测区，不因小噪声自动改口。</div>` : (item.legacy ? `<div class="env-meta">旧口径，不是新 Prediction 边界。</div>` : "")}</div>`
       ).join("")}</div>`
       : "";
     const flagText = flags.length
@@ -101,7 +159,7 @@
       <section class="zone zone-tape" data-zone="tape">
         <div class="zone-label">昨盘</div>
         <p class="env-line">${esc(tape.one_liner || "昨盘结论未就绪（M2）")}</p>
-        <div class="env-meta">${esc(tape.publishState ? `发布态 ${tape.publishState}` : "")}${tape.prediction_ready ? "" : " · 不编预测边界"}</div>
+        <div class="env-meta">${esc(tape.publishState ? `发布态 ${tape.publishState}` : "")} · 昨盘不是预测</div>
         ${tapeFlagText ? `<div class="missing-flags">${esc(tapeFlagText)}</div>` : ""}
         <ul class="env-bullets">${tapeItems.map((item) =>
           `<li class="${item.missing ? "missing" : ""}"><b>${esc(item.title)}</b> ${esc(item.clause)}</li>`
@@ -112,7 +170,7 @@
         <p class="env-line">${esc(note.summary || "复盘总结暂缺，不编白话。")}</p>
         <p class="review-explain">${esc(note.explanation || "解释不了：消息与情绪依据不足，不硬编诱多、转势、吸筹或逃跑。")}</p>
         ${note.unexplained ? `<div class="missing-flags">解释不了</div>` : ""}
-        <div class="prediction-placeholder">预测状态机尚未接入，不编时间窗口或涨跌边界。</div>
+        ${predictionCard(data.prediction, options)}
       </section>
       <details class="fold zone-c" data-zone="C">
         <summary>折叠材料（K 线 MA5/20/50/200 / 财报 / 估值 / 资讯原接口，不在结论区铺开）</summary>
@@ -127,9 +185,33 @@
           <span class="env-meta">${esc(state.detail || "")}</span>
         </div>
         <p class="env-line">${esc(thesis || "隔夜环境半句暂缺。")}</p>
-        <div class="env-meta">${esc(env.publishState ? `发布态 ${env.publishState}` : "")}${env.prediction_ready ? "" : " · 预测状态机尚未接入"}</div>
+        <div class="env-meta">${esc(env.publishState ? `发布态 ${env.publishState}` : "")} · 环境不是预测</div>
         ${flagText ? `<div class="missing-flags">${esc(flagText)}</div>` : ""}
       </section>${zoneB}`;
+    host.querySelectorAll(".supersede-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const wrap = btn.closest(".judgment-change");
+        const reason = wrap ? wrap.querySelector(".change-reason").value : "";
+        const status = wrap ? wrap.querySelector(".supersede-status") : null;
+        if (status) status.textContent = "提交中…";
+        try {
+          const response = await fetch(
+            `/api/stock/${encodeURIComponent(btn.dataset.symbol)}/predictions/${encodeURIComponent(btn.dataset.predictionId)}/supersede`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({ change_reason: reason })
+            }
+          );
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.detail || "改口失败");
+          if (status) status.textContent = "已留痕";
+          mountStockPmShell(options);
+        } catch (error) {
+          if (status) status.textContent = error.message || "改口失败";
+        }
+      });
+    });
     return data;
   }
 

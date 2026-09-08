@@ -55,7 +55,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;t
 </section>
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 <section class="panel" id="options-panel" style="display:none"><h2>期权市场概览</h2><div id="options-overview" class="hint">加载中…</div></section>
-<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周自动循环命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
+<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
 <section class="panel" id="macro-panel" style="display:none"><h2>当日宏观</h2><div id="macro"></div></section>
 <section class="panel"><h2>自选复盘</h2><div id="reviews" class="grid"></div></section>
 <section class="panel"><h2>日内分段摘要</h2><div id="segments"></div></section>
@@ -141,9 +141,11 @@ function card(row){
     <p class="summary">${esc(row.llm_why||'未生成')}</p>
     <h3 style="margin:12px 0 4px;font-size:13px">规则拟稿</h3>
     <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}</div>
-    <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法</h3>
+    <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法 <span class="chip">旧口径</span></h3>
     <p class="summary">${esc(row.llm_outlook||'未生成')} <span class="chip">${esc(row.active_bias||row.llm_bias||row.rule_bias||'—')}</span>
-      <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不需要每日确认</span></p>
+      <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不是新 Prediction 边界</span></p>
+    <h3 style="margin:12px 0 4px;font-size:13px">预测（新口径）</h3>
+    <p class="summary">${esc((row.prediction&&(row.prediction.badge||row.prediction.one_liner))||row.prediction_half||'到期未产出')}</p>
     <details class="fold" ${row.user_bias||row.user_outlook||row.user_note?'open':''}>
       <summary>折叠：可选备注（不写则沿用自动判断）</summary>
       <div class="form-row">
@@ -242,7 +244,9 @@ async function loadReview(){
     const hit=briefing.hit_rate||{};
     const all=hit.loop||hit.all||{};
     const notes=hit.notes_saved||hit.confirmed||{};
-    $('hit-rate').innerHTML=`自动循环对照 ${num(all.hits,0)}/${num(all.samples,0)} 符合（${all.rate_pct==null?'—':all.rate_pct+'%'}）。无需每日确认。历史备注记录 ${num(notes.hits,0)}/${num(notes.samples,0)}。`;
+    const predHit=briefing.prediction_hit_rate||{};
+    $('hit-rate').innerHTML=`<div><b>Prediction 对错</b> ${num(predHit.hits,0)}/${num(predHit.samples,0)} 兑现（${predHit.rate_pct==null?'—':predHit.rate_pct+'%'}），打脸 ${num(predHit.face_slaps,0)}。</div>
+      <div class="hint" style="margin-top:6px"><span class="chip">旧口径</span> 规则/模型偏向对照 ${num(all.hits,0)}/${num(all.samples,0)} 符合（${all.rate_pct==null?'—':all.rate_pct+'%'}）。${esc(hit.disclaimer||'不是新 Prediction 时间窗口与涨跌边界。')} 历史备注 ${num(notes.hits,0)}/${num(notes.samples,0)}。</div>`;
     $('reviews').innerHTML=(briefing.rows||[]).map(card).join('');
     $('reviews').querySelectorAll('.save').forEach(btn=>btn.onclick=()=>saveCard(btn.closest('.card')));
     const segs=day.segments_summary||[];

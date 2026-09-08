@@ -17,8 +17,8 @@
 | **A / P0** | 哲学与信任 | 去掉确认门槛、EmptyHonest、预警条、显式状态壳、环境半句第一刀。ACCEPTANCE_M1 的 P0/架构红线在此验收。 |
 | **B / 环境** | EnvironmentSnapshot 加深 | 刀 2 已落地：每标的 fundamentals / 三层消息 / 氛围合成 + field-level missingFlags + 盘后追加。同仓下一切片分支。 |
 | **C / 盘面** | M2 tape/review 闭环 | 刀 3 已落地：昨盘 TapeAnalysis + ReviewNote 总结/解释。同仓下一切片分支。 |
-| **D / 预测打脸** | M3 Prediction | 状态机、自动打脸、判断变更。切片 A 只提供非假壳。 |
-| M4 | 周洞察 | 可选薄做。 |
+| **D / 预测打脸** | M3 Prediction | 刀 4 已落地：时间窗口+涨跌边界、状态机、盘后 PredictionCheck 自动打脸、人工改口留痕。 |
+| M4 | 周洞察 | 可选薄做（刀 5）。 |
 
 这不是「只做 M1」或「首个 PR 只做 M1」。M1 红线是切片 A 的验收焦点，后面三刀仍在同一生产仓库演进。
 
@@ -49,3 +49,11 @@ FastAPI + PostgreSQL + 多页 HTML/JS。可加表：`environment_snapshots`、`s
 - 晨间总览 `昨盘半句` 用真实 `one_liner`；缺失写暂缺，不编量价。环境与昨盘冲突时只留一句因果，不并排两列。
 - `stock-pm-tape` 盘后追加写入；失败落 missing，不覆盖旧行、不编放量缩量。主路径仍无每日确认门槛。
 - 个股壳三区：环境 | 昨盘 | 复盘与预测。K 线 MA5/20/50/200 与原接口留在折叠 C。预测区仍是非假占位。
+
+## 切片 D / 刀 4 进度
+
+- 每只活跃自选可有结构化 `Prediction`：时间窗口、上涨边界、下跌边界（合格例：两周内补涨约10%，期间跌幅不超过5%）。因果链是 环境→昨盘→解释→因此。质量门不过则「到期未产出/缺数」，不编假边界。
+- 状态机：auto-gen → pending → active → hit / invalidated(打脸) / superseded。盘后 `PredictionCheck` 破界自动打脸；窗口到期未兑现也打脸。对照价缺失不静默判对。
+- 严重预警带人工改口 CTA；`supersedes` 留痕。小噪声不自动改口。
+- 晨间总览预测徽章绑真实 Prediction。`llm_outlook` 与旧命中率标「旧口径」。
+- `stock-pm-prediction` 盘后追加写入；已有未结束预测只做检查，不叠一条新预测。主路径仍无每日确认门槛。

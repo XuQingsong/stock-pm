@@ -70,6 +70,7 @@ stock-pm
 - 环境：`GET /api/environment`、`GET /api/environment?symbol=`、`GET /api/environment/history?symbol=`（只追加，不覆盖旧半句）
 - 昨盘：`GET /api/stock/{symbol}/tape`、`GET /api/stock/{symbol}/tape/history`（TapeAnalysis，只追加）
 - 复盘笔记：`GET /api/stock/{symbol}/review-notes`（ReviewNote 白话总结/解释，只追加）
+- 预测：`GET /api/stock/{symbol}/prediction`、`/predictions`、`/prediction/checks`；`POST /api/stock/{symbol}/predictions/{id}/supersede`（改口留痕）
 - 回放：`/api/replay/day?date=`、`/api/replay/range?symbol=&from=&to=`
 - 宏观：`GET/POST /api/macro/events`（POST 用于补录实际值或 FOMC 结果）
 
@@ -100,7 +101,7 @@ FMP 可提供：公司资料、PE/PB/PS、毛利率等 TTM 比率、季度利润
 
 ETF（例如 QQQ）或供应商未覆盖的字段同样显示为空。
 
-云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → 复盘 → 环境快照 → 昨盘/复盘笔记。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
+云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → 复盘 → 环境快照 → 昨盘/复盘笔记 → 预测与打脸检查。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
 
 ## 个股页指标定义
 
@@ -120,6 +121,7 @@ stock-pm-macro                # 同步宏观日历；配置 FRED_API_KEY 后自�
 stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
 stock-pm-environment          # 盘后追加 EnvironmentSnapshot（失败写 missing，不覆盖旧行）
 stock-pm-tape                 # 盘后追加 TapeAnalysis + ReviewNote（失败写 missing，不覆盖旧行）
+stock-pm-prediction           # 盘后追加 Prediction 并跑 PredictionCheck（失败写 missing，不编假边界）
 ```
 
 - 大额成交阈值默认 $200,000（`LARGE_TRADE_NOTIONAL`）；方向由 tick rule 推断，页面上均标注"推断"。

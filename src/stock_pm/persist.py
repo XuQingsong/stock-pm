@@ -796,6 +796,122 @@ class PersistMixin:
         except Exception as exc:
             raise DatabaseError(f"Failed to append review note: {exc}") from exc
 
+    def append_prediction(self, snapshot: dict[str, Any]) -> dict:
+        try:
+            with self.pool.connection() as conn:
+                row = conn.execute(
+                    """
+                    INSERT INTO predictions (
+                        as_of_date, symbol, state, window_start, window_end,
+                        window_days, window_label, thesis, entry_price,
+                        upside_bound_pct, downside_bound_pct, upside_price,
+                        downside_price, struct, missing_flags, publish_state,
+                        supersedes_id, superseded_by_id, change_reason
+                    ) VALUES (
+                        %(as_of_date)s, %(symbol)s, %(state)s, %(window_start)s,
+                        %(window_end)s, %(window_days)s, %(window_label)s,
+                        %(thesis)s, %(entry_price)s, %(upside_bound_pct)s,
+                        %(downside_bound_pct)s, %(upside_price)s,
+                        %(downside_price)s, %(struct)s, %(missing_flags)s,
+                        %(publish_state)s, %(supersedes_id)s, %(superseded_by_id)s,
+                        %(change_reason)s
+                    )
+                    RETURNING id
+                    """,
+                    {
+                        "as_of_date": snapshot.get("as_of_date"),
+                        "symbol": snapshot.get("symbol"),
+                        "state": snapshot.get("state") or "missing",
+                        "window_start": snapshot.get("window_start"),
+                        "window_end": snapshot.get("window_end"),
+                        "window_days": snapshot.get("window_days"),
+                        "window_label": snapshot.get("window_label"),
+                        "thesis": snapshot.get("thesis") or snapshot.get("one_liner"),
+                        "entry_price": snapshot.get("entry_price"),
+                        "upside_bound_pct": snapshot.get("upside_bound_pct"),
+                        "downside_bound_pct": snapshot.get("downside_bound_pct"),
+                        "upside_price": snapshot.get("upside_price"),
+                        "downside_price": snapshot.get("downside_price"),
+                        "struct": Jsonb(snapshot.get("struct") or {}),
+                        "missing_flags": Jsonb(snapshot.get("missingFlags") or []),
+                        "publish_state": snapshot.get("publishState") or "draft",
+                        "supersedes_id": snapshot.get("supersedes_id"),
+                        "superseded_by_id": snapshot.get("superseded_by_id"),
+                        "change_reason": snapshot.get("change_reason"),
+                    },
+                ).fetchone()
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append prediction: {exc}") from exc
+        if row:
+            snapshot["id"] = row["id"]
+        return snapshot
+
+    def update_prediction_state(self, snapshot: dict[str, Any]) -> None:
+        """Advance state / leave-trace pointers. Never rewrite bounds or thesis."""
+        pred_id = snapshot.get("id")
+        if not pred_id:
+            return
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    UPDATE predictions SET
+                        state = %s,
+                        superseded_by_id = COALESCE(%s, superseded_by_id),
+                        change_reason = COALESCE(%s, change_reason),
+                        struct = %s
+                    WHERE id = %s
+                    """,
+                    (
+                        snapshot.get("state"),
+                        snapshot.get("superseded_by_id"),
+                        snapshot.get("change_reason"),
+                        Jsonb(snapshot.get("struct") or {}),
+                        pred_id,
+                    ),
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to update prediction state: {exc}") from exc
+
+    def append_prediction_check(self, check: dict[str, Any]) -> None:
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO prediction_checks (
+                        prediction_id, as_of_date, symbol, close_price,
+                        high_price, low_price, max_gain_pct, max_drawdown_pct,
+                        in_bounds, outcome, reason, struct
+                    ) VALUES (
+                        %(prediction_id)s, %(as_of_date)s, %(symbol)s,
+                        %(close_price)s, %(high_price)s, %(low_price)s,
+                        %(max_gain_pct)s, %(max_drawdown_pct)s, %(in_bounds)s,
+                        %(outcome)s, %(reason)s, %(struct)s
+                    )
+                    """,
+                    {
+                        "prediction_id": check.get("prediction_id"),
+                        "as_of_date": check.get("as_of_date"),
+                        "symbol": check.get("symbol"),
+                        "close_price": check.get("close_price"),
+                        "high_price": check.get("high_price"),
+                        "low_price": check.get("low_price"),
+                        "max_gain_pct": check.get("max_gain_pct"),
+                        "max_drawdown_pct": check.get("max_drawdown_pct"),
+                        "in_bounds": check.get("in_bounds"),
+                        "outcome": check.get("outcome") or "tracking",
+                        "reason": check.get("reason"),
+                        "struct": Jsonb(
+                            {
+                                "next_state": check.get("next_state"),
+                                "outcome": check.get("outcome"),
+                            }
+                        ),
+                    },
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append prediction check: {exc}") from exc
+
     def append_job_run(self, job: dict[str, Any]) -> None:
         try:
             with self.pool.connection() as conn:

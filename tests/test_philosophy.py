@@ -74,7 +74,36 @@ def test_face_slap_shell_does_not_claim_prediction() -> None:
     assert state["prediction_ready"] is False
     alerts = derive_severity_alerts(briefing=briefing, explicit_state=state)
     assert alerts and alerts[0]["severity"] == "severe"
-    assert "预测状态机尚未接入" in state["detail"]
+    assert "旧口径" in state["detail"]
+    assert "不是新 Prediction" in state["detail"]
+    assert alerts[0].get("cta") is None
+
+
+def test_real_prediction_face_slap_is_ready_and_has_cta() -> None:
+    pred = {
+        "symbol": "INTC",
+        "state": "invalidated",
+        "prediction_ready": True,
+        "window_start": "2026-09-08",
+        "window_end": "2026-09-21",
+        "window_label": "两周内",
+        "upside_bound_pct": 10.0,
+        "downside_bound_pct": -5.0,
+        "badge": "两周内 上10% / 下5% · 已打脸",
+    }
+    briefing = {
+        "date": "2026-09-09",
+        "has_reviews": True,
+        "session": {"is_trading_day": True},
+        "rows": [{"symbol": "INTC", "prediction": pred}],
+    }
+    state = derive_explicit_state(briefing=briefing, environment={"publishState": "published"}, predictions=[pred])
+    assert state["code"] == "face_slap"
+    assert state["prediction_ready"] is True
+    assert "改口" in state["detail"]
+    alerts = derive_severity_alerts(briefing=briefing, explicit_state=state)
+    assert alerts[0]["cta"] == "judgment_change"
+    assert alerts[0].get("legacy") is False
 
 
 def test_environment_missing_flags_are_honest() -> None:

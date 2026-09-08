@@ -448,3 +448,61 @@ CREATE TABLE IF NOT EXISTS review_notes (
 
 CREATE INDEX IF NOT EXISTS idx_review_notes_symbol_date
     ON review_notes (symbol, as_of_date DESC, created_at DESC);
+
+-- Slice D / knife 4: Prediction object. New rows are appended; state
+-- transitions update the same object. Bounds/thesis are never rewritten.
+CREATE TABLE IF NOT EXISTS predictions (
+    id BIGSERIAL PRIMARY KEY,
+    as_of_date DATE NOT NULL,
+    symbol TEXT NOT NULL,
+    state TEXT NOT NULL DEFAULT 'missing'
+        CHECK (state IN (
+            'auto_gen', 'pending', 'active', 'hit',
+            'invalidated', 'superseded', 'missing'
+        )),
+    window_start DATE,
+    window_end DATE,
+    window_days INTEGER,
+    window_label TEXT,
+    thesis TEXT,
+    entry_price NUMERIC,
+    upside_bound_pct NUMERIC,
+    downside_bound_pct NUMERIC,
+    upside_price NUMERIC,
+    downside_price NUMERIC,
+    struct JSONB NOT NULL DEFAULT '{}'::jsonb,
+    missing_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    publish_state TEXT NOT NULL DEFAULT 'draft'
+        CHECK (publish_state IN ('draft', 'published', 'stale', 'missing')),
+    supersedes_id BIGINT,
+    superseded_by_id BIGINT,
+    change_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_predictions_symbol_date
+    ON predictions (symbol, as_of_date DESC, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_predictions_open
+    ON predictions (symbol, state, created_at DESC);
+
+-- Slice D / knife 4: append-only PredictionCheck after each close.
+CREATE TABLE IF NOT EXISTS prediction_checks (
+    id BIGSERIAL PRIMARY KEY,
+    prediction_id BIGINT,
+    as_of_date DATE NOT NULL,
+    symbol TEXT NOT NULL,
+    close_price NUMERIC,
+    high_price NUMERIC,
+    low_price NUMERIC,
+    max_gain_pct NUMERIC,
+    max_drawdown_pct NUMERIC,
+    in_bounds BOOLEAN,
+    outcome TEXT NOT NULL,
+    reason TEXT,
+    struct JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_prediction_checks_pred
+    ON prediction_checks (prediction_id, as_of_date DESC, created_at DESC);

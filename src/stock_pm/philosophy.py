@@ -17,6 +17,11 @@ from .environment import (
     news_stance,
     tape_stance,
 )
+from .prediction import (
+    LEGACY_LABEL,
+    has_real_bounds,
+    prediction_badge,
+)
 
 EXPLICIT_STATES = ("face_slap", "overdue", "missing", "clear")
 EXPLICIT_STATE_PRIORITY = {
@@ -334,8 +339,9 @@ def derive_explicit_state(
     environment: dict | None = None,
     sync: dict | None = None,
     now: datetime | None = None,
+    predictions: list[dict] | None = None,
 ) -> dict:
-    """Priority: face-slap > overdue > missing. Prediction machine is not claimed."""
+    """Priority: face-slap > overdue > missing. Real Prediction bounds only."""
     briefing = briefing or {}
     environment = environment or {}
     rows = briefing.get("rows") or []
@@ -343,23 +349,55 @@ def derive_explicit_state(
     now = now or datetime.now(timezone.utc)
     candidates: list[str] = []
     details: list[str] = []
+    pred_rows = list(predictions or [])
+    if not pred_rows:
+        pred_rows = [
+            row.get("prediction")
+            for row in rows
+            if row.get("prediction")
+        ]
+
+    slap_preds = [
+        pred
+        for pred in pred_rows
+        if pred and pred.get("state") == "invalidated" and has_real_bounds(pred)
+    ]
+    overdue_preds = [
+        pred
+        for pred in pred_rows
+        if pred and (pred.get("state") == "missing" or not has_real_bounds(pred))
+    ]
+    ready = any(has_real_bounds(pred) for pred in pred_rows)
 
     slap_rows = [
         row
         for row in rows
         if (row.get("prior_outcome") or {}).get("outcome_vs_bias") == "相反"
     ]
-    if slap_rows:
+    if slap_preds:
+        symbols = "、".join(str(pred.get("symbol") or "") for pred in slap_preds[:4])
+        candidates.append("face_slap")
+        details.append(
+            f"预测被打脸：{symbols}。{prediction_badge(slap_preds[0])}。"
+            "请判断是否改口（留痕），小噪声不自动改口。"
+        )
+    elif slap_rows:
         symbols = "、".join(row.get("symbol") or "" for row in slap_rows[:4])
         candidates.append("face_slap")
-        details.append(f"昨日判断被证伪：{symbols}。完整预测状态机尚未接入，这里只亮灯，不改写边界。")
+        details.append(
+            f"昨日判断被证伪：{symbols}。这是{LEGACY_LABEL}（规则/模型偏向对照），"
+            "不是新 Prediction 时间窗口或涨跌边界。"
+        )
 
     completed = _parse_ts((sync or {}).get("completed_at"))
     stale_sync = completed is not None and (now - completed).total_seconds() > 36 * 3600
     trading = session.get("is_trading_day") is not False
     reviews_missing = trading and not briefing.get("has_reviews")
-    if stale_sync or reviews_missing:
+    due_missing = trading and overdue_preds and not slap_preds
+    if stale_sync or reviews_missing or due_missing:
         candidates.append("overdue")
+        if due_missing:
+            details.append("到期未产出或质量门未过，未编造预测边界。")
         if reviews_missing:
             details.append("交易日复盘尚未生成。")
         if stale_sync:
@@ -381,8 +419,10 @@ def derive_explicit_state(
         "label": EXPLICIT_STATE_LABELS[code],
         "priority": EXPLICIT_STATE_PRIORITY[code],
         "detail": " ".join(details),
-        "prediction_ready": False,
-        "face_slap_symbols": [row.get("symbol") for row in slap_rows],
+        "prediction_ready": ready,
+        "face_slap_symbols": [
+            pred.get("symbol") for pred in slap_preds
+        ] or [row.get("symbol") for row in slap_rows],
     }
 
 
@@ -429,13 +469,16 @@ def derive_severity_alerts(
             )
     state = explicit_state or {}
     if state.get("code") == "face_slap":
+        ready = bool(state.get("prediction_ready"))
         alerts.append(
             {
                 "alert_key": "face_slap",
                 "severity": "severe",
                 "title": "打脸待核验",
-                "message": state.get("detail") or "昨日判断与今日走势相反。",
+                "message": state.get("detail") or "预测边界被打破。",
                 "symbol": None,
+                "cta": "judgment_change" if ready else None,
+                "legacy": not ready,
             }
         )
     return alerts
@@ -465,6 +508,7 @@ def build_shell(
     sync: dict | None = None,
     symbol: str | None = None,
     symbol_environment: dict | None = None,
+    predictions: list[dict] | None = None,
 ) -> dict:
     env = symbol_environment or synthesize_environment(
         as_of_date=briefing.get("date"),
@@ -474,7 +518,9 @@ def build_shell(
         symbol=symbol,
         session=briefing.get("session"),
     )
-    state = derive_explicit_state(briefing=briefing, environment=env, sync=sync)
+    state = derive_explicit_state(
+        briefing=briefing, environment=env, sync=sync, predictions=predictions
+    )
     alerts = derive_severity_alerts(
         briefing=briefing, snapshots=snapshots, explicit_state=state
     )
