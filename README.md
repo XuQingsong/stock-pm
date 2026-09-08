@@ -125,7 +125,7 @@ stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
 
 ## 过程文档
 
-产品需求（按描述整理，用来评审成品）在 [`docs/requirements.md`](docs/requirements.md)。讨论中的评估和方案在 [`docs/`](docs/README.md)。
+产品需求（按描述整理，用来评审成品是否答得上基本面/消息/情绪、盘面关联判断、量化预测与迭代）在 [`docs/requirements.md`](docs/requirements.md)。讨论中的评估和方案在 [`docs/`](docs/README.md)。
 
 ## 测试
 
