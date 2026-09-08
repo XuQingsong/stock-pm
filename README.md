@@ -125,7 +125,7 @@ stock-pm-cboe                 # 拉取 Cboe 日终期权成交量与 Put/Call
 
 ## 过程文档
 
-完整产品需求（基本面 / 隔日盘面 / 复盘迭代，以及对照富途后的个股模块）在 [`docs/requirements.md`](docs/requirements.md)。讨论中的评估和方案在 [`docs/`](docs/README.md)。
+产品需求（按描述整理，用来评审成品）在 [`docs/requirements.md`](docs/requirements.md)。讨论中的评估和方案在 [`docs/`](docs/README.md)。
 
 ## 测试
 

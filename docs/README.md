@@ -1,6 +1,6 @@
 # 过程文档（中间产物）
 
-完整产品需求见 [requirements.md](requirements.md)（原始三条研究问题 + 富途个股界面补充后的现行规格）。
+产品需求见 [requirements.md](requirements.md)。只写描述过的目标，用来评审成品是否答得上那三个问题；不是现行实现说明书。
 
 讨论里生成的评估、方案、对照表会同时留两份：
 
@@ -13,7 +13,7 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| [requirements.md](requirements.md) | 完整产品需求 v1.0：三条研究问题 + 页面/个股模块 + 诚实边界 + 验收 |
+| [requirements.md](requirements.md) | 按描述整理的产品需求（基本面 / 隔日盘面 / 复盘迭代 + 富途指出的内容类别），供对照成品评审 |
 
 ## canvases/
 
