@@ -1,11 +1,19 @@
 # 过程文档（中间产物）
 
+完整产品需求见 [requirements.md](requirements.md)（原始三条研究问题 + 富途个股界面补充后的现行规格）。
+
 讨论里生成的评估、方案、对照表会同时留两份：
 
 1. **仓库里（跟代码一起上 GitHub）**：本目录。换电脑或过几个月，打开这个仓库就能找到。
 2. **Cursor 里可交互打开**：`C:\Users\11737\.cursor\projects\d-workspace-stock-pm\canvases\`。在 Cursor 中点开 `.canvas.tsx` 可在聊天旁渲染。
 
 聊天记录本身在 `C:\Users\11737\.cursor\projects\d-workspace-stock-pm\agent-transcripts\`，不是这些评估文件。
+
+## 现行规格
+
+| 文件 | 内容 |
+| --- | --- |
+| [requirements.md](requirements.md) | 完整产品需求 v1.0：三条研究问题 + 页面/个股模块 + 诚实边界 + 验收 |
 
 ## canvases/
 
