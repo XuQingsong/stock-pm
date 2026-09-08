@@ -272,7 +272,7 @@ class FakeDatabase:
         briefing = self.briefing(date)
         options = self.cboe_option_stats(date)
         symbol_env = self.environment_payload(date, symbol) if symbol else None
-        return build_shell(
+        payload = build_shell(
             briefing=briefing,
             options={"status": "ok", **options} if options else {"status": "missing"},
             snapshots=self.latest_snapshots([symbol] if symbol else None),
@@ -281,6 +281,10 @@ class FakeDatabase:
             symbol=symbol,
             symbol_environment=symbol_env,
         )
+        if symbol:
+            payload["tape"] = self.tape_payload(date, symbol)
+            payload["review_note"] = self.review_note_payload(date, symbol)
+        return payload
 
     def environment_payload(self, date=None, symbol=None):
         from stock_pm.environment import synthesize_symbol_environment
@@ -313,6 +317,60 @@ class FakeDatabase:
         )
 
     def environment_history(self, symbol, limit=30):
+        return []
+
+    def _sample_tape(self, symbol, date=None):
+        from stock_pm.tape import synthesize_review_note, synthesize_tape_analysis
+
+        env = self.environment_payload(date, symbol)
+        tape = synthesize_tape_analysis(
+            as_of_date=date or "2026-09-04",
+            symbol=symbol,
+            metrics={
+                "day_change_pct": 3.2,
+                "relative_volume": 1.6,
+                "tape": "放量上攻，收盘靠近最高价，买盘主导",
+                "breakout": "放量有效突破",
+                "support_test": "未测试最近支撑",
+                "close_location": 0.82,
+                "poc_60d": 118.5,
+                "value_area_low": 110,
+                "value_area_high": 125,
+                "support": 116,
+                "resistance": 128,
+                "position": "大部分60日成交筹码处于浮盈区，趋势占优但需防获利回吐",
+                "ma5": 120,
+                "ma20": 118,
+                "ma50": 115,
+                "ma200": 100,
+                "close": 122,
+            },
+            environment=env,
+            session=self.market_session(date),
+            source="test",
+        )
+        return tape
+
+    def tape_payload(self, date=None, symbol=None):
+        return self._sample_tape(symbol or "NVDA", date)
+
+    def tape_history(self, symbol, limit=30):
+        return []
+
+    def review_note_payload(self, date=None, symbol=None):
+        from stock_pm.tape import synthesize_review_note
+
+        tape = self.tape_payload(date, symbol)
+        return synthesize_review_note(
+            as_of_date=date or "2026-09-04",
+            symbol=symbol or "NVDA",
+            tape=tape,
+            environment=self.environment_payload(date, symbol),
+            session=self.market_session(date),
+            source="test",
+        )
+
+    def review_note_history(self, symbol, limit=30):
         return []
 
     def job_runs(self, limit=20):
@@ -513,6 +571,11 @@ def test_shell_and_environment_endpoints(monkeypatch):
     assert history.status_code == 200
     assert history.json() == []
     assert c.get("/api/jobs").status_code == 200
+    symbol_shell = c.get("/api/shell?date=2026-09-04&symbol=NVDA").json()
+    assert symbol_shell["tape"]["symbol"] == "NVDA"
+    assert symbol_shell["tape"]["volume_price"]["form"]
+    assert symbol_shell["review_note"]["summary"]
+    assert symbol_shell["review_note"]["prediction_ready"] is False
     assert c.get("/api/shell?date=bad").status_code == 400
 
 
@@ -543,3 +606,31 @@ def test_static_shell_assets(monkeypatch):
     assert '预测状态机尚未接入' in home
     assert "watch_low" not in home
     assert "face_slap" not in home
+    assert "昨盘半句" in home
+    assert "昨盘结论未就绪（M2）" in home
+    assert "折叠材料" in home
+    js = c.get("/static/shell.js").text
+    assert 'data-zone="tape"' in js
+    assert 'data-zone="review"' in js
+    assert "预测状态机尚未接入，不编时间窗口或涨跌边界" in js
+    assert "MA5/20/50/200" in js
+    stock = c.get("/stock/NVDA").text
+    assert 'id="stock-pm-shell"' in stock
+
+
+def test_tape_and_review_note_endpoints(monkeypatch):
+    c = client(monkeypatch)
+    tape = c.get("/api/stock/NVDA/tape?date=2026-09-04").json()
+    assert tape["symbol"] == "NVDA"
+    assert tape["volume_price"]["form"] in {
+        "放量涨", "缩量涨", "放量跌", "缩量跌", "平量涨", "平量跌", "量价平稳"
+    }
+    assert tape["prediction_ready"] is False
+    assert "missingFlags" in tape
+    assert c.get("/api/stock/NVDA/tape/history").json() == []
+    notes = c.get("/api/stock/NVDA/review-notes?date=2026-09-04").json()
+    assert notes and notes[0]["summary"]
+    assert notes[0]["explanation"]
+    assert "保存确认" not in c.get("/").text
+    assert c.get("/api/stock/bad symbol/tape").status_code == 400
+    assert c.get("/api/stock/NVDA/tape?date=bad").status_code == 400

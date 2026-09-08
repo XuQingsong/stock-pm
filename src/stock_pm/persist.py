@@ -742,6 +742,60 @@ class PersistMixin:
         except Exception as exc:
             raise DatabaseError(f"Failed to append severity alerts: {exc}") from exc
 
+    def append_tape_analysis(self, snapshot: dict[str, Any]) -> None:
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tape_analyses (
+                        as_of_date, symbol, one_liner, conclusion,
+                        struct, missing_flags, publish_state
+                    ) VALUES (
+                        %(as_of_date)s, %(symbol)s, %(one_liner)s, %(conclusion)s,
+                        %(struct)s, %(missing_flags)s, %(publish_state)s
+                    )
+                    """,
+                    {
+                        "as_of_date": snapshot.get("as_of_date"),
+                        "symbol": snapshot.get("symbol"),
+                        "one_liner": snapshot.get("one_liner"),
+                        "conclusion": snapshot.get("conclusion") or snapshot.get("one_liner"),
+                        "struct": Jsonb(snapshot.get("struct") or {}),
+                        "missing_flags": Jsonb(snapshot.get("missingFlags") or []),
+                        "publish_state": snapshot.get("publishState") or "draft",
+                    },
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append tape analysis: {exc}") from exc
+
+    def append_review_note(self, note: dict[str, Any]) -> None:
+        try:
+            with self.pool.connection() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO review_notes (
+                        as_of_date, symbol, summary, explanation, unexplained,
+                        struct, missing_flags, publish_state
+                    ) VALUES (
+                        %(as_of_date)s, %(symbol)s, %(summary)s, %(explanation)s,
+                        %(unexplained)s, %(struct)s, %(missing_flags)s,
+                        %(publish_state)s
+                    )
+                    """,
+                    {
+                        "as_of_date": note.get("as_of_date"),
+                        "symbol": note.get("symbol"),
+                        "summary": note.get("summary"),
+                        "explanation": note.get("explanation"),
+                        "unexplained": bool(note.get("unexplained")),
+                        "struct": Jsonb(note.get("struct") or {}),
+                        "missing_flags": Jsonb(note.get("missingFlags") or []),
+                        "publish_state": note.get("publishState") or "draft",
+                    },
+                )
+        except Exception as exc:
+            raise DatabaseError(f"Failed to append review note: {exc}") from exc
+
     def append_job_run(self, job: dict[str, Any]) -> None:
         try:
             with self.pool.connection() as conn:

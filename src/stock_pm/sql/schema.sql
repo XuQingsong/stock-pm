@@ -413,3 +413,38 @@ CREATE TABLE IF NOT EXISTS job_runs (
 
 CREATE INDEX IF NOT EXISTS idx_job_runs_name_time
     ON job_runs (job_name, started_at DESC);
+
+-- Slice C / knife 3: append-only yesterday tape. Never upsert a date away.
+CREATE TABLE IF NOT EXISTS tape_analyses (
+    id BIGSERIAL PRIMARY KEY,
+    as_of_date DATE NOT NULL,
+    symbol TEXT NOT NULL,
+    one_liner TEXT,
+    conclusion TEXT,
+    struct JSONB NOT NULL DEFAULT '{}'::jsonb,
+    missing_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    publish_state TEXT NOT NULL DEFAULT 'draft'
+        CHECK (publish_state IN ('draft', 'published', 'stale', 'missing')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_tape_analyses_symbol_date
+    ON tape_analyses (symbol, as_of_date DESC, created_at DESC);
+
+-- Slice C / knife 3: append-only ReviewNote 总结/解释.
+CREATE TABLE IF NOT EXISTS review_notes (
+    id BIGSERIAL PRIMARY KEY,
+    as_of_date DATE NOT NULL,
+    symbol TEXT NOT NULL,
+    summary TEXT,
+    explanation TEXT,
+    unexplained BOOLEAN NOT NULL DEFAULT FALSE,
+    struct JSONB NOT NULL DEFAULT '{}'::jsonb,
+    missing_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
+    publish_state TEXT NOT NULL DEFAULT 'draft'
+        CHECK (publish_state IN ('draft', 'published', 'stale', 'missing')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_review_notes_symbol_date
+    ON review_notes (symbol, as_of_date DESC, created_at DESC);

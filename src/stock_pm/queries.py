@@ -28,6 +28,16 @@ from .environment import (
     snapshot_from_row,
     synthesize_symbol_environment,
 )
+from .tape import (
+    env_tape_conflict_sentence,
+    failed_review_note,
+    failed_tape,
+    review_note_from_row,
+    snapshot_from_row as tape_from_row,
+    synthesize_review_note,
+    synthesize_tape_analysis,
+    tape_half_display,
+)
 from .impact import macro_impact, news_impacts, THEME_NAMES
 from .philosophy import (
     build_shell,
@@ -1486,6 +1496,7 @@ class QueryMixin:
                 row["row_thesis"] = env.get("row_thesis") or row.get("row_thesis")
             else:
                 row["row_thesis"] = env.get("one_liner") or row.get("row_thesis")
+        self._attach_row_tapes(rows, as_of_date, session=session)
 
     def _with_shell(
         self,
@@ -1513,6 +1524,8 @@ class QueryMixin:
                 snapshots = self.latest_snapshots([symbol] if symbol else None)
             except Exception:
                 snapshots = []
+        symbol_tape = None
+        symbol_note = None
         if symbol and symbol_environment is None:
             match = next(
                 (
@@ -1528,6 +1541,21 @@ class QueryMixin:
             )
             if symbol_environment is None:
                 symbol_environment = self.build_live_environment(symbol, date)
+        if symbol:
+            match_row = next(
+                (
+                    row
+                    for row in briefing.get("rows") or []
+                    if str(row.get("symbol") or "").upper() == symbol.upper()
+                ),
+                None,
+            )
+            symbol_tape = (match_row or {}).get("tape_analysis") or self.tape_payload(
+                date, symbol
+            )
+            symbol_note = (match_row or {}).get("review_note") or self.review_note_payload(
+                date, symbol
+            )
         if not symbol and symbol_environment is None:
             try:
                 symbol_environment = self.latest_environment_snapshot(date, "market", None)
@@ -1542,7 +1570,11 @@ class QueryMixin:
             symbol=symbol,
             symbol_environment=symbol_environment,
         )
-        return {**briefing, **shell}
+        extra = {}
+        if symbol:
+            extra["tape"] = symbol_tape
+            extra["review_note"] = symbol_note
+        return {**briefing, **shell, **extra}
 
     def shell_state(self, date: str | None = None, symbol: str | None = None) -> dict:
         briefing = self.briefing(date)
@@ -1564,6 +1596,234 @@ class QueryMixin:
             return stored or self.build_live_environment(symbol, as_of)
         payload = self.shell_state(date)
         return payload.get("environment") or failed_snapshot(None, date, "environment missing")
+
+    def latest_tape_analyses(self, as_of_date: str | None) -> list[dict]:
+        if not as_of_date:
+            return []
+        rows = self.fetch_all(
+            """
+            SELECT DISTINCT ON (symbol)
+                   id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE as_of_date = %s
+            ORDER BY symbol, created_at DESC
+            """,
+            (as_of_date,),
+        )
+        return [tape_from_row(row) for row in rows if tape_from_row(row)]
+
+    def latest_tape_analysis(self, as_of_date: str | None, symbol: str) -> dict | None:
+        if not as_of_date:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE as_of_date = %s AND symbol = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, symbol),
+        )
+        return tape_from_row(rows[0]) if rows else None
+
+    def tape_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, one_liner, conclusion,
+                   struct, missing_flags, publish_state, created_at
+            FROM tape_analyses
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s
+            """,
+            (normalized, limit),
+        )
+        return [tape_from_row(row) for row in rows if tape_from_row(row)]
+
+    def latest_review_note(self, as_of_date: str | None, symbol: str) -> dict | None:
+        if not as_of_date:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, summary, explanation, unexplained,
+                   struct, missing_flags, publish_state, created_at
+            FROM review_notes
+            WHERE as_of_date = %s AND symbol = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (as_of_date, symbol),
+        )
+        return review_note_from_row(rows[0]) if rows else None
+
+    def review_note_history(self, symbol: str, limit: int = 30) -> list[dict]:
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT id, as_of_date, symbol, summary, explanation, unexplained,
+                   struct, missing_flags, publish_state, created_at
+            FROM review_notes
+            WHERE symbol = %s
+            ORDER BY created_at DESC, id DESC
+            LIMIT %s
+            """,
+            (normalized, limit),
+        )
+        return [review_note_from_row(row) for row in rows if review_note_from_row(row)]
+
+    def build_live_tape(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        **preloaded: Any,
+    ) -> dict:
+        from .review import analyze_bars
+
+        normalized = symbol.upper()
+        session = preloaded.get("session") or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        try:
+            bars = preloaded.get("bars")
+            if bars is None:
+                bars = self.history(normalized, 260, "1d")
+            complete = [
+                row
+                for row in bars
+                if all(
+                    row.get(key) is not None
+                    for key in ("open_price", "high_price", "low_price", "close_price")
+                )
+            ]
+            if date:
+                dated = [
+                    row
+                    for row in complete
+                    if str(row.get("bar_time") or "")[:10] <= str(date)[:10]
+                ]
+                if dated:
+                    complete = dated
+            if len(complete) < 20:
+                return failed_tape(normalized, date, "need 20 daily bars")
+            metrics = analyze_bars(complete)
+            environment = preloaded.get("environment")
+            if environment is None:
+                environment = self.environment_payload(date, normalized)
+            segments = preloaded.get("segments")
+            if segments is None:
+                try:
+                    segments = self.segments(normalized, date)
+                except Exception:
+                    segments = []
+            return synthesize_tape_analysis(
+                as_of_date=date,
+                symbol=normalized,
+                metrics=metrics,
+                environment=environment,
+                segments=segments,
+                session=session,
+                source=preloaded.get("source") or "live",
+            )
+        except Exception as exc:
+            return failed_tape(normalized, date, str(exc))
+
+    def build_live_review_note(
+        self,
+        symbol: str,
+        as_of_date: str | None = None,
+        *,
+        tape: dict | None = None,
+        environment: dict | None = None,
+        session: dict | None = None,
+        source: str = "live",
+    ) -> dict:
+        normalized = symbol.upper()
+        session = session or self.market_session(as_of_date)
+        date = as_of_date or session.get("default_review_date") or session.get("date")
+        try:
+            tape = tape or self.tape_payload(date, normalized)
+            environment = environment or self.environment_payload(date, normalized)
+            return synthesize_review_note(
+                as_of_date=date,
+                symbol=normalized,
+                tape=tape,
+                environment=environment,
+                session=session,
+                source=source,
+            )
+        except Exception as exc:
+            return failed_review_note(normalized, date, str(exc))
+
+    def tape_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if not symbol:
+            raise ValueError("symbol is required")
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date")
+        stored = self.latest_tape_analysis(as_of, symbol.upper())
+        return stored or self.build_live_tape(symbol, as_of)
+
+    def review_note_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+        if not symbol:
+            raise ValueError("symbol is required")
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date")
+        stored = self.latest_review_note(as_of, symbol.upper())
+        return stored or self.build_live_review_note(symbol, as_of)
+
+    def _attach_row_tapes(
+        self,
+        rows: list[dict],
+        as_of_date: str | None,
+        *,
+        session: dict | None = None,
+    ) -> None:
+        stored: dict[str, dict] = {}
+        try:
+            for item in self.latest_tape_analyses(as_of_date):
+                if item and item.get("symbol"):
+                    stored[item["symbol"]] = item
+        except Exception:
+            stored = {}
+        for row in rows:
+            symbol = row.get("symbol")
+            if not symbol:
+                continue
+            tape = stored.get(symbol)
+            if not tape:
+                tape = self.build_live_tape(
+                    symbol,
+                    as_of_date,
+                    environment=row.get("environment"),
+                    session=session,
+                    source="live",
+                )
+            note = None
+            try:
+                note = self.latest_review_note(as_of_date, symbol)
+            except Exception:
+                note = None
+            if not note:
+                note = synthesize_review_note(
+                    as_of_date=as_of_date,
+                    symbol=symbol,
+                    tape=tape,
+                    environment=row.get("environment"),
+                    session=session,
+                    source="live",
+                )
+            row["tape_analysis"] = tape
+            row["tape_half"] = tape_half_display(tape)
+            row["review_note"] = note
+            env = row.get("environment") or {}
+            conflict = bool((tape or {}).get("conflict"))
+            if conflict:
+                row["env_tape_conflict"] = True
+                row["row_thesis"] = env_tape_conflict_sentence(env, tape)
+            else:
+                row["env_tape_conflict"] = False
 
     def job_runs(self, limit: int = 20) -> list[dict]:
         rows = self.fetch_all(

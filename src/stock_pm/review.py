@@ -479,6 +479,7 @@ def main() -> None:
     database = Database()
     reviews: list[dict] = []
     env_result: dict = {"status": "missing"}
+    tape_result: dict = {"status": "missing"}
     try:
         database.initialize()
         symbols = args.symbols or database.active_symbols()
@@ -518,6 +519,18 @@ def main() -> None:
                     ensure_ascii=False,
                 )
             )
+        try:
+            from .tape_job import publish_tape_and_reviews
+
+            tape_result = publish_tape_and_reviews(database, symbols=symbols)
+        except Exception as exc:
+            tape_result = {"status": "failed", "error": str(exc), "publishState": "missing"}
+            print(
+                json.dumps(
+                    {"tape_publish_error": str(exc)},
+                    ensure_ascii=False,
+                )
+            )
     finally:
         database.close()
     print(
@@ -530,6 +543,11 @@ def main() -> None:
                     "status": env_result.get("status"),
                     "written": env_result.get("written"),
                     "errors": env_result.get("errors"),
+                },
+                "tape": {
+                    "status": tape_result.get("status"),
+                    "written": tape_result.get("written"),
+                    "errors": tape_result.get("errors"),
                 },
             },
             ensure_ascii=False,
