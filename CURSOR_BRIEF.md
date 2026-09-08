@@ -40,4 +40,4 @@ FastAPI + PostgreSQL + 多页 HTML/JS。可加表：`environment_snapshots`、`s
 - 晨间总览半句可扫；冲突仍是一句因果 `row_thesis`。个股 A 结论 / B 指向 A 的要点 / C 折叠原接口。
 - `stock-pm-environment` 盘后追加写入；失败落 missing，不覆盖旧快照、不编数字。
 - 晨间总览先结论行（预警 / 显式状态 / 环境半句），期权与新闻下沉为折叠 C，不与 A 抢位置。不编预测边界。
-- A 半句按 盘面 → 消息 → 因此 写因果，不再并排口号。
+- A 半句按 盘面 → 消息 → 因此 写因果，不再并排口号。收口清单见 `docs/DESIGN_CHECK_刀2_PR3.md`。
