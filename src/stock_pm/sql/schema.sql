@@ -399,6 +399,9 @@ CREATE TABLE IF NOT EXISTS severity_alerts (
 CREATE INDEX IF NOT EXISTS idx_severity_alerts_active
     ON severity_alerts (active, severity, created_at DESC);
 
+ALTER TABLE severity_alerts
+    ADD COLUMN IF NOT EXISTS prediction_id BIGINT;
+
 -- Slice A stub: dedicated job log. sync_runs remains the live Alpaca collector.
 CREATE TABLE IF NOT EXISTS job_runs (
     id BIGSERIAL PRIMARY KEY,

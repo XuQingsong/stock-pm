@@ -8,7 +8,7 @@
 3) TC-M3-SM-01: 状态机 auto-gen → pending → active → hit / invalidated / superseded
 4) TC-M3-CHECK-01: 盘后 PredictionCheck，价格破界自动打脸
 5) TC-M3-CHECK-02: 窗口到期未兑现 = 打脸；对照价缺失不静默判对
-6) TC-M3-CHANGE-01: 严重预警 → 人工改口 CTA；supersedes 留痕
+6) TC-M3-CHANGE-01: 严重预警 alert_id 前置（需求方硬项）→ 人工改口 CTA；supersedes 留痕
 7) TC-M3-CHANGE-02: 小噪声不自动改口
 8) TC-M3-UI-01: 总览预测徽章绑真实 Prediction，不编假边界
 9) TC-M3-NEG-01: 质量门失败 / 到期未产出 / 缺数可见
@@ -25,7 +25,7 @@
 | 状态机 | lifecycle + `activate_if_due` / `run_prediction_check` | `test_state_machine_auto_gen_pending_active_hit` |
 | 自动打脸 | 低点 ≤ 下跌价 → `invalidated` + alert CTA | `test_face_slap_on_downside_break_not_small_noise` |
 | 到期未兑现 | `outcome=expired` | `test_expired_window_is_face_slap` |
-| 改口留痕 | `apply_supersede` / `POST .../supersede` | `test_human_supersede_leaves_trace_and_is_not_automatic` |
+| 改口留痕 | `apply_supersede` / `POST .../supersede` 必须带严重 `alert_id` | `test_human_supersede_leaves_trace_and_is_not_automatic`、`test_require_judgment_alert_rejects_unusable_alerts`、`tests/test_api.py` |
 | 小噪声 | 未破界保持 tracking | `test_face_slap_on_downside_break_not_small_noise` |
 | 总览徽章 | `prediction_badge`；overview「预测」列 | `test_badge_never_fakes_bounds`、`tests/test_api.py` |
 | 诚实缺失 | `failed_prediction` / 质量门 | `test_quality_gate_failure_is_visible_missing` |

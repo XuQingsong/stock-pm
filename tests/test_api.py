@@ -405,13 +405,61 @@ class FakeDatabase:
         pred["id"] = prediction_id
         return pred
 
+    def severity_alert(self, alert_id):
+        from stock_pm.prediction import parse_alert_id
+
+        parsed = parse_alert_id(alert_id)
+        if parsed == 11:
+            return {
+                "id": 11,
+                "severity": "severe",
+                "symbol": "NVDA",
+                "prediction_id": 3,
+                "alert_key": "face_slap:NVDA:3",
+                "title": "打脸待核验",
+                "active": True,
+            }
+        if parsed == 12:
+            return {
+                "id": 12,
+                "severity": "warning",
+                "symbol": "NVDA",
+                "prediction_id": 3,
+                "alert_key": "face_slap:NVDA:3",
+                "active": True,
+            }
+        if parsed == 13:
+            return {
+                "id": 13,
+                "severity": "severe",
+                "symbol": "AAPL",
+                "prediction_id": 9,
+                "alert_key": "face_slap:AAPL:9",
+                "active": True,
+            }
+        return None
+
+    def latest_judgment_alert(self, symbol, prediction_id):
+        if symbol == "NVDA" and prediction_id == 3:
+            return self.severity_alert(11)
+        return None
+
     def supersede_prediction(self, prediction_id, body):
-        from stock_pm.prediction import apply_supersede
+        from stock_pm.prediction import apply_supersede, require_judgment_alert
 
         old = self.prediction_by_id(prediction_id)
+        alert_id = (body or {}).get("alert_id")
+        alert = self.severity_alert(alert_id)
+        require_judgment_alert(
+            alert, symbol=old["symbol"], prediction_id=old.get("id"), alert_id=alert_id
+        )
         new = self._sample_prediction(old["symbol"], body.get("as_of_date") or old["as_of_date"])
         superseded, replacement = apply_supersede(
-            old, new, change_reason=body.get("change_reason") or body.get("reason") or ""
+            old,
+            new,
+            change_reason=body.get("change_reason") or body.get("reason") or "",
+            alert_id=alert_id,
+            alert=alert,
         )
         replacement["id"] = prediction_id + 1
         self.superseded = {"old": superseded, "new": replacement}
@@ -671,6 +719,9 @@ def test_static_shell_assets(monkeypatch):
     assert 'data-zone="review"' in js
     assert "judgment-change" in js
     assert "改口（留痕）" in js
+    assert "data-alert-id" in js
+    assert "alert_id" in js
+    assert "judgment_alert" in js
     assert "到期未产出" in js
     assert "MA5/20/50/200" in js
     stock = c.get("/stock/NVDA").text
@@ -694,15 +745,32 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     assert "10%" not in (pred.get("badge") or "") or pred["upside_bound_pct"] == 10
     assert c.get("/api/stock/NVDA/predictions").json() == []
     assert c.get("/api/stock/NVDA/prediction/checks").json() == []
-    slap = c.post(
+    assert c.post(
         "/api/stock/NVDA/predictions/3/supersede",
         json={"change_reason": "公开持仓大幅增加，原边界不再适用"},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 99},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 12},
+    ).status_code == 400
+    assert c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 13},
+    ).status_code == 400
+    slap = c.post(
+        "/api/stock/NVDA/predictions/3/supersede",
+        json={"change_reason": "公开持仓大幅增加，原边界不再适用", "alert_id": 11},
     )
     assert slap.status_code == 200
     assert slap.json()["prediction"]["supersedes_id"] == 3
+    assert slap.json()["prediction"]["alert_id"] == 11
     assert c.post(
         "/api/stock/NVDA/predictions/3/supersede",
-        json={"change_reason": "  "},
+        json={"change_reason": "  ", "alert_id": 11},
     ).status_code == 400
     weak = tape["weak_vs_env"]
     assert weak

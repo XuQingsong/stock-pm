@@ -54,8 +54,10 @@ from .prediction import (
     check_from_row,
     failed_prediction,
     mark_legacy_hit_rate,
+    parse_alert_id,
     prediction_badge,
     prediction_hit_rate,
+    require_judgment_alert,
     snapshot_from_row as prediction_from_row,
     synthesize_prediction,
 )
@@ -1992,7 +1994,7 @@ class QueryMixin:
             """,
             (as_of_date, symbol.upper()),
         )
-        return prediction_from_row(rows[0]) if rows else None
+        return self._attach_judgment_alert(prediction_from_row(rows[0]) if rows else None)
 
     def prediction_history(self, symbol: str, limit: int = 30) -> list[dict]:
         normalized = self._watchlist_symbol(symbol)
@@ -2124,7 +2126,8 @@ class QueryMixin:
             stored = self.latest_prediction(as_of, symbol.upper())
         except DatabaseError:
             stored = None
-        return stored or self.build_live_prediction(symbol, as_of)
+        pred = stored or self.build_live_prediction(symbol, as_of)
+        return self._attach_judgment_alert(pred) or pred
 
     def _attach_row_predictions(
         self,
@@ -2163,13 +2166,74 @@ class QueryMixin:
                     session=session,
                     source="live",
                 )
-            row["prediction"] = pred
+            row["prediction"] = self._attach_judgment_alert(pred) or pred
             row["prediction_half"] = prediction_badge(pred)
+
+    def severity_alert(self, alert_id: int | None) -> dict | None:
+        parsed = parse_alert_id(alert_id)
+        if parsed is None:
+            return None
+        rows = self.fetch_all(
+            """
+            SELECT id, alert_key, severity, title, message, symbol, active,
+                   prediction_id, created_at, resolved_at
+            FROM severity_alerts
+            WHERE id = %s
+            """,
+            (parsed,),
+        )
+        return rows[0] if rows else None
+
+    def latest_judgment_alert(self, symbol: str, prediction_id: int | None) -> dict | None:
+        if not prediction_id:
+            return None
+        normalized = symbol.upper()
+        key = f"face_slap:{normalized}:{int(prediction_id)}"
+        rows = self.fetch_all(
+            """
+            SELECT id, alert_key, severity, title, message, symbol, active,
+                   prediction_id, created_at, resolved_at
+            FROM severity_alerts
+            WHERE severity = 'severe' AND active = TRUE
+              AND (
+                    prediction_id = %s
+                 OR alert_key = %s
+              )
+              AND (symbol IS NULL OR symbol = %s)
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            """,
+            (int(prediction_id), key, normalized),
+        )
+        return rows[0] if rows else None
+
+    def _attach_judgment_alert(self, pred: dict | None) -> dict | None:
+        if not pred:
+            return pred
+        attached = dict(pred)
+        if attached.get("state") != "invalidated" or not attached.get("id"):
+            attached["judgment_alert"] = None
+            return attached
+        try:
+            attached["judgment_alert"] = self.latest_judgment_alert(
+                attached.get("symbol") or "", attached.get("id")
+            )
+        except DatabaseError:
+            attached["judgment_alert"] = None
+        return attached
 
     def supersede_prediction(self, prediction_id: int, body: dict[str, Any]) -> dict:
         old = self.prediction_by_id(prediction_id)
         if not old:
             raise ValueError(f"No prediction {prediction_id}")
+        alert_id = parse_alert_id((body or {}).get("alert_id"))
+        alert = self.severity_alert(alert_id)
+        require_judgment_alert(
+            alert,
+            symbol=old["symbol"],
+            prediction_id=old.get("id"),
+            alert_id=(body or {}).get("alert_id"),
+        )
         reason = (body.get("change_reason") or body.get("reason") or "").strip()
         symbol = old["symbol"]
         session = self.market_session(body.get("as_of_date") or old.get("as_of_date"))
@@ -2204,7 +2268,13 @@ class QueryMixin:
                     f"{new.get('window_label') or '窗口'}改口约{up:g}%，"
                     f"期间跌幅不超过{abs(down):g}%。"
                 )
-        superseded, replacement = apply_supersede(old, new, change_reason=reason)
+        superseded, replacement = apply_supersede(
+            old,
+            new,
+            change_reason=reason,
+            alert_id=alert_id,
+            alert=alert,
+        )
         written = self.append_prediction(replacement)
         superseded["superseded_by_id"] = written.get("id")
         self.update_prediction_state(superseded)

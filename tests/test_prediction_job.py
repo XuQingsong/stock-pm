@@ -126,6 +126,7 @@ def test_job_checks_open_prediction_instead_of_stacking() -> None:
     assert second["checked"] == ["INTC"]
     assert store.checks
     assert store.predictions[0]["state"] == "active"
+    assert store.predictions[0]["state"] != "superseded"
 
 
 def test_job_failure_writes_visible_missing() -> None:

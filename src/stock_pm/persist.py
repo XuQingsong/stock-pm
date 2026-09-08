@@ -719,17 +719,20 @@ class PersistMixin:
         except Exception as exc:
             raise DatabaseError(f"Failed to append environment snapshot: {exc}") from exc
 
-    def append_severity_alerts(self, alerts: list[dict[str, Any]]) -> None:
+    def append_severity_alerts(self, alerts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not alerts:
-            return
+            return []
+        written: list[dict[str, Any]] = []
         try:
             with self.pool.connection() as conn:
                 for alert in alerts:
-                    conn.execute(
+                    row = conn.execute(
                         """
                         INSERT INTO severity_alerts (
-                            alert_key, severity, title, message, symbol, active
-                        ) VALUES (%s, %s, %s, %s, %s, TRUE)
+                            alert_key, severity, title, message, symbol, active,
+                            prediction_id
+                        ) VALUES (%s, %s, %s, %s, %s, TRUE, %s)
+                        RETURNING id
                         """,
                         (
                             alert.get("alert_key"),
@@ -737,10 +740,15 @@ class PersistMixin:
                             alert.get("title") or "",
                             alert.get("message") or "",
                             alert.get("symbol"),
+                            alert.get("prediction_id"),
                         ),
-                    )
+                    ).fetchone()
+                    if row:
+                        alert["id"] = row["id"]
+                    written.append(alert)
         except Exception as exc:
             raise DatabaseError(f"Failed to append severity alerts: {exc}") from exc
+        return written
 
     def append_tape_analysis(self, snapshot: dict[str, Any]) -> None:
         try:

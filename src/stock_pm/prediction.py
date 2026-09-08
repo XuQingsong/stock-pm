@@ -307,6 +307,9 @@ def snapshot_from_row(row: dict | None) -> dict | None:
         "supersedes_id": row.get("supersedes_id"),
         "superseded_by_id": row.get("superseded_by_id"),
         "change_reason": row.get("change_reason"),
+        "alert_id": parse_alert_id(row.get("alert_id"))
+        or parse_alert_id((struct or {}).get("alert_id") if isinstance(struct, dict) else None)
+        or parse_alert_id(((struct or {}).get("supersedes") or {}).get("alert_id") if isinstance(struct, dict) else None),
         "created_at": str(created) if created else None,
         "source": row.get("source") or (struct.get("source") if isinstance(struct, dict) else None) or "stored",
         "legacy": False,
@@ -620,11 +623,57 @@ def run_prediction_check(
     }
 
 
+def parse_alert_id(value: Any) -> int | None:
+    if value in (None, "", False):
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def require_judgment_alert(
+    alert: dict | None,
+    *,
+    symbol: str,
+    prediction_id: int | None,
+    alert_id: Any = None,
+) -> int:
+    """CHANGE-01: supersede only after a severe alert tied to this prediction."""
+    parsed = parse_alert_id(alert_id if alert_id is not None else (alert or {}).get("id"))
+    if parsed is None:
+        raise ValueError("改口必须引用严重预警 alert_id")
+    if not alert:
+        raise ValueError("alert_id 未知，不能改口")
+    stored_id = parse_alert_id(alert.get("id"))
+    if stored_id is None or stored_id != parsed:
+        raise ValueError("alert_id 未知，不能改口")
+    if str(alert.get("severity") or "") != "severe":
+        raise ValueError("alert_id 不是严重预警，不能改口")
+    alert_symbol = str(alert.get("symbol") or "").upper()
+    wanted = symbol.upper()
+    if alert_symbol and alert_symbol != wanted:
+        raise ValueError("alert_id 不属于该标的，不能改口")
+    if prediction_id is None:
+        raise ValueError("alert_id 不属于该预测打脸，不能改口")
+    pred_ref = parse_alert_id(alert.get("prediction_id"))
+    key = str(alert.get("alert_key") or "")
+    expected_key = f"face_slap:{wanted}:{int(prediction_id)}"
+    if pred_ref != int(prediction_id) and key != expected_key:
+        raise ValueError("alert_id 不属于该预测打脸，不能改口")
+    if alert.get("active") is False:
+        raise ValueError("alert_id 已解除，不能改口")
+    return parsed
+
+
 def apply_supersede(
     old: dict,
     new: dict,
     *,
     change_reason: str,
+    alert_id: Any,
+    alert: dict | None = None,
 ) -> tuple[dict, dict]:
     """Human judgment-change. Leave-trace; never auto-called on noise."""
     reason = (change_reason or "").strip()
@@ -632,28 +681,39 @@ def apply_supersede(
         raise ValueError("改口必须写原因，留痕")
     if old.get("state") == "missing" or not has_real_bounds(old):
         raise ValueError("没有可改口的真实预测")
+    tied = require_judgment_alert(
+        alert,
+        symbol=str(old.get("symbol") or ""),
+        prediction_id=old.get("id"),
+        alert_id=alert_id,
+    )
     superseded = dict(old)
     superseded["state"] = "superseded"
     superseded["state_label"] = STATE_LABELS["superseded"]
     superseded["change_reason"] = reason
+    superseded["alert_id"] = tied
     struct = dict(superseded.get("struct") or {})
     life = list(struct.get("lifecycle") or [])
-    life.append(_lifecycle("superseded", f"改口留痕：{reason}"))
+    life.append(_lifecycle("superseded", f"改口留痕：{reason}（alert_id={tied}）"))
     struct["lifecycle"] = life
+    struct["alert_id"] = tied
     superseded["struct"] = struct
     superseded["badge"] = prediction_badge(superseded)
 
     replacement = dict(new)
     replacement["supersedes_id"] = old.get("id")
     replacement["change_reason"] = reason
+    replacement["alert_id"] = tied
     replacement["source"] = "human"
     nstruct = dict(replacement.get("struct") or {})
     nstruct["source"] = "human"
+    nstruct["alert_id"] = tied
     nstruct["supersedes"] = {
         "id": old.get("id"),
         "thesis": old.get("thesis"),
         "state": old.get("state"),
         "reason": reason,
+        "alert_id": tied,
     }
     replacement["struct"] = nstruct
     replacement["badge"] = prediction_badge(replacement)

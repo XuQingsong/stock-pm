@@ -9,6 +9,7 @@ from stock_pm.prediction import (
     mark_legacy_hit_rate,
     prediction_badge,
     prediction_hit_rate,
+    require_judgment_alert,
     run_prediction_check,
     synthesize_prediction,
 )
@@ -200,6 +201,7 @@ def test_face_slap_on_downside_break_not_small_noise() -> None:
     assert slap["alert"]["severity"] == "severe"
     assert slap["alert"]["cta"] == "judgment_change"
     assert "打脸" in slap["alert"]["message"]
+    assert slap["prediction"]["state"] != "superseded"
 
 
 def test_expired_window_is_face_slap() -> None:
@@ -266,19 +268,88 @@ def test_human_supersede_leaves_trace_and_is_not_automatic() -> None:
         source="human",
         change_reason="公开持仓大幅增加，原下跌边界不再适用",
     )
+    alert = {
+        "id": 11,
+        "severity": "severe",
+        "symbol": "INTC",
+        "prediction_id": 3,
+        "alert_key": "face_slap:INTC:3",
+        "active": True,
+    }
+    try:
+        apply_supersede(
+            old, new, change_reason="公开持仓大幅增加，原下跌边界不再适用"
+        )
+        raise AssertionError("missing alert_id must fail")
+    except TypeError:
+        pass
+    try:
+        apply_supersede(
+            old,
+            new,
+            change_reason="公开持仓大幅增加，原下跌边界不再适用",
+            alert_id=None,
+        )
+        raise AssertionError("missing alert_id must fail")
+    except ValueError as exc:
+        assert "alert_id" in str(exc)
     superseded, replacement = apply_supersede(
-        old, new, change_reason="公开持仓大幅增加，原下跌边界不再适用"
+        old,
+        new,
+        change_reason="公开持仓大幅增加，原下跌边界不再适用",
+        alert_id=11,
+        alert=alert,
     )
     assert superseded["state"] == "superseded"
     assert superseded["change_reason"]
+    assert superseded["alert_id"] == 11
     assert replacement["supersedes_id"] == 3
+    assert replacement["alert_id"] == 11
     assert replacement["source"] == "human"
+    assert replacement["struct"]["supersedes"]["alert_id"] == 11
     assert "公开持仓" in replacement["struct"]["supersedes"]["reason"]
     try:
-        apply_supersede(old, new, change_reason="  ")
+        apply_supersede(old, new, change_reason="  ", alert_id=11, alert=alert)
         raise AssertionError("empty reason must fail")
     except ValueError as exc:
         assert "留痕" in str(exc)
+
+
+def test_require_judgment_alert_rejects_unusable_alerts() -> None:
+    good = {
+        "id": 11,
+        "severity": "severe",
+        "symbol": "INTC",
+        "prediction_id": 3,
+        "alert_key": "face_slap:INTC:3",
+        "active": True,
+    }
+    assert require_judgment_alert(good, symbol="INTC", prediction_id=3, alert_id=11) == 11
+    try:
+        require_judgment_alert(None, symbol="INTC", prediction_id=3, alert_id=None)
+        raise AssertionError("missing id")
+    except ValueError as exc:
+        assert "alert_id" in str(exc)
+    try:
+        require_judgment_alert(None, symbol="INTC", prediction_id=3, alert_id=99)
+        raise AssertionError("unknown id")
+    except ValueError as exc:
+        assert "未知" in str(exc)
+    try:
+        require_judgment_alert(
+            {**good, "severity": "warning"},
+            symbol="INTC",
+            prediction_id=3,
+            alert_id=11,
+        )
+        raise AssertionError("not severe")
+    except ValueError as exc:
+        assert "不是严重预警" in str(exc)
+    try:
+        require_judgment_alert(good, symbol="INTC", prediction_id=8, alert_id=11)
+        raise AssertionError("wrong prediction")
+    except ValueError as exc:
+        assert "不属于该预测" in str(exc)
 
 
 def test_badge_never_fakes_bounds() -> None:

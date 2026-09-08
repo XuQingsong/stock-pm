@@ -71,12 +71,16 @@
       ? `数据暂缺：${flags.map((flag) => FLAG_LABELS[flag] || flag).join("、")}`
       : "";
     const state = pred && pred.state;
-    const slap = ready && state === "invalidated";
+    const alert = pred && pred.judgment_alert;
+    const slap = !!(
+      ready && state === "invalidated"
+      && alert && alert.id && alert.severity === "severe"
+    );
     const cta = slap
       ? `<div class="judgment-change">
-          <p>打脸已自动写入。改口必须留痕，小噪声不要改。</p>
+          <p>打脸已自动写入。改口必须引用严重预警，小噪声不要改。</p>
           <textarea class="change-reason" placeholder="改口原因（必填）"></textarea>
-          <button type="button" class="btn supersede-btn" data-prediction-id="${esc(pred.id || "")}" data-symbol="${esc((options && options.symbol) || pred.symbol || "")}">改口（留痕）</button>
+          <button type="button" class="btn supersede-btn" data-prediction-id="${esc(pred.id || "")}" data-symbol="${esc((options && options.symbol) || pred.symbol || "")}" data-alert-id="${esc(alert.id)}">改口（留痕）</button>
           <span class="muted supersede-status"></span>
         </div>`
       : "";
@@ -124,7 +128,7 @@
       : env.one_liner;
     const alertHtml = alerts.length
       ? `<div class="alert-strip visible" role="alert">${alerts.map((item) =>
-        `<div class="alert-item"><b>${esc(item.title || "严重提醒")}</b><span>${esc(item.message || "")}</span>${item.cta === "judgment_change" ? `<div class="env-meta">改口（留痕）在个股预测区，不因小噪声自动改口。</div>` : (item.legacy ? `<div class="env-meta">旧口径，不是新 Prediction 边界。</div>` : "")}</div>`
+        `<div class="alert-item"><b>${esc(item.title || "严重提醒")}</b><span>${esc(item.message || "")}</span>${item.cta === "judgment_change" && item.id ? `<div class="env-meta">改口（留痕）在个股预测区，须带 alert_id。</div>` : (item.legacy ? `<div class="env-meta">旧口径，不是新 Prediction 边界。</div>` : "")}</div>`
       ).join("")}</div>`
       : "";
     const flagText = flags.length
@@ -200,7 +204,10 @@
             {
               method: "POST",
               headers: { "Content-Type": "application/json", Accept: "application/json" },
-              body: JSON.stringify({ change_reason: reason })
+              body: JSON.stringify({
+                change_reason: reason,
+                alert_id: Number(btn.dataset.alertId)
+              })
             }
           );
           const body = await response.json().catch(() => ({}));
