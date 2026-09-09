@@ -62,27 +62,25 @@ details.materials .grid2{margin-top:8px}
 <section class="panel" id="briefing-panel">
   <div class="zone-label">结论</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。预测徽章绑真实 Prediction（时间窗口 + 涨跌边界），缺则写到期未产出/缺数，不编假边界。环境与昨盘冲突时只留一句因果。期权、新闻、K 线材料在下方折叠。旧口径偏向命中率不冒充新预测。</div>
+  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。预测只写时间窗口与涨跌边界，缺则点名缺哪一项，不编假边界。环境与昨盘冲突时只留一句因果。期权、新闻、K 线材料在下方折叠。规则对照不冒充窗口边界。</div>
   <div class="table-wrap"><table>
     <thead><tr>
-      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>预测</th><th>量比</th><th>5日</th>
+      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>预测</th><th>关注</th><th>量比</th><th>5日</th>
       <th>均线位置</th><th>支撑/压力</th>
     </tr></thead>
     <tbody id="rows"></tbody>
   </table></div>
 </section>
 
-<section class="panel">
-  <div class="zone-label">展开</div>
-  <h2>最新复盘</h2>
-  <div class="hint">日终规则摘要 · 完整列表见 <a href="/review">复盘</a></div>
-  <div id="reviews"></div>
-</section>
-
 <details class="fold zone-c materials" data-zone="C">
-  <summary>折叠材料（期权 / 宏观 / 新闻 / 异动）</summary>
+  <summary>折叠材料（期权 / 宏观 / 新闻 / 异动 / 复盘摘要）</summary>
   <div class="zone-label">折叠</div>
-  <p class="hint">这些是支撑材料，不是晨间结论。缺数就藏或写「数据暂缺」，不编影响。</p>
+  <p class="hint">这些是支撑材料，不是晨间结论。缺哪一项就点名哪一项，或藏卡，不编影响。</p>
+  <section class="panel">
+    <h2>最新复盘</h2>
+    <div class="hint">日终规则摘要 · 完整列表见 <a href="/review">复盘</a></div>
+    <div id="reviews"></div>
+  </section>
 
   <section class="panel" id="options-panel" style="display:none">
     <h2>期权市场概览</h2>
@@ -184,37 +182,70 @@ async function main(){
   }
   const sn=Object.fromEntries(snaps.map(x=>[x.symbol,x])),sg=Object.fromEntries(signals.map(x=>[x.symbol,x]));
   const br=Object.fromEntries((briefing.rows||[]).map(x=>[x.symbol,x]));
-  $('rows').innerHTML=watch.map(w=>{const q=sn[w.symbol]||{},k=sg[w.symbol]||{},b=br[w.symbol]||{};
+  const copy=window.stockPmCopy||{};
+  const rankOf=b=>{
+    const attn=b.attention||{};
+    if(attn.rank!=null) return attn;
+    const pred=b.prediction||{};
+    const tape=b.tape_analysis||{};
+    if(pred.judgment_alert&&pred.judgment_alert.severity==='severe') return {rank:0,key:'severe_alert',label:'严重告警',tone:'severe',featured:true};
+    if(pred.state==='invalidated'||(b.prior_outcome&&b.prior_outcome.outcome_vs_bias==='相反')) return {rank:1,key:'slap',label:'已打脸',tone:'slap',featured:true};
+    if(pred.state==='missing'&&!(pred.missingFlags||[]).length) return {rank:2,key:'overdue',label:'到期未产出',tone:'overdue',featured:true};
+    if((pred.missingFlags||[]).length||((b.environment||{}).missingFlags||[]).length) return {rank:3,key:'named_missing',label:'缺数点名',tone:'missing',featured:true};
+    if(b.env_tape_conflict||(tape.conflict)) return {rank:4,key:'env_tape_conflict',label:'环境与昨盘冲突',tone:'conflict',featured:true};
+    if(tape.weak_vs_env&&tape.weak_vs_env.status==='weak') return {rank:5,key:'weak_vs_env',label:'弱于环境',tone:'weak',featured:true};
+    return {rank:6,key:'rest',label:'其余',tone:'rest',featured:false};
+  };
+  const ordered=watch.slice().sort((a,b)=>{
+    const ra=rankOf(br[a.symbol]||{}), rb=rankOf(br[b.symbol]||{});
+    return (ra.rank-rb.rank)||String(a.symbol).localeCompare(String(b.symbol));
+  });
+  const featured=ordered.filter(w=>rankOf(br[w.symbol]||{}).featured);
+  const rest=ordered.filter(w=>!rankOf(br[w.symbol]||{}).featured);
+  const renderRow=w=>{const q=sn[w.symbol]||{},b=br[w.symbol]||{};
+    const attn=rankOf(b);
+    const pred=b.prediction||{};
     const quality=b.quote_quality||q.quote_quality||{};
     const price=b.conclusion_price!=null?b.conclusion_price:(quality.hide_last_price?null:(q.prior_close||q.last_price||b.last_price));
     const delayed=quality.status==='delayed'||quality.delayed;
     const chg=b.day_change_pct!=null?b.day_change_pct:null;
-    const envHalf=b.env_half||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||'数据暂缺';
-    const tapeHalf=b.tape_half||(b.tape_analysis&&b.tape_analysis.one_liner)||'昨盘结论未就绪（M2）';
+    const envFlags=((b.environment||{}).missingFlags)||[];
+    const envHalf=b.env_half||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||(envFlags.length?(copy.missingFlagText?copy.missingFlagText(envFlags):envFlags.join('、')):'数据暂缺');
+    const tapeHalf=b.tape_half||(b.tape_analysis&&b.tape_analysis.one_liner)||'昨盘结论未就绪';
     const conflict=b.env_tape_conflict||(b.tape_analysis&&b.tape_analysis.conflict);
     const thesis=conflict?(b.row_thesis||envHalf):null;
+    const news=b.env_news;
+    const newsBit=news?`<div class="hint">${copy.newsHeadline?copy.newsHeadline(news):esc(news.headline||'')}<div class="news-stance">${esc(news.stance_line||'')}</div></div>`:'';
+    const predText=(copy.predictionDisplay?copy.predictionDisplay(pred):null)||b.prediction_half||pred.badge||'到期未产出';
+    const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
     const halfCells=conflict
-      ? `<td class="row-thesis" colspan="2">${esc(thesis)}</td>`
-      : `<td class="row-thesis">${esc(envHalf)}</td><td class="row-thesis">${esc(tapeHalf)}</td>`;
-    return `<tr onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
-      <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||'数据暂缺')+'</div>':''}</td>
-      <td class="${cls(chg)}">${pct(chg)}</td>
+      ? `<td class="row-thesis tone-conflict" colspan="2">${esc(thesis)}${newsBit}</td>`
+      : `<td class="row-thesis">${esc(envHalf)}${newsBit}</td><td class="row-thesis">${esc(tapeHalf)}</td>`;
+    return `<tr class="attn-${esc(attn.tone)}" onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
+      <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||(envFlags.length?envFlags.join('、'):'数据暂缺'))+'</div>':''}</td>
+      <td class="${cls(chg)} tone-a">${pct(chg)}</td>
       ${halfCells}
-      <td class="row-thesis">${esc(b.prediction_half||(b.prediction&&b.prediction.badge)||'到期未产出')}</td>
+      <td class="row-thesis tone-a ${predTone?('tone-'+predTone):''}">${esc(predText)}</td>
+      <td class="tone-a ${attn.tone?('tone-'+attn.tone):''}">${esc(attn.label)}</td>
       <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
       <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>
       <td class="hint">${esc(b.ma_position||'—')}</td>
-      <td>${esc(b.breakout_status||'—')}<div class="hint">${b.support_price!=null?('S '+money(b.support_price)+' / R '+money(b.resistance_price)):'—'}</div></td></tr>`}).join('');
+      <td>${esc(b.breakout_status||'—')}<div class="hint">${b.support_price!=null?('S '+money(b.support_price)+' / R '+money(b.resistance_price)):'—'}</div></td></tr>`};
+  $('rows').innerHTML=featured.map(renderRow).join('')
+    +(rest.length?`<tr class="rest-fold"><td colspan="11"><details class="fold"><summary>其余 ${rest.length} 只</summary><table><tbody>${rest.map(renderRow).join('')}</tbody></table></details></td></tr>`:'');
   $('events').innerHTML=events.length?events.map(e=>`<div class="news-item"><b>${esc(e.symbol)}</b> ${esc(e.title)}<div class="hint">${new Date(e.event_time).toLocaleString()} · ${esc(e.source)}</div></div>`).join(''):'近期无异动记录';
   $('earnings').innerHTML=earnings.length?earnings.map(x=>`<span class="badge"><b>${esc(x.symbol)}</b> ${esc(x.report_date)} · EPS ${num(x.eps_actual)}/预期${num(x.eps_estimate)} · 后1日 <span class="${cls(x.post_1d_return_pct)}">${pct(x.post_1d_return_pct)}</span></span>`).join(' '):'暂无财报记录';
   $('reviews').innerHTML=reviewRows.length?reviewRows.map(row=>`<div class="news-item"><a href="/stock/${esc(row.symbol)}#review"><b>${esc(row.symbol)}</b></a> ${num(row.score)}分 · ${esc(row.breakout_status||'')}
     <div class="hint">${esc(String(row.review_date||'').slice(0,10))} · ${esc(row.summary||'')}</div></div>`).join('')+'<div class="hint" style="margin-top:8px"><a href="/review">打开每日复盘</a></div>':'<div class="hint">当日复盘尚未生成。</div>';
   const mapped=news.filter(n=>(n.impacts||[]).length);
   const unmapped=news.filter(n=>(n.impacts||[]).length===0);
-  $('news-mapped').innerHTML=mapped.length?mapped.map(n=>`<div class="impact-item"><div class="narr"><a href="${esc(n.url||'#')}" target="_blank">${esc(n.headline)}</a></div>
+  const newsHead=n=>copy.newsHeadline?copy.newsHeadline(n):esc(n.headline||'');
+  const newsLine=n=>copy.newsStanceLine?copy.newsStanceLine(n):(n.stance_line||'');
+  $('news-mapped').innerHTML=mapped.length?mapped.map(n=>`<div class="impact-item"><div class="narr">${newsHead(n)}</div>
+    <div class="news-stance">${esc(newsLine(n))}</div>
     <div class="hint">${n.published_at?new Date(n.published_at).toLocaleString():''} · ${esc(n.symbol)} · ${esc(n.source||'')}</div>
-    ${(n.impacts||[]).map(i=>`<div><span class="chip ${i.direction.includes('多')?'bull':i.direction.includes('空')?'bear':''}">${esc(i.direction)}</span> <b>${esc(i.theme_name)}</b>（${(i.symbols||[]).map(esc).join('、')||'自选中无'}）<span class="hint">${esc(i.rationale)}</span></div>`).join('')}</div>`).join(''):'<div class="hint">近期没有可映射到板块的新闻。</div>';
-  $('news-unmapped').innerHTML=unmapped.length?`<div class="hint" style="margin-top:10px">未覆盖 ${unmapped.length} 条（规则未命中主题，不强制归类）</div>`+unmapped.slice(0,8).map(n=>`<div class="news-item"><a href="${esc(n.url||'#')}" target="_blank">${esc(n.headline)}</a> <span class="chip">${esc(n.symbol)}</span><div class="hint">${n.published_at?new Date(n.published_at).toLocaleDateString():''}</div></div>`).join(''):'';
+    </div>`).join(''):'<div class="hint">近期没有可映射到板块的新闻。</div>';
+  $('news-unmapped').innerHTML=unmapped.length?`<div class="hint" style="margin-top:10px">未覆盖 ${unmapped.length} 条（规则未命中主题，不强制归类）</div>`+unmapped.slice(0,8).map(n=>`<div class="news-item">${newsHead(n)} <span class="chip">${esc(n.symbol)}</span><div class="news-stance">${esc(newsLine(n))}</div><div class="hint">${n.published_at?new Date(n.published_at).toLocaleDateString():''}</div></div>`).join(''):'';
   try{
     const impact=await j('/api/market/impact');
     const hasMacro=impact.macro.length||impact.macro_unanalyzed.length||impact.upcoming.length||impact.news_themes.length;

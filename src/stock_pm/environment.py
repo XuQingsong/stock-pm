@@ -523,13 +523,9 @@ def _news_scan_text(
         if not layer:
             continue
         bias = layer.get("bias")
-        headline = layer.get("headline")
         if bias:
             dirs.append(bias)
-            piece = f"{label}{bias}"
-            if headline:
-                piece += f"（{_as_clause(str(headline), '')}）"
-            bits.append(piece)
+            bits.append(f"{label}{bias}")
         elif layer.get("clause"):
             bits.append(f"{label}有标题未映射，不编方向")
     if not bits:

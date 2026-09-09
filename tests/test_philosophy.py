@@ -74,8 +74,8 @@ def test_face_slap_shell_does_not_claim_prediction() -> None:
     assert state["prediction_ready"] is False
     alerts = derive_severity_alerts(briefing=briefing, explicit_state=state)
     assert alerts and alerts[0]["severity"] == "severe"
-    assert "旧口径" in state["detail"]
-    assert "不是新 Prediction" in state["detail"]
+    assert "规则对照" in state["detail"]
+    assert "不是时间窗口或涨跌边界" in state["detail"]
     assert alerts[0].get("cta") is None
 
 
@@ -164,7 +164,7 @@ def test_conflict_row_is_one_sentence() -> None:
     )
     assert is_causal_chain(thesis)
     assert "不当成两套并列结论" in thesis
-    assert "芯片股获上调" in thesis
+    assert "可点新闻" in thesis or "偏多" in thesis
     assert "可能相关" not in thesis
     assert thesis.find("。") > thesis.find("因此")
     mapped = impact_row_thesis(

@@ -501,8 +501,10 @@ def test_pages_render(monkeypatch):
     assert "尚未确认" not in c.get("/review").text
     assert "保存备注" in c.get("/review").text
     assert "自动循环" in c.get("/review").text
-    assert "旧口径" in c.get("/review").text
-    assert "旧口径" in c.get("/static/stock.js").text
+    assert "规则对照" in c.get("/review").text
+    assert "规则对照" in c.get("/static/stock.js").text
+    assert "旧口径" not in c.get("/review").text
+    assert "旧口径" not in c.get("/static/stock.js").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
 
@@ -703,11 +705,12 @@ def test_static_shell_assets(monkeypatch):
     assert "<details open" not in js.text
     assert "→ 支撑结论" in js.text
     assert 'data-zone="A"' in js.text
-    assert "预测徽章绑真实 Prediction" in home or "不编假边界" in home
+    assert "不编假边界" in home
     assert "watch_low" not in home
     assert "face_slap" not in home
     assert "昨盘半句" in home
-    assert "昨盘结论未就绪（M2）" in home
+    assert "昨盘结论未就绪" in home
+    assert "（M2）" not in home
     assert "折叠材料" in home
     js = c.get("/static/shell.js").text
     assert 'data-zone="tape"' in js
@@ -718,7 +721,8 @@ def test_static_shell_assets(monkeypatch):
     assert "不编造偏弱" in js
     assert 'data-zone="review"' in js
     assert "judgment-change" in js
-    assert "改口（留痕）" in js
+    assert "改口并写原因" in js
+    assert "须严重提醒后改口并写原因" in js
     assert "data-alert-id" in js
     assert "alert_id" in js
     assert "judgment_alert" in js
