@@ -61,6 +61,12 @@ from .prediction import (
     snapshot_from_row as prediction_from_row,
     synthesize_prediction,
 )
+from .ux_copy import (
+    decorate_news_item,
+    env_half_display,
+    first_env_news,
+    sort_attention_rows,
+)
 from .scoring import sentiment_from_components
 
 
@@ -895,6 +901,7 @@ class QueryMixin:
             themes = list(row.get("themes") or [])
             row["theme_names"] = [THEME_NAMES.get(theme, theme) for theme in themes]
             row["impacts"] = news_impacts(row, mapping)
+            decorate_news_item(row)
         return rows
 
     def segments(self, symbol: str, date: str | None = None) -> list[dict]:
@@ -1066,6 +1073,7 @@ class QueryMixin:
             themes = list(row.get("themes") or [])
             row["theme_names"] = [THEME_NAMES.get(theme, theme) for theme in themes]
             row["impacts"] = news_impacts(row, mapping)
+            decorate_news_item(row)
         return rows
 
     def fundamentals_thesis_view(self, symbol: str) -> dict:
@@ -1528,7 +1536,8 @@ class QueryMixin:
                     briefing_row=row,
                 )
             row["environment"] = env
-            row["env_half"] = env.get("one_liner")
+            row["env_half"] = env_half_display(env, env.get("one_liner"))
+            row["env_news"] = first_env_news(env)
             if env.get("conflict"):
                 row["row_thesis"] = env.get("row_thesis") or row.get("row_thesis")
             else:
@@ -2167,7 +2176,13 @@ class QueryMixin:
                     source="live",
                 )
             row["prediction"] = self._attach_judgment_alert(pred) or pred
-            row["prediction_half"] = prediction_badge(pred)
+            row["prediction_half"] = prediction_badge(row["prediction"])
+            ctx = row.get("context")
+            if isinstance(ctx, dict) and ctx.get("news"):
+                ctx = dict(ctx)
+                ctx["news"] = [decorate_news_item(item) for item in ctx.get("news") or []]
+                row["context"] = ctx
+        rows[:] = sort_attention_rows(rows)
 
     def severity_alert(self, alert_id: int | None) -> dict | None:
         parsed = parse_alert_id(alert_id)

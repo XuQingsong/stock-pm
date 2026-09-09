@@ -14,6 +14,12 @@ from typing import Any
 from .analytics import _number
 from .calendar import add_trading_days, next_trading_day
 from .environment import _as_clause
+from .ux_copy import (
+    LEGACY_DISCLAIMER,
+    LEGACY_LABEL,
+    PREDICTION_HIT_LABEL,
+    named_missing_line,
+)
 
 PUBLISH_STATES = ("published", "draft", "stale", "missing")
 PREDICTION_STATES = (
@@ -57,8 +63,7 @@ FLAG_LABELS = {
 }
 
 MISSING_LINE = "到期未产出，未编造时间窗口或涨跌边界。"
-MISSING_DATA_LINE = "缺数，未编造时间窗口或涨跌边界。"
-LEGACY_LABEL = "旧口径"
+MISSING_DATA_LINE = named_missing_line(PRED_FIELD_FLAGS)
 QUALIFIED_EXAMPLE = "两周内补涨约10%，期间跌幅不超过5%"
 
 MIN_BOUND_PCT = 0.5
@@ -69,7 +74,9 @@ SAME_DAY_WINDOW_DAYS = 1
 
 
 def flag_labels(flags: list[str]) -> str:
-    return "、".join(FLAG_LABELS.get(flag, flag) for flag in flags)
+    from .ux_copy import named_missing_labels
+
+    return "、".join(named_missing_labels(flags) or [FLAG_LABELS.get(flag, flag) for flag in flags])
 
 
 def _as_date(value: Any) -> date | None:
@@ -138,6 +145,32 @@ def prediction_badge(pred: dict | None) -> str:
         f"{window} 上{_fmt_pct(pred.get('upside_bound_pct'))} / "
         f"下{_fmt_pct(pred.get('downside_bound_pct'))} · {state}"
     )
+
+
+def _therefore_from_pred(pred: dict | None) -> str | None:
+    """A-card line: only 因此：窗+上下沿, or a named missing list."""
+    pred = pred or {}
+    thesis = str(pred.get("thesis") or "")
+    if "因此：" in thesis and pred.get("prediction_ready") and pred.get("state") != "missing":
+        return "因此：" + thesis.split("因此：", 1)[1].rstrip("。")
+    if pred.get("prediction_ready") and pred.get("state") != "missing":
+        window = pred.get("window_label") or "窗口"
+        if pred.get("upside_bound_pct") is not None and pred.get("downside_bound_pct") is not None:
+            return (
+                f"因此：{window} 上{_fmt_pct(pred.get('upside_bound_pct'))} / "
+                f"下{_fmt_pct(pred.get('downside_bound_pct'))}"
+            )
+    flags = list(pred.get("missingFlags") or [])
+    if flags:
+        return named_missing_line(flags)
+    stored = pred.get("therefore") or pred.get("missing_label")
+    return stored
+
+
+def prediction_therefore(pred: dict | None) -> str:
+    if pred and pred.get("therefore"):
+        return str(pred["therefore"])
+    return _therefore_from_pred(pred) or MISSING_LINE
 
 
 def is_legacy_outlook(text: str | None) -> bool:
@@ -243,6 +276,7 @@ def failed_prediction(
         "window_days": None,
         "window_label": None,
         "thesis": line,
+        "therefore": None,
         "one_liner": line,
         "entry_price": None,
         "upside_bound_pct": None,
@@ -293,6 +327,20 @@ def snapshot_from_row(row: dict | None) -> dict | None:
         "window_days": row.get("window_days"),
         "window_label": row.get("window_label") or (struct.get("window_label") if isinstance(struct, dict) else None),
         "thesis": row.get("thesis"),
+        "therefore": (struct.get("therefore") if isinstance(struct, dict) else None)
+        or _therefore_from_pred(
+            {
+                "window_label": row.get("window_label")
+                or (struct.get("window_label") if isinstance(struct, dict) else None),
+                "upside_bound_pct": row.get("upside_bound_pct"),
+                "downside_bound_pct": row.get("downside_bound_pct"),
+                "prediction_ready": ready and state != "missing",
+                "state": state,
+                "missingFlags": list(flags),
+                "missing_label": struct.get("missing_label") if isinstance(struct, dict) else None,
+                "thesis": row.get("thesis"),
+            }
+        ),
         "one_liner": row.get("thesis"),
         "entry_price": _number(row.get("entry_price")),
         "upside_bound_pct": _number(row.get("upside_bound_pct")),
@@ -392,7 +440,7 @@ def synthesize_prediction(
             flags.append("tape")
         if as_of is None and "window" not in flags:
             flags.append("window")
-        label = MISSING_DATA_LINE if flags else MISSING_LINE
+        label = named_missing_line(flags) if flags else MISSING_LINE
         return failed_prediction(
             symbol_u,
             as_of_date,
@@ -418,19 +466,21 @@ def synthesize_prediction(
         f"{window['window_label']}{action}约{_fmt_pct(bounds['upside_bound_pct'])}"
         f"，期间跌幅不超过{_fmt_pct(bounds['downside_bound_pct'])}"
     )
+    therefore = f"因此：{target}"
     thesis = (
         f"环境：{env_disp}。昨盘：{tape_disp}。解释：{explain_disp}。"
-        f"因此：{target}。"
+        f"{therefore}。"
     )
     lifecycle = [
         _lifecycle("auto_gen", "盘后自动生成"),
-        _lifecycle("pending", "质量门通过，等待窗口开始"),
+        _lifecycle("pending", "依据已齐，等待窗口开始"),
     ]
     if change_reason:
         lifecycle.append(_lifecycle("pending", f"改口留痕：{change_reason}"))
     struct = {
         "action": action,
         "target": target,
+        "therefore": therefore,
         "window_label": window["window_label"],
         "lifecycle": lifecycle,
         "prediction_ready": True,
@@ -453,6 +503,7 @@ def synthesize_prediction(
         "window_days": window["window_days"],
         "window_label": window["window_label"],
         "thesis": thesis,
+        "therefore": therefore,
         "one_liner": target + "。",
         "entry_price": round(entry, 4),
         "upside_bound_pct": bounds["upside_bound_pct"],
@@ -721,7 +772,7 @@ def apply_supersede(
 
 
 def prediction_hit_rate(rows: list[dict]) -> dict:
-    """New Prediction 对错. Not the old llm_outlook / outcome_vs_bias 口径."""
+    """Window-bound hit/miss. Not the old llm_outlook / outcome_vs_bias 对照."""
     scored = [
         row
         for row in rows
@@ -731,7 +782,7 @@ def prediction_hit_rate(rows: list[dict]) -> dict:
     slaps = sum(1 for row in scored if row.get("state") == "invalidated")
     total = len(scored)
     return {
-        "label": "Prediction 对错",
+        "label": PREDICTION_HIT_LABEL,
         "legacy": False,
         "samples": total,
         "hits": hits,
@@ -743,6 +794,6 @@ def prediction_hit_rate(rows: list[dict]) -> dict:
 def mark_legacy_hit_rate(hit_rate: dict | None) -> dict:
     payload = dict(hit_rate or {})
     payload["legacy"] = True
-    payload["label"] = "旧口径"
-    payload["disclaimer"] = "旧口径：规则/模型偏向对照，不是新 Prediction 时间窗口与涨跌边界。"
+    payload["label"] = LEGACY_LABEL
+    payload["disclaimer"] = LEGACY_DISCLAIMER
     return payload

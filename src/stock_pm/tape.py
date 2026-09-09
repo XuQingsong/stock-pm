@@ -37,7 +37,7 @@ FLAG_LABELS = {
     "review_note": "复盘总结",
 }
 
-TAPE_PLACEHOLDER = "昨盘结论未就绪（M2）"
+TAPE_PLACEHOLDER = "昨盘结论未就绪"
 TAPE_MISSING_LINE = "昨盘数据暂缺，未编造量价。"
 REVIEW_UNEXPLAINED = "解释不了：消息与情绪依据不足，不硬编诱多、转势、吸筹或逃跑。"
 

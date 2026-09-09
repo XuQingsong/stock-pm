@@ -198,6 +198,7 @@ def pack_review_context(
         compact_news.append(
             {
                 "headline": article.get("headline"),
+                "url": article.get("url"),
                 "summary": (article.get("summary") or "")[:280],
                 "themes": article.get("theme_names") or article.get("themes") or [],
                 "impacts": [

@@ -51,11 +51,11 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;t
     <label class="field"><span>复盘日期</span><input type="date" id="date"></label>
     <button id="load">加载复盘</button>
   </div>
-  <div class="hint" style="margin-top:6px">打开页面只读数据库，不会调用模型。若上次因额度不足失败，刷新本页会自动再请求一次。量价、新闻、宏观没变时会复用已保存的解释。</div>
+  <div class="hint" style="margin-top:6px">本页只展示已生成结论。若上次因额度不足失败，刷新本页会自动再请求一次。量价、新闻、宏观没变时会复用已保存的解释。</div>
 </section>
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 <section class="panel" id="options-panel" style="display:none"><h2>期权市场概览</h2><div id="options-overview" class="hint">加载中…</div></section>
-<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
+<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周窗口对照</h2><div id="hit-rate" class="hint">加载中…</div></section>
 <section class="panel" id="macro-panel" style="display:none"><h2>当日宏观</h2><div id="macro"></div></section>
 <section class="panel"><h2>自选复盘</h2><div id="reviews" class="grid"></div></section>
 <section class="panel"><h2>日内分段摘要</h2><div id="segments"></div></section>
@@ -109,12 +109,17 @@ function llmBanner(row){
 }
 function llmStamp(row){
   const t=row.llm_generated_at?String(row.llm_generated_at).replace('T',' ').slice(0,16)+' UTC':'已保存';
-  return `<div class="hint">模型结果已入库（${esc(t)}）。打开页面不会重新预测。</div>`;
+  return `<div class="hint">结论已生成（${esc(t)}）。</div>`;
 }
 function newsBlock(context){
+  const copy=window.stockPmCopy||{};
   const news=(context&&context.news)||[];
   const macro=(context&&context.macro)||[];
-  const n=news.map(item=>`<div class="news"><b>${esc(item.headline||'')}</b>${(item.impacts||[]).map(i=>`<div class="hint">${esc(i.direction)} ${esc(i.theme_name)} · ${esc(i.rationale)}</div>`).join('')}</div>`).join('');
+  const n=news.map(item=>{
+    const head=copy.newsHeadline?copy.newsHeadline(item):`<b>${esc(item.headline||'')}</b>${item.url?'':' <span class="hint">无原文链接</span>'}`;
+    const line=copy.newsStanceLine?copy.newsStanceLine(item):(item.stance_line||'');
+    return `<div class="news">${head}<div class="hint news-stance">${esc(line)}</div></div>`;
+  }).join('');
   const m=macro.map(item=>`<div class="macro"><b>${esc(item.name||'')}</b><div class="hint">${esc(item.narrative||'')}</div></div>`).join('');
   if(!n&&!m) return '<div class="hint">当日没有可挂上的新闻或宏观。</div>';
   return n+m;
@@ -122,30 +127,37 @@ function newsBlock(context){
 function card(row){
   const date=String(row.review_date||$('date').value).slice(0,10);
   const prior=row.prior_outcome;
-  return `<article class="card" data-symbol="${esc(row.symbol)}" data-date="${esc(date)}">
+  const copy=window.stockPmCopy||{};
+  const pred=row.prediction||{};
+  const attn=row.attention||{};
+  const predText=(copy.predictionDisplay&&copy.predictionDisplay(pred))||pred.therefore||pred.badge||row.prediction_half||'到期未产出';
+  const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
+  return `<article class="card attn-${esc(attn.tone||'rest')}" data-symbol="${esc(row.symbol)}" data-date="${esc(date)}">
     <div class="card-head"><div><b><a href="/stock/${esc(row.symbol)}#review" style="color:inherit">${esc(row.symbol)}</a></b>
-      <div class="hint">${esc(row.health||'—')} · ${esc(row.ma_position||'—')} · ${esc(row.breakout_status||'—')}</div></div>
-      <div class="score">${num(row.score,0)}</div></div>
+      <div class="hint">${esc(attn.label||'—')} · ${esc(row.health||'—')} · ${esc(row.breakout_status||'—')}</div></div>
+      </div>
     <div class="metrics">
-      <div><span>日涨跌</span><b class="${cls(row.day_change_pct)}">${pct(row.day_change_pct)}</b></div>
+      <div><span>日涨跌</span><b class="${cls(row.day_change_pct)} tone-a">${pct(row.day_change_pct)}</b></div>
       <div><span>量比</span><b>${row.volume_ratio_20d==null?'—':num(row.volume_ratio_20d)+'x'}</b></div>
       <div><span>5日</span><b class="${cls(row.return_5d_pct)}">${pct(row.return_5d_pct)}</b></div>
       <div><span>支撑 / 压力</span><b>${money(row.support_price)} / ${money(row.resistance_price)}</b></div>
     </div>
-    <p class="summary">${esc((row.review_note&&row.review_note.summary)||row.row_thesis||row.tape||row.summary||'—')}</p>
+    <h3 style="margin:12px 0 4px;font-size:13px">预测</h3>
+    <p class="summary tone-a ${predTone?('tone-'+predTone):''}">${esc(predText)}</p>
     <p class="summary hint">${esc((row.review_note&&row.review_note.explanation)||'')}</p>
     ${llmBanner(row)}
     <h3 style="margin:12px 0 4px;font-size:13px">可能解释走势的资料</h3>
     ${newsBlock(row.context)}
+    <details class="fold">
+      <summary>其余依据（规则拟稿 / 模型草稿，不代替窗口边界）</summary>
     <h3 style="margin:12px 0 4px;font-size:13px">模型：为何这样走</h3>
     <p class="summary">${esc(row.llm_why||'未生成')}</p>
     <h3 style="margin:12px 0 4px;font-size:13px">规则拟稿</h3>
-    <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}</div>
-    <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法 <span class="chip">旧口径</span></h3>
+    <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}${row.score==null?'':' · 规则分 '+num(row.score,0)}</div>
+    <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法 <span class="chip">规则对照</span></h3>
     <p class="summary">${esc(row.llm_outlook||'未生成')} <span class="chip">${esc(row.active_bias||row.llm_bias||row.rule_bias||'—')}</span>
-      <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不是新 Prediction 边界</span></p>
-    <h3 style="margin:12px 0 4px;font-size:13px">预测（新口径）</h3>
-    <p class="summary">${esc((row.prediction&&(row.prediction.badge||row.prediction.one_liner))||row.prediction_half||'到期未产出')}</p>
+      <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不是时间窗口或涨跌边界</span></p>
+    </details>
     <details class="fold" ${row.user_bias||row.user_outlook||row.user_note?'open':''}>
       <summary>折叠：可选备注（不写则沿用自动判断）</summary>
       <div class="form-row">
@@ -191,7 +203,7 @@ function closedMessage(session, date){
   return `<div class="empty"><b>当日休市，暂无复盘。</b><div class="hint" style="margin-top:8px">${esc(date)} ${esc(label)}。复盘的是上一交易日收盘结果。${link}</div></div>`;
 }
 function emptyReviewMessage(date){
-  return `<div class="empty">当日尚无复盘。<div class="hint" style="margin-top:8px">${esc(date)} 没有入库的日终复盘，不会调用模型。</div></div>`;
+  return `<div class="empty">当日尚无复盘。<div class="hint" style="margin-top:8px">${esc(date)} 没有已生成的日终复盘。</div></div>`;
 }
 async function loadReview(){
   const date=$('date').value; if(!date)return;
@@ -245,9 +257,13 @@ async function loadReview(){
     const all=hit.loop||hit.all||{};
     const notes=hit.notes_saved||hit.confirmed||{};
     const predHit=briefing.prediction_hit_rate||{};
-    $('hit-rate').innerHTML=`<div><b>Prediction 对错</b> ${num(predHit.hits,0)}/${num(predHit.samples,0)} 兑现（${predHit.rate_pct==null?'—':predHit.rate_pct+'%'}），打脸 ${num(predHit.face_slaps,0)}。</div>
-      <div class="hint" style="margin-top:6px"><span class="chip">旧口径</span> 规则/模型偏向对照 ${num(all.hits,0)}/${num(all.samples,0)} 符合（${all.rate_pct==null?'—':all.rate_pct+'%'}）。${esc(hit.disclaimer||'不是新 Prediction 时间窗口与涨跌边界。')} 历史备注 ${num(notes.hits,0)}/${num(notes.samples,0)}。</div>`;
-    $('reviews').innerHTML=(briefing.rows||[]).map(card).join('');
+    $('hit-rate').innerHTML=`<div><b>${esc(predHit.label||'窗口边界对错')}</b> ${num(predHit.hits,0)}/${num(predHit.samples,0)} 兑现（${predHit.rate_pct==null?'—':predHit.rate_pct+'%'}），打脸 ${num(predHit.face_slaps,0)}。</div>
+      <div class="hint" style="margin-top:6px"><span class="chip">规则对照</span> 规则/模型偏向对照 ${num(all.hits,0)}/${num(all.samples,0)} 符合（${all.rate_pct==null?'—':all.rate_pct+'%'}）。${esc(hit.disclaimer||'不是时间窗口或涨跌边界。')} 历史备注 ${num(notes.hits,0)}/${num(notes.samples,0)}。</div>`;
+    const rows=briefing.rows||[];
+    const featured=rows.filter(r=>(r.attention||{featured:true}).featured);
+    const rest=rows.filter(r=>r.attention&&r.attention.featured===false);
+    $('reviews').innerHTML=featured.map(card).join('')
+      +(rest.length?`<details class="fold" style="grid-column:1/-1"><summary>其余 ${rest.length} 只</summary><div class="grid">${rest.map(card).join('')}</div></details>`:'');
     $('reviews').querySelectorAll('.save').forEach(btn=>btn.onclick=()=>saveCard(btn.closest('.card')));
     const segs=day.segments_summary||[];
     $('segments').innerHTML=segs.length?`<div class="table-wrap"><table><thead><tr><th>标的</th><th>段数</th><th>推断买入</th><th>推断卖出</th><th>最大上涨段</th><th>最大下跌段</th></tr></thead><tbody>${

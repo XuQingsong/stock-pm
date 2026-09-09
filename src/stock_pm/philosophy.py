@@ -11,17 +11,16 @@ from typing import Any
 
 from .analytics import _number, pick_outlook_bias
 from .environment import (
-    FLAG_LABELS,
     causal_one_liner,
     flag_labels,
     news_stance,
     tape_stance,
 )
 from .prediction import (
-    LEGACY_LABEL,
     has_real_bounds,
     prediction_badge,
 )
+from .ux_copy import named_missing_labels
 
 EXPLICIT_STATES = ("face_slap", "overdue", "missing", "clear")
 EXPLICIT_STATE_PRIORITY = {
@@ -195,13 +194,13 @@ def stock_row_thesis(row: dict | None) -> str:
     news_text = None
     if headline:
         if stance_n == "bull":
-            news_text = f"偏多（{headline}）"
+            news_text = "偏多 · 可点新闻"
         elif stance_n == "bear":
-            news_text = f"偏空（{headline}）"
+            news_text = "偏空 · 可点新闻"
         elif stance_n == "mixed":
-            news_text = f"分歧（{headline}）"
+            news_text = "分歧 · 可点新闻"
         else:
-            news_text = f"未映射方向（{headline}），不编影响"
+            news_text = "未映射方向，不编影响"
             stance_n = None
     return causal_one_liner(tape_text, news_text, tape_stance(health, breakout), stance_n)
 
@@ -369,24 +368,12 @@ def derive_explicit_state(
     ]
     ready = any(has_real_bounds(pred) for pred in pred_rows)
 
-    slap_rows = [
-        row
-        for row in rows
-        if (row.get("prior_outcome") or {}).get("outcome_vs_bias") == "相反"
-    ]
     if slap_preds:
         symbols = "、".join(str(pred.get("symbol") or "") for pred in slap_preds[:4])
         candidates.append("face_slap")
         details.append(
             f"预测被打脸：{symbols}。{prediction_badge(slap_preds[0])}。"
             "请判断是否改口（留痕），小噪声不自动改口。"
-        )
-    elif slap_rows:
-        symbols = "、".join(row.get("symbol") or "" for row in slap_rows[:4])
-        candidates.append("face_slap")
-        details.append(
-            f"昨日判断被证伪：{symbols}。这是{LEGACY_LABEL}（规则/模型偏向对照），"
-            "不是新 Prediction 时间窗口或涨跌边界。"
         )
 
     completed = _parse_ts((sync or {}).get("completed_at"))
@@ -397,7 +384,7 @@ def derive_explicit_state(
     if stale_sync or reviews_missing or due_missing:
         candidates.append("overdue")
         if due_missing:
-            details.append("到期未产出或质量门未过，未编造预测边界。")
+            details.append("到期未产出或依据不足，未编造预测边界。")
         if reviews_missing:
             details.append("交易日复盘尚未生成。")
         if stale_sync:
@@ -408,7 +395,7 @@ def derive_explicit_state(
     if publish in {"missing", "draft"} or missing_flags:
         candidates.append("missing")
         if missing_flags:
-            shown = "、".join(FLAG_LABELS.get(flag, flag) for flag in missing_flags)
+            shown = "、".join(named_missing_labels(missing_flags))
             details.append(f"数据暂缺：{shown}。")
 
     code = pick_explicit_state(candidates)
@@ -420,9 +407,7 @@ def derive_explicit_state(
         "priority": EXPLICIT_STATE_PRIORITY[code],
         "detail": " ".join(details),
         "prediction_ready": ready,
-        "face_slap_symbols": [
-            pred.get("symbol") for pred in slap_preds
-        ] or [row.get("symbol") for row in slap_rows],
+        "face_slap_symbols": [pred.get("symbol") for pred in slap_preds],
     }
 
 

@@ -108,7 +108,8 @@ def test_quality_gate_failure_is_visible_missing() -> None:
     assert pred["prediction_ready"] is False
     assert pred["upside_bound_pct"] is None
     assert pred["downside_bound_pct"] is None
-    assert "缺数" in pred["missing_label"]
+    assert "缺" in pred["missing_label"]
+    assert "缺数，" not in pred["missing_label"]
     assert "未编造" in pred["one_liner"]
     assert prediction_badge(pred) == pred["missing_label"]
     assert prediction_badge(None) == "到期未产出"
@@ -129,7 +130,8 @@ def test_does_not_invent_bounds_without_support_resistance() -> None:
     assert pred["prediction_ready"] is False
     assert pred["upside_bound_pct"] is None
     assert "10%" not in (pred.get("thesis") or "")
-    assert "缺数" in pred["missing_label"]
+    assert "缺下沿" in pred["missing_label"] or "缺上沿" in pred["missing_label"]
+    assert "缺数，" not in pred["missing_label"]
 
 
 def test_state_machine_auto_gen_pending_active_hit() -> None:
@@ -364,8 +366,8 @@ def test_legacy_hit_rate_is_labeled() -> None:
         {"all": {"samples": 2, "hits": 1, "rate_pct": 50.0}, "confirm_required": False}
     )
     assert legacy["legacy"] is True
-    assert legacy["label"] == "旧口径"
-    assert "不是新 Prediction" in legacy["disclaimer"]
+    assert legacy["label"] == "规则对照"
+    assert "不是时间窗口或涨跌边界" in legacy["disclaimer"]
     fresh = prediction_hit_rate(
         [{"state": "hit"}, {"state": "invalidated"}, {"state": "missing"}]
     )
