@@ -55,7 +55,8 @@ def test_explicit_state_priority() -> None:
     assert pick_explicit_state([]) == "clear"
 
 
-def test_face_slap_shell_does_not_claim_prediction() -> None:
+def test_legacy_bias_miss_is_not_prediction_face_slap() -> None:
+    """Expert 3: 打脸 only from PredictionCheck, never 规则对照/命中率."""
     briefing = {
         "date": "2026-09-08",
         "has_reviews": True,
@@ -70,13 +71,11 @@ def test_face_slap_shell_does_not_claim_prediction() -> None:
     }
     env = synthesize_environment(as_of_date="2026-09-08", briefing_rows=briefing["rows"])
     state = derive_explicit_state(briefing=briefing, environment=env)
-    assert state["code"] == "face_slap"
+    assert state["code"] != "face_slap"
     assert state["prediction_ready"] is False
     alerts = derive_severity_alerts(briefing=briefing, explicit_state=state)
-    assert alerts and alerts[0]["severity"] == "severe"
-    assert "规则对照" in state["detail"]
-    assert "不是时间窗口或涨跌边界" in state["detail"]
-    assert alerts[0].get("cta") is None
+    assert all(item.get("cta") != "judgment_change" for item in alerts)
+    assert all(item.get("alert_key") != "face_slap" for item in alerts)
 
 
 def test_real_prediction_face_slap_is_ready_and_has_cta() -> None:

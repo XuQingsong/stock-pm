@@ -189,7 +189,7 @@ async function main(){
     const pred=b.prediction||{};
     const tape=b.tape_analysis||{};
     if(pred.judgment_alert&&pred.judgment_alert.severity==='severe') return {rank:0,key:'severe_alert',label:'严重告警',tone:'severe',featured:true};
-    if(pred.state==='invalidated'||(b.prior_outcome&&b.prior_outcome.outcome_vs_bias==='相反')) return {rank:1,key:'slap',label:'已打脸',tone:'slap',featured:true};
+    if(pred.state==='invalidated') return {rank:1,key:'slap',label:'已打脸',tone:'slap',featured:true};
     if(pred.state==='missing'&&!(pred.missingFlags||[]).length) return {rank:2,key:'overdue',label:'到期未产出',tone:'overdue',featured:true};
     if((pred.missingFlags||[]).length||((b.environment||{}).missingFlags||[]).length) return {rank:3,key:'named_missing',label:'缺数点名',tone:'missing',featured:true};
     if(b.env_tape_conflict||(tape.conflict)) return {rank:4,key:'env_tape_conflict',label:'环境与昨盘冲突',tone:'conflict',featured:true};
@@ -235,11 +235,11 @@ async function main(){
     +(rest.length?`<tr class="rest-fold"><td colspan="11"><details class="fold"><summary>其余 ${rest.length} 只</summary><table><tbody>${rest.map(renderRow).join('')}</tbody></table></details></td></tr>`:'');
   $('events').innerHTML=events.length?events.map(e=>`<div class="news-item"><b>${esc(e.symbol)}</b> ${esc(e.title)}<div class="hint">${new Date(e.event_time).toLocaleString()} · ${esc(e.source)}</div></div>`).join(''):'近期无异动记录';
   $('earnings').innerHTML=earnings.length?earnings.map(x=>`<span class="badge"><b>${esc(x.symbol)}</b> ${esc(x.report_date)} · EPS ${num(x.eps_actual)}/预期${num(x.eps_estimate)} · 后1日 <span class="${cls(x.post_1d_return_pct)}">${pct(x.post_1d_return_pct)}</span></span>`).join(' '):'暂无财报记录';
-  $('reviews').innerHTML=reviewRows.length?reviewRows.map(row=>`<div class="news-item"><a href="/stock/${esc(row.symbol)}#review"><b>${esc(row.symbol)}</b></a> ${num(row.score)}分 · ${esc(row.breakout_status||'')}
+  $('reviews').innerHTML=reviewRows.length?reviewRows.map(row=>`<div class="news-item"><a href="/stock/${esc(row.symbol)}#review"><b>${esc(row.symbol)}</b></a> ${esc(row.breakout_status||'')}
     <div class="hint">${esc(String(row.review_date||'').slice(0,10))} · ${esc(row.summary||'')}</div></div>`).join('')+'<div class="hint" style="margin-top:8px"><a href="/review">打开每日复盘</a></div>':'<div class="hint">当日复盘尚未生成。</div>';
   const mapped=news.filter(n=>(n.impacts||[]).length);
   const unmapped=news.filter(n=>(n.impacts||[]).length===0);
-  const newsHead=n=>copy.newsHeadline?copy.newsHeadline(n):esc(n.headline||'');
+  const newsHead=n=>copy.newsHeadline?copy.newsHeadline(n):(`${esc(n.headline||'无标题')}${n.url?'':' <span class="no-url">无原文链接</span>'}`);
   const newsLine=n=>copy.newsStanceLine?copy.newsStanceLine(n):(n.stance_line||'');
   $('news-mapped').innerHTML=mapped.length?mapped.map(n=>`<div class="impact-item"><div class="narr">${newsHead(n)}</div>
     <div class="news-stance">${esc(newsLine(n))}</div>

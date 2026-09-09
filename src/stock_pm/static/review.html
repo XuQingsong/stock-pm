@@ -55,7 +55,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;t
 </section>
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 <section class="panel" id="options-panel" style="display:none"><h2>期权市场概览</h2><div id="options-overview" class="hint">加载中…</div></section>
-<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周命中率</h2><div id="hit-rate" class="hint">加载中…</div></section>
+<section class="panel" id="hit-panel"><div class="zone-label">校验</div><h2>近两周窗口对照</h2><div id="hit-rate" class="hint">加载中…</div></section>
 <section class="panel" id="macro-panel" style="display:none"><h2>当日宏观</h2><div id="macro"></div></section>
 <section class="panel"><h2>自选复盘</h2><div id="reviews" class="grid"></div></section>
 <section class="panel"><h2>日内分段摘要</h2><div id="segments"></div></section>
@@ -134,8 +134,8 @@ function card(row){
   const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
   return `<article class="card attn-${esc(attn.tone||'rest')}" data-symbol="${esc(row.symbol)}" data-date="${esc(date)}">
     <div class="card-head"><div><b><a href="/stock/${esc(row.symbol)}#review" style="color:inherit">${esc(row.symbol)}</a></b>
-      <div class="hint">${esc(attn.label||'—')} · ${esc(row.health||'—')} · ${esc(row.ma_position||'—')} · ${esc(row.breakout_status||'—')}</div></div>
-      <div class="score">${num(row.score,0)}</div></div>
+      <div class="hint">${esc(attn.label||'—')} · ${esc(row.health||'—')} · ${esc(row.breakout_status||'—')}</div></div>
+      </div>
     <div class="metrics">
       <div><span>日涨跌</span><b class="${cls(row.day_change_pct)} tone-a">${pct(row.day_change_pct)}</b></div>
       <div><span>量比</span><b>${row.volume_ratio_20d==null?'—':num(row.volume_ratio_20d)+'x'}</b></div>
@@ -153,7 +153,7 @@ function card(row){
     <h3 style="margin:12px 0 4px;font-size:13px">模型：为何这样走</h3>
     <p class="summary">${esc(row.llm_why||'未生成')}</p>
     <h3 style="margin:12px 0 4px;font-size:13px">规则拟稿</h3>
-    <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}</div>
+    <div class="hint">偏向 ${esc(row.rule_bias||'—')} · 关注 ${money(row.watch_low)} – ${money(row.watch_high)}${row.score==null?'':' · 规则分 '+num(row.score,0)}</div>
     <h3 style="margin:12px 0 4px;font-size:13px">自动明日看法 <span class="chip">规则对照</span></h3>
     <p class="summary">${esc(row.llm_outlook||'未生成')} <span class="chip">${esc(row.active_bias||row.llm_bias||row.rule_bias||'—')}</span>
       <span class="hint">来源 ${esc(row.active_bias_source||'rule')} · 不是时间窗口或涨跌边界</span></p>

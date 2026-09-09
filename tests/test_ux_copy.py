@@ -3,6 +3,7 @@ from pathlib import Path
 from stock_pm.prediction import synthesize_prediction
 from stock_pm.ux_copy import (
     BANNED_ON_SCREEN,
+    attention_rank,
     decorate_news_item,
     env_half_display,
     featured_and_rest,
@@ -116,6 +117,14 @@ def test_attention_orders_alerts_conflict_then_rest() -> None:
     featured, rest = featured_and_rest(rows)
     assert [row["symbol"] for row in featured] == ["NVDA", "AAPL", "INTC", "MU"]
     assert [row["symbol"] for row in rest] == ["QQQ"]
+    legacy_miss = attention_rank(
+        {
+            "symbol": "AMD",
+            "prior_outcome": {"outcome_vs_bias": "相反", "bias": "偏多"},
+            "prediction": {"state": "active", "prediction_ready": True},
+        }
+    )
+    assert legacy_miss["key"] != "face_slap"
 
 
 def test_main_ui_path_bans_engineering_jargon() -> None:

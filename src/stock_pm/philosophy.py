@@ -20,7 +20,7 @@ from .prediction import (
     has_real_bounds,
     prediction_badge,
 )
-from .ux_copy import LEGACY_DISCLAIMER, LEGACY_LABEL, named_missing_labels
+from .ux_copy import named_missing_labels
 
 EXPLICIT_STATES = ("face_slap", "overdue", "missing", "clear")
 EXPLICIT_STATE_PRIORITY = {
@@ -368,24 +368,12 @@ def derive_explicit_state(
     ]
     ready = any(has_real_bounds(pred) for pred in pred_rows)
 
-    slap_rows = [
-        row
-        for row in rows
-        if (row.get("prior_outcome") or {}).get("outcome_vs_bias") == "相反"
-    ]
     if slap_preds:
         symbols = "、".join(str(pred.get("symbol") or "") for pred in slap_preds[:4])
         candidates.append("face_slap")
         details.append(
             f"预测被打脸：{symbols}。{prediction_badge(slap_preds[0])}。"
             "请判断是否改口（留痕），小噪声不自动改口。"
-        )
-    elif slap_rows:
-        symbols = "、".join(row.get("symbol") or "" for row in slap_rows[:4])
-        candidates.append("face_slap")
-        details.append(
-            f"昨日判断被证伪：{symbols}。这是{LEGACY_LABEL}，"
-            f"{LEGACY_DISCLAIMER}"
         )
 
     completed = _parse_ts((sync or {}).get("completed_at"))
@@ -419,9 +407,7 @@ def derive_explicit_state(
         "priority": EXPLICIT_STATE_PRIORITY[code],
         "detail": " ".join(details),
         "prediction_ready": ready,
-        "face_slap_symbols": [
-            pred.get("symbol") for pred in slap_preds
-        ] or [row.get("symbol") for row in slap_rows],
+        "face_slap_symbols": [pred.get("symbol") for pred in slap_preds],
     }
 
 

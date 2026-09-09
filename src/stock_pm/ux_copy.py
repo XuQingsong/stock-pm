@@ -260,14 +260,13 @@ def attention_rank(row: dict | None) -> dict:
     env_flags = list(env.get("missingFlags") or [])
     tape_flags = list(tape.get("missingFlags") or [])
     alert = pred.get("judgment_alert") or {}
-    prior = (row.get("prior_outcome") or {}).get("outcome_vs_bias")
     weak = (tape.get("weak_vs_env") or {}).get("status")
     conflict = bool(row.get("env_tape_conflict") or tape.get("conflict") or env.get("conflict"))
 
     key = "rest"
     if alert.get("id") and alert.get("severity") == "severe":
         key = "severe_alert"
-    elif state == "invalidated" or prior == "相反":
+    elif state == "invalidated":
         key = "face_slap"
     elif state == "missing" and not flags:
         key = "overdue"

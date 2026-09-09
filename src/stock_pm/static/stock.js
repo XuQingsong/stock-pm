@@ -439,7 +439,7 @@
       <section class="panel"><h2>可能解释走势的资料</h2>
         ${news.length || macro.length ? news.map((item) => {
           const copy = window.stockPmCopy || {};
-          const head = copy.newsHeadline ? copy.newsHeadline(item) : `<b>${esc(item.headline || MISSING)}</b>`;
+          const head = copy.newsHeadline ? copy.newsHeadline(item) : `<b>${esc(item.headline || MISSING)}</b>${item.url ? "" : ' <span class="no-url">无原文链接</span>'}`;
           const line = copy.newsStanceLine ? copy.newsStanceLine(item) : (item.stance_line || "");
           return `<div class="news-item">${head}<div class="subline news-stance">${esc(line)}</div></div>`;
         }).join("") + macro.map((item) => `<div class="news-item"><b>${esc(item.name || MISSING)}</b><div class="subline">${esc(item.narrative || "")}</div></div>`).join("") : empty("当日没有可挂上的新闻或宏观")}
@@ -480,7 +480,7 @@
     const copy = window.stockPmCopy || {};
     const names = item.theme_names || [];
     const chips = names.map((theme) => `<span class="chip">${esc(theme)}</span>`).join("");
-    const head = copy.newsHeadline ? copy.newsHeadline(item) : `<b>${esc(item.headline || MISSING)}</b>`;
+    const head = copy.newsHeadline ? copy.newsHeadline(item) : `<b>${esc(item.headline || MISSING)}</b>${item.url ? "" : ' <span class="no-url">无原文链接</span>'}`;
     const line = copy.newsStanceLine ? copy.newsStanceLine(item) : (item.stance_line || "分歧 · 因为规则未映射到可核对依据");
     return `<article class="news-item">${head}<div class="chips">${chips}</div><div class="subline news-stance">${esc(line)}</div><div class="news-meta">${dateText(item.published_at, true)} · ${esc(item.source || MISSING)}</div></article>`;
   }
