@@ -15,6 +15,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import Database
+from .decision import (
+    build_expectation_gap,
+    build_thesis,
+    build_what_changed,
+    review_prediction,
+)
 from .errors import DatabaseError
 from .review import retry_reviews_for_llm
 
@@ -75,6 +81,63 @@ def _http_error(exc: Exception) -> HTTPException:
 
 def _page(name: str) -> str:
     return files("stock_pm").joinpath(f"static/{name}").read_text(encoding="utf-8")
+
+
+# ------------------------------------------------------ decision MVP
+
+@app.post("/api/decision/what-changed")
+def decision_what_changed(body: Annotated[dict, Body()]) -> dict:
+    try:
+        return build_what_changed(
+            body.get("previous"),
+            body.get("current"),
+            materiality=body.get("materiality"),
+        )
+    except (TypeError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.post("/api/decision/expectation-gap")
+def decision_expectation_gap(body: Annotated[dict, Body()]) -> dict:
+    try:
+        return build_expectation_gap(
+            actual=body.get("actual"),
+            latest_consensus=body.get("latest_consensus"),
+            prior_consensus=body.get("prior_consensus"),
+        )
+    except (TypeError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.post("/api/decision/thesis")
+def decision_thesis(body: Annotated[dict, Body()]) -> dict:
+    try:
+        return build_thesis(
+            direction=body.get("direction") or "",
+            bull_drivers=body.get("bull_drivers") or [],
+            bear_drivers=body.get("bear_drivers") or [],
+            key_disagreement=body.get("key_disagreement") or "",
+            invalidation=body.get("invalidation") or {},
+            evidence_quality=body.get("evidence_quality") or "",
+        )
+    except (TypeError, ValueError) as exc:
+        raise _http_error(exc) from exc
+
+
+@app.post("/api/decision/prediction-review")
+def decision_prediction_review(body: Annotated[dict, Body()]) -> dict:
+    try:
+        return review_prediction(
+            body.get("frozen") or {},
+            actual_return_pct=body.get("actual_return_pct"),
+            benchmark_return_pct=body.get("benchmark_return_pct"),
+            max_drawdown_pct=body.get("max_drawdown_pct"),
+            invalidated=bool(body.get("invalidated")),
+            attribution=body.get("attribution") or "",
+            attribution_evidence=body.get("attribution_evidence") or [],
+        )
+    except (TypeError, ValueError) as exc:
+        raise _http_error(exc) from exc
 
 
 # ---------------------------------------------------------------- pages
