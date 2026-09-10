@@ -13,6 +13,7 @@ from typing import Any
 
 from .analytics import _number
 from .calendar import add_trading_days, next_trading_day
+from .decision import build_thesis, freeze_prediction
 from .environment import _as_clause
 from .ux_copy import (
     LEGACY_DISCLAIMER,
@@ -521,6 +522,50 @@ def synthesize_prediction(
         "source": source,
         "legacy": False,
     }
+    decision_thesis = build_thesis(
+        direction="bullish",
+        bull_drivers=[item for item in (environment.get("one_liner"), tape.get("one_liner")) if item][:3],
+        bear_drivers=[f"下跌边界 {_price(bounds['downside_price'])}"],
+        key_disagreement="现有盘面与环境证据能否在预测窗口内兑现",
+        invalidation={
+            "market": {
+                "type": "price",
+                "price": bounds["downside_price"],
+                "rule": "窗口内低点触及或跌破下跌边界",
+            }
+        },
+        evidence_quality="medium" if not unexplained else "weak",
+    )
+    forecast_snapshot = {
+        "symbol": symbol_u,
+        "direction": decision_thesis["direction"],
+        "window_start": window["window_start"],
+        "window_end": window["window_end"],
+        "expected_return_range": [
+            bounds["downside_bound_pct"],
+            bounds["upside_bound_pct"],
+        ],
+        "thesis": decision_thesis,
+    }
+    struct["decision"] = {
+        "schema_version": 1,
+        "what_changed": None,
+        "expectation_gap": None,
+        "thesis": decision_thesis,
+        "note": "What Changed 与预期差在有前序快照/一致预期时填充；缺失时不编造。",
+    }
+    struct["frozen_prediction"] = freeze_prediction(
+        forecast_snapshot,
+        generated_at=datetime.now(timezone.utc),
+        model_version="support-resistance-v1",
+        data_snapshot_id={
+            "as_of_date": as_of_date,
+            "environment_id": environment.get("id"),
+            "tape_id": tape.get("id"),
+            "review_note_id": review_note.get("id"),
+        },
+    )
+    payload["struct"] = struct
     payload["badge"] = prediction_badge(payload)
     return payload
 
