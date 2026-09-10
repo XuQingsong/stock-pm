@@ -1,6 +1,7 @@
 from datetime import date
 
 from stock_pm.calendar import add_trading_days, next_trading_day
+from stock_pm.decision import verify_frozen_prediction
 from stock_pm.prediction import (
     QUALIFIED_EXAMPLE,
     apply_supersede,
@@ -93,6 +94,8 @@ def test_qualified_example_has_window_and_both_bounds() -> None:
     assert has_real_bounds(pred)
     assert "10%" in pred["badge"]
     assert "5%" in pred["badge"]
+    assert pred["struct"]["decision"]["thesis"]["bear_drivers"]
+    assert verify_frozen_prediction(pred["struct"]["frozen_prediction"])
 
 
 def test_quality_gate_failure_is_visible_missing() -> None:
