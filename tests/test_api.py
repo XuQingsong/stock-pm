@@ -121,6 +121,20 @@ class FakeDatabase:
     def latest_fundamentals(self, symbol):
         return {"symbol": symbol.upper(), "pe_ttm": 25.4}
 
+    def decision_bundle(self, symbol):
+        row = next((item for item in WATCH if item["symbol"] == symbol.upper()), WATCH[0])
+        return {
+            "symbol": symbol.upper(),
+            "watch": row,
+            "bars": [],
+            "earnings": [],
+            "fundamentals": None,
+            "macro_events": list(self.macro),
+            "news": [],
+            "cboe": None,
+            "synthetic": False,
+        }
+
     def earnings_history(self, symbol):
         return [{"symbol": symbol.upper(), "fiscal_period": "Q2"}]
 
@@ -505,6 +519,8 @@ def test_pages_render(monkeypatch):
     assert "规则对照" in c.get("/static/stock.js").text
     assert "旧口径" not in c.get("/review").text
     assert "旧口径" not in c.get("/static/stock.js").text
+    assert "动态判断" in c.get("/stock/NVDA").text
+    assert "decision-module" in c.get("/stock/NVDA").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
 
@@ -570,6 +586,29 @@ def test_stock_group(monkeypatch):
     assert c.get("/api/market/session?date=bad").status_code == 400
     chart = c.get("/api/stock/NVDA/chart?interval=1m").json()
     assert chart["daily_ma"]["ma50"] == 240
+
+
+def test_stock_decision_live_and_preview(monkeypatch):
+    c = client(monkeypatch)
+    live = c.get("/api/stock/NVDA/decision").json()
+    assert live["symbol"] == "NVDA"
+    assert live["synthetic"] is False
+    assert live["preview"] is None
+    assert [step["id"] for step in live["chain"]] == [
+        "what_changed", "expectation", "confirmation", "transmission", "thesis_impact"
+    ]
+    preview = c.get("/api/stock/NVDA/decision?preview=A").json()
+    assert preview["synthetic"] is True
+    assert preview["preview"] == "A"
+    assert "合成演示数据" in preview["preview_label"]
+    assert preview["chain"][2]["status"] == "confirmed"
+    scene_b = c.get("/api/stock/NVDA/decision?preview=B").json()
+    assert scene_b["what_changed"]["thesis_changed"] is False
+    scene_c = c.get("/api/stock/AAPL/decision?preview=C").json()
+    assert scene_c["no_material_change"] is True
+    monkeypatch.setenv("APP_ENV", "production")
+    blocked = TestClient(api.app).get("/api/stock/NVDA/decision?preview=A").json()
+    assert blocked["synthetic"] is False
 
 
 def test_patch_review(monkeypatch):

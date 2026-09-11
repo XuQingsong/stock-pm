@@ -137,6 +137,10 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 | AL | 无 as_of / 不可解析 as_of 的 ValidatedBar 与 FactRef 不得进入后续层 | `ValidatedBar` / `FactRef` |
 | AM | 负数 materiality 阈值不得构造，不能把任意变化变成 material | `MaterialityRule` |
 
+## 阶段 2 展示（独立 stacked PR）
+
+`/stock/{symbol}` 顶部「动态判断」把本内核接成一条纵向因果链：What Changed → Expectation → Market Confirmation → Transmission → Thesis Impact。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap，禁止 fixture fallback。`?preview=A|B|C` 仅非生产环境可用，并标注「合成演示数据」。
+
 ## 明确不在本阶段
 
-Prediction、UI、API、数据库、Outcome 回检、概率、多周期、外部数据源、自动学习。
+Outcome 回检、概率、多周期、外部新数据源、自动学习。阶段 2 只把本内核接到现有页面，不合并阶段 1 Draft，也不进入预测价格。

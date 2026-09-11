@@ -531,6 +531,39 @@ class QueryMixin:
             "thesis": self.fundamentals_thesis_view(normalized),
         }
 
+    def decision_bundle(self, symbol: str) -> dict:
+        from datetime import date, timedelta
+
+        normalized = self._watchlist_symbol(symbol)
+        watch = next(
+            (row for row in self.watchlist_rows() if row["symbol"] == normalized),
+            {"symbol": normalized, "themes": [], "rate_sensitivity": "medium"},
+        )
+        end = date.today()
+        start = end - timedelta(days=180)
+        bars = self.fetch_all(
+            """
+            SELECT symbol, bar_size, bar_time, open_price, high_price,
+                   low_price, close_price, volume, source
+            FROM daily_price_bars
+            WHERE symbol = %s AND bar_size = '1d'
+            ORDER BY bar_time DESC
+            LIMIT 8
+            """,
+            (normalized,),
+        )
+        return {
+            "symbol": normalized,
+            "watch": watch,
+            "bars": bars,
+            "earnings": self.earnings_history(normalized)[:4],
+            "fundamentals": self.latest_fundamentals(normalized),
+            "macro_events": self.macro_events_between(start.isoformat(), end.isoformat()),
+            "news": self.news([normalized], 12),
+            "cboe": self.cboe_option_stats(),
+            "synthetic": False,
+        }
+
     def chart_history(
         self, symbol: str, limit: int = 260, interval: str = "1d"
     ) -> dict:
