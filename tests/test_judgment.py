@@ -247,6 +247,59 @@ def test_assemble_judgment_layers_and_missing_row() -> None:
     assert NO_STORED_LABEL in empty["judgment"]["one_liner"]
 
 
+def test_assemble_uses_env_bullets_and_tape_chips() -> None:
+    tape = _tape()
+    env = _env()
+    env["struct"] = {
+        "sentiment": {"atmosphere": "补涨", "clause": "氛围观察"},
+        "bullets": [
+            {"title": "基本面 · 一年涨跌", "clause": "过去一年约涨 23.4%"},
+            {"title": "基本面 · 财报", "clause": "近4季 EPS 超预期 4/4"},
+            {"title": "消息面 · 行业", "clause": "行业偏利多：分红日历"},
+        ],
+    }
+    price = fact_ref(
+        ref_table="price_bars",
+        ref_id="INTC|1d|2026-09-04",
+        as_of="2026-09-04",
+        text="INTC 2026-09-04 日线，收 20",
+        role="price",
+    )
+    news = fact_ref(
+        ref_table="news_articles",
+        ref_id=9,
+        as_of="2026-09-04",
+        text="分红日历",
+        source_url="https://example.com/n",
+        role="news",
+    )
+    payload = assemble_judgment(
+        symbol="INTC",
+        as_of_date="2026-09-04",
+        prediction=synthesize_prediction(
+            as_of_date="2026-09-04",
+            symbol="INTC",
+            environment=env,
+            tape=tape,
+            review_note=_note(tape),
+            entry_price=20.0,
+            support=19.0,
+            resistance=22.0,
+        ),
+        environment=env,
+        tape=tape,
+        review_note=_note(tape),
+        resolved_facts=[price, news],
+    )
+    titles = [item.get("text") or "" for item in payload["reasons"]]
+    assert any("过去一年约涨 23.4%" in text for text in titles)
+    assert any("近4季 EPS 超预期" in text for text in titles)
+    assert any(item.get("role") == "tape_chips" for item in payload["reasons"])
+    assert all(item["layer"] == "analysis" for item in payload["reasons"])
+    assert {item["layer"] for item in payload["facts"]} == {"fact"}
+    assert len(payload["facts"]) == 2
+
+
 def test_legacy_six_flag_row_is_rediagnosed() -> None:
     hot = _env(atmosphere="过热")
     tape = _tape(
@@ -363,6 +416,8 @@ def test_judgment_view_has_no_side_effects() -> None:
     probe._fact_news = QueryMixin._fact_news.__get__(probe)
     probe._fact_earnings = QueryMixin._fact_earnings.__get__(probe)
     probe._fact_macro = QueryMixin._fact_macro.__get__(probe)
+    probe._news_fact_from_row = QueryMixin._news_fact_from_row.__get__(probe)
+    probe._fact_news_recent = QueryMixin._fact_news_recent.__get__(probe)
     view = QueryMixin.judgment_view(probe, "AAPL", "2026-09-04")
     assert view["gate"]["reason"] == "missing"
     assert view["judgment"]["window_label"] is None

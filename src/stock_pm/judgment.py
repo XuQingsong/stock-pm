@@ -301,19 +301,22 @@ def assemble_judgment(
     """Assemble a judgment payload from already-persisted objects only."""
     facts = [_fact_from_candidate(item) for item in (resolved_facts or [])]
     facts = _unique([item for item in facts if item])
-    fact_by_role = {item.get("role"): item for item in facts if item.get("role")}
 
     def facts_for(*roles: str) -> list[dict]:
-        return [fact_by_role[role] for role in roles if role in fact_by_role]
+        wanted = set(roles)
+        return [item for item in facts if item.get("role") in wanted]
 
     reasons: list[dict] = []
-    env_reason = _analysis_from(
-        environment,
-        table="environment_snapshots",
-        text=(environment or {}).get("one_liner") or (environment or {}).get("synthesis"),
-        based_on=facts_for("price", "earnings", "news", "macro"),
-        role="environment",
-    )
+    bullets = ((environment or {}).get("struct") or {}).get("bullets") or []
+    env_reason = None
+    if not bullets:
+        env_reason = _analysis_from(
+            environment,
+            table="environment_snapshots",
+            text=(environment or {}).get("one_liner") or (environment or {}).get("synthesis"),
+            based_on=facts_for("price", "earnings", "news", "macro"),
+            role="environment",
+        )
     tape_clause = (
         ((tape or {}).get("volume_price") or {}).get("clause")
         or (tape or {}).get("one_liner")
@@ -322,7 +325,7 @@ def assemble_judgment(
         tape,
         table="tape_analyses",
         text=tape_clause,
-        based_on=facts_for("price"),
+        based_on=facts_for("price", "snapshot"),
         role="tape",
     )
     note_text = (review_note or {}).get("summary")
@@ -348,6 +351,42 @@ def assemble_judgment(
     for item in (env_reason, tape_reason, note_reason, review_reason):
         if item:
             reasons.append(item)
+    for bullet in bullets:
+        title = str(bullet.get("title") or "").strip()
+        clause = str(bullet.get("clause") or "").strip()
+        if not clause:
+            continue
+        item = _analysis_from(
+            environment,
+            table="environment_snapshots",
+            text=f"{title}：{clause}" if title else clause,
+            based_on=facts_for("price", "earnings", "news", "macro"),
+            role="environment",
+        )
+        if item:
+            reasons.append(item)
+    tape_row = tape or {}
+    extra_tape = (
+        ("tape_chips", (tape_row.get("chips") or {}).get("clause")),
+        ("tape_break", (tape_row.get("break") or {}).get("clause")),
+        (
+            "tape_weak",
+            (tape_row.get("weak_vs_env") or {}).get("clause")
+            or (tape_row.get("weak_vs_env") or {}).get("facts_line"),
+        ),
+    )
+    seen_text = {item.get("text") for item in reasons}
+    for role, text in extra_tape:
+        item = _analysis_from(
+            tape,
+            table="tape_analyses",
+            text=text,
+            based_on=facts_for("price", "snapshot"),
+            role=role,
+        )
+        if item and item.get("text") not in seen_text:
+            reasons.append(item)
+            seen_text.add(item.get("text"))
 
     stored = prediction
     if stored is None:

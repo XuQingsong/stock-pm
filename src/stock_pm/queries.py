@@ -2171,11 +2171,28 @@ class QueryMixin:
             return None
         bar_time = str(row.get("bar_time") or "")[:10]
         close = _number(row.get("close_price"))
+        open_px = _number(row.get("open_price"))
+        high = _number(row.get("high_price"))
+        low = _number(row.get("low_price"))
+        volume = _number(row.get("volume"))
+        parts = [f"{symbol} {bar_time or as_of} 日线"]
+        if close is not None:
+            bits = []
+            if open_px is not None:
+                bits.append(f"开 {open_px}")
+            if high is not None:
+                bits.append(f"高 {high}")
+            if low is not None:
+                bits.append(f"低 {low}")
+            bits.append(f"收 {close}")
+            parts.append("，".join(bits))
+        if volume is not None:
+            parts.append(f"成交 {volume:,.0f}")
         return fact_ref(
             ref_table="price_bars",
             ref_id=f"{symbol}|1d|{bar_time}",
             as_of=bar_time or as_of,
-            text=f"{symbol} 日线收盘 {close}" if close is not None else f"{symbol} 日线",
+            text="，".join(parts),
             source_name="Alpaca" if "alpaca" in str(row.get("source") or "").lower() else row.get("source"),
             source_url=None,
             completeness=COMPLETE,
@@ -2205,11 +2222,22 @@ class QueryMixin:
         if not row or row.get("id") is None:
             return None
         price = _number(row.get("last_price"))
+        prior = _number(row.get("prior_close"))
+        volume = _number(row.get("volume"))
+        bits = [f"{symbol} 行情快照"]
+        if price is not None:
+            bits.append(f"现价 {price}")
+        if prior is not None:
+            bits.append(f"昨收 {prior}")
+            if price is not None and prior:
+                bits.append(f"日涨跌 {(price / prior - 1) * 100:+.2f}%")
+        if volume is not None:
+            bits.append(f"成交 {volume:,.0f}")
         return fact_ref(
             ref_table="market_snapshots",
             ref_id=row["id"],
             as_of=row.get("captured_at"),
-            text=f"{symbol} 快照 {price}" if price is not None else f"{symbol} 行情快照",
+            text="，".join(bits),
             source_name="Alpaca" if "alpaca" in str(row.get("source") or "").lower() else row.get("source"),
             source_url=None,
             completeness=COMPLETE,
@@ -2254,6 +2282,9 @@ class QueryMixin:
                 (symbol, headline),
             )
         row = rows[0] if rows else None
+        return self._news_fact_from_row(row, fallback_headline=headline)
+
+    def _news_fact_from_row(self, row: dict | None, *, fallback_headline: str | None = None) -> dict | None:
         if not row or row.get("id") is None:
             return None
         source_url = row.get("url") if is_http_url(row.get("url")) else None
@@ -2261,12 +2292,27 @@ class QueryMixin:
             ref_table="news_articles",
             ref_id=row["id"],
             as_of=row.get("published_at"),
-            text=row.get("headline") or headline,
+            text=row.get("headline") or fallback_headline,
             source_name=row.get("source"),
             source_url=source_url,
             completeness=COMPLETE,
             role="news",
         )
+
+    def _fact_news_recent(self, symbol: str, limit: int = 3) -> list[dict]:
+        if not symbol:
+            return []
+        rows = self._safe_fetch(
+            """
+            SELECT id, symbol, headline, url, source, published_at
+            FROM news_articles
+            WHERE symbol = %s
+            ORDER BY published_at DESC NULLS LAST
+            LIMIT %s
+            """,
+            (symbol, limit),
+        )
+        return [item for item in (self._news_fact_from_row(row) for row in rows) if item]
 
     def _fact_earnings(self, symbol: str) -> dict | None:
         rows = self._safe_fetch(
@@ -2284,11 +2330,21 @@ class QueryMixin:
             return None
         report_date = str(row.get("report_date") or "")[:10]
         period = row.get("fiscal_period") or ""
+        eps = _number(row.get("eps_actual"))
+        est = _number(row.get("eps_estimate"))
+        surprise = _number(row.get("eps_surprise_pct"))
+        bits = [f"{symbol} {period} 财报".strip(), report_date]
+        if eps is not None:
+            bits.append(f"EPS {eps}")
+        if est is not None:
+            bits.append(f"预期 {est}")
+        if surprise is not None:
+            bits.append(f"惊喜 {surprise:+.1f}%")
         return fact_ref(
             ref_table="earnings_reports",
             ref_id=f"{symbol}|{report_date}|{period}",
             as_of=report_date,
-            text=f"{symbol} {period} 财报".strip(),
+            text="，".join(part for part in bits if part),
             source_name=row.get("source"),
             source_url=None,
             completeness=COMPLETE,
@@ -2323,11 +2379,17 @@ class QueryMixin:
         if not row:
             return None
         event_time = str(row.get("event_time") or "")
+        actual = row.get("actual")
+        name = row.get("name") or headline
+        text = name
+        if actual not in (None, ""):
+            unit = row.get("unit") or ""
+            text = f"{name}，公布 {actual}{unit}"
         return fact_ref(
             ref_table="macro_events",
             ref_id=f"{row.get('event_type')}|{event_time}",
             as_of=event_time[:10] if event_time else as_of,
-            text=row.get("name") or headline,
+            text=text,
             source_name=row.get("source") if row.get("source") not in {None, "manual"} else None,
             source_url=None,
             completeness=COMPLETE,
@@ -2341,34 +2403,38 @@ class QueryMixin:
         environment: dict | None,
     ) -> list[dict]:
         facts: list[dict] = []
-        price = self._fact_price_bar(symbol, as_of)
-        if price:
-            facts.append(price)
-        snapshot = self._fact_snapshot(symbol)
-        if snapshot:
-            facts.append(snapshot)
+        seen: set[tuple[Any, ...]] = set()
+
+        def add(item: dict | None) -> None:
+            if not item:
+                return
+            key = (item.get("ref_table"), item.get("ref_id"), item.get("role"))
+            if key in seen:
+                return
+            seen.add(key)
+            facts.append(item)
+
+        add(self._fact_price_bar(symbol, as_of))
+        add(self._fact_snapshot(symbol))
         struct = (environment or {}).get("struct") or {}
         news = struct.get("news") or {}
         for key in ("company", "sector", "macro"):
             layer = news.get(key) or {}
-            item = self._fact_news(
-                symbol,
-                headline=layer.get("headline"),
-                url=layer.get("url"),
-                ref_id=layer.get("id") or layer.get("article_id"),
+            add(
+                self._fact_news(
+                    symbol,
+                    headline=layer.get("headline"),
+                    url=layer.get("url"),
+                    ref_id=layer.get("id") or layer.get("article_id"),
+                )
             )
-            if item:
-                facts.append(item)
-                break
-        if (struct.get("fundamentals") or {}).get("earnings"):
-            earnings = self._fact_earnings(symbol)
-            if earnings:
-                facts.append(earnings)
+        for item in self._fact_news_recent(symbol, 3):
+            add(item)
+        add(self._fact_earnings(symbol))
         macro_headline = ((news.get("macro") or {}).get("headline"))
-        if macro_headline:
-            macro = self._fact_macro(as_of, macro_headline)
-            if macro:
-                facts.append(macro)
+        add(self._fact_macro(as_of, macro_headline))
+        if not any(item.get("role") == "macro" for item in facts):
+            add(self._fact_macro(as_of, None))
         return facts
 
     def _stored_daily_review(self, symbol: str, as_of: str | None) -> dict | None:

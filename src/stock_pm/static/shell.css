@@ -78,6 +78,7 @@ details.fold summary{cursor:pointer;color:#6b7280;font-size:12px}
 .layer-fact{background:#f8fafc;border:1px solid #cbd5e1}
 .layer-analysis{background:#fffbeb;border:1px solid #fcd34d}
 .layer-call{background:#f0fdf4;border:1px solid #86efac}
+.judgment-layer{max-height:min(72vh,680px);overflow:auto}
 .judgment-card[data-ready="false"] .layer-call{background:#f8fafc;border-color:#cbd5e1}
 .ev-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin:0 0 8px}
 .ev-card p{margin:6px 0 0}

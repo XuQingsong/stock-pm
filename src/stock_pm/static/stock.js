@@ -93,11 +93,15 @@
   };
   const ROLE_LABELS = {
     price: "行情",
+    snapshot: "快照",
     news: "新闻",
     earnings: "财报",
     macro: "宏观",
     environment: "环境",
     tape: "昨盘",
+    tape_chips: "筹码",
+    tape_break: "破位",
+    tape_weak: "相对环境",
     review_note: "复盘",
     daily_review: "日终复盘",
     counter: "反方"
