@@ -55,17 +55,27 @@ details.materials .grid2{margin-top:8px}
     <select id="jump" style="margin-left:8px;padding:7px;border-radius:8px;border:none"></select>
   </nav>
 </header>
-<div id="stock-pm-shell"></div>
+<section class="panel" id="judgment-board">
+  <div class="zone-label">可追溯判断</div>
+  <h2>事实 → 分析 → 区间假设</h2>
+  <div class="hint">旧总览把环境、昨盘、预测写成三列半句。判断卡把它们拆开：事实必须是原始表；分析必须能点回事实；第三层只写已落库的区间假设，门控不过就不编假边界。点卡片进个股看回溯。</div>
+  <div class="judgment-board-grid" id="judgment-rows">正在加载判断卡…</div>
+</section>
+
+<details class="fold legacy-shell-fold">
+  <summary>旧结论区（环境 / 昨盘 / 复盘半句）</summary>
+  <div id="stock-pm-shell"></div>
+</details>
 
 <section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
 
 <section class="panel" id="briefing-panel">
-  <div class="zone-label">结论</div>
+  <div class="zone-label">旧结论表</div>
   <h2>隔日盘面简报</h2>
-  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。预测只写时间窗口与涨跌边界，缺则点名缺哪一项，不编假边界。环境与昨盘冲突时只留一句因果。期权、新闻、K 线材料在下方折叠。规则对照不冒充窗口边界。</div>
+  <div class="hint">这张表仍是旧的环境半句 / 昨盘半句，方便对照。新的三层判断在上方卡片，以及个股页判断卡。区间假设列只转写已落库结果，缺则点名缺哪一项，不编假边界。</div>
   <div class="table-wrap"><table>
     <thead><tr>
-      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>预测</th><th>关注</th><th>量比</th><th>5日</th>
+      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>区间假设</th><th>关注</th><th>量比</th><th>5日</th>
       <th>均线位置</th><th>支撑/压力</th>
     </tr></thead>
     <tbody id="rows"></tbody>
@@ -158,10 +168,35 @@ async function main(){
     $('quota-msg').innerHTML='<b>模型额度已用尽。</b>请充值后到复盘页查看，本页不再自动请求生成。';
   }
   $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
-  $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};
+  $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value+'#judgment'};
   try{
     if(window.mountStockPmShell) await window.mountStockPmShell({date:briefing.date});
   }catch(_){}
+  const judgmentList=await Promise.all(watch.map(async w=>{
+    try{return await j('/api/stock/'+encodeURIComponent(w.symbol)+'/judgment');}
+    catch(_){return {symbol:w.symbol,judgment:{prediction_ready:false,one_liner:'判断暂不可用'},facts:[],reasons:[],gate:{},completeness:'missing'};}
+  }));
+  const jm=Object.fromEntries(judgmentList.map(row=>[String(row.symbol||'').toUpperCase(),row]));
+  const renderMini=w=>{
+    const row=jm[String(w.symbol).toUpperCase()]||{};
+    const jdg=row.judgment||{};
+    const gate=row.gate||{};
+    const ready=jdg.prediction_ready===true;
+    const facts=(row.facts||[]).length;
+    const reasons=(row.reasons||[]).length;
+    const line=ready?(jdg.one_liner||'区间假设已生成。'):(gate.label||jdg.one_liner||'尚未落库判断，未编造方向、时间窗或涨跌数字。');
+    return `<a class="judgment-mini" href="/stock/${esc(w.symbol)}#judgment">
+      <div class="judgment-mini-head"><b>${esc(w.symbol)}</b><span class="state-chip ${ready?'clear':'missing'}">${esc(ready?'已形成区间假设':(jdg.state_label||'未产出'))}</span></div>
+      <ol class="layer-steps">
+        <li class="${facts?'is-on':'is-off'}">1 事实 ${facts}</li>
+        <li class="${reasons?'is-on':'is-off'}">2 分析 ${reasons}</li>
+        <li class="${ready?'is-on':'is-off'}">3 ${ready?'区间假设':'未产出'}</li>
+      </ol>
+      <p>${esc(line)}</p>
+      <div class="hint">看事实与分析 →</div>
+    </a>`;
+  };
+  $('judgment-rows').innerHTML=watch.length?watch.map(renderMini).join(''):'<div class="hint">自选为空。</div>';
   const optionsHtml=renderOptionsOverview(options);
   if(optionsHtml){
     $('options-panel').style.display='';
@@ -203,16 +238,19 @@ async function main(){
     const thesis=conflict?(b.row_thesis||envHalf):null;
     const news=b.env_news;
     const newsBit=news?`<div class="hint">${copy.newsHeadline?copy.newsHeadline(news):esc(news.headline||'')}<div class="news-stance">${esc(news.stance_line||'')}</div></div>`:'';
-    const predText=(copy.predictionDisplay?copy.predictionDisplay(pred):null)||b.prediction_half||pred.badge||'到期未产出';
-    const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
+    const jrow=jm[String(w.symbol).toUpperCase()]||{};
+    const jdg=jrow.judgment||{};
+    const jgate=jrow.gate||{};
+    const predText=jdg.prediction_ready?(jdg.one_liner||'区间假设已生成。'):(jgate.label||jdg.one_liner||b.prediction_half||'尚未落库判断，未编造方向、时间窗或涨跌数字。');
+    const predTone=jdg.prediction_ready?'':(copy.predictionTone?copy.predictionTone(pred):(attn.tone||''));
     const halfCells=conflict
       ? `<td class="row-thesis tone-conflict" colspan="2">${esc(thesis)}${newsBit}</td>`
       : `<td class="row-thesis">${esc(envHalf)}${newsBit}</td><td class="row-thesis">${esc(tapeHalf)}</td>`;
-    return `<tr class="attn-${esc(attn.tone)}" onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
+    return `<tr class="attn-${esc(attn.tone)}" onclick="location.href='/stock/${esc(w.symbol)}#judgment'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
       <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||(envFlags.length?envFlags.join('、'):'数据暂缺'))+'</div>':''}</td>
       <td class="${cls(chg)} tone-a">${pct(chg)}</td>
       ${halfCells}
-      <td class="row-thesis tone-a ${predTone?('tone-'+predTone):''}">${esc(predText)}</td>
+      <td class="row-thesis tone-a ${predTone?('tone-'+predTone):''}">${esc(predText)}<div class="hint">看事实与分析 →</div></td>
       <td class="tone-a ${attn.tone?('tone-'+attn.tone):''}">${esc(attn.label)}</td>
       <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
       <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>

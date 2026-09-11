@@ -78,17 +78,84 @@
     return null;
   };
 
-  function evidenceItem(item) {
+  const TABLE_LABELS = {
+    price_bars: "日线",
+    market_snapshots: "行情快照",
+    news_articles: "新闻",
+    earnings_reports: "财报",
+    macro_events: "宏观事件",
+    fundamentals_snapshots: "基本面快照",
+    environment_snapshots: "环境快照",
+    tape_analyses: "昨盘分析",
+    review_notes: "复盘笔记",
+    daily_reviews: "日终复盘",
+    predictions: "区间假设"
+  };
+  const ROLE_LABELS = {
+    price: "行情",
+    news: "新闻",
+    earnings: "财报",
+    macro: "宏观",
+    environment: "环境",
+    tape: "昨盘",
+    review_note: "复盘",
+    daily_review: "日终复盘",
+    counter: "反方"
+  };
+
+  function evidenceKey(item) {
     const row = item || {};
-    const text = row.text || "分析依据不完整";
-    const source = row.source_name ? ` · ${row.source_name}` : "";
+    return [row.layer, row.ref_table, row.ref_id, row.as_of].map((part) => String(part ?? "")).join("|");
+  }
+
+  function evidenceCard(item, { showBasedOn = false } = {}) {
+    const row = item || {};
+    const layer = row.layer === "fact" ? "fact" : "analysis";
+    const incomplete = row.completeness && row.completeness !== "complete";
+    const source = row.source_name ? esc(row.source_name) : "";
     const link = row.source_url && safeUrl(row.source_url) !== "#"
-      ? ` <a href="${safeUrl(row.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>`
+      ? `<a href="${safeUrl(row.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>`
       : "";
-    const incomplete = row.completeness && row.completeness !== "complete"
-      ? '<span class="subline">分析依据不完整</span>'
+    const basedOn = row.based_on || row.refs || [];
+    const basedHtml = showBasedOn
+      ? (basedOn.length
+        ? `<div class="ev-based">${basedOn.map((child, index) =>
+          `<button type="button" class="ev-ref" data-ref="${esc(evidenceKey(child))}">基于事实 ${index + 1}</button>`
+        ).join("")}</div>`
+        : '<div class="ev-based is-missing">未挂到可核验事实 · 分析依据不完整</div>')
       : "";
-    return `<li class="${row.completeness === "partial" || row.completeness === "missing" ? "partial" : ""}">${esc(text)}${esc(source)}${link} ${incomplete}</li>`;
+    return `<article class="ev-card ev-${layer}${incomplete ? " is-partial" : ""}" data-key="${esc(evidenceKey(row))}" data-layer="${layer}">
+      <div class="ev-meta">
+        <span class="ev-badge ev-badge-${layer}">${layer === "fact" ? "事实" : "分析"}</span>
+        ${row.role ? `<span>${esc(ROLE_LABELS[row.role] || row.role)}</span>` : ""}
+        ${row.ref_table ? `<span>${esc(TABLE_LABELS[row.ref_table] || row.ref_table)}</span>` : ""}
+        ${row.as_of ? `<span>${esc(String(row.as_of).slice(0, 10))}</span>` : ""}
+        ${source ? `<span>${source}</span>` : ""}
+        ${link}
+      </div>
+      <p>${esc(row.text || (layer === "analysis" ? "分析依据不完整" : "事实暂缺"))}</p>
+      ${basedHtml}
+    </article>`;
+  }
+
+  function layerStack(items, empty, options) {
+    return items.length
+      ? items.map((item) => evidenceCard(item, options)).join("")
+      : `<div class="judgment-empty">${esc(empty)}</div>`;
+  }
+
+  function bindJudgmentTrace(host) {
+    host.querySelectorAll(".ev-ref").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        const key = button.getAttribute("data-ref") || "";
+        host.querySelectorAll(".ev-card").forEach((card) => {
+          card.classList.toggle("is-traced", (card.getAttribute("data-key") || "") === key);
+        });
+        const target = key && host.querySelector(`.ev-card[data-key="${CSS.escape(key)}"]`);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    });
   }
 
   function renderJudgmentCard(data) {
@@ -97,6 +164,7 @@
     const judgment = (data && data.judgment) || {};
     const gate = (data && data.gate) || {};
     const ready = judgment.prediction_ready === true;
+    const completeness = (data && data.completeness) || "missing";
     const line = ready
       ? (judgment.one_liner || "区间假设已生成。")
       : (gate.label || judgment.one_liner || "尚未落库判断，未编造方向、时间窗或涨跌数字。");
@@ -104,28 +172,55 @@
     const counters = (data && data.counter_evidence) || [];
     const invalidation = (data && data.invalidation) || [];
     const facts = (data && data.facts) || [];
-    const listOrEmpty = (items, empty) => items.length
-      ? `<ul class="judgment-list">${items.map(evidenceItem).join("")}</ul>`
-      : `<div class="judgment-empty">${esc(empty)}</div>`;
+    const boundRow = ready
+      ? `<dl class="judgment-bounds">
+          <div><dt>窗口</dt><dd>${esc(judgment.window_label || "—")}</dd></div>
+          <div><dt>对照价</dt><dd>${esc(money(judgment.entry_price))}</dd></div>
+          <div><dt>上沿</dt><dd>${esc(pct(judgment.upside_bound_pct, true))} / ${esc(money(judgment.upside_price))}</dd></div>
+          <div><dt>下沿</dt><dd>${esc(pct(judgment.downside_bound_pct, true))} / ${esc(money(judgment.downside_price))}</dd></div>
+        </dl>`
+      : `<div class="judgment-gate">${esc(gate.detail || gate.label || "门控未过，不编造方向、时间窗或涨跌数字。")}</div>`;
     const invalidationHtml = invalidation.length
       ? `<ul class="judgment-list">${invalidation.map((item) => `<li>${esc(item.text || "")}</li>`).join("")}</ul>`
-      : `<div class="judgment-empty">暂无已声明的失效条件</div>`;
+      : '<div class="judgment-empty">未声明失效条件（未形成区间假设时不编造）</div>';
+    const counterHtml = counters.length
+      ? layerStack(counters, "", { showBasedOn: true })
+      : '<div class="judgment-empty">暂无反方分析</div>';
     host.innerHTML = `
-      <section class="judgment-card">
-        <div class="zone-label">当前判断 · 区间假设</div>
+      <section class="judgment-card" data-ready="${ready}" data-completeness="${esc(completeness)}">
+        <p class="judgment-kicker">可追溯判断 · 三层分开看，不再和环境/昨盘半句并列</p>
+        <ol class="judgment-steps" aria-label="三层结构">
+          <li class="${facts.length ? "is-on" : "is-off"}"><b>1</b> 事实<span>${facts.length} 条原始记录</span></li>
+          <li class="${reasons.length ? "is-on" : "is-off"}"><b>2</b> 分析<span>${reasons.length} 条，须指向事实</span></li>
+          <li class="${ready ? "is-on" : "is-off"}"><b>3</b> 区间假设<span>${ready ? "已落库" : "未产出"}</span></li>
+        </ol>
+        <div class="judgment-status">
+          <span class="state-chip ${ready ? "clear" : "missing"}">${esc(ready ? (gate.label || "已形成区间假设") : (judgment.state_label || "到期未产出"))}</span>
+          <span class="state-chip ${completeness === "complete" ? "clear" : "missing"}">${completeness === "complete" ? "依据完整" : "分析依据不完整"}</span>
+          <span class="judgment-meta">${esc(judgment.kind_label || "区间假设")} · ${esc(judgment.as_of_date || data.as_of_date || "—")}</span>
+        </div>
         <p class="judgment-line">${esc(line)}</p>
-        <div class="judgment-meta">${esc(judgment.kind_label || "区间假设")}${ready && judgment.window_label ? ` · ${esc(judgment.window_label)}` : ""}${gate.reason ? "" : ""}</div>
-        <h3>为什么这样判断</h3>
-        ${listOrEmpty(reasons, "暂无已落库分析")}
-        <h3>反方证据</h3>
-        ${listOrEmpty(counters, "暂无反方证据")}
-        <h3>失效条件</h3>
-        ${invalidationHtml}
-        <details class="fold">
-          <summary>支撑事实</summary>
-          ${listOrEmpty(facts, "暂无可核验事实")}
-        </details>
+        <p class="judgment-disclaimer">第三层只展示已落库的区间假设，不是涨跌预测，也不在打开页面时现场生成。缺事实或门控未过时，不补方向、时间窗或涨跌数字。</p>
+        ${boundRow}
+        <div class="judgment-layers">
+          <section class="judgment-layer layer-fact" data-layer="fact">
+            <h3><span class="layer-index">1</span> 事实 <small>原始表，不是环境/昨盘半句</small></h3>
+            ${layerStack(facts, "暂无可核验事实。没有事实时，分析不得冒充已核验。")}
+          </section>
+          <section class="judgment-layer layer-analysis" data-layer="analysis">
+            <h3><span class="layer-index">2</span> 分析 <small>环境 / 昨盘 / 复盘 · 点「基于事实」可回溯</small></h3>
+            ${layerStack(reasons, "暂无已落库分析", { showBasedOn: true })}
+          </section>
+          <section class="judgment-layer layer-call" data-layer="judgment">
+            <h3><span class="layer-index">3</span> 区间假设 <small>门控通过才有数字</small></h3>
+            <h4>失效条件</h4>
+            ${invalidationHtml}
+            <h4>反方分析</h4>
+            ${counterHtml}
+          </section>
+        </div>
       </section>`;
+    bindJudgmentTrace(host);
   }
 
   async function loadJudgment() {

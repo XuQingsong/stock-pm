@@ -742,6 +742,10 @@ def test_static_shell_assets(monkeypatch):
     assert "→ 支撑结论" in js.text
     assert 'data-zone="A"' in js.text
     assert "不编假边界" in home
+    assert 'id="judgment-board"' in home
+    assert "事实 → 分析 → 区间假设" in home
+    assert "旧结论区" in home
+    assert home.index('id="judgment-board"') < home.index('id="stock-pm-shell"')
     assert "watch_low" not in home
     assert "face_slap" not in home
     assert "昨盘半句" in home
@@ -766,6 +770,8 @@ def test_static_shell_assets(monkeypatch):
     assert "MA5/20/50/200" in js
     stock = c.get("/stock/NVDA").text
     assert 'id="stock-pm-shell"' in stock
+    assert 'id="judgment-panel"' in stock
+    assert 'id="judgment"' in stock
 
 
 def test_tape_and_review_note_endpoints(monkeypatch):
@@ -859,6 +865,11 @@ def test_judgment_endpoint_is_read_only(monkeypatch):
     assert fake.writes == []
     html = c.get("/stock/NVDA").text
     assert 'id="judgment-panel"' in html
-    assert "/api/reviews/retry-llm" not in c.get("/static/stock.js").text
+    js = c.get("/static/stock.js").text
+    assert "/api/reviews/retry-llm" not in js
+    assert "judgment-layers" in js
+    assert 'data-layer="fact"' in js
+    assert "基于事实" in js
+    assert "三层分开看" in js
     assert c.get("/api/stock/bad symbol/judgment").status_code == 400
     assert c.get("/api/stock/NVDA/judgment?date=bad").status_code == 400
