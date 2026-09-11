@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping
 
+from .numbers import is_finite_number
+from .timeparse import as_of_status
+
 
 def to_dict(row: Any) -> dict[str, Any]:
     if hasattr(row, "__dataclass_fields__"):
@@ -32,12 +35,22 @@ class FactRef:
             raise FactValidationError("FactRef requires ref_table, source, and as_of")
         if self.ref_id is None or str(self.ref_id).strip() == "":
             raise FactValidationError("FactRef requires ref_id")
+        stamp = as_of_status(as_of)
+        if stamp != "ok":
+            raise FactValidationError("FactRef as_of must be a parseable ISO timestamp")
 
 
 @dataclass(frozen=True)
 class MaterialityRule:
     abs_delta: float | None = None
     pct_delta: float | None = None
+
+    def __post_init__(self) -> None:
+        for name, value in (("abs_delta", self.abs_delta), ("pct_delta", self.pct_delta)):
+            if value is None:
+                continue
+            if not is_finite_number(value) or value < 0:
+                raise FactValidationError(f"{name} must be finite and >= 0")
 
 
 class FactValidationError(ValueError):

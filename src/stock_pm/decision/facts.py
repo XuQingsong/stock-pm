@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .numbers import as_number, is_finite_number
+from .timeparse import as_of_status
 from .types import (
     PRICE_METRICS,
     SCOPE_GLOBAL,
@@ -76,6 +77,11 @@ class ValidatedBar:
             raise FactValidationError("OHLC failed fact validation: " + ", ".join(errors))
         if self.volume is not None and not is_finite_number(self.volume):
             raise FactValidationError("OHLC failed fact validation: volume_non_finite")
+        stamp = as_of_status(self.as_of)
+        if stamp == "missing_as_of":
+            raise FactValidationError("ValidatedBar requires as_of")
+        if stamp == "invalid_as_of":
+            raise FactValidationError("ValidatedBar as_of is not a parseable ISO timestamp")
         resolved = _require_identity(self.scope, self.subject, label="ValidatedBar")
         object.__setattr__(self, "subject", resolved)
 
@@ -112,6 +118,8 @@ class ValidatedFact:
             raise FactValidationError(f"numeric fact {self.metric!r} is missing or non-finite")
         if not (self.as_of or "").strip():
             raise FactValidationError(f"numeric fact {self.metric!r} requires as_of")
+        if as_of_status(self.as_of) != "ok":
+            raise FactValidationError(f"numeric fact {self.metric!r} as_of is not a parseable ISO timestamp")
         scope = infer_scope(self.metric, self.scope)
         object.__setattr__(self, "scope", scope)
         resolved = _require_identity(scope, self.subject, label="ValidatedFact")
@@ -126,6 +134,21 @@ def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
     close = as_number(row.get("close") if "close" in row else row.get("close_price"))
     errors = ohlc_constraint_errors(open_px, high, low, close)
     return OhlcCheck(ok=not errors, errors=tuple(errors), bar=row)
+
+
+def _nonempty_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _bar_row_subject(row: dict[str, Any], *, scope: str) -> str | None:
+    subject = _nonempty_text(row.get("subject"))
+    symbol = _nonempty_text(row.get("symbol"))
+    if subject and symbol and normalize_subject(scope, subject) != normalize_subject(scope, symbol):
+        raise FactValidationError("identity_override")
+    return subject or symbol
 
 
 def require_valid_bar(
@@ -149,8 +172,19 @@ def require_valid_bar(
     as_of = row.get("as_of") or row.get("date") or row.get("bar_date")
     as_of_text = None if as_of is None else str(as_of)
     assert open_px is not None and high is not None and low is not None and close is not None
-    resolved_scope = scope or row.get("scope") or SCOPE_SYMBOL
-    resolved_subject = subject or row.get("subject") or row.get("symbol")
+    row_scope = _nonempty_text(row.get("scope"))
+    param_scope = _nonempty_text(scope)
+    param_subject = _nonempty_text(subject)
+    if param_scope is not None and row_scope is not None and param_scope != row_scope:
+        raise FactValidationError("identity_override")
+    resolved_scope = param_scope or row_scope or SCOPE_SYMBOL
+    row_subject = _bar_row_subject(row, scope=resolved_scope)
+    if param_subject is not None and row_subject is not None:
+        if normalize_subject(resolved_scope, param_subject) != normalize_subject(
+            resolved_scope, row_subject
+        ):
+            raise FactValidationError("identity_override")
+    resolved_subject = param_subject or row_subject
     return ValidatedBar(
         as_of=as_of_text,
         open=open_px,

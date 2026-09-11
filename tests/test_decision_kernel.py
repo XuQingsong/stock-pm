@@ -1,4 +1,4 @@
-"""Golden tests A–AJ for Investment Decision Kernel v1.
+"""Golden tests A–AM for Investment Decision Kernel v1.
 
 All fixtures in this module are synthetic. They are not live market prints.
 """
@@ -1547,3 +1547,114 @@ def test_AJ_duplicate_missing_refs_or_wrong_direction_used_cannot_confirm():
         synthetic=True,
     )
     assert impact.status != "valid"
+
+
+# ---------------------------------------------------------------------------
+# AK / AL / AM
+# ---------------------------------------------------------------------------
+
+def test_AK_require_valid_bar_cannot_relabel_row_subject():
+    row = {
+        "open": 10.0,
+        "high": 10.3,
+        "low": 9.9,
+        "close": 10.2,
+        "as_of": "2026-09-10",
+        "symbol": "AAPL",
+        "synthetic": True,
+    }
+    with pytest.raises(FactValidationError, match="identity_override"):
+        require_valid_bar(row, subject="NVDA")
+    with pytest.raises(FactValidationError, match="identity_override"):
+        require_valid_bar({**row, "subject": "AAPL"}, subject="NVDA")
+    matched = require_valid_bar(row, subject="AAPL")
+    assert matched.subject == "AAPL"
+    filled = require_valid_bar(
+        {
+            "open": 10.0,
+            "high": 10.3,
+            "low": 9.9,
+            "close": 10.2,
+            "as_of": "2026-09-10",
+            "synthetic": True,
+        },
+        subject="NVDA",
+    )
+    assert filled.subject == "NVDA"
+
+
+def test_AL_bar_and_factref_require_parseable_as_of():
+    with pytest.raises(FactValidationError):
+        ValidatedBar(as_of=None, open=10, high=11, low=9, close=10, subject="AAPL")
+    with pytest.raises(FactValidationError):
+        ValidatedBar(as_of="", open=10, high=11, low=9, close=10, subject="AAPL")
+    with pytest.raises(FactValidationError):
+        ValidatedBar(as_of="not-a-date", open=10, high=11, low=9, close=10, subject="AAPL")
+    with pytest.raises(FactValidationError):
+        require_valid_bar(
+            {
+                "open": 10.0,
+                "high": 11.0,
+                "low": 9.0,
+                "close": 10.0,
+                "symbol": "AAPL",
+                "synthetic": True,
+            }
+        )
+    with pytest.raises(FactValidationError):
+        FactRef(ref_table="bars", ref_id="1", as_of="not-a-date", source="synthetic")
+    with pytest.raises(FactValidationError):
+        ValidatedFact(metric="cpi", value=3.1, as_of="tomorrow")
+    ok_ref = FactRef(ref_table="bars", ref_id="1", as_of="2026-09-10", source="synthetic")
+    ok_bar = ValidatedBar(
+        as_of="2026-09-10T00:00:00+00:00",
+        open=10,
+        high=11,
+        low=9,
+        close=10,
+        subject="AAPL",
+        refs=(ok_ref,),
+    )
+    assert ok_bar.as_of == "2026-09-10T00:00:00+00:00"
+    change = build_change_snapshot(
+        metric="close",
+        current_bar=ok_bar,
+        previous_bar=require_valid_bar(
+            {
+                "open": 9.8,
+                "high": 10.0,
+                "low": 9.7,
+                "close": 10.0,
+                "as_of": "2026-09-09",
+                "symbol": "AAPL",
+                "synthetic": True,
+            }
+        ),
+        synthetic=True,
+    )
+    assert change.current_as_of == ok_bar.as_of
+
+
+def test_AM_negative_materiality_threshold_is_rejected():
+    with pytest.raises(FactValidationError):
+        MaterialityRule(abs_delta=-0.01)
+    with pytest.raises(FactValidationError):
+        MaterialityRule(pct_delta=-1.0)
+    with pytest.raises(FactValidationError):
+        MaterialityRule(abs_delta=float("nan"))
+    with pytest.raises(FactValidationError):
+        MaterialityRule(pct_delta=float("inf"))
+    allowed = MaterialityRule(abs_delta=0.0, pct_delta=0.05)
+    tiny = build_change_snapshot(
+        metric="cpi",
+        previous_value=3.00,
+        current_value=3.02,
+        previous_as_of="2026-09-09",
+        current_as_of="2026-09-10",
+        comparison_window="1d",
+        materiality_rule=CPI_RULE,
+        fact_refs=(_ref("synthetic_series", "cpi-tiny"),),
+        synthetic=True,
+    )
+    assert tiny.materiality == "immaterial"
+    assert allowed.abs_delta == 0.0

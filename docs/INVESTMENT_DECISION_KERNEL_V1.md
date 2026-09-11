@@ -42,9 +42,9 @@ Facts
 
 输出：`id`, `metric`, `previous_value/current_value`, `previous_as_of/current_as_of`, `delta`, `delta_pct`, `comparison_window`, `direction` (`up`/`down`/`unchanged`/`unknown`), `materiality` (`material`/`immaterial`/`unknown`), `fact_refs`, `summary`。
 
-`FactRef` 必须具备非空 `ref_table` / `ref_id` / `as_of` / `source`，空壳不得构造。`ValidatedBar` / `ValidatedFact` / `ExpectationPoint` 自身携带 `scope`/`subject`；symbol scope 缺 subject 失败。builder 从输入推导身份，禁止用独立参数重贴标签；previous/current 身份不一致失败。证据 `id` 必须包含 scope + 规范化 subject。
+`FactRef` 必须具备非空 `ref_table` / `ref_id` / `as_of` / `source`，且 `as_of` 必须是可解析的 ISO 日期/时间；空壳或 `not-a-date` 不得构造。`ValidatedBar` / `ValidatedFact` 必须有可解析 `as_of`。`ValidatedBar` / `ValidatedFact` / `ExpectationPoint` 自身携带 `scope`/`subject`；symbol scope 缺 subject 失败。builder 与 `require_valid_bar` 从输入推导身份：row 已标明 subject/symbol 时，参数不得重贴为另一个标的（`identity_override`）。previous/current 身份不一致失败。证据 `id` 必须包含 scope + 规范化 subject。
 
-`ValidatedBar` / `ValidatedFact` 在 `__post_init__` 内强制校验，直接构造非法实例会失败。价格 Change 必须消费已通过校验的 `ValidatedBar`。
+`ValidatedBar` / `ValidatedFact` 在 `__post_init__` 内强制校验，直接构造非法实例会失败。价格 Change 必须消费已通过校验的 `ValidatedBar`。`MaterialityRule.abs_delta` / `pct_delta` 必须是有限且 `>= 0` 的阈值，负数不得让任意变化变成 material。
 
 Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司 Thesis 只能直接引用同标的公司级证据；全局宏观必须经 CausalImpact。bull/bear driver 必须与方向性 CausalImpact 极性一致。合格证据必须有可追溯 FactRef；无 refs 的 material Change / ok Gap / valid-looking Impact 不得进入 Thesis（`missing_provenance`）。
 
@@ -133,6 +133,9 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 | AH | 输入点 subject 不一致 → `conflict`，`code=subject_mismatch` | `build_expectation_gap` |
 | AI | 伪造 confirmed / 空 used 不得 valid | `MarketConfirmation` / `build_causal_impact` |
 | AJ | used 含重复指标、无 refs 或方向不合不得 valid | `MarketConfirmation` / `assess_market_confirmation` |
+| AK | row 标明 AAPL、参数传 NVDA → `identity_override` | `require_valid_bar` |
+| AL | 无 as_of / 不可解析 as_of 的 ValidatedBar 与 FactRef 不得进入后续层 | `ValidatedBar` / `FactRef` |
+| AM | 负数 materiality 阈值不得构造，不能把任意变化变成 material | `MaterialityRule` |
 
 ## 明确不在本阶段
 
