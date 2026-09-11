@@ -178,13 +178,13 @@ def _preview_a(symbol: str) -> dict:
     )
     view = assemble_from_kernel(
         symbol=symbol,
-        changes=[cpi, *[row for row in confirmation.used], price],
+        changes=[cpi, price],
         expectations=[],
         confirmation=confirmation,
         impacts=[impact],
         thesis=thesis,
         previous_thesis=previous,
-        data_gaps=[],
+        data_gaps=[{"code": "missing_prior_consensus", "text": "本预览只覆盖宏观链，不构造财报共识"}],
         facts=[
             {"kind": "macro", "metric": "cpi", "as_of": cpi.current_as_of, "source": "synthetic", "ref": {"ref_table": "synthetic_series", "ref_id": "cpi", "as_of": cpi.current_as_of, "source": "synthetic"}},
             {"kind": "bar", "metric": "close", "subject": symbol, "as_of": price.current_as_of, "source": "synthetic", "ref": {"ref_table": "daily_price_bars", "ref_id": f"{symbol}-curr", "as_of": price.current_as_of, "source": "synthetic"}},
@@ -245,6 +245,12 @@ def _preview_b(symbol: str) -> dict:
                 "status": "unverified",
                 "headline": "synthetic unverified war/sanctions rumor",
                 "source": "synthetic",
+                "ref": {
+                    "ref_table": "synthetic_news",
+                    "ref_id": "war-sanctions-rumor",
+                    "as_of": "2026-09-10",
+                    "source": "synthetic",
+                },
                 "as_of": "2026-09-10",
                 "why": "未核实新闻只能作为线索，不改变 Thesis",
             }

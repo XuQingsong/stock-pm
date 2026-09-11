@@ -37,6 +37,10 @@ def test_preview_A_confirmed_macro_chain_is_traceable():
     assert view["thesis"]["direction"] == "bearish"
     what = _chain(view, "what_changed")
     assert what["items"]
+    metrics = {item["metric"] for item in what["items"]}
+    assert "cpi" in metrics
+    assert "close" in metrics
+    assert "us2y" not in metrics
     assert all("ref" in item or item.get("refs") for item in what["items"])
 
 
@@ -124,7 +128,9 @@ def test_live_bundle_without_yields_does_not_jump_to_stock():
     assert "missing_prior_consensus" in codes
     assert "missing_cpi" in codes
     trans = _chain(view, "transmission")
-    assert all(item["status"] != "valid" for item in trans["items"])
+    assert trans["items"] == []
+    assert trans["status"] == "insufficient"
+    assert "missing_mechanism" in codes
     expect = _chain(view, "expectation")
     assert expect["status"] != "ok"
     what = _chain(view, "what_changed")
@@ -134,6 +140,46 @@ def test_live_bundle_without_yields_does_not_jump_to_stock():
     assert price["ref"]["as_of"]
     nfp = next(item for item in what["items"] if item["metric"] == "nfp")
     assert nfp["scope"] == "global"
+
+
+def test_invalid_latest_ohlc_is_gap_not_a_price_change():
+    view = assemble_from_bundle(
+        {
+            "symbol": "NVDA",
+            "watch": {"symbol": "NVDA", "themes": ["high_valuation_growth"], "rate_sensitivity": "high"},
+            "bars": [
+                {
+                    "symbol": "NVDA",
+                    "open_price": 116,
+                    "high_price": 118,
+                    "low_price": 115,
+                    "close_price": 122,
+                    "volume": 10,
+                    "bar_time": "2026-09-10T20:00:00+00:00",
+                    "source": "alpaca_sip",
+                },
+                {
+                    "symbol": "NVDA",
+                    "open_price": 115,
+                    "high_price": 117,
+                    "low_price": 114,
+                    "close_price": 116,
+                    "volume": 10,
+                    "bar_time": "2026-09-09T20:00:00+00:00",
+                    "source": "alpaca_sip",
+                },
+            ],
+            "earnings": [],
+            "macro_events": [],
+            "news": [],
+            "synthetic": False,
+            "_skip_previous": True,
+        }
+    )
+    codes = {row["code"] for row in view["gaps"]}
+    assert "invalid_ohlc" in codes
+    what = _chain(view, "what_changed")
+    assert all(item.get("metric") != "close" for item in what["items"])
 
 
 def test_preview_disabled_in_production(monkeypatch):

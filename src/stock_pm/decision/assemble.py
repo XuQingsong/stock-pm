@@ -476,15 +476,6 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         )
     elif exposure is not None:
         data_gaps.append(_gap("missing_mechanism", "缺通胀原因，不能把非农或新闻直接跳到个股"))
-        impacts.append(
-            build_causal_impact(
-                cause=None,
-                mechanism=RATES_DISCOUNT_MECHANISM,
-                exposure=exposure,
-                market_confirmation=confirmation,
-                synthetic=synthetic,
-            )
-        )
     else:
         data_gaps.append(_gap("missing_exposure", "该标的没有利率久期暴露，不把宏观直接写成个股方向"))
 

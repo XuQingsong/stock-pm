@@ -551,15 +551,26 @@
 
   function refLine(item) {
     const ref = item.ref || {};
-    const source = item.source || ref.source || MISSING;
-    const table = ref.ref_table || MISSING;
-    const id = ref.ref_id || item.id || MISSING;
-    const asOf = dateText(item.as_of || ref.as_of, true);
+    const source = item.source || ref.source;
+    const table = ref.ref_table;
+    const id = ref.ref_id || item.ref_id || item.id;
+    const asOf = item.as_of || ref.as_of;
+    if (!source && !table && !id && !asOf) return "";
     return `<div class="chain-metrics">
-      <div><span>source</span><b>${esc(source)}</b></div>
-      <div><span>ref</span><b>${esc(table)} / ${esc(id)}</b></div>
-      <div><span>as_of</span><b>${asOf}</b></div>
+      <div><span>source</span><b>${esc(source || "—")}</b></div>
+      <div><span>ref</span><b>${esc(table || "evidence")} / ${esc(id || "—")}</b></div>
+      <div><span>as_of</span><b>${asOf ? dateText(asOf, true) : "—"}</b></div>
     </div>`;
+  }
+
+  function thesisItem(item) {
+    return `<article class="chain-item">
+      ${statusPill(item.thesis_effect || item.status)}
+      <div class="why">${esc(item.what || item.summary || "")}</div>
+      <div class="why">为什么重要：${esc(item.why_it_matters || item.why || "—")} · 影响对象：${esc(item.affects || "—")}</div>
+      ${item.derived_reason || item.why_thesis_effect ? `<div class="why">${esc(item.derived_reason || item.why_thesis_effect)}</div>` : ""}
+      ${refLine(item)}
+    </article>`;
   }
 
   function chainItem(item) {
@@ -590,7 +601,7 @@
   function renderChain(payload) {
     const steps = payload.chain || [];
     return steps.map((step, index) => {
-      const items = (step.items || []).map(chainItem).join("");
+      const items = (step.items || []).map(step.id === "thesis_impact" ? thesisItem : chainItem).join("");
       const empty = !items && step.empty_reason ? `<div class="empty-note">${esc(step.empty_reason)}</div>` : "";
       const extra = [];
       if (step.id === "confirmation" && (step.clues || []).length) {
