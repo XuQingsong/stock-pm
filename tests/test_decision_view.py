@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 from stock_pm.decision.assemble import assemble_from_bundle
-from stock_pm.decision.clock import classify_macros, dataset_as_of, macro_window, partition_macros
+from stock_pm.decision.clock import dataset_as_of, macro_window, partition_macros
 from stock_pm.decision.preview import build_preview, preview_allowed
 from stock_pm.decision.viewmodel import CHAIN_STEPS
 from stock_pm.config import Settings
