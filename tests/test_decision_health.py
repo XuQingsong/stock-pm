@@ -21,7 +21,6 @@ from stock_pm.decision.health import (
     _earnings_row,
     _healthy_bundle,
     _macro,
-    _valid_bar,
 )
 from stock_pm.decision.preview import build_preview
 from stock_pm.decision.viewmodel import CHAIN_STEPS
