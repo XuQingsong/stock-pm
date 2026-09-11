@@ -652,49 +652,97 @@
     }).join("");
   }
 
+  function chainCounts(overall) {
+    const counts = overall.available_counts || {};
+    const parts = ["L3", "L2", "L1"].filter((key) => Number(counts[key] || 0) > 0)
+      .map((key) => `${counts[key]} 条 ${key}`);
+    return parts.join("、") || "无可用链";
+  }
+
+  function renderChainGroups(payload) {
+    const groups = payload.chains || [];
+    return `<div class="chain-groups">${groups.map((group) => {
+      const gaps = (group.blocking_gaps || []).map((row) => `${row.code} → ${row.affects_chain}/${row.affects_stage}`).join("；") || "无";
+      const stages = (group.affected_stages || []).join("、") || "—";
+      const upgrade = group.level === "L3" ? "本链已完整，不伪装其他链的缺口" : (group.next_required_evidence || "补该链下一层证据");
+      const collapsed = group.level === "L0" && !(group.blocking_gaps || []).length;
+      const body = `<div class="chain-metrics">
+          <div><span>level</span><b>${esc(group.level)}</b></div>
+          <div><span>scope</span><b>${esc(group.scope || "—")}</b></div>
+          <div><span>affected stages</span><b>${esc(stages)}</b></div>
+        </div>
+        <div class="why">可确定：${esc(group.validated_conclusion || "—")}</div>
+        <div class="why">缺口影响：${esc(gaps)}</div>
+        <div class="why">升级到下一等级：${esc(upgrade)}</div>
+        ${refLine(group)}`;
+      if (collapsed) {
+        return `<details class="chain-group is-empty"><summary>${esc(group.title)} · ${esc(group.title_zh)} ${statusPill(group.level)}</summary>${body}</details>`;
+      }
+      return `<article class="chain-group">
+        <h3>${esc(group.title_zh)} <span class="chain-kicker">${esc(group.title)}</span>${statusPill(group.level)}</h3>
+        ${body}
+      </article>`;
+    }).join("")}</div>`;
+  }
+
+  function renderGradeBoard(payload) {
+    const overall = payload.overall || {};
+    const level = overall.level || "L0";
+    const status = overall.status || level;
+    const blocked = payload.cannot_form_judgment && level === "L0";
+    const banner = payload.synthetic
+      ? `<div class="decision-banner" role="status">合成演示数据 · ${esc(payload.preview_label || "preview")}。生产环境不会用 fixture 顶替真实数据。</div>`
+      : "";
+    const l0 = blocked
+      ? `<div class="decision-banner decision-blocked" role="status">${esc(payload.cannot_form_judgment_reason || "目前不能形成判断")}</div>`
+      : "";
+    return `${banner}${l0}
+      <header class="decision-head">
+        <h2 id="decision-heading">动态判断</h2>
+        <div class="grade-board" role="status">
+          <div class="grade-level">当前可用等级 <b>${esc(level)}</b>${statusPill(status)}</div>
+          <p>目前可以确定什么：${esc(overall.can_determine || "尚无可用结论")}</p>
+          <p>目前不能确定什么：${esc(overall.cannot_determine || "尚不能输出方向性 Thesis")}</p>
+          <p>可用链数量：${esc(chainCounts(overall))}</p>
+        </div>
+      </header>`;
+  }
+
   function renderDecision(payload) {
     const thesis = payload.thesis || {};
     const compared = payload.compared_to || {};
+    const overall = payload.overall || {};
+    const canDirect = payload.can_form_direction === true;
+    const conflict = overall.status === "conflict";
     const quality = payload.evidence_quality || thesis.evidence_quality || "insufficient";
-    const thesisStatus = payload.cannot_form_judgment && thesis.status === "ok" ? "incomplete" : (thesis.status || "incomplete");
-    const thesisDirection = payload.cannot_form_judgment && thesis.status === "ok" ? "incomplete" : (thesis.direction || "incomplete");
-    const gaps = (payload.gaps || []).map((row) => `<li>${esc(row.text || row.code)}</li>`).join("");
-    const bulls = (thesis.bull_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格多头证据</li>";
-    const bears = (thesis.bear_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格空头证据</li>";
+    const thesisStatus = canDirect ? (thesis.status || "ok") : (conflict ? "conflict" : "incomplete");
+    const thesisDirection = canDirect ? (overall.direction || thesis.direction || "incomplete") : (conflict ? "conflict" : "局部判断");
+    const gaps = (payload.gaps || []).map((row) => `<li>${esc(row.text || row.code)} <small>${esc(row.affects_chain || "")}/${esc(row.affects_stage || "")}</small></li>`).join("");
+    const blockedThesis = conflict
+      ? "<li>同等强度 L3 方向冲突，不输出统一个股方向</li>"
+      : "<li>未达 L3，不把局部事实写成方向性 Thesis</li>";
+    const bulls = canDirect
+      ? ((thesis.bull_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格多头证据</li>")
+      : blockedThesis;
+    const bears = canDirect
+      ? ((thesis.bear_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格空头证据</li>")
+      : blockedThesis;
     const facts = (payload.facts || []).map((row) => {
       const ref = row.ref || {};
       return `<li>${esc(row.kind || "fact")} · ${esc(row.metric || "")} · ${esc(ref.source || row.source || "")} · ${esc(ref.as_of || row.as_of || "")} · ${esc(ref.ref_table || "")}/${esc(ref.ref_id || "")}</li>`;
     }).join("") || "<li>没有可折叠的原始事实</li>";
-    const banner = payload.synthetic
-      ? `<div class="decision-banner" role="status">合成演示数据 · ${esc(payload.preview_label || "preview")}。生产环境不会用 fixture 顶替真实数据。</div>`
-      : "";
     const noMove = payload.no_material_change ? `<p class="subline">无重大变化：${esc((payload.what_changed || {}).summary || "原判断不变")}</p>` : "";
-    const blockedReason = payload.cannot_form_judgment_reason || "证据不足或观察时间不可用";
-    const blockedLabel = String(blockedReason).includes("目前不能形成判断")
-      ? blockedReason
-      : `目前不能形成判断：${blockedReason}`;
-    const blocked = payload.cannot_form_judgment
-      ? `<div class="decision-banner decision-blocked" role="status">${esc(blockedLabel)}</div>`
-      : "";
-    $("decision-module").innerHTML = `${banner}${blocked}
-      <header class="decision-head">
-        <h2 id="decision-heading">动态判断</h2>
-        <div class="decision-meta">
-          <span>标的 <b>${esc(payload.symbol || SYMBOL)}</b></span>
-          <span>数据截止 <b>${dateText(payload.as_of, true)}</b></span>
-          <span>证据质量 <b>${esc(quality)}</b></span>
-          <span>Thesis ${statusPill(thesisStatus)} <b>${esc(thesisDirection)}</b></span>
-          <span>相对上次 <b>${dateText(compared.as_of, true)}</b> · ${esc((compared.changed_fields || []).join("、") || "无字段变化")}</span>
-        </div>
-      </header>
+    $("decision-module").innerHTML = `${renderGradeBoard(payload)}
       ${noMove}
       ${gaps ? `<ul class="decision-gaps">${gaps}</ul>` : ""}
+      ${renderChainGroups(payload)}
       <div class="decision-chain">${renderChain(payload)}</div>
       <div class="decision-sides">
         <section class="decision-side"><h3>Bull</h3><ul>${bulls}</ul></section>
         <section class="decision-side"><h3>Bear</h3><ul>${bears}</ul></section>
       </div>
-      <p class="subline">关键分歧：${esc(thesis.key_disagreement || "尚未形成")} · 失效条件：${esc(thesis.invalidation || "尚未形成")}</p>
+      <p class="subline">关键分歧：${esc(canDirect ? (thesis.key_disagreement || "尚未形成") : "局部判断不成方向")} · 失效条件：${esc(canDirect ? (thesis.invalidation || "尚未形成") : "需先补齐 L3 所需环节")}</p>
+      <p class="subline">标的 ${esc(payload.symbol || SYMBOL)} · 数据截止 ${dateText(payload.as_of, true)} · 证据质量 ${esc(quality)} · Thesis ${statusPill(thesisStatus)} <b>${esc(thesisDirection)}</b> · 相对上次 ${dateText(compared.as_of, true)}</p>
       <details class="decision-facts fold"><summary>原始 Facts（默认折叠）</summary><ul>${facts}</ul></details>`;
   }
 

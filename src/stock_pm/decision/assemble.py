@@ -24,6 +24,7 @@ from .facts import FactValidationError, ValidatedFact, require_valid_bar
 from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
 from .types import PRICE_METRICS, FactRef, MaterialityRule
+from .grading import GAP_EFFECTS, annotate_gaps, grade_decision
 from .viewmodel import render_decision_view
 from .what_changed import build_what_changed
 
@@ -73,8 +74,14 @@ def iso_stamp(value: Any) -> str | None:
     return text or None
 
 
-def _gap(code: str, text: str) -> dict[str, str]:
-    return {"code": code, "text": text}
+def _gap(code: str, text: str, *, affects_chain: str | None = None, affects_stage: str | None = None) -> dict[str, str]:
+    meta = GAP_EFFECTS.get(code, {})
+    return {
+        "code": code,
+        "text": text,
+        "affects_chain": affects_chain or meta.get("chain") or "page",
+        "affects_stage": affects_stage or meta.get("stage") or "unspecified",
+    }
 
 
 def _macro_coverage_gaps(
@@ -95,31 +102,45 @@ def _macro_coverage_gaps(
     gaps: list[dict[str, str]] = []
     if not (in_metrics & set(INFLATION_TYPES)):
         if stale_metrics & set(INFLATION_TYPES):
-            gaps.append(_gap("stale_dataset", "CPI/PCE 原因序列存在于决策窗口之前，不是数据缺失"))
+            gaps.append(
+                _gap(
+                    "stale_dataset",
+                    "CPI/PCE 原因序列存在于决策窗口之前，不是数据缺失",
+                    affects_chain="macro_rates",
+                    affects_stage="what_changed",
+                )
+            )
         elif scheduled_metrics & set(INFLATION_TYPES):
             pass
         elif mismatch_metrics & set(INFLATION_TYPES):
-            gaps.append(_gap("window_mismatch", "CPI/PCE 原因序列存在但落在决策窗口之外，不是数据缺失"))
+            gaps.append(
+                _gap(
+                    "window_mismatch",
+                    "CPI/PCE 原因序列存在但落在决策窗口之外，不是数据缺失",
+                    affects_chain="macro_rates",
+                    affects_stage="what_changed",
+                )
+            )
         else:
             gaps.append(_gap("missing_cpi", "缺失 CPI/PCE 原因序列"))
     rate_keys = {"us2y", "real_rate", "cut_odds"}
     if "us2y" in in_metrics and "real_rate" in in_metrics:
         pass
     elif not (in_metrics & rate_keys) and (stale_metrics & rate_keys):
-        gaps.append(_gap("stale_dataset", "利率确认通道存在于决策窗口之前，不是数据缺失"))
+        gaps.append(_gap("stale_dataset", "利率确认通道存在于决策窗口之前，不是数据缺失", affects_chain="macro_rates", affects_stage="confirmation"))
     elif not (in_metrics & rate_keys) and (scheduled_metrics & rate_keys):
         pass
     elif not (in_metrics & rate_keys) and (mismatch_metrics & rate_keys):
-        gaps.append(_gap("window_mismatch", "利率确认通道存在但落在决策窗口之外，不是数据缺失"))
+        gaps.append(_gap("window_mismatch", "利率确认通道存在但落在决策窗口之外，不是数据缺失", affects_chain="macro_rates", affects_stage="confirmation"))
     else:
         gaps.append(_gap("missing_rates_confirmation", "缺失利率确认通道（US2Y/实际利率/降息预期）"))
     if "vix" not in in_metrics:
         if "vix" in stale_metrics:
-            gaps.append(_gap("stale_dataset", "VIX 存在于决策窗口之前，不是数据缺失"))
+            gaps.append(_gap("stale_dataset", "VIX 存在于决策窗口之前，不是数据缺失", affects_chain="risk_sentiment", affects_stage="confirmation"))
         elif "vix" in scheduled_metrics:
             pass
         elif "vix" in mismatch_metrics:
-            gaps.append(_gap("window_mismatch", "VIX 存在但落在决策窗口之外，不是数据缺失"))
+            gaps.append(_gap("window_mismatch", "VIX 存在但落在决策窗口之外，不是数据缺失", affects_chain="risk_sentiment", affects_stage="confirmation"))
         else:
             gaps.append(_gap("missing_vix", "缺失 VIX"))
     return gaps
@@ -572,6 +593,18 @@ def assemble_from_kernel(
         "changed_fields": list(report.changed_fields),
         "thesis_changed": report.thesis_changed,
     }
+    gaps = annotate_gaps(gaps)
+    graded = grade_decision(
+        symbol=symbol,
+        changes=changes,
+        expectations=expectations,
+        confirmation=confirmation,
+        tension=tension,
+        impacts=impacts,
+        data_gaps=gaps,
+        clues=clues,
+        clock_status=clock_status,
+    )
     return render_decision_view(
         symbol=symbol,
         changes=changes,
@@ -580,7 +613,7 @@ def assemble_from_kernel(
         impacts=impacts,
         thesis=thesis,
         what_changed=report,
-        data_gaps=gaps,
+        data_gaps=graded["gaps"],
         facts=facts,
         clues=clues,
         synthetic=synthetic,
@@ -590,6 +623,7 @@ def assemble_from_kernel(
         clock_status=clock_status,
         tension=tension,
         rates_chain_blocked=blocked,
+        graded=graded,
     )
 
 
@@ -708,12 +742,13 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     as_of = clock.isoformat() if clock is not None else None
     if as_of is None and price_changes:
         as_of = price_changes[0].current_as_of
-    seen: set[str] = set()
+    seen: set[tuple[str, str]] = set()
     unique_gaps: list[dict[str, str]] = []
     for row in data_gaps:
-        if row["code"] in seen:
+        key = (str(row.get("code") or ""), str(row.get("affects_chain") or ""))
+        if key in seen:
             continue
-        seen.add(row["code"])
+        seen.add(key)
         unique_gaps.append(row)
 
     previous = None

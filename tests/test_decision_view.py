@@ -112,8 +112,8 @@ def test_removing_expectation_blocks_complete_and_thesis_direction():
     expect = _chain(view, "expectation")
     assert expect["status"] != "ok"
     assert expect["items"] == []
-    assert view["cannot_form_judgment"] is True
-    assert "目前不能形成判断" in (view["cannot_form_judgment_reason"] or "")
+    assert view["can_form_direction"] is False
+    assert view["overall"]["level"] != "L3"
     assert view["evidence_quality"] != "complete"
     assert view["thesis"]["direction"] not in {"bearish", "bullish"}
     assert view["thesis"]["based_on_causal_impact_ids"] == []
@@ -129,7 +129,8 @@ def test_removing_price_makes_tension_insufficient_and_not_complete():
     view = build_preview_a("NVDA", include_price=False)
     tension = _chain(view, "tension")
     assert tension["status"] == "insufficient"
-    assert view["cannot_form_judgment"] is True
+    assert view["can_form_direction"] is False
+    assert view["overall"]["level"] != "L3"
     assert view["evidence_quality"] != "complete"
     assert view["thesis"]["direction"] not in {"bearish", "bullish"}
     assert view["rates_chain_blocked"] is True
@@ -244,8 +245,15 @@ def test_preview_C_no_material_change_is_explicit():
     assert price["ref"]["as_of"]
     nfp = next(item for item in what["items"] if item["metric"] == "nfp")
     assert nfp["scope"] == "global"
-    assert view["cannot_form_judgment"] is True
-    assert "目前不能形成判断" in (view["cannot_form_judgment_reason"] or "")
+    chains = {row["id"]: row for row in view["chains"]}
+    assert chains["price"]["level"] == "L1"
+    assert chains["macro_rates"]["level"] == "L1"
+    assert chains["risk_sentiment"]["level"] == "L0"
+    assert chains["earnings"]["level"] == "L1"
+    assert view["overall"]["level"] == "L1"
+    assert view["overall"]["level"] != "L0"
+    assert view["can_form_direction"] is False
+    assert view["cannot_form_judgment"] is False
     tension = _chain(view, "tension")
     assert tension["status"] == "insufficient"
     assert _causal(view)["confirmation"]["status"] != "confirmed"
@@ -291,16 +299,14 @@ def test_live_missing_expectation_tension_cannot_form_judgment():
     tension = _chain(view, "tension")
     assert expect["status"] != "ok"
     assert tension["status"] == "insufficient"
-    assert view["cannot_form_judgment"] is True
-    reason = view["cannot_form_judgment_reason"] or ""
-    assert reason.startswith("目前不能形成判断")
-    assert reason.count("目前不能形成判断") == 1
+    assert view["overall"]["level"] in {"L1", "L2"}
+    assert view["can_form_direction"] is False
+    assert view["cannot_form_judgment"] is False
     assert view["evidence_quality"] != "complete"
     assert view["thesis"]["direction"] not in {"bearish", "bullish"}
     confirm = _causal(view)["confirmation"]
     assert confirm["status"] != "ok"
-    # Confirmation must not patch a missing Expectation / Tension into a complete judgment.
-    assert view["thesis"]["evidence_quality"] != "complete" or view["cannot_form_judgment"] is True
+    assert view["overall"]["direction"] is None
 
 
 def test_invalid_latest_ohlc_is_gap_not_a_price_change():

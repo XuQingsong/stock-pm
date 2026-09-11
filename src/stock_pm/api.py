@@ -371,11 +371,11 @@ def stock_overview(symbol: str) -> dict:
 @app.get("/api/stock/{symbol}/decision")
 def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
     from .decision.assemble import assemble_from_bundle
-    from .decision.preview import build_preview, preview_allowed
+    from .decision.preview import PREVIEW_LABELS, build_preview, preview_allowed
 
     key = (preview or "").strip().upper()
     try:
-        if key in {"A", "B", "C"} and preview_allowed():
+        if key in PREVIEW_LABELS and preview_allowed():
             return build_preview(symbol, key)
         return assemble_from_bundle(database.decision_bundle(symbol))
     except ValueError as exc:

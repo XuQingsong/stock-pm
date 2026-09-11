@@ -309,6 +309,7 @@ def render_decision_view(
     clock_status: str = "ok",
     tension: PriceExpectationTension | None = None,
     rates_chain_blocked: bool = False,
+    graded: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     change_rows = [change_view(row) for row in changes]
     gap_rows = [gap_view(row) for row in expectations]
@@ -436,37 +437,35 @@ def render_decision_view(
     ]
 
     blocking = [row for row in data_gaps if row.get("code") == "clock_insufficient"]
-    chain_incomplete = [row for row in data_gaps if row.get("code") in {"rates_chain_incomplete", "missing_rate_path_expectation"}]
-    missing_expect_or_tension = expect_status != "ok" or tension_status == "insufficient"
-    live_missing_layers = (not synthetic) and missing_expect_or_tension and not no_material
-    cannot = (
-        clock_status == "clock_insufficient"
-        or rates_chain_blocked
-        or live_missing_layers
-        or (thesis.status == "incomplete" and not no_material)
-    )
+    overall = (graded or {}).get("overall") or {}
+    can_form_direction = bool((graded or {}).get("can_form_direction"))
+    overall_level = overall.get("level") or "L0"
+    cannot = clock_status == "clock_insufficient" or overall_level == "L0"
     reason = None
     if cannot:
         if clock_status == "clock_insufficient" and blocking:
             reason = blocking[0]["text"]
-        elif rates_chain_blocked or live_missing_layers or missing_expect_or_tension:
-            reason = (
-                (chain_incomplete[0]["text"] if chain_incomplete else None)
-                or expect_empty
-                or tension_empty
-                or "目前不能形成判断：缺少可追溯预期或价格/预期张力，市场确认不能代替这两层"
-            )
         else:
-            reason = thesis.reason or "现有证据不足以形成有效判断"
-        if not reason.startswith("目前不能形成判断"):
+            reason = overall.get("cannot_determine") or "核心事实无效或不可追溯，不能分析"
+        if not str(reason).startswith("目前不能形成判断"):
             reason = f"目前不能形成判断：{reason}"
-    evidence_quality = "insufficient" if cannot else thesis.evidence_quality
+    if overall_level == "L3" and can_form_direction:
+        evidence_quality = "complete"
+    elif overall_level in {"L2", "L3"}:
+        evidence_quality = "partial"
+    elif overall_level == "L1":
+        evidence_quality = "partial"
+    else:
+        evidence_quality = "insufficient"
     return {
         "symbol": symbol,
         "as_of": None if clock_status == "clock_insufficient" else as_of,
         "clock_status": clock_status,
         "cannot_form_judgment": cannot,
         "cannot_form_judgment_reason": reason,
+        "can_form_direction": can_form_direction,
+        "overall": overall,
+        "chains": list((graded or {}).get("chains") or ()),
         "evidence_quality": evidence_quality,
         "thesis": thesis_view(thesis),
         "updated_at": thesis.generated_at,
