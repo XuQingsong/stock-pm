@@ -15,7 +15,8 @@ Facts
   → Price / Expectation Tension
   → Causal Impact
   → Thesis
-  →（后续阶段）Prediction / UI / Outcome
+  →（阶段 2）现有 `/stock/{symbol}` 页面 + 只读 decision endpoint
+  →（后续阶段）Prediction / Outcome
 ```
 
 禁止跨层跳跃：没有通过事实校验的 OHLC 不得生成 Change；没有比较基准不得声称涨跌；没有最新财报前共识不得把 actual 去跟更早预期比；没有传导机制+exposure 不得从宏观得出个股方向；没有市场确认不得把宏观印成有效 CausalImpact；未确认新闻不得改 Thesis。
@@ -137,10 +138,8 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 | AL | 无 as_of / 不可解析 as_of 的 ValidatedBar 与 FactRef 不得进入后续层 | `ValidatedBar` / `FactRef` |
 | AM | 负数 materiality 阈值不得构造，不能把任意变化变成 material | `MaterialityRule` |
 
-## 阶段 2 展示（独立 stacked PR）
+## 阶段边界
 
-`/stock/{symbol}` 顶部「动态判断」把本内核接成一条纵向因果链：What Changed → Expectation → Market Confirmation → Transmission → Thesis Impact。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap，禁止 fixture fallback。`?preview=A|B|C` 仅非生产环境可用，并标注「合成演示数据」。
-
-## 明确不在本阶段
-
-Outcome 回检、概率、多周期、外部新数据源、自动学习。阶段 2 只把本内核接到现有页面，不合并阶段 1 Draft，也不进入预测价格。
+- **阶段一**：只建立本内核与 Golden Tests A–AM。不含 UI、API、schema migration、外部数据源。
+- **阶段二**：只把本内核接到现有 `/stock/{symbol}` 页面，并增加只读 `GET /api/stock/{symbol}/decision`。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap。合成 A/B/C 必须 `ENABLE_DECISION_PREVIEW=true` 且 `APP_ENV` 为 development/test/local，页面标注「合成演示数据」；缺省或生产环境绝不返回 fixture。
+- **明确不含**：schema migration、Alpha Vantage / SEC / 新闻等新外部数据源、预测价格/概率、Outcome 回检、多周期、自动学习。不合并阶段 1 Draft。

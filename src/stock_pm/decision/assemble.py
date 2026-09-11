@@ -73,6 +73,44 @@ def _gap(code: str, text: str) -> dict[str, str]:
     return {"code": code, "text": text}
 
 
+def _macro_coverage_gaps(
+    macro_changes: list[ChangeSnapshot],
+    stale_events: Iterable[dict[str, Any]],
+    mismatch_events: Iterable[dict[str, Any]],
+) -> list[dict[str, str]]:
+    in_metrics = {canonical_metric(row.metric) for row in macro_changes}
+    stale_metrics = {canonical_metric(str(event.get("event_type") or "")) for event in stale_events}
+    mismatch_metrics = {
+        canonical_metric(str(event.get("event_type") or "")) for event in mismatch_events
+    }
+
+    gaps: list[dict[str, str]] = []
+    if not (in_metrics & set(INFLATION_TYPES)):
+        if stale_metrics & set(INFLATION_TYPES):
+            gaps.append(_gap("stale_dataset", "CPI/PCE 原因序列存在于决策窗口之前，不是数据缺失"))
+        elif mismatch_metrics & set(INFLATION_TYPES):
+            gaps.append(_gap("window_mismatch", "CPI/PCE 原因序列存在但落在决策窗口之外，不是数据缺失"))
+        else:
+            gaps.append(_gap("missing_cpi", "缺失 CPI/PCE 原因序列"))
+    rate_keys = {"us2y", "real_rate", "cut_odds"}
+    if "us2y" in in_metrics and "real_rate" in in_metrics:
+        pass
+    elif not (in_metrics & rate_keys) and (stale_metrics & rate_keys):
+        gaps.append(_gap("stale_dataset", "利率确认通道存在于决策窗口之前，不是数据缺失"))
+    elif not (in_metrics & rate_keys) and (mismatch_metrics & rate_keys):
+        gaps.append(_gap("window_mismatch", "利率确认通道存在但落在决策窗口之外，不是数据缺失"))
+    else:
+        gaps.append(_gap("missing_rates_confirmation", "缺失利率确认通道（US2Y/实际利率/降息预期）"))
+    if "vix" not in in_metrics:
+        if "vix" in stale_metrics:
+            gaps.append(_gap("stale_dataset", "VIX 存在于决策窗口之前，不是数据缺失"))
+        elif "vix" in mismatch_metrics:
+            gaps.append(_gap("window_mismatch", "VIX 存在但落在决策窗口之外，不是数据缺失"))
+        else:
+            gaps.append(_gap("missing_vix", "缺失 VIX"))
+    return gaps
+
+
 def _watch_symbol(bundle: dict[str, Any]) -> str:
     watch = bundle.get("watch") or {}
     return str(bundle.get("symbol") or watch.get("symbol") or "").upper()
@@ -446,13 +484,11 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     data_gaps.extend(expect_gaps)
     facts.extend(expect_facts)
 
-    if not any(canonical_metric(row.metric) in INFLATION_TYPES for row in macro_changes):
-        data_gaps.append(_gap("missing_cpi", "缺失 CPI/PCE 原因序列"))
-    confirm_have = {canonical_metric(row.metric) for row in macro_changes if canonical_metric(row.metric) in CONFIRM_TYPES}
-    if "us2y" not in confirm_have or "real_rate" not in confirm_have:
-        data_gaps.append(_gap("missing_rates_confirmation", "缺失利率确认通道（US2Y/实际利率/降息预期）"))
-    if "vix" not in confirm_have:
-        data_gaps.append(_gap("missing_vix", "缺失 VIX"))
+    stale_macros = list(bundle.get("macro_events_stale") or ())
+    mismatch_macros = list(bundle.get("macro_events_window_mismatch") or ())
+    if not stale_macros and not mismatch_macros and bundle.get("macro_events_out_of_window"):
+        stale_macros = list(bundle.get("macro_events_out_of_window") or ())
+    data_gaps.extend(_macro_coverage_gaps(macro_changes, stale_macros, mismatch_macros))
 
     confirm_series = [row for row in macro_changes if canonical_metric(row.metric) in CONFIRM_TYPES]
     confirmation = assess_market_confirmation(

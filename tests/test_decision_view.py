@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from stock_pm.decision.assemble import assemble_from_bundle
+from stock_pm.decision.clock import dataset_as_of, macro_window, partition_macros
 from stock_pm.decision.preview import build_preview, preview_allowed
 from stock_pm.decision.viewmodel import CHAIN_STEPS
 from stock_pm.config import Settings
@@ -182,6 +185,119 @@ def test_invalid_latest_ohlc_is_gap_not_a_price_change():
     assert all(item.get("metric") != "close" for item in what["items"])
 
 
-def test_preview_disabled_in_production(monkeypatch):
-    monkeypatch.setenv("APP_ENV", "production")
+def test_preview_requires_explicit_dual_opt_in(monkeypatch):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
+    assert preview_allowed() is False
     assert preview_allowed(Settings()) is False
+
+    denied = [
+        ("", "true"),
+        ("   ", "true"),
+        ("staging", "true"),
+        ("production", "true"),
+        ("prod", "true"),
+        (" PRODUCTION ", "true"),
+        ("Prod", "true"),
+        ("production", "false"),
+        ("development", ""),
+        ("development", "false"),
+        ("development", "0"),
+        ("test", "no"),
+        (None, "true"),
+        ("development", None),
+    ]
+    for env, flag in denied:
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
+        if env is not None:
+            monkeypatch.setenv("APP_ENV", env)
+        if flag is not None:
+            monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
+        assert preview_allowed() is False, (env, flag)
+        assert preview_allowed(Settings()) is False, (env, flag)
+
+    allowed = [
+        ("development", "true"),
+        (" DEVELOPMENT ", "TRUE"),
+        ("test", "1"),
+        ("local", "yes"),
+        ("local", "on"),
+    ]
+    for env, flag in allowed:
+        monkeypatch.setenv("APP_ENV", env)
+        monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
+        assert preview_allowed() is True, (env, flag)
+        assert preview_allowed(Settings()) is True, (env, flag)
+
+
+def test_old_macros_stay_in_window_when_wall_clock_is_later():
+    today = date(2028, 1, 1)
+    bars = [{"bar_time": "2026-09-10T20:00:00+00:00"}]
+    macros = [{"event_type": "cpi", "event_time": "2026-09-05T12:30:00+00:00"}]
+    clock = dataset_as_of(bars=bars, macros=macros, today=today)
+    assert clock == date(2026, 9, 10)
+    start, end = macro_window(clock)
+    inside, stale, mismatch = partition_macros(macros, start=start, end=end)
+    assert len(inside) == 1
+    assert stale == []
+    assert mismatch == []
+    wall_start, wall_end = macro_window(today)
+    _inside, wall_stale, _mismatch = partition_macros(macros, start=wall_start, end=wall_end)
+    assert wall_stale and not _inside
+
+
+def _coverage_bundle(**extra):
+    payload = {
+        "symbol": "NVDA",
+        "watch": {"symbol": "NVDA", "themes": ["high_valuation_growth"], "rate_sensitivity": "high"},
+        "bars": [],
+        "earnings": [],
+        "macro_events": [],
+        "news": [],
+        "synthetic": False,
+        "_skip_previous": True,
+    }
+    payload.update(extra)
+    return payload
+
+
+def test_stale_cpi_is_not_reported_as_missing():
+    view = assemble_from_bundle(
+        _coverage_bundle(
+            macro_events_stale=[
+                {
+                    "event_type": "cpi",
+                    "event_time": "2025-01-15T12:30:00+00:00",
+                    "actual": 3.5,
+                    "prior": 3.0,
+                    "source": "FRED",
+                    "name": "CPI",
+                }
+            ]
+        )
+    )
+    codes = {row["code"] for row in view["gaps"]}
+    assert "stale_dataset" in codes
+    assert "missing_cpi" not in codes
+    assert any("不是数据缺失" in row["text"] for row in view["gaps"] if row["code"] == "stale_dataset")
+
+
+def test_window_mismatch_cpi_is_not_reported_as_missing():
+    view = assemble_from_bundle(
+        _coverage_bundle(
+            macro_events_window_mismatch=[
+                {
+                    "event_type": "cpi",
+                    "event_time": "2027-03-01T12:30:00+00:00",
+                    "actual": 3.5,
+                    "prior": 3.0,
+                    "source": "FRED",
+                    "name": "CPI",
+                }
+            ]
+        )
+    )
+    codes = {row["code"] for row in view["gaps"]}
+    assert "window_mismatch" in codes
+    assert "missing_cpi" not in codes

@@ -663,6 +663,8 @@
     const root = $("decision-module");
     if (!root) return;
     const preview = new URLSearchParams(location.search).get("preview");
+    // Same gate as GET /api/stock/{symbol}/decision: the API ignores preview
+    // unless ENABLE_DECISION_PREVIEW is on and APP_ENV is development/test/local.
     const path = endpoint("decision") + (preview ? `?preview=${encodeURIComponent(preview)}` : "");
     try {
       const payload = await api(path);

@@ -1,6 +1,8 @@
-"""Dev/test-only synthetic A/B/C previews. Never used as production fallback."""
+"""Dev/test-only synthetic A/B/C previews. Opt-in; never a production fallback."""
 
 from __future__ import annotations
+
+import os
 
 from stock_pm.config import Settings
 
@@ -33,9 +35,23 @@ PREVIEW_LABELS = {
 }
 
 
+PREVIEW_ENV_ALLOWLIST = frozenset({"development", "test", "local"})
+_TRUTHY = frozenset({"1", "true", "yes", "on"})
+
+
+def _truthy(value: str | None) -> bool:
+    return (value or "").strip().lower() in _TRUTHY
+
+
 def preview_allowed(settings: Settings | None = None) -> bool:
-    env = (settings or Settings()).app_env
-    return env not in {"production", "prod"}
+    """Explicit dual opt-in. Missing APP_ENV is not treated as development."""
+    if settings is None:
+        enabled = _truthy(os.getenv("ENABLE_DECISION_PREVIEW"))
+        env = (os.getenv("APP_ENV") or "").strip().lower()
+    else:
+        enabled = bool(settings.enable_decision_preview)
+        env = (settings.app_env or "").strip().lower()
+    return enabled and env in PREVIEW_ENV_ALLOWLIST
 
 
 def _ref(table: str, ref_id: str, as_of: str = "2026-09-10") -> FactRef:

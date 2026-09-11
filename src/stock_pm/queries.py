@@ -532,15 +532,15 @@ class QueryMixin:
         }
 
     def decision_bundle(self, symbol: str) -> dict:
-        from datetime import date, timedelta
+        from datetime import date
+
+        from .decision.clock import dataset_as_of, macro_window, partition_macros
 
         normalized = self._watchlist_symbol(symbol)
         watch = next(
             (row for row in self.watchlist_rows() if row["symbol"] == normalized),
             {"symbol": normalized, "themes": [], "rate_sensitivity": "medium"},
         )
-        end = date.today()
-        start = end - timedelta(days=180)
         bars = self.fetch_all(
             """
             SELECT symbol, bar_size, bar_time, open_price, high_price,
@@ -552,13 +552,33 @@ class QueryMixin:
             """,
             (normalized,),
         )
+        earnings = self.earnings_history(normalized)[:4]
+        macros = self.fetch_all(
+            """
+            SELECT event_type, event_time, name, actual, consensus, prior,
+                   unit, surprise, confirmed, source, notes
+            FROM macro_events
+            ORDER BY event_time DESC
+            LIMIT 200
+            """
+        )
+        clock = dataset_as_of(bars=bars, earnings=earnings, macros=macros, today=date.today())
+        start, end = macro_window(clock)
+        inside, stale, mismatch = partition_macros(macros, start=start, end=end)
         return {
             "symbol": normalized,
             "watch": watch,
             "bars": bars,
-            "earnings": self.earnings_history(normalized)[:4],
+            "earnings": earnings,
             "fundamentals": self.latest_fundamentals(normalized),
-            "macro_events": self.macro_events_between(start.isoformat(), end.isoformat()),
+            "macro_events": inside,
+            "macro_events_stale": stale,
+            "macro_events_window_mismatch": mismatch,
+            "macro_window": {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "dataset_as_of": clock.isoformat(),
+            },
             "news": self.news([normalized], 12),
             "cboe": self.cboe_option_stats(),
             "synthetic": False,

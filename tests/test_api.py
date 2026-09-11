@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
 
 from stock_pm import api
@@ -589,6 +590,8 @@ def test_stock_group(monkeypatch):
 
 
 def test_stock_decision_live_and_preview(monkeypatch):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
     c = client(monkeypatch)
     live = c.get("/api/stock/NVDA/decision").json()
     assert live["symbol"] == "NVDA"
@@ -597,6 +600,11 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert [step["id"] for step in live["chain"]] == [
         "what_changed", "expectation", "confirmation", "transmission", "thesis_impact"
     ]
+    # Default-off: a leaked ?preview= must never return fixture.
+    leaked = c.get("/api/stock/NVDA/decision?preview=A").json()
+    assert leaked["synthetic"] is False
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("ENABLE_DECISION_PREVIEW", "true")
     preview = c.get("/api/stock/NVDA/decision?preview=A").json()
     assert preview["synthetic"] is True
     assert preview["preview"] == "A"
@@ -606,9 +614,36 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert scene_b["what_changed"]["thesis_changed"] is False
     scene_c = c.get("/api/stock/AAPL/decision?preview=C").json()
     assert scene_c["no_material_change"] is True
-    monkeypatch.setenv("APP_ENV", "production")
-    blocked = TestClient(api.app).get("/api/stock/NVDA/decision?preview=A").json()
-    assert blocked["synthetic"] is False
+
+
+@pytest.mark.parametrize(
+    "env,flag",
+    [
+        (None, None),
+        ("", "true"),
+        ("   ", "true"),
+        ("unknown", "true"),
+        ("production", "true"),
+        ("prod", "true"),
+        (" PRODUCTION ", "true"),
+        ("Prod", "true"),
+        ("development", None),
+        ("development", "false"),
+        (None, "true"),
+    ],
+)
+def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env, flag):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
+    if env is not None:
+        monkeypatch.setenv("APP_ENV", env)
+    if flag is not None:
+        monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
+    c = client(monkeypatch)
+    for scene in ("A", "B", "C"):
+        body = c.get(f"/api/stock/NVDA/decision?preview={scene}").json()
+        assert body["synthetic"] is False, (env, flag, scene)
+        assert body.get("preview") in (None, "")
 
 
 def test_patch_review(monkeypatch):
