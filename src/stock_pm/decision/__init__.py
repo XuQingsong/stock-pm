@@ -14,12 +14,21 @@ from .causal import (
     MarketConfirmation,
     assess_market_confirmation,
     build_causal_impact,
+    canonical_metric,
 )
 from .change import NO_MATERIAL_CHANGE, ChangeSnapshot, build_change_snapshot
 from .expectation import ExpectationGap, ExpectationPoint, build_expectation_gap
-from .facts import FactValidationError, OhlcCheck, require_valid_bar, validate_ohlc
+from .facts import (
+    FactValidationError,
+    OhlcCheck,
+    ValidatedBar,
+    ValidatedFact,
+    require_valid_bar,
+    require_valid_fact,
+    validate_ohlc,
+)
 from .tension import PriceExpectationTension, build_price_expectation_tension
-from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
+from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot, thesis_changed_fields
 from .types import FactRef, MaterialityRule
 from .what_changed import (
     NO_MATERIAL_CHANGE_THESIS,
@@ -52,6 +61,8 @@ __all__ = [
     "RATES_DISCOUNT_MECHANISM",
     "ThesisSnapshot",
     "UNCONFIRMED",
+    "ValidatedBar",
+    "ValidatedFact",
     "WhatChanged",
     "WhatChangedItem",
     "assess_market_confirmation",
@@ -61,6 +72,9 @@ __all__ = [
     "build_price_expectation_tension",
     "build_thesis_snapshot",
     "build_what_changed",
+    "canonical_metric",
     "require_valid_bar",
+    "require_valid_fact",
+    "thesis_changed_fields",
     "validate_ohlc",
 ]

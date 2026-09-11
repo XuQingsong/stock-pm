@@ -6,7 +6,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from .numbers import as_number
-from .types import FactValidationError
+from .types import FactRef, FactValidationError
+
+PRICE_METRICS = frozenset({"close", "open", "high", "low", "price", "last"})
 
 
 @dataclass(frozen=True)
@@ -14,6 +16,44 @@ class OhlcCheck:
     ok: bool
     errors: tuple[str, ...]
     bar: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class ValidatedBar:
+    """OHLC that has already passed inequality checks. Required for price Change."""
+
+    as_of: str | None
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float | None = None
+    refs: tuple[FactRef, ...] = ()
+    synthetic: bool = True
+
+    def price_for(self, metric: str) -> float:
+        key = (metric or "").strip().lower()
+        if key in {"close", "price", "last"}:
+            return self.close
+        if key == "open":
+            return self.open
+        if key == "high":
+            return self.high
+        if key == "low":
+            return self.low
+        raise TypeError(f"ValidatedBar has no price field for metric {metric!r}")
+
+
+@dataclass(frozen=True)
+class ValidatedFact:
+    """Finite numeric fact. Optional controlled entry for non-price series."""
+
+    metric: str
+    value: float
+    as_of: str | None
+    unit: str | None = None
+    refs: tuple[FactRef, ...] = ()
+    synthetic: bool = True
 
 
 def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
@@ -40,10 +80,58 @@ def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
     return OhlcCheck(ok=not errors, errors=tuple(errors), bar=row)
 
 
-def require_valid_bar(bar: dict[str, Any] | None) -> dict[str, Any]:
+def require_valid_bar(
+    bar: dict[str, Any] | None,
+    *,
+    refs: tuple[FactRef, ...] | None = None,
+) -> ValidatedBar:
     check = validate_ohlc(bar)
     if not check.ok:
         raise FactValidationError(
             "OHLC failed fact validation: " + ", ".join(check.errors)
         )
-    return check.bar
+    row = check.bar
+    open_px = as_number(row.get("open") if "open" in row else row.get("open_price"))
+    high = as_number(row.get("high") if "high" in row else row.get("high_price"))
+    low = as_number(row.get("low") if "low" in row else row.get("low_price"))
+    close = as_number(row.get("close") if "close" in row else row.get("close_price"))
+    volume = as_number(row.get("volume"))
+    as_of = row.get("as_of") or row.get("date") or row.get("bar_date")
+    as_of_text = None if as_of is None else str(as_of)
+    assert open_px is not None and high is not None and low is not None and close is not None
+    return ValidatedBar(
+        as_of=as_of_text,
+        open=open_px,
+        high=high,
+        low=low,
+        close=close,
+        volume=volume,
+        refs=refs or (),
+        synthetic=bool(row.get("synthetic", True)),
+    )
+
+
+def require_valid_fact(
+    *,
+    metric: str,
+    value: Any,
+    as_of: str | None,
+    unit: str | None = None,
+    refs: tuple[FactRef, ...] | None = None,
+    synthetic: bool = True,
+) -> ValidatedFact:
+    number = as_number(value)
+    if number is None:
+        raise FactValidationError(f"numeric fact {metric!r} is missing or non-finite")
+    return ValidatedFact(
+        metric=metric,
+        value=number,
+        as_of=as_of,
+        unit=unit,
+        refs=refs or (),
+        synthetic=synthetic,
+    )
+
+
+def is_price_metric(metric: str) -> bool:
+    return (metric or "").strip().lower() in PRICE_METRICS

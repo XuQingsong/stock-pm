@@ -18,6 +18,7 @@ class PriceExpectationTension:
     tension: str
     evidence_quality: str
     reason: str
+    divergence_kind: str | None = None
     synthetic: bool = True
 
     def to_dict(self) -> dict[str, Any]:
@@ -44,9 +45,32 @@ def build_price_expectation_tension(
             tension="insufficient",
             evidence_quality="insufficient",
             reason="数据不足，只描述证据，不冒充已定价结论",
+            divergence_kind=None,
             synthetic=synthetic,
         )
     quality = "complete" if valuation is not None else "partial"
+    if fund > 0 and price < 0:
+        return PriceExpectationTension(
+            fundamentals_change=fund,
+            price_change=price,
+            valuation_change=valuation,
+            tension="divergence",
+            evidence_quality=quality,
+            reason="基本面改善而价格下跌，方向背离，不得用绝对值抹平符号",
+            divergence_kind="fundamentals_up_price_down",
+            synthetic=synthetic,
+        )
+    if fund < 0 and price > 0:
+        return PriceExpectationTension(
+            fundamentals_change=fund,
+            price_change=price,
+            valuation_change=valuation,
+            tension="divergence",
+            evidence_quality=quality,
+            reason="基本面下修而价格上涨，方向背离，不得用绝对值抹平符号",
+            divergence_kind="fundamentals_down_price_up",
+            synthetic=synthetic,
+        )
     abs_fund, abs_price = abs(fund), abs(price)
     valuation_expanded = valuation is not None and valuation > 0
     valuation_compressed = valuation is not None and valuation < 0
@@ -66,6 +90,7 @@ def build_price_expectation_tension(
         tension=tension,
         evidence_quality=quality,
         reason=reason,
+        divergence_kind=None,
         synthetic=synthetic,
     )
 
