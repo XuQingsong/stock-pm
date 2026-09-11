@@ -38,13 +38,15 @@ Facts
 
 ### `ChangeSnapshot` ← `build_change_snapshot`
 
-输入：`metric`；**价格类指标**（close/open/high/low/price/last）必须消费 `ValidatedBar`，禁止把原始 `current_value` 送进 Change；非价格序列可用数值或 `ValidatedFact`。可选 `comparison_window`、`materiality_rule`。
+输入：`metric`；**价格类指标**（close/open/high/low/price/last）必须消费 `ValidatedBar`，禁止把原始 `current_value` 送进 Change；公司级非价格序列必须消费 `ValidatedFact`；仅全局宏观序列允许原始数值。可选 `comparison_window`、`materiality_rule`。
 
 输出：`id`, `metric`, `previous_value/current_value`, `previous_as_of/current_as_of`, `delta`, `delta_pct`, `comparison_window`, `direction` (`up`/`down`/`unchanged`/`unknown`), `materiality` (`material`/`immaterial`/`unknown`), `fact_refs`, `summary`。
 
+`FactRef` 必须具备非空 `ref_table` / `ref_id` / `as_of` / `source`，空壳不得构造。`ValidatedBar` / `ValidatedFact` / `ExpectationPoint` 自身携带 `scope`/`subject`；symbol scope 缺 subject 失败。builder 从输入推导身份，禁止用独立参数重贴标签；previous/current 身份不一致失败。证据 `id` 必须包含 scope + 规范化 subject。
+
 `ValidatedBar` / `ValidatedFact` 在 `__post_init__` 内强制校验，直接构造非法实例会失败。价格 Change 必须消费已通过校验的 `ValidatedBar`。
 
-Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司 Thesis 只能直接引用同标的公司级证据；全局宏观必须经 CausalImpact。bull/bear driver 必须与方向性 CausalImpact 极性一致。
+Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司 Thesis 只能直接引用同标的公司级证据；全局宏观必须经 CausalImpact。bull/bear driver 必须与方向性 CausalImpact 极性一致。合格证据必须有可追溯 FactRef；无 refs 的 material Change / ok Gap / valid-looking Impact 不得进入 Thesis（`missing_provenance`）。
 
 ### `ExpectationGap` ← `build_expectation_gap`
 
@@ -66,13 +68,15 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 
 必填结构：`cause`, `market_confirmation`, `mechanism`, `exposure`, `effect_target`, `direction`, `horizon`, `counter_evidence`, `confidence`, `fact_refs`, `status`。
 
-宏观路径必须 `assess_market_confirmation`。确认序列按规范化指标去重，要求独立通道 ≥2，**comparison_window 与 UTC as_of 均在容差内**（缺 as_of 不得 confirmed）。`fact_refs` 合并 cause 与**实际采用**的 confirmation channel refs，未采用序列不得冒充证据。cause 必须 material，cause 指标必须与 mechanism 兼容。
+宏观路径必须 `assess_market_confirmation`。确认序列按规范化指标去重，要求独立通道 ≥2，**comparison_window 与 UTC as_of 均在容差内**（缺 as_of 不得 confirmed）。`fact_refs` 合并 cause 与**实际采用**的 confirmation channel refs，未采用序列不得冒充证据。cause 必须 material 且自身带完整 refs；cause 指标必须与 mechanism 兼容。
+
+`MarketConfirmation(status="confirmed")` 不可伪造：`__post_init__` 与 `build_causal_impact` 均重新验证 `used`（≥2 个去重合格独立通道、方向、materiality、窗口、as_of、refs）。空 `used`、重复指标、无 refs 或方向不合均不得 confirmed/valid。
 
 ### `ThesisSnapshot` ← `build_thesis_snapshot`
 
 `direction`, `bull_drivers`≤3, `bear_drivers`≤3, `key_disagreement`, `invalidation`, `evidence_quality`, `based_on_change_ids`, `based_on_expectation_ids`, `based_on_causal_impact_ids`, `generated_at`, `status`。
 
-每个 driver 必须引用存在且合格的 ID：material Change、ok Expectation、valid CausalImpact。自由文本、引用不存在、跨标的 → `incomplete`。权重规则：两侧都引用了方向相反的 valid CausalImpact → `neutral`，保留两侧；无对立的 cited valid causal 可以给方向，仍保留反方 driver。未引用的 valid impact 不得决定方向。
+每个 driver 必须引用存在且合格的 ID：material Change、ok Expectation、valid CausalImpact，且均须带完整 FactRef。自由文本、引用不存在、跨标的、缺来源、重复证据 ID → `incomplete`（`free_text` / `missing_citation` / `cross_symbol` / `missing_provenance` / `duplicate_evidence_id`）。`_catalog` 遇到同一 ID 指向不同对象必须 conflict，禁止静默覆盖。权重规则：两侧都引用了方向相反的 valid CausalImpact → `neutral`，保留两侧；无对立的 cited valid causal 可以给方向，仍保留反方 driver。未引用的 valid impact 不得决定方向。
 
 ### `WhatChanged` ← `build_what_changed`
 
@@ -122,6 +126,13 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 | AA | valid rates impact.fact_refs 含 CPI 与实际确认通道，不含未采用序列 | `build_causal_impact` |
 | AB | fund=-10%、price=-30% → price_decline 语义，不是涨幅 | `build_price_expectation_tension` |
 | AC | fund=-20%、price=-5% → deteriorating，不是 improving | `build_price_expectation_tension` |
+| AD | 无 refs 的 material Change / ok Gap / valid-looking Impact 不得形成 Thesis，`code=missing_provenance` | `build_thesis_snapshot` |
+| AE | AAPL 与 NVDA 同期 EPS/price 的证据 ID 必须不同 | `build_change_snapshot` |
+| AF | 强制重复证据 ID → Thesis `incomplete`，`code=duplicate_evidence_id` | `build_thesis_snapshot` |
+| AG | AAPL ValidatedFact/ExpectationPoint 重贴 NVDA 标签必须失败 | `build_change_snapshot` / `build_expectation_gap` |
+| AH | 输入点 subject 不一致 → `conflict`，`code=subject_mismatch` | `build_expectation_gap` |
+| AI | 伪造 confirmed / 空 used 不得 valid | `MarketConfirmation` / `build_causal_impact` |
+| AJ | used 含重复指标、无 refs 或方向不合不得 valid | `MarketConfirmation` / `assess_market_confirmation` |
 
 ## 明确不在本阶段
 

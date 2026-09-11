@@ -24,6 +24,15 @@ class FactRef:
     text: str | None = None
     synthetic: bool = True
 
+    def __post_init__(self) -> None:
+        table = (self.ref_table or "").strip()
+        source = (self.source or "").strip()
+        as_of = (self.as_of or "").strip()
+        if not table or not source or not as_of:
+            raise FactValidationError("FactRef requires ref_table, source, and as_of")
+        if self.ref_id is None or str(self.ref_id).strip() == "":
+            raise FactValidationError("FactRef requires ref_id")
+
 
 @dataclass(frozen=True)
 class MaterialityRule:
@@ -42,3 +51,73 @@ class DecisionConflictError(ValueError):
 SCOPE_GLOBAL = "global"
 SCOPE_SECTOR = "sector"
 SCOPE_SYMBOL = "symbol"
+
+PRICE_METRICS = frozenset({"close", "open", "high", "low", "price", "last"})
+GLOBAL_METRICS = frozenset(
+    {
+        "cpi",
+        "core_cpi",
+        "pce",
+        "core_pce",
+        "inflation",
+        "us2y",
+        "us_2y",
+        "real_rate",
+        "real_rates",
+        "cut_odds",
+        "vix",
+        "wti",
+        "brent",
+        "oil",
+        "crude",
+        "geopolitics_headline",
+    }
+)
+SYMBOL_METRICS = frozenset(
+    {"close", "open", "high", "low", "price", "last", "eps", "revenue", "pe", "opex", "gross_margin"}
+)
+
+
+def infer_scope(metric: str, scope: str | None = None) -> str:
+    if scope in {SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL}:
+        return scope
+    key = (metric or "").strip().lower()
+    if key in GLOBAL_METRICS:
+        return SCOPE_GLOBAL
+    if key in SYMBOL_METRICS or key in PRICE_METRICS:
+        return SCOPE_SYMBOL
+    return SCOPE_GLOBAL
+
+
+def normalize_subject(scope: str | None, subject: str | None) -> str | None:
+    if scope == SCOPE_GLOBAL:
+        return "global"
+    text = (subject or "").strip()
+    if not text:
+        return None
+    if scope == SCOPE_SYMBOL:
+        return text.upper()
+    return text.lower()
+
+
+def make_evidence_id(prefix: str, scope: str, subject: str | None, *parts: object) -> str:
+    key = normalize_subject(scope, subject) or ""
+    tail = "|".join("" if part is None else str(part) for part in parts)
+    return f"{prefix}|{scope}|{key}|{tail}"
+
+
+def fact_ref_is_complete(ref: FactRef | None) -> bool:
+    if ref is None:
+        return False
+    table = (ref.ref_table or "").strip()
+    source = (ref.source or "").strip()
+    as_of = (ref.as_of or "").strip()
+    if ref.ref_id is None or str(ref.ref_id).strip() == "":
+        return False
+    return bool(table and source and as_of)
+
+
+def has_provenance(refs: tuple[FactRef, ...] | None) -> bool:
+    if not refs:
+        return False
+    return all(fact_ref_is_complete(ref) for ref in refs)

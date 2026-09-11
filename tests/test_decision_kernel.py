@@ -1,4 +1,4 @@
-"""Golden tests A–AC for Investment Decision Kernel v1.
+"""Golden tests A–AJ for Investment Decision Kernel v1.
 
 All fixtures in this module are synthetic. They are not live market prints.
 """
@@ -11,9 +11,11 @@ from stock_pm.decision import (
     CHANNEL_COMMODITY_REVENUE,
     CHANNEL_DURATION,
     CHANNEL_FUEL_COST,
+    CausalImpact,
     Driver,
     FactRef,
     FactValidationError,
+    MarketConfirmation,
     MaterialityRule,
     NO_MATERIAL_CHANGE_THESIS,
     OIL_CONSUMER_MECHANISM,
@@ -35,6 +37,7 @@ from stock_pm.decision import (
     require_valid_bar,
     validate_ohlc,
 )
+from stock_pm.decision.types import SCOPE_GLOBAL, infer_scope
 
 SYNTHETIC = True
 
@@ -61,7 +64,38 @@ def _chg(
     previous_as_of: str = "2026-09-09",
     scope: str | None = None,
     subject: str | None = None,
+    fact_refs=None,
 ):
+    refs = fact_refs if fact_refs is not None else (_ref("synthetic_series", metric),)
+    inferred = infer_scope(metric, scope)
+    if inferred != SCOPE_GLOBAL:
+        subj = subject or "MSFT"
+        current_fact = ValidatedFact(
+            metric=metric,
+            value=current,
+            as_of=current_as_of,
+            refs=refs,
+            subject=subj,
+            synthetic=True,
+        )
+        previous_fact = None
+        if previous is not None:
+            previous_fact = ValidatedFact(
+                metric=metric,
+                value=previous,
+                as_of=previous_as_of,
+                refs=refs,
+                subject=subj,
+                synthetic=True,
+            )
+        return build_change_snapshot(
+            metric=metric,
+            current_fact=current_fact,
+            previous_fact=previous_fact,
+            comparison_window=window,
+            materiality_rule=rule,
+            synthetic=True,
+        )
     return build_change_snapshot(
         metric=metric,
         previous_value=previous,
@@ -70,30 +104,52 @@ def _chg(
         current_as_of=current_as_of,
         comparison_window=window,
         materiality_rule=rule,
-        fact_refs=(_ref("synthetic_series", metric),),
-        scope=scope,
-        subject=subject,
+        fact_refs=refs,
         synthetic=True,
     )
 
 
 def _company_chg(symbol: str, metric: str = "gross_margin", previous=40.0, current=32.0):
+    refs = (_ref("synthetic_series", f"{symbol}-{metric}"),)
     return build_change_snapshot(
         metric=metric,
-        previous_value=previous,
-        current_value=current,
-        previous_as_of="2026-09-09",
-        current_as_of="2026-09-10",
+        current_fact=ValidatedFact(
+            metric=metric,
+            value=current,
+            as_of="2026-09-10",
+            refs=refs,
+            subject=symbol,
+            synthetic=True,
+        ),
+        previous_fact=ValidatedFact(
+            metric=metric,
+            value=previous,
+            as_of="2026-09-09",
+            refs=refs,
+            subject=symbol,
+            synthetic=True,
+        ),
         comparison_window="1d",
         materiality_rule=MaterialityRule(abs_delta=2.0),
-        fact_refs=(_ref("synthetic_series", f"{symbol}-{metric}"),),
-        scope="symbol",
-        subject=symbol,
         synthetic=True,
     )
 
 
-def _eps(value, as_of, *, period="FY2026Q2", source="street", basis="gaap", ref_id=None):
+def _eps(
+    value,
+    as_of,
+    *,
+    period="FY2026Q2",
+    source="street",
+    basis="gaap",
+    ref_id=None,
+    subject="MSFT",
+    analyst_count=None,
+    fact_ref="default",
+):
+    ref = None
+    if fact_ref is not None:
+        ref = fact_ref if fact_ref != "default" else _ref("consensus", ref_id or f"{source}-{as_of}")
     return ExpectationPoint(
         value=value,
         as_of=as_of,
@@ -101,7 +157,9 @@ def _eps(value, as_of, *, period="FY2026Q2", source="street", basis="gaap", ref_
         currency="USD",
         basis=basis,
         fiscal_period=period,
-        fact_ref=_ref("consensus", ref_id or f"{source}-{as_of}"),
+        fact_ref=ref,
+        analyst_count=analyst_count,
+        subject=subject,
         synthetic=True,
     )
 
@@ -195,35 +253,9 @@ def test_C_eps_revision_and_surprise_not_slogan():
     gap = build_expectation_gap(
         metric="eps",
         fiscal_period="FY2026Q2",
-        prior_consensus=ExpectationPoint(
-            value=1.18,
-            as_of="2026-07-13",
-            source="street",
-            currency="USD",
-            basis="gaap",
-            fact_ref=_ref("consensus", "prior"),
-            analyst_count=18,
-            synthetic=True,
-        ),
-        latest_consensus=ExpectationPoint(
-            value=1.28,
-            as_of="2026-08-11",
-            source="street",
-            currency="USD",
-            basis="gaap",
-            fact_ref=_ref("consensus", "latest"),
-            analyst_count=21,
-            synthetic=True,
-        ),
-        actual=ExpectationPoint(
-            value=1.30,
-            as_of="2026-08-12",
-            source="company",
-            currency="USD",
-            basis="gaap",
-            fact_ref=_ref("earnings_reports", "print"),
-            synthetic=True,
-        ),
+        prior_consensus=_eps(1.18, "2026-07-13", analyst_count=18, ref_id="prior"),
+        latest_consensus=_eps(1.28, "2026-08-11", analyst_count=21, ref_id="latest"),
+        actual=_eps(1.30, "2026-08-12", source="company", ref_id="print"),
         synthetic=True,
     )
     assert gap.status == "ok"
@@ -442,22 +474,8 @@ def test_I_missing_prior_consensus_has_no_revision_trend():
     gap = build_expectation_gap(
         metric="eps",
         fiscal_period="FY2026Q2",
-        latest_consensus=ExpectationPoint(
-            value=1.28,
-            as_of="2026-08-11",
-            source="street",
-            currency="USD",
-            basis="gaap",
-            synthetic=True,
-        ),
-        actual=ExpectationPoint(
-            value=1.30,
-            as_of="2026-08-12",
-            source="company",
-            currency="USD",
-            basis="gaap",
-            synthetic=True,
-        ),
+        latest_consensus=_eps(1.28, "2026-08-11", fact_ref=None),
+        actual=_eps(1.30, "2026-08-12", source="company", fact_ref=None),
         synthetic=True,
     )
     assert gap.revision_pct is None
@@ -486,10 +504,26 @@ def test_J_invalid_ohlc_cannot_enter_later_layers():
             synthetic=True,
         )
     prev = require_valid_bar(
-        {"open": 9.8, "high": 10.0, "low": 9.7, "close": 10.0, "as_of": "2026-09-09", "synthetic": True}
+        {
+            "open": 9.8,
+            "high": 10.0,
+            "low": 9.7,
+            "close": 10.0,
+            "as_of": "2026-09-09",
+            "symbol": "MSFT",
+            "synthetic": True,
+        }
     )
     curr = require_valid_bar(
-        {"open": 10.0, "high": 10.3, "low": 9.9, "close": 10.2, "as_of": "2026-09-10", "synthetic": True}
+        {
+            "open": 10.0,
+            "high": 10.3,
+            "low": 9.9,
+            "close": 10.2,
+            "as_of": "2026-09-10",
+            "symbol": "MSFT",
+            "synthetic": True,
+        }
     )
     ok = build_change_snapshot(
         metric="close",
@@ -508,10 +542,14 @@ def test_J_invalid_ohlc_cannot_enter_later_layers():
 def test_missing_baseline_is_not_zero_and_not_a_rise():
     row = build_change_snapshot(
         metric="eps",
-        previous_value=None,
-        current_value=1.30,
-        previous_as_of=None,
-        current_as_of="2026-08-12",
+        current_fact=ValidatedFact(
+            metric="eps",
+            value=1.30,
+            as_of="2026-08-12",
+            subject="MSFT",
+            synthetic=True,
+        ),
+        previous_fact=None,
         synthetic=True,
     )
     assert row.previous_value is None
@@ -526,12 +564,8 @@ def test_gaap_vs_nongaap_is_conflict_not_a_choice():
     gap = build_expectation_gap(
         metric="eps",
         fiscal_period="FY2026Q2",
-        latest_consensus=ExpectationPoint(
-            value=1.28, as_of="2026-08-11", source="street", currency="USD", basis="gaap", synthetic=True
-        ),
-        actual=ExpectationPoint(
-            value=1.45, as_of="2026-08-12", source="company", currency="USD", basis="non-gaap", synthetic=True
-        ),
+        latest_consensus=_eps(1.28, "2026-08-11"),
+        actual=_eps(1.45, "2026-08-12", source="company", basis="non-gaap"),
         synthetic=True,
     )
     assert gap.status == "conflict"
@@ -865,7 +899,15 @@ def test_T_forged_validated_bar_cannot_enter_change():
             metric="close",
             current_bar=bad,
             previous_bar=require_valid_bar(
-                {"open": 9.8, "high": 10.0, "low": 9.7, "close": 10.0, "as_of": "2026-09-09", "synthetic": True}
+                {
+                    "open": 9.8,
+                    "high": 10.0,
+                    "low": 9.7,
+                    "close": 10.0,
+                    "as_of": "2026-09-09",
+                    "symbol": "MSFT",
+                    "synthetic": True,
+                }
             ),
             synthetic=True,
         )
@@ -883,11 +925,9 @@ def test_U_nvda_thesis_cannot_cite_aapl_eps_gap():
     aapl_gap = build_expectation_gap(
         metric="eps",
         fiscal_period="FY2026Q2",
-        scope="symbol",
-        subject="AAPL",
-        prior_consensus=_eps(1.18, "2026-07-13", ref_id="aapl-prior"),
-        latest_consensus=_eps(1.28, "2026-08-11", ref_id="aapl-latest"),
-        actual=_eps(1.30, "2026-08-12", source="company", ref_id="aapl-actual"),
+        prior_consensus=_eps(1.18, "2026-07-13", ref_id="aapl-prior", subject="AAPL"),
+        latest_consensus=_eps(1.28, "2026-08-11", ref_id="aapl-latest", subject="AAPL"),
+        actual=_eps(1.30, "2026-08-12", source="company", ref_id="aapl-actual", subject="AAPL"),
         synthetic=True,
     )
     assert aapl_gap.status == "ok"
@@ -1126,14 +1166,384 @@ def test_missing_fiscal_period_not_fully_comparable():
     gap = build_expectation_gap(
         metric="eps",
         fiscal_period=None,
-        latest_consensus=ExpectationPoint(
-            value=1.28, as_of="2026-08-11", source="street", currency="USD", basis="gaap", synthetic=True
-        ),
-        actual=ExpectationPoint(
-            value=1.30, as_of="2026-08-12", source="company", currency="USD", basis="gaap", synthetic=True
-        ),
+        latest_consensus=_eps(1.28, "2026-08-11", period=None),
+        actual=_eps(1.30, "2026-08-12", source="company", period=None),
         synthetic=True,
     )
     assert gap.status == "insufficient"
     assert gap.code == "missing_period"
     assert gap.surprise_pct is None
+
+
+def _price_change(symbol: str, previous: float, current: float):
+    prev = require_valid_bar(
+        {
+            "open": previous,
+            "high": previous,
+            "low": previous,
+            "close": previous,
+            "as_of": "2026-09-09",
+            "symbol": symbol,
+            "synthetic": True,
+        },
+        refs=(_ref("bars", f"{symbol}-prev"),),
+    )
+    curr = require_valid_bar(
+        {
+            "open": current,
+            "high": current,
+            "low": current,
+            "close": current,
+            "as_of": "2026-09-10",
+            "symbol": symbol,
+            "synthetic": True,
+        },
+        refs=(_ref("bars", f"{symbol}-curr"),),
+    )
+    return build_change_snapshot(
+        metric="close",
+        current_bar=curr,
+        previous_bar=prev,
+        comparison_window="1d",
+        materiality_rule=MaterialityRule(pct_delta=0.5),
+        synthetic=True,
+    )
+
+
+def _forced_company_change(symbol: str, *, change_id: str, metric: str = "eps"):
+    refs = (_ref("synthetic_series", f"{symbol}-{metric}"),)
+    return build_change_snapshot(
+        metric=metric,
+        current_fact=ValidatedFact(
+            metric=metric,
+            value=1.20,
+            as_of="2026-09-10",
+            refs=refs,
+            subject=symbol,
+            synthetic=True,
+        ),
+        previous_fact=ValidatedFact(
+            metric=metric,
+            value=1.00,
+            as_of="2026-09-09",
+            refs=refs,
+            subject=symbol,
+            synthetic=True,
+        ),
+        comparison_window="1d",
+        materiality_rule=MaterialityRule(abs_delta=0.05),
+        change_id=change_id,
+        synthetic=True,
+    )
+
+
+def _forged_valid_impact(target: str = "NVDA") -> CausalImpact:
+    return CausalImpact(
+        id="cau|forged|empty-refs",
+        cause=None,
+        market_confirmation=MarketConfirmation(
+            path="none",
+            status="insufficient",
+            reason="forged",
+            used=(),
+        ),
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(target=target, target_kind="company", channel=CHANNEL_DURATION),
+        effect_target=target,
+        direction="bearish",
+        horizon="short",
+        counter_evidence=(),
+        confidence="medium",
+        fact_refs=(),
+        status="valid",
+        reason="forged valid without refs",
+        chain=("forged",),
+        code="valid",
+        synthetic=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# AD (P0-1)
+# ---------------------------------------------------------------------------
+
+def test_AD_missing_provenance_cannot_form_thesis():
+    with pytest.raises(FactValidationError):
+        FactRef(ref_table="", ref_id="", as_of=None, source="")
+
+    opposite = _company_chg("NVDA", "opex", previous=20.0, current=28.0)
+    empty_change = build_change_snapshot(
+        metric="gross_margin",
+        current_fact=ValidatedFact(
+            metric="gross_margin",
+            value=32.0,
+            as_of="2026-09-10",
+            subject="NVDA",
+            refs=(),
+            synthetic=True,
+        ),
+        previous_fact=ValidatedFact(
+            metric="gross_margin",
+            value=40.0,
+            as_of="2026-09-09",
+            subject="NVDA",
+            refs=(),
+            synthetic=True,
+        ),
+        comparison_window="1d",
+        materiality_rule=MaterialityRule(abs_delta=2.0),
+        synthetic=True,
+    )
+    assert empty_change.materiality == "material"
+    assert empty_change.fact_refs == ()
+    from_change = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("无来源变化", based_on=(empty_change.id,)),),
+        bear_drivers=(Driver("有来源成本", based_on=(opposite.id,)),),
+        key_disagreement="来源",
+        invalidation="来源失效",
+        changes=(empty_change, opposite),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert from_change.status == "incomplete"
+    assert from_change.code == "missing_provenance"
+
+    empty_gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        latest_consensus=_eps(1.28, "2026-08-11", subject="NVDA", fact_ref=None),
+        actual=_eps(1.30, "2026-08-12", source="company", subject="NVDA", fact_ref=None),
+        synthetic=True,
+    )
+    assert empty_gap.status == "ok"
+    assert empty_gap.fact_refs == ()
+    from_gap = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("无来源预期", based_on=(empty_gap.id,)),),
+        bear_drivers=(Driver("有来源成本", based_on=(opposite.id,)),),
+        key_disagreement="来源",
+        invalidation="来源失效",
+        changes=(opposite,),
+        expectations=(empty_gap,),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert from_gap.status == "incomplete"
+    assert from_gap.code == "missing_provenance"
+
+    forged = _forged_valid_impact("NVDA")
+    from_impact = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("伪造因果", based_on=(forged.id,)),),
+        bear_drivers=(Driver("有来源成本", based_on=(opposite.id,)),),
+        key_disagreement="来源",
+        invalidation="来源失效",
+        changes=(opposite,),
+        impacts=(forged,),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert from_impact.status == "incomplete"
+    assert from_impact.code == "missing_provenance"
+
+
+# ---------------------------------------------------------------------------
+# AE / AF (P0-2)
+# ---------------------------------------------------------------------------
+
+def test_AE_same_period_eps_and_price_ids_differ_by_subject():
+    aapl_eps = _company_chg("AAPL", "eps", previous=1.00, current=1.20)
+    nvda_eps = _company_chg("NVDA", "eps", previous=1.00, current=1.20)
+    assert aapl_eps.id != nvda_eps.id
+    assert "AAPL" in aapl_eps.id
+    assert "NVDA" in nvda_eps.id
+    aapl_px = _price_change("AAPL", 100.0, 102.0)
+    nvda_px = _price_change("NVDA", 100.0, 102.0)
+    assert aapl_px.id != nvda_px.id
+    assert "AAPL" in aapl_px.id
+    assert "NVDA" in nvda_px.id
+
+
+def test_AF_duplicate_evidence_id_makes_thesis_incomplete():
+    aapl = _forced_company_change("AAPL", change_id="dup")
+    nvda = _forced_company_change("NVDA", change_id="dup")
+    assert aapl.id == nvda.id
+    assert aapl != nvda
+    thesis = build_thesis_snapshot(
+        symbol="AAPL",
+        bull_drivers=(Driver("AAPL", based_on=(aapl.id,)),),
+        bear_drivers=(Driver("NVDA 被写成同一 ID", based_on=(nvda.id,)),),
+        key_disagreement="ID 碰撞",
+        invalidation="ID 碰撞失效",
+        changes=(aapl, nvda),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert thesis.status == "incomplete"
+    assert thesis.code == "duplicate_evidence_id"
+
+
+# ---------------------------------------------------------------------------
+# AG / AH (P0-3)
+# ---------------------------------------------------------------------------
+
+def test_AG_cannot_relabel_aapl_evidence_as_nvda():
+    aapl_curr = ValidatedFact(
+        metric="eps",
+        value=1.30,
+        as_of="2026-09-10",
+        subject="AAPL",
+        refs=(_ref("synthetic_series", "aapl-eps-curr"),),
+        synthetic=True,
+    )
+    aapl_prev = ValidatedFact(
+        metric="eps",
+        value=1.10,
+        as_of="2026-09-09",
+        subject="AAPL",
+        refs=(_ref("synthetic_series", "aapl-eps-prev"),),
+        synthetic=True,
+    )
+    with pytest.raises(FactValidationError):
+        build_change_snapshot(
+            metric="eps",
+            current_fact=aapl_curr,
+            previous_fact=aapl_prev,
+            comparison_window="1d",
+            materiality_rule=MaterialityRule(abs_delta=0.05),
+            subject="NVDA",
+            synthetic=True,
+        )
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        latest_consensus=_eps(1.28, "2026-08-11", subject="AAPL"),
+        actual=_eps(1.30, "2026-08-12", source="company", subject="AAPL"),
+        subject="NVDA",
+        synthetic=True,
+    )
+    assert gap.status == "conflict"
+    assert gap.code == "identity_override"
+
+
+def test_AH_mixed_input_subjects_are_conflict():
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        latest_consensus=_eps(1.28, "2026-08-11", subject="AAPL"),
+        actual=_eps(1.30, "2026-08-12", source="company", subject="NVDA"),
+        synthetic=True,
+    )
+    assert gap.status == "conflict"
+    assert gap.code == "subject_mismatch"
+    with pytest.raises(FactValidationError):
+        build_change_snapshot(
+            metric="eps",
+            current_fact=ValidatedFact(
+                metric="eps",
+                value=1.30,
+                as_of="2026-09-10",
+                subject="AAPL",
+                synthetic=True,
+            ),
+            previous_fact=ValidatedFact(
+                metric="eps",
+                value=1.10,
+                as_of="2026-09-09",
+                subject="NVDA",
+                synthetic=True,
+            ),
+            synthetic=True,
+        )
+
+
+# ---------------------------------------------------------------------------
+# AI / AJ (P0-4)
+# ---------------------------------------------------------------------------
+
+def test_AI_forged_confirmed_empty_used_is_not_valid():
+    with pytest.raises(FactValidationError):
+        MarketConfirmation(
+            path="rates_tightening",
+            status="confirmed",
+            reason="forged",
+            used=(),
+        )
+    cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
+    empty = assess_market_confirmation(path="rates_tightening", series=(), synthetic=True)
+    assert empty.status != "confirmed"
+    impact = build_causal_impact(
+        cause=cpi,
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(target="NVDA", target_kind="company", channel=CHANNEL_DURATION),
+        market_confirmation=empty,
+        synthetic=True,
+    )
+    assert impact.status != "valid"
+    unconfirmed = MarketConfirmation(
+        path="rates_tightening",
+        status="unconfirmed",
+        reason=UNCONFIRMED,
+        used=(),
+    )
+    still_blocked = build_causal_impact(
+        cause=cpi,
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(target="NVDA", target_kind="company", channel=CHANNEL_DURATION),
+        market_confirmation=unconfirmed,
+        synthetic=True,
+    )
+    assert still_blocked.status != "valid"
+
+
+def test_AJ_duplicate_missing_refs_or_wrong_direction_used_cannot_confirm():
+    us2y_a = _chg("us2y", 4.00, 4.12, rule=YIELD_RULE)
+    us2y_b = _chg("us2y", 4.00, 4.15, rule=YIELD_RULE)
+    real_rate = _chg("real_rate", 1.50, 1.62, rule=YIELD_RULE)
+    with pytest.raises(FactValidationError):
+        MarketConfirmation(
+            path="rates_tightening",
+            status="confirmed",
+            reason="duplicate channel",
+            used=(us2y_a, us2y_b),
+        )
+    no_refs = _chg("us2y", 4.00, 4.12, rule=YIELD_RULE, fact_refs=())
+    with pytest.raises(FactValidationError):
+        MarketConfirmation(
+            path="rates_tightening",
+            status="confirmed",
+            reason="missing refs",
+            used=(no_refs, real_rate),
+        )
+    us2y_down = _chg("us2y", 4.12, 4.00, rule=YIELD_RULE)
+    with pytest.raises(FactValidationError):
+        MarketConfirmation(
+            path="rates_tightening",
+            status="confirmed",
+            reason="wrong direction",
+            used=(us2y_down, real_rate),
+        )
+    assert assess_market_confirmation(
+        path="rates_tightening",
+        series=(no_refs, real_rate),
+        synthetic=True,
+    ).status != "confirmed"
+    assert assess_market_confirmation(
+        path="rates_tightening",
+        series=(us2y_down, real_rate),
+        synthetic=True,
+    ).status != "confirmed"
+    cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
+    impact = build_causal_impact(
+        cause=cpi,
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(target="NVDA", target_kind="company", channel=CHANNEL_DURATION),
+        market_confirmation=assess_market_confirmation(
+            path="rates_tightening",
+            series=(no_refs, real_rate),
+            synthetic=True,
+        ),
+        synthetic=True,
+    )
+    assert impact.status != "valid"

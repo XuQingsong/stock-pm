@@ -7,34 +7,18 @@ from typing import Any, Iterable
 
 from .facts import ValidatedBar, ValidatedFact, is_price_metric
 from .numbers import as_number, pct_delta, round_pct, signed_delta
-from .types import SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL, FactRef, MaterialityRule
+from .types import (
+    SCOPE_GLOBAL,
+    FactRef,
+    FactValidationError,
+    MaterialityRule,
+    infer_scope,
+    make_evidence_id,
+    normalize_subject,
+)
 
 
 NO_MATERIAL_CHANGE = "今日无重大变化"
-
-GLOBAL_METRICS = frozenset(
-    {
-        "cpi",
-        "core_cpi",
-        "pce",
-        "core_pce",
-        "inflation",
-        "us2y",
-        "us_2y",
-        "real_rate",
-        "real_rates",
-        "cut_odds",
-        "vix",
-        "wti",
-        "brent",
-        "oil",
-        "crude",
-        "geopolitics_headline",
-    }
-)
-SYMBOL_METRICS = frozenset(
-    {"close", "open", "high", "low", "price", "last", "eps", "revenue", "pe", "opex", "gross_margin"}
-)
 
 
 @dataclass(frozen=True)
@@ -61,17 +45,6 @@ class ChangeSnapshot:
         from .types import to_dict
 
         return to_dict(self)
-
-
-def infer_scope(metric: str, scope: str | None = None) -> str:
-    if scope in {SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL}:
-        return scope
-    key = (metric or "").strip().lower()
-    if key in GLOBAL_METRICS:
-        return SCOPE_GLOBAL
-    if key in SYMBOL_METRICS or is_price_metric(key):
-        return SCOPE_SYMBOL
-    return SCOPE_GLOBAL
 
 
 def _direction(delta: float | None, *, has_baseline: bool) -> str:
@@ -122,6 +95,24 @@ def _require_bar(bar: Any, *, role: str) -> ValidatedBar:
     return bar
 
 
+def _identity_of(obj: ValidatedBar | ValidatedFact | None) -> tuple[str, str] | None:
+    if obj is None:
+        return None
+    scope = obj.scope or infer_scope(getattr(obj, "metric", "close"))
+    subject = normalize_subject(scope, obj.subject)
+    if not subject:
+        raise FactValidationError("input fact/bar is missing subject")
+    return scope, subject
+
+
+def _reject_relabel(derived: tuple[str, str], scope: str | None, subject: str | None) -> None:
+    derived_scope, derived_subject = derived
+    if scope is not None and scope != derived_scope:
+        raise FactValidationError("cannot relabel Change scope from builder arguments")
+    if subject is not None and normalize_subject(derived_scope, subject) != derived_subject:
+        raise FactValidationError("cannot relabel Change subject from builder arguments")
+
+
 def build_change_snapshot(
     *,
     metric: str,
@@ -143,16 +134,19 @@ def build_change_snapshot(
     synthetic: bool = True,
 ) -> ChangeSnapshot:
     refs: list[FactRef] = list(fact_refs or ())
+    identities: list[tuple[str, str]] = []
     if is_price_metric(metric):
         current = _require_bar(current_bar, role="current_bar")
         current_value = current.price_for(metric)
         current_as_of = current.as_of or current_as_of
         refs.extend(current.refs)
+        identities.append(_identity_of(current))  # type: ignore[arg-type]
         if previous_bar is not None:
             previous = _require_bar(previous_bar, role="previous_bar")
             previous_value = previous.price_for(metric)
             previous_as_of = previous.as_of or previous_as_of
             refs.extend(previous.refs)
+            identities.append(_identity_of(previous))  # type: ignore[arg-type]
         elif previous_value is not None:
             raise TypeError(
                 "price Change previous baseline must be ValidatedBar; "
@@ -162,16 +156,38 @@ def build_change_snapshot(
         if current_fact is not None:
             if not isinstance(current_fact, ValidatedFact):
                 raise TypeError("current_fact must be ValidatedFact")
+            if current_fact.metric != metric:
+                raise FactValidationError("ValidatedFact metric does not match Change metric")
             current_value = current_fact.value
             current_as_of = current_fact.as_of or current_as_of
             unit = current_fact.unit if unit is None else unit
             refs.extend(current_fact.refs)
+            identities.append(_identity_of(current_fact))  # type: ignore[arg-type]
         if previous_fact is not None:
             if not isinstance(previous_fact, ValidatedFact):
                 raise TypeError("previous_fact must be ValidatedFact")
+            if previous_fact.metric != metric:
+                raise FactValidationError("ValidatedFact metric does not match Change metric")
             previous_value = previous_fact.value
             previous_as_of = previous_fact.as_of or previous_as_of
             refs.extend(previous_fact.refs)
+            identities.append(_identity_of(previous_fact))  # type: ignore[arg-type]
+
+    if identities:
+        unique = set(identities)
+        if len(unique) > 1:
+            raise FactValidationError("previous/current subject or scope mismatch")
+        derived_scope, derived_subject = identities[0]
+        _reject_relabel((derived_scope, derived_subject), scope, subject)
+    else:
+        derived_scope = infer_scope(metric)
+        if derived_scope != SCOPE_GLOBAL:
+            raise FactValidationError("symbol-scoped Change requires ValidatedFact/ValidatedBar identity")
+        derived_subject = "global"
+        if scope is not None and scope != derived_scope:
+            raise FactValidationError("cannot relabel Change scope from builder arguments")
+        if subject is not None and normalize_subject(derived_scope, subject) != derived_subject:
+            raise FactValidationError("cannot relabel Change subject from builder arguments")
 
     current_n = as_number(current_value)
     previous_n = as_number(previous_value)
@@ -180,8 +196,9 @@ def build_change_snapshot(
     rel = round_pct(pct_delta(current_n, previous_n))
     direction = _direction(delta, has_baseline=has_baseline)
     materiality = _is_material(delta, rel, materiality_rule)
-    ident = change_id or f"chg|{metric}|{current_as_of or ''}|{previous_as_of or ''}"
-    resolved_scope = infer_scope(metric, scope)
+    ident = change_id or make_evidence_id(
+        "chg", derived_scope, derived_subject, metric, current_as_of or "", previous_as_of or ""
+    )
     return ChangeSnapshot(
         id=ident,
         metric=metric,
@@ -194,10 +211,10 @@ def build_change_snapshot(
         comparison_window=comparison_window,
         direction=direction,
         materiality=materiality,
-        fact_refs=tuple(refs),
+        fact_refs=tuple(dict.fromkeys(refs)),
         summary=_summary(direction, materiality, has_baseline=has_baseline),
         unit=unit,
-        scope=resolved_scope,
-        subject=subject,
+        scope=derived_scope,
+        subject=derived_subject,
         synthetic=synthetic,
     )

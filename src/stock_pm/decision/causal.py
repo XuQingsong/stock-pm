@@ -10,7 +10,7 @@ from stock_pm.impact import THEME_NAMES
 
 from .change import ChangeSnapshot
 from .timeparse import as_of_span, parse_as_of
-from .types import FactRef
+from .types import FactRef, FactValidationError, has_provenance, make_evidence_id
 
 
 RATES_DISCOUNT_MECHANISM = "inflation_to_rates_to_discount"
@@ -101,6 +101,13 @@ class MarketConfirmation:
     used: tuple[ChangeSnapshot, ...] = ()
     code: str = ""
 
+    def __post_init__(self) -> None:
+        if self.status != "confirmed":
+            return
+        error = rates_confirmation_error(self.path, self.used)
+        if error:
+            raise FactValidationError(f"MarketConfirmation confirmed is invalid: {error}")
+
 
 @dataclass(frozen=True)
 class CausalImpact:
@@ -150,6 +157,9 @@ def _has_as_of(row: ChangeSnapshot) -> bool:
 
 
 def _as_of_cluster_ok(rows: Iterable[ChangeSnapshot], cause: ChangeSnapshot | None = None) -> bool:
+    rows = tuple(rows)
+    if not rows:
+        return False
     stamps = [row.current_as_of for row in rows]
     if cause is not None:
         stamps.append(cause.current_as_of)
@@ -157,6 +167,34 @@ def _as_of_cluster_ok(rows: Iterable[ChangeSnapshot], cause: ChangeSnapshot | No
     if span is None:
         return False
     return span <= CONFIRMATION_AS_OF_TOLERANCE
+
+
+def rates_confirmation_error(path: str, used: Iterable[ChangeSnapshot]) -> str | None:
+    if path != "rates_tightening":
+        return "forged_confirmation"
+    rows = tuple(used)
+    if not rows:
+        return "forged_confirmation"
+    channels = [canonical_metric(row.metric) for row in rows]
+    if len(channels) != len(set(channels)):
+        return "duplicate_channel"
+    if len(set(channels)) < 2:
+        return "forged_confirmation"
+    if any(canonical_metric(row.metric) not in RATES_CONFIRM_METRICS for row in rows):
+        return "forged_confirmation"
+    if any(row.materiality != "material" for row in rows):
+        return "forged_confirmation"
+    if any(not _tightening_sign(row.metric, row.direction) for row in rows):
+        return "confirmation_direction"
+    if any(not has_provenance(row.fact_refs) for row in rows):
+        return "missing_provenance"
+    if any(not _has_as_of(row) for row in rows):
+        return "missing_as_of"
+    if not _windows_consistent(rows):
+        return "window_mismatch"
+    if not _as_of_cluster_ok(rows):
+        return "as_of_mismatch"
+    return None
 
 
 def assess_market_confirmation(
@@ -183,7 +221,11 @@ def assess_market_confirmation(
             for row in unique
             if row.materiality == "material" and _tightening_sign(row.metric, row.direction)
         ]
-        needed = [row for row in confirming if canonical_metric(row.metric) in RATES_CONFIRM_METRICS]
+        needed = [
+            row
+            for row in confirming
+            if canonical_metric(row.metric) in RATES_CONFIRM_METRICS and has_provenance(row.fact_refs)
+        ]
         if any(not _has_as_of(row) for row in needed):
             return MarketConfirmation(
                 path=path,
@@ -384,8 +426,14 @@ def build_causal_impact(
         path="none", status="insufficient", reason="未评估市场确认", series=(), code="missing_confirmation"
     )
     counters = tuple(counter_evidence or ())
-    ident = impact_id or f"cau|{(cause.metric if cause else 'na')}|{(exposure.target if exposure else 'na')}"
     target = exposure.target if exposure else None
+    ident = impact_id or make_evidence_id(
+        "cau",
+        cause.scope if cause else "na",
+        cause.subject if cause else "na",
+        cause.metric if cause else "na",
+        target or "na",
+    )
 
     def result(**kwargs: Any) -> CausalImpact:
         return _impact(
@@ -487,7 +535,20 @@ def build_causal_impact(
         )
 
     if is_macro_rates or exposure.channel == CHANNEL_DURATION:
-        if confirmation.status != "confirmed":
+        if confirmation.status == "confirmed":
+            used_error = rates_confirmation_error(confirmation.path, confirmation.used)
+            if used_error:
+                return result(
+                    mechanism=mechanism,
+                    direction=None,
+                    horizon=None,
+                    confidence="low",
+                    status="unconfirmed",
+                    reason=UNCONFIRMED,
+                    chain=(),
+                    code=used_error,
+                )
+        else:
             return result(
                 mechanism=mechanism,
                 direction=None,
@@ -531,6 +592,18 @@ def build_causal_impact(
             reason="原因变化未达重大阈值，不得形成 valid CausalImpact",
             chain=(),
             code="immaterial_cause",
+        )
+
+    if not has_provenance(cause.fact_refs):
+        return result(
+            mechanism=mechanism,
+            direction=None,
+            horizon=None,
+            confidence="low",
+            status="insufficient",
+            reason="cause 缺少可追溯 FactRef，不得形成 valid CausalImpact",
+            chain=(),
+            code="missing_provenance",
         )
 
     direction = _direction_for(mechanism, exposure, cause, confirmation)

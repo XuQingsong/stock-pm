@@ -6,10 +6,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from .change import infer_scope
 from .numbers import as_number, pct_delta, round_pct
 from .timeparse import parse_as_of
-from .types import SCOPE_GLOBAL, FactRef
+from .types import (
+    SCOPE_GLOBAL,
+    FactRef,
+    infer_scope,
+    make_evidence_id,
+    normalize_subject,
+)
 
 
 CONSENSUS_ABS_TOLERANCE = 0.01
@@ -27,6 +32,16 @@ class ExpectationPoint:
     analyst_count: int | None = None
     synthetic: bool = True
     fiscal_period: str | None = None
+    scope: str | None = None
+    subject: str | None = None
+
+    def __post_init__(self) -> None:
+        scope = (self.scope or "").strip() or None
+        if scope:
+            object.__setattr__(self, "scope", scope)
+            object.__setattr__(self, "subject", normalize_subject(scope, self.subject))
+        elif self.subject is not None:
+            object.__setattr__(self, "subject", str(self.subject).strip() or None)
 
 
 @dataclass(frozen=True)
@@ -124,6 +139,49 @@ def _point_period(point: ExpectationPoint | None) -> str | None:
         return None
     text = (point.fiscal_period or "").strip()
     return text or None
+
+
+def _point_identity(metric: str, point: ExpectationPoint | None) -> tuple[str, str] | None:
+    if point is None:
+        return None
+    scope = infer_scope(metric, point.scope)
+    subject = normalize_subject(scope, point.subject)
+    if scope != SCOPE_GLOBAL and not subject:
+        return scope, ""
+    return scope, subject or "global"
+
+
+def _resolve_gap_identity(
+    metric: str,
+    actual: ExpectationPoint | None,
+    latest_consensus: ExpectationPoint | None,
+    prior_consensus: ExpectationPoint | None,
+    conflicting_latest: ExpectationPoint | None,
+    scope: str | None,
+    subject: str | None,
+) -> tuple[str, str] | tuple[None, str]:
+    identities: list[tuple[str, str]] = []
+    for point in (actual, latest_consensus, prior_consensus, conflicting_latest):
+        ident = _point_identity(metric, point)
+        if ident is not None:
+            identities.append(ident)
+    if any(item[1] == "" for item in identities):
+        return None, "missing_subject"
+    unique = set(identities)
+    if len(unique) > 1:
+        return None, "subject_mismatch"
+    if unique:
+        derived_scope, derived_subject = next(iter(unique))
+    else:
+        derived_scope = infer_scope(metric, scope)
+        derived_subject = normalize_subject(derived_scope, subject) or ("global" if derived_scope == SCOPE_GLOBAL else "")
+        if derived_scope != SCOPE_GLOBAL and not derived_subject:
+            return None, "missing_subject"
+    if scope is not None and scope != derived_scope:
+        return None, "identity_override"
+    if subject is not None and normalize_subject(derived_scope, subject) != derived_subject:
+        return None, "identity_override"
+    return derived_scope, derived_subject
 
 
 def _collect_refs(*points: ExpectationPoint | None) -> tuple[FactRef, ...]:
@@ -248,8 +306,35 @@ def build_expectation_gap(
     synthetic: bool = True,
 ) -> ExpectationGap:
     refs = _collect_refs(actual, latest_consensus, prior_consensus, conflicting_latest)
-    ident = gap_id or f"exp|{metric}|{fiscal_period or ''}"
-    resolved_scope = infer_scope(metric, scope)
+    identity = _resolve_gap_identity(
+        metric, actual, latest_consensus, prior_consensus, conflicting_latest, scope, subject
+    )
+    if identity[0] is None:
+        code = str(identity[1])
+        ident = gap_id or f"exp|{metric}|{fiscal_period or ''}"
+        reason = {
+            "missing_subject": "symbol scope 缺 subject，不能比较",
+            "subject_mismatch": "输入点 subject/scope 不一致，禁止比较",
+            "identity_override": "禁止用 builder 参数覆盖输入证据身份",
+        }.get(code, code)
+        status = "conflict" if code in {"subject_mismatch", "identity_override"} else "insufficient"
+        return _blocked_gap(
+            ident=ident,
+            metric=metric,
+            fiscal_period=fiscal_period,
+            actual=actual,
+            latest_consensus=latest_consensus,
+            prior_consensus=prior_consensus,
+            refs=refs,
+            status=status,
+            reason=reason,
+            code=code,
+            scope=infer_scope(metric, scope),
+            subject=subject,
+            synthetic=synthetic,
+        )
+    derived_scope, derived_subject = identity
+    ident = gap_id or make_evidence_id("exp", derived_scope, derived_subject, metric, fiscal_period or "")
 
     def blocked(status: str, code: str, reason: str) -> ExpectationGap:
         return _blocked_gap(
@@ -263,8 +348,8 @@ def build_expectation_gap(
             status=status,
             reason=reason,
             code=code,
-            scope=resolved_scope,
-            subject=subject,
+            scope=derived_scope,
+            subject=derived_subject,
             synthetic=synthetic,
         )
 
@@ -355,7 +440,7 @@ def build_expectation_gap(
         reason=reason,
         fact_refs=refs,
         code=code,
-        scope=resolved_scope,
-        subject=subject,
+        scope=derived_scope,
+        subject=derived_subject,
         synthetic=synthetic,
     )

@@ -6,9 +6,17 @@ from dataclasses import dataclass
 from typing import Any
 
 from .numbers import as_number, is_finite_number
-from .types import FactRef, FactValidationError
+from .types import (
+    PRICE_METRICS,
+    SCOPE_GLOBAL,
+    SCOPE_SYMBOL,
+    FactRef,
+    FactValidationError,
+    infer_scope,
+    normalize_subject,
+)
 
-PRICE_METRICS = frozenset({"close", "open", "high", "low", "price", "last"})
+PRICE_METRICS = PRICE_METRICS
 
 
 @dataclass(frozen=True)
@@ -36,6 +44,17 @@ def ohlc_constraint_errors(open_px: Any, high: Any, low: Any, close: Any) -> lis
     return errors
 
 
+def _require_identity(scope: str, subject: str | None, *, label: str) -> str:
+    resolved = normalize_subject(scope, subject)
+    if scope == SCOPE_SYMBOL and not resolved:
+        raise FactValidationError(f"{label} with symbol scope requires subject")
+    if scope == SCOPE_GLOBAL:
+        return "global"
+    if not resolved:
+        raise FactValidationError(f"{label} requires subject")
+    return resolved
+
+
 @dataclass(frozen=True)
 class ValidatedBar:
     """OHLC that has already passed inequality checks. Required for price Change."""
@@ -47,6 +66,8 @@ class ValidatedBar:
     close: float
     volume: float | None = None
     refs: tuple[FactRef, ...] = ()
+    scope: str = SCOPE_SYMBOL
+    subject: str | None = None
     synthetic: bool = True
 
     def __post_init__(self) -> None:
@@ -55,6 +76,8 @@ class ValidatedBar:
             raise FactValidationError("OHLC failed fact validation: " + ", ".join(errors))
         if self.volume is not None and not is_finite_number(self.volume):
             raise FactValidationError("OHLC failed fact validation: volume_non_finite")
+        resolved = _require_identity(self.scope, self.subject, label="ValidatedBar")
+        object.__setattr__(self, "subject", resolved)
 
     def price_for(self, metric: str) -> float:
         key = (metric or "").strip().lower()
@@ -78,6 +101,8 @@ class ValidatedFact:
     as_of: str | None
     unit: str | None = None
     refs: tuple[FactRef, ...] = ()
+    scope: str | None = None
+    subject: str | None = None
     synthetic: bool = True
 
     def __post_init__(self) -> None:
@@ -87,6 +112,10 @@ class ValidatedFact:
             raise FactValidationError(f"numeric fact {self.metric!r} is missing or non-finite")
         if not (self.as_of or "").strip():
             raise FactValidationError(f"numeric fact {self.metric!r} requires as_of")
+        scope = infer_scope(self.metric, self.scope)
+        object.__setattr__(self, "scope", scope)
+        resolved = _require_identity(scope, self.subject, label="ValidatedFact")
+        object.__setattr__(self, "subject", resolved)
 
 
 def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
@@ -103,6 +132,8 @@ def require_valid_bar(
     bar: dict[str, Any] | None,
     *,
     refs: tuple[FactRef, ...] | None = None,
+    scope: str | None = None,
+    subject: str | None = None,
 ) -> ValidatedBar:
     check = validate_ohlc(bar)
     if not check.ok:
@@ -118,6 +149,8 @@ def require_valid_bar(
     as_of = row.get("as_of") or row.get("date") or row.get("bar_date")
     as_of_text = None if as_of is None else str(as_of)
     assert open_px is not None and high is not None and low is not None and close is not None
+    resolved_scope = scope or row.get("scope") or SCOPE_SYMBOL
+    resolved_subject = subject or row.get("subject") or row.get("symbol")
     return ValidatedBar(
         as_of=as_of_text,
         open=open_px,
@@ -126,6 +159,8 @@ def require_valid_bar(
         close=close,
         volume=volume,
         refs=refs or (),
+        scope=resolved_scope,
+        subject=resolved_subject,
         synthetic=bool(row.get("synthetic", True)),
     )
 
@@ -137,6 +172,8 @@ def require_valid_fact(
     as_of: str | None,
     unit: str | None = None,
     refs: tuple[FactRef, ...] | None = None,
+    scope: str | None = None,
+    subject: str | None = None,
     synthetic: bool = True,
 ) -> ValidatedFact:
     number = as_number(value)
@@ -148,6 +185,8 @@ def require_valid_fact(
         as_of=as_of,
         unit=unit,
         refs=refs or (),
+        scope=scope,
+        subject=subject,
         synthetic=synthetic,
     )
 
