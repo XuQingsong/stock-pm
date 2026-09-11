@@ -16,6 +16,21 @@ from stock_pm.decision.preview import (
 )
 from stock_pm.decision.thesis import Driver, build_thesis_snapshot
 from stock_pm.decision.viewmodel import CHAIN_STEPS
+from stock_pm.decision.grading import PRICE_MOVE_CONCLUSIONS
+
+
+def _what_changed(view):
+    return next(step for step in view["chain"] if step["id"] == "what_changed")
+
+
+def _tension(view):
+    return next(step for step in view["chain"] if step["id"] == "tension")
+
+
+def _assert_no_price_move_in_can_determine(view):
+    text = view["overall"].get("can_determine") or ""
+    for phrase in PRICE_MOVE_CONCLUSIONS:
+        assert phrase not in text, (phrase, text)
 
 
 def _g(view, chain_id):
@@ -295,3 +310,164 @@ def test_graded_previews_keep_internal_chain_order():
         else:
             assert view["overall"]["level"] == "L3"
             assert view["can_form_direction"] is True
+
+
+def _valid_bar(as_of: str, close: float) -> dict:
+    return {
+        "symbol": "NVDA",
+        "open_price": close,
+        "high_price": close + 2,
+        "low_price": close - 1,
+        "close_price": close,
+        "volume": 10,
+        "bar_time": as_of,
+        "source": "alpaca_sip",
+    }
+
+
+def _invalid_ohlc_bar(as_of: str) -> dict:
+    return {
+        "symbol": "NVDA",
+        "open_price": 120,
+        "high_price": 110,
+        "low_price": 119,
+        "close_price": 122,
+        "volume": 10,
+        "bar_time": as_of,
+        "source": "alpaca_sip",
+    }
+
+
+def _shared_non_price_bundle(bars: list[dict]) -> dict:
+    return {
+        "symbol": "NVDA",
+        "watch": {"symbol": "NVDA", "themes": ["high_valuation_growth"], "rate_sensitivity": "high"},
+        "bars": bars,
+        "earnings": [
+            {
+                "eps_actual": 0.81,
+                "eps_estimate": 0.74,
+                "fiscal_period": "FY2026Q2",
+                "report_date": "2026-08-28",
+                "source": "fmp",
+            }
+        ],
+        "macro_events": [
+            {
+                "event_type": "nfp",
+                "event_time": "2026-09-05T12:30:00+00:00",
+                "actual": 220,
+                "prior": 140,
+                "source": "FRED",
+                "name": "NFP",
+            }
+        ],
+        "news": [],
+        "synthetic": False,
+        "_skip_previous": True,
+    }
+
+
+def test_invalid_ohlc_forces_price_l0_even_when_other_bars_are_valid():
+    good_bars = [
+        _valid_bar("2026-09-10T20:00:00+00:00", 122),
+        _valid_bar("2026-09-09T20:00:00+00:00", 116),
+    ]
+    mixed_bars = [_invalid_ohlc_bar("2026-09-11T20:00:00+00:00"), *good_bars]
+    good = assemble_from_bundle(_shared_non_price_bundle(good_bars))
+    bad = assemble_from_bundle(_shared_non_price_bundle(mixed_bars))
+
+    assert _g(good, "price")["level"] == "L1"
+    assert _g(bad, "price")["level"] == "L0"
+    assert _g(bad, "price")["validated_conclusion"].startswith("价格核心事实无效")
+    for chain_id in ("earnings", "macro_rates", "risk_sentiment"):
+        assert _g(bad, chain_id)["level"] == _g(good, chain_id)["level"], chain_id
+    _assert_no_price_move_in_can_determine(bad)
+    ohlc = next(row for row in bad["gaps"] if row["code"] == "invalid_ohlc")
+    assert ohlc["affects_chain"] == "price"
+    assert ohlc["affects_stage"] == "facts"
+    assert not any(
+        item.get("metric") in {"close", "open", "high", "low", "price"}
+        for item in _what_changed(bad)["items"]
+    )
+    tension = _tension(bad)
+    assert tension["status"] == "insufficient"
+    assert (tension.get("tension") or {}).get("price_change") in {None, "insufficient"}
+
+
+def test_invalid_ohlc_overrides_injected_price_change_and_keeps_other_chains():
+    price = _price("NVDA", 100.0, 101.0)
+    eps = _eps_gap("NVDA")
+    thesis = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("EPS 相对最新共识为正", based_on=(eps.id,)),),
+        bear_drivers=(Driver("估值仍不便宜", based_on=(eps.id,)),),
+        key_disagreement="盈利能否消化估值",
+        invalidation="盈利下修",
+        changes=(price,),
+        expectations=(eps,),
+        generated_at="2026-09-10T16:00:00+00:00",
+        synthetic=True,
+    )
+    clean = assemble_from_kernel(
+        symbol="NVDA",
+        changes=[price],
+        expectations=[eps],
+        confirmation=None,
+        impacts=[],
+        thesis=thesis,
+        previous_thesis=None,
+        data_gaps=[],
+        facts=[],
+        synthetic=True,
+        as_of="2026-09-10",
+    )
+    tainted = assemble_from_kernel(
+        symbol="NVDA",
+        changes=[price],
+        expectations=[eps],
+        confirmation=None,
+        impacts=[],
+        thesis=thesis,
+        previous_thesis=None,
+        data_gaps=[{"code": "invalid_ohlc", "text": "价格 OHLC 未通过事实校验，不能进入 Change"}],
+        facts=[],
+        synthetic=True,
+        as_of="2026-09-10",
+    )
+    assert _g(clean, "price")["level"] == "L1"
+    assert _g(tainted, "price")["level"] == "L0"
+    assert _g(tainted, "earnings")["level"] == _g(clean, "earnings")["level"] == "L3"
+    assert _g(tainted, "macro_rates")["level"] == _g(clean, "macro_rates")["level"]
+    assert _g(tainted, "risk_sentiment")["level"] == _g(clean, "risk_sentiment")["level"]
+    _assert_no_price_move_in_can_determine(tainted)
+    assert not any(
+        item.get("metric") in {"close", "open", "high", "low", "price"}
+        for item in _what_changed(tainted)["items"]
+    )
+
+
+def test_nfp_without_cpi_states_nfp_fact_not_rates_chain():
+    view = assemble_from_bundle(
+        _shared_non_price_bundle(
+            [
+                _valid_bar("2026-09-10T20:00:00+00:00", 122),
+                _valid_bar("2026-09-09T20:00:00+00:00", 116),
+            ]
+        )
+    )
+    macro = _g(view, "macro_rates")
+    text = macro["validated_conclusion"]
+    assert macro["level"] == "L1"
+    assert "NFP" in text
+    assert "current=220" in text
+    assert "prior=140" in text
+    assert "delta=80" in text
+    assert "as_of=" in text
+    assert "上升且达到重要性阈值" not in text
+    assert "今日无重大变化" not in text
+    assert "通胀/利率链已成立" in text and "不能" in text
+    assert macro["source"] == "FRED"
+    codes = {row["code"] for row in view["gaps"]}
+    assert "missing_cpi" in codes
+    assert view["overall"]["level"] == "L1"

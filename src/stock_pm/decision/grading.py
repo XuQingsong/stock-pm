@@ -14,7 +14,7 @@ from .causal import (
     canonical_metric,
     mechanism_requires_expectation,
 )
-from .change import ChangeSnapshot
+from .change import ChangeSnapshot, NO_MATERIAL_CHANGE
 from .expectation import ExpectationGap
 from .tension import PriceExpectationTension
 from .types import PRICE_METRICS
@@ -54,6 +54,30 @@ GAP_EFFECTS: dict[str, dict[str, str]] = {
     "window_mismatch": {"chain": "macro_rates", "stage": "what_changed"},
     "below_materiality": {"chain": "macro_rates", "stage": "change"},
 }
+
+FACT_METRIC_LABELS = {
+    "nfp": "非农就业(NFP)",
+    "cpi": "CPI",
+    "core_cpi": "核心CPI",
+    "pce": "PCE",
+    "core_pce": "核心PCE",
+    "inflation": "通胀",
+    "us2y": "美债2Y",
+    "real_rate": "实际利率",
+    "cut_odds": "降息概率",
+    "fed_funds": "联邦基金利率",
+    "rate_path": "利率路径",
+    "vix": "VIX",
+}
+
+PRICE_MOVE_CONCLUSIONS = (
+    NO_MATERIAL_CHANGE,
+    "上升且达到重要性阈值",
+    "下降且达到重要性阈值",
+    "上升日达到重要性阈值",
+    "价格上升",
+    "价格下降",
+)
 
 NEXT_EVIDENCE = {
     "price": {
@@ -109,6 +133,29 @@ def _has_code(gaps: list[dict[str, Any]], *codes: str) -> bool:
     return any(row.get("code") in wanted for row in gaps)
 
 
+def _fmt_fact_number(value: Any) -> str:
+    if value is None:
+        return "—"
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def _traceable_fact_conclusion(change: ChangeSnapshot) -> str:
+    metric = canonical_metric(change.metric)
+    label = FACT_METRIC_LABELS.get(metric, metric)
+    return (
+        f"{label} 事实：current={_fmt_fact_number(change.current_value)}，"
+        f"prior={_fmt_fact_number(change.previous_value)}，"
+        f"delta={_fmt_fact_number(change.delta)}，"
+        f"as_of={change.current_as_of or '—'}"
+    )
+
+
+def _is_symbol_price(change: ChangeSnapshot) -> bool:
+    return canonical_metric(change.metric) in PRICE_METRICS and change.scope == "symbol"
+
+
 def _primary_ref(obj: Any) -> dict[str, Any] | None:
     refs = list(getattr(obj, "fact_refs", ()) or ())
     if not refs:
@@ -161,12 +208,18 @@ def _grade_price(
     gaps: list[dict[str, Any]],
 ) -> dict[str, Any]:
     blocking = _gaps_for(gaps, "price")
-    prices = [
-        row
-        for row in changes
-        if canonical_metric(row.metric) in PRICE_METRICS and row.scope == "symbol"
-    ]
+    prices = [row for row in changes if _is_symbol_price(row)]
     stages = sorted({row["affects_stage"] for row in blocking})
+    if _has_code(blocking, "invalid_ohlc"):
+        return _chain_payload(
+            chain_id="price",
+            level="L0",
+            scope="fact",
+            conclusion="价格核心事实无效：OHLC 未通过校验，不能输出涨跌或无变化，也不能进入 Change/Tension",
+            direction=None,
+            blocking=blocking,
+            stages=stages or ["facts"],
+        )
     if not prices:
         return _chain_payload(
             chain_id="price",
@@ -322,11 +375,16 @@ def _grade_macro(
         ]
         if other_macro:
             cause = other_macro[0]
+            fact = _traceable_fact_conclusion(cause)
+            if _has_code(blocking, "missing_cpi", "missing_mechanism"):
+                conclusion = f"{fact}。缺 CPI/PCE，不能把该宏观事实写成通胀/利率链已成立"
+            else:
+                conclusion = f"{fact}。缺少通胀原因与后续传导，不能把该事实写成利率链已成立"
             return _chain_payload(
                 chain_id="macro_rates",
                 level="L1",
                 scope="fact",
-                conclusion=cause.summary or "宏观事实变化已成立，但缺少通胀原因与后续传导",
+                conclusion=conclusion,
                 direction=None,
                 blocking=blocking,
                 stages=stages or ["what_changed"],
@@ -381,7 +439,7 @@ def _grade_macro(
         chain_id="macro_rates",
         level="L1",
         scope="fact",
-        conclusion=cause.summary or "宏观事实变化已成立，后续预期/传导不足",
+        conclusion=f"{_traceable_fact_conclusion(cause)}。后续预期/传导不足，不能据此声称利率链已成立",
         direction=None,
         blocking=blocking,
         stages=stages or ["what_changed"],
@@ -450,6 +508,8 @@ def _usable_conclusions(rows: list[dict[str, Any]]) -> list[str]:
     skip = ("缺失", "没有可分析", "核心事实无效", "本链无")
     lines = []
     for row in rows:
+        if row.get("id") == "price" and row.get("level") == "L0":
+            continue
         text = str(row.get("validated_conclusion") or "").strip()
         if not text or any(token in text for token in skip):
             continue

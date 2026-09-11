@@ -24,7 +24,7 @@ from .facts import FactValidationError, ValidatedFact, require_valid_bar
 from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
 from .types import PRICE_METRICS, FactRef, MaterialityRule
-from .grading import GAP_EFFECTS, annotate_gaps, grade_decision
+from .grading import GAP_EFFECTS, annotate_gaps, grade_decision, _is_symbol_price
 from .viewmodel import render_decision_view
 from .what_changed import build_what_changed
 
@@ -213,22 +213,34 @@ def _validated_bar(symbol: str, row: dict[str, Any], *, synthetic: bool):
     return (bar, as_of, source, ref), None
 
 
+def _exclude_price_changes_if_invalid_ohlc(
+    changes: Iterable[ChangeSnapshot],
+    gaps: Iterable[dict[str, Any]],
+) -> list[ChangeSnapshot]:
+    rows = list(changes)
+    if not any(item.get("code") == "invalid_ohlc" for item in gaps):
+        return rows
+    return [row for row in rows if not _is_symbol_price(row)]
+
+
 def _price_changes(symbol: str, bars: list[dict[str, Any]], *, synthetic: bool) -> tuple[list[ChangeSnapshot], list[dict[str, str]], list[dict[str, Any]]]:
     changes: list[ChangeSnapshot] = []
     gaps: list[dict[str, str]] = []
     facts: list[dict[str, Any]] = []
     valid: list[tuple[Any, str, str, Any]] = []
+    seen_codes: set[str] = set()
     for row in bars:
         parsed, gap = _validated_bar(symbol, row, synthetic=synthetic)
         if parsed is None:
-            if gap and not valid:
+            if gap and gap["code"] not in seen_codes:
+                seen_codes.add(gap["code"])
                 gaps.append(gap)
             continue
         valid.append(parsed)
-        if len(valid) >= 2:
-            break
+    if any(row["code"] == "invalid_ohlc" for row in gaps):
+        return [], gaps, []
     if len(valid) < 2:
-        if not any(row["code"] == "invalid_ohlc" for row in gaps):
+        if "missing_price_baseline" not in seen_codes:
             gaps.append(_gap("missing_price_baseline", "数据不足：缺失可比价格序列"))
         return changes, gaps, facts
     current_bar, current_as_of, current_source, current_ref = valid[0]
@@ -543,6 +555,7 @@ def assemble_from_kernel(
     as_of: str | None = None,
     clock_status: str = "ok",
 ) -> dict[str, Any]:
+    changes = _exclude_price_changes_if_invalid_ohlc(changes, data_gaps)
     tension = resolve_price_expectation_tension(changes, expectations, synthetic=synthetic)
     blocked = rates_chain_incomplete(impacts, expectations, tension)
     gaps = list(data_gaps)
