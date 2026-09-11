@@ -28,7 +28,6 @@ from .prediction import (
     STATE_LABELS,
     diagnose_quality_gate,
     has_real_bounds,
-    prediction_therefore,
 )
 from .tape import env_tape_conflict_sentence
 from .ux_copy import is_http_url
@@ -36,6 +35,20 @@ from .ux_copy import is_http_url
 
 NO_STORED_LABEL = "尚未落库判断，未编造方向、时间窗或涨跌数字。"
 ABSTAIN_LABEL = GATE_LABELS[GATE_ANALYSIS_ABSTAIN]
+INTERNAL_MARKERS = ("诱多", "逃跑", "吸筹", "转势", "补涨", "续涨")
+
+
+def public_reason_text(text: str | None) -> str | None:
+    """Keep rule jargon off the default judgment card."""
+    if not text:
+        return None
+    cleaned = str(text)
+    for marker in INTERNAL_MARKERS:
+        cleaned = cleaned.replace(f"{marker}（推断）", "")
+        cleaned = cleaned.replace(f"推断：{marker}", "对照后未形成方向")
+        cleaned = cleaned.replace(marker, "")
+    cleaned = "，".join(part for part in (bit.strip(" ，；") for bit in cleaned.split("，")) if part)
+    return cleaned or None
 
 
 def _as_of(value: Any) -> str | None:
@@ -124,7 +137,9 @@ def _analysis_from(
 ) -> dict | None:
     if not row:
         return None
-    clause = text or row.get("one_liner") or row.get("summary") or row.get("thesis")
+    clause = public_reason_text(
+        text or row.get("one_liner") or row.get("summary") or row.get("thesis")
+    )
     if not clause:
         return None
     return analysis_ref(
@@ -228,7 +243,6 @@ def _judgment_block(pred: dict | None, diagnosed: dict) -> dict:
             f"{window}上沿约{_pct(pred.get('upside_bound_pct'))}"
             f"，下沿约{_pct(pred.get('downside_bound_pct'))}"
         )
-        therefore = prediction_therefore(pred)
         return {
             "kind": "range_hypothesis",
             "kind_label": KIND_LABEL,
@@ -236,7 +250,7 @@ def _judgment_block(pred: dict | None, diagnosed: dict) -> dict:
             "state_label": pred.get("state_label") or STATE_LABELS.get(pred.get("state") or "", ""),
             "as_of_date": pred.get("as_of_date"),
             "id": pred.get("id"),
-            "one_liner": therefore or f"区间假设：{line}。",
+            "one_liner": f"区间假设：{line}。",
             "thesis": pred.get("thesis"),
             "window_start": pred.get("window_start"),
             "window_end": pred.get("window_end"),
@@ -300,10 +314,14 @@ def assemble_judgment(
         based_on=facts_for("price", "earnings", "news", "macro"),
         role="environment",
     )
+    tape_clause = (
+        ((tape or {}).get("volume_price") or {}).get("clause")
+        or (tape or {}).get("one_liner")
+    )
     tape_reason = _analysis_from(
         tape,
         table="tape_analyses",
-        text=(tape or {}).get("one_liner"),
+        text=tape_clause,
         based_on=facts_for("price"),
         role="tape",
     )

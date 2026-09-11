@@ -233,6 +233,11 @@ def test_assemble_judgment_layers_and_missing_row() -> None:
     assert "environment_snapshots" not in {item["ref_table"] for item in payload["facts"]}
     assert payload["invalidation"]
     assert payload["data_snapshot_id"]
+    assert payload["judgment"]["one_liner"].startswith("区间假设：")
+    joined = " ".join(item.get("text") or "" for item in payload["reasons"])
+    for marker in ("诱多", "逃跑", "吸筹", "转势", "补涨", "续涨"):
+        assert marker not in joined
+        assert marker not in (payload["judgment"]["one_liner"] or "")
 
     empty = assemble_judgment(symbol="AAPL", as_of_date="2026-09-04")
     assert empty["judgment"]["prediction_ready"] is False
