@@ -735,8 +735,9 @@ def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
 
 
 def _preview_settings(settings: Settings | None) -> Settings:
-    if settings is not None:
-        return settings
+    # Synthetic scenes explain evidence gaps, not the host process's live keys.
+    # Always use inert placeholders so MISSING stays upstream_empty.
+    _ = settings
     return Settings(
         alpaca_api_key_id="set",
         alpaca_api_secret_key="set",

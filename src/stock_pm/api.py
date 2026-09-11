@@ -394,7 +394,7 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
     key = (preview or "").strip().upper()
     try:
         if key in HEALTH_PREVIEW_LABELS and preview_allowed():
-            return build_health_preview(symbol, key, settings=Settings())
+            return build_health_preview(symbol, key)
         try:
             bundle = database.decision_bundle(symbol)
         except DatabaseError:

@@ -220,6 +220,15 @@ def test_health_preview_scenes_and_chain_order_untouched():
     assert [step["id"] for step in view["chain"]] == [row[0] for row in CHAIN_STEPS]
 
 
+def test_missing_preview_stays_upstream_empty_with_unconfigured_host_settings():
+    health = build_health_preview("NVDA", "MISSING", settings=_unconfigured())
+    assert health["overall"]["status"] == "unavailable"
+    for row in health["datasets"]:
+        assert row["status"] == "missing", row["dataset"]
+        assert row["reason_code"] == REASON_UPSTREAM_EMPTY, row["dataset"]
+        assert row["reason_label"] == "上游无记录"
+
+
 def test_partial_and_missing_and_error_previews():
     partial = build_health_preview("NVDA", "PARTIAL", settings=_configured())
     missing = build_health_preview("NVDA", "MISSING", settings=_configured())
