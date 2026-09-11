@@ -61,6 +61,18 @@ MECHANISM_CONFIRM_PATH = {
     RATES_DISCOUNT_MECHANISM: "rates_tightening",
 }
 
+# Explicit contract: these mechanisms may not skip Expectation / Tension.
+# Oil price → producer/consumer cash flow does not need a rate-path expectation.
+# inflation_to_rates_to_discount is not an exception — it requires a traceable
+# rate-path / cut-odds expectation delta before it can be a directional driver.
+MECHANISMS_REQUIRING_EXPECTATION = frozenset({RATES_DISCOUNT_MECHANISM})
+MECHANISMS_WITHOUT_EXPECTATION = frozenset({OIL_PRODUCER_MECHANISM, OIL_CONSUMER_MECHANISM})
+RATE_PATH_EXPECTATION_METRICS = frozenset({"cut_odds", "us2y", "real_rate", "fed_funds", "rate_path"})
+
+
+def mechanism_requires_expectation(mechanism: str | None) -> bool:
+    return (mechanism or "") in MECHANISMS_REQUIRING_EXPECTATION
+
 
 def canonical_metric(metric: str | None) -> str:
     raw = (metric or "").strip().lower()

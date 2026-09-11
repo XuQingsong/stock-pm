@@ -16,6 +16,7 @@ from .causal import (
     build_causal_impact,
 )
 from .change import build_change_snapshot
+from .expectation import ExpectationPoint, build_expectation_gap
 from .facts import ValidatedFact, require_valid_bar
 from .thesis import Driver, build_thesis_snapshot
 from .types import FactRef, MaterialityRule
@@ -153,7 +154,46 @@ def build_preview(symbol: str, scenario: str) -> dict:
     return _preview_c(symbol)
 
 
+def _rate_path_expectation() -> object:
+    prior_ref = _ref("synthetic_series", "cut_odds-prior", "2026-09-09")
+    latest_ref = _ref("synthetic_series", "cut_odds", "2026-09-10")
+    return build_expectation_gap(
+        metric="cut_odds",
+        fiscal_period="fomc-path-2026-09",
+        prior_consensus=ExpectationPoint(
+            value=42.0,
+            as_of="2026-09-09",
+            source="synthetic",
+            currency=None,
+            basis="unknown",
+            fact_ref=prior_ref,
+            synthetic=True,
+        ),
+        latest_consensus=ExpectationPoint(
+            value=28.0,
+            as_of="2026-09-10",
+            source="synthetic",
+            currency=None,
+            basis="unknown",
+            fact_ref=latest_ref,
+            synthetic=True,
+        ),
+        synthetic=True,
+    )
+
+
 def _preview_a(symbol: str) -> dict:
+    return build_preview_a(symbol)
+
+
+def build_preview_a(
+    symbol: str,
+    *,
+    include_expectation: bool = True,
+    include_price: bool = True,
+    previous_close: float = 100.0,
+    current_close: float = 104.0,
+) -> dict:
     cpi = _macro("cpi", 3.0, 3.5, CPI_RULE)
     confirmation = _rates_confirmation(hot=True)
     impact = build_causal_impact(
@@ -168,43 +208,103 @@ def _preview_a(symbol: str) -> dict:
         market_confirmation=confirmation,
         synthetic=True,
     )
-    price = _price(symbol, 100.0, 104.0)
+    price = _price(symbol, previous_close, current_close) if include_price else None
+    expectation = _rate_path_expectation() if include_expectation else None
     stamp = "2026-09-10T16:00:00+00:00"
+    changes = [cpi] + ([price] if price is not None else [])
+    expectations = [expectation] if expectation is not None else []
     previous = build_thesis_snapshot(
         symbol=symbol,
-        bull_drivers=(Driver("份额叙事仍在", based_on=(price.id,)),),
+        bull_drivers=(Driver("份额叙事仍在", based_on=((price.id,) if price is not None else (cpi.id,))),),
         bear_drivers=(Driver("利率路径转鹰", based_on=(impact.id,)),),
         key_disagreement="增长能否消化估值",
         invalidation="实际利率继续上行",
-        changes=(price, cpi),
+        changes=tuple(changes),
+        expectations=tuple(expectations),
         impacts=(impact,),
         generated_at="2026-09-09T16:00:00+00:00",
         synthetic=True,
     )
     thesis = build_thesis_snapshot(
         symbol=symbol,
-        bull_drivers=(Driver("价格仍强于基本面节奏", based_on=(price.id,)),),
+        bull_drivers=(Driver("价格仍强于基本面节奏", based_on=((price.id,) if price is not None else (cpi.id,))),),
         bear_drivers=(Driver("通胀→利率→折现率，高估值短期承压", based_on=(impact.id,)),),
         key_disagreement="增长能否消化折现率上行",
         invalidation="实际利率回落或估值压缩结束",
-        changes=(price, cpi),
+        changes=tuple(changes),
+        expectations=tuple(expectations),
         impacts=(impact,),
         generated_at=stamp,
         synthetic=True,
     )
+    gaps = [
+        {
+            "code": "missing_prior_consensus",
+            "text": "本预览不构造财报 EPS 共识；利率路径预期见 Expectation Change",
+        }
+    ]
+    if not include_expectation:
+        gaps = [
+            {
+                "code": "missing_rate_path_expectation",
+                "text": "删除利率路径预期后，不能把通胀变化写成有效空头驱动",
+            }
+        ]
+    facts = [
+        {
+            "kind": "macro",
+            "metric": "cpi",
+            "as_of": cpi.current_as_of,
+            "source": "synthetic",
+            "ref": {
+                "ref_table": "synthetic_series",
+                "ref_id": "cpi",
+                "as_of": cpi.current_as_of,
+                "source": "synthetic",
+            },
+        },
+    ]
+    if price is not None:
+        facts.append(
+            {
+                "kind": "bar",
+                "metric": "close",
+                "subject": symbol,
+                "as_of": price.current_as_of,
+                "source": "synthetic",
+                "ref": {
+                    "ref_table": "daily_price_bars",
+                    "ref_id": f"{symbol}-curr",
+                    "as_of": price.current_as_of,
+                    "source": "synthetic",
+                },
+            }
+        )
+    if expectation is not None:
+        facts.append(
+            {
+                "kind": "expectation",
+                "metric": "cut_odds",
+                "as_of": expectation.latest_consensus_as_of,
+                "source": "synthetic",
+                "ref": {
+                    "ref_table": "synthetic_series",
+                    "ref_id": "cut_odds",
+                    "as_of": expectation.latest_consensus_as_of,
+                    "source": "synthetic",
+                },
+            }
+        )
     view = assemble_from_kernel(
         symbol=symbol,
-        changes=[cpi, price],
-        expectations=[],
+        changes=changes,
+        expectations=expectations,
         confirmation=confirmation,
         impacts=[impact],
         thesis=thesis,
         previous_thesis=previous,
-        data_gaps=[{"code": "missing_prior_consensus", "text": "本预览只覆盖宏观链，不构造财报共识"}],
-        facts=[
-            {"kind": "macro", "metric": "cpi", "as_of": cpi.current_as_of, "source": "synthetic", "ref": {"ref_table": "synthetic_series", "ref_id": "cpi", "as_of": cpi.current_as_of, "source": "synthetic"}},
-            {"kind": "bar", "metric": "close", "subject": symbol, "as_of": price.current_as_of, "source": "synthetic", "ref": {"ref_table": "daily_price_bars", "ref_id": f"{symbol}-curr", "as_of": price.current_as_of, "source": "synthetic"}},
-        ],
+        data_gaps=gaps,
+        facts=facts,
         synthetic=True,
         preview="A",
         as_of=cpi.current_as_of,

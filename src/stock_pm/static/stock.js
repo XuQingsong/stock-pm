@@ -603,21 +603,50 @@
     return steps.map((step, index) => {
       const items = (step.items || []).map(step.id === "thesis_impact" ? thesisItem : chainItem).join("");
       const empty = !items && step.empty_reason ? `<div class="empty-note">${esc(step.empty_reason)}</div>` : "";
-      const extra = [];
-      if (step.id === "confirmation" && (step.clues || []).length) {
-        extra.push((step.clues || []).map((clue) => `<article class="chain-item">${statusPill(clue.status)}<div class="why">${esc(clue.headline || "")} · ${esc(clue.why || "")}</div>${refLine(clue)}</article>`).join(""));
-      }
-      if (step.id === "thesis_impact") {
+      let body = "";
+      if (step.id === "tension") {
+        const t = step.tension || (step.items || [])[0] || {};
+        if (t.tension && t.tension !== "insufficient") {
+          body = `<article class="chain-item">
+            ${statusPill(t.tension || t.status)}
+            <div class="chain-metrics">
+              <div><span>价格变动 %</span><b>${esc(finite(t.price_change) ? signed(t.price_change) : "—")}</b></div>
+              <div><span>预期变动 %</span><b>${esc(finite(t.fundamentals_change) ? signed(t.fundamentals_change) : "—")}</b></div>
+              <div><span>张力</span><b>${esc(t.tension || t.status || "—")}</b></div>
+              <div><span>code</span><b>${esc(t.code || "—")}</b></div>
+            </div>
+            <div class="why">${esc(t.reason || t.why || "")}</div>
+          </article>`;
+        } else {
+          body = empty || `<div class="empty-note">${esc(t.reason || step.empty_reason || "缺少价格或预期变动，不能描述张力")}</div>`;
+        }
+      } else if (step.id === "causal_impact") {
+        const conf = step.confirmation || {};
+        const confItems = (conf.used || conf.series || []).map(chainItem).join("");
+        const clues = (step.clues || []).map((clue) => `<article class="chain-item">${statusPill(clue.status)}<div class="why">${esc(clue.headline || "")} · ${esc(clue.why || "")}</div>${refLine(clue)}</article>`).join("");
+        body = `<div class="causal-block">
+            <h4>Market Confirmation ${statusPill(conf.status)}</h4>
+            <p class="why">${esc(conf.reason || "")}</p>
+            ${confItems || `<div class="empty-note">${esc(conf.reason || "未评估市场确认")}</div>`}
+            ${clues}
+          </div>
+          <div class="causal-block">
+            <h4>Transmission ${statusPill(step.transmission_status || step.status)}</h4>
+            ${items || (step.transmission_empty ? `<div class="empty-note">${esc(step.transmission_empty)}</div>` : empty)}
+          </div>`;
+      } else if (step.id === "thesis_impact") {
         const fields = (step.changed_fields || []).join("、") || "无";
-        extra.push(`<article class="chain-item"><div class="why">Thesis ${step.thesis_changed ? "已变化" : "未变化"}。changed_fields：${esc(fields)}。${esc(step.derived_reason || step.summary || "")}</div></article>`);
+        body = `${items || empty}
+          <article class="chain-item"><div class="why">Thesis ${step.thesis_changed ? "已变化" : "未变化"}。changed_fields：${esc(fields)}。张力 ${esc(step.tension_status || "—")}。${esc(step.derived_reason || step.summary || "")}</div></article>`;
+      } else {
+        body = items || empty;
       }
       return `<div class="chain-step">
         <div class="chain-rail" aria-hidden="true"><span class="chain-dot"></span>${index < steps.length - 1 ? '<span class="chain-line"></span>' : ""}</div>
         <div class="chain-body">
           <div class="chain-kicker">${esc(step.title)}</div>
           <h3>${esc(step.title_zh)}${statusPill(step.status)}</h3>
-          ${items || extra.join("") || empty}
-          ${items ? extra.join("") : ""}
+          ${body}
         </div>
       </div>`;
     }).join("");
@@ -626,6 +655,9 @@
   function renderDecision(payload) {
     const thesis = payload.thesis || {};
     const compared = payload.compared_to || {};
+    const quality = payload.evidence_quality || thesis.evidence_quality || "insufficient";
+    const thesisStatus = payload.cannot_form_judgment && thesis.status === "ok" ? "incomplete" : (thesis.status || "incomplete");
+    const thesisDirection = payload.cannot_form_judgment && thesis.status === "ok" ? "incomplete" : (thesis.direction || "incomplete");
     const gaps = (payload.gaps || []).map((row) => `<li>${esc(row.text || row.code)}</li>`).join("");
     const bulls = (thesis.bull_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格多头证据</li>";
     const bears = (thesis.bear_drivers || []).map((row) => `<li>${esc(row.text)} <small>${esc((row.based_on || []).join(", "))}</small></li>`).join("") || "<li>暂无合格空头证据</li>";
@@ -646,8 +678,8 @@
         <div class="decision-meta">
           <span>标的 <b>${esc(payload.symbol || SYMBOL)}</b></span>
           <span>数据截止 <b>${dateText(payload.as_of, true)}</b></span>
-          <span>证据质量 <b>${esc(thesis.evidence_quality || "insufficient")}</b></span>
-          <span>Thesis ${statusPill(thesis.status)} <b>${esc(thesis.direction || "incomplete")}</b></span>
+          <span>证据质量 <b>${esc(quality)}</b></span>
+          <span>Thesis ${statusPill(thesisStatus)} <b>${esc(thesisDirection)}</b></span>
           <span>相对上次 <b>${dateText(compared.as_of, true)}</b> · ${esc((compared.changed_fields || []).join("、") || "无字段变化")}</span>
         </div>
       </header>

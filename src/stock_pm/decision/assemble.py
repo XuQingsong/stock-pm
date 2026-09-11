@@ -7,6 +7,7 @@ from typing import Any, Iterable
 
 from .causal import (
     CHANNEL_DURATION,
+    RATE_PATH_EXPECTATION_METRICS,
     RATES_DISCOUNT_MECHANISM,
     ClaimSource,
     Exposure,
@@ -14,13 +15,15 @@ from .causal import (
     assess_market_confirmation,
     build_causal_impact,
     canonical_metric,
+    mechanism_requires_expectation,
 )
 from .clock import classify_macros, dataset_as_of
 from .change import ChangeSnapshot, build_change_snapshot
 from .expectation import ExpectationGap, ExpectationPoint, build_expectation_gap
 from .facts import FactValidationError, ValidatedFact, require_valid_bar
+from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
-from .types import FactRef, MaterialityRule
+from .types import PRICE_METRICS, FactRef, MaterialityRule
 from .viewmodel import render_decision_view
 from .what_changed import build_what_changed
 
@@ -434,6 +437,74 @@ def _drivers(
     return bulls[:3], bears[:3], disagreement, invalidation
 
 
+def ok_rate_path_expectation(expectations: Iterable[ExpectationGap]) -> ExpectationGap | None:
+    for gap in expectations:
+        if gap.status == "ok" and canonical_metric(gap.metric) in RATE_PATH_EXPECTATION_METRICS:
+            return gap
+    return None
+
+
+def _symbol_price_change(changes: Iterable[ChangeSnapshot]) -> ChangeSnapshot | None:
+    for change in changes:
+        if change.metric in PRICE_METRICS and change.scope == "symbol":
+            return change
+    return None
+
+
+def resolve_price_expectation_tension(
+    changes: Iterable[ChangeSnapshot],
+    expectations: Iterable[ExpectationGap],
+    *,
+    synthetic: bool,
+) -> PriceExpectationTension:
+    price = _symbol_price_change(changes)
+    fund: ExpectationGap | ChangeSnapshot | None = ok_rate_path_expectation(expectations)
+    if fund is None:
+        fund = next((gap for gap in expectations if gap.status == "ok"), None)
+    return build_price_expectation_tension(
+        fundamentals_change=fund,
+        price_change=price,
+        synthetic=synthetic,
+    )
+
+
+def rates_chain_incomplete(
+    impacts: Iterable[Any],
+    expectations: Iterable[ExpectationGap],
+    tension: PriceExpectationTension | None,
+) -> bool:
+    has_valid_rates = any(
+        mechanism_requires_expectation(getattr(impact, "mechanism", None))
+        and getattr(impact, "status", None) == "valid"
+        for impact in impacts
+    )
+    if not has_valid_rates:
+        return False
+    if ok_rate_path_expectation(expectations) is None:
+        return True
+    if tension is None or tension.tension == "insufficient" or tension.evidence_quality == "insufficient":
+        return True
+    return False
+
+
+def directional_impacts(
+    impacts: Iterable[Any],
+    *,
+    blocked: bool,
+) -> list[Any]:
+    rows = list(impacts)
+    if not blocked:
+        return rows
+    return [
+        impact
+        for impact in rows
+        if not (
+            mechanism_requires_expectation(getattr(impact, "mechanism", None))
+            and getattr(impact, "status", None) == "valid"
+        )
+    ]
+
+
 def assemble_from_kernel(
     *,
     symbol: str,
@@ -451,10 +522,47 @@ def assemble_from_kernel(
     as_of: str | None = None,
     clock_status: str = "ok",
 ) -> dict[str, Any]:
+    tension = resolve_price_expectation_tension(changes, expectations, synthetic=synthetic)
+    blocked = rates_chain_incomplete(impacts, expectations, tension)
+    gaps = list(data_gaps)
+    if blocked:
+        if not any(row.get("code") == "rates_chain_incomplete" for row in gaps):
+            gaps.append(
+                _gap(
+                    "rates_chain_incomplete",
+                    "通胀→利率机制缺少可追溯预期或价格/预期张力，不能形成方向性判断，市场确认不能代替这两层",
+                )
+            )
+        if ok_rate_path_expectation(expectations) is None and not any(
+            row.get("code") == "missing_rate_path_expectation" for row in gaps
+        ):
+            gaps.append(
+                _gap(
+                    "missing_rate_path_expectation",
+                    "利率路径/降息概率缺少可追溯的 current vs prior（含 as_of 与 source），不能形成有效方向",
+                )
+            )
+        thesis_impacts = directional_impacts(impacts, blocked=True)
+        bulls, bears, disagreement, invalidation = _drivers(symbol, changes, expectations, thesis_impacts)
+        thesis = build_thesis_snapshot(
+            bull_drivers=bulls,
+            bear_drivers=bears,
+            key_disagreement=disagreement,
+            invalidation=invalidation,
+            changes=changes,
+            expectations=expectations,
+            impacts=thesis_impacts,
+            generated_at=thesis.generated_at,
+            symbol=symbol,
+            synthetic=synthetic,
+        )
+        report_impacts = thesis_impacts
+    else:
+        report_impacts = impacts
     report = build_what_changed(
         changes=changes,
         expectations=expectations,
-        impacts=impacts,
+        impacts=report_impacts,
         previous_thesis=previous_thesis,
         current_thesis=thesis,
         synthetic=synthetic,
@@ -472,7 +580,7 @@ def assemble_from_kernel(
         impacts=impacts,
         thesis=thesis,
         what_changed=report,
-        data_gaps=data_gaps,
+        data_gaps=gaps,
         facts=facts,
         clues=clues,
         synthetic=synthetic,
@@ -480,6 +588,8 @@ def assemble_from_kernel(
         as_of=as_of,
         compared_to=compared,
         clock_status=clock_status,
+        tension=tension,
+        rates_chain_blocked=blocked,
     )
 
 

@@ -598,7 +598,7 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert live["synthetic"] is False
     assert live["preview"] is None
     assert [step["id"] for step in live["chain"]] == [
-        "what_changed", "expectation", "confirmation", "transmission", "thesis_impact"
+        "what_changed", "expectation", "tension", "causal_impact", "thesis_impact"
     ]
     # Default-off: a leaked ?preview= must never return fixture.
     leaked = c.get("/api/stock/NVDA/decision?preview=A").json()
@@ -609,7 +609,10 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert preview["synthetic"] is True
     assert preview["preview"] == "A"
     assert "合成演示数据" in preview["preview_label"]
-    assert preview["chain"][2]["status"] == "confirmed"
+    assert preview["chain"][3]["id"] == "causal_impact"
+    assert preview["chain"][3]["confirmation"]["status"] == "confirmed"
+    assert preview["chain"][2]["id"] == "tension"
+    assert preview["chain"][1]["status"] == "ok"
     scene_b = c.get("/api/stock/NVDA/decision?preview=B").json()
     assert scene_b["what_changed"]["thesis_changed"] is False
     scene_c = c.get("/api/stock/AAPL/decision?preview=C").json()

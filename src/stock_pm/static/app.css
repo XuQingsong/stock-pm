@@ -45,9 +45,13 @@
 .decision-facts{margin-top:8px}
 .decision-facts summary{cursor:pointer;color:var(--muted);font-size:12px}
 .status-pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11px;background:#eef2f7;color:#374151;margin-left:6px}
-.status-pill.ok,.status-pill.confirmed,.status-pill.valid{background:#dcfce7;color:#166534}
+.status-pill.ok,.status-pill.confirmed,.status-pill.valid,.status-pill.aligned{background:#dcfce7;color:#166534}
 .status-pill.unconfirmed,.status-pill.insufficient,.status-pill.immaterial{background:#e5e7eb;color:#374151}
-.status-pill.conflict,.status-pill.unverified{background:#ffedd5;color:#9a3412}
+.status-pill.conflict,.status-pill.unverified,.status-pill.divergence,.status-pill.price_ahead_of_fundamentals,.status-pill.price_decline_ahead_of_fundamentals{background:#ffedd5;color:#9a3412}
+.status-pill.watch,.status-pill.observation,.status-pill.improving_faster_than_price,.status-pill.deteriorating_faster_than_price{background:#e0e7ff;color:#3730a3}
+.causal-block{margin-top:10px;padding-top:4px}
+.causal-block h4{margin:8px 0 4px;font-size:12px;color:#4b5563;letter-spacing:.04em;text-transform:uppercase}
+.causal-block .why{margin:0 0 6px;font-size:12px;color:#374151}
 @media(max-width:720px){
   .decision-sides{grid-template-columns:1fr}
   .decision-module{padding:12px}
