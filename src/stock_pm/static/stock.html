@@ -36,7 +36,15 @@
     </div>
   </header>
   <main class="page-shell">
-    <div id="stock-pm-shell"></div>
+    <div id="judgment" class="judgment-panel">
+      <div id="judgment-panel" aria-live="polite">
+        <div class="state loading"><span class="spinner"></span>正在加载判断…</div>
+      </div>
+    </div>
+    <details class="fold legacy-shell-fold">
+      <summary>旧结论区（环境 / 昨盘 / 复盘）</summary>
+      <div id="stock-pm-shell"></div>
+    </details>
     <div class="tabs" role="tablist" aria-label="个股详情">
       <button role="tab" data-tab="chart">图表</button>
       <button role="tab" data-tab="review">复盘</button>

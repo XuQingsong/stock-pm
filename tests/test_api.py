@@ -394,6 +394,42 @@ class FakeDatabase:
     def prediction_payload(self, date=None, symbol=None):
         return self._sample_prediction(symbol or "NVDA", date)
 
+    def latest_prediction(self, date=None, symbol=None, open_only=False):
+        pred = self._sample_prediction(symbol or "NVDA", date)
+        pred["id"] = 1
+        pred["created_at"] = "2026-09-04T20:10:00+00:00"
+        return pred
+
+    def latest_environment_snapshot(self, date=None, scope="symbol", symbol=None):
+        env = self.environment_payload(date, symbol)
+        env["id"] = 2
+        return env
+
+    def latest_tape_analysis(self, date=None, symbol=None):
+        tape = self.tape_payload(date, symbol)
+        tape["id"] = 3
+        return tape
+
+    def latest_review_note(self, date=None, symbol=None):
+        note = self.review_note_payload(date, symbol)
+        note["id"] = 4
+        return note
+
+    def judgment_view(self, symbol, date=None):
+        from stock_pm.judgment import assemble_judgment
+
+        pred = self.latest_prediction(date, symbol)
+        return assemble_judgment(
+            symbol=symbol or "NVDA",
+            as_of_date=date or "2026-09-04",
+            prediction=pred,
+            environment=self.latest_environment_snapshot(date, "symbol", symbol),
+            tape=self.latest_tape_analysis(date, symbol),
+            review_note=self.latest_review_note(date, symbol),
+            resolved_facts=[],
+            generated_at=pred.get("created_at"),
+        )
+
     def prediction_history(self, symbol, limit=30):
         return []
 
@@ -706,6 +742,10 @@ def test_static_shell_assets(monkeypatch):
     assert "→ 支撑结论" in js.text
     assert 'data-zone="A"' in js.text
     assert "不编假边界" in home
+    assert 'id="judgment-board"' in home
+    assert "事实 → 分析 → 区间假设" in home
+    assert "旧结论区" in home
+    assert home.index('id="judgment-board"') < home.index('id="stock-pm-shell"')
     assert "watch_low" not in home
     assert "face_slap" not in home
     assert "昨盘半句" in home
@@ -730,6 +770,8 @@ def test_static_shell_assets(monkeypatch):
     assert "MA5/20/50/200" in js
     stock = c.get("/stock/NVDA").text
     assert 'id="stock-pm-shell"' in stock
+    assert 'id="judgment-panel"' in stock
+    assert 'id="judgment"' in stock
 
 
 def test_tape_and_review_note_endpoints(monkeypatch):
@@ -792,3 +834,42 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     assert "保存确认" not in c.get("/").text
     assert c.get("/api/stock/bad symbol/tape").status_code == 400
     assert c.get("/api/stock/NVDA/tape?date=bad").status_code == 400
+
+
+def test_judgment_endpoint_is_read_only(monkeypatch):
+    fake = FakeDatabase()
+    fake.writes = []
+
+    def boom(*_args, **_kwargs):
+        fake.writes.append(1)
+        raise AssertionError("judgment must not write")
+
+    fake.append_prediction = boom
+    fake.ingest = boom
+    fake.append_tape_analysis = boom
+    monkeypatch.setattr(api, "database", fake)
+    c = TestClient(api.app)
+    first = c.get("/api/stock/NVDA/judgment?date=2026-09-04")
+    second = c.get("/api/stock/NVDA/judgment?date=2026-09-04")
+    assert first.status_code == 200
+    assert second.status_code == 200
+    body = first.json()
+    assert body["symbol"] == "NVDA"
+    assert body["judgment"]["kind_label"] == "区间假设"
+    assert body["gate"]["reason"] is None
+    assert body["model_version"] == "judgment-v1"
+    assert body["data_snapshot_id"]
+    assert all(item["layer"] == "analysis" for item in body["reasons"])
+    assert all(item["layer"] == "fact" for item in body["facts"])
+    assert first.json() == second.json()
+    assert fake.writes == []
+    html = c.get("/stock/NVDA").text
+    assert 'id="judgment-panel"' in html
+    js = c.get("/static/stock.js").text
+    assert "/api/reviews/retry-llm" not in js
+    assert "judgment-layers" in js
+    assert 'data-layer="fact"' in js
+    assert "基于事实" in js
+    assert "三层分开看" in js
+    assert c.get("/api/stock/bad symbol/judgment").status_code == 400
+    assert c.get("/api/stock/NVDA/judgment?date=bad").status_code == 400

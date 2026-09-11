@@ -111,6 +111,7 @@ def _chip_block(metrics: dict) -> tuple[dict | None, bool]:
     value_high = _number(metrics.get("value_area_high"))
     support = _number(metrics.get("support"))
     resistance = _number(metrics.get("resistance"))
+    close = _number(metrics.get("close"))
     position = (metrics.get("position") or "").strip()
     if poc is None and support is None and resistance is None:
         return None, True
@@ -138,6 +139,7 @@ def _chip_block(metrics: dict) -> tuple[dict | None, bool]:
         "value_high": value_high,
         "support": support,
         "resistance": resistance,
+        "close": close,
         "band": band,
         "position": position or None,
         "ma_context": ma_text,

@@ -489,6 +489,9 @@ CREATE INDEX IF NOT EXISTS idx_predictions_symbol_date
 CREATE INDEX IF NOT EXISTS idx_predictions_open
     ON predictions (symbol, state, created_at DESC);
 
+ALTER TABLE predictions
+    ADD COLUMN IF NOT EXISTS gate_reason TEXT;
+
 -- Slice D / knife 4: append-only PredictionCheck after each close.
 CREATE TABLE IF NOT EXISTS prediction_checks (
     id BIGSERIAL PRIMARY KEY,

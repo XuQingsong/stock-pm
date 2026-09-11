@@ -14,6 +14,7 @@ from typing import Any
 from .analytics import _number
 from .calendar import add_trading_days, next_trading_day
 from .environment import _as_clause
+from .evidence import PARTIAL, analysis_ref
 from .ux_copy import (
     LEGACY_DISCLAIMER,
     LEGACY_LABEL,
@@ -65,6 +66,24 @@ FLAG_LABELS = {
 MISSING_LINE = "到期未产出，未编造时间窗口或涨跌边界。"
 MISSING_DATA_LINE = named_missing_line(PRED_FIELD_FLAGS)
 QUALIFIED_EXAMPLE = "两周内补涨约10%，期间跌幅不超过5%"
+KIND_LABEL = "区间假设"
+
+GATE_PREMISE_MISSING = "premise_missing"
+GATE_BOUNDS_TOO_TIGHT = "bounds_too_tight"
+GATE_ANALYSIS_ABSTAIN = "analysis_abstain"
+GATE_SESSION_CLOSED = "session_closed"
+GATE_REASONS = (
+    GATE_PREMISE_MISSING,
+    GATE_BOUNDS_TOO_TIGHT,
+    GATE_ANALYSIS_ABSTAIN,
+    GATE_SESSION_CLOSED,
+)
+GATE_LABELS = {
+    GATE_PREMISE_MISSING: "依据不足，未编造时间窗口或涨跌边界。",
+    GATE_BOUNDS_TOO_TIGHT: "支撑或压力距现价过近，不作为有效边界。",
+    GATE_ANALYSIS_ABSTAIN: "对照后不足以形成区间假设，未给出方向、时间窗或涨跌数字。",
+    GATE_SESSION_CLOSED: "当日休市，不编当日区间假设。",
+}
 
 MIN_BOUND_PCT = 0.5
 MAX_BOUND_PCT = 30.0
@@ -161,9 +180,14 @@ def _therefore_from_pred(pred: dict | None) -> str | None:
                 f"下{_fmt_pct(pred.get('downside_bound_pct'))}"
             )
     flags = list(pred.get("missingFlags") or [])
+    reason = pred.get("gate_reason")
+    stored = pred.get("therefore") or pred.get("missing_label")
+    if reason == GATE_BOUNDS_TOO_TIGHT:
+        return stored or GATE_LABELS[GATE_BOUNDS_TOO_TIGHT]
+    if reason == GATE_ANALYSIS_ABSTAIN:
+        return stored or GATE_LABELS[GATE_ANALYSIS_ABSTAIN]
     if flags:
         return named_missing_line(flags)
-    stored = pred.get("therefore") or pred.get("missing_label")
     return stored
 
 
@@ -201,10 +225,28 @@ def _action_from_premises(tape: dict | None, environment: dict | None) -> str | 
     return None
 
 
+def _tight_item(side: str, kind: str, distance_pct: float) -> dict:
+    if side == "support" and kind == "too_close":
+        message = "支撑距现价过近，不作为有效下沿"
+    elif side == "support":
+        message = "支撑距现价过远，不作为有效下沿"
+    elif side == "resistance" and kind == "too_close":
+        message = "压力距现价过近，不作为有效上沿"
+    else:
+        message = "压力距现价过远，不作为有效上沿"
+    return {
+        "side": side,
+        "kind": kind,
+        "distance_pct": _round_pct(distance_pct),
+        "message": message,
+    }
+
+
 def _bounds_from_sr(
     entry: float | None, support: float | None, resistance: float | None
-) -> tuple[dict | None, list[str]]:
+) -> tuple[dict | None, list[str], list[dict]]:
     missing: list[str] = []
+    tight: list[dict] = []
     if entry is None or entry <= 0:
         missing.append("entry_price")
     if support is None:
@@ -212,21 +254,96 @@ def _bounds_from_sr(
     if resistance is None:
         missing.append("resistance")
     if missing:
-        return None, missing
+        return None, missing, []
     upside = 100.0 * (resistance - entry) / entry
     downside = 100.0 * (support - entry) / entry
-    if upside < MIN_BOUND_PCT or upside > MAX_BOUND_PCT:
-        missing.append("resistance")
-    if downside > -MIN_BOUND_PCT or downside < -MAX_BOUND_PCT:
-        missing.append("support")
-    if missing:
-        return None, missing
+    if upside < MIN_BOUND_PCT:
+        tight.append(_tight_item("resistance", "too_close", upside))
+    elif upside > MAX_BOUND_PCT:
+        tight.append(_tight_item("resistance", "too_far", upside))
+    if downside > -MIN_BOUND_PCT:
+        tight.append(_tight_item("support", "too_close", downside))
+    elif downside < -MAX_BOUND_PCT:
+        tight.append(_tight_item("support", "too_far", downside))
+    if tight:
+        return None, [], tight
     return {
         "upside_bound_pct": _round_pct(upside),
         "downside_bound_pct": _round_pct(downside),
         "upside_price": round(entry * (1 + upside / 100.0), 4),
         "downside_price": round(entry * (1 + downside / 100.0), 4),
-    }, []
+    }, [], []
+
+
+def _tight_label(tight: list[dict]) -> str:
+    messages = [str(item.get("message") or "") for item in tight if item.get("message")]
+    body = "；".join(messages) if messages else GATE_LABELS[GATE_BOUNDS_TOO_TIGHT]
+    return f"{body}，未编造时间窗口或涨跌边界。"
+
+
+def diagnose_quality_gate(
+    *,
+    environment: dict | None,
+    tape: dict | None,
+    review_note: dict | None = None,
+    entry_price: float | None = None,
+    support: float | None = None,
+    resistance: float | None = None,
+    as_of_date: str | None = None,
+) -> dict:
+    """Classify why a range hypothesis cannot be published.
+
+    missingFlags lists only absent inputs. Unusable-but-present S/R is
+    bounds_too_tight. A refused action is analysis_abstain — not a missing tape.
+    """
+    chips = (tape or {}).get("chips") or {}
+    entry = _number(entry_price) or _number(chips.get("close"))
+    support_n = _number(support) if support is not None else _number(chips.get("support"))
+    resistance_n = (
+        _number(resistance) if resistance is not None else _number(chips.get("resistance"))
+    )
+    missing = _premise_ready(tape, environment)
+    bounds, bound_missing, tight = _bounds_from_sr(entry, support_n, resistance_n)
+    missing.extend(flag for flag in bound_missing if flag not in missing)
+    if _as_date(as_of_date) is None and "window" not in missing:
+        missing.append("window")
+    action = _action_from_premises(tape, environment)
+    unexplained = bool((review_note or {}).get("unexplained"))
+    if missing:
+        return {
+            "gate_reason": GATE_PREMISE_MISSING,
+            "missingFlags": list(missing),
+            "tight": tight,
+            "action": action,
+            "bounds": None,
+            "label": named_missing_line(missing),
+        }
+    if tight:
+        return {
+            "gate_reason": GATE_BOUNDS_TOO_TIGHT,
+            "missingFlags": [],
+            "tight": tight,
+            "action": action,
+            "bounds": None,
+            "label": _tight_label(tight),
+        }
+    if action is None or unexplained and action is None:
+        return {
+            "gate_reason": GATE_ANALYSIS_ABSTAIN,
+            "missingFlags": [],
+            "tight": [],
+            "action": None,
+            "bounds": None,
+            "label": GATE_LABELS[GATE_ANALYSIS_ABSTAIN],
+        }
+    return {
+        "gate_reason": None,
+        "missingFlags": [],
+        "tight": [],
+        "action": action,
+        "bounds": bounds,
+        "label": None,
+    }
 
 
 def _window_for_bounds(as_of: date | None, upside: float, downside: float) -> dict:
@@ -264,8 +381,25 @@ def failed_prediction(
     *,
     flags: list[str] | None = None,
     missing_label: str | None = None,
+    gate_reason: str | None = None,
+    tight: list[dict] | None = None,
 ) -> dict:
-    line = missing_label or MISSING_LINE
+    reason = gate_reason or (
+        GATE_PREMISE_MISSING if flags else None
+    )
+    line = missing_label or (
+        named_missing_line(flags) if flags else (GATE_LABELS.get(reason or "", MISSING_LINE))
+    )
+    struct = {
+        "error": error,
+        "lifecycle": [_lifecycle("missing", error)],
+        "gate_reason": reason,
+        "kind": "range_hypothesis",
+        "kind_label": KIND_LABEL,
+        "tight": list(tight or []),
+        "missing_label": line,
+        "prediction_ready": False,
+    }
     return {
         "as_of_date": as_of_date,
         "symbol": symbol.upper(),
@@ -283,11 +417,14 @@ def failed_prediction(
         "downside_bound_pct": None,
         "upside_price": None,
         "downside_price": None,
-        "struct": {"error": error, "lifecycle": [_lifecycle("missing", error)]},
-        "missingFlags": list(flags or PRED_FIELD_FLAGS),
+        "struct": struct,
+        "missingFlags": list(flags or []),
         "publishState": "missing",
         "prediction_ready": False,
         "missing_label": line,
+        "gate_reason": reason,
+        "kind": "range_hypothesis",
+        "kind_label": KIND_LABEL,
         "supersedes_id": None,
         "superseded_by_id": None,
         "change_reason": None,
@@ -363,6 +500,22 @@ def snapshot_from_row(row: dict | None) -> dict | None:
         "legacy": False,
     }
     payload["badge"] = prediction_badge(payload)
+    payload["gate_reason"] = (
+        row.get("gate_reason")
+        if row.get("gate_reason") is not None
+        else (struct.get("gate_reason") if isinstance(struct, dict) else None)
+    )
+    payload["kind"] = (struct.get("kind") if isinstance(struct, dict) else None) or "range_hypothesis"
+    payload["kind_label"] = (struct.get("kind_label") if isinstance(struct, dict) else None) or KIND_LABEL
+    payload["supporting_evidence"] = (
+        struct.get("supporting_evidence") if isinstance(struct, dict) else None
+    ) or []
+    payload["counter_evidence"] = (
+        struct.get("counter_evidence") if isinstance(struct, dict) else None
+    ) or []
+    payload["invalidation"] = (
+        struct.get("invalidation") if isinstance(struct, dict) else None
+    ) or []
     return payload
 
 
@@ -417,37 +570,44 @@ def synthesize_prediction(
     resistance = (
         _number(resistance) if resistance is not None else _number(chips.get("resistance"))
     )
-    missing = _premise_ready(tape, environment)
-    bounds, bound_flags = _bounds_from_sr(entry, support, resistance)
-    missing.extend(flag for flag in bound_flags if flag not in missing)
-    action = _action_from_premises(tape, environment)
     unexplained = bool(review_note.get("unexplained"))
-    if unexplained and not action:
-        if "tape" not in missing:
-            missing.append("tape")
+    diagnosed = diagnose_quality_gate(
+        environment=environment,
+        tape=tape,
+        review_note=review_note,
+        entry_price=entry,
+        support=support,
+        resistance=resistance,
+        as_of_date=as_of_date,
+    )
 
     if session and session.get("is_trading_day") is False:
-        line = f"{as_of_date or ''} {session.get('label') or '美股休市'}，不编当日预测边界。".strip()
-        pred = failed_prediction(symbol_u, as_of_date, "session_closed", missing_label=line)
+        line = f"{as_of_date or ''} {session.get('label') or '美股休市'}，不编当日区间假设。".strip()
+        pred = failed_prediction(
+            symbol_u,
+            as_of_date,
+            "session_closed",
+            flags=[],
+            missing_label=line,
+            gate_reason=GATE_SESSION_CLOSED,
+        )
         pred["publishState"] = "stale"
         pred["one_liner"] = line
         pred["thesis"] = line
         return pred
 
-    if missing or bounds is None or action is None or as_of is None:
-        flags = missing or list(PRED_FIELD_FLAGS)
-        if action is None and "tape" not in flags:
-            flags.append("tape")
-        if as_of is None and "window" not in flags:
-            flags.append("window")
-        label = named_missing_line(flags) if flags else MISSING_LINE
+    if diagnosed["gate_reason"] or diagnosed["bounds"] is None or diagnosed["action"] is None:
         return failed_prediction(
             symbol_u,
             as_of_date,
-            "quality_gate",
-            flags=flags,
-            missing_label=label,
+            diagnosed["gate_reason"] or "quality_gate",
+            flags=list(diagnosed.get("missingFlags") or []),
+            missing_label=diagnosed.get("label") or MISSING_LINE,
+            gate_reason=diagnosed.get("gate_reason") or GATE_PREMISE_MISSING,
+            tight=list(diagnosed.get("tight") or []),
         )
+    action = diagnosed["action"]
+    bounds = diagnosed["bounds"]
 
     window = _window_for_bounds(as_of, bounds["upside_bound_pct"], bounds["downside_bound_pct"])
     env_disp = _as_clause(
@@ -477,6 +637,29 @@ def synthesize_prediction(
     ]
     if change_reason:
         lifecycle.append(_lifecycle("pending", f"改口留痕：{change_reason}"))
+    supporting = []
+    if environment.get("one_liner") or environment.get("id"):
+        supporting.append(
+            analysis_ref(
+                ref_table="environment_snapshots",
+                ref_id=environment.get("id"),
+                as_of=environment.get("as_of_date") or as_of_date,
+                text=environment.get("one_liner") or env_disp,
+                completeness=PARTIAL,
+                role="environment",
+            )
+        )
+    if tape.get("one_liner") or tape.get("id"):
+        supporting.append(
+            analysis_ref(
+                ref_table="tape_analyses",
+                ref_id=tape.get("id"),
+                as_of=tape.get("as_of_date") or as_of_date,
+                text=tape.get("one_liner") or tape_disp,
+                completeness=PARTIAL,
+                role="tape",
+            )
+        )
     struct = {
         "action": action,
         "target": target,
@@ -492,6 +675,23 @@ def synthesize_prediction(
         },
         "bounds_source": "support_resistance",
         "missing_label": None,
+        "gate_reason": None,
+        "kind": "range_hypothesis",
+        "kind_label": KIND_LABEL,
+        "supporting_evidence": supporting,
+        "counter_evidence": [],
+        "invalidation": [
+            {
+                "kind": "downside_break",
+                "text": f"期间低点跌破下跌边界 {_price(bounds['downside_price'])}，区间假设失效",
+            },
+            {
+                "kind": "window_expiry",
+                "text": (
+                    f"窗口到期仍未触及上涨边界 {_price(bounds['upside_price'])}，区间假设失效"
+                ),
+            },
+        ],
     }
     payload = {
         "as_of_date": as_of_date,
@@ -515,6 +715,10 @@ def synthesize_prediction(
         "publishState": "published",
         "prediction_ready": True,
         "missing_label": None,
+        "gate_reason": None,
+        "kind": "range_hypothesis",
+        "kind_label": KIND_LABEL,
+        "supporting_evidence": supporting,
         "supersedes_id": supersedes_id,
         "superseded_by_id": None,
         "change_reason": change_reason,
