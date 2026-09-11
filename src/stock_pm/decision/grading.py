@@ -177,7 +177,7 @@ def _grade_price(
             blocking=blocking,
             stages=stages or ["facts"],
         )
-    change = prices[0]
+    change = next((row for row in prices if row.materiality == "material"), prices[0])
     conclusion = change.summary or f"{change.metric} {change.previous_value}→{change.current_value}"
     return _chain_payload(
         chain_id="price",
@@ -253,7 +253,7 @@ def _grade_earnings(
             chain_id="earnings",
             level="L1",
             scope="fact",
-            conclusion=gap.reason or "盈利事实存在，但预期链不可追溯",
+            conclusion="盈利数字存在，但缺少可追溯 prior/as_of，只能陈述事实、不能比较 surprise",
             direction=None,
             blocking=blocking,
             stages=stages or ["expectation"],
@@ -446,6 +446,17 @@ def _grade_news(clues: list[dict[str, Any]], gaps: list[dict[str, Any]]) -> dict
     )
 
 
+def _usable_conclusions(rows: list[dict[str, Any]]) -> list[str]:
+    skip = ("缺失", "没有可分析", "核心事实无效", "本链无")
+    lines = []
+    for row in rows:
+        text = str(row.get("validated_conclusion") or "").strip()
+        if not text or any(token in text for token in skip):
+            continue
+        lines.append(text)
+    return lines
+
+
 def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, Any]:
     if clock_status == "clock_insufficient":
         return {
@@ -467,7 +478,7 @@ def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, An
         "L2": int(counts.get("L2", 0)),
         "L3": int(counts.get("L3", 0)),
     }
-    can_bits = [row["validated_conclusion"] for row in core if row["level"] in {"L1", "L2", "L3"}]
+    can_bits = _usable_conclusions([row for row in core if row["level"] in {"L1", "L2", "L3"}])
     cannot_bits = [
         row["next_required_evidence"]
         for row in core
@@ -490,7 +501,7 @@ def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, An
             "status": "full",
             "direction": direction,
             "can_form_direction": direction in {"bullish", "bearish"},
-            "can_determine": "；".join(row["validated_conclusion"] for row in l3),
+            "can_determine": "；".join(_usable_conclusions(l3)) or "存在完整证据链",
             "cannot_determine": "；".join(cannot_bits) or "局部缺口不阻止已完整链的方向",
             "available_counts": counts_payload,
         }
@@ -500,7 +511,7 @@ def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, An
             "status": "partial",
             "direction": None,
             "can_form_direction": False,
-            "can_determine": "；".join(row["validated_conclusion"] for row in core if row["level"] == "L2")
+            "can_determine": "；".join(_usable_conclusions([row for row in core if row["level"] == "L2"]))
             or "存在局部因果",
             "cannot_determine": "没有 L3，多条 L2 不能堆叠成完整个股方向",
             "available_counts": counts_payload,
@@ -511,7 +522,8 @@ def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, An
             "status": "fact_only",
             "direction": None,
             "can_form_direction": False,
-            "can_determine": "；".join(row["validated_conclusion"] for row in core if row["level"] == "L1"),
+            "can_determine": "；".join(_usable_conclusions([row for row in core if row["level"] == "L1"]))
+            or "存在可追溯事实变化",
             "cannot_determine": "只有事实变化，不能输出方向性 Thesis",
             "available_counts": counts_payload,
         }
