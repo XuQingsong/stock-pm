@@ -19,6 +19,7 @@ class PriceExpectationTension:
     evidence_quality: str
     reason: str
     divergence_kind: str | None = None
+    code: str = ""
     synthetic: bool = True
 
     def to_dict(self) -> dict[str, Any]:
@@ -46,6 +47,7 @@ def build_price_expectation_tension(
             evidence_quality="insufficient",
             reason="数据不足，只描述证据，不冒充已定价结论",
             divergence_kind=None,
+            code="insufficient",
             synthetic=synthetic,
         )
     quality = "complete" if valuation is not None else "partial"
@@ -58,6 +60,7 @@ def build_price_expectation_tension(
             evidence_quality=quality,
             reason="基本面改善而价格下跌，方向背离，不得用绝对值抹平符号",
             divergence_kind="fundamentals_up_price_down",
+            code="fundamentals_up_price_down",
             synthetic=synthetic,
         )
     if fund < 0 and price > 0:
@@ -69,20 +72,49 @@ def build_price_expectation_tension(
             evidence_quality=quality,
             reason="基本面下修而价格上涨，方向背离，不得用绝对值抹平符号",
             divergence_kind="fundamentals_down_price_up",
+            code="fundamentals_down_price_up",
             synthetic=synthetic,
         )
     abs_fund, abs_price = abs(fund), abs(price)
+    both_negative = fund < 0 and price < 0
     valuation_expanded = valuation is not None and valuation > 0
     valuation_compressed = valuation is not None and valuation < 0
+    if both_negative:
+        if abs_price > abs_fund * 1.5:
+            tension = "price_decline_ahead_of_fundamentals"
+            reason = "价格跌幅明显快于基本面恶化"
+            code = "price_decline_ahead"
+        elif abs_fund > abs_price * 1.5:
+            tension = "deteriorating_faster_than_price"
+            reason = "基本面恶化快于价格下跌"
+            code = "deteriorating_faster"
+        else:
+            tension = "aligned"
+            reason = "基本面恶化与价格下跌量级接近"
+            code = "aligned_down"
+        return PriceExpectationTension(
+            fundamentals_change=fund,
+            price_change=price,
+            valuation_change=valuation,
+            tension=tension,
+            evidence_quality=quality,
+            reason=reason,
+            divergence_kind=None,
+            code=code,
+            synthetic=synthetic,
+        )
     if abs_price > abs_fund * 1.5 and (valuation_expanded or valuation is None):
         tension = "price_ahead_of_fundamentals"
         reason = "价格涨幅明显快于基本面修订，估值若扩张则更支持这一描述"
+        code = "price_ahead"
     elif abs_fund > abs_price * 1.5 and (valuation_compressed or valuation is None or abs_price < abs_fund):
         tension = "improving_faster_than_price"
         reason = "基本面修订快于价格变动"
+        code = "improving_faster"
     else:
         tension = "aligned"
         reason = "基本面修订与价格变动量级接近"
+        code = "aligned_up"
     return PriceExpectationTension(
         fundamentals_change=fund,
         price_change=price,
@@ -91,6 +123,7 @@ def build_price_expectation_tension(
         evidence_quality=quality,
         reason=reason,
         divergence_kind=None,
+        code=code,
         synthetic=synthetic,
     )
 

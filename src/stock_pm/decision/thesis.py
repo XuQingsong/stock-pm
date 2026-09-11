@@ -9,6 +9,7 @@ from typing import Iterable
 from .causal import CausalImpact
 from .change import ChangeSnapshot
 from .expectation import ExpectationGap
+from .types import SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL
 
 
 MAX_DRIVERS = 3
@@ -39,6 +40,7 @@ class ThesisSnapshot:
     status: str
     reason: str
     symbol: str | None = None
+    code: str = ""
     synthetic: bool = True
 
 
@@ -84,24 +86,64 @@ def _is_qualified(kind: str, obj: object) -> bool:
     return False
 
 
+def _scope_problem(kind: str, obj: object, symbol: str | None) -> str | None:
+    if kind == QUALIFIED_CAUSAL and isinstance(obj, CausalImpact):
+        target = obj.effect_target or (obj.exposure.target if obj.exposure else None)
+        if symbol and target and target != symbol:
+            return "cross_symbol"
+        return None
+    scope = getattr(obj, "scope", SCOPE_GLOBAL)
+    subject = getattr(obj, "subject", None)
+    if scope in {SCOPE_GLOBAL, SCOPE_SECTOR}:
+        return "macro_requires_causal"
+    if scope == SCOPE_SYMBOL:
+        if not symbol or not subject or subject != symbol:
+            return "cross_symbol"
+    return None
+
+
 def _citation_problem(
     drivers: tuple[Driver, ...],
     catalog: dict[str, tuple[str, object]],
     symbol: str | None,
-) -> str | None:
+) -> tuple[str, str] | None:
     for driver in drivers:
         if not driver.based_on:
-            return "自由文本不得生成 Thesis：每个 driver 必须引用存在且合格的证据 ID"
+            return ("free_text", "自由文本不得生成 Thesis：每个 driver 必须引用存在且合格的证据 ID")
         for eid in driver.based_on:
             if eid not in catalog:
-                return "引用不存在：driver 指向了未知的 Change/Expectation/CausalImpact ID"
+                return ("missing_citation", "引用不存在：driver 指向了未知的 Change/Expectation/CausalImpact ID")
             kind, obj = catalog[eid]
             if not _is_qualified(kind, obj):
-                return "引用不合格：driver 必须引用 material Change、ok Expectation 或 valid CausalImpact"
-            if kind == QUALIFIED_CAUSAL and isinstance(obj, CausalImpact):
-                target = obj.effect_target or (obj.exposure.target if obj.exposure else None)
-                if symbol and target and target != symbol:
-                    return "跨标的引用：CausalImpact 与 Thesis 标的不一致"
+                return ("unqualified_citation", "引用不合格：driver 必须引用 material Change、ok Expectation 或 valid CausalImpact")
+            scope_code = _scope_problem(kind, obj, symbol)
+            if scope_code == "cross_symbol":
+                return ("cross_symbol", "跨标的引用：证据 subject/target 与 Thesis 标的不一致")
+            if scope_code == "macro_requires_causal":
+                return ("macro_requires_causal", "全局/行业证据只能经 CausalImpact 进入公司 Thesis")
+    return None
+
+
+def _polarity_problem(
+    bulls: tuple[Driver, ...],
+    bears: tuple[Driver, ...],
+    catalog: dict[str, tuple[str, object]],
+) -> tuple[str, str] | None:
+    def cited_impact_dirs(drivers: tuple[Driver, ...]) -> set[str]:
+        dirs: set[str] = set()
+        for driver in drivers:
+            for eid in driver.based_on:
+                kind, obj = catalog[eid]
+                if kind == QUALIFIED_CAUSAL and isinstance(obj, CausalImpact) and obj.direction:
+                    dirs.add(obj.direction)
+        return dirs
+
+    bull_dirs = cited_impact_dirs(bulls)
+    bear_dirs = cited_impact_dirs(bears)
+    if "bearish" in bull_dirs or (bull_dirs - {"bullish"}):
+        return ("polarity_mismatch", "bull driver 引用了非 bullish 的方向性 CausalImpact")
+    if "bullish" in bear_dirs or (bear_dirs - {"bearish"}):
+        return ("polarity_mismatch", "bear driver 引用了非 bearish 的方向性 CausalImpact")
     return None
 
 
@@ -193,11 +235,13 @@ def build_thesis_snapshot(
     catalog = _catalog(changes, expectations, impacts)
     stamp = generated_at or datetime.now(timezone.utc).isoformat()
     all_drivers = bulls + bears
-    citation_error = _citation_problem(all_drivers, catalog, symbol) if all_drivers else "缺支持或反方，不得生成强方向"
+    citation_error = _citation_problem(all_drivers, catalog, symbol) if all_drivers else ("missing_side", "缺支持或反方，不得生成强方向")
     cited = _cited_ids(all_drivers)
-    change_ids, exp_ids, cau_ids, cited_impacts = _partition_citations(cited, catalog) if not citation_error else ((), (), (), [])
+    change_ids, exp_ids, cau_ids, cited_impacts = (
+        _partition_citations(cited, catalog) if not citation_error else ((), (), (), [])
+    )
 
-    def incomplete(reason: str, *, quality: str = "insufficient") -> ThesisSnapshot:
+    def incomplete(code: str, reason: str, *, quality: str = "insufficient") -> ThesisSnapshot:
         return ThesisSnapshot(
             direction="incomplete",
             bull_drivers=bulls,
@@ -212,36 +256,44 @@ def build_thesis_snapshot(
             status="incomplete",
             reason=reason,
             symbol=symbol,
+            code=code,
             synthetic=synthetic,
         )
 
     if not bulls or not bears:
-        return incomplete("缺支持或反方，不得生成强方向")
+        return incomplete("missing_side", "缺支持或反方，不得生成强方向")
     if citation_error:
-        return incomplete(citation_error)
+        return incomplete(*citation_error)
+    polarity_error = _polarity_problem(bulls, bears, catalog)
+    if polarity_error:
+        return incomplete(*polarity_error)
     if not (key_disagreement or "").strip() or not (invalidation or "").strip():
-        return incomplete("缺核心分歧或失效条件，不得生成强方向")
+        return incomplete("missing_structure", "缺核心分歧或失效条件，不得生成强方向")
 
     valid_cited = [item for item in cited_impacts if item.status == "valid" and item.direction]
     dirs = {item.direction for item in valid_cited}
     if "bullish" in dirs and "bearish" in dirs:
         direction = "neutral"
         status = "neutral"
+        code = "evidence_conflict"
         reason = "证据冲突：两侧均引用了方向相反的 valid CausalImpact；保留两侧，不按单一权重强行选择"
         quality = "partial"
     elif dirs == {"bullish"}:
         direction = "bullish"
         status = "ok"
+        code = "ok"
         reason = "无对立的 valid CausalImpact；引用的确认路径支持偏多，仍保留反方 driver"
         quality = "complete" if cau_ids else "partial"
     elif dirs == {"bearish"}:
         direction = "bearish"
         status = "ok"
+        code = "ok"
         reason = "无对立的 valid CausalImpact；引用的确认路径支持偏空，仍保留反方 driver"
         quality = "complete" if cau_ids else "partial"
     else:
         direction = "neutral"
         status = "neutral"
+        code = "neutral"
         reason = "支持与反方同时存在，没有单一有效因果压过反方"
         quality = "partial"
 
@@ -259,5 +311,6 @@ def build_thesis_snapshot(
         status=status,
         reason=reason,
         symbol=symbol,
+        code=code,
         synthetic=synthetic,
     )

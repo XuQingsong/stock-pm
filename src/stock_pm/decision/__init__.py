@@ -29,7 +29,7 @@ from .facts import (
 )
 from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot, thesis_changed_fields
-from .types import FactRef, MaterialityRule
+from .types import FactRef, MaterialityRule, SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL
 from .what_changed import (
     NO_MATERIAL_CHANGE_THESIS,
     WhatChanged,
@@ -59,6 +59,9 @@ __all__ = [
     "OhlcCheck",
     "PriceExpectationTension",
     "RATES_DISCOUNT_MECHANISM",
+    "SCOPE_GLOBAL",
+    "SCOPE_SECTOR",
+    "SCOPE_SYMBOL",
     "ThesisSnapshot",
     "UNCONFIRMED",
     "ValidatedBar",

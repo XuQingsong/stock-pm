@@ -42,7 +42,9 @@ Facts
 
 输出：`id`, `metric`, `previous_value/current_value`, `previous_as_of/current_as_of`, `delta`, `delta_pct`, `comparison_window`, `direction` (`up`/`down`/`unchanged`/`unknown`), `materiality` (`material`/`immaterial`/`unknown`), `fact_refs`, `summary`。
 
-无 previous → `direction=unknown`，禁止「上升/下降」。低于阈值 → 仍可有方向，但 `materiality=immaterial`，summary 可为「今日无重大变化」。绕过 `require_valid_bar` 向价格 Change 传数字 → `TypeError`。
+`ValidatedBar` / `ValidatedFact` 在 `__post_init__` 内强制校验，直接构造非法实例会失败。价格 Change 必须消费已通过校验的 `ValidatedBar`。
+
+Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司 Thesis 只能直接引用同标的公司级证据；全局宏观必须经 CausalImpact。bull/bear driver 必须与方向性 CausalImpact 极性一致。
 
 ### `ExpectationGap` ← `build_expectation_gap`
 
@@ -50,21 +52,21 @@ Facts
 
 输出：`actual_vs_latest_pct`（surprise）, `latest_vs_prior_pct`（revision）, `revision_trend`（仅当 prior 存在且口径一致）, `status` (`ok`/`conflict`/`insufficient`), refs。
 
-必须解析并验证 `prior_as_of < latest_as_of < actual_as_of`，且 latest 在财报前。缺失或非法 `as_of` → `insufficient`；时间颠倒 → `conflict`；不同 fiscal period → `insufficient`，禁止比较。口径或币种冲突 → `conflict`，不任选。缺 prior → 无 `revision_trend`。
+必须解析并验证 **UTC** 下 `prior_as_of < latest_as_of < actual_as_of`，且 latest 在财报前。缺失或非法 `as_of` → `insufficient`；时间颠倒 → `conflict`；不同或缺失 fiscal period → `insufficient`。同一快照两个 latest consensus 超容差 → `conflict`，两个 source refs 均保留。actual(company) 与 consensus(street) 的来源不同不视为冲突。缺 latest.value → `insufficient`，即使 prior 有值。
 
 ### `PriceExpectationTension` ← `build_price_expectation_tension`
 
 输入：EPS/营收 revision%、价格变动%、可选估值变动。
 
-输出：`fundamentals_change`, `price_change`, `valuation_change`, `tension` ∈ {`improving_faster_than_price`, `price_ahead_of_fundamentals`, `aligned`, `divergence`, `insufficient`}, `divergence_kind`, `evidence_quality`。
+输出：`fundamentals_change`, `price_change`, `valuation_change`, `tension` ∈ {`improving_faster_than_price`, `price_ahead_of_fundamentals`, `aligned`, `divergence`, `price_decline_ahead_of_fundamentals`, `deteriorating_faster_than_price`, `insufficient`}, `divergence_kind`, `evidence_quality`, `code`。
 
-先处理方向背离：基本面与价格符号相反 → `divergence`（`fundamentals_down_price_up` / `fundamentals_up_price_down`），不得用绝对值抹平符号。同号才比较量级。缺核心序列 → `insufficient`。永不输出 `priced_in`。
+先处理方向背离：基本面与价格符号相反 → `divergence`。正同号才使用 improving/涨幅语义；负同号使用 deterioration/price_decline 语义，不得复用涨幅文案。缺核心序列 → `insufficient`。永不输出 `priced_in`。
 
 ### `CausalImpact` ← `build_causal_impact`
 
 必填结构：`cause`, `market_confirmation`, `mechanism`, `exposure`, `effect_target`, `direction`, `horizon`, `counter_evidence`, `confidence`, `fact_refs`, `status`。
 
-宏观路径必须 `assess_market_confirmation`。确认序列按规范化指标去重，要求 **独立通道** ≥2（us2y / real_rate / cut_odds），时间窗口一致，cause 必须 material，cause 指标必须与 mechanism 兼容。利率方向由 **机制 + 确认路径 + exposure** 决定，不取 `cause.direction`。`status=unconfirmed` 时中文理由含「市场未确认」，`direction` 为空。`source_class=social` 且未核实 → `unverified`。Oil 可对能源生产商为正、航空为负；高估值科技仅当利率通道确认才允许负向；WTI 不得套用 `inflation_to_rates_to_discount`。
+宏观路径必须 `assess_market_confirmation`。确认序列按规范化指标去重，要求独立通道 ≥2，**comparison_window 与 UTC as_of 均在容差内**（缺 as_of 不得 confirmed）。`fact_refs` 合并 cause 与**实际采用**的 confirmation channel refs，未采用序列不得冒充证据。cause 必须 material，cause 指标必须与 mechanism 兼容。
 
 ### `ThesisSnapshot` ← `build_thesis_snapshot`
 
@@ -110,6 +112,16 @@ Facts
 | Q | 方向不变但核心论据改变 → `thesis_changed=True` 并列出 changed fields | `build_what_changed` |
 | R | fund=-10%、price=+5% → `divergence` / `fundamentals_down_price_up` | `build_price_expectation_tension` |
 | S | fund=+10%、price=-5% → `divergence` / `fundamentals_up_price_down` | `build_price_expectation_tension` |
+| T | 直接构造非法 ValidatedBar 必须失败，不能生成 Change | `ValidatedBar` / `build_change_snapshot` |
+| U | NVDA Thesis 引用 AAPL EPS gap → incomplete | `build_thesis_snapshot` |
+| V | 宏观 CPI Change 直接作为 NVDA driver → incomplete | `build_thesis_snapshot` |
+| W | bull driver 引用 bearish impact → incomplete | `build_thesis_snapshot` |
+| X | 两个 latest consensus 同快照超容差 → conflict，两个 refs 均保留 | `build_expectation_gap` |
+| Y | 跨时区 as_of 按 UTC 排序正确 | `build_expectation_gap` |
+| Z | 相隔数月但同为 1d 窗口不得 confirmed | `assess_market_confirmation` |
+| AA | valid rates impact.fact_refs 含 CPI 与实际确认通道，不含未采用序列 | `build_causal_impact` |
+| AB | fund=-10%、price=-30% → price_decline 语义，不是涨幅 | `build_price_expectation_tension` |
+| AC | fund=-20%、price=-5% → deteriorating，不是 improving | `build_price_expectation_tension` |
 
 ## 明确不在本阶段
 

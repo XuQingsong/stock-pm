@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .numbers import as_number
+from .numbers import as_number, is_finite_number
 from .types import FactRef, FactValidationError
 
 PRICE_METRICS = frozenset({"close", "open", "high", "low", "price", "last"})
@@ -16,6 +16,24 @@ class OhlcCheck:
     ok: bool
     errors: tuple[str, ...]
     bar: dict[str, Any]
+
+
+def ohlc_constraint_errors(open_px: Any, high: Any, low: Any, close: Any) -> list[str]:
+    errors: list[str] = []
+    if not all(is_finite_number(value) for value in (open_px, high, low, close)):
+        errors.append("ohlc_incomplete")
+        return errors
+    if high < low:
+        errors.append("high_lt_low")
+    if high < open_px:
+        errors.append("high_lt_open")
+    if high < close:
+        errors.append("high_lt_close")
+    if low > open_px:
+        errors.append("low_gt_open")
+    if low > close:
+        errors.append("low_gt_close")
+    return errors
 
 
 @dataclass(frozen=True)
@@ -30,6 +48,13 @@ class ValidatedBar:
     volume: float | None = None
     refs: tuple[FactRef, ...] = ()
     synthetic: bool = True
+
+    def __post_init__(self) -> None:
+        errors = ohlc_constraint_errors(self.open, self.high, self.low, self.close)
+        if errors:
+            raise FactValidationError("OHLC failed fact validation: " + ", ".join(errors))
+        if self.volume is not None and not is_finite_number(self.volume):
+            raise FactValidationError("OHLC failed fact validation: volume_non_finite")
 
     def price_for(self, metric: str) -> float:
         key = (metric or "").strip().lower()
@@ -55,6 +80,14 @@ class ValidatedFact:
     refs: tuple[FactRef, ...] = ()
     synthetic: bool = True
 
+    def __post_init__(self) -> None:
+        if not (self.metric or "").strip():
+            raise FactValidationError("numeric fact metric is required")
+        if not is_finite_number(self.value):
+            raise FactValidationError(f"numeric fact {self.metric!r} is missing or non-finite")
+        if not (self.as_of or "").strip():
+            raise FactValidationError(f"numeric fact {self.metric!r} requires as_of")
+
 
 def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
     row = dict(bar or {})
@@ -62,21 +95,7 @@ def validate_ohlc(bar: dict[str, Any] | None) -> OhlcCheck:
     high = as_number(row.get("high") if "high" in row else row.get("high_price"))
     low = as_number(row.get("low") if "low" in row else row.get("low_price"))
     close = as_number(row.get("close") if "close" in row else row.get("close_price"))
-    errors: list[str] = []
-    if None in (open_px, high, low, close):
-        errors.append("ohlc_incomplete")
-        return OhlcCheck(ok=False, errors=tuple(errors), bar=row)
-    assert open_px is not None and high is not None and low is not None and close is not None
-    if high < low:
-        errors.append("high_lt_low")
-    if high < open_px:
-        errors.append("high_lt_open")
-    if high < close:
-        errors.append("high_lt_close")
-    if low > open_px:
-        errors.append("low_gt_open")
-    if low > close:
-        errors.append("low_gt_close")
+    errors = ohlc_constraint_errors(open_px, high, low, close)
     return OhlcCheck(ok=not errors, errors=tuple(errors), bar=row)
 
 

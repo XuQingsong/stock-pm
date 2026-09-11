@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from stock_pm.analytics import _number
 
 
 def as_number(value: Any) -> float | None:
-    return _number(value)
+    number = _number(value)
+    if number is None or not math.isfinite(number):
+        return None
+    return number
+
+
+def is_finite_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
 def signed_delta(current: float | None, previous: float | None) -> float | None:

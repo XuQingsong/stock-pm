@@ -6,11 +6,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from .change import infer_scope
 from .numbers import as_number, pct_delta, round_pct
-from .types import FactRef
+from .timeparse import parse_as_of
+from .types import SCOPE_GLOBAL, FactRef
 
 
-ALLOWED_BASIS = {"gaap", "non-gaap", "non_gaap", "unknown"}
+CONSENSUS_ABS_TOLERANCE = 0.01
+CONSENSUS_REL_TOLERANCE = 0.005
 
 
 @dataclass(frozen=True)
@@ -46,6 +49,9 @@ class ExpectationGap:
     status: str
     reason: str
     fact_refs: tuple[FactRef, ...]
+    code: str = ""
+    scope: str = SCOPE_GLOBAL
+    subject: str | None = None
     synthetic: bool = True
 
     def to_dict(self) -> dict[str, Any]:
@@ -63,7 +69,9 @@ def _basis(value: str | None) -> str:
     return "unknown"
 
 
-def _compatible(left: ExpectationPoint | None, right: ExpectationPoint | None) -> str | None:
+def _compatible_basis_currency(
+    left: ExpectationPoint | None, right: ExpectationPoint | None
+) -> str | None:
     if left is None or right is None:
         return None
     if left.currency and right.currency and left.currency != right.currency:
@@ -71,17 +79,34 @@ def _compatible(left: ExpectationPoint | None, right: ExpectationPoint | None) -
     left_b, right_b = _basis(left.basis), _basis(right.basis)
     if left_b != "unknown" and right_b != "unknown" and left_b != right_b:
         return "basis_conflict"
-    if (
-        left.source
-        and right.source
-        and left.source != right.source
-        and left.value is not None
-        and right.value is not None
-        and left.value != right.value
-        and left_b != right_b
-    ):
-        return "source_conflict"
     return None
+
+
+def _values_diverge(left: float | None, right: float | None) -> bool:
+    if left is None or right is None:
+        return False
+    if abs(left - right) <= CONSENSUS_ABS_TOLERANCE:
+        return False
+    scale = max(abs(left), abs(right))
+    if scale > 0 and abs(left - right) / scale <= CONSENSUS_REL_TOLERANCE:
+        return False
+    return True
+
+
+def _same_consensus_snapshot(left: ExpectationPoint, right: ExpectationPoint, gap_period: str | None) -> bool:
+    left_period = (left.fiscal_period or gap_period or "").strip()
+    right_period = (right.fiscal_period or gap_period or "").strip()
+    if left_period and right_period and left_period != right_period:
+        return False
+    left_dt = parse_as_of(left.as_of)
+    right_dt = parse_as_of(right.as_of)
+    if not isinstance(left_dt, datetime) or not isinstance(right_dt, datetime):
+        return False
+    if left_dt != right_dt:
+        return False
+    if _compatible_basis_currency(left, right):
+        return False
+    return True
 
 
 def _trend(revision_pct: float | None) -> str | None:
@@ -94,28 +119,26 @@ def _trend(revision_pct: float | None) -> str | None:
     return "unchanged"
 
 
-def parse_as_of(value: str | None) -> datetime | None | str:
-    """Return datetime, None if missing, or 'invalid' if unparseable."""
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text:
-        return None
-    text = text.replace("Z", "+00:00")
-    try:
-        dt = datetime.fromisoformat(text)
-    except ValueError:
-        return "invalid"
-    if dt.tzinfo is not None:
-        dt = dt.replace(tzinfo=None)
-    return dt
-
-
 def _point_period(point: ExpectationPoint | None) -> str | None:
     if point is None:
         return None
     text = (point.fiscal_period or "").strip()
     return text or None
+
+
+def _collect_refs(*points: ExpectationPoint | None) -> tuple[FactRef, ...]:
+    refs: list[FactRef] = []
+    seen: set[tuple] = set()
+    for point in points:
+        if not point or not point.fact_ref:
+            continue
+        ref = point.fact_ref
+        key = (ref.ref_table, str(ref.ref_id), ref.as_of, ref.source)
+        if key in seen:
+            continue
+        seen.add(key)
+        refs.append(ref)
+    return tuple(refs)
 
 
 def _blocked_gap(
@@ -129,6 +152,9 @@ def _blocked_gap(
     refs: tuple[FactRef, ...],
     status: str,
     reason: str,
+    code: str,
+    scope: str,
+    subject: str | None,
     synthetic: bool,
 ) -> ExpectationGap:
     return ExpectationGap(
@@ -150,34 +176,41 @@ def _blocked_gap(
         status=status,
         reason=reason,
         fact_refs=refs,
+        code=code,
+        scope=scope,
+        subject=subject,
         synthetic=synthetic,
     )
 
 
-def _validate_periods(
+def _resolved_period(
     fiscal_period: str | None,
     actual: ExpectationPoint | None,
     latest_consensus: ExpectationPoint | None,
     prior_consensus: ExpectationPoint | None,
-) -> str | None:
+    conflicting_latest: ExpectationPoint | None,
+) -> tuple[str | None, str | None]:
     periods: list[str] = []
     gap_period = (fiscal_period or "").strip()
     if gap_period:
         periods.append(gap_period)
-    for point in (actual, latest_consensus, prior_consensus):
+    for point in (actual, latest_consensus, prior_consensus, conflicting_latest):
         period = _point_period(point)
         if period:
             periods.append(period)
-    if periods and len(set(periods)) > 1:
-        return "不同 fiscal period 禁止比较"
-    return None
+    unique = set(periods)
+    if unique and len(unique) > 1:
+        return None, "period_mismatch"
+    if not unique:
+        return None, "missing_period"
+    return next(iter(unique)), None
 
 
 def _validate_as_of_order(
     actual: ExpectationPoint | None,
     latest_consensus: ExpectationPoint | None,
     prior_consensus: ExpectationPoint | None,
-) -> tuple[str, str] | None:
+) -> tuple[str, str, str] | None:
     parsed: dict[str, datetime] = {}
     for name, point in (
         ("prior", prior_consensus),
@@ -188,16 +221,16 @@ def _validate_as_of_order(
             continue
         dt = parse_as_of(point.as_of)
         if dt is None:
-            return ("insufficient", "缺失 as_of，不能比较预期")
+            return ("insufficient", "missing_as_of", "缺失 as_of，不能比较预期")
         if dt == "invalid":
-            return ("insufficient", "非法 as_of，不能比较预期")
+            return ("insufficient", "invalid_as_of", "非法 as_of，不能比较预期")
         parsed[name] = dt
     if "prior" in parsed and "latest" in parsed and not (parsed["prior"] < parsed["latest"]):
-        return ("conflict", "时间顺序颠倒：prior_as_of 必须早于 latest_as_of")
+        return ("conflict", "time_order", "时间顺序颠倒：prior_as_of 必须早于 latest_as_of")
     if "latest" in parsed and "actual" in parsed and not (parsed["latest"] < parsed["actual"]):
-        return ("conflict", "latest 必须是财报前共识（latest_as_of < actual_as_of）")
+        return ("conflict", "time_order", "latest 必须是财报前共识（latest_as_of < actual_as_of）")
     if "prior" in parsed and "actual" in parsed and not (parsed["prior"] < parsed["actual"]):
-        return ("conflict", "时间顺序颠倒：prior_as_of 必须早于 actual_as_of")
+        return ("conflict", "time_order", "时间顺序颠倒：prior_as_of 必须早于 actual_as_of")
     return None
 
 
@@ -210,18 +243,15 @@ def build_expectation_gap(
     prior_consensus: ExpectationPoint | None = None,
     conflicting_latest: ExpectationPoint | None = None,
     gap_id: str | None = None,
+    scope: str | None = None,
+    subject: str | None = None,
     synthetic: bool = True,
 ) -> ExpectationGap:
-    refs: list[FactRef] = []
-    for point in (actual, latest_consensus, prior_consensus):
-        if point and point.fact_ref:
-            refs.append(point.fact_ref)
-
+    refs = _collect_refs(actual, latest_consensus, prior_consensus, conflicting_latest)
     ident = gap_id or f"exp|{metric}|{fiscal_period or ''}"
-    ref_tuple = tuple(refs)
+    resolved_scope = infer_scope(metric, scope)
 
-    period_reason = _validate_periods(fiscal_period, actual, latest_consensus, prior_consensus)
-    if period_reason:
+    def blocked(status: str, code: str, reason: str) -> ExpectationGap:
         return _blocked_gap(
             ident=ident,
             metric=metric,
@@ -229,85 +259,70 @@ def build_expectation_gap(
             actual=actual,
             latest_consensus=latest_consensus,
             prior_consensus=prior_consensus,
-            refs=ref_tuple,
-            status="insufficient",
-            reason=period_reason,
+            refs=refs,
+            status=status,
+            reason=reason,
+            code=code,
+            scope=resolved_scope,
+            subject=subject,
             synthetic=synthetic,
         )
+
+    period, period_code = _resolved_period(
+        fiscal_period, actual, latest_consensus, prior_consensus, conflicting_latest
+    )
+    if period_code == "period_mismatch":
+        return blocked("insufficient", "period_mismatch", "不同 fiscal period 禁止比较")
+    if period_code == "missing_period":
+        return blocked("insufficient", "missing_period", "fiscal period 缺失，不能声称完整可比")
 
     as_of_block = _validate_as_of_order(actual, latest_consensus, prior_consensus)
     if as_of_block:
-        status, reason = as_of_block
-        return _blocked_gap(
-            ident=ident,
-            metric=metric,
-            fiscal_period=fiscal_period,
-            actual=actual,
-            latest_consensus=latest_consensus,
-            prior_consensus=prior_consensus,
-            refs=ref_tuple,
-            status=status,
-            reason=reason,
-            synthetic=synthetic,
-        )
+        status, code, reason = as_of_block
+        return blocked(status, code, reason)
 
     if conflicting_latest is not None and latest_consensus is not None:
-        return _blocked_gap(
-            ident=ident,
-            metric=metric,
-            fiscal_period=fiscal_period,
-            actual=actual,
-            latest_consensus=latest_consensus,
-            prior_consensus=prior_consensus,
-            refs=ref_tuple,
-            status="conflict",
-            reason="来源或口径冲突，不得任选一个共识",
-            synthetic=synthetic,
-        )
+        if not _same_consensus_snapshot(latest_consensus, conflicting_latest, period):
+            return blocked("conflict", "source_conflict", "多来源共识不是同一快照，不得任选")
+        left_v = as_number(latest_consensus.value)
+        right_v = as_number(conflicting_latest.value)
+        if _values_diverge(left_v, right_v):
+            return blocked("conflict", "source_conflict", "同一快照多来源共识差异超过容差，不得任选")
 
     for left, right in (
         (actual, latest_consensus),
         (latest_consensus, prior_consensus),
         (actual, prior_consensus),
     ):
-        conflict = _compatible(left, right)
+        conflict = _compatible_basis_currency(left, right)
         if conflict:
-            return _blocked_gap(
-                ident=ident,
-                metric=metric,
-                fiscal_period=fiscal_period,
-                actual=actual,
-                latest_consensus=latest_consensus,
-                prior_consensus=prior_consensus,
-                refs=ref_tuple,
-                status="conflict",
-                reason="来源或口径冲突，不得任选一个共识",
-                synthetic=synthetic,
-            )
+            return blocked("conflict", conflict, "来源或口径冲突，不得任选一个共识")
 
     actual_v = as_number(actual.value) if actual else None
     latest_v = as_number(latest_consensus.value) if latest_consensus else None
     prior_v = as_number(prior_consensus.value) if prior_consensus else None
     surprise = round_pct(pct_delta(actual_v, latest_v))
-    revision = round_pct(pct_delta(latest_v, prior_v)) if prior_v is not None else None
-    if prior_v is None:
-        revision_trend = None
-        reason = "缺历史共识，不能生成 revision trend"
-        status = "ok" if latest_v is not None or actual_v is not None else "insufficient"
-        if latest_v is None and actual_v is not None:
-            status = "insufficient"
-            reason = "缺最新财报前预期，actual 不能比较"
-        elif prior_v is None:
-            status = "ok" if latest_v is not None else "insufficient"
-    else:
+    revision = round_pct(pct_delta(latest_v, prior_v)) if prior_v is not None and latest_v is not None else None
+    can_surprise = actual_v is not None and latest_v is not None
+    can_revision = latest_v is not None and prior_v is not None
+    if latest_v is None:
+        return blocked("insufficient", "missing_latest", "缺最新财报前预期，actual 不能比较")
+    if not can_surprise and not can_revision:
+        return blocked("insufficient", "insufficient_points", "缺比较点，不能生成完整预期差")
+
+    if can_revision:
         revision_trend = _trend(revision)
         status = "ok"
+        code = "ok"
         reason = "actual 对照最新财报前共识；修订对照更早共识"
-
-    if actual_v is not None and latest_v is None:
-        status = "insufficient"
-        surprise = None
-        reason = "缺最新财报前预期，actual 不能比较"
+        if not can_surprise:
+            reason = "修订对照更早共识；缺 actual 故无 surprise"
+    else:
+        revision_trend = None
+        revision = None
+        status = "ok"
+        code = "ok"
+        reason = "缺历史共识，不能生成 revision trend"
 
     currency = None
     basis = None
@@ -323,14 +338,14 @@ def build_expectation_gap(
     return ExpectationGap(
         id=ident,
         metric=metric,
-        fiscal_period=fiscal_period,
+        fiscal_period=period,
         actual=actual_v,
         latest_consensus=latest_v,
         prior_consensus=prior_v,
         actual_as_of=actual.as_of if actual else None,
         latest_consensus_as_of=latest_consensus.as_of if latest_consensus else None,
         prior_consensus_as_of=prior_consensus.as_of if prior_consensus else None,
-        surprise_pct=surprise,
+        surprise_pct=surprise if can_surprise else None,
         revision_pct=revision,
         revision_trend=revision_trend,
         analyst_count=latest_consensus.analyst_count if latest_consensus else None,
@@ -338,6 +353,9 @@ def build_expectation_gap(
         basis=basis,
         status=status,
         reason=reason,
-        fact_refs=tuple(refs),
+        fact_refs=refs,
+        code=code,
+        scope=resolved_scope,
+        subject=subject,
         synthetic=synthetic,
     )

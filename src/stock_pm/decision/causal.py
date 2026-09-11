@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any, Iterable
 
 from stock_pm.impact import THEME_NAMES
 
 from .change import ChangeSnapshot
+from .timeparse import as_of_span, parse_as_of
 from .types import FactRef
 
 
@@ -21,6 +23,7 @@ CHANNEL_FUEL_COST = "fuel_cost"
 
 UNCONFIRMED = "市场未确认"
 UNVERIFIED = "unverified"
+CONFIRMATION_AS_OF_TOLERANCE = timedelta(days=3)
 
 METRIC_ALIASES = {
     "us_2y": "us2y",
@@ -95,6 +98,8 @@ class MarketConfirmation:
     reason: str
     series: tuple[ChangeSnapshot, ...] = ()
     channels: tuple[str, ...] = ()
+    used: tuple[ChangeSnapshot, ...] = ()
+    code: str = ""
 
 
 @dataclass(frozen=True)
@@ -113,6 +118,7 @@ class CausalImpact:
     status: str
     reason: str
     chain: tuple[str, ...]
+    code: str = ""
     synthetic: bool = True
 
     def to_dict(self) -> dict[str, Any]:
@@ -138,6 +144,21 @@ def _windows_consistent(rows: Iterable[ChangeSnapshot]) -> bool:
     return len(windows) <= 1
 
 
+def _has_as_of(row: ChangeSnapshot) -> bool:
+    dt = parse_as_of(row.current_as_of)
+    return dt is not None and dt != "invalid"
+
+
+def _as_of_cluster_ok(rows: Iterable[ChangeSnapshot], cause: ChangeSnapshot | None = None) -> bool:
+    stamps = [row.current_as_of for row in rows]
+    if cause is not None:
+        stamps.append(cause.current_as_of)
+    span = as_of_span(stamps)
+    if span is None:
+        return False
+    return span <= CONFIRMATION_AS_OF_TOLERANCE
+
+
 def assess_market_confirmation(
     *,
     path: str,
@@ -153,6 +174,8 @@ def assess_market_confirmation(
             reason="未提供市场确认序列",
             series=rows,
             channels=(),
+            used=(),
+            code="missing_series",
         )
     if path == "rates_tightening":
         confirming = [
@@ -161,15 +184,37 @@ def assess_market_confirmation(
             if row.materiality == "material" and _tightening_sign(row.metric, row.direction)
         ]
         needed = [row for row in confirming if canonical_metric(row.metric) in RATES_CONFIRM_METRICS]
-        channels = tuple(canonical_metric(row.metric) for row in needed)
+        if any(not _has_as_of(row) for row in needed):
+            return MarketConfirmation(
+                path=path,
+                status="unconfirmed",
+                reason=UNCONFIRMED,
+                series=rows,
+                channels=tuple(canonical_metric(row.metric) for row in needed),
+                used=(),
+                code="missing_as_of",
+            )
         if not _windows_consistent(needed):
             return MarketConfirmation(
                 path=path,
                 status="unconfirmed",
                 reason="确认序列时间窗口不一致",
                 series=rows,
-                channels=channels,
+                channels=tuple(canonical_metric(row.metric) for row in needed),
+                used=(),
+                code="window_mismatch",
             )
+        if needed and not _as_of_cluster_ok(needed):
+            return MarketConfirmation(
+                path=path,
+                status="unconfirmed",
+                reason=UNCONFIRMED,
+                series=rows,
+                channels=tuple(canonical_metric(row.metric) for row in needed),
+                used=(),
+                code="as_of_mismatch",
+            )
+        channels = tuple(canonical_metric(row.metric) for row in needed)
         if len(set(channels)) >= 2:
             return MarketConfirmation(
                 path=path,
@@ -177,6 +222,8 @@ def assess_market_confirmation(
                 reason="美债/实际利率/降息预期中至少两项独立通道沿紧缩方向且达到重要性阈值",
                 series=rows,
                 channels=tuple(dict.fromkeys(channels)),
+                used=tuple(needed),
+                code="confirmed",
             )
         return MarketConfirmation(
             path=path,
@@ -184,6 +231,8 @@ def assess_market_confirmation(
             reason=UNCONFIRMED,
             series=rows,
             channels=tuple(dict.fromkeys(channels)),
+            used=(),
+            code="unconfirmed",
         )
     return MarketConfirmation(
         path=path,
@@ -191,6 +240,8 @@ def assess_market_confirmation(
         reason="未知确认路径",
         series=rows,
         channels=tuple(canonical_metric(row.metric) for row in unique),
+        used=(),
+        code="unknown_path",
     )
 
 
@@ -244,24 +295,77 @@ def _chain(mechanism: str | None, exposure: Exposure | None) -> tuple[str, ...]:
 
 
 def _windows_match_cause(cause: ChangeSnapshot, confirmation: MarketConfirmation) -> bool:
-    if not confirmation.series:
-        return True
-    cause_window = cause.comparison_window
-    used = [
-        row
-        for row in _dedupe_series(confirmation.series)
-        if row.materiality == "material" and canonical_metric(row.metric) in RATES_CONFIRM_METRICS
-    ]
-    if not used:
-        used = list(_dedupe_series(confirmation.series))
+    used = confirmation.used or ()
     if not used:
         return True
     if not _windows_consistent(used):
         return False
     series_window = used[0].comparison_window
-    if cause_window is None or series_window is None:
+    if cause.comparison_window is None or series_window is None:
         return True
-    return cause_window == series_window
+    return cause.comparison_window == series_window
+
+
+def _merge_fact_refs(cause: ChangeSnapshot | None, confirmation: MarketConfirmation) -> tuple[FactRef, ...]:
+    refs: list[FactRef] = []
+    seen: set[tuple] = set()
+
+    def add(ref: FactRef) -> None:
+        key = (ref.ref_table, str(ref.ref_id), ref.as_of, ref.source)
+        if key in seen:
+            return
+        seen.add(key)
+        refs.append(ref)
+
+    if cause:
+        for ref in cause.fact_refs:
+            add(ref)
+    for row in confirmation.used:
+        for ref in row.fact_refs:
+            add(ref)
+    return tuple(refs)
+
+
+def _impact(
+    *,
+    ident: str,
+    cause: ChangeSnapshot | None,
+    confirmation: MarketConfirmation,
+    mechanism: str | None,
+    exposure: Exposure | None,
+    target: str | None,
+    direction: str | None,
+    horizon: str | None,
+    counters: tuple[str, ...],
+    confidence: str,
+    status: str,
+    reason: str,
+    chain: tuple[str, ...],
+    code: str,
+    include_confirmation_refs: bool,
+    synthetic: bool,
+) -> CausalImpact:
+    refs = _merge_fact_refs(cause, confirmation) if include_confirmation_refs else (
+        tuple(cause.fact_refs) if cause else ()
+    )
+    return CausalImpact(
+        id=ident,
+        cause=cause,
+        market_confirmation=confirmation,
+        mechanism=mechanism,
+        exposure=exposure,
+        effect_target=target,
+        direction=direction,
+        horizon=horizon,
+        counter_evidence=counters,
+        confidence=confidence,
+        fact_refs=refs,
+        status=status,
+        reason=reason,
+        chain=chain,
+        code=code,
+        synthetic=synthetic,
+    )
 
 
 def build_causal_impact(
@@ -276,242 +380,187 @@ def build_causal_impact(
     impact_id: str | None = None,
     synthetic: bool = True,
 ) -> CausalImpact:
-    refs: list[FactRef] = []
-    if cause:
-        refs.extend(cause.fact_refs)
     confirmation = market_confirmation or MarketConfirmation(
-        path="none", status="insufficient", reason="未评估市场确认", series=()
+        path="none", status="insufficient", reason="未评估市场确认", series=(), code="missing_confirmation"
     )
     counters = tuple(counter_evidence or ())
     ident = impact_id or f"cau|{(cause.metric if cause else 'na')}|{(exposure.target if exposure else 'na')}"
     target = exposure.target if exposure else None
 
-    if claim is not None and (not claim.verified or claim.source_class in {"social", "rumor", "unverified"}):
-        return CausalImpact(
-            id=ident,
+    def result(**kwargs: Any) -> CausalImpact:
+        return _impact(
+            ident=ident,
             cause=cause,
-            market_confirmation=confirmation,
-            mechanism=None,
+            confirmation=confirmation,
             exposure=exposure,
-            effect_target=target,
+            target=target,
+            counters=counters,
+            synthetic=synthetic,
+            include_confirmation_refs=False,
+            **kwargs,
+        )
+
+    if claim is not None and (not claim.verified or claim.source_class in {"social", "rumor", "unverified"}):
+        return result(
+            mechanism=None,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="none",
-            fact_refs=tuple(refs),
             status=UNVERIFIED,
             reason="未确认新闻只能作为线索，不能形成有效 CausalImpact",
             chain=(),
-            synthetic=synthetic,
+            code="unverified",
         )
 
     if cause is None:
-        return CausalImpact(
-            id=ident,
-            cause=None,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="none",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="缺 cause fact/change",
             chain=(),
-            synthetic=synthetic,
+            code="missing_cause",
         )
 
     is_macro_rates = mechanism == RATES_DISCOUNT_MECHANISM
     if is_macro_rates and (mechanism is None or exposure is None):
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="none",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="宏观事实不能直接跳到个股方向：需要传导机制和 exposure",
             chain=(),
-            synthetic=synthetic,
+            code="missing_mechanism",
         )
     if mechanism is None or exposure is None:
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="none",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="必须同时存在传导机制和公司/行业 exposure",
             chain=(),
-            synthetic=synthetic,
+            code="missing_mechanism",
         )
 
     if not _mechanism_compatible(mechanism, cause):
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="none",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="机制与原因指标不兼容",
             chain=(),
-            synthetic=synthetic,
+            code="mechanism_mismatch",
         )
 
     expected_path = MECHANISM_CONFIRM_PATH.get(mechanism)
     if expected_path and confirmation.path not in {expected_path, "none"} and confirmation.path:
         if confirmation.path != expected_path:
-            return CausalImpact(
-                id=ident,
-                cause=cause,
-                market_confirmation=confirmation,
+            return result(
                 mechanism=mechanism,
-                exposure=exposure,
-                effect_target=target,
                 direction=None,
                 horizon=None,
-                counter_evidence=counters,
                 confidence="low",
-                fact_refs=tuple(refs),
                 status="insufficient",
                 reason="确认路径与机制不兼容",
                 chain=(),
-                synthetic=synthetic,
+                code="path_mismatch",
             )
 
     if exposure.channel == CHANNEL_DURATION and mechanism != RATES_DISCOUNT_MECHANISM:
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="low",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="高估值科技只有利率通道得到确认时才允许负向",
             chain=(),
-            synthetic=synthetic,
+            code="channel_mismatch",
         )
 
     if is_macro_rates or exposure.channel == CHANNEL_DURATION:
         if confirmation.status != "confirmed":
-            return CausalImpact(
-                id=ident,
-                cause=cause,
-                market_confirmation=confirmation,
+            return result(
                 mechanism=mechanism,
-                exposure=exposure,
-                effect_target=target,
                 direction=None,
                 horizon=None,
-                counter_evidence=counters + (confirmation.reason,),
                 confidence="low",
-                fact_refs=tuple(refs),
                 status="unconfirmed",
                 reason=UNCONFIRMED,
                 chain=(),
-                synthetic=synthetic,
+                code="unconfirmed",
             )
         if not _windows_match_cause(cause, confirmation):
-            return CausalImpact(
-                id=ident,
-                cause=cause,
-                market_confirmation=confirmation,
+            return result(
                 mechanism=mechanism,
-                exposure=exposure,
-                effect_target=target,
                 direction=None,
                 horizon=None,
-                counter_evidence=counters,
                 confidence="low",
-                fact_refs=tuple(refs),
                 status="unconfirmed",
                 reason="确认序列与原因的时间窗口不一致",
                 chain=(),
-                synthetic=synthetic,
+                code="window_mismatch",
+            )
+        if not _as_of_cluster_ok(confirmation.used, cause):
+            return result(
+                mechanism=mechanism,
+                direction=None,
+                horizon=None,
+                confidence="low",
+                status="unconfirmed",
+                reason=UNCONFIRMED,
+                chain=(),
+                code="as_of_mismatch",
             )
 
     if cause.materiality != "material":
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="low",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="原因变化未达重大阈值，不得形成 valid CausalImpact",
             chain=(),
-            synthetic=synthetic,
+            code="immaterial_cause",
         )
 
     direction = _direction_for(mechanism, exposure, cause, confirmation)
     if direction is None:
-        return CausalImpact(
-            id=ident,
-            cause=cause,
-            market_confirmation=confirmation,
+        return result(
             mechanism=mechanism,
-            exposure=exposure,
-            effect_target=target,
             direction=None,
             horizon=None,
-            counter_evidence=counters,
             confidence="low",
-            fact_refs=tuple(refs),
             status="insufficient",
             reason="机制、确认路径与 exposure 无法形成方向",
             chain=(),
-            synthetic=synthetic,
+            code="no_direction",
         )
 
-    return CausalImpact(
-        id=ident,
+    return _impact(
+        ident=ident,
         cause=cause,
-        market_confirmation=confirmation,
+        confirmation=confirmation,
         mechanism=mechanism,
         exposure=exposure,
-        effect_target=target,
+        target=target,
         direction=direction,
         horizon=horizon,
-        counter_evidence=counters,
+        counters=counters,
         confidence="medium",
-        fact_refs=tuple(refs),
         status="valid",
         reason="机制、exposure 与市场确认齐备",
         chain=_chain(mechanism, exposure),
+        code="valid",
+        include_confirmation_refs=True,
         synthetic=synthetic,
     )

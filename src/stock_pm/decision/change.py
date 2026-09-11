@@ -7,10 +7,34 @@ from typing import Any, Iterable
 
 from .facts import ValidatedBar, ValidatedFact, is_price_metric
 from .numbers import as_number, pct_delta, round_pct, signed_delta
-from .types import FactRef, MaterialityRule
+from .types import SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL, FactRef, MaterialityRule
 
 
 NO_MATERIAL_CHANGE = "今日无重大变化"
+
+GLOBAL_METRICS = frozenset(
+    {
+        "cpi",
+        "core_cpi",
+        "pce",
+        "core_pce",
+        "inflation",
+        "us2y",
+        "us_2y",
+        "real_rate",
+        "real_rates",
+        "cut_odds",
+        "vix",
+        "wti",
+        "brent",
+        "oil",
+        "crude",
+        "geopolitics_headline",
+    }
+)
+SYMBOL_METRICS = frozenset(
+    {"close", "open", "high", "low", "price", "last", "eps", "revenue", "pe", "opex", "gross_margin"}
+)
 
 
 @dataclass(frozen=True)
@@ -29,12 +53,25 @@ class ChangeSnapshot:
     fact_refs: tuple[FactRef, ...]
     summary: str
     unit: str | None = None
+    scope: str = SCOPE_GLOBAL
+    subject: str | None = None
     synthetic: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         from .types import to_dict
 
         return to_dict(self)
+
+
+def infer_scope(metric: str, scope: str | None = None) -> str:
+    if scope in {SCOPE_GLOBAL, SCOPE_SECTOR, SCOPE_SYMBOL}:
+        return scope
+    key = (metric or "").strip().lower()
+    if key in GLOBAL_METRICS:
+        return SCOPE_GLOBAL
+    if key in SYMBOL_METRICS or is_price_metric(key):
+        return SCOPE_SYMBOL
+    return SCOPE_GLOBAL
 
 
 def _direction(delta: float | None, *, has_baseline: bool) -> str:
@@ -101,6 +138,8 @@ def build_change_snapshot(
     fact_refs: Iterable[FactRef] | None = None,
     unit: str | None = None,
     change_id: str | None = None,
+    scope: str | None = None,
+    subject: str | None = None,
     synthetic: bool = True,
 ) -> ChangeSnapshot:
     refs: list[FactRef] = list(fact_refs or ())
@@ -142,6 +181,7 @@ def build_change_snapshot(
     direction = _direction(delta, has_baseline=has_baseline)
     materiality = _is_material(delta, rel, materiality_rule)
     ident = change_id or f"chg|{metric}|{current_as_of or ''}|{previous_as_of or ''}"
+    resolved_scope = infer_scope(metric, scope)
     return ChangeSnapshot(
         id=ident,
         metric=metric,
@@ -157,5 +197,7 @@ def build_change_snapshot(
         fact_refs=tuple(refs),
         summary=_summary(direction, materiality, has_baseline=has_baseline),
         unit=unit,
+        scope=resolved_scope,
+        subject=subject,
         synthetic=synthetic,
     )

@@ -1,4 +1,4 @@
-"""Golden tests A–S for Investment Decision Kernel v1.
+"""Golden tests A–AC for Investment Decision Kernel v1.
 
 All fixtures in this module are synthetic. They are not live market prints.
 """
@@ -20,6 +20,8 @@ from stock_pm.decision import (
     OIL_PRODUCER_MECHANISM,
     RATES_DISCOUNT_MECHANISM,
     UNCONFIRMED,
+    ValidatedBar,
+    ValidatedFact,
     ClaimSource,
     ExpectationPoint,
     Exposure,
@@ -48,21 +50,50 @@ def _ref(table: str, ref_id: str) -> FactRef:
     return FactRef(ref_table=table, ref_id=ref_id, as_of="2026-09-10", source="synthetic", synthetic=True)
 
 
-def _chg(metric: str, previous, current, *, rule: MaterialityRule, window: str = "1d"):
+def _chg(
+    metric: str,
+    previous,
+    current,
+    *,
+    rule: MaterialityRule,
+    window: str = "1d",
+    current_as_of: str = "2026-09-10",
+    previous_as_of: str = "2026-09-09",
+    scope: str | None = None,
+    subject: str | None = None,
+):
+    return build_change_snapshot(
+        metric=metric,
+        previous_value=previous,
+        current_value=current,
+        previous_as_of=previous_as_of,
+        current_as_of=current_as_of,
+        comparison_window=window,
+        materiality_rule=rule,
+        fact_refs=(_ref("synthetic_series", metric),),
+        scope=scope,
+        subject=subject,
+        synthetic=True,
+    )
+
+
+def _company_chg(symbol: str, metric: str = "gross_margin", previous=40.0, current=32.0):
     return build_change_snapshot(
         metric=metric,
         previous_value=previous,
         current_value=current,
         previous_as_of="2026-09-09",
         current_as_of="2026-09-10",
-        comparison_window=window,
-        materiality_rule=rule,
-        fact_refs=(_ref("synthetic_series", metric),),
+        comparison_window="1d",
+        materiality_rule=MaterialityRule(abs_delta=2.0),
+        fact_refs=(_ref("synthetic_series", f"{symbol}-{metric}"),),
+        scope="symbol",
+        subject=symbol,
         synthetic=True,
     )
 
 
-def _eps(value, as_of, *, period=None, source="street", basis="gaap"):
+def _eps(value, as_of, *, period="FY2026Q2", source="street", basis="gaap", ref_id=None):
     return ExpectationPoint(
         value=value,
         as_of=as_of,
@@ -70,6 +101,7 @@ def _eps(value, as_of, *, period=None, source="street", basis="gaap"):
         currency="USD",
         basis=basis,
         fiscal_period=period,
+        fact_ref=_ref("consensus", ref_id or f"{source}-{as_of}"),
         synthetic=True,
     )
 
@@ -520,9 +552,9 @@ def test_K_latest_after_actual_is_conflict():
         synthetic=True,
     )
     assert gap.status == "conflict"
+    assert gap.code == "time_order"
     assert gap.surprise_pct is None
     assert gap.revision_pct is None
-    assert "财报前" in gap.reason or "latest_as_of" in gap.reason
 
 
 def test_L_prior_after_latest_is_conflict():
@@ -535,8 +567,8 @@ def test_L_prior_after_latest_is_conflict():
         synthetic=True,
     )
     assert gap.status == "conflict"
+    assert gap.code == "time_order"
     assert gap.surprise_pct is None
-    assert "prior_as_of" in gap.reason or "时间顺序" in gap.reason
 
 
 def test_M_different_fiscal_period_cannot_compare():
@@ -549,8 +581,8 @@ def test_M_different_fiscal_period_cannot_compare():
         synthetic=True,
     )
     assert gap.status == "insufficient"
+    assert gap.code == "period_mismatch"
     assert gap.surprise_pct is None
-    assert "fiscal period" in gap.reason
 
     missing = build_expectation_gap(
         metric="eps",
@@ -560,6 +592,7 @@ def test_M_different_fiscal_period_cannot_compare():
         synthetic=True,
     )
     assert missing.status == "insufficient"
+    assert missing.code == "missing_as_of"
     illegal = build_expectation_gap(
         metric="eps",
         fiscal_period="FY2026Q2",
@@ -568,6 +601,7 @@ def test_M_different_fiscal_period_cannot_compare():
         synthetic=True,
     )
     assert illegal.status == "insufficient"
+    assert illegal.code == "invalid_as_of"
 
 
 # ---------------------------------------------------------------------------
@@ -584,6 +618,7 @@ def test_N_duplicate_us2y_does_not_confirm():
     )
     assert confirmation.status != "confirmed"
     assert confirmation.status == "unconfirmed"
+    assert confirmation.code == "unconfirmed"
     cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
     impact = build_causal_impact(
         cause=cpi,
@@ -621,7 +656,7 @@ def test_O_immaterial_cause_cannot_be_valid():
         synthetic=True,
     )
     assert impact.status != "valid"
-    assert "重大" in impact.reason
+    assert impact.code == "immaterial_cause"
 
 
 def test_P_wti_cannot_use_inflation_to_rates():
@@ -648,7 +683,7 @@ def test_P_wti_cannot_use_inflation_to_rates():
         synthetic=True,
     )
     assert impact.status != "valid"
-    assert "不兼容" in impact.reason
+    assert impact.code == "mechanism_mismatch"
 
 
 # ---------------------------------------------------------------------------
@@ -666,7 +701,7 @@ def test_p0_4_thesis_requires_qualified_citations():
     )
     assert free.status == "incomplete"
     assert free.direction == "incomplete"
-    assert "自由文本" in free.reason
+    assert free.code == "free_text"
 
     missing = build_thesis_snapshot(
         bull_drivers=(Driver("引用缺失", based_on=("chg|does-not-exist",)),),
@@ -677,7 +712,7 @@ def test_p0_4_thesis_requires_qualified_citations():
         synthetic=True,
     )
     assert missing.status == "incomplete"
-    assert "不存在" in missing.reason
+    assert missing.code == "missing_citation"
 
     oil, energy = _oil_producer()
     crossed = build_thesis_snapshot(
@@ -692,7 +727,7 @@ def test_p0_4_thesis_requires_qualified_citations():
         synthetic=True,
     )
     assert crossed.status == "incomplete"
-    assert "跨标的" in crossed.reason
+    assert crossed.code == "cross_symbol"
 
 
 # ---------------------------------------------------------------------------
@@ -701,13 +736,14 @@ def test_p0_4_thesis_requires_qualified_citations():
 
 def test_Q_same_direction_but_core_evidence_changed():
     oil, energy = _oil_producer()
+    cost = _company_chg("XOM")
     previous = build_thesis_snapshot(
         symbol="XOM",
         bull_drivers=(Driver("油价利好上游", based_on=(energy.id,)),),
-        bear_drivers=(Driver("成本与监管", based_on=(oil.id,)),),
+        bear_drivers=(Driver("成本与监管", based_on=(cost.id,)),),
         key_disagreement="油价能否持续",
         invalidation="油价跌破成本曲线",
-        changes=(oil,),
+        changes=(cost,),
         impacts=(energy,),
         generated_at="2026-09-10T12:00:00+00:00",
         synthetic=True,
@@ -715,17 +751,17 @@ def test_Q_same_direction_but_core_evidence_changed():
     current = build_thesis_snapshot(
         symbol="XOM",
         bull_drivers=(Driver("份额扩张才是核心", based_on=(energy.id,)),),
-        bear_drivers=(Driver("成本与监管", based_on=(oil.id,)),),
+        bear_drivers=(Driver("成本与监管", based_on=(cost.id,)),),
         key_disagreement="份额能否跟上油价",
         invalidation="油价跌破成本曲线",
-        changes=(oil,),
+        changes=(cost,),
         impacts=(energy,),
         generated_at="2026-09-11T12:00:00+00:00",
         synthetic=True,
     )
     assert previous.direction == current.direction
     report = build_what_changed(
-        changes=(oil,),
+        changes=(cost,),
         impacts=(energy,),
         previous_thesis=previous,
         current_thesis=current,
@@ -743,13 +779,14 @@ def test_Q_same_direction_but_core_evidence_changed():
 
 def test_p0_6_what_changed_explanations_are_derived():
     oil, energy = _oil_producer()
+    cost = _company_chg("XOM")
     thesis = build_thesis_snapshot(
         symbol="XOM",
         bull_drivers=(Driver("油价利好上游", based_on=(energy.id,)),),
-        bear_drivers=(Driver("成本与监管", based_on=(oil.id,)),),
+        bear_drivers=(Driver("成本与监管", based_on=(cost.id,)),),
         key_disagreement="油价能否持续",
         invalidation="油价跌破成本曲线",
-        changes=(oil,),
+        changes=(cost,),
         impacts=(energy,),
         generated_at="2026-09-10T12:00:00+00:00",
         synthetic=True,
@@ -757,10 +794,10 @@ def test_p0_6_what_changed_explanations_are_derived():
     later = build_thesis_snapshot(
         symbol="XOM",
         bull_drivers=(Driver("油价利好上游", based_on=(energy.id,)),),
-        bear_drivers=(Driver("成本与监管", based_on=(oil.id,)),),
+        bear_drivers=(Driver("成本与监管", based_on=(cost.id,)),),
         key_disagreement="油价能否持续",
         invalidation="油价跌破成本曲线",
-        changes=(oil,),
+        changes=(cost,),
         impacts=(energy,),
         generated_at="2026-09-11T12:00:00+00:00",
         synthetic=True,
@@ -813,3 +850,290 @@ def test_S_fundamentals_up_price_down_is_divergence():
     assert tension.divergence_kind == "fundamentals_up_price_down"
     assert tension.tension not in {"price_ahead_of_fundamentals", "aligned", "improving_faster_than_price"}
     assert "priced_in" not in tension.to_dict()
+
+
+# ---------------------------------------------------------------------------
+# T (P0-A)
+# ---------------------------------------------------------------------------
+
+def test_T_forged_validated_bar_cannot_enter_change():
+    with pytest.raises(FactValidationError):
+        ValidatedBar(as_of="2026-09-10", open=10, high=8, low=11, close=10)
+    with pytest.raises(FactValidationError):
+        bad = ValidatedBar(as_of="2026-09-10", open=10, high=8, low=11, close=10)
+        build_change_snapshot(
+            metric="close",
+            current_bar=bad,
+            previous_bar=require_valid_bar(
+                {"open": 9.8, "high": 10.0, "low": 9.7, "close": 10.0, "as_of": "2026-09-09", "synthetic": True}
+            ),
+            synthetic=True,
+        )
+    with pytest.raises(FactValidationError):
+        ValidatedFact(metric="cpi", value=3.1, as_of=None)
+    with pytest.raises(FactValidationError):
+        ValidatedBar(as_of="2026-09-10", open=10, high=float("nan"), low=9, close=10)
+
+
+# ---------------------------------------------------------------------------
+# U / V (P0-B)
+# ---------------------------------------------------------------------------
+
+def test_U_nvda_thesis_cannot_cite_aapl_eps_gap():
+    aapl_gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        scope="symbol",
+        subject="AAPL",
+        prior_consensus=_eps(1.18, "2026-07-13", ref_id="aapl-prior"),
+        latest_consensus=_eps(1.28, "2026-08-11", ref_id="aapl-latest"),
+        actual=_eps(1.30, "2026-08-12", source="company", ref_id="aapl-actual"),
+        synthetic=True,
+    )
+    assert aapl_gap.status == "ok"
+    nvda_cost = _company_chg("NVDA")
+    thesis = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("引用 AAPL EPS", based_on=(aapl_gap.id,)),),
+        bear_drivers=(Driver("NVDA 成本", based_on=(nvda_cost.id,)),),
+        key_disagreement="标的错配",
+        invalidation="标的错配失效",
+        changes=(nvda_cost,),
+        expectations=(aapl_gap,),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert thesis.status == "incomplete"
+    assert thesis.code == "cross_symbol"
+    assert thesis.direction == "incomplete"
+
+
+def test_V_macro_cpi_cannot_be_direct_nvda_driver():
+    cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
+    nvda_cost = _company_chg("NVDA")
+    assert cpi.scope == "global"
+    thesis = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("CPI 直接看多", based_on=(cpi.id,)),),
+        bear_drivers=(Driver("NVDA 成本", based_on=(nvda_cost.id,)),),
+        key_disagreement="宏观不能直接跳层",
+        invalidation="跳层失效",
+        changes=(cpi, nvda_cost),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert thesis.status == "incomplete"
+    assert thesis.code == "macro_requires_causal"
+
+
+# ---------------------------------------------------------------------------
+# W (P0-C)
+# ---------------------------------------------------------------------------
+
+def test_W_bull_driver_cannot_cite_bearish_impact():
+    cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
+    confirmation = assess_market_confirmation(
+        path="rates_tightening",
+        series=(
+            _chg("us2y", 4.00, 4.12, rule=YIELD_RULE),
+            _chg("real_rate", 1.50, 1.62, rule=YIELD_RULE),
+            _chg("cut_odds", 42.0, 28.0, rule=ODDS_RULE),
+        ),
+        synthetic=True,
+    )
+    impact = build_causal_impact(
+        cause=cpi,
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(
+            target="NVDA",
+            target_kind="company",
+            channel=CHANNEL_DURATION,
+            theme="high_valuation_growth",
+        ),
+        market_confirmation=confirmation,
+        synthetic=True,
+    )
+    assert impact.status == "valid"
+    assert impact.direction == "bearish"
+    nvda_cost = _company_chg("NVDA")
+    thesis = build_thesis_snapshot(
+        symbol="NVDA",
+        bull_drivers=(Driver("看多却引用偏空因果", based_on=(impact.id,)),),
+        bear_drivers=(Driver("成本", based_on=(nvda_cost.id,)),),
+        key_disagreement="极性矛盾",
+        invalidation="极性失效",
+        changes=(nvda_cost,),
+        impacts=(impact,),
+        generated_at="2026-09-10T12:00:00+00:00",
+        synthetic=True,
+    )
+    assert thesis.status == "incomplete"
+    assert thesis.code == "polarity_mismatch"
+    assert thesis.direction != "bearish"
+
+
+# ---------------------------------------------------------------------------
+# X (P0-D)
+# ---------------------------------------------------------------------------
+
+def test_X_two_latest_consensus_same_snapshot_conflict_keeps_both_refs():
+    street = _eps(1.28, "2026-08-11", source="street", ref_id="street-latest")
+    other = _eps(1.40, "2026-08-11", source="other_house", ref_id="other-latest")
+    actual = _eps(1.30, "2026-08-12", source="company", ref_id="company-actual")
+    prior = _eps(1.18, "2026-07-13", ref_id="street-prior")
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        prior_consensus=prior,
+        latest_consensus=street,
+        conflicting_latest=other,
+        actual=actual,
+        synthetic=True,
+    )
+    assert gap.status == "conflict"
+    assert gap.code == "source_conflict"
+    assert gap.surprise_pct is None
+    ref_ids = {str(item.ref_id) for item in gap.fact_refs}
+    assert "street-latest" in ref_ids
+    assert "other-latest" in ref_ids
+
+    company_vs_street = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        prior_consensus=prior,
+        latest_consensus=street,
+        actual=actual,
+        synthetic=True,
+    )
+    assert company_vs_street.status == "ok"
+    assert company_vs_street.code == "ok"
+
+
+# ---------------------------------------------------------------------------
+# Y / Z (P0-E)
+# ---------------------------------------------------------------------------
+
+def test_Y_timezone_aware_as_of_orders_in_utc():
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        prior_consensus=_eps(1.18, "2026-07-13T00:00:00+00:00", ref_id="y-prior"),
+        latest_consensus=_eps(1.28, "2026-08-12T02:00:00+09:00", ref_id="y-latest"),
+        actual=_eps(1.30, "2026-08-11T20:00:00+00:00", source="company", ref_id="y-actual"),
+        synthetic=True,
+    )
+    assert gap.status == "ok"
+    assert gap.code == "ok"
+    assert gap.surprise_pct == pytest.approx(1.56, abs=0.01)
+
+
+def test_Z_same_1d_window_months_apart_does_not_confirm():
+    confirmation = assess_market_confirmation(
+        path="rates_tightening",
+        series=(
+            _chg("us2y", 4.00, 4.12, rule=YIELD_RULE, current_as_of="2026-01-15", previous_as_of="2026-01-14"),
+            _chg("real_rate", 1.50, 1.62, rule=YIELD_RULE, current_as_of="2026-09-10", previous_as_of="2026-09-09"),
+        ),
+        synthetic=True,
+    )
+    assert confirmation.status != "confirmed"
+    assert confirmation.code == "as_of_mismatch"
+    assert confirmation.used == ()
+
+
+# ---------------------------------------------------------------------------
+# AA (P0-F)
+# ---------------------------------------------------------------------------
+
+def test_AA_valid_rates_impact_refs_include_cause_and_used_channels():
+    cpi = _chg("cpi", 3.0, 3.5, rule=CPI_RULE)
+    us2y = _chg("us2y", 4.00, 4.12, rule=YIELD_RULE)
+    real_rate = _chg("real_rate", 1.50, 1.62, rule=YIELD_RULE)
+    cut_odds = _chg("cut_odds", 42.0, 28.0, rule=ODDS_RULE)
+    vix = _chg("vix", 16.0, 18.5, rule=VIX_RULE)
+    confirmation = assess_market_confirmation(
+        path="rates_tightening",
+        series=(us2y, real_rate, cut_odds, vix),
+        synthetic=True,
+    )
+    assert confirmation.status == "confirmed"
+    impact = build_causal_impact(
+        cause=cpi,
+        mechanism=RATES_DISCOUNT_MECHANISM,
+        exposure=Exposure(
+            target="AVGO",
+            target_kind="company",
+            channel=CHANNEL_DURATION,
+            theme="high_valuation_growth",
+        ),
+        market_confirmation=confirmation,
+        synthetic=True,
+    )
+    assert impact.status == "valid"
+    ref_ids = {str(item.ref_id) for item in impact.fact_refs}
+    assert {"cpi", "us2y", "real_rate", "cut_odds"} <= ref_ids
+    assert "vix" not in ref_ids
+    used_metrics = {row.metric for row in confirmation.used}
+    assert used_metrics == {"us2y", "real_rate", "cut_odds"}
+
+
+# ---------------------------------------------------------------------------
+# AB / AC (P0-G)
+# ---------------------------------------------------------------------------
+
+def test_AB_both_negative_price_falls_faster_is_not_price_ahead_copy():
+    tension = build_price_expectation_tension(
+        fundamentals_change=-10.0,
+        price_change=-30.0,
+        synthetic=True,
+    )
+    assert tension.tension == "price_decline_ahead_of_fundamentals"
+    assert tension.code == "price_decline_ahead"
+    assert tension.tension != "price_ahead_of_fundamentals"
+    assert "涨幅" not in tension.reason
+    assert "improving" not in tension.tension
+
+
+def test_AC_both_negative_fundamentals_worsen_faster_is_not_improving():
+    tension = build_price_expectation_tension(
+        fundamentals_change=-20.0,
+        price_change=-5.0,
+        synthetic=True,
+    )
+    assert tension.tension == "deteriorating_faster_than_price"
+    assert tension.code == "deteriorating_faster"
+    assert tension.tension != "improving_faster_than_price"
+    assert "improving" not in tension.reason
+    assert "涨幅" not in tension.reason
+
+
+def test_missing_latest_consensus_not_ok_when_prior_exists():
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period="FY2026Q2",
+        prior_consensus=_eps(1.18, "2026-07-13"),
+        latest_consensus=_eps(None, "2026-08-11"),
+        actual=_eps(1.30, "2026-08-12", source="company"),
+        synthetic=True,
+    )
+    assert gap.status == "insufficient"
+    assert gap.code == "missing_latest"
+    assert gap.surprise_pct is None
+    assert gap.revision_pct is None
+
+
+def test_missing_fiscal_period_not_fully_comparable():
+    gap = build_expectation_gap(
+        metric="eps",
+        fiscal_period=None,
+        latest_consensus=ExpectationPoint(
+            value=1.28, as_of="2026-08-11", source="street", currency="USD", basis="gaap", synthetic=True
+        ),
+        actual=ExpectationPoint(
+            value=1.30, as_of="2026-08-12", source="company", currency="USD", basis="gaap", synthetic=True
+        ),
+        synthetic=True,
+    )
+    assert gap.status == "insufficient"
+    assert gap.code == "missing_period"
+    assert gap.surprise_pct is None

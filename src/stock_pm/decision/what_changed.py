@@ -10,6 +10,7 @@ from .causal import CausalImpact
 from .change import ChangeSnapshot
 from .expectation import ExpectationGap
 from .thesis import ThesisSnapshot, thesis_changed_fields
+from .timeparse import parse_as_of
 
 
 NO_MATERIAL_CHANGE_THESIS = "无重大变化，原判断不变"
@@ -43,16 +44,10 @@ class WhatChanged:
 
 
 def _parse_recency(value: str | None) -> datetime:
-    if not value:
-        return datetime.min
-    text = str(value).strip().replace("Z", "+00:00")
-    try:
-        dt = datetime.fromisoformat(text)
-    except ValueError:
-        return datetime.min
-    if dt.tzinfo is not None:
-        dt = dt.replace(tzinfo=None)
-    return dt
+    dt = parse_as_of(value)
+    if dt is None or dt == "invalid":
+        return datetime.min.replace(tzinfo=None)
+    return dt.replace(tzinfo=None)
 
 
 def _sort_key(item: WhatChangedItem) -> tuple:

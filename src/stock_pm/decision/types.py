@@ -37,3 +37,8 @@ class FactValidationError(ValueError):
 
 class DecisionConflictError(ValueError):
     """Reserved for caller misuse; kernel functions return status instead."""
+
+
+SCOPE_GLOBAL = "global"
+SCOPE_SECTOR = "sector"
+SCOPE_SYMBOL = "symbol"
