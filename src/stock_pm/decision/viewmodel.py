@@ -252,6 +252,7 @@ def render_decision_view(
     preview: str | None = None,
     as_of: str | None = None,
     compared_to: dict[str, Any] | None = None,
+    clock_status: str = "ok",
 ) -> dict[str, Any]:
     change_rows = [change_view(row) for row in changes]
     gap_rows = [gap_view(row) for row in expectations]
@@ -328,9 +329,19 @@ def render_decision_view(
         ),
     ]
 
+    blocking = [row for row in data_gaps if row.get("code") == "clock_insufficient"]
+    cannot = clock_status == "clock_insufficient" or (
+        thesis.status == "incomplete" and report["summary"] != NO_MATERIAL_CHANGE_THESIS
+    )
+    reason = None
+    if cannot:
+        reason = (blocking[0]["text"] if blocking else None) or thesis.reason or "现有证据不足以形成有效判断"
     return {
         "symbol": symbol,
-        "as_of": as_of or thesis.generated_at,
+        "as_of": None if clock_status == "clock_insufficient" else as_of,
+        "clock_status": clock_status,
+        "cannot_form_judgment": cannot,
+        "cannot_form_judgment_reason": reason,
         "evidence_quality": thesis.evidence_quality,
         "thesis": thesis_view(thesis),
         "updated_at": thesis.generated_at,

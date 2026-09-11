@@ -1,8 +1,6 @@
 # Investment Decision Kernel v1
 
-阶段 1 只建立投资分析内核与 Golden Tests。不改页面、API、schema，不接外部数据。
-
-本内核是新的决策主链，不是旧 `impact.macro_impact` / `environment.causal_one_liner` / `prediction.synthesize_prediction` 的平行产品。那些模块继续服务现有页面；宏观→个股方向必须走本内核，不得复用会跳层的 `MACRO_RULES`。
+本内核是新的决策主链，不是旧 `impact.macro_impact` / `environment.causal_one_liner` / `prediction.synthesize_prediction` 的平行产品。那些模块继续服务现有页面；宏观→个股方向必须走本内核，不得复用会跳层的 `MACRO_RULES`。阶段范围只维护在文末「阶段边界」，此处不重复。
 
 复用：`analytics._number`（缺失保持 `None`，不转 0）、`impact.THEME_NAMES`（行业/主题命名）。
 
@@ -143,3 +141,5 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 - **阶段一**：只建立本内核与 Golden Tests A–AM。不含 UI、API、schema migration、外部数据源。
 - **阶段二**：只把本内核接到现有 `/stock/{symbol}` 页面，并增加只读 `GET /api/stock/{symbol}/decision`。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap。合成 A/B/C 必须 `ENABLE_DECISION_PREVIEW=true` 且 `APP_ENV` 为 development/test/local，页面标注「合成演示数据」；缺省或生产环境绝不返回 fixture。
 - **明确不含**：schema migration、Alpha Vantage / SEC / 新闻等新外部数据源、预测价格/概率、Outcome 回检、多周期、自动学习。不合并阶段 1 Draft。
+
+数据集时钟只使用 `observed_at` / `ingested_at` / `synced_at` / `source_as_of` / 已成交 `bar_time`。`event_time`、`release_date`、`fiscal_period` 是事件或计划时间，不得推进时钟；无可靠观察时间返回 `clock_insufficient`，不得用 `date.today()` 或未来日程代替。

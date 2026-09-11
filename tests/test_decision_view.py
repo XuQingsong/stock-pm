@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 from stock_pm.decision.assemble import assemble_from_bundle
-from stock_pm.decision.clock import dataset_as_of, macro_window, partition_macros
+from stock_pm.decision.clock import classify_macros, dataset_as_of, macro_window, partition_macros
 from stock_pm.decision.preview import build_preview, preview_allowed
 from stock_pm.decision.viewmodel import CHAIN_STEPS
 from stock_pm.config import Settings
@@ -234,8 +234,8 @@ def test_preview_requires_explicit_dual_opt_in(monkeypatch):
 def test_old_macros_stay_in_window_when_wall_clock_is_later():
     today = date(2028, 1, 1)
     bars = [{"bar_time": "2026-09-10T20:00:00+00:00"}]
-    macros = [{"event_type": "cpi", "event_time": "2026-09-05T12:30:00+00:00"}]
-    clock = dataset_as_of(bars=bars, macros=macros, today=today)
+    macros = [{"event_type": "cpi", "event_time": "2026-09-05T12:30:00+00:00", "actual": 3.5}]
+    clock = dataset_as_of(bars=bars, macros=macros)
     assert clock == date(2026, 9, 10)
     start, end = macro_window(clock)
     inside, stale, mismatch = partition_macros(macros, start=start, end=end)
@@ -245,6 +245,100 @@ def test_old_macros_stay_in_window_when_wall_clock_is_later():
     wall_start, wall_end = macro_window(today)
     _inside, wall_stale, _mismatch = partition_macros(macros, start=wall_start, end=wall_end)
     assert wall_stale and not _inside
+
+
+def test_future_fomc_does_not_advance_dataset_clock():
+    clock = dataset_as_of(
+        bars=[{"bar_time": "2026-09-10T20:00:00+00:00", "source_as_of": "2026-09-10T20:00:00+00:00"}],
+        macros=[{"event_type": "fomc", "event_time": "2026-12-15T18:00:00+00:00", "name": "FOMC"}],
+    )
+    assert clock == date(2026, 9, 10)
+
+
+def test_future_earnings_release_does_not_advance_dataset_clock():
+    clock = dataset_as_of(
+        bars=[{"bar_time": "2026-09-10T20:00:00+00:00"}],
+        earnings=[{
+            "report_date": "2026-11-20",
+            "release_date": "2026-11-20",
+            "fiscal_period": "FY2027Q1",
+            "period_end": "2026-10-31",
+            "eps_actual": None,
+            "eps_estimate": 0.9,
+        }],
+    )
+    assert clock == date(2026, 9, 10)
+
+
+def test_only_scheduled_macro_is_not_observed_not_confirmed():
+    view = assemble_from_bundle(
+        _coverage_bundle(
+            bars=[
+                {
+                    "symbol": "NVDA",
+                    "open_price": 115,
+                    "high_price": 117,
+                    "low_price": 114,
+                    "close_price": 116,
+                    "volume": 10,
+                    "bar_time": "2026-09-10T20:00:00+00:00",
+                    "source": "alpaca_sip",
+                },
+                {
+                    "symbol": "NVDA",
+                    "open_price": 114,
+                    "high_price": 116,
+                    "low_price": 113,
+                    "close_price": 115,
+                    "volume": 10,
+                    "bar_time": "2026-09-09T20:00:00+00:00",
+                    "source": "alpaca_sip",
+                },
+            ],
+            macro_events=[{
+                "event_type": "fomc",
+                "event_time": "2026-12-15T18:00:00+00:00",
+                "name": "FOMC",
+                "actual": None,
+                "prior": None,
+                "source": "calendar",
+            }],
+        )
+    )
+    codes = {row["code"] for row in view["gaps"]}
+    assert "not_observed" in codes
+    trans = _chain(view, "transmission")
+    assert all(item.get("status") != "valid" for item in trans["items"])
+    confirm = _chain(view, "confirmation")
+    assert confirm["status"] != "confirmed"
+    assert view["as_of"].startswith("2026-09-10")
+    assert all(
+        item.get("metric") != "fomc"
+        for item in _chain(view, "what_changed")["items"]
+    )
+
+
+def test_no_observation_timestamp_is_clock_insufficient():
+    view = assemble_from_bundle(
+        _coverage_bundle(
+            bars=[],
+            earnings=[{"report_date": "2026-11-20", "fiscal_period": "FY2027Q1", "eps_actual": None}],
+            macro_events=[{
+                "event_type": "fomc",
+                "event_time": "2026-12-15T18:00:00+00:00",
+                "actual": None,
+                "source": "calendar",
+            }],
+        )
+    )
+    codes = {row["code"] for row in view["gaps"]}
+    assert "clock_insufficient" in codes
+    assert view["clock_status"] == "clock_insufficient"
+    assert view["as_of"] is None
+    assert view["cannot_form_judgment"] is True
+    assert view["cannot_form_judgment_reason"]
+    trans = _chain(view, "transmission")
+    assert all(item.get("status") != "valid" for item in trans["items"])
 
 
 def _coverage_bundle(**extra):
@@ -262,10 +356,36 @@ def _coverage_bundle(**extra):
     return payload
 
 
+def _price_bars():
+    return [
+        {
+            "symbol": "NVDA",
+            "open_price": 115,
+            "high_price": 117,
+            "low_price": 114,
+            "close_price": 116,
+            "volume": 10,
+            "bar_time": "2026-09-10T20:00:00+00:00",
+            "source": "alpaca_sip",
+        },
+        {
+            "symbol": "NVDA",
+            "open_price": 114,
+            "high_price": 116,
+            "low_price": 113,
+            "close_price": 115,
+            "volume": 10,
+            "bar_time": "2026-09-09T20:00:00+00:00",
+            "source": "alpaca_sip",
+        },
+    ]
+
+
 def test_stale_cpi_is_not_reported_as_missing():
     view = assemble_from_bundle(
         _coverage_bundle(
-            macro_events_stale=[
+            bars=_price_bars(),
+            macro_events=[
                 {
                     "event_type": "cpi",
                     "event_time": "2025-01-15T12:30:00+00:00",
@@ -274,7 +394,7 @@ def test_stale_cpi_is_not_reported_as_missing():
                     "source": "FRED",
                     "name": "CPI",
                 }
-            ]
+            ],
         )
     )
     codes = {row["code"] for row in view["gaps"]}
@@ -286,7 +406,8 @@ def test_stale_cpi_is_not_reported_as_missing():
 def test_window_mismatch_cpi_is_not_reported_as_missing():
     view = assemble_from_bundle(
         _coverage_bundle(
-            macro_events_window_mismatch=[
+            bars=_price_bars(),
+            macro_events=[
                 {
                     "event_type": "cpi",
                     "event_time": "2027-03-01T12:30:00+00:00",
@@ -295,9 +416,10 @@ def test_window_mismatch_cpi_is_not_reported_as_missing():
                     "source": "FRED",
                     "name": "CPI",
                 }
-            ]
+            ],
         )
     )
     codes = {row["code"] for row in view["gaps"]}
-    assert "window_mismatch" in codes
+    assert "not_observed" in codes
     assert "missing_cpi" not in codes
+    assert view["as_of"].startswith("2026-09-10")

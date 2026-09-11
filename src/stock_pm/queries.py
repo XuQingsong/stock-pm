@@ -81,6 +81,7 @@ EARNINGS_SQL = """
                 e.revenue_estimate, e.revenue_surprise_pct,
                 e.net_income_actual, e.net_income_estimate,
                 e.net_income_surprise_pct, e.provider_fields, e.source,
+                e.synced_at,
                 before_5.close_price AS price_5d_before,
                 before_1.close_price AS price_before,
                 after_1.close_price AS price_after_1d,
@@ -532,9 +533,7 @@ class QueryMixin:
         }
 
     def decision_bundle(self, symbol: str) -> dict:
-        from datetime import date
-
-        from .decision.clock import dataset_as_of, macro_window, partition_macros
+        from .decision.clock import classify_macros, dataset_as_of, macro_window
 
         normalized = self._watchlist_symbol(symbol)
         watch = next(
@@ -562,23 +561,28 @@ class QueryMixin:
             LIMIT 200
             """
         )
-        clock = dataset_as_of(bars=bars, earnings=earnings, macros=macros, today=date.today())
-        start, end = macro_window(clock)
-        inside, stale, mismatch = partition_macros(macros, start=start, end=end)
+        clock = dataset_as_of(bars=bars, earnings=earnings, macros=macros)
+        parts = classify_macros(macros, clock)
+        window = None
+        if clock is not None:
+            start, end = macro_window(clock)
+            window = {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "dataset_as_of": clock.isoformat(),
+            }
         return {
             "symbol": normalized,
             "watch": watch,
             "bars": bars,
             "earnings": earnings,
             "fundamentals": self.latest_fundamentals(normalized),
-            "macro_events": inside,
-            "macro_events_stale": stale,
-            "macro_events_window_mismatch": mismatch,
-            "macro_window": {
-                "start": start.isoformat(),
-                "end": end.isoformat(),
-                "dataset_as_of": clock.isoformat(),
-            },
+            "macro_events": parts.inside,
+            "macro_events_stale": parts.stale,
+            "macro_events_window_mismatch": parts.mismatch,
+            "macro_events_scheduled": parts.scheduled,
+            "macro_window": window,
+            "clock_status": "ok" if clock is not None else "clock_insufficient",
             "news": self.news([normalized], 12),
             "cboe": self.cboe_option_stats(),
             "synthetic": False,

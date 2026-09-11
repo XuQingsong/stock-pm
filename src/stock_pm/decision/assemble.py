@@ -15,6 +15,7 @@ from .causal import (
     build_causal_impact,
     canonical_metric,
 )
+from .clock import classify_macros, dataset_as_of
 from .change import ChangeSnapshot, build_change_snapshot
 from .expectation import ExpectationGap, ExpectationPoint, build_expectation_gap
 from .facts import FactValidationError, ValidatedFact, require_valid_bar
@@ -77,17 +78,23 @@ def _macro_coverage_gaps(
     macro_changes: list[ChangeSnapshot],
     stale_events: Iterable[dict[str, Any]],
     mismatch_events: Iterable[dict[str, Any]],
+    scheduled_events: Iterable[dict[str, Any]] = (),
 ) -> list[dict[str, str]]:
     in_metrics = {canonical_metric(row.metric) for row in macro_changes}
     stale_metrics = {canonical_metric(str(event.get("event_type") or "")) for event in stale_events}
     mismatch_metrics = {
         canonical_metric(str(event.get("event_type") or "")) for event in mismatch_events
     }
+    scheduled_metrics = {
+        canonical_metric(str(event.get("event_type") or "")) for event in scheduled_events
+    }
 
     gaps: list[dict[str, str]] = []
     if not (in_metrics & set(INFLATION_TYPES)):
         if stale_metrics & set(INFLATION_TYPES):
             gaps.append(_gap("stale_dataset", "CPI/PCE 原因序列存在于决策窗口之前，不是数据缺失"))
+        elif scheduled_metrics & set(INFLATION_TYPES):
+            pass
         elif mismatch_metrics & set(INFLATION_TYPES):
             gaps.append(_gap("window_mismatch", "CPI/PCE 原因序列存在但落在决策窗口之外，不是数据缺失"))
         else:
@@ -97,6 +104,8 @@ def _macro_coverage_gaps(
         pass
     elif not (in_metrics & rate_keys) and (stale_metrics & rate_keys):
         gaps.append(_gap("stale_dataset", "利率确认通道存在于决策窗口之前，不是数据缺失"))
+    elif not (in_metrics & rate_keys) and (scheduled_metrics & rate_keys):
+        pass
     elif not (in_metrics & rate_keys) and (mismatch_metrics & rate_keys):
         gaps.append(_gap("window_mismatch", "利率确认通道存在但落在决策窗口之外，不是数据缺失"))
     else:
@@ -104,11 +113,21 @@ def _macro_coverage_gaps(
     if "vix" not in in_metrics:
         if "vix" in stale_metrics:
             gaps.append(_gap("stale_dataset", "VIX 存在于决策窗口之前，不是数据缺失"))
+        elif "vix" in scheduled_metrics:
+            pass
         elif "vix" in mismatch_metrics:
             gaps.append(_gap("window_mismatch", "VIX 存在但落在决策窗口之外，不是数据缺失"))
         else:
             gaps.append(_gap("missing_vix", "缺失 VIX"))
     return gaps
+
+
+def _scheduled_gaps(scheduled: Iterable[dict[str, Any]]) -> list[dict[str, str]]:
+    rows = list(scheduled)
+    if not rows:
+        return []
+    names = sorted({str(row.get("event_type") or row.get("name") or "event") for row in rows})
+    return [_gap("not_observed", f"未来日程 {', '.join(names)} 尚未被观察，不能当作已发生事实")]
 
 
 def _watch_symbol(bundle: dict[str, Any]) -> str:
@@ -143,56 +162,53 @@ def _make_ref(table: str, ref_id: Any, as_of: str, source: str, *, synthetic: bo
         return None
 
 
+def _validated_bar(symbol: str, row: dict[str, Any], *, synthetic: bool):
+    as_of = iso_stamp(row.get("bar_time") or row.get("as_of") or row.get("source_as_of"))
+    source = str(row.get("source") or "").strip()
+    if not source or not as_of:
+        return None, _gap("missing_price_source", "价格事实缺少 source/as_of，不能进入判断")
+    ref = _make_ref("daily_price_bars", f"{symbol}|{as_of}", as_of, source, synthetic=synthetic)
+    if ref is None:
+        return None, _gap("invalid_price_ref", "价格 FactRef 不完整，不能进入判断")
+    try:
+        bar = require_valid_bar(
+            {
+                "open": row.get("open_price") or row.get("open"),
+                "high": row.get("high_price") or row.get("high"),
+                "low": row.get("low_price") or row.get("low"),
+                "close": row.get("close_price") or row.get("close"),
+                "volume": row.get("volume"),
+                "as_of": as_of,
+                "symbol": symbol,
+                "synthetic": synthetic,
+            },
+            refs=(ref,),
+        )
+    except (FactValidationError, TypeError):
+        return None, _gap("invalid_ohlc", "价格 OHLC 未通过事实校验，不能进入 Change")
+    return (bar, as_of, source, ref), None
+
+
 def _price_changes(symbol: str, bars: list[dict[str, Any]], *, synthetic: bool) -> tuple[list[ChangeSnapshot], list[dict[str, str]], list[dict[str, Any]]]:
     changes: list[ChangeSnapshot] = []
     gaps: list[dict[str, str]] = []
     facts: list[dict[str, Any]] = []
-    if len(bars) < 2:
-        gaps.append(_gap("missing_price_baseline", "数据不足：缺失可比价格序列"))
+    valid: list[tuple[Any, str, str, Any]] = []
+    for row in bars:
+        parsed, gap = _validated_bar(symbol, row, synthetic=synthetic)
+        if parsed is None:
+            if gap and not valid:
+                gaps.append(gap)
+            continue
+        valid.append(parsed)
+        if len(valid) >= 2:
+            break
+    if len(valid) < 2:
+        if not any(row["code"] == "invalid_ohlc" for row in gaps):
+            gaps.append(_gap("missing_price_baseline", "数据不足：缺失可比价格序列"))
         return changes, gaps, facts
-    current_row, previous_row = bars[0], bars[1]
-    current_as_of = iso_stamp(current_row.get("bar_time") or current_row.get("as_of"))
-    previous_as_of = iso_stamp(previous_row.get("bar_time") or previous_row.get("as_of"))
-    current_source = str(current_row.get("source") or "").strip()
-    previous_source = str(previous_row.get("source") or "").strip()
-    if not current_source or not previous_source or not current_as_of or not previous_as_of:
-        gaps.append(_gap("missing_price_source", "价格事实缺少 source/as_of，不能进入判断"))
-        return changes, gaps, facts
-    current_ref = _make_ref("daily_price_bars", f"{symbol}|{current_as_of}", current_as_of, current_source, synthetic=synthetic)
-    previous_ref = _make_ref("daily_price_bars", f"{symbol}|{previous_as_of}", previous_as_of, previous_source, synthetic=synthetic)
-    if current_ref is None or previous_ref is None:
-        gaps.append(_gap("invalid_price_ref", "价格 FactRef 不完整，不能进入判断"))
-        return changes, gaps, facts
-    try:
-        current_bar = require_valid_bar(
-            {
-                "open": current_row.get("open_price") or current_row.get("open"),
-                "high": current_row.get("high_price") or current_row.get("high"),
-                "low": current_row.get("low_price") or current_row.get("low"),
-                "close": current_row.get("close_price") or current_row.get("close"),
-                "volume": current_row.get("volume"),
-                "as_of": current_as_of,
-                "symbol": symbol,
-                "synthetic": synthetic,
-            },
-            refs=(current_ref,),
-        )
-        previous_bar = require_valid_bar(
-            {
-                "open": previous_row.get("open_price") or previous_row.get("open"),
-                "high": previous_row.get("high_price") or previous_row.get("high"),
-                "low": previous_row.get("low_price") or previous_row.get("low"),
-                "close": previous_row.get("close_price") or previous_row.get("close"),
-                "volume": previous_row.get("volume"),
-                "as_of": previous_as_of,
-                "symbol": symbol,
-                "synthetic": synthetic,
-            },
-            refs=(previous_ref,),
-        )
-    except (FactValidationError, TypeError):
-        gaps.append(_gap("invalid_ohlc", "价格 OHLC 未通过事实校验，不能进入 Change"))
-        return changes, gaps, facts
+    current_bar, current_as_of, current_source, current_ref = valid[0]
+    previous_bar, _previous_as_of, _previous_source, _previous_ref = valid[1]
     change = build_change_snapshot(
         metric="close",
         current_bar=current_bar,
@@ -433,6 +449,7 @@ def assemble_from_kernel(
     synthetic: bool = False,
     preview: str | None = None,
     as_of: str | None = None,
+    clock_status: str = "ok",
 ) -> dict[str, Any]:
     report = build_what_changed(
         changes=changes,
@@ -462,6 +479,7 @@ def assemble_from_kernel(
         preview=preview,
         as_of=as_of,
         compared_to=compared,
+        clock_status=clock_status,
     )
 
 
@@ -476,19 +494,34 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     data_gaps.extend(price_gaps)
     facts.extend(price_facts)
 
-    macro_changes, macro_gaps, macro_facts = _macro_changes(list(bundle.get("macro_events") or []), synthetic=synthetic)
+    collected_macros: list[dict[str, Any]] = []
+    for key in (
+        "macro_events",
+        "macro_events_stale",
+        "macro_events_window_mismatch",
+        "macro_events_scheduled",
+        "macro_events_out_of_window",
+    ):
+        collected_macros.extend(list(bundle.get(key) or ()))
+    clock = dataset_as_of(
+        bars=list(bundle.get("bars") or []),
+        earnings=list(bundle.get("earnings") or []),
+        macros=collected_macros,
+    )
+    clock_status = "ok" if clock is not None else "clock_insufficient"
+    if clock is None:
+        data_gaps.append(_gap("clock_insufficient", "无可靠观察时间，不能猜测今天或用未来事件日代替，目前不能形成判断"))
+    parts = classify_macros(collected_macros, clock)
+    macro_changes, macro_gaps, macro_facts = _macro_changes(parts.inside, synthetic=synthetic)
     data_gaps.extend(macro_gaps)
     facts.extend(macro_facts)
+    data_gaps.extend(_scheduled_gaps(parts.scheduled))
 
     expect_rows, expect_gaps, expect_facts = _expectation_gaps(symbol, list(bundle.get("earnings") or []), synthetic=synthetic)
     data_gaps.extend(expect_gaps)
     facts.extend(expect_facts)
 
-    stale_macros = list(bundle.get("macro_events_stale") or ())
-    mismatch_macros = list(bundle.get("macro_events_window_mismatch") or ())
-    if not stale_macros and not mismatch_macros and bundle.get("macro_events_out_of_window"):
-        stale_macros = list(bundle.get("macro_events_out_of_window") or ())
-    data_gaps.extend(_macro_coverage_gaps(macro_changes, stale_macros, mismatch_macros))
+    data_gaps.extend(_macro_coverage_gaps(macro_changes, parts.stale, parts.mismatch, parts.scheduled))
 
     confirm_series = [row for row in macro_changes if canonical_metric(row.metric) in CONFIRM_TYPES]
     confirmation = assess_market_confirmation(
@@ -516,6 +549,22 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         data_gaps.append(_gap("missing_exposure", "该标的没有利率久期暴露，不把宏观直接写成个股方向"))
 
     clues = _unverified_clues(list(bundle.get("news") or []))
+    for event in parts.scheduled:
+        clues.append(
+            {
+                "status": "not_observed",
+                "headline": event.get("name") or event.get("event_type"),
+                "source": event.get("source"),
+                "as_of": iso_stamp(event.get("event_time")),
+                "why": "未来日程 / 尚未观察，不能当作已发生事实",
+                "ref": {
+                    "ref_table": "macro_events",
+                    "ref_id": f"{event.get('event_type')}|{event.get('event_time')}",
+                    "as_of": iso_stamp(event.get("event_time")),
+                    "source": event.get("source"),
+                },
+            }
+        )
     if clues:
         data_gaps.append(_gap("unverified_news", "存在未核实新闻，仅作线索，不改变 Thesis"))
         headline = clues[0].get("headline") or "unverified news"
@@ -546,9 +595,9 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         synthetic=synthetic,
     )
 
-    as_of = price_changes[0].current_as_of if price_changes else (
-        macro_changes[0].current_as_of if macro_changes else stamp
-    )
+    as_of = clock.isoformat() if clock is not None else None
+    if as_of is None and price_changes:
+        as_of = price_changes[0].current_as_of
     seen: set[str] = set()
     unique_gaps: list[dict[str, str]] = []
     for row in data_gaps:
@@ -579,6 +628,7 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         clues=clues,
         synthetic=synthetic,
         as_of=as_of,
+        clock_status=clock_status,
     )
 
 
