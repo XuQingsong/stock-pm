@@ -15,6 +15,7 @@
 | [DESIGN_CHECK_刀2_PR3.md](DESIGN_CHECK_刀2_PR3.md) | PR #3 三条核验：因果半句、材料折叠 C、环境 A/B/C；含证据路径与中文样句 |
 | [DESIGN_CHECK_刀3.md](DESIGN_CHECK_刀3.md) | 刀 3 ACCEPTANCE_M2：昨盘四问、复盘总结/解释、自动发布、材料折叠 C |
 | [DESIGN_CHECK_刀4.md](DESIGN_CHECK_刀4.md) | 刀 4 ACCEPTANCE_M3：预测边界、状态机、自动打脸、改口留痕、旧口径 |
+| [INVESTMENT_DECISION_KERNEL_V1.md](INVESTMENT_DECISION_KERNEL_V1.md) | 阶段 1：Facts→Change→Expectation→Tension→Causal→Thesis 内核契约与 Golden Tests A–J |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |
