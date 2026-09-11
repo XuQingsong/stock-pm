@@ -325,10 +325,14 @@ def assemble_judgment(
         based_on=facts_for("price"),
         role="tape",
     )
+    note_text = (review_note or {}).get("summary")
+    explanation = (review_note or {}).get("explanation") or ""
+    if explanation and not any(marker in explanation for marker in INTERNAL_MARKERS):
+        note_text = explanation
     note_reason = _analysis_from(
         review_note,
         table="review_notes",
-        text=(review_note or {}).get("explanation") or (review_note or {}).get("summary"),
+        text=note_text,
         based_on=facts_for("price", "news"),
         role="review_note",
     )
