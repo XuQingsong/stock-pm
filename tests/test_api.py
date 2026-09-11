@@ -629,7 +629,13 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert l3["overall"]["level"] == "L3"
     conflict = c.get("/api/stock/NVDA/decision?preview=CONFLICT").json()
     assert conflict["overall"]["status"] == "conflict"
+    assert conflict["overall"]["conflict"] is True
     assert conflict["can_form_direction"] is False
+    l0 = c.get("/api/stock/NVDA/decision?preview=L0").json()
+    assert l0["preview"] == "L0"
+    assert l0["overall"]["level"] == "L0"
+    assert l0["overall"]["status"] == "unavailable"
+    assert l0["cannot_form_judgment"] is True
 
 
 @pytest.mark.parametrize(
@@ -656,7 +662,7 @@ def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env,
     if flag is not None:
         monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
     c = client(monkeypatch)
-    for scene in ("A", "B", "C", "L1", "L2", "L3", "CONFLICT"):
+    for scene in ("A", "B", "C", "L0", "L1", "L2", "L3", "CONFLICT"):
         body = c.get(f"/api/stock/NVDA/decision?preview={scene}").json()
         assert body["synthetic"] is False, (env, flag, scene)
         assert body.get("preview") in (None, "")

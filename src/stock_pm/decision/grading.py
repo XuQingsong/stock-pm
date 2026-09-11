@@ -457,17 +457,39 @@ def _usable_conclusions(rows: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _overall_result(
+    *,
+    level: str,
+    status: str,
+    direction: str | None,
+    can_form_direction: bool,
+    can_determine: str,
+    cannot_determine: str,
+    available_counts: dict[str, int],
+) -> dict[str, Any]:
+    return {
+        "level": level,
+        "status": status,
+        "direction": direction,
+        "conflict": status == "conflict",
+        "can_form_direction": can_form_direction,
+        "can_determine": can_determine,
+        "cannot_determine": cannot_determine,
+        "available_counts": available_counts,
+    }
+
+
 def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, Any]:
     if clock_status == "clock_insufficient":
-        return {
-            "level": "L0",
-            "status": "unavailable",
-            "direction": None,
-            "can_form_direction": False,
-            "can_determine": "没有任何带观察时间的证据",
-            "cannot_determine": "无可靠观察时间，不能形成任何链的判断",
-            "available_counts": {"L0": len(chains), "L1": 0, "L2": 0, "L3": 0},
-        }
+        return _overall_result(
+            level="L0",
+            status="unavailable",
+            direction=None,
+            can_form_direction=False,
+            can_determine="没有任何带观察时间的证据",
+            cannot_determine="无可靠观察时间，不能形成任何链的判断",
+            available_counts={"L0": len(chains), "L1": 0, "L2": 0, "L3": 0},
+        )
     core = [row for row in chains if row["id"] != "news"]
     counts = Counter(row["level"] for row in core)
     l3 = [row for row in core if row["level"] == "L3"]
@@ -485,57 +507,57 @@ def _overall(chains: list[dict[str, Any]], *, clock_status: str) -> dict[str, An
         if row["level"] in {"L0", "L1", "L2"} and row.get("next_required_evidence")
     ]
     if len(dirs) > 1:
-        return {
-            "level": "L3",
-            "status": "conflict",
-            "direction": None,
-            "can_form_direction": False,
-            "can_determine": "；".join(can_bits) or "存在完整但方向相反的证据链",
-            "cannot_determine": "同等强度的 L3 方向冲突，不能合成统一个股方向",
-            "available_counts": counts_payload,
-        }
+        return _overall_result(
+            level="L3",
+            status="conflict",
+            direction=None,
+            can_form_direction=False,
+            can_determine="；".join(can_bits) or "存在完整但方向相反的证据链",
+            cannot_determine="同等强度的 L3 方向冲突，不能合成统一个股方向",
+            available_counts=counts_payload,
+        )
     if l3:
         direction = next(iter(dirs)) if dirs else None
-        return {
-            "level": "L3",
-            "status": "full",
-            "direction": direction,
-            "can_form_direction": direction in {"bullish", "bearish"},
-            "can_determine": "；".join(_usable_conclusions(l3)) or "存在完整证据链",
-            "cannot_determine": "；".join(cannot_bits) or "局部缺口不阻止已完整链的方向",
-            "available_counts": counts_payload,
-        }
+        return _overall_result(
+            level="L3",
+            status="full",
+            direction=direction,
+            can_form_direction=direction in {"bullish", "bearish"},
+            can_determine="；".join(_usable_conclusions(l3)) or "存在完整证据链",
+            cannot_determine="；".join(cannot_bits) or "局部缺口不阻止已完整链的方向",
+            available_counts=counts_payload,
+        )
     if counts.get("L2"):
-        return {
-            "level": "L2",
-            "status": "partial",
-            "direction": None,
-            "can_form_direction": False,
-            "can_determine": "；".join(_usable_conclusions([row for row in core if row["level"] == "L2"]))
+        return _overall_result(
+            level="L2",
+            status="partial",
+            direction=None,
+            can_form_direction=False,
+            can_determine="；".join(_usable_conclusions([row for row in core if row["level"] == "L2"]))
             or "存在局部因果",
-            "cannot_determine": "没有 L3，多条 L2 不能堆叠成完整个股方向",
-            "available_counts": counts_payload,
-        }
+            cannot_determine="没有 L3，多条 L2 不能堆叠成完整个股方向",
+            available_counts=counts_payload,
+        )
     if counts.get("L1"):
-        return {
-            "level": "L1",
-            "status": "fact_only",
-            "direction": None,
-            "can_form_direction": False,
-            "can_determine": "；".join(_usable_conclusions([row for row in core if row["level"] == "L1"]))
+        return _overall_result(
+            level="L1",
+            status="fact_only",
+            direction=None,
+            can_form_direction=False,
+            can_determine="；".join(_usable_conclusions([row for row in core if row["level"] == "L1"]))
             or "存在可追溯事实变化",
-            "cannot_determine": "只有事实变化，不能输出方向性 Thesis",
-            "available_counts": counts_payload,
-        }
-    return {
-        "level": "L0",
-        "status": "unavailable",
-        "direction": None,
-        "can_form_direction": False,
-        "can_determine": "没有可分析的证据链",
-        "cannot_determine": "核心事实无效或不可追溯",
-        "available_counts": counts_payload,
-    }
+            cannot_determine="只有事实变化，不能输出方向性 Thesis",
+            available_counts=counts_payload,
+        )
+    return _overall_result(
+        level="L0",
+        status="unavailable",
+        direction=None,
+        can_form_direction=False,
+        can_determine="没有可分析的证据链",
+        cannot_determine="核心事实无效或不可追溯",
+        available_counts=counts_payload,
+    )
 
 
 def grade_decision(

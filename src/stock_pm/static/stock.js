@@ -665,7 +665,6 @@
       const gaps = (group.blocking_gaps || []).map((row) => `${row.code} → ${row.affects_chain}/${row.affects_stage}`).join("；") || "无";
       const stages = (group.affected_stages || []).join("、") || "—";
       const upgrade = group.level === "L3" ? "本链已完整，不伪装其他链的缺口" : (group.next_required_evidence || "补该链下一层证据");
-      const collapsed = group.level === "L0" && !(group.blocking_gaps || []).length;
       const body = `<div class="chain-metrics">
           <div><span>level</span><b>${esc(group.level)}</b></div>
           <div><span>scope</span><b>${esc(group.scope || "—")}</b></div>
@@ -675,14 +674,20 @@
         <div class="why">缺口影响：${esc(gaps)}</div>
         <div class="why">升级到下一等级：${esc(upgrade)}</div>
         ${refLine(group)}`;
-      if (collapsed) {
-        return `<details class="chain-group is-empty"><summary>${esc(group.title)} · ${esc(group.title_zh)} ${statusPill(group.level)}</summary>${body}</details>`;
-      }
-      return `<article class="chain-group">
+      return `<article class="chain-group${group.level === "L0" ? " is-empty" : ""}">
         <h3>${esc(group.title_zh)} <span class="chain-kicker">${esc(group.title)}</span>${statusPill(group.level)}</h3>
         ${body}
       </article>`;
     }).join("")}</div>`;
+  }
+
+  function overallDirectionLabel(payload) {
+    const overall = payload.overall || {};
+    const level = overall.level || "L0";
+    if (overall.conflict || overall.status === "conflict") return "conflict（无统一个股方向）";
+    if (payload.can_form_direction === true) return overall.direction || "—";
+    if (level === "L0") return "unavailable";
+    return "无（未达 L3，不输出方向）";
   }
 
   function renderGradeBoard(payload) {
@@ -700,7 +705,7 @@
       <header class="decision-head">
         <h2 id="decision-heading">动态判断</h2>
         <div class="grade-board" role="status">
-          <div class="grade-level">当前可用等级 <b>${esc(level)}</b>${statusPill(status)}</div>
+          <div class="grade-level">当前可用等级 <b>${esc(level)}</b>${statusPill(status)} · 方向 <b>${esc(overallDirectionLabel(payload))}</b></div>
           <p>目前可以确定什么：${esc(overall.can_determine || "尚无可用结论")}</p>
           <p>目前不能确定什么：${esc(overall.cannot_determine || "尚不能输出方向性 Thesis")}</p>
           <p>可用链数量：${esc(chainCounts(overall))}</p>
@@ -713,10 +718,10 @@
     const compared = payload.compared_to || {};
     const overall = payload.overall || {};
     const canDirect = payload.can_form_direction === true;
-    const conflict = overall.status === "conflict";
+    const conflict = overall.conflict === true || overall.status === "conflict";
     const quality = payload.evidence_quality || thesis.evidence_quality || "insufficient";
+    const directionLabel = overallDirectionLabel(payload);
     const thesisStatus = canDirect ? (thesis.status || "ok") : (conflict ? "conflict" : "incomplete");
-    const thesisDirection = canDirect ? (overall.direction || thesis.direction || "incomplete") : (conflict ? "conflict" : "局部判断");
     const gaps = (payload.gaps || []).map((row) => `<li>${esc(row.text || row.code)} <small>${esc(row.affects_chain || "")}/${esc(row.affects_stage || "")}</small></li>`).join("");
     const blockedThesis = conflict
       ? "<li>同等强度 L3 方向冲突，不输出统一个股方向</li>"
@@ -742,7 +747,7 @@
         <section class="decision-side"><h3>Bear</h3><ul>${bears}</ul></section>
       </div>
       <p class="subline">关键分歧：${esc(canDirect ? (thesis.key_disagreement || "尚未形成") : "局部判断不成方向")} · 失效条件：${esc(canDirect ? (thesis.invalidation || "尚未形成") : "需先补齐 L3 所需环节")}</p>
-      <p class="subline">标的 ${esc(payload.symbol || SYMBOL)} · 数据截止 ${dateText(payload.as_of, true)} · 证据质量 ${esc(quality)} · Thesis ${statusPill(thesisStatus)} <b>${esc(thesisDirection)}</b> · 相对上次 ${dateText(compared.as_of, true)}</p>
+      <p class="subline">标的 ${esc(payload.symbol || SYMBOL)} · 数据截止 ${dateText(payload.as_of, true)} · 证据质量 ${esc(quality)} · Thesis ${statusPill(thesisStatus)} <b>${esc(directionLabel)}</b> · 相对上次 ${dateText(compared.as_of, true)}</p>
       <details class="decision-facts fold"><summary>原始 Facts（默认折叠）</summary><ul>${facts}</ul></details>`;
   }
 

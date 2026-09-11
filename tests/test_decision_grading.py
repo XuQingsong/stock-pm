@@ -140,6 +140,7 @@ def test_opposite_l3_chains_are_overall_conflict():
     assert _g(view, "macro_rates")["direction"] == "bearish"
     assert _g(view, "earnings")["direction"] == "bullish"
     assert view["overall"]["status"] == "conflict"
+    assert view["overall"]["conflict"] is True
     assert view["overall"]["direction"] is None
     assert view["can_form_direction"] is False
 
@@ -179,6 +180,8 @@ def test_multiple_l2_cannot_stack_into_l3():
     assert view["overall"]["level"] == "L2"
     assert view["can_form_direction"] is False
     assert view["overall"]["direction"] is None
+    assert view["overall"]["conflict"] is False
+    assert view["overall"]["level"] != "L3"
 
 
 def test_macro_without_stock_exposure_caps_at_l2_factor():
@@ -191,6 +194,7 @@ def test_macro_without_stock_exposure_caps_at_l2_factor():
 
 def test_every_gap_names_chain_and_stage():
     views = [
+        build_preview("NVDA", "L0"),
         build_preview("NVDA", "L1"),
         build_preview("NVDA", "L2"),
         build_preview("NVDA", "L3"),
@@ -260,8 +264,28 @@ def test_stale_or_conflict_gaps_stay_on_their_own_chain():
     assert all(row.get("affects_stage") for row in view["gaps"])
 
 
+def test_l0_clock_insufficient_is_unavailable():
+    view = build_preview("NVDA", "L0")
+    assert view["synthetic"] is True
+    assert "合成演示数据" in view["preview_label"]
+    assert view["overall"]["level"] == "L0"
+    assert view["overall"]["status"] == "unavailable"
+    assert view["overall"]["conflict"] is False
+    assert view["overall"]["direction"] is None
+    assert view["can_form_direction"] is False
+    assert view["cannot_form_judgment"] is True
+    assert view["clock_status"] == "clock_insufficient"
+    clock = next(row for row in view["gaps"] if row["code"] == "clock_insufficient")
+    assert clock["affects_chain"] == "page"
+    assert clock["affects_stage"] == "clock"
+    for row in view["chains"]:
+        if row["level"] in {"L1", "L2"}:
+            raise AssertionError(row)
+        assert row.get("next_required_evidence") or row["level"] == "L0"
+
+
 def test_graded_previews_keep_internal_chain_order():
-    for key in ("L1", "L2", "L3", "CONFLICT"):
+    for key in ("L0", "L1", "L2", "L3", "CONFLICT"):
         view = build_preview("NVDA", key)
         assert view["synthetic"] is True
         assert "合成演示数据" in view["preview_label"]

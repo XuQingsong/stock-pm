@@ -33,6 +33,7 @@ PREVIEW_LABELS = {
     "A": "已确认宏观链（合成演示数据）",
     "B": "未确认事件（合成演示数据）",
     "C": "无重大变化（合成演示数据）",
+    "L0": "L0 不可用（合成演示数据）",
     "L1": "L1 仅事实（合成演示数据）",
     "L2": "L2 局部判断（合成演示数据）",
     "L3": "L3 完整方向（合成演示数据）",
@@ -149,7 +150,7 @@ def _rates_confirmation(*, hot: bool):
 def build_preview(symbol: str, scenario: str) -> dict:
     key = (scenario or "").strip().upper()
     if key not in PREVIEW_LABELS:
-        raise ValueError("preview must be A, B, C, L1, L2, L3, or CONFLICT")
+        raise ValueError("preview must be A, B, C, L0, L1, L2, L3, or CONFLICT")
     symbol = (symbol or "NVDA").upper()
     if key == "A":
         return _preview_a(symbol)
@@ -157,6 +158,8 @@ def build_preview(symbol: str, scenario: str) -> dict:
         return _preview_b(symbol)
     if key == "C":
         return _preview_c(symbol)
+    if key == "L0":
+        return _preview_l0(symbol)
     if key == "L1":
         return _preview_l1(symbol)
     if key == "L2":
@@ -484,6 +487,40 @@ def _eps_gap(symbol: str):
         ),
         synthetic=True,
     )
+
+
+def _preview_l0(symbol: str) -> dict:
+    thesis = build_thesis_snapshot(
+        symbol=symbol,
+        bull_drivers=(Driver("无可用观察", based_on=()),),
+        bear_drivers=(Driver("无可用观察", based_on=()),),
+        key_disagreement="没有观察时间",
+        invalidation="出现带 as_of 的事实",
+        generated_at="1970-01-01T00:00:00+00:00",
+        synthetic=True,
+    )
+    view = assemble_from_kernel(
+        symbol=symbol,
+        changes=[],
+        expectations=[],
+        confirmation=None,
+        impacts=[],
+        thesis=thesis,
+        previous_thesis=None,
+        data_gaps=[
+            {
+                "code": "clock_insufficient",
+                "text": "无可靠观察时间，不能猜测今天或用未来事件日代替，目前不能形成判断",
+            }
+        ],
+        facts=[],
+        synthetic=True,
+        preview="L0",
+        as_of=None,
+        clock_status="clock_insufficient",
+    )
+    view["preview_label"] = PREVIEW_LABELS["L0"]
+    return view
 
 
 def _preview_l1(symbol: str) -> dict:
