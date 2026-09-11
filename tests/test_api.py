@@ -636,6 +636,18 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert l0["overall"]["level"] == "L0"
     assert l0["overall"]["status"] == "unavailable"
     assert l0["cannot_form_judgment"] is True
+    health_live = c.get("/api/stock/NVDA/data-health").json()
+    assert health_live.get("synthetic") is False
+    assert [step["id"] for step in live["chain"]] == [
+        "what_changed", "expectation", "tension", "causal_impact", "thesis_impact"
+    ]
+    health_preview = c.get("/api/stock/NVDA/data-health?preview=PARTIAL").json()
+    assert health_preview["synthetic"] is True
+    assert health_preview["preview"] == "PARTIAL"
+    assert "合成演示数据" in health_preview["preview_label"]
+    vix = next(row for row in health_preview["datasets"] if row["dataset"] == "macro_vix")
+    assert vix["status"] == "missing"
+    assert vix["reason_label"] == "上游无记录"
 
 
 @pytest.mark.parametrize(
@@ -666,6 +678,14 @@ def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env,
         body = c.get(f"/api/stock/NVDA/decision?preview={scene}").json()
         assert body["synthetic"] is False, (env, flag, scene)
         assert body.get("preview") in (None, "")
+    for scene in ("HEALTHY", "PARTIAL", "MISSING", "STALE", "INVALID", "ERROR"):
+        health = c.get(f"/api/stock/NVDA/data-health?preview={scene}").json()
+        assert health.get("synthetic") is False, (env, flag, scene)
+        assert health.get("preview") in (None, "")
+        dumped = str(health).lower()
+        assert "traceback" not in dumped
+        assert "api_key" not in dumped
+        assert "secret" not in dumped
 
 
 def test_patch_review(monkeypatch):

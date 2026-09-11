@@ -43,6 +43,15 @@
 .decision-facts{margin-top:8px}
 .decision-facts summary{cursor:pointer;color:var(--muted);font-size:12px}
 .empty-note{padding:10px;text-align:center;color:var(--muted);background:#fafbfc;border:1px dashed var(--line);border-radius:7px;font-size:12px}
+.data-health{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#f7fafc}
+.data-health .health-compact{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px}
+.data-health .health-details{margin-top:6px}
+.data-health .health-details summary{cursor:pointer;color:var(--muted);font-size:12px}
+.health-rows{display:grid;gap:8px;margin-top:8px}
+.health-row{border:1px solid var(--line);border-radius:7px;padding:7px 9px;background:#fff}
+.health-row h4{margin:0 0 4px;font-size:13px}
+.health-row.status-invalid,.health-row.status-error{border-color:#f3c1c1;background:#fff7f7}
+.health-row.status-stale,.health-row.status-missing,.health-row.status-not_configured{border-color:#f1d9a0;background:#fffdf6}
 .grade-board{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#f8fafc}
 .grade-board p{margin:4px 0 0;font-size:13px;color:#374151}
 .grade-level{font-size:14px}

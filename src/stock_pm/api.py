@@ -384,6 +384,31 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/stock/{symbol}/data-health")
+def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
+    from .config import Settings
+    from .decision.assemble import assemble_from_bundle
+    from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview, empty_query_error_health
+    from .decision.preview import preview_allowed
+
+    key = (preview or "").strip().upper()
+    try:
+        if key in HEALTH_PREVIEW_LABELS and preview_allowed():
+            return build_health_preview(symbol, key, settings=Settings())
+        try:
+            bundle = database.decision_bundle(symbol)
+        except DatabaseError:
+            return empty_query_error_health(symbol.upper())
+        try:
+            view = assemble_from_bundle(bundle)
+            judgment = view.get("overall")
+        except Exception:
+            judgment = None
+        return build_data_health(bundle, settings=Settings(), judgment=judgment)
+    except ValueError as exc:
+        raise _http_error(exc) from exc
+
+
 @app.get("/api/stock/{symbol}/fundamentals")
 def stock_fundamentals(symbol: str) -> dict:
     try:
