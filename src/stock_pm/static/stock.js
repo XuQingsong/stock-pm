@@ -669,8 +669,12 @@
       ? `<div class="decision-banner" role="status">合成演示数据 · ${esc(payload.preview_label || "preview")}。生产环境不会用 fixture 顶替真实数据。</div>`
       : "";
     const noMove = payload.no_material_change ? `<p class="subline">无重大变化：${esc((payload.what_changed || {}).summary || "原判断不变")}</p>` : "";
+    const blockedReason = payload.cannot_form_judgment_reason || "证据不足或观察时间不可用";
+    const blockedLabel = String(blockedReason).includes("目前不能形成判断")
+      ? blockedReason
+      : `目前不能形成判断：${blockedReason}`;
     const blocked = payload.cannot_form_judgment
-      ? `<div class="decision-banner decision-blocked" role="status">目前不能形成判断：${esc(payload.cannot_form_judgment_reason || "证据不足或观察时间不可用")}</div>`
+      ? `<div class="decision-banner decision-blocked" role="status">${esc(blockedLabel)}</div>`
       : "";
     $("decision-module").innerHTML = `${banner}${blocked}
       <header class="decision-head">

@@ -292,7 +292,9 @@ def test_live_missing_expectation_tension_cannot_form_judgment():
     assert expect["status"] != "ok"
     assert tension["status"] == "insufficient"
     assert view["cannot_form_judgment"] is True
-    assert "目前不能形成判断" in (view["cannot_form_judgment_reason"] or "")
+    reason = view["cannot_form_judgment_reason"] or ""
+    assert reason.startswith("目前不能形成判断")
+    assert reason.count("目前不能形成判断") == 1
     assert view["evidence_quality"] != "complete"
     assert view["thesis"]["direction"] not in {"bearish", "bullish"}
     confirm = _causal(view)["confirmation"]
