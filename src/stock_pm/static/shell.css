@@ -52,3 +52,14 @@ details.fold summary{cursor:pointer;color:#6b7280;font-size:12px}
 .judgment-change{margin-top:8px;padding-top:8px;border-top:1px solid #fecaca}
 .judgment-change textarea{width:100%;min-height:56px;margin:6px 0;border:1px solid #fecaca;border-radius:8px;padding:6px 8px}
 .legacy-tag{display:inline-block;background:#fff7ed;color:#9a3412;border-radius:8px;padding:1px 7px;font-size:11px;margin-left:6px}
+.judgment-panel{margin:14px 0 4px}
+.judgment-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px}
+.judgment-card h3{margin:16px 0 6px;font-size:13px;color:#374151}
+.judgment-line{margin:8px 0 0;font-size:18px;line-height:1.45;font-weight:700}
+.judgment-meta{color:#6b7280;font-size:12px;margin-top:6px}
+.judgment-list{margin:0;padding-left:18px}
+.judgment-list li{margin:6px 0;line-height:1.45}
+.judgment-list li.partial{color:#4b5563}
+.judgment-empty{color:#6b7280;font-size:13px}
+.legacy-shell-fold{margin:10px 0 16px}
+.legacy-shell-fold>summary{cursor:pointer;color:#6b7280;font-size:12px}

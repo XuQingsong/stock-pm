@@ -59,8 +59,8 @@ app = FastAPI(
     version="0.9.0",
     description=(
         "Watchlist analysis API. Knife 4: Prediction "
-        "(/api/stock/{symbol}/prediction, /predictions, /prediction/checks) "
-        "and judgment-change supersede. Knife 3 TapeAnalysis and Knife 2 "
+        "(/api/stock/{symbol}/prediction, /predictions, /prediction/checks, "
+        "/judgment) and judgment-change supersede. Knife 3 TapeAnalysis and Knife 2 "
         "EnvironmentSnapshot remain as premises."
     ),
     lifespan=lifespan,
@@ -486,6 +486,23 @@ def stock_tape_history(
         if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
             raise ValueError("invalid symbol")
         return database.tape_history(symbol.upper(), limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
+@app.get("/api/stock/{symbol}/judgment")
+def stock_judgment(
+    symbol: str,
+    date_: Annotated[str | None, Query(alias="date")] = None,
+) -> dict:
+    try:
+        if date_:
+            date.fromisoformat(date_)
+        if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+            raise ValueError("invalid symbol")
+        return database.judgment_view(symbol.upper(), date_)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except DatabaseError as exc:

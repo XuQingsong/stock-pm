@@ -155,20 +155,7 @@ async function main(){
   $('sync').textContent=sync&&sync.completed_at?`最近同步 ${new Date(sync.completed_at).toLocaleString()} · ${esc(sync.source||'')}`:'尚未同步';
   if((briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted')){
     $('quota-panel').style.display='';
-    $('quota-msg').innerHTML='<b>模型额度已用尽。</b>正在重新请求生成解释与明日看法…';
-    try{
-      const retry=await j('/api/reviews/retry-llm'+(briefing.date?`?date=${encodeURIComponent(briefing.date)}`:''),{method:'POST'});
-      briefing=retry.briefing||briefing;
-    }catch(_){}
-    if((briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted')){
-      $('quota-msg').innerHTML='<b>模型额度已用尽。</b>请充值后刷新本页，系统会自动重新生成复盘解释。';
-    }else{
-      $('quota-msg').innerHTML='额度恢复后已重新生成模型解释。';
-      $('quota-msg').style.background='#ecfdf5';
-      $('quota-msg').style.color='#065f46';
-      $('quota-msg').style.borderLeftColor='#0f9d72';
-      reviewRows=await j('/api/reviews').catch(()=>reviewRows);
-    }
+    $('quota-msg').innerHTML='<b>模型额度已用尽。</b>请充值后到复盘页查看，本页不再自动请求生成。';
   }
   $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
   $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};

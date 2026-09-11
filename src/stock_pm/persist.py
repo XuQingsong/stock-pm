@@ -814,7 +814,8 @@ class PersistMixin:
                         window_days, window_label, thesis, entry_price,
                         upside_bound_pct, downside_bound_pct, upside_price,
                         downside_price, struct, missing_flags, publish_state,
-                        supersedes_id, superseded_by_id, change_reason
+                        supersedes_id, superseded_by_id, change_reason,
+                        gate_reason
                     ) VALUES (
                         %(as_of_date)s, %(symbol)s, %(state)s, %(window_start)s,
                         %(window_end)s, %(window_days)s, %(window_label)s,
@@ -822,7 +823,7 @@ class PersistMixin:
                         %(downside_bound_pct)s, %(upside_price)s,
                         %(downside_price)s, %(struct)s, %(missing_flags)s,
                         %(publish_state)s, %(supersedes_id)s, %(superseded_by_id)s,
-                        %(change_reason)s
+                        %(change_reason)s, %(gate_reason)s
                     )
                     RETURNING id
                     """,
@@ -846,6 +847,8 @@ class PersistMixin:
                         "supersedes_id": snapshot.get("supersedes_id"),
                         "superseded_by_id": snapshot.get("superseded_by_id"),
                         "change_reason": snapshot.get("change_reason"),
+                        "gate_reason": snapshot.get("gate_reason")
+                        or (snapshot.get("struct") or {}).get("gate_reason"),
                     },
                 ).fetchone()
         except Exception as exc:

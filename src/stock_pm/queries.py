@@ -48,6 +48,8 @@ from .philosophy import (
     impact_row_thesis,
     quote_quality,
 )
+from .evidence import COMPLETE, fact_ref
+from .judgment import assemble_judgment
 from .prediction import (
     OPEN_STATES,
     apply_supersede,
@@ -65,6 +67,7 @@ from .ux_copy import (
     decorate_news_item,
     env_half_display,
     first_env_news,
+    is_http_url,
     sort_attention_rows,
 )
 from .scoring import sentiment_from_components
@@ -1948,7 +1951,8 @@ class QueryMixin:
                    window_days, window_label, thesis, entry_price,
                    upside_bound_pct, downside_bound_pct, upside_price,
                    downside_price, struct, missing_flags, publish_state,
-                   supersedes_id, superseded_by_id, change_reason, created_at
+                   supersedes_id, superseded_by_id, change_reason, gate_reason,
+                   created_at
             FROM predictions
             WHERE as_of_date = %s
             ORDER BY symbol, created_at DESC
@@ -1965,7 +1969,8 @@ class QueryMixin:
                    window_days, window_label, thesis, entry_price,
                    upside_bound_pct, downside_bound_pct, upside_price,
                    downside_price, struct, missing_flags, publish_state,
-                   supersedes_id, superseded_by_id, change_reason, created_at
+                   supersedes_id, superseded_by_id, change_reason, gate_reason,
+                   created_at
             FROM predictions
             WHERE symbol = %s AND state = ANY(%s)
             ORDER BY created_at DESC, id DESC
@@ -1995,7 +2000,8 @@ class QueryMixin:
                    window_days, window_label, thesis, entry_price,
                    upside_bound_pct, downside_bound_pct, upside_price,
                    downside_price, struct, missing_flags, publish_state,
-                   supersedes_id, superseded_by_id, change_reason, created_at
+                   supersedes_id, superseded_by_id, change_reason, gate_reason,
+                   created_at
             FROM predictions
             WHERE as_of_date = %s AND symbol = %s
             ORDER BY created_at DESC
@@ -2013,7 +2019,8 @@ class QueryMixin:
                    window_days, window_label, thesis, entry_price,
                    upside_bound_pct, downside_bound_pct, upside_price,
                    downside_price, struct, missing_flags, publish_state,
-                   supersedes_id, superseded_by_id, change_reason, created_at
+                   supersedes_id, superseded_by_id, change_reason, gate_reason,
+                   created_at
             FROM predictions
             WHERE symbol = %s
             ORDER BY created_at DESC, id DESC
@@ -2045,7 +2052,8 @@ class QueryMixin:
                    window_days, window_label, thesis, entry_price,
                    upside_bound_pct, downside_bound_pct, upside_price,
                    downside_price, struct, missing_flags, publish_state,
-                   supersedes_id, superseded_by_id, change_reason, created_at
+                   supersedes_id, superseded_by_id, change_reason, gate_reason,
+                   created_at
             FROM predictions
             WHERE id = %s
             """,
@@ -2137,6 +2145,287 @@ class QueryMixin:
             stored = None
         pred = stored or self.build_live_prediction(symbol, as_of)
         return self._attach_judgment_alert(pred) or pred
+
+    def _safe_fetch(self, query: str, params: tuple[Any, ...] = ()) -> list[dict]:
+        try:
+            return self.fetch_all(query, params)
+        except Exception:
+            return []
+
+    def _fact_price_bar(self, symbol: str, as_of: str | None) -> dict | None:
+        if not symbol or not as_of:
+            return None
+        rows = self._safe_fetch(
+            """
+            SELECT symbol, bar_size, bar_time, open_price, high_price, low_price,
+                   close_price, volume, source
+            FROM daily_price_bars
+            WHERE symbol = %s
+              AND (bar_time AT TIME ZONE 'America/New_York')::date = %s::date
+            LIMIT 1
+            """,
+            (symbol, as_of),
+        )
+        row = rows[0] if rows else None
+        if not row:
+            return None
+        bar_time = str(row.get("bar_time") or "")[:10]
+        close = _number(row.get("close_price"))
+        return fact_ref(
+            ref_table="price_bars",
+            ref_id=f"{symbol}|1d|{bar_time}",
+            as_of=bar_time or as_of,
+            text=f"{symbol} 日线收盘 {close}" if close is not None else f"{symbol} 日线",
+            source_name="Alpaca" if "alpaca" in str(row.get("source") or "").lower() else row.get("source"),
+            source_url=None,
+            completeness=COMPLETE,
+            role="price",
+        )
+
+    def _fact_snapshot(self, symbol: str, ref_id: Any = None) -> dict | None:
+        rows: list[dict] = []
+        if ref_id not in (None, "") and str(ref_id).isdigit():
+            rows = self._safe_fetch(
+                """
+                SELECT id, symbol, captured_at, last_price, prior_close, volume, source
+                FROM market_snapshots WHERE id = %s
+                """,
+                (int(ref_id),),
+            )
+        elif symbol:
+            rows = self._safe_fetch(
+                """
+                SELECT id, symbol, captured_at, last_price, prior_close, volume, source
+                FROM market_snapshots WHERE symbol = %s
+                ORDER BY captured_at DESC LIMIT 1
+                """,
+                (symbol,),
+            )
+        row = rows[0] if rows else None
+        if not row or row.get("id") is None:
+            return None
+        price = _number(row.get("last_price"))
+        return fact_ref(
+            ref_table="market_snapshots",
+            ref_id=row["id"],
+            as_of=row.get("captured_at"),
+            text=f"{symbol} 快照 {price}" if price is not None else f"{symbol} 行情快照",
+            source_name="Alpaca" if "alpaca" in str(row.get("source") or "").lower() else row.get("source"),
+            source_url=None,
+            completeness=COMPLETE,
+            role="snapshot",
+        )
+
+    def _fact_news(
+        self,
+        symbol: str,
+        *,
+        headline: str | None = None,
+        url: str | None = None,
+        ref_id: Any = None,
+    ) -> dict | None:
+        rows: list[dict] = []
+        if ref_id not in (None, "") and str(ref_id).isdigit():
+            rows = self._safe_fetch(
+                """
+                SELECT id, symbol, headline, url, source, published_at
+                FROM news_articles WHERE id = %s
+                """,
+                (int(ref_id),),
+            )
+        elif url and is_http_url(url):
+            rows = self._safe_fetch(
+                """
+                SELECT id, symbol, headline, url, source, published_at
+                FROM news_articles WHERE url = %s
+                LIMIT 1
+                """,
+                (url,),
+            )
+        elif headline and symbol:
+            rows = self._safe_fetch(
+                """
+                SELECT id, symbol, headline, url, source, published_at
+                FROM news_articles
+                WHERE symbol = %s AND headline = %s
+                ORDER BY published_at DESC NULLS LAST
+                LIMIT 1
+                """,
+                (symbol, headline),
+            )
+        row = rows[0] if rows else None
+        if not row or row.get("id") is None:
+            return None
+        source_url = row.get("url") if is_http_url(row.get("url")) else None
+        return fact_ref(
+            ref_table="news_articles",
+            ref_id=row["id"],
+            as_of=row.get("published_at"),
+            text=row.get("headline") or headline,
+            source_name=row.get("source"),
+            source_url=source_url,
+            completeness=COMPLETE,
+            role="news",
+        )
+
+    def _fact_earnings(self, symbol: str) -> dict | None:
+        rows = self._safe_fetch(
+            """
+            SELECT symbol, report_date, fiscal_period, eps_actual, source
+            FROM earnings_reports
+            WHERE symbol = %s
+            ORDER BY report_date DESC
+            LIMIT 1
+            """,
+            (symbol,),
+        )
+        row = rows[0] if rows else None
+        if not row:
+            return None
+        report_date = str(row.get("report_date") or "")[:10]
+        period = row.get("fiscal_period") or ""
+        return fact_ref(
+            ref_table="earnings_reports",
+            ref_id=f"{symbol}|{report_date}|{period}",
+            as_of=report_date,
+            text=f"{symbol} {period} 财报".strip(),
+            source_name=row.get("source"),
+            source_url=None,
+            completeness=COMPLETE,
+            role="earnings",
+        )
+
+    def _fact_macro(self, as_of: str | None, headline: str | None = None) -> dict | None:
+        rows: list[dict] = []
+        if headline:
+            rows = self._safe_fetch(
+                """
+                SELECT event_type, event_time, name, actual, source
+                FROM macro_events
+                WHERE name = %s
+                ORDER BY event_time DESC
+                LIMIT 1
+                """,
+                (headline,),
+            )
+        elif as_of:
+            rows = self._safe_fetch(
+                """
+                SELECT event_type, event_time, name, actual, source
+                FROM macro_events
+                WHERE event_time::date <= %s::date
+                ORDER BY event_time DESC
+                LIMIT 1
+                """,
+                (as_of,),
+            )
+        row = rows[0] if rows else None
+        if not row:
+            return None
+        event_time = str(row.get("event_time") or "")
+        return fact_ref(
+            ref_table="macro_events",
+            ref_id=f"{row.get('event_type')}|{event_time}",
+            as_of=event_time[:10] if event_time else as_of,
+            text=row.get("name") or headline,
+            source_name=row.get("source") if row.get("source") not in {None, "manual"} else None,
+            source_url=None,
+            completeness=COMPLETE,
+            role="macro",
+        )
+
+    def _collect_judgment_facts(
+        self,
+        symbol: str,
+        as_of: str | None,
+        environment: dict | None,
+    ) -> list[dict]:
+        facts: list[dict] = []
+        price = self._fact_price_bar(symbol, as_of)
+        if price:
+            facts.append(price)
+        snapshot = self._fact_snapshot(symbol)
+        if snapshot:
+            facts.append(snapshot)
+        struct = (environment or {}).get("struct") or {}
+        news = struct.get("news") or {}
+        for key in ("company", "sector", "macro"):
+            layer = news.get(key) or {}
+            item = self._fact_news(
+                symbol,
+                headline=layer.get("headline"),
+                url=layer.get("url"),
+                ref_id=layer.get("id") or layer.get("article_id"),
+            )
+            if item:
+                facts.append(item)
+                break
+        if (struct.get("fundamentals") or {}).get("earnings"):
+            earnings = self._fact_earnings(symbol)
+            if earnings:
+                facts.append(earnings)
+        macro_headline = ((news.get("macro") or {}).get("headline"))
+        if macro_headline:
+            macro = self._fact_macro(as_of, macro_headline)
+            if macro:
+                facts.append(macro)
+        return facts
+
+    def _stored_daily_review(self, symbol: str, as_of: str | None) -> dict | None:
+        if not as_of:
+            return None
+        try:
+            rows = self.reviews_by_date(as_of)
+        except Exception:
+            return None
+        match = next(
+            (
+                row
+                for row in rows
+                if str(row.get("symbol") or "").upper() == symbol.upper()
+            ),
+            None,
+        )
+        return match
+
+    def judgment_view(self, symbol: str, date: str | None = None) -> dict:
+        """Read-only judgment card. Never synthesizes or writes."""
+        normalized = symbol.upper()
+        session = self.market_session(date)
+        as_of = date or session.get("default_review_date") or session.get("date")
+        stored = None
+        environment = None
+        tape = None
+        review_note = None
+        try:
+            stored = self.latest_prediction(as_of, normalized)
+        except Exception:
+            stored = None
+        try:
+            environment = self.latest_environment_snapshot(as_of, "symbol", normalized)
+        except Exception:
+            environment = None
+        try:
+            tape = self.latest_tape_analysis(as_of, normalized)
+        except Exception:
+            tape = None
+        try:
+            review_note = self.latest_review_note(as_of, normalized)
+        except Exception:
+            review_note = None
+        daily_review = self._stored_daily_review(normalized, as_of)
+        facts = self._collect_judgment_facts(normalized, as_of, environment)
+        return assemble_judgment(
+            symbol=normalized,
+            as_of_date=as_of,
+            prediction=stored,
+            environment=environment,
+            tape=tape,
+            review_note=review_note,
+            daily_review=daily_review,
+            resolved_facts=facts,
+            generated_at=(stored or {}).get("created_at"),
+        )
 
     def _attach_row_predictions(
         self,

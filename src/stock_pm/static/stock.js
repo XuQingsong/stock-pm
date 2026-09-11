@@ -78,6 +78,67 @@
     return null;
   };
 
+  function evidenceItem(item) {
+    const row = item || {};
+    const text = row.text || "分析依据不完整";
+    const source = row.source_name ? ` · ${row.source_name}` : "";
+    const link = row.source_url && safeUrl(row.source_url) !== "#"
+      ? ` <a href="${safeUrl(row.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>`
+      : "";
+    const incomplete = row.completeness && row.completeness !== "complete"
+      ? '<span class="subline">分析依据不完整</span>'
+      : "";
+    return `<li class="${row.completeness === "partial" || row.completeness === "missing" ? "partial" : ""}">${esc(text)}${esc(source)}${link} ${incomplete}</li>`;
+  }
+
+  function renderJudgmentCard(data) {
+    const host = $("judgment-panel");
+    if (!host) return;
+    const judgment = (data && data.judgment) || {};
+    const gate = (data && data.gate) || {};
+    const ready = judgment.prediction_ready === true;
+    const line = ready
+      ? (judgment.one_liner || "区间假设已生成。")
+      : (gate.label || judgment.one_liner || "尚未落库判断，未编造方向、时间窗或涨跌数字。");
+    const reasons = (data && data.reasons) || [];
+    const counters = (data && data.counter_evidence) || [];
+    const invalidation = (data && data.invalidation) || [];
+    const facts = (data && data.facts) || [];
+    const listOrEmpty = (items, empty) => items.length
+      ? `<ul class="judgment-list">${items.map(evidenceItem).join("")}</ul>`
+      : `<div class="judgment-empty">${esc(empty)}</div>`;
+    const invalidationHtml = invalidation.length
+      ? `<ul class="judgment-list">${invalidation.map((item) => `<li>${esc(item.text || "")}</li>`).join("")}</ul>`
+      : `<div class="judgment-empty">暂无已声明的失效条件</div>`;
+    host.innerHTML = `
+      <section class="judgment-card">
+        <div class="zone-label">当前判断 · 区间假设</div>
+        <p class="judgment-line">${esc(line)}</p>
+        <div class="judgment-meta">${esc(judgment.kind_label || "区间假设")}${ready && judgment.window_label ? ` · ${esc(judgment.window_label)}` : ""}${gate.reason ? "" : ""}</div>
+        <h3>为什么这样判断</h3>
+        ${listOrEmpty(reasons, "暂无已落库分析")}
+        <h3>反方证据</h3>
+        ${listOrEmpty(counters, "暂无反方证据")}
+        <h3>失效条件</h3>
+        ${invalidationHtml}
+        <details class="fold">
+          <summary>支撑事实</summary>
+          ${listOrEmpty(facts, "暂无可核验事实")}
+        </details>
+      </section>`;
+  }
+
+  async function loadJudgment() {
+    const host = $("judgment-panel");
+    if (!host || !SYMBOL) return;
+    try {
+      const data = await api(`${endpoint("judgment")}`);
+      renderJudgmentCard(data);
+    } catch (error) {
+      host.innerHTML = `<section class="judgment-card"><p class="judgment-line">判断暂不可用</p><div class="judgment-meta">${esc(error.message || "请求失败")}</div></section>`;
+    }
+  }
+
   async function loadHeader() {
     if (!SYMBOL) { location.replace("/"); return; }
     $("symbol").textContent = SYMBOL;
@@ -397,14 +458,6 @@
     const reviewSafe = review || {};
     const noteSafe = note || row.review_note || {};
     const status = row.llm_status || reviewSafe.llm_status || null;
-    if (!didRetry && status === "quota_exhausted") {
-      $("tab-content").innerHTML = '<div class="state loading"><span class="spinner"></span>模型额度已用尽，正在重新请求生成…充值后刷新即可。</div>';
-      await fetch(`/api/reviews/retry-llm?date=${encodeURIComponent(date)}&symbol=${encodeURIComponent(SYMBOL)}`, {
-        method: "POST",
-        headers: { Accept: "application/json" }
-      }).catch(() => null);
-      return renderReview(true);
-    }
     const quota = status === "quota_exhausted";
     const llmMissing = Boolean(status) && status !== "ok";
     const context = row.context || reviewSafe.context || {};
@@ -414,7 +467,7 @@
     const llmNote = !status
       ? ""
       : quota
-        ? `<div class="disclaimer prominent">模型额度已用尽。请充值后刷新本页，系统会自动重新生成「为何走」和明日看法。</div>`
+        ? `<div class="disclaimer prominent">模型额度已用尽。请充值后到复盘页手动重试，本页不再自动请求生成。</div>`
         : llmMissing
           ? `<div class="disclaimer prominent">${esc(row.llm_error || reviewSafe.llm_error || `解释与明日看法未生成（${status}）`)}</div>`
           : `<div class="subline">结论已生成。${row.llm_generated_at ? `上次生成 ${esc(String(row.llm_generated_at).replace("T", " ").slice(0, 16))} UTC。` : ""}量价、新闻或宏观变化后才会再生成。</div>`;
@@ -533,6 +586,7 @@
   window.addEventListener("beforeunload", disposeCharts);
   Promise.all([
     loadHeader(),
+    loadJudgment(),
     window.mountStockPmShell ? window.mountStockPmShell({ symbol: SYMBOL }) : Promise.resolve()
   ]).finally(() => activate(location.hash.slice(1) || "chart"));
 })();
