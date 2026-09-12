@@ -241,50 +241,56 @@ def capture_pages() -> dict[str, str]:
                 return text
         raise RuntimeError(f"decision module did not finish rendering: {url}")
 
-    def clip(selector: str, dest: Path) -> None:
+    def isolate_decision() -> None:
         call(
             "Runtime.evaluate",
             {
-                "expression": f"""(() => {{
-                  const node = document.querySelector({selector!r});
-                  if (node && node.tagName === 'DETAILS') node.open = true;
-                  if (node) node.scrollIntoView({{block: 'start'}});
-                  return Boolean(node);
-                }})()""",
+                "expression": """(() => {
+                  document.querySelectorAll('.stock-header, .tabs, #stock-pm-shell').forEach((n) => {
+                    n.style.display = 'none';
+                  });
+                  const keep = document.getElementById('decision-module');
+                  document.querySelectorAll('main.page-shell > *').forEach((n) => {
+                    if (keep && !keep.contains(n) && n !== keep) n.style.display = 'none';
+                  });
+                  const bg = document.querySelector('.market-background');
+                  if (bg) bg.open = true;
+                  window.scrollTo(0, 0);
+                  if (keep) keep.scrollIntoView({block: 'start'});
+                  return Boolean(document.querySelector('.causal-flow') && document.querySelector('[data-decision-ready="1"]'));
+                })()""",
                 "returnByValue": True,
             },
         )
-        time.sleep(0.4)
-        box = call(
+        time.sleep(0.3)
+
+    def clip(_selector: str, dest: Path) -> None:
+        isolate_decision()
+        metrics = call(
             "Runtime.evaluate",
             {
-                "expression": f"""(() => {{
-                  const node = document.querySelector({selector!r});
+                "expression": """(() => {
+                  const node = document.querySelector('.causal-flow') || document.getElementById('decision-body');
                   if (!node) return null;
                   const r = node.getBoundingClientRect();
-                  return {{x: r.x, y: r.y, width: r.width, height: Math.min(r.height, 1600), dpr: window.devicePixelRatio || 1}};
-                }})()""",
+                  return {width: Math.max(1200, Math.ceil(r.width + 32)), height: Math.min(2200, Math.max(900, Math.ceil(r.bottom + 24)))};
+                })()""",
                 "returnByValue": True,
             },
         )
-        geom = ((box.get("result") or {}).get("result") or {}).get("value")
-        if not geom or geom["width"] < 40 or geom["height"] < 40:
-            raise RuntimeError(f"cannot clip {selector}")
-        scale = 1
-        png = call(
-            "Page.captureScreenshot",
+        size = ((metrics.get("result") or {}).get("result") or {}).get("value") or {"width": 1400, "height": 1200}
+        call(
+            "Emulation.setDeviceMetricsOverride",
             {
-                "format": "png",
-                "fromSurface": True,
-                "clip": {
-                    "x": max(geom["x"], 0),
-                    "y": max(geom["y"], 0),
-                    "width": geom["width"],
-                    "height": geom["height"],
-                    "scale": scale,
-                },
+                "width": int(size["width"]),
+                "height": int(size["height"]),
+                "deviceScaleFactor": 1,
+                "mobile": False,
             },
         )
+        time.sleep(0.2)
+        isolate_decision()
+        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True})
         dest.write_bytes(base64.b64decode(png["result"]["data"]))
 
     OUT.mkdir(parents=True, exist_ok=True)
