@@ -110,3 +110,9 @@ class Settings:
     events_mode: str = field(
         default_factory=lambda: (os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
     )
+    # Documented SEC fair-access format: "Company Name AdminContact@domain.com"
+    sec_edgar_user_agent: str = field(
+        default_factory=lambda: (
+            os.getenv("SEC_EDGAR_USER_AGENT") or "stock-pm research AdminContact@example.com"
+        ).strip()
+    )

@@ -119,31 +119,40 @@
     ).join("");
   };
 
+  const providerPill = (coverage, name) => {
+    const row = ((coverage || {}).providers || {})[name] || {};
+    const status = row.status || "idle";
+    return `${pill(`${name} ${status}`, status)}<span>${esc(name)} events ${esc(row.event_count ?? 0)} · last_success ${esc(row.last_success_at || "—")} · ${esc(row.reason_code || "ok")}</span>`;
+  };
+
   const renderCoverage = (coverage) => {
     const google = ((coverage || {}).providers || {}).google_cse || {};
     const official = ((coverage || {}).providers || {}).official_feed || {};
     const status = google.status || "not_configured";
     const mode = coverage.data_mode || "empty";
     const live = coverage.live === true;
+    const ratio = coverage.live_coverage_ratio;
     const modeLabel = live
-      ? "LIVE · 生产实时"
+      ? `LIVE · 生产实时 · 覆盖率 ${ratio == null ? "—" : Math.round(Number(ratio) * 100) + "%"}`
       : mode === "empty"
-        ? "生产默认 · 框架完成 / 实时覆盖未完成 · 无实时官方事件采集"
+        ? "生产默认 · 无 fixture · 等待官方源"
         : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
     return {
-      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "not_implemented")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}">
+      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}">
         <div class="event-mode-banner ${live ? "is-live" : "is-fixture"}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
-        ${pill(`verdict ${coverage.verdict || coverage.status || "incomplete"}`, "not_configured")}
+        ${pill(`verdict ${coverage.verdict || coverage.status || "incomplete"}`, live ? "ok" : "not_configured")}
         ${pill(`data_mode ${mode}`)}
         ${pill(`google_cse ${status}`, status)}
-        ${pill(`official_feed ${official.status || "not_implemented"}`, official.status || "not_implemented")}
+        ${providerPill(coverage, "sec_edgar")}
+        ${providerPill(coverage, "federal_reserve")}
+        ${providerPill(coverage, "eia_press")}
         <span>live_event_count ${esc(coverage.live_event_count ?? 0)}</span>
         <span>fixture_event_count ${esc(coverage.fixture_event_count ?? 0)}</span>
         <span>source_count ${esc(coverage.source_count ?? 0)}</span>
+        <span>real_source_count ${esc(coverage.real_source_count ?? 0)}</span>
         <span>conflict_count ${esc(coverage.conflict_count ?? 0)}</span>
+        <span>last_success ${esc(coverage.last_success || "—")}</span>
         <span>reason_code ${esc(coverage.reason_code || "—")}</span>
-        <span>official last_success ${esc(official.last_success_at || "—")}</span>
-        <span>google request ${esc(google.request_url || "—")}</span>
         <div class="subline">${esc(coverage.note || "")} 只影响事件链：${esc(coverage.affects_chain || "events")}。不影响 ${esc((coverage.does_not_affect || []).join(" / ") || "price / earnings / macro_rates")}。</div>
       </div>`,
       googleStatus: status,

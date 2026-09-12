@@ -41,9 +41,10 @@ def test_production_default_does_not_load_fixtures():
     assert center["data_mode"] == "empty"
     assert center["live"] is False
     assert center["events"] == []
-    assert center["coverage"]["verdict"] == "framework_complete_live_coverage_incomplete"
     assert center["coverage"]["live_event_count"] == 0
-    assert center["coverage"]["providers"]["official_feed"]["status"] == "not_implemented"
+    assert center["coverage"]["providers"]["official_feed"]["status"] == "idle"
+    assert center["coverage"]["providers"]["official_feed"]["reason_code"] == "fixture_loader_only"
+    assert center["coverage"]["providers"]["sec_edgar"]["reason_code"] == "live_fetch_disabled"
 
 
 def test_dedupe_matrix_title_country_entity_date():

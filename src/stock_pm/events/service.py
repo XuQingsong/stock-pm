@@ -8,22 +8,28 @@ from stock_pm.config import Settings
 
 from .analyze import DISPLAY_SYMBOLS, analyze_event, symbol_event_view
 from .dedupe import build_events
+from .live import discover_live_documents, reset_live_state
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
 from .types import TrustedEvent
 
 
 _CACHE: dict[str, Any] = {"events": None, "coverage": None}
+REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
 
 
 def build_event_book(settings: Settings | None = None, *, refresh: bool = False) -> list[TrustedEvent]:
     if _CACHE["events"] is not None and not refresh:
         return list(_CACHE["events"])
     official = OfficialFeedProvider(settings).discover()
+    live = discover_live_documents(settings)
     google = GoogleDiscoveryProvider(settings)
-    discovered = official
+    discovered = list(official) + list(live)
     if google.configured():
-        discovered = official + google.discover()
+        try:
+            discovered.extend(google.discover())
+        except Exception:
+            pass
     events = build_events(discovered)
     for event in events:
         analyze_event(event)
@@ -36,30 +42,55 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     rows = events if events is not None else build_event_book(settings)
     providers = provider_coverage(settings)
     google = providers["google_cse"]
-    official = providers["official_feed"]
-    conflicts = sum(int((event.analysis or {}).get("conflict_count") or 0) for event in rows)
     mode = events_data_mode(settings)
-    live_count = 0
     fixture_count = len(rows) if mode in {"demo", "fixture"} else 0
+    live_rows = [providers[name] for name in REQUIRED_LIVE if name in providers]
+    live_ok = [
+        row for row in live_rows if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0
+    ]
+    live_event_count = 0 if mode in {"demo", "fixture"} else len(rows)
+    ratio = (len(live_ok) / len(REQUIRED_LIVE)) if mode not in {"demo", "fixture"} else 0.0
+    is_live = mode not in {"demo", "fixture"} and bool(live_ok)
+    if mode in {"demo", "fixture"}:
+        verdict = "framework_complete_live_coverage_incomplete"
+        note = "Labeled fixture/demo only. Not production live coverage."
+    elif len(live_ok) == len(REQUIRED_LIVE):
+        verdict = "live_official_ingest"
+        note = "Production showing verified SEC / Federal Reserve / EIA events only."
+    elif live_ok:
+        verdict = "partial_live_official_ingest"
+        note = "At least one official feed succeeded. Failed sources stay isolated on the events chain."
+    else:
+        verdict = "framework_complete_live_coverage_incomplete"
+        note = "Live official ingest ran but no provider returned events."
+    last_success = None
+    for row in live_rows:
+        stamp = row.get("last_success_at")
+        if stamp and (last_success is None or str(stamp) > str(last_success)):
+            last_success = stamp
+    failed = [f"{row.get('provider')}:{row.get('reason_code')}" for row in live_rows if row.get("status") != "ok"]
     return {
-        "status": "framework_complete_live_coverage_incomplete",
-        "verdict": "framework_complete_live_coverage_incomplete",
+        "status": verdict,
+        "verdict": verdict,
         "data_mode": mode if mode != "test" else "fixture",
-        "live": False,
-        "live_event_count": live_count,
-        "live_coverage_ratio": 0.0,
+        "live": is_live,
+        "live_event_count": live_event_count,
+        "live_coverage_ratio": ratio,
         "fixture_event_count": fixture_count,
-        "coverage": "incomplete_live",
-        "last_success": None if mode == "empty" else max((event.updated_at for event in rows), default=None),
+        "coverage": "live_official" if is_live else "incomplete_live",
+        "last_success": last_success,
         "source_count": sum(len(event.sources) for event in rows),
         "event_count": len(rows),
-        "conflict_count": conflicts,
-        "reason_code": official.get("reason_code") or google.get("reason_code"),
+        "conflict_count": sum(int((event.analysis or {}).get("conflict_count") or 0) for event in rows),
+        "reason_code": None if not failed else ",".join(failed),
         "providers": providers,
-        "implemented_live_providers": [],
+        "implemented_live_providers": list(REQUIRED_LIVE),
+        "live_ok_providers": [row.get("provider") for row in live_ok],
+        "real_source_count": len(REQUIRED_LIVE),
         "affects_chain": "events",
         "does_not_affect": ["price", "earnings", "macro_rates"],
-        "note": "No live official event ingest. Seed/demo fixtures are labeled and are not production prints.",
+        "note": note,
+        "google_cse": google.get("status"),
     }
 
 
@@ -69,7 +100,7 @@ def market_center(settings: Settings | None = None) -> dict[str, Any]:
     return {
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
-        "live": False,
+        "live": cover["live"],
         "coverage": cover,
         "events": [event.as_dict() for event in events],
     }
@@ -79,6 +110,7 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
     events = build_event_book(settings)
     selected = []
     risk_state = None
+    cover = coverage(settings, events)
     for event in events:
         if event.event_type == "vix_risk" and risk_state is None:
             analysis = event.analysis or {}
@@ -95,9 +127,9 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
             selected.append(view)
     return {
         "symbol": symbol.upper(),
-        "data_mode": events_data_mode(settings),
-        "live": False,
-        "coverage": coverage(settings, events),
+        "data_mode": cover["data_mode"],
+        "live": cover["live"],
+        "coverage": cover,
         "events": selected,
         "risk_state": risk_state,
         "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。",
@@ -114,6 +146,7 @@ def event_detail(event_id: str, settings: Settings | None = None) -> dict[str, A
 def reset_cache() -> None:
     _CACHE["events"] = None
     _CACHE["coverage"] = None
+    reset_live_state()
 
 
 def display_symbols() -> tuple[str, ...]:
