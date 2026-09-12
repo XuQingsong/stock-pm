@@ -75,7 +75,7 @@ def _connect(settings: Settings | None = None) -> ConnectionPool:
         min_size=0,
         max_size=1,
         open=True,
-        kwargs={"row_factory": dict_row},
+        kwargs={"row_factory": dict_row, "connect_timeout": 2},
     )
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import psycopg
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
@@ -27,7 +28,7 @@ class Database(QueryMixin, PersistMixin):
             min_size=0,
             max_size=settings.database_pool_size,
             open=True,
-            kwargs={"row_factory": dict_row},
+            kwargs={"row_factory": dict_row, "connect_timeout": 2},
         )
 
     def close(self) -> None:
@@ -43,8 +44,13 @@ class Database(QueryMixin, PersistMixin):
         return self.ping()
 
     def ping(self) -> bool:
+        """Health probe uses a short standalone connect so a wedged pool cannot hang /health."""
         try:
-            with self.pool.connection(timeout=2) as conn:
+            with psycopg.connect(
+                self.settings.database_url,
+                connect_timeout=2,
+                row_factory=dict_row,
+            ) as conn:
                 return conn.execute("SELECT 1").fetchone() is not None
         except Exception:
             return False

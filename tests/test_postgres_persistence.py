@@ -179,6 +179,24 @@ def test_nfp_persist_readback_and_stale_freshness():
         db.close()
 
 
+def test_ping_against_closed_port_returns_false_quickly():
+    import time
+
+    from stock_pm.config import Settings
+
+    db = Database(Settings(database_url="postgresql://stock_pm:stock_pm_dev@127.0.0.1:1/stock_pm"))
+    try:
+        started = time.monotonic()
+        assert db.ping() is False
+        assert time.monotonic() - started < 3
+        status = db.monitor_status()
+        assert status["status"] == "error"
+        assert status["reason_code"] == "query_error"
+        assert "stock_pm_dev" not in str(status)
+    finally:
+        db.close()
+
+
 def test_reconnect_after_disconnect():
     db = postgres_or_skip()
     try:
