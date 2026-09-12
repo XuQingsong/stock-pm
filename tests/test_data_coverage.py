@@ -23,7 +23,7 @@ def _valid_bar(as_of: str, close: float) -> dict:
     }
 
 
-def _macro(metric: str, actual: float, observed: str, event_time: str, *, series: str | None = None, unit: str = "index", frequency: str = "daily") -> dict:
+def _macro(metric: str, actual: float, observed: str, event_time: str, *, series: str | None = None, unit: str = "index", frequency: str = "daily", source: str = "FRED") -> dict:
     series_id = series or metric
     return decorate_macro_row(
         {
@@ -31,7 +31,7 @@ def _macro(metric: str, actual: float, observed: str, event_time: str, *, series
             "event_time": event_time,
             "actual": actual,
             "prior": actual - 0.1,
-            "source": "FRED",
+            "source": source,
             "name": "广义美元代理" if metric in {"usd_broad", "broad_usd_proxy"} else metric.upper(),
             "unit": unit,
             "notes": (
@@ -48,7 +48,7 @@ def _bundle(*, include_vix: bool = True) -> dict:
         _macro("nfp", 220, "2026-09-05T14:00:00+00:00", "2026-09-05T12:30:00+00:00", series="PAYEMS", unit="thousands"),
         _macro("cpi", 323.1, "2026-09-11T12:00:00+00:00", "2026-08-01T00:00:00+00:00", series="CPIAUCSL", frequency="monthly"),
         _macro("us2y", 3.71, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DGS2", unit="percent"),
-        _macro("gold", 2300, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="GOLDPMGBD228NLBM", unit="USD/oz"),
+        _macro("gold", 2348.5, "2026-09-11T12:00:00+00:00", "2026-09-11T00:00:00+00:00", series="XAU", unit="USD/oz", source="alpha_vantage"),
         _macro("wti", 78.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DCOILWTICO", unit="USD/bbl"),
         _macro("broad_usd_proxy", 121.4, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DTWEXBGS"),
     ]
@@ -84,6 +84,7 @@ def _settings() -> Settings:
         alpaca_api_secret_key="set",
         fred_api_key="set",
         fmp_api_key="set",
+        alpha_vantage_api_key="set",
     )
 
 
@@ -156,7 +157,7 @@ def test_health_inputs_expose_contract_fields_for_each_macro():
         ("macro_cpi", "CPIAUCSL"),
         ("macro_rates_confirm", "DGS2"),
         ("macro_vix", "VIXCLS"),
-        ("macro_gold", "GOLDPMGBD228NLBM"),
+        ("macro_gold", "XAU"),
         ("macro_wti", "DCOILWTICO"),
         ("macro_broad_usd_proxy", "DTWEXBGS"),
     ):
@@ -164,7 +165,7 @@ def test_health_inputs_expose_contract_fields_for_each_macro():
         for field in ("source", "series_or_symbol", "as_of", "fetched_at", "unit", "frequency", "status"):
             assert row.get(field) not in (None, ""), (dataset, field)
         assert row["series_or_symbol"] == series
-        assert row["source"] in {"FRED", "cboe"}
+        assert row["source"] in {"FRED", "cboe", "alpha_vantage"}
     dxy = _ds(health, "macro_dxy")
     assert dxy["status"] == "not_configured"
     assert dxy["source"] == "ice"

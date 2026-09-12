@@ -41,6 +41,7 @@ def _configured() -> Settings:
         alpaca_api_secret_key="set",
         fred_api_key="set",
         fmp_api_key="set",
+        alpha_vantage_api_key="set",
     )
 
 
@@ -50,6 +51,7 @@ def _unconfigured() -> Settings:
         alpaca_api_secret_key="",
         fred_api_key="",
         fmp_api_key="",
+        alpha_vantage_api_key="",
     )
 
 
@@ -161,7 +163,8 @@ def test_not_configured_is_not_query_error_and_secrets_stay_out():
     assert "sk-" not in dumped
     assert "traceback" not in dumped
     assert "secret" not in dumped
-    assert "api_key" not in dumped
+    assert "api_key=" not in dumped
+    assert "apikey=" not in dumped
 
 
 def test_future_release_date_does_not_make_freshness_newer():

@@ -59,6 +59,7 @@ class Settings:
     alpaca_options_feed: str = field(default_factory=lambda: os.getenv("ALPACA_OPTIONS_FEED", "indicative"))
     fred_api_key: str = field(default_factory=lambda: os.getenv("FRED_API_KEY", ""))
     fmp_api_key: str = field(default_factory=lambda: os.getenv("FMP_API_KEY", ""))
+    alpha_vantage_api_key: str = field(default_factory=lambda: os.getenv("ALPHA_VANTAGE_API_KEY", ""))
     llm_api_key: str = field(default_factory=lambda: os.getenv("LLM_API_KEY", ""))
     llm_provider: str = field(default_factory=lambda: os.getenv("LLM_PROVIDER", "openai"))
     llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", ""))

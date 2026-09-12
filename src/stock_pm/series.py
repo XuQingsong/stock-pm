@@ -1,6 +1,6 @@
-"""Official FRED series for rates, VIX, metals, oil, and the dollar.
+"""Official FRED series for rates, VIX, oil, and the dollar.
 
-Reuses the existing FRED provider. Does not add Alpha Vantage or EDGAR.
+Gold live prints are not a FRED series. See gold.py (Alpha Vantage adapter).
 Does not invent values when the upstream is empty, timed out, or unconfigured.
 """
 
@@ -52,17 +52,6 @@ FRED_MARKET_SERIES = {
         "affects_chain": "risk_sentiment",
         "affects_stage": "confirmation",
         "fixture": "tests/fixtures/fred_vixcls.json",
-    },
-    "gold": {
-        "series_id": "GOLDPMGBD228NLBM",
-        "unit": "USD/oz",
-        "frequency": "daily",
-        "name": "LBMA Gold PM",
-        "freshness_days": 7,
-        "required": False,
-        "affects_chain": "macro_rates",
-        "affects_stage": "confirmation",
-        "fixture": "tests/fixtures/fred_goldpmgbd228nlbm.json",
     },
     "wti": {
         "series_id": "DCOILWTICO",
@@ -159,6 +148,10 @@ def _require_period(value: Any) -> str:
 
 
 def expected_unit(metric: str) -> str | None:
+    if metric == "gold":
+        from .gold import GOLD_UNIT
+
+        return GOLD_UNIT
     spec = FRED_MARKET_SERIES.get(metric)
     return None if spec is None else spec["unit"]
 
@@ -554,16 +547,25 @@ def collect_live_macro_overlay(
     settings: Settings | None = None,
 ) -> tuple[list[dict[str, Any]], set[str], dict[str, Any]]:
     """Official FRED prints for the real runtime. Never reads test fixtures."""
+    settings = settings or Settings()
     stored: list[dict[str, Any]] = []
-    report = sync_fred_market_series(settings or Settings(), store=stored.append)
+    report = sync_fred_market_series(settings, store=stored.append)
+    from .gold import fred_gold_historical_record, sync_live_gold
+
+    gold_events, gold_rec = sync_live_gold(settings, store=stored.append)
+    report["series"]["gold"] = gold_rec
+    report["series"]["gold_fred_historical"] = fred_gold_historical_record(
+        fetched_at=report.get("fetched_at")
+    )
     errors: set[str] = set()
     for metric, rec in report.get("series", {}).items():
-        if metric == "dxy":
+        if metric in {"dxy", "gold_fred_historical"}:
             continue
         if rec.get("status") in {"error", "invalid"}:
             dataset = DATASET_FOR_METRIC.get(metric)
             if dataset:
                 errors.add(dataset)
+    _ = gold_events
     return [decorate_macro_row(row) for row in stored], errors, report
 
 
@@ -574,8 +576,10 @@ def collect_live_macro_events(settings: Settings | None = None) -> list[dict[str
 
 
 def merge_live_macros(bundle: dict[str, Any], live: list[dict[str, Any]]) -> dict[str, Any]:
+    from .gold import is_deprecated_fred_gold
+
     payload = dict(bundle)
-    existing = list(payload.get("macro_events") or [])
+    existing = [row for row in list(payload.get("macro_events") or []) if not is_deprecated_fred_gold(row)]
     live_types = {str(row.get("event_type")) for row in live}
     kept = [row for row in existing if str(row.get("event_type")) not in live_types]
     payload["macro_events"] = kept + live

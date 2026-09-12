@@ -58,7 +58,7 @@
 .health-row h4{margin:0 0 4px;font-size:13px}
 .health-row .why{margin-top:3px;font-size:12px;color:#374151}
 .health-row.status-invalid,.health-row.status-error{border-color:#f3c1c1;background:#fff7f7}
-.health-row.status-stale,.health-row.status-missing,.health-row.status-not_configured{border-color:#f1d9a0;background:#fffdf6}
+.health-row.status-stale,.health-row.status-missing,.health-row.status-not_configured,.health-row.status-upstream_unavailable{border-color:#f1d9a0;background:#fffdf6}
 .grade-board{margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#f8fafc}
 .grade-board p{margin:4px 0 0;font-size:13px;color:#374151}
 .grade-level{font-size:14px}
@@ -76,7 +76,7 @@
 .status-pill.L2,.status-pill.partial{background:#e0e7ff;color:#3730a3}
 .status-pill.L1,.status-pill.fact_only{background:#e5e7eb;color:#374151}
 .status-pill.L0,.status-pill.unavailable{background:#f3f4f6;color:#6b7280}
-.status-pill.degraded,.status-pill.stale,.status-pill.missing,.status-pill.not_configured{background:#fef3c7;color:#92400e}
+.status-pill.degraded,.status-pill.stale,.status-pill.missing,.status-pill.not_configured,.status-pill.upstream_unavailable,.status-pill.deprecated{background:#fef3c7;color:#92400e}
 .status-pill.invalid,.status-pill.error{background:#fee2e2;color:#991b1b}
 @media(max-width:720px){
   .chain-groups{grid-template-columns:1fr}

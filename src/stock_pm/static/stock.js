@@ -762,6 +762,8 @@
     if (code === "record_invalid") return "记录格式非法";
     if (code === "query_error") return "查询异常";
     if (code === "missing_observation") return "缺少观察时间";
+    if (code === "upstream_unavailable") return "上游已不可用";
+    if (code === "deprecated") return "序列已停更";
     return row.reason_label || code || "状态未知";
   }
 
@@ -799,7 +801,8 @@
         <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")} · series_or_symbol ${esc(row.series_or_symbol || row.series || "—")}</div>
         <div class="why">as_of ${esc(row.as_of || "—")} · value ${esc(row.value == null ? "—" : String(row.value))} ${esc(row.unit || "")} · 观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
         <div class="why">http_source ${esc(row.http_source || "—")} · transport ${esc(row.transport || "—")}</div>
-        <div class="why">恢复：${esc(row.next_action || "—")}</div>
+        <div class="why">恢复：${esc(row.next_action || "—")}${row.required_env ? ` · 所需环境变量 ${esc(row.required_env)}` : ""}</div>
+        ${row.historical_series_or_symbol ? `<div class="why">历史 FRED ${esc(row.historical_series_or_symbol)} · ${esc(row.historical_status || "")} / ${esc(row.historical_reason_code || "")} · 不得当作当前金价</div>` : ""}
       </article>`;
     }).join("");
     return `<section class="data-health" aria-label="数据健康" data-mode="${health.synthetic ? "synthetic" : "live"}" data-runtime="${health.synthetic ? "synthetic" : "real"}">
@@ -813,7 +816,7 @@
       </div>
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
       <table class="health-inputs">
-        <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。</caption>
+        <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。FRED GOLDPMGBD228NLBM 已停更，不得当作当前金价；实时黄金需 ALPHA_VANTAGE_API_KEY。</caption>
         <thead><tr><th>输入</th><th>source</th><th>series_or_symbol</th><th>as_of</th><th>value</th><th>unit</th><th>新鲜度</th><th>状态</th></tr></thead>
         <tbody>${inputRows}</tbody>
       </table>

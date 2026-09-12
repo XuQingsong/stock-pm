@@ -6,6 +6,12 @@ from datetime import date, datetime, timezone
 from typing import Any, Iterable
 
 from stock_pm.config import Settings
+from stock_pm.gold import (
+    GOLD_ENV_VAR,
+    GOLD_LIVE,
+    historical_gold_fields,
+    is_deprecated_fred_gold,
+)
 from stock_pm.series import FRED_MARKET_SERIES
 
 from .causal import canonical_metric
@@ -35,6 +41,7 @@ STATUS_STALE = "stale"
 STATUS_INVALID = "invalid"
 STATUS_ERROR = "error"
 STATUS_NOT_CONFIGURED = "not_configured"
+STATUS_UNAVAILABLE = "upstream_unavailable"
 
 REASON_SOURCE_NOT_CONFIGURED = "source_not_configured"
 REASON_UPSTREAM_EMPTY = "upstream_empty"
@@ -43,6 +50,8 @@ REASON_RECORD_INVALID = "record_invalid"
 REASON_QUERY_ERROR = "query_error"
 REASON_WITHIN_THRESHOLD = "within_threshold"
 REASON_MISSING_OBSERVATION = "missing_observation"
+REASON_UPSTREAM_UNAVAILABLE = "upstream_unavailable"
+REASON_DEPRECATED = "deprecated"
 
 # Catch-all UI copy is forbidden. Each reason_code maps to a distinct label.
 REASON_LABELS = {
@@ -53,6 +62,8 @@ REASON_LABELS = {
     REASON_QUERY_ERROR: "查询异常",
     REASON_WITHIN_THRESHOLD: "在新鲜度阈值内",
     REASON_MISSING_OBSERVATION: "缺少观察时间",
+    REASON_UPSTREAM_UNAVAILABLE: "上游已不可用",
+    REASON_DEPRECATED: "序列已停更",
 }
 
 FRESHNESS_DAYS = {
@@ -77,7 +88,7 @@ DATASET_TITLES = {
     "macro_nfp": ("NFP", "非农"),
     "macro_cpi": ("CPI-U", "CPI"),
     "macro_rates_confirm": ("US 2Y", "美债2年"),
-    "macro_gold": ("LBMA Gold", "黄金"),
+    "macro_gold": ("Gold", "黄金"),
     "macro_wti": ("WTI", "WTI 原油"),
     "macro_broad_usd_proxy": ("USD broad proxy", "广义美元代理"),
     "macro_dxy": ("ICE DXY", "ICE 美元指数"),
@@ -153,6 +164,8 @@ def _source_configured(settings: Settings | None, family: str) -> bool:
         return True
     if family == "fmp":
         return bool(settings.fmp_api_key)
+    if family == "alpha_vantage":
+        return bool(settings.alpha_vantage_api_key)
     return True
 
 
@@ -307,6 +320,12 @@ def _evaluate_rows(
     latest = rows[0] if rows else {}
     provenance = _row_provenance(latest)
     spec = FRED_MARKET_SERIES.get(metric) or {}
+    if metric == "gold":
+        spec = {
+            "series_id": GOLD_LIVE["symbol"],
+            "unit": GOLD_LIVE["unit"],
+            "frequency": GOLD_LIVE["frequency"],
+        }
     if not provenance.get("series_or_symbol") and spec.get("series_id"):
         provenance["series"] = spec["series_id"]
         provenance["series_or_symbol"] = spec["series_id"]
@@ -350,8 +369,7 @@ def _evaluate_rows(
             **provenance,
         )
     if not rows:
-        spec = FRED_MARKET_SERIES.get(metric) or {}
-        wired = spec.get("series_id")
+        wired = spec.get("series_id") or provenance.get("series_or_symbol")
         if not configured:
             return _dataset_row(
                 dataset=dataset,
@@ -361,7 +379,11 @@ def _evaluate_rows(
                 reason_code=REASON_SOURCE_NOT_CONFIGURED,
                 affects_chain=chain,
                 affects_stage=stage,
-                next_action=f"配置 {source} 后重新同步（不在页面展示密钥）",
+                next_action=(
+                    empty_action
+                    if metric == "gold"
+                    else f"配置 {source} 后重新同步（不在页面展示密钥）"
+                ),
                 freshness_threshold=thresh,
                 coverage_window=coverage_window,
                 configured=False,
@@ -681,21 +703,13 @@ def build_data_health(
             empty_action="补利率确认通道（US2Y/实际利率/降息概率）",
             stale_action="更新利率确认观察",
         ),
-        _macro_metric_health(
-            metric="gold",
-            dataset="macro_gold",
-            stage="confirmation",
-            family="fred",
-            source="FRED",
+        _gold_health(
             parts_inside=parts.inside,
             parts_stale=parts.stale,
             all_events=macros,
             clock=clock,
             settings=settings,
             errors=errors,
-            empty_action="同步 LBMA 黄金观察（FRED GOLDPMGBD228NLBM）",
-            stale_action="更新黄金观察；缺失黄金不得删除其他宏观事实",
-            required=False,
         ),
         _macro_metric_health(
             metric="wti",
@@ -768,6 +782,54 @@ def build_data_health(
         },
         "does_not_form_conclusion": True,
     }
+
+
+def _gold_health(
+    *,
+    parts_inside: list[dict[str, Any]],
+    parts_stale: list[dict[str, Any]],
+    all_events: list[dict[str, Any]],
+    clock: date | None,
+    settings: Settings | None,
+    errors: set[str],
+) -> dict[str, Any]:
+    window = _window_payload(clock)
+    inside = [row for row in _macros_of(parts_inside, "gold") if not is_deprecated_fred_gold(row)]
+    stale = [row for row in _macros_of(parts_stale, "gold") if not is_deprecated_fred_gold(row)]
+    any_rows = [row for row in _macros_of(all_events, "gold") if not is_deprecated_fred_gold(row)]
+    coverage_stale = bool(stale) and not inside
+    rows = inside or stale or any_rows
+    row = _evaluate_rows(
+        dataset="macro_gold",
+        metric="gold",
+        source="alpha_vantage",
+        family="alpha_vantage",
+        chain="macro_rates",
+        stage="confirmation",
+        rows=rows,
+        clock=clock,
+        settings=settings,
+        kind="macro",
+        empty_action=f"配置 {GOLD_ENV_VAR} 后同步 Alpha Vantage {GOLD_LIVE['symbol']} 日度金价（不在页面展示密钥）",
+        stale_action="更新 Alpha Vantage 黄金观察；不得把已停更的 FRED LBMA 价格当作当前金价",
+        coverage_stale=coverage_stale,
+        query_error="macro_gold" in errors or "gold" in errors,
+        coverage_window=window,
+        required=False,
+    )
+    row.update(historical_gold_fields())
+    if row["status"] in {STATUS_NOT_CONFIGURED, STATUS_UNAVAILABLE, STATUS_MISSING, STATUS_ERROR}:
+        if not rows:
+            row["value"] = None
+    if is_deprecated_fred_gold({"series_or_symbol": row.get("series_or_symbol"), "source": row.get("source")}):
+        row["value"] = None
+        row["status"] = STATUS_UNAVAILABLE
+        row["reason_code"] = REASON_DEPRECATED
+        row["reason_label"] = REASON_LABELS[REASON_DEPRECATED]
+        row["series_or_symbol"] = GOLD_LIVE["symbol"]
+        row["series"] = GOLD_LIVE["symbol"]
+        row["source"] = "alpha_vantage"
+    return row
 
 
 def _dxy_unavailable_health() -> dict[str, Any]:
@@ -925,6 +987,7 @@ def _preview_settings(settings: Settings | None) -> Settings:
         alpaca_api_secret_key="set",
         fred_api_key="set",
         fmp_api_key="set",
+        alpha_vantage_api_key="set",
     )
 
 

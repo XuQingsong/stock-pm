@@ -109,8 +109,6 @@ def test_sync_without_api_key_uses_official_csv_not_not_configured(monkeypatch):
             series_id = "CPIAUCSL"
         elif "VIXCLS" in url:
             series_id = "VIXCLS"
-        elif "GOLDPMGBD228NLBM" in url:
-            series_id = "GOLDPMGBD228NLBM"
         elif "DCOILWTICO" in url:
             series_id = "DCOILWTICO"
         elif "DTWEXBGS" in url:
@@ -180,7 +178,6 @@ def test_normalized_record_contract_for_wired_series():
         "cpi": {"period": "2026-08-01", "value": 323.2},
         "us2y": {"period": "2026-09-10", "value": 3.71},
         "vix": {"period": "2026-09-10", "value": 16.2},
-        "gold": {"period": "2026-09-10", "value": 2300.0},
         "wti": {"period": "2026-09-10", "value": 78.2},
         "broad_usd_proxy": {"period": "2026-09-10", "value": 121.4},
     }

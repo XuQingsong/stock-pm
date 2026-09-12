@@ -12,18 +12,18 @@ Recorded fixtures in tests are labeled as such. They are not live market prints.
 | macro_cpi / cpi | FRED | CPIAUCSL | monthly | 50d | API key JSON, else official `fredgraph.csv`; last successful cache | official CPI-U index; keyless CSV is first-party stlouisfed.org |
 | macro_rates_confirm / us2y | FRED | DGS2 | daily | 14d | API key JSON, else official `fredgraph.csv`; last successful cache | US 2Y Treasury |
 | macro_vix / vix | FRED | VIXCLS | daily | 7d | API key JSON, else official `fredgraph.csv`; last successful cache | CBOE VIX via FRED; not Cboe P/C HTML |
-| macro_gold / gold | FRED | GOLDPMGBD228NLBM | daily | 7d | API key JSON, else official `fredgraph.csv`; last successful cache | optional; keep this series id; do not substitute another gold series |
+| macro_gold / gold | Alpha Vantage `GOLD_SILVER_HISTORY` | XAU | daily | 7d | last successful Alpha Vantage cache (`stale`); never FRED last print | **live** requires `ALPHA_VANTAGE_API_KEY` (`not_configured` when absent). FRED `GOLDPMGBD228NLBM` is **historical only**: `upstream_unavailable` / `deprecated` (ICE/IBA removed 2022, official CSV 404). Do not substitute IQ12260 or scrape LBMA/ICE. |
 | macro_wti / wti | FRED | DCOILWTICO | daily | 7d | API key JSON, else official `fredgraph.csv`; last successful cache | optional |
 | macro_broad_usd_proxy / broad_usd_proxy | FRED | DTWEXBGS | daily | 7d | API key JSON, else official `fredgraph.csv`; last successful cache | **广义美元代理**；不得写成 DXY，也不得让 DXY 因代理健康而显示 ok |
 | macro_dxy / dxy | ice | — | — | 7d | none | **not_configured / unavailable**：ICE DXY 未合法稳定接入 |
 
 Each persisted observation keeps `source`, `series_or_symbol`, `observed_at` (fetch/observation clock), `as_of` (series period), `fetched_at`, `unit`, `frequency`, `status`. `event_time` / `release_date` / `fiscal_period` are not used as the observation clock. Tests assert this contract for CPI, US2Y, VIX, gold, WTI, and `broad_usd_proxy`; DXY stays unavailable.
 
-Failure reasons stay distinct: `source_not_configured`, `upstream_empty`, `record_stale`, `record_invalid`, `query_error`.
+Failure reasons stay distinct: `source_not_configured`, `upstream_empty`, `record_stale`, `record_invalid`, `query_error`, `upstream_unavailable`, `deprecated`.
 
 ## Failure-case tests (per series)
 
-| Case | CPI | US2Y | VIX | gold | WTI | DXY / proxy |
+| Case | CPI | US2Y | VIX | gold (Alpha Vantage live) | WTI | DXY / proxy |
 | --- | --- | --- | --- | --- | --- | --- |
 | empty response | `test_empty_response_per_series[cpi]` | `[us2y]` | `[vix]` | `[gold]` | `[wti]` | proxy `[broad_usd_proxy]`; DXY `test_dxy_stays_unavailable_for_every_failure_mode` |
 | timeout | `test_timeout_without_cache_per_series` + `test_timeout_uses_stale_cache_per_series` | same | same | same | same | DXY stays not_configured |
@@ -32,8 +32,9 @@ Failure reasons stay distinct: `source_not_configured`, `upstream_empty`, `recor
 | stale-cache fallback | `test_timeout_uses_stale_cache_per_series`, `test_429_uses_stale_cache_per_series` | same | same | same | same | none |
 | unit error | `test_unit_error_per_series[cpi]` | `[us2y]` | `[vix]` | `[gold]` | `[wti]` | `[broad_usd_proxy]` |
 | date / as_of error | `test_date_as_of_error_per_series` + `test_build_macro_event_does_not_use_period_as_observed_clock` | same | same | same | same | DXY has no as_of |
-| dedicated fixture | `test_monthly_cpi_fixture_is_not_a_daily_generalization` / `test_recorded_monthly_cpi_fixture_is_labeled` | `test_recorded_fred_fixture_is_labeled` | `test_daily_vix_fixture_is_not_dgs2` | `fred_goldpmgbd228nlbm.json` | `fred_dcoilwtico.json` | `fred_dtwexbgs.json` + `test_dxy_never_healthy_when_broad_usd_proxy_ok` |
-| official keyless CSV | `test_keyless_uses_official_fredgraph_csv` + `test_api_failure_falls_back_to_official_csv` + `test_keyless_csv_parse_error` | same | same | `test_gold_official_csv_404_is_error_not_substitute` (keep GOLDPMGBD228NLBM) | same | DXY never fetched; proxy uses DTWEXBGS |
+| dedicated fixture | `test_monthly_cpi_fixture_is_not_a_daily_generalization` / `test_recorded_monthly_cpi_fixture_is_labeled` | `test_recorded_fred_fixture_is_labeled` | `test_daily_vix_fixture_is_not_dgs2` | `av_gold_xau.json` + historical `fred_goldpmgbd228nlbm.json` | `fred_dcoilwtico.json` | `fred_dtwexbgs.json` + `test_dxy_never_healthy_when_broad_usd_proxy_ok` |
+| official keyless CSV | `test_keyless_uses_official_fredgraph_csv` + `test_api_failure_falls_back_to_official_csv` + `test_keyless_csv_parse_error` | same | same | FRED gold is not fetched (`test_fred_sync_does_not_fetch_discontinued_gold`) | same | DXY never fetched; proxy uses DTWEXBGS |
+| gold provider | — | — | — | `test_gold_ok_uses_alpha_vantage_history` / `test_gold_unconfigured_names_env_var` / `test_fred_gold_is_upstream_unavailable_deprecated_not_current_price` / `test_gold_stale_cache` | — | — |
 | fixture isolation | `test_collect_live_never_reads_test_fixtures` — recorded fixtures must not enter real runtime | | | | | |
 | valid bars survive | `test_plan_daily_writes_keeps_valid_history`, `test_twenty_two_invalid_bars_do_not_delete_valid_history`, `test_quarantine_without_confirm_does_not_delete` | | | | | |
 

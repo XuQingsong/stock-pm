@@ -1,4 +1,7 @@
-"""Per-series failure matrix for CPI, US2Y, VIX, gold, WTI, DXY, and broad_usd_proxy."""
+"""Per-series failure matrix for CPI, US2Y, VIX, WTI, DXY, and broad_usd_proxy.
+
+Gold live prints are covered in test_gold_provider.py (Alpha Vantage).
+"""
 
 from __future__ import annotations
 

@@ -702,7 +702,8 @@ def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env,
         assert health.get("preview") in (None, "")
         dumped = str(health).lower()
         assert "traceback" not in dumped
-        assert "api_key" not in dumped
+        assert "api_key=" not in dumped
+        assert "apikey=" not in dumped
         assert "secret" not in dumped
 
 

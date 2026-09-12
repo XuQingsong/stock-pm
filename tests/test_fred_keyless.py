@@ -95,10 +95,11 @@ def test_keyless_csv_parse_error():
     assert exc.value.reason_code == "record_invalid"
 
 
-def test_gold_official_csv_404_is_error_not_substitute(monkeypatch):
+def test_fred_sync_does_not_fetch_discontinued_gold(monkeypatch):
+    seen: list[str] = []
+
     def fake_text(url, **kwargs):
-        if "GOLDPMGBD228NLBM" in url:
-            raise FetchError("query_error", "HTTP Error 404")
+        seen.append(url)
         series_id = next(
             spec["series_id"] for spec in FRED_MARKET_SERIES.values() if spec["series_id"] in url
         )
@@ -107,11 +108,9 @@ def test_gold_official_csv_404_is_error_not_substitute(monkeypatch):
 
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
     report = sync_fred_market_series(Settings(fred_api_key=""))
-    gold = report["series"]["gold"]
-    assert gold["status"] == "error"
-    assert gold["reason_code"] == "query_error"
-    assert gold["series_or_symbol"] == "GOLDPMGBD228NLBM"
-    assert gold["http_source"].endswith("id=GOLDPMGBD228NLBM") or "GOLDPMGBD228NLBM" in (gold["http_source"] or "")
+    assert "gold" not in FRED_MARKET_SERIES
+    assert "gold" not in report["series"]
+    assert all("GOLDPMGBD228NLBM" not in url for url in seen)
     assert "IQ12260" not in str(report)
     assert report["series"]["cpi"]["status"] == "ok"
     assert report["series"]["dxy"]["status"] == "not_configured"
@@ -131,8 +130,6 @@ def test_collect_live_never_reads_test_fixtures(monkeypatch):
             if spec["series_id"] in url:
                 series_id = spec["series_id"]
                 break
-        if series_id == "GOLDPMGBD228NLBM":
-            raise FetchError("query_error", "HTTP Error 404")
         period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
         return _text_result(url, _csv(series_id, period, "3.5"))
 
@@ -234,7 +231,8 @@ def test_data_health_overlays_live_fred_and_keeps_dxy_unavailable(monkeypatch):
     assert health["runtime"] == "real"
     dumped = str(health).lower()
     assert "tests/fixtures" not in dumped
-    assert "api_key" not in dumped
+    assert "api_key=" not in dumped
+    assert "apikey=" not in dumped
     by_dataset = {row["dataset"]: row for row in health["datasets"]}
     assert by_dataset["macro_cpi"]["status"] == "ok"
     assert by_dataset["macro_cpi"]["value"] == 334.131
@@ -269,12 +267,14 @@ def test_fred_without_api_key_is_missing_not_not_configured():
     assert by_dataset["daily_price_bars"]["status"] == "not_configured"
     assert by_dataset["macro_dxy"]["status"] == "not_configured"
     assert by_dataset["macro_dxy"]["series_or_symbol"] is None
+    assert by_dataset["macro_gold"]["status"] == "not_configured"
+    assert by_dataset["macro_gold"]["series_or_symbol"] == "XAU"
+    assert by_dataset["macro_gold"]["value"] is None
+    assert by_dataset["macro_gold"]["required_env"] == "ALPHA_VANTAGE_API_KEY"
 
 
-def test_overlay_reports_gold_error_without_dropping_other_series(monkeypatch):
+def test_overlay_reports_gold_unconfigured_without_dropping_other_series(monkeypatch):
     def fake_text(url, **kwargs):
-        if "GOLDPMGBD228NLBM" in url:
-            raise FetchError("query_error", "HTTP Error 404")
         series_id = next(
             spec["series_id"] for spec in FRED_MARKET_SERIES.values() if spec["series_id"] in url
         )
@@ -282,8 +282,13 @@ def test_overlay_reports_gold_error_without_dropping_other_series(monkeypatch):
         return _text_result(url, _csv(series_id, period, "2.5"))
 
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
-    events, errors, report = collect_live_macro_overlay(Settings(fred_api_key=""))
-    assert "macro_gold" in errors
-    assert report["series"]["gold"]["series_or_symbol"] == "GOLDPMGBD228NLBM"
+    events, errors, report = collect_live_macro_overlay(
+        Settings(fred_api_key="", alpha_vantage_api_key="")
+    )
+    assert "macro_gold" not in errors
+    assert report["series"]["gold"]["status"] == "not_configured"
+    assert report["series"]["gold"]["series_or_symbol"] == "XAU"
+    assert report["series"]["gold"]["value"] is None
+    assert report["series"]["gold_fred_historical"]["status"] == "upstream_unavailable"
     assert any(row["event_type"] == "cpi" for row in events)
     assert all(row["event_type"] != "gold" for row in events)
