@@ -207,11 +207,20 @@ def test_ping_against_closed_port_returns_false_quickly():
 
 
 def test_reconnect_after_disconnect():
+    from stock_pm.errors import DatabaseError
+
     db = postgres_or_skip()
     try:
         assert db.ping() is True
         db.close()
-        assert db.ping() is False
+        # ping() is a standalone Postgres probe, not a pool-liveness check.
+        assert db.ping() is True
+        try:
+            db.fetch_all("SELECT 1 AS ok")
+        except DatabaseError:
+            pass
+        else:
+            raise AssertionError("fetch_all must fail after the pool is closed")
         assert db.reconnect() is True
         assert db.ping() is True
         rows = db.fetch_all("SELECT 1 AS ok")
