@@ -460,6 +460,11 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
             metric: row.get("http_source") for metric, row in series_report.items()
         }
         payload["series_report"] = series_report
+        for row in payload.get("datasets") or []:
+            rec = series_report.get(row.get("metric") or "") or {}
+            if not row.get("http_source") and rec.get("http_source"):
+                row["http_source"] = rec.get("http_source")
+                row["transport"] = rec.get("transport") or row.get("transport")
         return payload
     except ValueError as exc:
         raise _http_error(exc) from exc
