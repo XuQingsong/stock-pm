@@ -148,9 +148,9 @@ class PersistMixin:
         except Exception as exc:
             raise DatabaseError(f"Failed to store macro event: {exc}") from exc
 
-    def quarantine_invalid_daily_bars(self) -> int:
-        """Delete stored daily bars that fail OHLC constraints. Does not invent replacements."""
-        from .bars import is_valid_ohlc
+    def audit_invalid_daily_bars(self) -> dict[str, int]:
+        """Count invalid daily bars. Never deletes. Production ingest only rejects new writes."""
+        from .bars import partition_ohlc_rows
 
         try:
             with self.pool.connection() as conn:
@@ -161,17 +161,35 @@ class PersistMixin:
                     FROM price_bars WHERE bar_size = '1d'
                     """
                 ).fetchall()
+            mapped = [dict(row) if not isinstance(row, dict) else row for row in rows]
+            parts = partition_ohlc_rows(mapped)
+            return {"valid_count": len(parts["valid"]), "invalid_count": len(parts["invalid"])}
+        except Exception as exc:
+            raise DatabaseError(f"Failed to audit invalid daily bars: {exc}") from exc
+
+    def quarantine_invalid_daily_bars(self, *, confirm: bool = False) -> int:
+        """Explicit audited delete of invalid daily bars.
+
+        Not called on ingest or process startup. The 22-bar cleanup on a
+        developer VM was a one-time operator repair with confirm=True, not
+        product startup behavior. Valid historical bars are never deleted.
+        """
+        if not confirm:
+            return 0
+        from .bars import partition_ohlc_rows
+
+        try:
+            with self.pool.connection() as conn:
+                rows = conn.execute(
+                    """
+                    SELECT symbol, bar_size, bar_time, open_price, high_price,
+                           low_price, close_price
+                    FROM price_bars WHERE bar_size = '1d'
+                    """
+                ).fetchall()
+                mapped = [dict(row) if not isinstance(row, dict) else row for row in rows]
                 removed = 0
-                for row in rows:
-                    mapping = dict(row) if not isinstance(row, dict) else row
-                    payload = {
-                        "open_price": mapping.get("open_price"),
-                        "high_price": mapping.get("high_price"),
-                        "low_price": mapping.get("low_price"),
-                        "close_price": mapping.get("close_price"),
-                    }
-                    if is_valid_ohlc(payload):
-                        continue
+                for mapping in partition_ohlc_rows(mapped)["invalid"]:
                     conn.execute(
                         """
                         DELETE FROM price_bars
@@ -372,6 +390,7 @@ class PersistMixin:
             "news": len(payload.get("news", [])),
             "fundamentals": len(payload.get("fundamentals", [])),
             "earnings": len(payload.get("earnings", [])),
+            "invalid_daily_bars_rejected": 0,
         }
         try:
             with self.pool.connection() as conn, conn.transaction():
@@ -409,6 +428,7 @@ class PersistMixin:
 
                         for bar in series.get("bars", []):
                             if series.get("bar_size", "1d") == "1d" and not is_valid_ohlc(bar):
+                                counts["invalid_daily_bars_rejected"] += 1
                                 continue
                             cur.execute(
                                 """

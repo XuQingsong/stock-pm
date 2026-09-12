@@ -92,3 +92,16 @@ def decorate_bar(
 
 def usable_daily_bars(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [row for row in rows if is_valid_ohlc(row)]
+
+
+def partition_ohlc_rows(rows: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> dict[str, list[dict[str, Any]]]:
+    """Split rows into valid/invalid. Never deletes."""
+    valid: list[dict[str, Any]] = []
+    invalid: list[dict[str, Any]] = []
+    for row in rows:
+        mapping = dict(row) if not isinstance(row, dict) else row
+        if is_valid_ohlc(mapping):
+            valid.append(mapping)
+        else:
+            invalid.append(mapping)
+    return {"valid": valid, "invalid": invalid}

@@ -770,18 +770,32 @@
     const list = (ids) => (ids || []).map((id) => names[id] || id).join("、") || "无";
     const banner = health.synthetic
       ? `<div class="decision-banner" role="status">合成演示数据 · ${esc(health.preview_label || "preview")}。生产环境不会用 fixture 顶替真实数据。</div>`
-      : "";
+      : `<div class="health-mode" role="status">实盘观察 · 非合成 fixture</div>`;
+    const inputRows = (health.datasets || []).map((row) => {
+      const title = row.title_zh || row.dataset;
+      const age = row.freshness_age == null ? "—" : `${row.freshness_age}天`;
+      return `<tr class="status-${esc(row.status)}">
+        <td>${esc(title)}</td>
+        <td>${esc(row.source || "—")}</td>
+        <td>${esc(row.series || "—")}</td>
+        <td>${esc(row.as_of || "—")}</td>
+        <td>${esc(row.latest_observed_at || "—")}</td>
+        <td>${esc(age)}</td>
+        <td>${statusPill(row.status)}</td>
+      </tr>`;
+    }).join("");
     const rows = (health.datasets || []).map((row) => {
       const age = row.freshness_age == null ? "—" : `${row.freshness_age} 天 / 阈值 ${row.freshness_threshold ?? "—"} 天`;
+      const title = row.title_zh || row.dataset;
       return `<article class="health-row status-${esc(row.status)}">
-        <h4>${esc(row.dataset)} · ${esc(row.metric)} ${statusPill(row.status)}</h4>
+        <h4>${esc(title)} · ${esc(row.dataset)} ${statusPill(row.status)}</h4>
         <div class="why">原因：${esc(healthReasonCopy(row))} <small>${esc(row.reason_code || "")}</small></div>
-        <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")}</div>
-        <div class="why">观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
+        <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")} · series ${esc(row.series || "—")}</div>
+        <div class="why">as_of ${esc(row.as_of || "—")} · 观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
         <div class="why">恢复：${esc(row.next_action || "—")}</div>
       </article>`;
     }).join("");
-    return `${banner}<section class="data-health" aria-label="数据健康">
+    return `${banner}<section class="data-health" aria-label="数据健康" data-mode="${health.synthetic ? "synthetic" : "live"}">
       <div class="health-compact">
         <strong>数据健康</strong>
         <span class="status-pill ${esc(overall.status || "degraded")}">${esc(overall.status || "degraded")}</span>
@@ -790,6 +804,11 @@
         <span>不可用链：${esc(list(overall.unavailable_chains))}</span>
       </div>
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
+      <table class="health-inputs">
+        <caption>各输入的 source / series / as_of / 新鲜度 / 状态（ICE DXY 未接入，DTWEXBGS 只显示为广义美元代理）</caption>
+        <thead><tr><th>输入</th><th>source</th><th>series</th><th>as_of</th><th>观察</th><th>新鲜度</th><th>状态</th></tr></thead>
+        <tbody>${inputRows}</tbody>
+      </table>
       <details class="health-details">
         <summary>展开缺口、陈旧程度、作用范围和恢复条件</summary>
         <div class="health-rows">${rows}</div>

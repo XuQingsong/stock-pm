@@ -23,7 +23,8 @@ def _valid_bar(as_of: str, close: float) -> dict:
     }
 
 
-def _macro(metric: str, actual: float, observed: str, event_time: str) -> dict:
+def _macro(metric: str, actual: float, observed: str, event_time: str, *, series: str | None = None, unit: str = "index", frequency: str = "daily") -> dict:
+    series_id = series or metric
     return decorate_macro_row(
         {
             "event_type": metric,
@@ -31,10 +32,12 @@ def _macro(metric: str, actual: float, observed: str, event_time: str) -> dict:
             "actual": actual,
             "prior": actual - 0.1,
             "source": "FRED",
-            "name": metric.upper(),
+            "name": "广义美元代理" if metric == "usd_broad" else metric.upper(),
+            "unit": unit,
             "notes": (
-                '{"series":"%s","observed_at":"%s","fetched_at":"%s",'
-                '"frequency":"daily","status":"ok"}' % (metric, observed, observed)
+                '{"series":"%s","symbol":"%s","observed_at":"%s","fetched_at":"%s",'
+                '"as_of":"%s","unit":"%s","frequency":"%s","status":"ok"}'
+                % (series_id, series_id, observed, observed, event_time[:10], unit, frequency)
             ),
         }
     )
@@ -42,15 +45,15 @@ def _macro(metric: str, actual: float, observed: str, event_time: str) -> dict:
 
 def _bundle(*, include_vix: bool = True) -> dict:
     macros = [
-        _macro("nfp", 220, "2026-09-05T14:00:00+00:00", "2026-09-05T12:30:00+00:00"),
-        _macro("cpi", 323.1, "2026-09-11T12:00:00+00:00", "2026-08-01T00:00:00+00:00"),
-        _macro("us2y", 3.71, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00"),
-        _macro("gold", 2300, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00"),
-        _macro("wti", 78.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00"),
-        _macro("dxy", 121.4, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00"),
+        _macro("nfp", 220, "2026-09-05T14:00:00+00:00", "2026-09-05T12:30:00+00:00", series="PAYEMS", unit="thousands"),
+        _macro("cpi", 323.1, "2026-09-11T12:00:00+00:00", "2026-08-01T00:00:00+00:00", series="CPIAUCSL", frequency="monthly"),
+        _macro("us2y", 3.71, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DGS2", unit="percent"),
+        _macro("gold", 2300, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="GOLDPMGBD228NLBM", unit="USD/oz"),
+        _macro("wti", 78.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DCOILWTICO", unit="USD/bbl"),
+        _macro("usd_broad", 121.4, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DTWEXBGS"),
     ]
     if include_vix:
-        macros.append(_macro("vix", 16.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00"))
+        macros.append(_macro("vix", 16.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="VIXCLS"))
     return {
         "symbol": "NVDA",
         "bars": [
@@ -102,7 +105,25 @@ def test_recorded_nvda_bundle_forms_complete_inputs():
     assert _ds(health, "macro_rates_confirm")["status"] == "ok"
     assert _ds(health, "macro_vix")["status"] == "ok"
     assert _ds(health, "macro_gold")["status"] == "ok"
+    assert _ds(health, "macro_usd_broad")["status"] == "ok"
+    assert _ds(health, "macro_usd_broad")["title_zh"] == "广义美元代理"
+    assert _ds(health, "macro_usd_broad")["series"] == "DTWEXBGS"
     assert health["overall"]["kind"] == "operational_health"
+
+
+def test_dxy_never_healthy_when_usd_broad_ok():
+    health = build_data_health(_bundle(), settings=_settings())
+    dxy = _ds(health, "macro_dxy")
+    proxy = _ds(health, "macro_usd_broad")
+    assert dxy["status"] == "not_configured"
+    assert dxy["reason_code"] == "source_not_configured"
+    assert dxy["title_zh"] == "ICE 美元指数"
+    assert dxy["series"] is None
+    assert proxy["status"] == "ok"
+    assert proxy["metric"] == "usd_broad"
+    assert proxy["title_zh"] == "广义美元代理"
+    assert "DXY" not in proxy["title"]
+    assert "DXY" not in proxy["title_zh"]
 
 
 def test_vix_failure_does_not_drop_other_facts_or_mint_direction():

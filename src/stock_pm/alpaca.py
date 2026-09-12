@@ -333,7 +333,6 @@ def main() -> None:
     try:
         database.initialize()
         counts = database.ingest(payload)
-        counts["invalid_bars_removed"] = database.quarantine_invalid_daily_bars()
     finally:
         database.close()
     print(json.dumps({"status": "ok", "counts": counts, "errors": errors}, ensure_ascii=False))

@@ -199,6 +199,9 @@ def test_healthy_datasets_do_not_stack_l2_into_l3_or_mint_a_thesis():
     assert health["judgment"]["can_form_direction"] is False
     assert health["judgment"]["note"]
     assert view["overall"]["level"] != "L3" or view["can_form_direction"] is False
+    assert _ds(health, "macro_dxy")["status"] == "not_configured"
+    assert _ds(health, "macro_usd_broad")["status"] == "ok"
+    assert _ds(health, "macro_usd_broad")["title_zh"] == "广义美元代理"
 
 
 def test_health_preview_scenes_and_chain_order_untouched():
@@ -210,10 +213,11 @@ def test_health_preview_scenes_and_chain_order_untouched():
         assert [row["id"] for row in health["chains"]] == ["price", "earnings", "macro_rates", "risk_sentiment"]
         for row in health["datasets"]:
             for field in (
-                "dataset", "metric", "source", "status", "latest_observed_at",
-                "latest_ingested_at", "freshness_age", "freshness_threshold",
-                "coverage_window", "sample_count", "reason_code",
-                "affects_chain", "affects_stage", "next_action",
+                "dataset", "metric", "title", "title_zh", "source", "series",
+                "status", "latest_observed_at", "latest_ingested_at", "as_of",
+                "fetched_at", "unit", "frequency", "freshness_age",
+                "freshness_threshold", "coverage_window", "sample_count",
+                "reason_code", "affects_chain", "affects_stage", "next_action",
             ):
                 assert field in row, (key, row.get("dataset"), field)
             assert row["reason_label"] != "缺数据"
@@ -225,6 +229,10 @@ def test_missing_preview_stays_upstream_empty_with_unconfigured_host_settings():
     health = build_health_preview("NVDA", "MISSING", settings=_unconfigured())
     assert health["overall"]["status"] == "unavailable"
     for row in health["datasets"]:
+        if row["dataset"] == "macro_dxy":
+            assert row["status"] == "not_configured", row
+            assert row["reason_code"] == REASON_SOURCE_NOT_CONFIGURED
+            continue
         assert row["status"] == "missing", row["dataset"]
         assert row["reason_code"] == REASON_UPSTREAM_EMPTY, row["dataset"]
         assert row["reason_label"] == "上游无记录"
@@ -237,7 +245,12 @@ def test_partial_and_missing_and_error_previews():
     invalid = build_health_preview("NVDA", "INVALID", settings=_configured())
     assert _ds(partial, "macro_vix")["status"] == "missing"
     assert _ds(partial, "daily_price_bars")["status"] == "ok"
-    assert all(row["status"] in {"missing"} for row in missing["datasets"])
+    assert all(
+        row["status"] == "not_configured" if row["dataset"] == "macro_dxy" else row["status"] == "missing"
+        for row in missing["datasets"]
+    )
+    assert _ds(partial, "macro_dxy")["status"] == "not_configured"
+    assert _ds(partial, "macro_usd_broad")["title_zh"] == "广义美元代理"
     assert _ds(error, "daily_price_bars")["status"] == "error"
     assert _ds(error, "macro_nfp")["status"] == "ok"
     assert _ds(invalid, "daily_price_bars")["status"] == "invalid"

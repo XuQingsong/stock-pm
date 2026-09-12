@@ -7,6 +7,7 @@ from stock_pm.bars import (
     decorate_bar,
     is_valid_ohlc,
     last_completed_session_end,
+    partition_ohlc_rows,
     usable_daily_bars,
 )
 
@@ -52,6 +53,42 @@ def test_decorate_bar_tags_split_adjustment_and_ny_session():
     assert row["trading_day"] is True
     assert row["status"] == "ok"
     assert row["fetched_at"] == "2026-09-11T01:00:00+00:00"
+
+
+def test_partition_keeps_valid_historical_bars():
+    valid_old = {
+        "symbol": "NVDA",
+        "bar_size": "1d",
+        "bar_time": "2025-01-15T21:00:00+00:00",
+        "open_price": 130.0,
+        "high_price": 132.0,
+        "low_price": 129.0,
+        "close_price": 131.0,
+    }
+    valid_recent = {
+        "symbol": "NVDA",
+        "bar_size": "1d",
+        "bar_time": "2026-09-09T20:00:00+00:00",
+        "open_price": 115.88,
+        "high_price": 117.62,
+        "low_price": 114.84,
+        "close_price": 116.35,
+    }
+    invalid = {
+        "symbol": "NVDA",
+        "bar_size": "1d",
+        "bar_time": "2026-09-10T20:00:00+00:00",
+        "open_price": 116.8,
+        "high_price": 118.5,
+        "low_price": 115.0,
+        "close_price": 122.0,
+    }
+    parts = partition_ohlc_rows([valid_old, valid_recent, invalid])
+    assert {row["bar_time"] for row in parts["valid"]} == {
+        valid_old["bar_time"],
+        valid_recent["bar_time"],
+    }
+    assert [row["bar_time"] for row in parts["invalid"]] == [invalid["bar_time"]]
 
 
 def test_last_completed_session_skips_weekend():

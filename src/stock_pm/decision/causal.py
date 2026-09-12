@@ -41,6 +41,8 @@ METRIC_ALIASES = {
     "oil": "oil",
     "crude": "oil",
     "cpi": "cpi",
+    "usd_broad": "usd_broad",
+    "dtwexbgs": "usd_broad",
     "core_cpi": "core_cpi",
     "pce": "pce",
     "core_pce": "core_pce",

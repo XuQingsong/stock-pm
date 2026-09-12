@@ -88,6 +88,20 @@ def test_429_without_cache_is_error(tmp_path, monkeypatch):
     assert "api_key" not in str(exc.value)
 
 
+def test_429_uses_cache(tmp_path, monkeypatch):
+    write_cache("demo", {"n": 3}, tmp_path)
+
+    def boom(*args, **kwargs):
+        raise HTTPError("https://example.test/x", 429, "rate", hdrs=None, fp=None)
+
+    monkeypatch.setattr("stock_pm.fetch.urlopen", boom)
+    result = json_get("https://example.test/x", cache_key="demo", directory=tmp_path, retries=1)
+    assert result.from_cache is True
+    assert result.status == "stale"
+    assert result.reason_code == "record_stale"
+    assert result.payload == {"n": 3}
+
+
 def test_empty_cache_does_not_invent_values(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
         raise URLError("timeout")

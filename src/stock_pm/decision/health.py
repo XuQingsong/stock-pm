@@ -64,7 +64,22 @@ FRESHNESS_DAYS = {
     "vix": 7,
     "gold": 7,
     "wti": 7,
+    "usd_broad": 7,
     "dxy": 7,
+}
+
+DATASET_TITLES = {
+    "daily_price_bars": ("Daily price bars", "日线价格"),
+    "earnings_reports": ("Earnings reports", "盈利报告"),
+    "earnings_prior_consensus": ("Prior consensus", "前次共识"),
+    "macro_nfp": ("NFP", "非农"),
+    "macro_cpi": ("CPI-U", "CPI"),
+    "macro_rates_confirm": ("US 2Y", "美债2年"),
+    "macro_gold": ("LBMA Gold", "黄金"),
+    "macro_wti": ("WTI", "WTI 原油"),
+    "macro_usd_broad": ("USD broad proxy", "广义美元代理"),
+    "macro_dxy": ("ICE DXY", "ICE 美元指数"),
+    "macro_vix": ("VIX", "VIX"),
 }
 
 HEALTH_PREVIEW_LABELS = {
@@ -156,14 +171,29 @@ def _dataset_row(
     sample_count: int = 0,
     configured: bool = True,
     required: bool = True,
+    series: str | None = None,
+    as_of: str | None = None,
+    fetched_at: str | None = None,
+    unit: str | None = None,
+    frequency: str | None = None,
+    title: str | None = None,
+    title_zh: str | None = None,
 ) -> dict[str, Any]:
+    en, zh = DATASET_TITLES.get(dataset, (dataset, dataset))
     return {
         "dataset": dataset,
         "metric": metric,
+        "title": title or en,
+        "title_zh": title_zh or zh,
         "source": source,
+        "series": series,
         "status": status,
         "latest_observed_at": latest_observed_at,
         "latest_ingested_at": latest_ingested_at,
+        "as_of": as_of,
+        "fetched_at": fetched_at,
+        "unit": unit,
+        "frequency": frequency,
         "freshness_age": freshness_age,
         "freshness_threshold": freshness_threshold,
         "coverage_window": coverage_window,
@@ -217,6 +247,22 @@ def _macros_of(events: Iterable[dict[str, Any]], *metrics: str) -> list[dict[str
     return [row for row in events if canonical_metric(str(row.get("event_type") or row.get("metric") or "")) in wanted]
 
 
+def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
+    latest = row or {}
+    series = latest.get("series") or latest.get("symbol")
+    as_of = latest.get("as_of")
+    if as_of is None and latest.get("event_time"):
+        event_time = latest.get("event_time")
+        as_of = event_time.isoformat()[:10] if hasattr(event_time, "isoformat") else str(event_time)[:10]
+    return {
+        "series": series,
+        "as_of": as_of,
+        "fetched_at": latest.get("fetched_at") or latest.get("observed_at"),
+        "unit": latest.get("unit"),
+        "frequency": latest.get("frequency"),
+    }
+
+
 def _evaluate_rows(
     *,
     dataset: str,
@@ -240,6 +286,8 @@ def _evaluate_rows(
 ) -> dict[str, Any]:
     configured = _source_configured(settings, family)
     thresh = FRESHNESS_DAYS.get(metric) if threshold is None else threshold
+    latest = rows[0] if rows else {}
+    provenance = _row_provenance(latest)
     if query_error:
         return _dataset_row(
             dataset=dataset,
@@ -254,9 +302,9 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             configured=configured,
             required=required,
+            **provenance,
         )
     if invalid:
-        latest = rows[0] if rows else {}
         return _dataset_row(
             dataset=dataset,
             metric=metric,
@@ -273,6 +321,7 @@ def _evaluate_rows(
             sample_count=len(rows),
             configured=configured,
             required=required,
+            **provenance,
         )
     if not rows:
         if not configured:
@@ -304,7 +353,6 @@ def _evaluate_rows(
             configured=configured,
             required=required,
         )
-    latest = rows[0]
     observed = _observed_iso(latest, kind=kind)
     ingested = _ingested_iso(latest)
     age = _age_days(clock, observed)
@@ -327,6 +375,7 @@ def _evaluate_rows(
             sample_count=len(rows),
             configured=configured,
             required=required,
+            **provenance,
         )
     if observed is None and kind != "bar":
         return _dataset_row(
@@ -346,6 +395,7 @@ def _evaluate_rows(
             sample_count=len(rows),
             configured=configured,
             required=required,
+            **provenance,
         )
     return _dataset_row(
         dataset=dataset,
@@ -364,6 +414,7 @@ def _evaluate_rows(
         sample_count=len(rows),
         configured=configured,
         required=required,
+        **provenance,
     )
 
 
@@ -627,8 +678,8 @@ def build_data_health(
             required=False,
         ),
         _macro_metric_health(
-            metric="dxy",
-            dataset="macro_dxy",
+            metric="usd_broad",
+            dataset="macro_usd_broad",
             stage="confirmation",
             family="fred",
             source="FRED",
@@ -638,10 +689,11 @@ def build_data_health(
             clock=clock,
             settings=settings,
             errors=errors,
-            empty_action="同步美元宽指数观察（FRED DTWEXBGS，不是 ICE DXY）",
-            stale_action="更新美元指数观察；单项缺失不得删除其他事实",
+            empty_action="同步广义美元代理（FRED DTWEXBGS）；不得写成 DXY",
+            stale_action="更新广义美元代理观察；单项缺失不得删除其他事实，也不得冒充 ICE DXY",
             required=False,
         ),
+        _dxy_unavailable_health(),
         _macro_metric_health(
             metric="vix",
             dataset="macro_vix",
@@ -682,6 +734,23 @@ def build_data_health(
     }
 
 
+def _dxy_unavailable_health() -> dict[str, Any]:
+    return _dataset_row(
+        dataset="macro_dxy",
+        metric="dxy",
+        source="ice",
+        status=STATUS_NOT_CONFIGURED,
+        reason_code=REASON_SOURCE_NOT_CONFIGURED,
+        affects_chain="macro_rates",
+        affects_stage="confirmation",
+        next_action="ICE DXY 未合法稳定接入；不得把 FRED DTWEXBGS 写成 DXY 或用代理冒充健康",
+        freshness_threshold=FRESHNESS_DAYS["dxy"],
+        configured=False,
+        required=False,
+        series=None,
+    )
+
+
 def empty_query_error_health(symbol: str) -> dict[str, Any]:
     bundle = {"symbol": symbol, "bars": [], "earnings": [], "macro_events": [], "synthetic": False}
     return build_data_health(
@@ -695,7 +764,7 @@ def empty_query_error_health(symbol: str) -> dict[str, Any]:
             "macro_rates_confirm",
             "macro_gold",
             "macro_wti",
-            "macro_dxy",
+            "macro_usd_broad",
             "macro_vix",
         },
     )
@@ -753,7 +822,18 @@ def _earnings_row(symbol: str = "NVDA", *, with_prior: bool = False) -> dict[str
     return row
 
 
-def _macro(event_type: str, actual: float, prior: float, event_time: str, observed: str, source: str = "FRED") -> dict[str, Any]:
+def _macro(
+    event_type: str,
+    actual: float,
+    prior: float,
+    event_time: str,
+    observed: str,
+    source: str = "FRED",
+    *,
+    series: str | None = None,
+    unit: str | None = None,
+    frequency: str = "daily",
+) -> dict[str, Any]:
     return _stamp_row(
         {
             "event_type": event_type,
@@ -761,7 +841,13 @@ def _macro(event_type: str, actual: float, prior: float, event_time: str, observ
             "actual": actual,
             "prior": prior,
             "source": source,
-            "name": event_type.upper(),
+            "name": "广义美元代理" if event_type == "usd_broad" else event_type.upper(),
+            "series": series or event_type,
+            "as_of": event_time[:10],
+            "fetched_at": observed,
+            "unit": unit,
+            "frequency": frequency,
+            "status": "ok",
         },
         observed,
         observed,
@@ -777,10 +863,11 @@ def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
         ],
         "earnings": [_earnings_row(symbol, with_prior=True)],
         "macro_events": [
-            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00"),
-            _macro("cpi", 3.1, 3.0, "2026-09-01T12:30:00+00:00", "2026-09-01T14:00:00+00:00"),
-            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00"),
-            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe"),
+            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
+            _macro("cpi", 3.1, 3.0, "2026-09-01T12:30:00+00:00", "2026-09-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
+            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
+            _macro("usd_broad", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ],
         "synthetic": True,
     }
@@ -816,10 +903,11 @@ def build_health_preview(symbol: str, key: str, *, settings: Settings | None = N
         }
     elif scene == "STALE":
         bundle["macro_events"] = [
-            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00"),
-            _macro("cpi", 3.1, 3.0, "2025-12-01T12:30:00+00:00", "2025-12-01T14:00:00+00:00"),
-            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00"),
-            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe"),
+            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
+            _macro("cpi", 3.1, 3.0, "2025-12-01T12:30:00+00:00", "2025-12-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
+            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
+            _macro("usd_broad", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ]
     elif scene == "INVALID":
         bundle["bars"] = [

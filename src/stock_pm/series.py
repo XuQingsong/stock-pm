@@ -17,7 +17,7 @@ from .fetch import FetchError, FetchResult, json_get, utc_now
 
 FRED_API = "https://api.stlouisfed.org/fred/series/observations"
 
-# Official / first-hand series. DXY uses the Fed broad dollar index (not ICE).
+# Official / first-hand series. ICE DXY is not wired; DTWEXBGS is a separate proxy.
 FRED_MARKET_SERIES = {
     "cpi": {
         "series_id": "CPIAUCSL",
@@ -69,17 +69,38 @@ FRED_MARKET_SERIES = {
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
     },
-    "dxy": {
+    "usd_broad": {
         "series_id": "DTWEXBGS",
         "unit": "index",
         "frequency": "daily",
-        "name": "Trade-weighted USD (broad)",
+        "name": "广义美元代理",
         "freshness_days": 7,
         "required": False,
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
     },
 }
+
+# ICE DXY is not licensed or stably wired. Never fetch or label DTWEXBGS as DXY.
+DXY_UNAVAILABLE = {
+    "metric": "dxy",
+    "series_id": None,
+    "status": "not_configured",
+    "reason_code": "source_not_configured",
+    "name": "ICE DXY",
+    "note": "ICE DXY is not wired; FRED DTWEXBGS is usd_broad (广义美元代理) only",
+}
+
+NORMALIZED_FIELDS = (
+    "source",
+    "series",
+    "observed_at",
+    "as_of",
+    "fetched_at",
+    "unit",
+    "frequency",
+    "status",
+)
 
 
 def parse_fred_observations(payload: Any) -> list[dict[str, Any]]:
@@ -161,38 +182,71 @@ def observation_notes(
     )
 
 
-def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
-    payload = dict(row)
+def _notes_meta(row: dict[str, Any]) -> dict[str, Any]:
     notes = row.get("notes")
-    meta: dict[str, Any] = {}
     if isinstance(notes, dict):
-        meta = notes
-    elif isinstance(notes, str) and notes.startswith("{"):
+        return notes
+    if isinstance(notes, str) and notes.startswith("{"):
         try:
             parsed = json.loads(notes)
         except json.JSONDecodeError:
-            parsed = {}
+            return {}
         if isinstance(parsed, dict):
-            meta = parsed
-    fetched = meta.get("fetched_at") or meta.get("observed_at")
-    period = payload.get("event_time")
+            return parsed
+    return {}
+
+
+def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(row)
+    meta = dict(_notes_meta(row))
+    series_id = meta.get("series") or meta.get("symbol") or payload.get("series")
+    event_type = str(payload.get("event_type") or payload.get("metric") or "")
+    # Historical dxy+DTWEXBGS rows surface as the proxy, never as ICE DXY.
+    if series_id == "DTWEXBGS" or event_type == "dxy":
+        payload["event_type"] = "usd_broad"
+        payload["name"] = "广义美元代理"
+        series_id = series_id or "DTWEXBGS"
+        meta["series"] = series_id
+        meta["symbol"] = series_id
+        meta["metric"] = "usd_broad"
+    fetched = meta.get("fetched_at") or meta.get("observed_at") or payload.get("fetched_at") or payload.get("observed_at")
+    period = meta.get("as_of") or payload.get("as_of") or payload.get("event_time")
     if hasattr(period, "isoformat"):
         period = period.isoformat()
+    as_of = str(period)[:10] if period else None
     payload.update(
         {
-            "series": meta.get("series") or meta.get("symbol"),
+            "series": series_id,
+            "symbol": series_id,
             "observed_at": fetched,
             "ingested_at": fetched,
             "synced_at": fetched,
             "source_as_of": fetched,
-            "as_of": str(period)[:10] if period else meta.get("as_of"),
+            "as_of": as_of,
             "fetched_at": fetched,
-            "frequency": meta.get("frequency"),
+            "frequency": payload.get("frequency") or meta.get("frequency"),
             "unit": payload.get("unit") or meta.get("unit"),
-            "status": meta.get("status") or "ok",
+            "status": meta.get("status") or payload.get("status") or "ok",
         }
     )
     return payload
+
+
+def normalized_record(row: dict[str, Any]) -> dict[str, Any]:
+    """Machine-verifiable contract: source, series, clocks, unit, frequency, status."""
+    decorated = decorate_macro_row(row)
+    series = decorated.get("series") or decorated.get("symbol")
+    return {
+        "source": decorated.get("source"),
+        "series": series,
+        "symbol": series,
+        "observed_at": decorated.get("observed_at"),
+        "as_of": decorated.get("as_of"),
+        "fetched_at": decorated.get("fetched_at"),
+        "unit": decorated.get("unit"),
+        "frequency": decorated.get("frequency"),
+        "status": decorated.get("status") or "ok",
+    }
 
 
 def map_earnings_health(row: dict[str, Any]) -> dict[str, Any]:
@@ -251,6 +305,12 @@ def build_macro_event(
 def sync_fred_market_series(settings: Settings | None = None, store=None) -> dict[str, Any]:
     settings = settings or Settings()
     report: dict[str, Any] = {"fetched_at": utc_now(), "series": {}}
+    report["series"]["dxy"] = {
+        "status": DXY_UNAVAILABLE["status"],
+        "reason_code": DXY_UNAVAILABLE["reason_code"],
+        "series_id": None,
+        "note": DXY_UNAVAILABLE["note"],
+    }
     if not settings.fred_api_key:
         for metric in FRED_MARKET_SERIES:
             report["series"][metric] = {"status": "not_configured", "reason_code": "source_not_configured"}
