@@ -140,14 +140,17 @@ def test_e6_google_not_configured_official_feeds_continue(monkeypatch):
     assert google.configured() is False
     assert google.status()["status"] == "not_configured"
     assert google.discover() == []
-    official = OfficialFeedProvider(settings).discover()
+    official = OfficialFeedProvider(Settings(events_mode="fixture")).discover()
     assert official
     reset_cache()
-    cover = coverage(settings)
+    cover = coverage(Settings(events_mode="fixture"))
     assert cover["providers"]["google_cse"]["status"] == "not_configured"
-    assert cover["providers"]["official_feed"]["status"] == "ok"
+    assert cover["providers"]["official_feed"]["status"] == "demo_fixture"
+    assert cover["providers"]["official_feed"]["live"] is False
+    assert cover["verdict"] == "framework_complete_live_coverage_incomplete"
     assert cover["affects_chain"] == "events"
     assert cover["event_count"] >= 3
+    assert cover["data_mode"] == "fixture"
 
 
 def test_google_never_scrapes_html_search_pages(monkeypatch):

@@ -1049,7 +1049,8 @@
   function eventsCoverageChip(cover) {
     if (!cover) return "";
     const google = ((cover.providers || {}).google_cse || {}).status || cover.reason_code || "unknown";
-    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(cover.coverage || cover.status || "partial")} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
+    const mode = cover.data_mode || "empty";
+    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(mode)}/${esc(cover.verdict || cover.status || "incomplete")} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
   }
 
   async function loadEvents() {
@@ -1064,6 +1065,8 @@
       body.dataset.eventsReady = "1";
       body.dataset.symbol = SYMBOL;
       body.dataset.eventCount = String((payload.events || []).length);
+      body.dataset.dataMode = payload.data_mode || "empty";
+      body.dataset.live = payload.live ? "1" : "0";
       const module = $("event-module");
       if (module) module.dataset.eventsReady = "1";
     } catch (error) {

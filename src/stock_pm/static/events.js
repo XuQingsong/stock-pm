@@ -17,11 +17,15 @@
         coverNode.innerHTML = cover.html;
         coverNode.dataset.googleStatus = cover.googleStatus;
         coverNode.dataset.eventsReady = "1";
+        coverNode.dataset.dataMode = cover.dataMode || payload.data_mode || "empty";
+        coverNode.dataset.live = payload.live ? "1" : "0";
       }
       root.className = "";
       root.innerHTML = ui.renderCenter(payload);
       root.dataset.eventsReady = "1";
       root.dataset.eventCount = String((payload.events || []).length);
+      root.dataset.dataMode = payload.data_mode || "empty";
+      root.dataset.live = payload.live ? "1" : "0";
     } catch (error) {
       root.className = "state error";
       root.dataset.eventsReady = "error";

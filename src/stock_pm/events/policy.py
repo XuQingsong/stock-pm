@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
+import os
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+from stock_pm.config import Settings
 
 from .types import EventDocument
 
@@ -53,6 +57,68 @@ INJECTION_MARKERS = (
     "忽略之前",
     "系统提示",
 )
+
+
+BLOCKED_HOSTS = {
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    "::1",
+    "metadata.google.internal",
+    "example.com",
+    "example.invalid",
+    "example.org",
+}
+
+
+def events_data_mode(settings: Settings | None = None) -> str:
+    """Production default is empty. Fixtures are never implicit live data."""
+    config = settings or Settings()
+    explicit = (getattr(config, "events_mode", None) or os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
+    if explicit in {"empty", "live", "demo", "fixture", "test"}:
+        return "fixture" if explicit == "test" else explicit
+    env = (config.app_env or os.getenv("APP_ENV") or "").strip().lower()
+    if env in {"test", "development", "local"}:
+        return "fixture"
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return "fixture"
+    return "empty"
+
+
+def is_safe_public_http_url(url: str) -> bool:
+    parts = urlsplit((url or "").strip())
+    if parts.scheme not in {"http", "https"}:
+        return False
+    if parts.username or parts.password:
+        return False
+    host = (parts.hostname or "").lower()
+    if not host or host in BLOCKED_HOSTS or host.endswith(".example.com") or host.endswith(".invalid"):
+        return False
+    if host.startswith("www."):
+        host = host[4:]
+        if host in BLOCKED_HOSTS:
+            return False
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        ip = None
+    if ip is not None and (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast):
+        return False
+    return True
+
+
+def redact_url(url: str) -> str:
+    parts = urlsplit(url or "")
+    if not parts.scheme:
+        return "<redacted>"
+    query = urlencode(
+        [
+            (key, "REDACTED" if re.search(r"(key|token|secret|password|cx)", key, re.I) else value)
+            for key, value in parse_qsl(parts.query, keep_blank_values=True)
+        ]
+    )
+    host = (parts.hostname or "").lower()
+    return urlunsplit((parts.scheme, host, parts.path, query, ""))
 
 
 def normalize_url(url: str) -> str:

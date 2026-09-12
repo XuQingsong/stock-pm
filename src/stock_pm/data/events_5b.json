@@ -1,4 +1,9 @@
 {
+  "_meta": {
+    "data_class": "test_fixture",
+    "live": false,
+    "note": "Packaged seed/demo documents. Not production live prints. URLs are illustrative and may 404."
+  },
   "documents": [
     {
       "title": "Treasury OFAC designates additional Iran energy sanctions",

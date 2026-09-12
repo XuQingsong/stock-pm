@@ -7,8 +7,14 @@
 
   const safeUrl = (value) => {
     try {
-      const u = new URL(String(value), window.location.origin);
-      return ["http:", "https:"].includes(u.protocol) ? u.href : "";
+      const u = new URL(String(value));
+      if (!["http:", "https:"].includes(u.protocol)) return "";
+      if (u.username || u.password) return "";
+      const host = (u.hostname || "").toLowerCase();
+      if (!host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".invalid") || host === "example.com" || host.endsWith(".example.com")) {
+        return "";
+      }
+      return u.href;
     } catch (_) {
       return "";
     }
@@ -95,7 +101,11 @@
   const claimsHtml = (claims) => {
     if (!claims || !claims.length) return "";
     return `<div class="event-claims">${claims.map((claim) =>
-      `<div class="claim-row" data-polarity="${esc(claim.polarity)}">${pill(claim.polarity, claim.polarity === "contradicts" ? "conflict" : "")} ${esc(claim.text)}</div>`
+      `<div class="claim-row" data-polarity="${esc(claim.polarity)}" data-claim-source="${esc(claim.source_url || "")}">
+        ${pill(claim.polarity, claim.polarity === "contradicts" ? "conflict" : "")}
+        ${esc(claim.text)}
+        <div class="evidence-refs">${claim.source_url ? sourceLink(claim.source_url, claim.publisher || "原文") : "<span class='no-url'>无来源</span>"}</div>
+      </div>`
     ).join("")}</div>`;
   };
 
@@ -113,19 +123,31 @@
     const google = ((coverage || {}).providers || {}).google_cse || {};
     const official = ((coverage || {}).providers || {}).official_feed || {};
     const status = google.status || "not_configured";
+    const mode = coverage.data_mode || "empty";
+    const live = coverage.live === true;
+    const modeLabel = live
+      ? "LIVE · 生产实时"
+      : mode === "empty"
+        ? "生产默认 · 框架完成 / 实时覆盖未完成 · 无实时官方事件采集"
+        : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
     return {
-      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "ok")}">
-        ${pill(`coverage ${coverage.coverage || "partial"}`, coverage.coverage || "partial")}
-        ${pill(`events ${coverage.status || "ok"}`, coverage.status || "ok")}
+      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "not_implemented")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}">
+        <div class="event-mode-banner ${live ? "is-live" : "is-fixture"}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
+        ${pill(`verdict ${coverage.verdict || coverage.status || "incomplete"}`, "not_configured")}
+        ${pill(`data_mode ${mode}`)}
         ${pill(`google_cse ${status}`, status)}
-        ${pill(`official_feed ${official.status || "ok"}`, official.status || "ok")}
-        <span>last_success ${esc(coverage.last_success || "—")}</span>
+        ${pill(`official_feed ${official.status || "not_implemented"}`, official.status || "not_implemented")}
+        <span>live_event_count ${esc(coverage.live_event_count ?? 0)}</span>
+        <span>fixture_event_count ${esc(coverage.fixture_event_count ?? 0)}</span>
         <span>source_count ${esc(coverage.source_count ?? 0)}</span>
         <span>conflict_count ${esc(coverage.conflict_count ?? 0)}</span>
         <span>reason_code ${esc(coverage.reason_code || "—")}</span>
-        <div class="subline">只影响事件链：${esc(coverage.affects_chain || "events")}。不影响 ${esc((coverage.does_not_affect || []).join(" / ") || "price / earnings / macro_rates")}。Google 未配置时保持 not_configured，不抓取 HTML、不伪造结果。</div>
+        <span>official last_success ${esc(official.last_success_at || "—")}</span>
+        <span>google request ${esc(google.request_url || "—")}</span>
+        <div class="subline">${esc(coverage.note || "")} 只影响事件链：${esc(coverage.affects_chain || "events")}。不影响 ${esc((coverage.does_not_affect || []).join(" / ") || "price / earnings / macro_rates")}。</div>
       </div>`,
-      googleStatus: status
+      googleStatus: status,
+      dataMode: mode
     };
   };
 
@@ -175,7 +197,8 @@
         <h4>方向 / 期限</h4>
         <p data-direction="${esc((analysis.direction && analysis.direction.text) || withheld.direction || "withheld")}">${boundHtml(analysis.direction)} · ${boundHtml(analysis.horizon)}</p>
         <h4>置信度</h4>
-        <p>${boundHtml(analysis.confidence)}</p>
+        <p data-confidence-rule="${esc((analysis.confidence_rule && analysis.confidence_rule.result) || "")}">${boundHtml(analysis.confidence)}</p>
+        <p class="subline" data-confidence-fields="1">规则：revoked=${esc((analysis.confidence_rule || {}).revoked)} · conflict_count=${esc((analysis.confidence_rule || {}).conflict_count)} · tier1=${esc((analysis.confidence_rule || {}).tier1_count)} · tier2=${esc((analysis.confidence_rule || {}).tier2_count)} → ${esc((analysis.confidence_rule || {}).result || "")}</p>
         <h4>反证 / 失效条件</h4>
         ${(analysis.counter_evidence || []).map((row) => `<p>${boundHtml(row)}</p>`).join("")}
         <h4>What changes</h4>

@@ -107,3 +107,6 @@ class Settings:
     )
     google_cse_api_key: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_API_KEY", ""))
     google_cse_id: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_ID", ""))
+    events_mode: str = field(
+        default_factory=lambda: (os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
+    )

@@ -63,6 +63,8 @@ class EventClaim:
     polarity: str
     source_id: str
     status: str = "open"
+    source_url: str = ""
+    publisher: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -71,6 +73,8 @@ class EventClaim:
             "polarity": self.polarity,
             "source_id": self.source_id,
             "status": self.status,
+            "source_url": self.source_url,
+            "publisher": self.publisher,
         }
 
 

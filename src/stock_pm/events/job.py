@@ -26,11 +26,12 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
     try:
         with db.pool.connection() as conn:
             persisted = persist_events(conn, events, cover)
+            official = cover["providers"]["official_feed"]
             persist_cursor(
                 conn,
                 "official_feed",
-                status="ok",
-                reason_code=None,
+                status=official.get("status") or "not_implemented",
+                reason_code=official.get("reason_code"),
                 item_count=persisted,
                 stamp=stamp,
             )
