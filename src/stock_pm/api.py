@@ -21,6 +21,7 @@ from .review import retry_reviews_for_llm
 SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 
 database = Database()
+_database_reachable = False
 
 
 def _backfill_environment_snapshots() -> None:
@@ -44,8 +45,10 @@ def _backfill_environment_snapshots() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    global _database_reachable
     try:
-        if database.ping():
+        _database_reachable = bool(database.ping())
+        if _database_reachable:
             database.initialize()
             threading.Thread(
                 target=_backfill_environment_snapshots,
@@ -55,6 +58,7 @@ async def lifespan(_: FastAPI):
         else:
             print(json.dumps({"database_init_error": "postgres unreachable; real health still serves official FRED"}, ensure_ascii=False))
     except Exception as exc:
+        _database_reachable = False
         print(json.dumps({"database_init_error": str(exc)}, ensure_ascii=False))
     yield
     try:
@@ -407,11 +411,15 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
             return build_health_preview(symbol, key)
         settings = Settings()
         db_error = False
-        try:
-            bundle = database.decision_bundle(symbol)
-        except DatabaseError:
+        if not _database_reachable:
             db_error = True
             bundle = empty_real_bundle(symbol.upper())
+        else:
+            try:
+                bundle = database.decision_bundle(symbol)
+            except DatabaseError:
+                db_error = True
+                bundle = empty_real_bundle(symbol.upper())
         live, live_errors, live_report = collect_live_macro_overlay(settings)
         bundle = merge_live_macros(bundle, live)
         query_errors = set(live_errors)
