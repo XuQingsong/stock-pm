@@ -847,7 +847,12 @@
       .concat(payload.market_background || [])
       .concat(((payload.layers || []).find((row) => row.id === "change") || {}).items || [])
       .concat(((payload.rates_path || {}).nodes || []));
-    const item = catalog.find((row) => factId(row) === factIdWanted || row.metric === factIdWanted || row.id === factIdWanted);
+    const aliases = { price: "close", price_pressure: "close", close: "close" };
+    const wanted = aliases[factIdWanted] || factIdWanted;
+    const item = catalog.find((row) => {
+      const id = factId(row);
+      return id === factIdWanted || id === wanted || row.metric === factIdWanted || row.metric === wanted || row.id === factIdWanted || row.id === wanted;
+    });
     if (!item) {
       body.innerHTML = `<p>未找到内部事实 ${esc(factIdWanted)}</p>`;
     } else {
