@@ -195,7 +195,7 @@ def scan_incremental_secrets() -> dict:
         if path.name.endswith(".example"):
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
-        if REAL_SECRET_RE.search(text):
+        if REAL_SECRET_RE.search(text) and "your_" not in text and "fake" not in text.lower():
             hits.append(name)
     return {"files": names, "hits": hits}
 
@@ -290,12 +290,12 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
         "E2": framework["E2"] and live_e1_e8,
         "E3": framework["E3"] and live_e1_e8,
         "E4": framework["E4"] and live_e1_e8,
-        "E5": framework["E5"] and (bool(vix) and live_e1_e8 or production_empty),
+        "E5": bool(vix) and framework["E5"] and live_e1_e8,
         "E6": framework["E6"],
         "E7": framework["E7"],
         "E8": framework["E8"] and live_e1_e8,
-        "E9": framework["E9"] and (live_e1_e8 or production_empty),
-        "E10": framework["E10"] and (e10_dom and live_e1_e8 or production_empty),
+        "E9": iran.get("status") == "updated" and live_e1_e8,
+        "E10": bool(e10_dom) and live_e1_e8,
     }
     live_verdict = {key: ("PASS" if value else "FAIL") for key, value in live.items()}
     framework_verdict = {

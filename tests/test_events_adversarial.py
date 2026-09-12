@@ -165,7 +165,7 @@ def test_confidence_rule_is_reproducible_from_fields():
 
 
 def test_google_fake_key_and_timeout_stay_local(monkeypatch):
-    settings = Settings(google_cse_api_key="fake-key-value", google_cse_id="fake-cx", events_mode="empty")
+    settings = Settings(google_cse_api_key="x", google_cse_id="y", events_mode="empty")
     provider = GoogleDiscoveryProvider(settings)
 
     def boom(req: Request, timeout=12):
