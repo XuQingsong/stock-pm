@@ -45,14 +45,17 @@ def _backfill_environment_snapshots() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
-        database.initialize()
+        if database.ping():
+            database.initialize()
+            threading.Thread(
+                target=_backfill_environment_snapshots,
+                name="environment-backfill",
+                daemon=True,
+            ).start()
+        else:
+            print(json.dumps({"database_init_error": "postgres unreachable; real health still serves official FRED"}, ensure_ascii=False))
     except Exception as exc:
         print(json.dumps({"database_init_error": str(exc)}, ensure_ascii=False))
-    threading.Thread(
-        target=_backfill_environment_snapshots,
-        name="environment-backfill",
-        daemon=True,
-    ).start()
     yield
     try:
         database.close()
@@ -413,7 +416,7 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
         bundle = merge_live_macros(bundle, live)
         query_errors = set(live_errors)
         if db_error:
-            query_errors.add("macro_nfp")
+            # NFP stays calendar/DB this phase: missing, not a FRED keyless query_error.
             if settings.alpaca_api_key_id and settings.alpaca_api_secret_key:
                 query_errors.add("daily_price_bars")
             if settings.fmp_api_key:
