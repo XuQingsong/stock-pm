@@ -138,6 +138,23 @@ def test_selective_exposure_counterexamples():
     assert why_relevant(unknown, "XOM") is None
     assert why_relevant(unknown, "JPM") is None
     assert why_relevant(unknown, "AAPL") is None
+    rates = build_events(
+        [
+            _doc(
+                title="Minutes of the Board discount rate meetings",
+                url="https://www.federalreserve.gov/newsevents/pressreleases/monetary20260825a.htm",
+                publisher="Federal Reserve",
+                event_type="central_bank_rates",
+                entities=["FOMC", "US"],
+                countries=["US"],
+                claims=["discount rate minutes"],
+            )
+        ]
+    )[0]
+    assert why_relevant(rates, "NVDA")["channel"] == "duration"
+    assert why_relevant(rates, "JPM")["channel"] == "credit_conditions"
+    assert why_relevant(rates, "AAPL") is None
+    assert why_relevant(rates, "XOM") is None
 
 
 def test_confidence_rule_is_reproducible_from_fields():

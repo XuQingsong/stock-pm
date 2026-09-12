@@ -52,7 +52,8 @@ def _seed(symbol: str) -> dict[str, Any]:
 
 
 def _tokens(event: TrustedEvent) -> set[str]:
-    parts = list(event.entities) + list(event.countries) + [event.event_type, event.canonical_title]
+    # Do not tokenize event_type: "central_bank_rates" would inject a false "bank" token.
+    parts = list(event.entities) + list(event.countries) + [event.canonical_title]
     blob = " ".join(str(item) for item in parts).lower()
     return {item for item in blob.replace("/", " ").replace("-", " ").replace("_", " ").split() if item}
 
