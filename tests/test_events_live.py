@@ -77,6 +77,7 @@ class _FakeResp:
         self.last_modified = "Fri, 11 Sep 2026 14:00:13 GMT"
         self.not_modified = False
         self.error = None
+        self.content_type = "application/xml"
         if "browse-edgar" in url:
             self.body = SEC_ATOM
         elif "federalreserve.gov" in url:
@@ -86,6 +87,11 @@ class _FakeResp:
         else:
             self.body = b""
             self.error = "unexpected_url"
+            self.status_code = 0
+
+    @property
+    def ok(self) -> bool:
+        return self.error is None and self.status_code == 200
 
 
 def setup_function() -> None:
