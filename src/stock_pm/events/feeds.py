@@ -105,7 +105,7 @@ def fetch_feed(
     extra_headers: dict[str, str] | None = None,
     etag: str | None = None,
     last_modified: str | None = None,
-    timeout: float = 20,
+    timeout: float = 30,
     limiter: RateLimiter | None = None,
     retries: int = 2,
 ) -> FeedResponse:

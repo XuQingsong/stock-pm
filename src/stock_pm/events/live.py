@@ -222,6 +222,8 @@ def _fetch_items(
         etag=etag,
         last_modified=last_modified,
         limiter=limiter,
+        timeout=40 if "sec.gov" in url else 25,
+        retries=3 if "sec.gov" in url else 2,
     )
     meta = {
         "status_code": resp.status_code,
