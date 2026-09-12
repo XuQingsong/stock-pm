@@ -535,6 +535,7 @@
     loadHeader(),
     loadDecision(),
     loadDataHealth(),
+    loadEvents(),
     window.mountStockPmShell ? window.mountStockPmShell({ symbol: SYMBOL }) : Promise.resolve()
   ]).finally(() => activate(location.hash.slice(1) || "chart"));
 
@@ -1017,6 +1018,7 @@
         <span>受限链：${esc(list(overall.limited_chains))}</span>
         <span>不可用链：${esc(list(overall.unavailable_chains))}</span>
         <span class="status-pill ${esc((health.database && health.database.status) || "ok")}">数据库 ${esc((health.database && (health.database.database || health.database.status)) || "unknown")}</span>
+        ${eventsCoverageChip(health.events_coverage)}
       </div>
       ${health.database && health.database.status === "error" ? `<p class="subline">数据库不可达或写入失败：${esc(health.database.note || "PostgreSQL unreachable; live overlay does not hide this")}</p>` : ""}
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
@@ -1041,6 +1043,31 @@
       slot.innerHTML = renderDataHealth(health);
     } catch (error) {
       slot.innerHTML = `<section class="data-health"><p class="subline">数据健康加载失败：${esc(error.message || "未知错误")}</p></section>`;
+    }
+  }
+
+  function eventsCoverageChip(cover) {
+    if (!cover) return "";
+    const google = ((cover.providers || {}).google_cse || {}).status || cover.reason_code || "unknown";
+    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(cover.coverage || cover.status || "partial")} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
+  }
+
+  async function loadEvents() {
+    const body = $("event-body");
+    if (!body) return;
+    try {
+      const payload = await api(`/api/stock/${encodeURIComponent(SYMBOL)}/events`);
+      const ui = window.StockPmEvents;
+      if (!ui) throw new Error("事件渲染未加载");
+      body.className = "";
+      body.innerHTML = ui.renderStock(payload);
+      body.dataset.eventsReady = "1";
+      body.dataset.symbol = SYMBOL;
+      body.dataset.eventCount = String((payload.events || []).length);
+    } catch (error) {
+      body.className = "";
+      body.dataset.eventsReady = "error";
+      body.innerHTML = `<div class="empty-note">相关事件暂不可用，只影响事件链：${esc(error.message || "未知错误")}</div>`;
     }
   }
 
