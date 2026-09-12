@@ -17,6 +17,9 @@ def test_nfp_from_payems_is_monthly_difference():
     assert derived["value"] == 220.0
     assert derived["payems_level"] == 159832.0
     assert derived["prior_level"] == 159612.0
+    assert derived["prior_change"] == 212.0
+    assert derived["comparison"] == "same_definition_monthly_diff"
+    assert "存量" in derived["formula"] or "差分" in derived["formula"]
 
 
 def test_nfp_from_payems_needs_two_prints():
@@ -25,7 +28,7 @@ def test_nfp_from_payems_needs_two_prints():
 
 
 def test_sync_nfp_from_official_csv(monkeypatch):
-    csv = "observation_date,PAYEMS\n2026-08-01,159832\n2026-07-01,159612\n"
+    csv = "observation_date,PAYEMS\n2026-08-01,159832\n2026-07-01,159612\n2026-06-01,159400\n"
 
     def fake_text(url, **kwargs):
         assert "id=PAYEMS" in url
@@ -51,4 +54,7 @@ def test_sync_nfp_from_official_csv(monkeypatch):
     assert rec["source"] == "FRED"
     assert stored[0]["event_type"] == "nfp"
     assert stored[0]["actual"] == 220.0
+    assert stored[0]["prior"] == 212.0
+    assert stored[0]["prior"] != stored[0]["prior_level"]
+    assert rec["prior_change"] == 212.0
     assert "apikey" not in str(rec).lower()

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from .causal import CausalImpact, MarketConfirmation
+from .causal import CausalImpact, MarketConfirmation, canonical_metric
 from .change import ChangeSnapshot, NO_MATERIAL_CHANGE
 from .expectation import ExpectationGap
+from .path import BACKGROUND_METRICS, LABOR_METRICS, RISK_METRICS
 from .tension import PriceExpectationTension
 from .thesis import Driver, ThesisSnapshot
 from .types import FactRef
@@ -30,6 +31,10 @@ def ref_view(ref: FactRef) -> dict[str, Any]:
         "source": ref.source,
         "text": ref.text,
         "synthetic": ref.synthetic,
+        "http_source": getattr(ref, "http_source", None),
+        "unit": getattr(ref, "unit", None),
+        "status": getattr(ref, "status", None),
+        "origin": getattr(ref, "origin", None),
     }
 
 
@@ -69,6 +74,12 @@ def change_view(change: ChangeSnapshot) -> dict[str, Any]:
         "refs": refs,
         "status": status,
         "counter": None,
+        "unit": change.unit,
+        "series": None,
+        "formula": None,
+        "comparison": None,
+        "origin": "primary",
+        "http_source": getattr(primary, "get", lambda *_: None)("http_source") if primary else None,
     }
 
 
@@ -310,13 +321,51 @@ def render_decision_view(
     tension: PriceExpectationTension | None = None,
     rates_chain_blocked: bool = False,
     graded: dict[str, Any] | None = None,
+    rates_path: dict[str, Any] | None = None,
+    risk_state: dict[str, Any] | None = None,
+    market_background: list[dict[str, Any]] | None = None,
+    inject: list[str] | None = None,
 ) -> dict[str, Any]:
     change_rows = [change_view(row) for row in changes]
     gap_rows = [gap_view(row) for row in expectations]
     impact_rows = [impact_view(row) for row in impacts]
+    catalog = list(facts or []) + list(market_background or [])
+    fact_by_metric = {
+        canonical_metric(str(row.get("metric") or "")): row
+        for row in catalog
+        if row.get("metric")
+    }
+    for row in change_rows:
+        extra = fact_by_metric.get(canonical_metric(str(row.get("metric") or "")))
+        if not extra:
+            continue
+        row["series"] = extra.get("series")
+        row["formula"] = extra.get("formula")
+        row["comparison"] = extra.get("comparison")
+        row["unit"] = row.get("unit") or extra.get("unit")
+        row["origin"] = extra.get("origin") or row.get("origin")
+        row["http_source"] = extra.get("http_source") or row.get("http_source")
+        row["period"] = extra.get("period")
+        row["previous_period"] = extra.get("previous_period")
+        if row.get("ref"):
+            row["ref"]["http_source"] = extra.get("http_source") or row["ref"].get("http_source")
+            row["ref"]["unit"] = extra.get("unit") or row["ref"].get("unit")
+            row["ref"]["status"] = extra.get("status") or row["ref"].get("status")
+            row["ref"]["origin"] = extra.get("origin") or row["ref"].get("origin")
+    hidden_metrics = BACKGROUND_METRICS | LABOR_METRICS | RISK_METRICS
+    visible_change_rows = [
+        row
+        for row in change_rows
+        if canonical_metric(str(row.get("metric") or "")) not in hidden_metrics
+    ]
     confirm = confirmation_view(confirmation)
     tension_row = tension_view(tension)
     report = what_changed_view(what_changed)
+    visible_what_items = [
+        item
+        for item in report["items"]
+        if canonical_metric(str(item.get("affects") or "")) not in hidden_metrics
+    ]
     clues = list(clues or ())
     no_material = report["summary"] == NO_MATERIAL_CHANGE_THESIS
 
@@ -480,4 +529,15 @@ def render_decision_view(
         "facts": facts,
         "no_material_change": no_material,
         "rates_chain_blocked": rates_chain_blocked,
+        "layers": [
+            {"id": "fact", "title": "Fact", "title_zh": "事实", "items": facts},
+            {"id": "change", "title": "Change", "title_zh": "相对什么变了", "items": visible_change_rows},
+            {"id": "expectation", "title": "Expectation", "title_zh": "预期如何变", "items": gap_rows},
+            {"id": "impact", "title": "Impact", "title_zh": "如何传导", "items": impact_rows, "path": rates_path, "risk_state": risk_state},
+            {"id": "what_changes", "title": "What changes", "title_zh": "改变了哪个判断", "items": visible_what_items},
+        ],
+        "rates_path": rates_path,
+        "risk_state": risk_state,
+        "market_background": list(market_background or ()),
+        "inject": list(inject or ()),
     }

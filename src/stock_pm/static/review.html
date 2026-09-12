@@ -130,7 +130,9 @@ function card(row){
   const copy=window.stockPmCopy||{};
   const pred=row.prediction||{};
   const attn=row.attention||{};
-  const predText=(copy.predictionDisplay&&copy.predictionDisplay(pred))||pred.therefore||pred.badge||row.prediction_half||'到期未产出';
+  const predText=(pred.direction_withheld||pred.can_form_direction===false||pred.state==='withheld')
+    ? (pred.therefore||pred.missing_label||'决策未形成方向，不展示百分比预测')
+    : ((copy.predictionDisplay&&copy.predictionDisplay(pred))||pred.therefore||pred.badge||row.prediction_half||'到期未产出');
   const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
   return `<article class="card attn-${esc(attn.tone||'rest')}" data-symbol="${esc(row.symbol)}" data-date="${esc(date)}">
     <div class="card-head"><div><b><a href="/stock/${esc(row.symbol)}#review" style="color:inherit">${esc(row.symbol)}</a></b>

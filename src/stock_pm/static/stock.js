@@ -550,18 +550,48 @@
     return `<span class="status-pill ${esc(text)}">${esc(text)}</span>`;
   }
 
+  function sourceLink(url, label) {
+    if (!url) return "—";
+    try {
+      const parsed = new URL(String(url), location.origin);
+      if (!["http:", "https:"].includes(parsed.protocol)) return esc(url);
+      return `<a class="source-link" href="${esc(parsed.href)}" target="_blank" rel="noopener noreferrer">${esc(label || parsed.host + parsed.pathname)}</a>`;
+    } catch (_) {
+      return esc(url);
+    }
+  }
+
+  function originLabel(origin) {
+    if (origin === "primary") return "原始";
+    if (origin === "secondary") return "二手";
+    return origin || "原始";
+  }
+
+  function factId(item) {
+    return item.id || (item.ref && item.ref.ref_id) || item.ref_id || item.metric || "";
+  }
+
   function refLine(item) {
     const ref = item.ref || {};
     const source = item.source || ref.source;
     const table = ref.ref_table;
     const id = ref.ref_id || item.ref_id || item.id;
     const asOf = item.as_of || ref.as_of;
-    if (!source && !table && !id && !asOf) return "";
+    const http = item.http_source || ref.http_source;
+    const unit = item.unit || ref.unit;
+    const status = item.status || ref.status;
+    const origin = item.origin || ref.origin;
+    if (!source && !table && !id && !asOf && !http) return "";
     return `<div class="chain-metrics">
       <div><span>source</span><b>${esc(source || "—")}</b></div>
       <div><span>ref</span><b>${esc(table || "evidence")} / ${esc(id || "—")}</b></div>
       <div><span>as_of</span><b>${asOf ? dateText(asOf, true) : "—"}</b></div>
-    </div>`;
+      <div><span>unit</span><b>${esc(unit || "—")}</b></div>
+      <div><span>status</span><b>${esc(status || "—")}</b></div>
+      <div><span>来源性质</span><b>${esc(originLabel(origin))}</b></div>
+      <div><span>http_source</span><b>${sourceLink(http)}</b></div>
+    </div>
+    <button type="button" class="fact-link" data-fact-id="${esc(factId(item))}">打开事实详情</button>`;
   }
 
   function thesisItem(item) {
@@ -714,6 +744,133 @@
       </header>`;
   }
 
+  function comparisonBlock(item) {
+    const current = finite(item.current) || finite(item.value) ? num(item.current ?? item.value) : "—";
+    const previous = finite(item.previous) ? num(item.previous) : "—";
+    const delta = finite(item.delta) ? signed(item.delta) : (finite(item.delta_pct) ? pct(item.delta_pct) : "—");
+    return `<div class="chain-metrics">
+      <div><span>series</span><b>${esc(item.series || item.metric || "—")}</b></div>
+      <div><span>单位</span><b>${esc(item.unit || "—")}</b></div>
+      <div><span>期间</span><b>${esc(item.period || item.as_of || "—")} vs ${esc(item.previous_period || item.previous_as_of || "—")}</b></div>
+      <div><span>current / prior / delta</span><b>${esc(current)} / ${esc(previous)} / ${esc(delta)}</b></div>
+      <div><span>公式</span><b>${esc(item.formula || item.comparison || "同序列同单位比较")}</b></div>
+      <div><span>方向</span><b>${esc(item.direction || "—")}</b></div>
+    </div>`;
+  }
+
+  function renderRatesPath(path) {
+    if (!path) return `<div class="empty-note">利率贴现链未形成</div>`;
+    if (path.status === "not_applicable") {
+      return `<div class="empty-note">${esc(path.reason || "该标的没有高估值久期暴露，利率贴现链不进入个股主结论")}</div>`;
+    }
+    const nodes = (path.nodes || []).map((node) => `<article class="path-node" data-layer="${esc(node.layer || "")}">
+      <div class="chain-kicker">${esc(node.layer || "node")}</div>
+      <h4>${esc(node.title || node.id)}</h4>
+      ${statusPill(node.status || node.direction || path.status)}
+      <div class="why">方向 ${esc(node.direction || "—")} · 机制 ${esc(node.mechanism || node.channel || "—")}</div>
+      ${node.value != null ? `<div class="why">current ${esc(String(node.value))} ${esc(node.unit || "")} · as_of ${esc(node.as_of || "—")}</div>` : ""}
+      <div class="why">source ${esc(node.source || "—")} · 置信度 ${esc(node.confidence || path.confidence || "—")}</div>
+      ${node.does_not_imply ? `<div class="counter">不推出：${esc(node.does_not_imply)}</div>` : ""}
+      <button type="button" class="fact-link" data-fact-id="${esc(node.metric || node.id)}">引用事实</button>
+    </article>`).join("");
+    const edges = (path.edges || []).map((edge) => `<article class="path-edge">
+      <div class="chain-kicker">${esc(edge.from)} → ${esc(edge.to)}</div>
+      <div class="why">方向 ${esc(edge.direction || "—")} · 机制 ${esc(edge.mechanism || "—")}</div>
+      <div class="why">as_of ${esc(edge.as_of || "—")} · 置信度 ${esc(edge.confidence || "—")}</div>
+      <div class="counter">失效条件：${esc(edge.invalidation || path.invalidation || "—")}</div>
+      <button type="button" class="fact-link" data-fact-id="${esc((edge.evidence || [])[0] || edge.from)}">引用事实</button>
+    </article>`).join("");
+    return `<div class="rates-path" data-status="${esc(path.status || "")}">
+      <p class="why">Fact → Change → Expectation → Impact → What changes。置信度 ${esc(path.confidence || "—")}。失效：${esc(path.invalidation || "—")}</p>
+      <div class="path-nodes">${nodes}</div>
+      <div class="path-edges">${edges}</div>
+    </div>`;
+  }
+
+  function renderRiskState(risk) {
+    if (!risk) return `<div class="empty-note">没有可追溯 VIX，风险状态不编造</div>`;
+    return `<article class="risk-state">
+      <h4>VIX 只改变风险状态</h4>
+      ${statusPill(risk.status)}
+      <div class="why">VIX ${esc(String(risk.current ?? "—"))} vs ${esc(String(risk.previous ?? "—"))} ${esc(risk.unit || "")} · as_of ${esc(risk.as_of || "—")}</div>
+      <div class="why">传导：${esc(risk.affects || "risk_state")}。禁止直接推出 ${esc(risk.does_not_imply || "个股涨跌方向")}</div>
+      <div class="counter">反证 / 失效：${esc(risk.invalidation || "—")}</div>
+      <button type="button" class="fact-link" data-fact-id="vix">打开 VIX 事实</button>
+    </article>`;
+  }
+
+  function renderLayers(payload) {
+    const layers = payload.layers || [];
+    return `<ol class="causal-layers">${layers.map((layer) => {
+      let body = "";
+      if (layer.id === "impact") {
+        body = `${renderRatesPath(layer.path || payload.rates_path)}${renderRiskState(layer.risk_state || payload.risk_state)}`;
+        if ((layer.items || []).length) {
+          body += (layer.items || []).map(chainItem).join("");
+        }
+      } else if (layer.id === "what_changes") {
+        body = (layer.items || []).map(thesisItem).join("") || `<div class="empty-note">主结论尚未改写方向</div>`;
+      } else if (layer.id === "fact" || layer.id === "change") {
+        body = (layer.items || []).map((item) => `<article class="chain-item">
+          ${statusPill(item.status || item.materiality)}
+          <h4>${esc(item.name || item.metric || item.kind || "fact")}</h4>
+          ${comparisonBlock(item)}
+          ${refLine(item)}
+        </article>`).join("") || `<div class="empty-note">本层暂无进入个股主结论的项目</div>`;
+      } else {
+        body = (layer.items || []).map(chainItem).join("") || `<div class="empty-note">本层数据不足</div>`;
+      }
+      return `<li class="causal-layer" data-layer="${esc(layer.id)}">
+        <div class="chain-kicker">${esc(layer.title)}</div>
+        <h3>${esc(layer.title_zh)}</h3>
+        ${body}
+      </li>`;
+    }).join("")}</ol>`;
+  }
+
+  function renderBackground(rows) {
+    const items = (rows || []).map((row) => `<article class="chain-item">
+      <h4>${esc(row.name || row.metric)}</h4>
+      ${comparisonBlock(row)}
+      ${refLine(row)}
+      <div class="why">市场背景，不写入该股主结论</div>
+    </article>`).join("") || `<div class="empty-note">没有折叠的市场背景宏观</div>`;
+    return `<details class="market-background fold"><summary>市场背景宏观（不进入个股主结论）</summary>${items}</details>`;
+  }
+
+  function openFactDrawer(payload, factIdWanted) {
+    const drawer = $("fact-drawer");
+    const body = $("fact-drawer-body");
+    if (!drawer || !body) return;
+    const catalog = []
+      .concat(payload.facts || [])
+      .concat(payload.market_background || [])
+      .concat(((payload.layers || []).find((row) => row.id === "change") || {}).items || [])
+      .concat(((payload.rates_path || {}).nodes || []));
+    const item = catalog.find((row) => factId(row) === factIdWanted || row.metric === factIdWanted || row.id === factIdWanted);
+    if (!item) {
+      body.innerHTML = `<p>未找到内部事实 ${esc(factIdWanted)}</p>`;
+    } else {
+      const ref = item.ref || {};
+      body.innerHTML = `<h3>事实详情 · ${esc(item.name || item.metric || factIdWanted)}</h3>
+        <p>内部 id：${esc(factId(item))}</p>
+        ${comparisonBlock({ ...item, current: item.current ?? item.value })}
+        <p>source ${esc(item.source || ref.source || "—")} · as_of ${esc(item.as_of || ref.as_of || "—")} · unit ${esc(item.unit || ref.unit || "—")}</p>
+        <p>status ${esc(item.status || ref.status || "—")} · 原始/二手：${esc(originLabel(item.origin || ref.origin))}</p>
+        <p>http_source：${sourceLink(item.http_source || ref.http_source)}</p>`;
+    }
+    if (typeof drawer.showModal === "function") drawer.showModal();
+  }
+
+  function bindFactLinks(root, payload) {
+    root.querySelectorAll(".fact-link").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        openFactDrawer(payload, btn.getAttribute("data-fact-id"));
+      });
+    });
+  }
+
   function renderDecision(payload) {
     const thesis = payload.thesis || {};
     const compared = payload.compared_to || {};
@@ -740,11 +897,26 @@
     const noMove = payload.no_material_change ? `<p class="subline">无重大变化：${esc((payload.what_changed || {}).summary || "原判断不变")}</p>` : "";
     const body = $("decision-body") || $("decision-module");
     body.className = "";
+    const injectNote = (payload.inject || []).length
+      ? `<div class="decision-banner" role="status">测试注入 ${esc((payload.inject || []).join(", "))}（仅测试/预览环境）</div>`
+      : "";
+    const withheld = !canDirect
+      ? `<div class="decision-banner" role="status">历史事实与预测已区分：can_form_direction=false，页面不展示无来源方向或百分比预测。</div>`
+      : "";
     body.innerHTML = `${renderGradeBoard(payload)}
+      ${injectNote}${withheld}
       ${noMove}
       ${gaps ? `<ul class="decision-gaps">${gaps}</ul>` : ""}
       ${renderChainGroups(payload)}
-      <div class="decision-chain">${renderChain(payload)}</div>
+      <section class="causal-flow" aria-label="Fact Change Expectation Impact What changes">
+        <h3>Fact → Change → Expectation → Impact → What changes</h3>
+        ${renderLayers(payload)}
+        ${renderRiskState(payload.risk_state)}
+        ${renderBackground(payload.market_background)}
+      </section>
+      <details class="decision-chain-fold fold"><summary>兼容技术链（默认折叠）</summary>
+        <div class="decision-chain">${renderChain(payload)}</div>
+      </details>
       <div class="decision-sides">
         <section class="decision-side"><h3>Bull</h3><ul>${bulls}</ul></section>
         <section class="decision-side"><h3>Bear</h3><ul>${bears}</ul></section>
@@ -752,6 +924,7 @@
       <p class="subline">关键分歧：${esc(canDirect ? (thesis.key_disagreement || "尚未形成") : "局部判断不成方向")} · 失效条件：${esc(canDirect ? (thesis.invalidation || "尚未形成") : "需先补齐 L3 所需环节")}</p>
       <p class="subline">标的 ${esc(payload.symbol || SYMBOL)} · 数据截止 ${dateText(payload.as_of, true)} · 证据质量 ${esc(quality)} · Thesis ${statusPill(thesisStatus)} <b>${esc(directionLabel)}</b> · 相对上次 ${dateText(compared.as_of, true)}</p>
       <details class="decision-facts fold"><summary>原始 Facts（默认折叠）</summary><ul>${facts}</ul></details>`;
+    bindFactLinks(body, payload);
   }
 
   function healthReasonCopy(row) {
@@ -783,7 +956,7 @@
       const unit = row.unit || "—";
       return `<tr class="status-${esc(row.status)}">
         <td>${esc(title)}</td>
-        <td>${esc(row.source || "—")}</td>
+        <td>${esc(row.source || "—")}<div class="why">${sourceLink(row.http_source)}</div></td>
         <td>${esc(series)}</td>
         <td>${esc(row.as_of || "—")}</td>
         <td>${esc(value)}</td>
@@ -800,7 +973,7 @@
         <div class="why">原因：${esc(healthReasonCopy(row))} <small>${esc(row.reason_code || "")}</small></div>
         <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")} · series_or_symbol ${esc(row.series_or_symbol || row.series || "—")}</div>
         <div class="why">as_of ${esc(row.as_of || "—")} · value ${esc(row.value == null ? "—" : String(row.value))} ${esc(row.unit || "")} · 观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
-        <div class="why">http_source ${esc(row.http_source || "—")} · transport ${esc(row.transport || "—")}</div>
+        <div class="why">http_source ${sourceLink(row.http_source)} · transport ${esc(row.transport || "—")}</div>
         <div class="why">恢复：${esc(row.next_action || "—")}${row.required_env ? ` · 所需环境变量 ${esc(row.required_env)}` : ""}</div>
         ${row.historical_series_or_symbol ? `<div class="why">历史 FRED ${esc(row.historical_series_or_symbol)} · ${esc(row.historical_status || "")} / ${esc(row.historical_reason_code || "")} · 不得当作当前金价</div>` : ""}
       </article>`;

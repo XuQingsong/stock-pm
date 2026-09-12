@@ -60,6 +60,7 @@ from .prediction import (
     require_judgment_alert,
     snapshot_from_row as prediction_from_row,
     synthesize_prediction,
+    withhold_unsourced_prediction,
 )
 from .ux_copy import (
     decorate_news_item,
@@ -2261,7 +2262,19 @@ class QueryMixin:
         except DatabaseError:
             stored = None
         pred = stored or self.build_live_prediction(symbol, as_of)
-        return self._attach_judgment_alert(pred) or pred
+        attached = self._attach_judgment_alert(pred) or pred
+        return self._apply_direction_gate(attached, symbol)
+
+    def _apply_direction_gate(self, pred: dict, symbol: str) -> dict:
+        allowed = False
+        try:
+            from stock_pm.decision.assemble import assemble_from_bundle
+
+            view = assemble_from_bundle(self.decision_bundle(symbol))
+            allowed = bool(view.get("can_form_direction"))
+        except Exception:
+            allowed = False
+        return withhold_unsourced_prediction(pred, can_form_direction=allowed)
 
     def _attach_row_predictions(
         self,
@@ -2300,8 +2313,9 @@ class QueryMixin:
                     session=session,
                     source="live",
                 )
-            row["prediction"] = self._attach_judgment_alert(pred) or pred
-            row["prediction_half"] = prediction_badge(row["prediction"])
+            gated = self._apply_direction_gate(self._attach_judgment_alert(pred) or pred, symbol)
+            row["prediction"] = gated
+            row["prediction_half"] = prediction_badge(gated)
             ctx = row.get("context")
             if isinstance(ctx, dict) and ctx.get("news"):
                 ctx = dict(ctx)

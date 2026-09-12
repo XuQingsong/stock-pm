@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Annotated
 
 import uvicorn
-from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -444,16 +444,33 @@ def stock_overview(symbol: str) -> dict:
         )
 
 
+def _request_inject(request: Request, inject: str | None) -> frozenset[str]:
+    from .decision.inject import inject_allowed, parse_inject_tokens
+
+    if not inject_allowed():
+        return frozenset()
+    return parse_inject_tokens([inject or "", request.headers.get("x-stock-pm-inject") or ""])
+
+
 @app.get("/api/stock/{symbol}/decision")
-def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
+def stock_decision(
+    request: Request,
+    symbol: str,
+    preview: str | None = Query(None),
+    inject: str | None = Query(None),
+) -> dict:
     from .decision.assemble import assemble_from_bundle
     from .decision.preview import PREVIEW_LABELS, build_preview, preview_allowed
+    from .live_bundle import overlay_live_bundle
 
     key = (preview or "").strip().upper()
     try:
         if key in PREVIEW_LABELS and preview_allowed():
             return build_preview(symbol, key)
-        return assemble_from_bundle(database.decision_bundle(symbol))
+        packed = overlay_live_bundle(
+            database, symbol, persist=True, inject=_request_inject(request, inject)
+        )
+        return assemble_from_bundle(packed["bundle"])
     except ValueError as exc:
         raise _http_error(exc) from exc
     except DatabaseError:
@@ -461,82 +478,32 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
 
 
 @app.get("/api/stock/{symbol}/data-health")
-def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
-    from .alpaca import collect_live_daily_bars
-    from .config import Settings
+def stock_data_health(
+    request: Request,
+    symbol: str,
+    preview: str | None = Query(None),
+    inject: str | None = Query(None),
+) -> dict:
     from .decision.assemble import assemble_from_bundle
     from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview
     from .decision.preview import preview_allowed
-    from .providers import collect_live_earnings
-    from .series import collect_live_macro_overlay, empty_real_bundle, merge_live_macros
+    from .live_bundle import overlay_live_bundle
 
     key = (preview or "").strip().upper()
     try:
         if key in HEALTH_PREVIEW_LABELS and preview_allowed():
             return build_health_preview(symbol, key)
-        settings = Settings()
-        db_status = database_monitor_status()
-        db_error = not bool(db_status.get("reachable"))
-        if db_error:
-            bundle = empty_real_bundle(symbol.upper())
-        else:
-            try:
-                bundle = database.decision_bundle(symbol)
-            except DatabaseError:
-                db_error = True
-                db_status = {
-                    **db_status,
-                    "status": "error",
-                    "reachable": False,
-                    "database": "unavailable",
-                    "reason_code": "query_error",
-                    "note": "PostgreSQL unreachable; live overlay does not hide this",
-                }
-                bundle = empty_real_bundle(symbol.upper())
-        live, live_errors, live_report = collect_live_macro_overlay(settings)
-        bundle = merge_live_macros(bundle, live)
-        live_bars, bar_errors, bar_report = collect_live_daily_bars(symbol.upper(), settings)
-        if live_bars:
-            bundle["bars"] = live_bars
-        live_earnings, earn_errors, earn_report = collect_live_earnings(symbol.upper(), settings)
-        if live_earnings:
-            bundle["earnings"] = live_earnings
-        persistence = {"status": "skipped", "reason": "database_unavailable"}
-        if not db_error:
-            try:
-                from .persist_live import persist_daily_bars, persist_earnings, persist_macro_events
-
-                captured_at = live_report.get("fetched_at")
-                if live_bars:
-                    persist_daily_bars(
-                        database,
-                        symbol.upper(),
-                        live_bars,
-                        captured_at=captured_at,
-                        source=str((bar_report.get("daily_price_bars") or {}).get("source") or "alpaca_sip"),
-                    )
-                if live_earnings:
-                    persist_earnings(
-                        database,
-                        symbol.upper(),
-                        live_earnings,
-                        captured_at=captured_at,
-                        source="fmp",
-                    )
-                if live:
-                    persist_macro_events(database, live)
-                persistence = {"status": "ok"}
-            except DatabaseError:
-                persistence = {"status": "error", "reason_code": "query_error"}
-                db_status = {
-                    **db_status,
-                    "status": "error",
-                    "reason_code": "query_error",
-                    "note": "PostgreSQL write failed; live overlay does not hide this",
-                }
-        query_errors = set(live_errors)
-        query_errors.update(bar_errors)
-        query_errors.update(earn_errors)
+        packed = overlay_live_bundle(
+            database, symbol, persist=True, inject=_request_inject(request, inject)
+        )
+        bundle = packed["bundle"]
+        db_status = packed["db_status"]
+        persistence = packed["persistence"]
+        query_errors = packed["query_errors"]
+        settings = packed["settings"]
+        live_report = packed["live_report"]
+        bar_report = packed["bar_report"]
+        earn_report = packed["earn_report"]
         try:
             view = assemble_from_bundle(bundle)
             judgment = view.get("overall")
@@ -675,7 +642,13 @@ def stock_sentiment(symbol: str) -> dict:
 
 
 @app.get("/api/stock/{symbol}/options")
-def stock_options(symbol: str) -> list[dict]:
+def stock_options(
+    request: Request,
+    symbol: str,
+    inject: str | None = Query(None),
+) -> list[dict]:
+    if "missing_options" in _request_inject(request, inject):
+        return []
     try:
         return database.option_wall(symbol)
     except (DatabaseError, ValueError):
@@ -683,7 +656,14 @@ def stock_options(symbol: str) -> list[dict]:
 
 
 @app.get("/api/stock/{symbol}/news")
-def stock_news(symbol: str, limit: int = Query(30, ge=1, le=100)) -> list[dict]:
+def stock_news(
+    request: Request,
+    symbol: str,
+    limit: int = Query(30, ge=1, le=100),
+    inject: str | None = Query(None),
+) -> list[dict]:
+    if "missing_news" in _request_inject(request, inject):
+        return []
     try:
         return database.news([symbol], limit)
     except (DatabaseError, ValueError):

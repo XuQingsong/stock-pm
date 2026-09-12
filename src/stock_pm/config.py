@@ -97,3 +97,7 @@ class Settings:
         default_factory=lambda: (os.getenv("ENABLE_DECISION_PREVIEW") or "").strip().lower()
         in {"1", "true", "yes", "on"}
     )
+    enable_decision_inject: bool = field(
+        default_factory=lambda: (os.getenv("ENABLE_DECISION_INJECT") or "").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
