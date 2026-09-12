@@ -309,7 +309,15 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
     official_feeds_ok = sum(1 for row in live_providers.values() if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0)
     fixture_honest = official.get("status") in {"idle", "demo_fixture", "not_implemented"} and official.get("live") is False
     google_honest = google.get("status") == "not_configured" and "google.com/search" not in js
-    live_originals = bool(live_hits) and all(row.get("live") for row in probes if _official_href(row.get("url") or ""))
+    lead_urls = {
+        str(row.get("source_url") or "")
+        for row in list(lead.get("sources") or []) + refs
+        if str(row.get("source_url") or "").startswith("http")
+    }
+    lead_probes = [row for row in probes if row.get("url") in lead_urls]
+    live_originals = bool(lead_probes) and all(row.get("live") for row in lead_probes) and any(
+        _official_href(row.get("url") or "") for row in lead_probes
+    )
     framework = {
         "E1": ("official_fact" in fact_types and (e1_fixture_dom if fixture_mode else e1_live_dom)),
         "E2": e2_observed,
@@ -409,9 +417,15 @@ def main() -> int:
         for ref in (event.get("analysis") or {}).get("evidence_refs") or []:
             urls.append(ref.get("source_url"))
     unique = list(dict.fromkeys(item for item in urls if item))
-    preferred = [url for url in unique if _official_href(url)]
+    lead_first = []
+    for event in (center.get("events") or [])[:3]:
+        for source in event.get("sources") or []:
+            lead_first.append(source.get("source_url"))
+        for ref in (event.get("analysis") or {}).get("evidence_refs") or []:
+            lead_first.append(ref.get("source_url"))
+    preferred = [url for url in dict.fromkeys(lead_first) if url]
     rest = [url for url in unique if url not in preferred]
-    probes = [probe_url(url) for url in (preferred[:16] + rest[:8])]
+    probes = [probe_url(url) for url in (preferred + rest)[:12]]
     screenshot_error = None
     shots = {}
     try:
