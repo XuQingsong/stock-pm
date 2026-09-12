@@ -46,6 +46,20 @@ def _av_ok(**kwargs) -> FetchResult:
     )
 
 
+def test_official_history_price_field_parses():
+    rows = parse_alpha_vantage_gold(
+        {
+            "nominal": "XAUUSD",
+            "data": [
+                {"date": "2026-09-11", "price": "4318.8913924063"},
+                {"date": "2026-09-10", "price": "4300.1"},
+            ],
+        }
+    )
+    assert rows[0]["period"] == "2026-09-11"
+    assert abs(rows[0]["value"] - 4318.8913924063) < 1e-6
+
+
 def test_recorded_av_gold_fixture_is_labeled():
     payload = json.loads(FIXTURE.read_text())
     assert "recorded fixture" in payload["label"]

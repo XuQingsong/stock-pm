@@ -135,7 +135,7 @@ def test_collect_live_never_reads_test_fixtures(monkeypatch):
 
     monkeypatch.setattr(Path, "read_text", spy)
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
-    events = collect_live_macro_events(Settings(fred_api_key=""))
+    events = collect_live_macro_events(Settings(fred_api_key="", alpha_vantage_api_key=""))
     assert events
     assert not any("tests/fixtures" in path for path in reads)
     assert all(row.get("source") == "FRED" for row in events)
@@ -256,7 +256,13 @@ def test_fred_without_api_key_is_missing_not_not_configured():
 
     health = build_data_health(
         {"symbol": "NVDA", "bars": [], "earnings": [], "macro_events": []},
-        settings=Settings(alpaca_api_key_id="", alpaca_api_secret_key="", fred_api_key="", fmp_api_key=""),
+        settings=Settings(
+            alpaca_api_key_id="",
+            alpaca_api_secret_key="",
+            fred_api_key="",
+            fmp_api_key="",
+            alpha_vantage_api_key="",
+        ),
     )
     by_dataset = {row["dataset"]: row for row in health["datasets"]}
     assert by_dataset["macro_cpi"]["status"] == "missing"

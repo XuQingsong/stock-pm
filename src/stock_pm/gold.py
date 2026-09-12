@@ -128,6 +128,8 @@ def parse_alpha_vantage_gold(payload: Any) -> list[dict[str, Any]]:
             raise FetchError("record_invalid", "Alpha Vantage gold row is not an object")
         value = row.get("value")
         if value in (None, "", "."):
+            value = row.get("price")
+        if value in (None, "", "."):
             continue
         try:
             number = float(value)
