@@ -94,8 +94,12 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     }
 
 
-def _center_sort_key(event: TrustedEvent) -> tuple:
-    mapped = any(str(item).upper() in DISPLAY_SYMBOLS for item in event.entities)
+def _center_sort_key(event: TrustedEvent | dict[str, Any]) -> tuple:
+    event_type = event.event_type if isinstance(event, TrustedEvent) else str(event.get("event_type") or "")
+    entities = event.entities if isinstance(event, TrustedEvent) else list(event.get("entities") or [])
+    published = event.published_at if isinstance(event, TrustedEvent) else event.get("published_at")
+    title = event.canonical_title if isinstance(event, TrustedEvent) else str(event.get("canonical_title") or "")
+    mapped = any(str(item).upper() in DISPLAY_SYMBOLS for item in entities)
     type_rank = {
         "central_bank_rates": 0,
         "energy_supply": 1,
@@ -105,8 +109,8 @@ def _center_sort_key(event: TrustedEvent) -> tuple:
         "company_filing": 5 if mapped else 8,
         "vix_risk": 6,
         "war_sanctions": 1,
-    }.get(event.event_type, 7)
-    return (type_rank, event.published_at or "", event.canonical_title)
+    }.get(event_type, 7)
+    return (type_rank, published or "", title)
 
 
 def market_center(settings: Settings | None = None) -> dict[str, Any]:
@@ -141,6 +145,7 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         view = symbol_event_view(event, symbol)
         if view:
             selected.append(view)
+    selected.sort(key=_center_sort_key)
     return {
         "symbol": symbol.upper(),
         "data_mode": cover["data_mode"],
