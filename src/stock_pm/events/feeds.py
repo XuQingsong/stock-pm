@@ -61,8 +61,12 @@ def strip_markup(text: str) -> str:
     raw = SCRIPT_RE.sub(" ", raw)
     raw = STYLE_RE.sub(" ", raw)
     raw = TAG_RE.sub(" ", raw)
-    raw = SPACE_RE.sub(" ", raw).strip()
-    return sanitize_untrusted(raw)
+    lines = []
+    for line in raw.splitlines():
+        collapsed = SPACE_RE.sub(" ", line).strip()
+        if collapsed:
+            lines.append(collapsed)
+    return sanitize_untrusted("\n".join(lines))
 
 
 def parse_datetime(raw: str | None) -> str | None:

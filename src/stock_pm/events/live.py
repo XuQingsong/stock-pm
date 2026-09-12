@@ -165,9 +165,16 @@ def _record(
     return docs
 
 
-def _provider_status(name: str, *, role: str, default_url: str, disabled_note: str) -> dict[str, Any]:
+def _provider_status(
+    name: str,
+    *,
+    role: str,
+    default_url: str,
+    disabled_note: str,
+    settings: Settings | None = None,
+) -> dict[str, Any]:
     state = _STATE.get(name) or {}
-    if not live_ingest_enabled():
+    if not live_ingest_enabled(settings):
         return {
             "provider": name,
             "status": "idle",
@@ -269,6 +276,7 @@ class SecEdgarProvider:
             role="official_fact",
             default_url=SEC_CURRENT_8K,
             disabled_note="Live SEC fetch disabled in this process.",
+            settings=self.settings,
         )
 
     def _company_url(self, cik: str) -> str:
@@ -438,6 +446,7 @@ class FederalReserveProvider:
             role="official_fact",
             default_url=FED_PRESS_ALL,
             disabled_note="Live Federal Reserve fetch disabled in this process.",
+            settings=self.settings,
         )
 
     def _classify(self, title: str, url: str) -> tuple[str, list[str]]:
@@ -558,6 +567,7 @@ class EiaPressProvider:
             role="official_fact",
             default_url=EIA_PRESS,
             disabled_note="Live EIA fetch disabled in this process.",
+            settings=self.settings,
         )
 
     def _classify(self, title: str, slug: str) -> tuple[str, list[str]]:
