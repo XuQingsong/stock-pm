@@ -193,6 +193,15 @@ def test_nvda_rates_path_visible_aapl_nok_not_copied():
     aapl_bg = {row["metric"] for row in aapl["market_background"]}
     assert "cpi" in aapl_bg
     assert "gold" in aapl_bg
+    def layer_metrics(view, layer_id):
+        layer = next(row for row in view["layers"] if row["id"] == layer_id)
+        return {item.get("metric") for item in layer["items"]}
+    assert "cpi" in layer_metrics(nvda, "fact")
+    assert "cpi" in layer_metrics(nvda, "change")
+    assert "cpi" not in layer_metrics(aapl, "fact")
+    assert "cpi" not in layer_metrics(aapl, "change")
+    assert "cpi" not in layer_metrics(nok, "fact")
+    assert "cpi" not in layer_metrics(nok, "change")
 
 
 def test_vix_is_risk_state_not_stock_direction():

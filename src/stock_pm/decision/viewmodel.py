@@ -352,7 +352,12 @@ def render_decision_view(
             row["ref"]["unit"] = extra.get("unit") or row["ref"].get("unit")
             row["ref"]["status"] = extra.get("status") or row["ref"].get("status")
             row["ref"]["origin"] = extra.get("origin") or row["ref"].get("origin")
-    hidden_metrics = BACKGROUND_METRICS | LABOR_METRICS | RISK_METRICS
+    background_keys = {
+        canonical_metric(str(row.get("metric") or ""))
+        for row in (market_background or [])
+        if row.get("metric")
+    }
+    hidden_metrics = BACKGROUND_METRICS | LABOR_METRICS | RISK_METRICS | background_keys
     visible_change_rows = [
         row
         for row in change_rows

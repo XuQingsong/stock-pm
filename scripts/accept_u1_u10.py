@@ -241,79 +241,93 @@ def capture_pages() -> dict[str, str]:
                 return text
         raise RuntimeError(f"decision module did not finish rendering: {url}")
 
-    def isolate_decision() -> None:
-        call(
+    def isolate_module(*, keep_banner: bool = False, open_drawer: bool = False) -> dict:
+        ev = call(
             "Runtime.evaluate",
             {
-                "expression": """(() => {
-                  document.querySelectorAll('.stock-header, .tabs, #stock-pm-shell').forEach((n) => {
-                    n.style.display = 'none';
-                  });
+                "expression": f"""(() => {{
+                  document.querySelectorAll('.stock-header, .tabs, #stock-pm-shell, #tab-content').forEach((n) => {{
+                    n.style.setProperty('display', 'none', 'important');
+                    n.style.setProperty('position', 'static', 'important');
+                  }});
                   const keep = document.getElementById('decision-module');
-                  document.querySelectorAll('main.page-shell > *').forEach((n) => {
-                    if (keep && !keep.contains(n) && n !== keep) n.style.display = 'none';
-                  });
+                  document.querySelectorAll('main.page-shell > *').forEach((n) => {{
+                    if (keep && n !== keep && !keep.contains(n)) n.style.setProperty('display', 'none', 'important');
+                  }});
+                  const flow = document.querySelector('.causal-flow');
+                  const body = document.getElementById('decision-body');
+                  const banner = document.querySelector('.decision-banner');
+                  const gaps = document.querySelector('.decision-gaps');
+                  if (body) {{
+                    [...body.children].forEach((n) => {{
+                      const keepChild = n === flow || ({str(keep_banner).lower()} && (n === banner || n === gaps));
+                      if (!keepChild) n.style.setProperty('display', 'none', 'important');
+                    }});
+                  }}
                   const bg = document.querySelector('.market-background');
                   if (bg) bg.open = true;
+                  if ({str(open_drawer).lower()}) {{
+                    const btn = document.querySelector('.causal-layer[data-layer="fact"] .fact-link[data-fact-id="cpi"]')
+                      || document.querySelector('.causal-layer[data-layer="fact"] .fact-link');
+                    if (btn) btn.click();
+                  }}
                   window.scrollTo(0, 0);
-                  if (keep) keep.scrollIntoView({block: 'start'});
-                  return Boolean(document.querySelector('.causal-flow') && document.querySelector('[data-decision-ready="1"]'));
-                })()""",
+                  document.documentElement.scrollTop = 0;
+                  document.body.scrollTop = 0;
+                  const node = flow || body;
+                  const r = node ? node.getBoundingClientRect() : {{width: 1280, height: 1100}};
+                  const heading = (flow && flow.querySelector('h3') && flow.querySelector('h3').innerText) || '';
+                  const layerTitles = [...document.querySelectorAll('.causal-layer .chain-kicker')].map((n) => n.innerText);
+                  return {{
+                    ready: Boolean(document.querySelector('[data-decision-ready="1"]')),
+                    heading,
+                    layerTitles,
+                    loading: document.body.innerText.includes('正在加载动态判断'),
+                    width: Math.max(1280, Math.ceil(r.width + 24)),
+                    height: Math.min(2400, Math.max(1000, Math.ceil(r.height + 36)))
+                  }};
+                }})()""",
                 "returnByValue": True,
             },
         )
-        time.sleep(0.3)
+        return ((ev.get("result") or {}).get("result") or {}).get("value") or {}
 
-    def clip(_selector: str, dest: Path) -> None:
-        isolate_decision()
-        metrics = call(
-            "Runtime.evaluate",
-            {
-                "expression": """(() => {
-                  const node = document.querySelector('.causal-flow') || document.getElementById('decision-body');
-                  if (!node) return null;
-                  const r = node.getBoundingClientRect();
-                  return {width: Math.max(1200, Math.ceil(r.width + 32)), height: Math.min(2200, Math.max(900, Math.ceil(r.bottom + 24)))};
-                })()""",
-                "returnByValue": True,
-            },
-        )
-        size = ((metrics.get("result") or {}).get("result") or {}).get("value") or {"width": 1400, "height": 1200}
+    def clip(dest: Path, *, keep_banner: bool = False, open_drawer: bool = False) -> dict:
+        info = isolate_module(keep_banner=keep_banner, open_drawer=open_drawer)
+        if info.get("loading"):
+            raise RuntimeError(f"still loading when capturing {dest.name}")
+        if not info.get("ready"):
+            raise RuntimeError(f"decision module not ready when capturing {dest.name}")
         call(
             "Emulation.setDeviceMetricsOverride",
             {
-                "width": int(size["width"]),
-                "height": int(size["height"]),
+                "width": int(info.get("width") or 1280),
+                "height": int(info.get("height") or 1400),
                 "deviceScaleFactor": 1,
                 "mobile": False,
             },
         )
-        time.sleep(0.2)
-        isolate_decision()
-        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True})
+        time.sleep(0.25)
+        info = isolate_module(keep_banner=keep_banner, open_drawer=open_drawer)
+        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True, "captureBeyondViewport": False})
         dest.write_bytes(base64.b64decode(png["result"]["data"]))
+        return info
 
     OUT.mkdir(parents=True, exist_ok=True)
     texts = {}
     texts["NVDA"] = wait_ready(f"{BASE}/stock/NVDA")
-    call(
-        "Runtime.evaluate",
-        {"expression": "(() => { const d=document.querySelector('.market-background'); if (d) d.open = true; return true; })()", "returnByValue": True},
-    )
-    clip(".causal-flow", OUT / "nvda-causal.png")
-    clip('.causal-layer[data-layer="fact"]', OUT / "nvda-facts.png")
+    nvda_info = clip(OUT / "nvda-causal.png")
+    clip(OUT / "nvda-facts.png")
+    clip(OUT / "nvda-fact-drawer.png", open_drawer=True)
     texts["AAPL"] = wait_ready(f"{BASE}/stock/AAPL")
-    call(
-        "Runtime.evaluate",
-        {"expression": "(() => { const d=document.querySelector('.market-background'); if (d) d.open = true; return true; })()", "returnByValue": True},
-    )
-    clip(".causal-flow", OUT / "aapl-causal.png")
+    aapl_info = clip(OUT / "aapl-causal.png")
     texts["NOK"] = wait_ready(f"{BASE}/stock/NOK")
-    call(
-        "Runtime.evaluate",
-        {"expression": "(() => { const d=document.querySelector('.market-background'); if (d) d.open = true; return true; })()", "returnByValue": True},
-    )
-    clip(".causal-flow", OUT / "nok-causal.png")
+    nok_info = clip(OUT / "nok-causal.png")
+    texts["_capture_meta"] = {
+        "NVDA": nvda_info,
+        "AAPL": aapl_info,
+        "NOK": nok_info,
+    }
 
     for token, name in (
         ("missing_gold", "inject-gold.png"),
@@ -323,10 +337,10 @@ def capture_pages() -> dict[str, str]:
         ("missing_options", "inject-options.png"),
     ):
         texts[token] = wait_ready(f"{INJECT}/stock/NVDA?inject={token}")
-        clip("#decision-body", OUT / name)
+        clip(OUT / name, keep_banner=True)
 
     texts["public_inject"] = wait_ready(f"{BASE}/stock/NVDA?inject=missing_gold,missing_nfp")
-    clip("#decision-body", OUT / "inject-public-ignored.png")
+    clip(OUT / "inject-public-ignored.png", keep_banner=True)
     ws.close()
     if proc:
         proc.terminate()
@@ -352,6 +366,43 @@ def main() -> int:
     js = html(f"{BASE}/static/stock.js")
     page = html(f"{BASE}/stock/NVDA")
     report = score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, js, page)
+    evidence = {
+        "public_inject": {"inject": pub.get("inject"), "overall": pub.get("overall")},
+        "missing_gold": {
+            "inject": gold.get("inject"),
+            "gaps": [row for row in gold.get("gaps") or [] if row.get("code") == "missing_gold"],
+            "overall": gold.get("overall"),
+            "has_missing_cpi": "missing_cpi" in codes(gold),
+        },
+        "missing_nfp": {
+            "inject": nfp.get("inject"),
+            "gaps": [row for row in nfp.get("gaps") or [] if row.get("code") == "missing_nfp"],
+            "overall": nfp.get("overall"),
+            "has_missing_cpi": "missing_cpi" in codes(nfp),
+        },
+        "missing_prior_consensus": {
+            "inject": prior.get("inject"),
+            "gaps": [row for row in prior.get("gaps") or [] if row.get("code") == "missing_prior_consensus"],
+        },
+        "missing_news": {
+            "inject": news.get("inject"),
+            "gaps": [row for row in news.get("gaps") or [] if row.get("code") == "missing_news"],
+        },
+        "missing_options": {
+            "inject": options.get("inject"),
+            "gaps": [row for row in options.get("gaps") or [] if row.get("code") == "missing_options"],
+        },
+        "nfp": report["nfp"],
+        "rates_path": {
+            "NVDA": (nvda.get("rates_path") or {}).get("status"),
+            "AAPL": (aapl.get("rates_path") or {}).get("status"),
+            "NOK": (nok.get("rates_path") or {}).get("status"),
+        },
+    }
+    evidence_text = json.dumps(evidence, ensure_ascii=False, indent=2)
+    if SECRET_RE.search(evidence_text):
+        evidence_text = SECRET_RE.sub("REDACTED", evidence_text)
+    (OUT / "api-evidence.json").write_text(evidence_text)
     page_texts = {}
     screenshot_error = None
     try:
@@ -366,11 +417,18 @@ def main() -> int:
             for symbol, text in page_texts.items()
             if symbol in {"NVDA", "AAPL", "NOK"}
         }
+        report["capture_meta"] = page_texts.get("_capture_meta")
         if any(row.get("loading") for row in report["page"].values()):
             report["verdict"]["U3"] = "FAIL"
             report["must_fail"] = sorted(set(report["must_fail"] + ["U3"]))
             report["gate"] = False
             screenshot_error = "captured a still-loading decision module"
+        meta = report.get("capture_meta") or {}
+        if not screenshot_error and any(
+            "Fact" not in str((meta.get(symbol) or {}).get("heading") or "")
+            for symbol in ("NVDA", "AAPL", "NOK")
+        ):
+            screenshot_error = "causal-flow heading missing from isolated capture"
     except Exception as exc:
         screenshot_error = str(exc)
         report["screenshot_error"] = screenshot_error
