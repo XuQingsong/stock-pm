@@ -33,6 +33,10 @@ def same_event(left: EventDocument, right: EventDocument) -> bool:
     right_countries = {item.upper() for item in right.countries}
     if left_countries and right_countries and not left_countries & right_countries:
         return False
+    left_geo = left_countries - {"US", "USA"}
+    right_geo = right_countries - {"US", "USA"}
+    if left_geo and right_geo and not left_geo & right_geo:
+        return False
     left_entities = {item.lower() for item in left.entities}
     right_entities = {item.lower() for item in right.entities}
     shared = left_entities & right_entities
@@ -41,9 +45,11 @@ def same_event(left: EventDocument, right: EventDocument) -> bool:
     claim_score = _overlap(_tokens(" ".join(left.claims)), _tokens(" ".join(right.claims)))
     # Curated entity fingerprints beat noisy titles. Require enough overlap
     # so "Iran oil sanctions" does not swallow "Russia oil sanctions".
+    if left_entities - right_entities and right_entities - left_entities and entity_score < 0.66:
+        return False
     if len(shared) >= 2 and entity_score >= 0.66:
         return True
-    if title_score >= 0.72 and entity_score >= 0.34:
+    if title_score >= 0.72 and entity_score >= 0.66:
         return True
     if entity_score >= 0.6 and claim_score >= 0.4:
         return True
