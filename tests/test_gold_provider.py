@@ -199,11 +199,20 @@ def test_fetch_strips_apikey_from_http_source(monkeypatch):
 def test_overlay_gold_unconfigured_does_not_break_other_macros(monkeypatch):
     def fake_text(url, **kwargs):
         series_id = next(
-            spec["series_id"] for spec in FRED_MARKET_SERIES.values() if spec["series_id"] in url
+            (
+                spec["series_id"]
+                for spec in FRED_MARKET_SERIES.values()
+                if spec["series_id"] in url
+            ),
+            "PAYEMS" if "PAYEMS" in url else None,
         )
-        period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
+        if series_id == "PAYEMS":
+            payload = "observation_date,PAYEMS\n2026-08-01,159832\n2026-07-01,159612\n"
+        else:
+            period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
+            payload = f"observation_date,{series_id}\n{period},2.5\n"
         return FetchResult(
-            payload=f"observation_date,{series_id}\n{period},2.5\n",
+            payload=payload,
             status="ok",
             reason_code="within_threshold",
             fetched_at=FETCHED,

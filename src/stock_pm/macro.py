@@ -4,22 +4,19 @@ from __future__ import annotations
 
 The calendar file `data/macro_calendar.json` is the manually maintained
 schedule (event time, consensus, prior). `--sync` upserts it into the
-`macro_events` table and, when FRED_API_KEY is configured, fills in actual
-values for the series FRED covers. FOMC decisions (cut/hold/hike) have no
-numeric actual and are maintained manually or via POST /api/macro/events.
+`macro_events` table and fills official FRED actuals (API key optional;
+keyless fredgraph.csv is first-party). FOMC decisions (cut/hold/hike) have
+no numeric actual and are maintained manually or via POST /api/macro/events.
 """
 
 import argparse
 import json
 from datetime import datetime, timezone
 from importlib.resources import files
-from urllib.parse import urlencode
-from urllib.request import urlopen
 
 from .config import Settings
 from .database import Database
-
-FRED_API = "https://api.stlouisfed.org/fred/series/observations"
+from .series import fetch_fred_series, parse_fred_observations
 
 # event_type -> (FRED series, transform)
 FRED_SERIES = {
@@ -29,28 +26,19 @@ FRED_SERIES = {
 }
 
 
-def _fred_observations(series: str, api_key: str, limit: int = 14) -> list[tuple[str, float]]:
-    params = urlencode(
-        {
-            "series_id": series,
-            "api_key": api_key,
-            "file_type": "json",
-            "sort_order": "desc",
-            "limit": limit,
-        }
-    )
-    with urlopen(f"{FRED_API}?{params}", timeout=30) as response:
-        payload = json.load(response)
+def _fred_observations(series: str, api_key: str = "", limit: int = 14) -> list[tuple[str, float]]:
+    result = fetch_fred_series(series, api_key, limit=limit)
     observations = []
-    for row in payload.get("observations") or []:
+    for row in parse_fred_observations(result.payload):
         try:
-            observations.append((row["date"], float(row["value"])))
-        except (KeyError, ValueError):
+            observations.append((row["period"], float(row["value"])))
+        except (KeyError, TypeError, ValueError):
             continue
     return observations
 
 
-def fred_actual(event_type: str, api_key: str) -> float | None:
+def fred_actual(event_type: str, api_key: str = "") -> float | None:
+    """Fill calendar actuals from official FRED. API key optional (keyless CSV)."""
     entry = FRED_SERIES.get(event_type)
     if not entry:
         return None
@@ -92,12 +80,11 @@ def sync(fill_actuals: bool = True) -> dict:
             if (
                 fill_actuals
                 and actual is None
-                and settings.fred_api_key
                 and event["event_type"] in FRED_SERIES
                 and event_time <= datetime.now(timezone.utc)
             ):
                 try:
-                    actual = fred_actual(event["event_type"], settings.fred_api_key)
+                    actual = fred_actual(event["event_type"], settings.fred_api_key or "")
                     if actual is not None:
                         counts["actuals_filled"] += 1
                 except Exception:

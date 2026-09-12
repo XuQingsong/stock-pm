@@ -144,7 +144,7 @@ function renderOptionsOverview(opt){
 
 async function main(){
   const [watch,snaps,signals,events,news,earnings,sync,reviews,briefingRaw,options]=await Promise.all([
-    j('/api/watchlist'),j('/api/market/snapshot'),j('/api/market/signals').catch(()=>[]),
+    j('/api/watchlist').catch(()=>[]),j('/api/market/snapshot').catch(()=>[]),j('/api/market/signals').catch(()=>[]),
     j('/api/market/events?limit=30').catch(()=>[]),
     j('/api/market/news?limit=40').catch(()=>[]),j('/api/market/earnings/recent?limit=8').catch(()=>[]),
     j('/api/sync/status').catch(()=>null),j('/api/reviews').catch(()=>[]),

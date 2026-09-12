@@ -404,6 +404,57 @@ class QueryMixin:
             (normalized, bar_size, limit),
         )
 
+    def latest_daily_bar(self, symbol: str) -> dict | None:
+        from .bars import decorate_bar
+        from .fetch import utc_now
+
+        normalized = self._watchlist_symbol(symbol)
+        rows = self.fetch_all(
+            """
+            SELECT symbol, bar_size, bar_time, open_price, high_price,
+                   low_price, close_price, volume, source, raw_data
+            FROM daily_price_bars
+            WHERE symbol = %s AND bar_size = '1d'
+            ORDER BY bar_time DESC
+            LIMIT 1
+            """,
+            (normalized,),
+        )
+        if not rows:
+            return None
+        return decorate_bar(rows[0], fetched_at=utc_now(), source=str(rows[0].get("source") or "alpaca"))
+
+    def latest_earnings_row(self, symbol: str) -> dict | None:
+        rows = self.fetch_all(
+            """
+            SELECT symbol, report_date, report_timing, fiscal_period, fiscal_year,
+                   period_end, currency, eps_actual, eps_estimate, eps_surprise_pct,
+                   revenue_actual, revenue_estimate, revenue_surprise_pct,
+                   net_income_actual, net_income_estimate, net_income_surprise_pct,
+                   provider_fields, source, synced_at
+            FROM earnings_reports
+            WHERE symbol = %s
+            ORDER BY report_date DESC
+            LIMIT 1
+            """,
+            (self._watchlist_symbol(symbol),),
+        )
+        return rows[0] if rows else None
+
+    def latest_macro_event(self, event_type: str) -> dict | None:
+        rows = self.fetch_all(
+            """
+            SELECT event_type, event_time, name, actual, consensus, prior,
+                   unit, surprise, confirmed, source, notes
+            FROM macro_events
+            WHERE event_type = %s
+            ORDER BY event_time DESC
+            LIMIT 1
+            """,
+            (event_type,),
+        )
+        return rows[0] if rows else None
+
     def latest_positions(self) -> list[dict]:
         return self.fetch_all(
             """

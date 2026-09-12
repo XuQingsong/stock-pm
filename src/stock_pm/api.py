@@ -86,6 +86,61 @@ def _http_error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=503, detail=str(exc))
 
 
+def refresh_database_reachable() -> bool:
+    global _database_reachable
+    ping = getattr(database, "ping", None)
+    try:
+        _database_reachable = bool(ping()) if callable(ping) else False
+    except Exception:
+        _database_reachable = False
+    return _database_reachable
+
+
+def database_monitor_status() -> dict:
+    monitor = getattr(database, "monitor_status", None)
+    if callable(monitor):
+        try:
+            status = monitor()
+            global _database_reachable
+            _database_reachable = bool(status.get("reachable"))
+            return status
+        except Exception:
+            pass
+    reachable = refresh_database_reachable()
+    return {
+        "status": "ok" if reachable else "error",
+        "reachable": reachable,
+        "database": "connected" if reachable else "unavailable",
+        "reason_code": None if reachable else "query_error",
+        "note": None if reachable else "PostgreSQL unreachable; live overlay does not hide this",
+    }
+
+
+def _degraded_payload(dataset: str, **extra) -> dict:
+    payload = {
+        "status": "error",
+        "reason_code": "query_error",
+        "dataset": dataset,
+        "database": database_monitor_status(),
+    }
+    payload.update(extra)
+    return payload
+
+
+def _read_list(loader):
+    try:
+        return loader()
+    except DatabaseError:
+        return []
+
+
+def _read_dict(dataset: str, loader, fallback: dict | None = None):
+    try:
+        return loader()
+    except DatabaseError:
+        return _degraded_payload(dataset, **(fallback or {}))
+
+
 def _page(name: str) -> str:
     return files("stock_pm").joinpath(f"static/{name}").read_text(encoding="utf-8")
 
@@ -125,21 +180,21 @@ def review_page() -> str:
 # ---------------------------------------------------------------- health & watchlist
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    available = database.ping()
+def health() -> dict:
+    status = database_monitor_status()
     return {
-        "status": "ok" if available else "degraded",
-        "database": "connected" if available else "unavailable",
+        "status": "ok" if status.get("reachable") else "error",
+        "database": status.get("database"),
+        "database_status": status.get("status"),
+        "reason_code": status.get("reason_code"),
+        "note": status.get("note"),
         "data_source": "alpaca",
     }
 
 
 @app.get("/api/watchlist")
 def watchlist(include_inactive: bool = False) -> list[dict]:
-    try:
-        return database.watchlist_rows(include_inactive=include_inactive)
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_list(lambda: database.watchlist_rows(include_inactive=include_inactive))
 
 
 def _backfill_symbol(symbol: str) -> None:
@@ -213,10 +268,7 @@ def remove_watchlist(symbol: str) -> dict:
 
 @app.get("/api/sync/status")
 def sync_status() -> dict:
-    try:
-        return database.sync_status() or {"status": "never_synced"}
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_dict("sync_runs", lambda: database.sync_status() or {"status": "never_synced"})
 
 
 @app.get("/api/market/snapshot")
@@ -225,8 +277,8 @@ def market_snapshot(
 ) -> list[dict]:
     try:
         return database.latest_snapshots(symbols)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/market/signals")
@@ -235,16 +287,13 @@ def market_signals(
 ) -> list[dict]:
     try:
         return database.live_signals(symbols)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/market/technicals")
 def market_technicals() -> list[dict]:
-    try:
-        return database.technical_summary()
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_list(database.technical_summary)
 
 
 @app.get("/api/market/events")
@@ -254,8 +303,8 @@ def market_events(
 ) -> list[dict]:
     try:
         return database.market_events(symbol, limit)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/market/news")
@@ -265,24 +314,22 @@ def market_news(
 ) -> list[dict]:
     try:
         return database.news(symbols, limit)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/market/earnings/recent")
 def market_recent_earnings(limit: int = Query(8, ge=1, le=50)) -> list[dict]:
-    try:
-        return database.recent_earnings(limit)
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_list(lambda: database.recent_earnings(limit))
 
 
 @app.get("/api/market/impact")
 def market_impact(days: int = Query(14, ge=1, le=90)) -> dict:
-    try:
-        return database.market_impact(days)
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_dict(
+        "market_impact",
+        lambda: database.market_impact(days),
+        {"macro": [], "macro_unanalyzed": [], "upcoming": [], "news_themes": []},
+    )
 
 
 @app.get("/api/market/session")
@@ -295,8 +342,8 @@ def market_session(
         return database.market_session(date_)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("market_session", trade_date=date_)
 
 
 @app.get("/api/market/options-overview")
@@ -312,8 +359,8 @@ def options_overview(
         return {"status": "ok", **row}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("cboe_option_stats", trade_date=date_)
 
 
 # ---------------------------------------------------------------- single stock
@@ -326,8 +373,8 @@ def stock_history(
 ) -> list[dict]:
     try:
         return database.history(symbol, limit, bar_size)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/chart")
@@ -338,16 +385,25 @@ def stock_chart(
 ) -> dict:
     try:
         return database.chart_history(symbol, limit, interval)
-    except (DatabaseError, ValueError) as exc:
+    except ValueError as exc:
         raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload(
+            "daily_price_bars",
+            symbol=symbol.upper(),
+            interval=interval,
+            bars=[],
+            source=None,
+            as_of=None,
+        )
 
 
 @app.get("/api/stock/{symbol}/intraday")
 def stock_intraday(symbol: str, limit: int = Query(600, ge=1, le=3000)) -> list[dict]:
     try:
         return database.intraday_history(symbol, limit)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/segments")
@@ -357,8 +413,8 @@ def stock_segments(symbol: str, date: str | None = None) -> dict:
             "segments": database.segments(symbol, date),
             "dates": [str(row["trade_date"]) for row in database.segment_dates(symbol)],
         }
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("intraday_segments", segments=[], dates=[])
 
 
 @app.get("/api/stock/{symbol}/large-trades")
@@ -369,16 +425,23 @@ def stock_large_trades(
 ) -> list[dict]:
     try:
         return database.large_trades(symbol, date, min_notional)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/overview")
 def stock_overview(symbol: str) -> dict:
     try:
         return database.investment_overview(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload(
+            "overview",
+            symbol=symbol.upper(),
+            technical=None,
+            sentiment=None,
+            valuation=None,
+            earnings=[],
+        )
 
 
 @app.get("/api/stock/{symbol}/decision")
@@ -393,8 +456,8 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
         return assemble_from_bundle(database.decision_bundle(symbol))
     except ValueError as exc:
         raise _http_error(exc) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("decision", symbol=symbol.upper())
 
 
 @app.get("/api/stock/{symbol}/data-health")
@@ -412,15 +475,23 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
         if key in HEALTH_PREVIEW_LABELS and preview_allowed():
             return build_health_preview(symbol, key)
         settings = Settings()
-        db_error = False
-        if not _database_reachable:
-            db_error = True
+        db_status = database_monitor_status()
+        db_error = not bool(db_status.get("reachable"))
+        if db_error:
             bundle = empty_real_bundle(symbol.upper())
         else:
             try:
                 bundle = database.decision_bundle(symbol)
             except DatabaseError:
                 db_error = True
+                db_status = {
+                    **db_status,
+                    "status": "error",
+                    "reachable": False,
+                    "database": "unavailable",
+                    "reason_code": "query_error",
+                    "note": "PostgreSQL unreachable; live overlay does not hide this",
+                }
                 bundle = empty_real_bundle(symbol.upper())
         live, live_errors, live_report = collect_live_macro_overlay(settings)
         bundle = merge_live_macros(bundle, live)
@@ -430,6 +501,39 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
         live_earnings, earn_errors, earn_report = collect_live_earnings(symbol.upper(), settings)
         if live_earnings:
             bundle["earnings"] = live_earnings
+        persistence = {"status": "skipped", "reason": "database_unavailable"}
+        if not db_error:
+            try:
+                from .persist_live import persist_daily_bars, persist_earnings, persist_macro_events
+
+                captured_at = live_report.get("fetched_at")
+                if live_bars:
+                    persist_daily_bars(
+                        database,
+                        symbol.upper(),
+                        live_bars,
+                        captured_at=captured_at,
+                        source=str((bar_report.get("daily_price_bars") or {}).get("source") or "alpaca_sip"),
+                    )
+                if live_earnings:
+                    persist_earnings(
+                        database,
+                        symbol.upper(),
+                        live_earnings,
+                        captured_at=captured_at,
+                        source="fmp",
+                    )
+                if live:
+                    persist_macro_events(database, live)
+                persistence = {"status": "ok"}
+            except DatabaseError:
+                persistence = {"status": "error", "reason_code": "query_error"}
+                db_status = {
+                    **db_status,
+                    "status": "error",
+                    "reason_code": "query_error",
+                    "note": "PostgreSQL write failed; live overlay does not hide this",
+                }
         query_errors = set(live_errors)
         query_errors.update(bar_errors)
         query_errors.update(earn_errors)
@@ -490,6 +594,8 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
             metric: row.get("http_source") for metric, row in series_report.items()
         }
         payload["series_report"] = series_report
+        payload["database"] = db_status
+        payload["persistence"] = persistence
         for row in payload.get("datasets") or []:
             rec = series_report.get(row.get("metric") or "") or {}
             if not row.get("http_source") and rec.get("http_source"):
@@ -507,24 +613,24 @@ def stock_fundamentals(symbol: str) -> dict:
             "symbol": symbol.upper(),
             "status": "awaiting_sync",
         }
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("fundamentals", symbol=symbol.upper())
 
 
 @app.get("/api/stock/{symbol}/earnings/summary")
 def stock_earnings_summary(symbol: str) -> dict:
     try:
         return database.earnings_summary_view(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("earnings_reports", latest=None, history=[], highlights=[])
 
 
 @app.get("/api/stock/{symbol}/earnings")
 def stock_earnings(symbol: str) -> list[dict]:
     try:
         return database.earnings_history(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/valuation/history")
@@ -534,8 +640,8 @@ def stock_valuation_history(
 ) -> dict:
     try:
         return database.valuation_history(symbol, limit)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("fundamentals", current=None, series=[], metrics={}, coverage={})
 
 
 @app.get("/api/stock/{symbol}/volume-profile")
@@ -545,8 +651,8 @@ def stock_volume_profile(
 ) -> dict:
     try:
         return database.volume_profile_view(symbol, lookback)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("volume_profile", buckets=[], lookback=lookback)
 
 
 @app.get("/api/stock/{symbol}/capital-flow")
@@ -556,40 +662,40 @@ def stock_capital_flow(
 ) -> dict:
     try:
         return database.capital_flow_view(symbol, days)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("capital_flow", tiers=[], timeline=[], days=days)
 
 
 @app.get("/api/stock/{symbol}/sentiment")
 def stock_sentiment(symbol: str) -> dict:
     try:
         return database.sentiment_summary(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return _degraded_payload("news_articles", symbol=symbol.upper())
 
 
 @app.get("/api/stock/{symbol}/options")
 def stock_options(symbol: str) -> list[dict]:
     try:
         return database.option_wall(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/news")
 def stock_news(symbol: str, limit: int = Query(30, ge=1, le=100)) -> list[dict]:
     try:
         return database.news([symbol], limit)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/reviews")
 def stock_reviews(symbol: str) -> list[dict]:
     try:
         return database.latest_reviews(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/stock/{symbol}/tape")
@@ -605,8 +711,8 @@ def stock_tape(
         return database.tape_payload(date_, symbol.upper())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("tape_analyses", symbol=symbol.upper())
 
 
 @app.get("/api/stock/{symbol}/tape/history")
@@ -620,8 +726,8 @@ def stock_tape_history(
         return database.tape_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return []
 
 
 @app.get("/api/stock/{symbol}/prediction")
@@ -637,8 +743,8 @@ def stock_prediction(
         return database.prediction_payload(date_, symbol.upper())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("predictions", symbol=symbol.upper())
 
 
 @app.get("/api/stock/{symbol}/predictions")
@@ -652,8 +758,8 @@ def stock_prediction_history(
         return database.prediction_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return []
 
 
 @app.get("/api/stock/{symbol}/prediction/checks")
@@ -674,8 +780,8 @@ def stock_prediction_checks(
         return database.prediction_checks(pred_id, limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return []
 
 
 @app.post("/api/stock/{symbol}/predictions/{prediction_id}/supersede")
@@ -716,16 +822,16 @@ def stock_review_notes(
         return database.review_note_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return []
 
 
 @app.get("/api/reviews")
 def reviews(symbol: str | None = None) -> list[dict]:
     try:
         return database.latest_reviews(symbol)
-    except (DatabaseError, ValueError) as exc:
-        raise _http_error(exc) from exc
+    except (DatabaseError, ValueError):
+        return []
 
 
 @app.get("/api/briefing")
@@ -736,8 +842,8 @@ def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
         return database.briefing(date_)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("daily_reviews", rows=[], hit_rate=None)
 
 
 @app.get("/api/shell")
@@ -753,8 +859,8 @@ def shell_state(
         return database.shell_state(date_, symbol.upper() if symbol else None)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload("shell")
 
 
 @app.get("/api/environment")
@@ -770,8 +876,13 @@ def environment_snapshot(
         return database.environment_payload(date_, symbol.upper() if symbol else None)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload(
+            "environment_snapshots",
+            symbol=symbol.upper() if symbol else None,
+            scope="symbol" if symbol else "market",
+            publishState="missing",
+        )
 
 
 @app.get("/api/environment/history")
@@ -785,16 +896,13 @@ def environment_history(
         return database.environment_history(symbol.upper(), limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return []
 
 
 @app.get("/api/jobs")
 def job_runs(limit: int = Query(20, ge=1, le=100)) -> list[dict]:
-    try:
-        return database.job_runs(limit)
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_list(lambda: database.job_runs(limit))
 
 
 @app.post("/api/reviews/retry-llm")
@@ -837,8 +945,15 @@ def replay_day(date_: Annotated[str, Query(alias="date")]) -> dict:
         return database.replay_day(date_)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload(
+            "replay_day",
+            date=date_,
+            reviews=[],
+            segments=[],
+            events=[],
+            macro=[],
+        )
 
 
 @app.get("/api/replay/range")
@@ -860,8 +975,16 @@ def replay_range(
         return result
     except ValueError as exc:
         raise _http_error(exc) from exc
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    except DatabaseError:
+        return _degraded_payload(
+            "replay_range",
+            symbol=symbol.upper(),
+            bars=[],
+            events=[],
+            macro=[],
+            reviews=[],
+            segments=[],
+        )
 
 
 # ---------------------------------------------------------------- macro maintenance
@@ -871,10 +994,9 @@ def macro_events(
     start: Annotated[str | None, Query(alias="from")] = None,
     end: Annotated[str | None, Query(alias="to")] = None,
 ) -> list[dict]:
-    try:
-        return database.macro_events_between(start or "1970-01-01", end or "2999-01-01")
-    except DatabaseError as exc:
-        raise _http_error(exc) from exc
+    return _read_list(
+        lambda: database.macro_events_between(start or "1970-01-01", end or "2999-01-01")
+    )
 
 
 @app.post("/api/macro/events")

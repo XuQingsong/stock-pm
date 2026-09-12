@@ -540,6 +540,7 @@ DATASET_FOR_METRIC = {
     "gold": "macro_gold",
     "wti": "macro_wti",
     "broad_usd_proxy": "macro_broad_usd_proxy",
+    "nfp": "macro_nfp",
 }
 
 
@@ -557,6 +558,10 @@ def collect_live_macro_overlay(
     report["series"]["gold_fred_historical"] = fred_gold_historical_record(
         fetched_at=report.get("fetched_at")
     )
+    from .nfp import sync_nfp_from_fred
+
+    nfp_rec = sync_nfp_from_fred(settings, store=stored.append)
+    report["series"]["nfp"] = {key: value for key, value in nfp_rec.items() if key != "event"}
     errors: set[str] = set()
     for metric, rec in report.get("series", {}).items():
         if metric in {"dxy", "gold_fred_historical"}:

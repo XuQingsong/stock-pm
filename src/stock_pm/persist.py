@@ -139,6 +139,7 @@ class PersistMixin:
                         "consensus": None,
                         "prior": None,
                         "unit": None,
+                        "surprise": "unknown",
                         "confirmed": True,
                         "source": "manual",
                         "notes": None,

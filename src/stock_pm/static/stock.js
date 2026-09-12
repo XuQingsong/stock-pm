@@ -150,7 +150,7 @@
   async function renderChart() {
     const interval = cache.get("chart-interval") || "1d";
     const [payload, profile] = await Promise.all([
-      api(`${endpoint("chart")}?interval=${encodeURIComponent(interval)}&limit=260`),
+      softApi(`${endpoint("chart")}?interval=${encodeURIComponent(interval)}&limit=260`, { bars: [], status: "error" }),
       softApi(`${endpoint("volume-profile")}?lookback=60`, {})
     ]);
     const envelope = Array.isArray(payload) ? { bars: payload, interval, source: "", delayed: null, as_of: null } : payload;
@@ -260,7 +260,7 @@
   }
 
   async function renderEarnings() {
-    const data = await api(endpoint("earnings/summary"));
+    const data = await softApi(endpoint("earnings/summary"), { latest: {}, history: [], status: "error" });
     const latest = data.latest || {};
     const history = data.history || [];
     const provider = data.provider || {};
@@ -314,7 +314,7 @@
   }
 
   async function renderValuation() {
-    const data = await api(endpoint("valuation/history"));
+    const data = await softApi(endpoint("valuation/history"), { current: {}, series: [], metrics: {}, status: "error" });
     const current = data.current || {};
     const metrics = data.metrics || {};
     const series = data.series || [];
@@ -353,8 +353,8 @@
 
   async function renderFlow() {
     const [profile, flow] = await Promise.all([
-      api(`${endpoint("volume-profile")}?lookback=60`),
-      api(`${endpoint("capital-flow")}?days=5`)
+      softApi(`${endpoint("volume-profile")}?lookback=60`, { buckets: [], status: "error" }),
+      softApi(`${endpoint("capital-flow")}?days=5`, { tiers: [], timeline: [], status: "error" })
     ]);
     const tiers = flow.tiers || [], timeline = flow.timeline || [];
     const maxNet = Math.max(1, ...timeline.map((row) => Math.abs(Number(row.net_notional || 0))));
@@ -813,7 +813,9 @@
         <span>可用链：${esc(list(overall.available_chains))}</span>
         <span>受限链：${esc(list(overall.limited_chains))}</span>
         <span>不可用链：${esc(list(overall.unavailable_chains))}</span>
+        <span class="status-pill ${esc((health.database && health.database.status) || "ok")}">数据库 ${esc((health.database && (health.database.database || health.database.status)) || "unknown")}</span>
       </div>
+      ${health.database && health.database.status === "error" ? `<p class="subline">数据库不可达或写入失败：${esc(health.database.note || "PostgreSQL unreachable; live overlay does not hide this")}</p>` : ""}
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
       <table class="health-inputs">
         <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。FRED GOLDPMGBD228NLBM 已停更，不得当作当前金价；实时黄金需 ALPHA_VANTAGE_API_KEY。NVDA 日线需 ALPACA_API_KEY_ID 与 ALPACA_API_SECRET_KEY；盈利需 FMP_API_KEY。不在页面展示密钥。</caption>

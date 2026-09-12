@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from importlib.resources import files
 from typing import Any
 
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
-from .config import Settings
+from .config import Settings, redact_database_url
 from .errors import DatabaseError
+from .migrate import apply_migrations, verify_migrations
 from .persist import PersistMixin
 from .queries import QueryMixin
 
@@ -16,18 +16,31 @@ __all__ = ["Database", "DatabaseError"]
 
 class Database(QueryMixin, PersistMixin):
     def __init__(self, settings: Settings | None = None) -> None:
-        config = settings or Settings()
-        self.pool = ConnectionPool(
-            conninfo=config.database_url,
+        self.settings = settings or Settings()
+        self.pool = self._open_pool(self.settings)
+        self._watchlist_cache: tuple[float, list[dict]] = (0.0, [])
+
+    @staticmethod
+    def _open_pool(settings: Settings) -> ConnectionPool:
+        return ConnectionPool(
+            conninfo=settings.database_url,
             min_size=0,
-            max_size=config.database_pool_size,
+            max_size=settings.database_pool_size,
             open=True,
             kwargs={"row_factory": dict_row},
         )
-        self._watchlist_cache: tuple[float, list[dict]] = (0.0, [])
 
     def close(self) -> None:
         self.pool.close()
+
+    def reconnect(self) -> bool:
+        try:
+            self.pool.close()
+        except Exception:
+            pass
+        self.settings = Settings()
+        self.pool = self._open_pool(self.settings)
+        return self.ping()
 
     def ping(self) -> bool:
         try:
@@ -36,13 +49,26 @@ class Database(QueryMixin, PersistMixin):
         except Exception:
             return False
 
+    def monitor_status(self) -> dict[str, Any]:
+        reachable = self.ping()
+        return {
+            "status": "ok" if reachable else "error",
+            "reachable": reachable,
+            "database": "connected" if reachable else "unavailable",
+            "reason_code": None if reachable else "query_error",
+            "note": None if reachable else "PostgreSQL unreachable; live overlay does not hide this",
+            "dsn": redact_database_url(self.settings.database_url),
+        }
+
     def initialize(self) -> None:
         from .config import DEFAULT_WATCHLIST
 
-        schema_path = files("stock_pm").joinpath("sql/schema.sql")
         try:
             with self.pool.connection() as conn:
-                conn.execute(schema_path.read_text(encoding="utf-8"))
+                apply_migrations(conn)
+                verify = verify_migrations(conn)
+                if verify["status"] != "ok":
+                    raise DatabaseError(f"migration verify failed: {verify}")
                 for item in DEFAULT_WATCHLIST.values():
                     conn.execute(
                         """
@@ -62,6 +88,8 @@ class Database(QueryMixin, PersistMixin):
                             item.rate_sensitivity,
                         ),
                     )
+        except DatabaseError:
+            raise
         except Exception as exc:
             raise DatabaseError(f"PostgreSQL initialization failed: {exc}") from exc
 
