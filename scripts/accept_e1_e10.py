@@ -39,13 +39,11 @@ def html(url: str) -> str:
 
 
 def start_cdp() -> subprocess.Popen | None:
-    try:
-        urllib.request.urlopen(f"{CDP}/json", timeout=1)
-        return None
-    except Exception:
-        profile = Path("/tmp/chrome-accept-5b")
-        profile.mkdir(exist_ok=True)
-        return subprocess.Popen(
+    profile = Path("/tmp/chrome-accept-5b")
+    if profile.exists():
+        subprocess.run(["rm", "-rf", str(profile)], check=False)
+    profile.mkdir(exist_ok=True)
+    return subprocess.Popen(
             [
                 "google-chrome",
                 "--headless=new",
@@ -107,8 +105,7 @@ def capture_pages() -> dict:
                     ready,
                     loading,
                     text: document.body.innerText.slice(0, 24000),
-                    html: (root && root.innerHTML || '').slice(0, 80000),
-                    google: (document.querySelector('[data-google-status]') || {{}}).getAttribute('data-google-status') || '',
+                    google: (document.querySelector('[data-google-status]') && document.querySelector('[data-google-status]').getAttribute('data-google-status')) || '',
                     facts: [...document.querySelectorAll('[data-lane="facts"] [data-content-type]')].map((n) => n.getAttribute('data-content-type')),
                     opinions: [...document.querySelectorAll('[data-lane="opinion"] [data-content-type]')].map((n) => n.getAttribute('data-content-type')),
                     factHrefs: [...document.querySelectorAll('[data-lane="facts"] a.source-link')].map((a) => a.href),
@@ -120,13 +117,13 @@ def capture_pages() -> dict:
                     conflicts: [...document.querySelectorAll('[data-polarity="contradicts"]')].map((n) => n.innerText),
                     what: [...document.querySelectorAll('[data-what-changes]')].map((n) => n.innerText),
                     analysisHrefs: [...document.querySelectorAll('.causal-block a.source-link')].map((a) => a.href),
-                    vixRole: (document.querySelector('[data-vix-role]') || {{}}).getAttribute('data-vix-role') || ''
+                    vixRole: (document.querySelector('[data-vix-role]') && document.querySelector('[data-vix-role]').getAttribute('data-vix-role')) || ''
                   }};
                 }})()"""
             ) or {}
             if last.get("ready") and not last.get("loading"):
                 return last
-        raise RuntimeError(f"events UI did not finish rendering: {url}")
+        raise RuntimeError(f"events UI did not finish rendering: {url} last={last!r}")
 
     def isolate(selector: str) -> dict:
         return evaluate(
