@@ -62,6 +62,9 @@ FRESHNESS_DAYS = {
     "cpi": 50,
     "us2y": 14,
     "vix": 7,
+    "gold": 7,
+    "wti": 7,
+    "dxy": 7,
 }
 
 HEALTH_PREVIEW_LABELS = {
@@ -152,6 +155,7 @@ def _dataset_row(
     coverage_window: dict[str, str] | None = None,
     sample_count: int = 0,
     configured: bool = True,
+    required: bool = True,
 ) -> dict[str, Any]:
     return {
         "dataset": dataset,
@@ -170,6 +174,7 @@ def _dataset_row(
         "affects_stage": affects_stage,
         "next_action": next_action,
         "configured": configured,
+        "required": required,
     }
 
 
@@ -231,6 +236,7 @@ def _evaluate_rows(
     query_error: bool = False,
     threshold: int | None = None,
     coverage_window: dict[str, str] | None = None,
+    required: bool = True,
 ) -> dict[str, Any]:
     configured = _source_configured(settings, family)
     thresh = FRESHNESS_DAYS.get(metric) if threshold is None else threshold
@@ -247,6 +253,7 @@ def _evaluate_rows(
             freshness_threshold=thresh,
             coverage_window=coverage_window,
             configured=configured,
+            required=required,
         )
     if invalid:
         latest = rows[0] if rows else {}
@@ -265,6 +272,7 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
         )
     if not rows:
         if not configured:
@@ -280,6 +288,7 @@ def _evaluate_rows(
                 freshness_threshold=thresh,
                 coverage_window=coverage_window,
                 configured=False,
+                required=required,
             )
         return _dataset_row(
             dataset=dataset,
@@ -293,6 +302,7 @@ def _evaluate_rows(
             freshness_threshold=thresh,
             coverage_window=coverage_window,
             configured=configured,
+            required=required,
         )
     latest = rows[0]
     observed = _observed_iso(latest, kind=kind)
@@ -316,6 +326,7 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
         )
     if observed is None and kind != "bar":
         return _dataset_row(
@@ -334,6 +345,7 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
         )
     return _dataset_row(
         dataset=dataset,
@@ -351,13 +363,15 @@ def _evaluate_rows(
         coverage_window=coverage_window,
         sample_count=len(rows),
         configured=configured,
+        required=required,
     )
 
 
 def _price_health(bundle: dict[str, Any], clock: date | None, settings: Settings | None, errors: set[str]) -> dict[str, Any]:
-    bars = list(bundle.get("bars") or [])
+    bars = list(bundle.get("bars_all") or bundle.get("bars") or [])
     window = _window_payload(clock, days=FRESHNESS_DAYS["close"])
-    invalid = any(_bar_invalid(row) for row in bars)
+    latest = bars[0] if bars else None
+    invalid = bool(latest) and _bar_invalid(latest)
     return _evaluate_rows(
         dataset="daily_price_bars",
         metric="close",
@@ -437,6 +451,7 @@ def _macro_metric_health(
     errors: set[str],
     empty_action: str,
     stale_action: str,
+    required: bool = True,
 ) -> dict[str, Any]:
     window = _window_payload(clock)
     inside = _macros_of(parts_inside, metric)
@@ -460,12 +475,14 @@ def _macro_metric_health(
         coverage_stale=coverage_stale,
         query_error=dataset in errors or metric in errors,
         coverage_window=window,
+        required=required,
     )
 
 
 def _chain_payload(chain_id: str, datasets: list[dict[str, Any]]) -> dict[str, Any]:
     owned = [row for row in datasets if row["affects_chain"] == chain_id]
-    statuses = {row["status"] for row in owned}
+    core = [row for row in owned if row.get("required", True)]
+    statuses = {row["status"] for row in (core or owned)}
     if STATUS_INVALID in statuses or STATUS_ERROR in statuses:
         health = "unavailable"
     elif not owned or statuses <= {STATUS_MISSING, STATUS_NOT_CONFIGURED}:
@@ -578,11 +595,59 @@ def build_data_health(
             stale_action="更新利率确认观察",
         ),
         _macro_metric_health(
+            metric="gold",
+            dataset="macro_gold",
+            stage="confirmation",
+            family="fred",
+            source="FRED",
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+            empty_action="同步 LBMA 黄金观察（FRED GOLDPMGBD228NLBM）",
+            stale_action="更新黄金观察；缺失黄金不得删除其他宏观事实",
+            required=False,
+        ),
+        _macro_metric_health(
+            metric="wti",
+            dataset="macro_wti",
+            stage="confirmation",
+            family="fred",
+            source="FRED",
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+            empty_action="同步 WTI 观察（FRED DCOILWTICO）",
+            stale_action="更新 WTI 观察；缺失原油不得伪造利率链",
+            required=False,
+        ),
+        _macro_metric_health(
+            metric="dxy",
+            dataset="macro_dxy",
+            stage="confirmation",
+            family="fred",
+            source="FRED",
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+            empty_action="同步美元宽指数观察（FRED DTWEXBGS，不是 ICE DXY）",
+            stale_action="更新美元指数观察；单项缺失不得删除其他事实",
+            required=False,
+        ),
+        _macro_metric_health(
             metric="vix",
             dataset="macro_vix",
             stage="confirmation",
-            family="cboe",
-            source="cboe",
+            family="fred",
+            source="FRED",
             parts_inside=parts.inside,
             parts_stale=parts.stale,
             all_events=macros,
@@ -628,6 +693,9 @@ def empty_query_error_health(symbol: str) -> dict[str, Any]:
             "macro_nfp",
             "macro_cpi",
             "macro_rates_confirm",
+            "macro_gold",
+            "macro_wti",
+            "macro_dxy",
             "macro_vix",
         },
     )

@@ -1,6 +1,7 @@
 .env
 .env.bridge
 .env.server
+.stock-pm-cache/
 .venv/
 __pycache__/
 .pytest_cache/

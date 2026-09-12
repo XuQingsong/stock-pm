@@ -9,8 +9,10 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from .bars import DAILY_ADJUSTMENT, decorate_bar, last_completed_session_end
 from .config import Settings
 from .database import Database
+from .fetch import utc_now
 
 
 DATA_API = "https://data.alpaca.markets"
@@ -77,7 +79,7 @@ def _bars(client: AlpacaClient, symbols: list[str], timeframe: str, start: datet
             "start": start.isoformat(),
             "end": end.isoformat(),
             "feed": client.settings.alpaca_bars_feed,
-            "adjustment": "all",
+            "adjustment": DAILY_ADJUSTMENT if timeframe == "1Day" else "raw",
             "limit": 10000,
             "sort": "asc",
         }
@@ -273,9 +275,12 @@ def collect(mode: str = "intraday", symbols: list[str] | None = None) -> tuple[d
     delayed_end = now - timedelta(minutes=16)
     snapshots = _snapshots(client, requested)
     prices = {row["symbol"]: row["last_price"] for row in snapshots}
-    start = delayed_end - (timedelta(days=3) if mode == "intraday" else timedelta(days=430))
+    daily_end = last_completed_session_end(now)
+    end = delayed_end if mode == "intraday" else daily_end
+    start = end - (timedelta(days=3) if mode == "intraday" else timedelta(days=430))
     timeframe, bar_size = ("1Min", "1m") if mode == "intraday" else ("1Day", "1d")
-    bars = _bars(client, requested, timeframe, start, delayed_end)
+    fetched_at = utc_now()
+    bars = _bars(client, requested, timeframe, start, end)
     errors: dict[str, str] = {}
     options = []
     for symbol in requested:
@@ -291,8 +296,17 @@ def collect(mode: str = "intraday", symbols: list[str] | None = None) -> tuple[d
             {
                 "symbol": symbol,
                 "bar_size": bar_size,
-                "source": f"alpaca_{client.settings.alpaca_bars_feed}_delayed",
-                "bars": rows,
+                "source": f"alpaca_{client.settings.alpaca_bars_feed}",
+                "adjustment": DAILY_ADJUSTMENT if bar_size == "1d" else "raw",
+                "bars": [
+                    decorate_bar(
+                        row,
+                        fetched_at=fetched_at,
+                        adjustment=DAILY_ADJUSTMENT if bar_size == "1d" else "raw",
+                        source=f"alpaca_{client.settings.alpaca_bars_feed}",
+                    )
+                    for row in rows
+                ],
             }
             for symbol, rows in bars.items() if rows
         ],
@@ -319,6 +333,7 @@ def main() -> None:
     try:
         database.initialize()
         counts = database.ingest(payload)
+        counts["invalid_bars_removed"] = database.quarantine_invalid_daily_bars()
     finally:
         database.close()
     print(json.dumps({"status": "ok", "counts": counts, "errors": errors}, ensure_ascii=False))

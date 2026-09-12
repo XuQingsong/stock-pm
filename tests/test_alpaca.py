@@ -40,3 +40,4 @@ def test_bars_use_configured_data_feed() -> None:
     now = datetime(2026, 9, 7, tzinfo=timezone.utc)
     _bars(client, ["AAPL"], "1Day", now, now)
     assert client.params["feed"] == "sip"
+    assert client.params["adjustment"] == "split"

@@ -147,6 +147,41 @@ class PersistMixin:
                 )
         except Exception as exc:
             raise DatabaseError(f"Failed to store macro event: {exc}") from exc
+
+    def quarantine_invalid_daily_bars(self) -> int:
+        """Delete stored daily bars that fail OHLC constraints. Does not invent replacements."""
+        from .bars import is_valid_ohlc
+
+        try:
+            with self.pool.connection() as conn:
+                rows = conn.execute(
+                    """
+                    SELECT symbol, bar_size, bar_time, open_price, high_price,
+                           low_price, close_price
+                    FROM price_bars WHERE bar_size = '1d'
+                    """
+                ).fetchall()
+                removed = 0
+                for row in rows:
+                    payload = {
+                        "open_price": row[3],
+                        "high_price": row[4],
+                        "low_price": row[5],
+                        "close_price": row[6],
+                    }
+                    if is_valid_ohlc(payload):
+                        continue
+                    conn.execute(
+                        """
+                        DELETE FROM price_bars
+                        WHERE symbol = %s AND bar_size = %s AND bar_time = %s
+                        """,
+                        (row[0], row[1], row[2]),
+                    )
+                    removed += 1
+                return removed
+        except Exception as exc:
+            raise DatabaseError(f"Failed to quarantine invalid daily bars: {exc}") from exc
     def store_event(self, event: dict[str, Any]) -> None:
         try:
             with self.pool.connection() as conn:
@@ -369,7 +404,11 @@ class PersistMixin:
                             },
                         )
                     for series in payload.get("history", []):
+                        from .bars import is_valid_ohlc
+
                         for bar in series.get("bars", []):
+                            if series.get("bar_size", "1d") == "1d" and not is_valid_ohlc(bar):
+                                continue
                             cur.execute(
                                 """
                                 INSERT INTO price_bars (
