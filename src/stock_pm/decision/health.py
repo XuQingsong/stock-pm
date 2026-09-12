@@ -278,11 +278,15 @@ def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
     if as_of is None and latest.get("event_time"):
         event_time = latest.get("event_time")
         as_of = event_time.isoformat()[:10] if hasattr(event_time, "isoformat") else str(event_time)[:10]
+    if as_of is None and latest.get("report_date"):
+        as_of = str(latest.get("report_date"))[:10]
     value = latest.get("value")
     if value is None:
         value = latest.get("actual")
     if value is None:
         value = latest.get("close_price")
+    if value is None:
+        value = latest.get("eps_actual")
     unit = latest.get("unit")
     if unit is None and latest.get("close_price") is not None:
         unit = "USD"

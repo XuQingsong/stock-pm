@@ -10,3 +10,4 @@ def isolate_live_provider_keys(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ALPHA_VANTAGE_API_KEY", "")
     monkeypatch.setenv("ALPACA_API_KEY_ID", "")
     monkeypatch.setenv("ALPACA_API_SECRET_KEY", "")
+    monkeypatch.setenv("FMP_API_KEY", "")

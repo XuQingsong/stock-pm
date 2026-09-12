@@ -1,6 +1,9 @@
+from stock_pm.config import Settings
 from stock_pm.providers import (
     FMPProvider,
     _merge_fmp_earnings,
+    collect_live_earnings,
+    earnings_http_source,
     get_fundamentals_provider,
 )
 
@@ -92,3 +95,57 @@ def test_fmp_fetch_maps_profile_and_earnings(monkeypatch) -> None:
     assert result["fundamental"]["analyst_target_price"] is None
     assert result["earnings"][0]["net_income_actual"] == 50
     assert result["news"][0]["headline"] == "x"
+
+
+def test_live_earnings_unconfigured() -> None:
+    rows, errors, report = collect_live_earnings("NVDA", Settings(fmp_api_key=""))
+    rec = report["earnings_reports"]
+    assert rows == []
+    assert errors == set()
+    assert rec["status"] == "not_configured"
+    assert rec["required_env"] == "FMP_API_KEY"
+    assert rec["http_source"] == earnings_http_source("NVDA")
+    assert "apikey=" not in rec["http_source"].lower()
+
+
+def test_live_earnings_ok(monkeypatch) -> None:
+    def fake_try(self, path, params):
+        if path == "earnings":
+            return [
+                {
+                    "date": "2026-08-26",
+                    "epsActual": 2.22,
+                    "epsEstimated": 2.09,
+                    "revenueActual": 100,
+                    "revenueEstimated": 90,
+                }
+            ]
+        if path == "income-statement":
+            return [{"date": "2026-07-27", "fiscalYear": 2027, "period": "Q2", "netIncome": 1}]
+        return []
+
+    monkeypatch.setattr(FMPProvider, "_try_get", fake_try)
+    rows, errors, report = collect_live_earnings("nvda", Settings(fmp_api_key="set"))
+    rec = report["earnings_reports"]
+    assert errors == set()
+    assert rows[0]["eps_actual"] == 2.22
+    assert rows[0]["as_of"] == "2026-08-26"
+    assert rec["status"] == "ok"
+    assert rec["as_of"] == "2026-08-26"
+    assert rec["value"] == 2.22
+    assert rec["unit"] == "USD/share"
+    assert rec["series_or_symbol"] == "NVDA"
+    assert "apikey=" not in rec["http_source"].lower()
+    assert rec["http_source"] == earnings_http_source("NVDA")
+    assert rows[0].get("prior_consensus") is None
+
+
+def test_live_earnings_query_error(monkeypatch) -> None:
+    def boom(self, path, params):
+        raise RuntimeError("FMP earnings failed with HTTP 401")
+
+    monkeypatch.setattr(FMPProvider, "_try_get", boom)
+    rows, errors, report = collect_live_earnings("NVDA", Settings(fmp_api_key="set"))
+    assert rows == []
+    assert "earnings_reports" in errors
+    assert report["earnings_reports"]["status"] == "error"

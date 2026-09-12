@@ -404,6 +404,7 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
     from .decision.assemble import assemble_from_bundle
     from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview
     from .decision.preview import preview_allowed
+    from .providers import collect_live_earnings
     from .series import collect_live_macro_overlay, empty_real_bundle, merge_live_macros
 
     key = (preview or "").strip().upper()
@@ -426,12 +427,12 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
         live_bars, bar_errors, bar_report = collect_live_daily_bars(symbol.upper(), settings)
         if live_bars:
             bundle["bars"] = live_bars
+        live_earnings, earn_errors, earn_report = collect_live_earnings(symbol.upper(), settings)
+        if live_earnings:
+            bundle["earnings"] = live_earnings
         query_errors = set(live_errors)
         query_errors.update(bar_errors)
-        if db_error:
-            # NFP stays calendar/DB this phase: missing, not a FRED keyless query_error.
-            if settings.fmp_api_key:
-                query_errors.update({"earnings_reports", "earnings_prior_consensus"})
+        query_errors.update(earn_errors)
         try:
             view = assemble_from_bundle(bundle)
             judgment = view.get("overall")
@@ -445,6 +446,19 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
             synthetic=False,
         )
         series_report = {}
+        eps_rec = (earn_report or {}).get("earnings_reports")
+        if eps_rec:
+            series_report["eps"] = {
+                "source": eps_rec.get("source"),
+                "series_or_symbol": eps_rec.get("series_or_symbol"),
+                "as_of": eps_rec.get("as_of"),
+                "value": eps_rec.get("value"),
+                "unit": eps_rec.get("unit"),
+                "status": eps_rec.get("status"),
+                "reason_code": eps_rec.get("reason_code"),
+                "http_source": eps_rec.get("http_source"),
+                "transport": eps_rec.get("transport"),
+            }
         close_rec = (bar_report or {}).get("daily_price_bars")
         if close_rec:
             series_report["close"] = {

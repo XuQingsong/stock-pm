@@ -357,3 +357,61 @@ def test_data_health_overlays_live_alpaca_bars_without_postgres(monkeypatch):
     assert price["unit"] == "USD"
     assert price["series_or_symbol"] == "NVDA"
     assert price["http_source"] == daily_bars_http_source("NVDA", "sip")
+
+
+def test_data_health_overlays_live_fmp_earnings_without_postgres(monkeypatch):
+    from stock_pm.providers import earnings_http_source
+
+    live_row = {
+        "symbol": "NVDA",
+        "report_date": "2026-08-26",
+        "eps_actual": 2.22,
+        "eps_estimate": 2.09,
+        "as_of": "2026-08-26",
+        "value": 2.22,
+        "unit": "USD/share",
+        "source": "fmp",
+        "series_or_symbol": "NVDA",
+        "synced_at": FETCHED,
+        "observed_at": FETCHED,
+        "fetched_at": FETCHED,
+        "http_source": earnings_http_source("NVDA"),
+        "transport": "fmp",
+    }
+    rec = {
+        "source": "fmp",
+        "series_or_symbol": "NVDA",
+        "as_of": "2026-08-26",
+        "value": 2.22,
+        "unit": "USD/share",
+        "status": "ok",
+        "reason_code": "within_threshold",
+        "http_source": earnings_http_source("NVDA"),
+        "transport": "fmp",
+    }
+    monkeypatch.setattr(api, "database", FakeDatabase())
+    monkeypatch.setattr(api, "_database_reachable", False)
+    monkeypatch.setattr(
+        "stock_pm.series.collect_live_macro_overlay",
+        lambda settings=None: ([], set(), {"fetched_at": FETCHED, "series": {}}),
+    )
+    monkeypatch.setattr(
+        "stock_pm.alpaca.collect_live_daily_bars",
+        lambda symbol, settings=None, **kwargs: ([], set(), {"fetched_at": FETCHED, "daily_price_bars": {"status": "not_configured"}}),
+    )
+    monkeypatch.setattr(
+        "stock_pm.providers.collect_live_earnings",
+        lambda symbol, settings=None, **kwargs: ([live_row], set(), {"fetched_at": FETCHED, "earnings_reports": rec}),
+    )
+    health = TestClient(api.app).get("/api/stock/NVDA/data-health").json()
+    dumped = str(health).lower()
+    assert "apikey=" not in dumped
+    by_dataset = {row["dataset"]: row for row in health["datasets"]}
+    facts = by_dataset["earnings_reports"]
+    assert facts["status"] == "ok"
+    assert facts["as_of"] == "2026-08-26"
+    assert facts["value"] == 2.22
+    assert facts["unit"] == "USD/share"
+    assert facts["series_or_symbol"] == "NVDA"
+    assert facts["http_source"] == earnings_http_source("NVDA")
+    assert by_dataset["earnings_prior_consensus"]["status"] in {"missing", "not_configured"}
