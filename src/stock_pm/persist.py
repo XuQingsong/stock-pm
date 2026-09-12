@@ -163,11 +163,12 @@ class PersistMixin:
                 ).fetchall()
                 removed = 0
                 for row in rows:
+                    mapping = dict(row) if not isinstance(row, dict) else row
                     payload = {
-                        "open_price": row[3],
-                        "high_price": row[4],
-                        "low_price": row[5],
-                        "close_price": row[6],
+                        "open_price": mapping.get("open_price"),
+                        "high_price": mapping.get("high_price"),
+                        "low_price": mapping.get("low_price"),
+                        "close_price": mapping.get("close_price"),
                     }
                     if is_valid_ohlc(payload):
                         continue
@@ -176,7 +177,7 @@ class PersistMixin:
                         DELETE FROM price_bars
                         WHERE symbol = %s AND bar_size = %s AND bar_time = %s
                         """,
-                        (row[0], row[1], row[2]),
+                        (mapping["symbol"], mapping["bar_size"], mapping["bar_time"]),
                     )
                     removed += 1
                 return removed
