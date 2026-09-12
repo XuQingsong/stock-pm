@@ -33,7 +33,11 @@ def withhold_unsourced_prediction(pred: dict[str, Any] | None, *, can_form_direc
     payload["therefore"] = "决策未形成方向：不展示无来源涨跌或百分比预测。下面若有数字，只可能是已发生事实。"
     payload["upside_bound_pct"] = None
     payload["downside_bound_pct"] = None
+    payload["upside_price"] = None
+    payload["downside_price"] = None
     payload["window_label"] = None
+    payload["window_start"] = None
+    payload["window_end"] = None
     payload["badge"] = None
     payload["one_liner"] = None
     payload["target"] = None
@@ -42,6 +46,15 @@ def withhold_unsourced_prediction(pred: dict[str, Any] | None, *, can_form_direc
     payload["missing_label"] = "决策未形成方向，不展示百分比预测"
     payload["prediction_half"] = payload["missing_label"]
     payload["missingFlags"] = list(payload.get("missingFlags") or []) + ["decision_direction"]
+    struct = dict(payload.get("struct") or {})
+    if struct:
+        struct["therefore"] = payload["therefore"]
+        struct["target"] = None
+        struct["action"] = None
+        struct["window_label"] = None
+        struct["prediction_ready"] = False
+        struct["missing_label"] = payload["missing_label"]
+        payload["struct"] = struct
     return payload
 
 

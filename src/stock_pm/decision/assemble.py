@@ -25,7 +25,7 @@ from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
 from .types import PRICE_METRICS, FactRef, MaterialityRule
 from .grading import GAP_EFFECTS, annotate_gaps, grade_decision, _is_symbol_price
-from .path import build_rates_path, build_risk_state, split_display_facts
+from .path import BACKGROUND_METRICS, LABOR_METRICS, RISK_METRICS, build_rates_path, build_risk_state, split_display_facts
 from .viewmodel import render_decision_view
 from .what_changed import build_what_changed
 from stock_pm.config import DEFAULT_WATCHLIST
@@ -357,6 +357,10 @@ def _leftover_macro_facts(
     for event in events:
         metric = canonical_metric(str(event.get("event_type") or ""))
         if not metric or metric in already:
+            continue
+        if metric not in (BACKGROUND_METRICS | LABOR_METRICS | RISK_METRICS):
+            continue
+        if "probe" in metric:
             continue
         as_of = iso_stamp(event.get("event_time"))
         source = str(event.get("source") or "").strip()

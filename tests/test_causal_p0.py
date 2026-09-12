@@ -255,6 +255,8 @@ def test_withhold_strips_percent_forecast():
     assert "1%" not in (pred["therefore"] or "")
     assert pred["badge"] is None
     assert pred["kind"] == "historical_or_withheld"
+    assert pred["upside_price"] is None
+    assert "1%" not in json.dumps(pred.get("struct") or {}, ensure_ascii=False)
 
 
 def test_ui_renders_causal_layers_and_fact_drawer():
