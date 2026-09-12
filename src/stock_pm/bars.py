@@ -105,3 +105,32 @@ def partition_ohlc_rows(rows: list[dict[str, Any]] | tuple[dict[str, Any], ...])
         else:
             invalid.append(mapping)
     return {"valid": valid, "invalid": invalid}
+
+
+def plan_daily_bar_writes(
+    existing: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+    incoming: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+) -> dict[str, list[dict[str, Any]]]:
+    """Decide ingest writes. Valid history is kept; invalid incoming is isolated, never deleted."""
+    stored = partition_ohlc_rows(existing)
+    arriving = partition_ohlc_rows(incoming)
+    return {
+        "keep_existing_valid": stored["valid"],
+        "audit_existing_invalid": stored["invalid"],
+        "write": arriving["valid"],
+        "isolate": arriving["invalid"],
+        "delete": [],
+    }
+
+
+def isolated_bar_record(row: dict[str, Any], *, reason: str = "invalid_ohlc", isolated_at: str | None = None) -> dict[str, Any]:
+    payload = dict(row)
+    payload.update(
+        {
+            "reason": reason,
+            "isolated_at": isolated_at,
+            "recoverable": True,
+            "deleted": False,
+        }
+    )
+    return payload

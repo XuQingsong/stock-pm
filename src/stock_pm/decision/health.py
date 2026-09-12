@@ -64,6 +64,7 @@ FRESHNESS_DAYS = {
     "vix": 7,
     "gold": 7,
     "wti": 7,
+    "broad_usd_proxy": 7,
     "usd_broad": 7,
     "dxy": 7,
 }
@@ -77,18 +78,18 @@ DATASET_TITLES = {
     "macro_rates_confirm": ("US 2Y", "美债2年"),
     "macro_gold": ("LBMA Gold", "黄金"),
     "macro_wti": ("WTI", "WTI 原油"),
-    "macro_usd_broad": ("USD broad proxy", "广义美元代理"),
+    "macro_broad_usd_proxy": ("USD broad proxy", "广义美元代理"),
     "macro_dxy": ("ICE DXY", "ICE 美元指数"),
     "macro_vix": ("VIX", "VIX"),
 }
 
 HEALTH_PREVIEW_LABELS = {
-    "HEALTHY": "数据健康·全面可用（合成演示数据）",
-    "PARTIAL": "数据健康·部分缺失（合成演示数据）",
-    "MISSING": "数据健康·全面缺失（合成演示数据）",
-    "STALE": "数据健康·陈旧（合成演示数据）",
-    "INVALID": "数据健康·非法记录（合成演示数据）",
-    "ERROR": "数据健康·查询异常（合成演示数据）",
+    "HEALTHY": "SYNTHETIC SCENARIO · 数据健康·全面可用（合成演示数据，非实时）",
+    "PARTIAL": "SYNTHETIC SCENARIO · 数据健康·部分缺失（合成演示数据，非实时）",
+    "MISSING": "SYNTHETIC SCENARIO · 数据健康·全面缺失（合成演示数据，非实时）",
+    "STALE": "SYNTHETIC SCENARIO · 数据健康·陈旧（合成演示数据，非实时）",
+    "INVALID": "SYNTHETIC SCENARIO · 数据健康·非法记录（合成演示数据，非实时）",
+    "ERROR": "SYNTHETIC SCENARIO · 数据健康·查询异常（合成演示数据，非实时）",
 }
 
 
@@ -172,6 +173,7 @@ def _dataset_row(
     configured: bool = True,
     required: bool = True,
     series: str | None = None,
+    series_or_symbol: str | None = None,
     as_of: str | None = None,
     fetched_at: str | None = None,
     unit: str | None = None,
@@ -186,7 +188,8 @@ def _dataset_row(
         "title": title or en,
         "title_zh": title_zh or zh,
         "source": source,
-        "series": series,
+        "series": series_or_symbol or series,
+        "series_or_symbol": series_or_symbol or series,
         "status": status,
         "latest_observed_at": latest_observed_at,
         "latest_ingested_at": latest_ingested_at,
@@ -249,13 +252,14 @@ def _macros_of(events: Iterable[dict[str, Any]], *metrics: str) -> list[dict[str
 
 def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
     latest = row or {}
-    series = latest.get("series") or latest.get("symbol")
+    series = latest.get("series_or_symbol") or latest.get("series") or latest.get("symbol")
     as_of = latest.get("as_of")
     if as_of is None and latest.get("event_time"):
         event_time = latest.get("event_time")
         as_of = event_time.isoformat()[:10] if hasattr(event_time, "isoformat") else str(event_time)[:10]
     return {
         "series": series,
+        "series_or_symbol": series,
         "as_of": as_of,
         "fetched_at": latest.get("fetched_at") or latest.get("observed_at"),
         "unit": latest.get("unit"),
@@ -678,8 +682,8 @@ def build_data_health(
             required=False,
         ),
         _macro_metric_health(
-            metric="usd_broad",
-            dataset="macro_usd_broad",
+            metric="broad_usd_proxy",
+            dataset="macro_broad_usd_proxy",
             stage="confirmation",
             family="fred",
             source="FRED",
@@ -689,7 +693,7 @@ def build_data_health(
             clock=clock,
             settings=settings,
             errors=errors,
-            empty_action="同步广义美元代理（FRED DTWEXBGS）；不得写成 DXY",
+            empty_action="同步广义美元代理 broad_usd_proxy（FRED DTWEXBGS）；不得写成 DXY",
             stale_action="更新广义美元代理观察；单项缺失不得删除其他事实，也不得冒充 ICE DXY",
             required=False,
         ),
@@ -748,6 +752,7 @@ def _dxy_unavailable_health() -> dict[str, Any]:
         configured=False,
         required=False,
         series=None,
+        series_or_symbol=None,
     )
 
 
@@ -764,7 +769,7 @@ def empty_query_error_health(symbol: str) -> dict[str, Any]:
             "macro_rates_confirm",
             "macro_gold",
             "macro_wti",
-            "macro_usd_broad",
+            "macro_broad_usd_proxy",
             "macro_vix",
         },
     )
@@ -846,8 +851,9 @@ def _macro(
             "actual": actual,
             "prior": prior,
             "source": source,
-            "name": "广义美元代理" if event_type == "usd_broad" else event_type.upper(),
+            "name": "广义美元代理" if event_type in {"usd_broad", "broad_usd_proxy"} else event_type.upper(),
             "series": series or event_type,
+            "series_or_symbol": series or event_type,
             "as_of": event_time[:10],
             "fetched_at": observed,
             "unit": unit,
@@ -871,7 +877,7 @@ def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
             _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
             _macro("cpi", 3.1, 3.0, "2026-09-01T12:30:00+00:00", "2026-09-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
             _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
-            _macro("usd_broad", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("broad_usd_proxy", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
             _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ],
         "synthetic": True,
@@ -911,7 +917,7 @@ def build_health_preview(symbol: str, key: str, *, settings: Settings | None = N
             _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
             _macro("cpi", 3.1, 3.0, "2025-12-01T12:30:00+00:00", "2025-12-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
             _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
-            _macro("usd_broad", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("broad_usd_proxy", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
             _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ]
     elif scene == "INVALID":

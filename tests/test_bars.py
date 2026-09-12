@@ -8,6 +8,7 @@ from stock_pm.bars import (
     is_valid_ohlc,
     last_completed_session_end,
     partition_ohlc_rows,
+    plan_daily_bar_writes,
     usable_daily_bars,
 )
 
@@ -89,6 +90,66 @@ def test_partition_keeps_valid_historical_bars():
         valid_recent["bar_time"],
     }
     assert [row["bar_time"] for row in parts["invalid"]] == [invalid["bar_time"]]
+
+
+def test_plan_daily_writes_keeps_valid_history():
+    valid_old = {
+        "symbol": "NVDA",
+        "bar_size": "1d",
+        "bar_time": "2024-06-03T20:00:00+00:00",
+        "open_price": 90.0,
+        "high_price": 92.0,
+        "low_price": 89.0,
+        "close_price": 91.0,
+    }
+    incoming_invalid = {
+        "symbol": "NVDA",
+        "bar_size": "1d",
+        "bar_time": "2026-09-10T20:00:00+00:00",
+        "open_price": 116.8,
+        "high_price": 118.5,
+        "low_price": 115.0,
+        "close_price": 122.0,
+    }
+    plan = plan_daily_bar_writes([valid_old], [incoming_invalid])
+    assert plan["delete"] == []
+    assert plan["keep_existing_valid"] == [valid_old]
+    assert plan["write"] == []
+    assert plan["isolate"][0]["bar_time"] == incoming_invalid["bar_time"]
+
+
+def test_twenty_two_invalid_bars_do_not_delete_valid_history():
+    valid = [
+        {
+            "symbol": "NVDA",
+            "bar_size": "1d",
+            "bar_time": f"2025-01-{day:02d}T21:00:00+00:00",
+            "open_price": 100 + day,
+            "high_price": 102 + day,
+            "low_price": 99 + day,
+            "close_price": 101 + day,
+        }
+        for day in range(2, 12)
+    ]
+    invalid = [
+        {
+            "symbol": "NVDA",
+            "bar_size": "1d",
+            "bar_time": f"2026-08-{day:02d}T20:00:00+00:00",
+            "open_price": 110,
+            "high_price": 108,
+            "low_price": 109,
+            "close_price": 112,
+        }
+        for day in range(1, 23)
+    ]
+    assert len(invalid) == 22
+    plan = plan_daily_bar_writes(valid + invalid[:3], invalid)
+    assert plan["delete"] == []
+    assert len(plan["keep_existing_valid"]) == len(valid)
+    assert {row["bar_time"] for row in plan["keep_existing_valid"]} == {row["bar_time"] for row in valid}
+    assert len(plan["isolate"]) == 22
+    assert len(plan["audit_existing_invalid"]) == 3
 
 
 def test_last_completed_session_skips_weekend():

@@ -1,0 +1,10 @@
+{
+  "label": "recorded fixture, not a live gold print",
+  "series_id": "GOLDPMGBD228NLBM",
+  "frequency": "daily",
+  "unit": "USD/oz",
+  "observations": [
+    {"date": "2026-09-10", "value": "2301.50", "realtime_start": "2026-09-11"},
+    {"date": "2026-09-09", "value": "2294.00", "realtime_start": "2026-09-10"}
+  ]
+}

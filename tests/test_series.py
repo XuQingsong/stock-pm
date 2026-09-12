@@ -13,6 +13,7 @@ from stock_pm.series import (
     NORMALIZED_FIELDS,
     build_macro_event,
     decorate_macro_row,
+    dxy_unavailable_record,
     map_earnings_health,
     normalized_record,
     parse_fred_observations,
@@ -26,15 +27,12 @@ def assert_normalized_record(row, *, series, unit, frequency, source="FRED"):
         assert field in rec, field
         assert rec[field] not in (None, ""), field
     assert rec["source"] == source
-    assert rec["series"] == series
+    assert rec["series_or_symbol"] == series
+    assert rec.get("series") == series
     assert rec.get("symbol") == series
     assert rec["unit"] == unit
     assert rec["frequency"] == frequency
-    assert rec["status"] in {"ok", "stale", "missing", "invalid", "error", "not_configured"}
-    assert rec["as_of"]
-    assert rec["observed_at"]
-    assert rec["fetched_at"]
-    # Period label is not the fetch/observation clock.
+    assert rec["status"] in {"ok", "stale", "missing", "invalid", "error", "not_configured", "unavailable"}
     assert rec["as_of"] != rec["observed_at"]
     assert rec["as_of"] != rec["fetched_at"]
 
@@ -78,10 +76,12 @@ def test_build_macro_event_does_not_use_period_as_observed_clock():
     notes = json.loads(event["notes"])
     assert notes["observed_at"] == "2026-09-11T12:00:00+00:00"
     assert notes["as_of"] == "2026-09-10"
+    assert notes["series_or_symbol"] == "DGS2"
     assert "2099" not in notes["observed_at"]
     decorated = decorate_macro_row(event)
     assert decorated["observed_at"] == "2026-09-11T12:00:00+00:00"
     assert decorated["as_of"].startswith("2026-09-10")
+    assert decorated["series_or_symbol"] == "DGS2"
 
 
 def test_map_earnings_does_not_invent_prior_or_edgar():
@@ -104,13 +104,17 @@ def test_sync_unconfigured_is_not_empty_or_error():
     report = sync_fred_market_series(Settings(fred_api_key=""))
     assert report["series"]["us2y"]["reason_code"] == "source_not_configured"
     assert report["series"]["cpi"]["status"] == "not_configured"
-    assert report["series"]["usd_broad"]["status"] == "not_configured"
+    assert report["series"]["broad_usd_proxy"]["status"] == "not_configured"
+    assert report["series"]["broad_usd_proxy"]["series_or_symbol"] == "DTWEXBGS"
     assert report["series"]["dxy"]["status"] == "not_configured"
+    assert report["series"]["dxy"]["availability"] == "unavailable"
     assert report["series"]["dxy"]["reason_code"] == "source_not_configured"
+    assert "usd_broad" not in report["series"]
 
 
 def test_recorded_fred_fixture_is_labeled():
     fixture = json.loads(Path("tests/fixtures/fred_dgs2.json").read_text())
+    assert "recorded fixture" in fixture["label"]
     rows = parse_fred_observations(fixture)
     assert rows[0]["value"] == 3.71
     assert rows[0]["period"] == "2026-09-10"
@@ -119,6 +123,7 @@ def test_recorded_fred_fixture_is_labeled():
 def test_recorded_monthly_cpi_fixture_is_labeled():
     fixture = json.loads(Path("tests/fixtures/fred_cpiaucsl.json").read_text())
     assert "recorded fixture" in fixture["label"]
+    assert fixture["frequency"] == "monthly"
     rows = parse_fred_observations(fixture)
     assert rows[0]["period"] == "2026-08-01"
     assert rows[0]["value"] == 323.228
@@ -133,6 +138,7 @@ def test_recorded_monthly_cpi_fixture_is_labeled():
     rec = normalized_record(event)
     assert rec["as_of"] == "2026-08-01"
     assert rec["observed_at"] == "2026-09-11T12:00:00+00:00"
+    assert rec["series_or_symbol"] == "CPIAUCSL"
 
 
 def test_parse_fred_non_numeric_is_invalid():
@@ -149,9 +155,10 @@ def test_normalized_record_contract_for_wired_series():
         "vix": {"period": "2026-09-10", "value": 16.2},
         "gold": {"period": "2026-09-10", "value": 2300.0},
         "wti": {"period": "2026-09-10", "value": 78.2},
-        "usd_broad": {"period": "2026-09-10", "value": 121.4},
+        "broad_usd_proxy": {"period": "2026-09-10", "value": 121.4},
     }
     assert "dxy" not in FRED_MARKET_SERIES
+    assert "usd_broad" not in FRED_MARKET_SERIES
     for metric, observation in samples.items():
         spec = FRED_MARKET_SERIES[metric]
         event = build_macro_event(
@@ -171,9 +178,10 @@ def test_normalized_record_contract_for_wired_series():
         assert rec["as_of"] == observation["period"]
         assert rec["observed_at"] == fetched
         assert rec["fetched_at"] == fetched
-        if metric == "usd_broad":
+        if metric == "broad_usd_proxy":
             assert event["name"] == "广义美元代理"
-            assert rec["series"] == "DTWEXBGS"
+            assert rec["series_or_symbol"] == "DTWEXBGS"
+            assert "DXY" not in event["name"]
 
 
 def test_legacy_dtwexbgs_row_is_relabeled_proxy_not_dxy():
@@ -197,11 +205,26 @@ def test_legacy_dtwexbgs_row_is_relabeled_proxy_not_dxy():
             ),
         }
     )
-    assert row["event_type"] == "usd_broad"
+    assert row["event_type"] == "broad_usd_proxy"
     assert row["name"] == "广义美元代理"
     rec = normalized_record(row)
-    assert rec["series"] == "DTWEXBGS"
+    assert rec["series_or_symbol"] == "DTWEXBGS"
     assert rec["as_of"] == "2026-09-10"
+
+
+def test_legacy_usd_broad_row_is_renamed_broad_usd_proxy():
+    row = decorate_macro_row(
+        {
+            "event_type": "usd_broad",
+            "event_time": "2026-09-10T00:00:00+00:00",
+            "actual": 121.4,
+            "source": "FRED",
+            "unit": "index",
+            "notes": json.dumps({"series": "DTWEXBGS", "as_of": "2026-09-10", "fetched_at": "2026-09-11T12:00:00+00:00"}),
+        }
+    )
+    assert row["event_type"] == "broad_usd_proxy"
+    assert row["series_or_symbol"] == "DTWEXBGS"
 
 
 def test_sync_empty_observations_is_upstream_empty(monkeypatch):
@@ -238,7 +261,9 @@ def test_sync_reports_dxy_unavailable_even_when_fred_configured(monkeypatch):
     assert "dxy" not in FRED_MARKET_SERIES
     assert report["series"]["dxy"]["status"] == DXY_UNAVAILABLE["status"]
     assert report["series"]["dxy"]["series_id"] is None
-    assert report["series"]["usd_broad"]["status"] == "ok"
-    assert report["series"]["usd_broad"]["series_id"] == "DTWEXBGS"
+    assert report["series"]["dxy"]["series_or_symbol"] is None
+    assert report["series"]["broad_usd_proxy"]["status"] == "ok"
+    assert report["series"]["broad_usd_proxy"]["series_or_symbol"] == "DTWEXBGS"
     assert all(event["event_type"] != "dxy" for event in stored)
-    assert any(event["event_type"] == "usd_broad" for event in stored)
+    assert any(event["event_type"] == "broad_usd_proxy" for event in stored)
+    assert dxy_unavailable_record()["availability"] == "unavailable"

@@ -163,19 +163,51 @@ class PersistMixin:
                 ).fetchall()
             mapped = [dict(row) if not isinstance(row, dict) else row for row in rows]
             parts = partition_ohlc_rows(mapped)
-            return {"valid_count": len(parts["valid"]), "invalid_count": len(parts["invalid"])}
+            return {
+                "valid_count": len(parts["valid"]),
+                "invalid_count": len(parts["invalid"]),
+                "deleted": 0,
+            }
         except Exception as exc:
             raise DatabaseError(f"Failed to audit invalid daily bars: {exc}") from exc
 
-    def quarantine_invalid_daily_bars(self, *, confirm: bool = False) -> int:
-        """Explicit audited delete of invalid daily bars.
+    def _isolate_rejected_daily_bar(self, cur, bar: dict[str, Any], *, source: str) -> None:
+        from .bars import isolated_bar_record
+        from .fetch import utc_now
 
-        Not called on ingest or process startup. The 22-bar cleanup on a
-        developer VM was a one-time operator repair with confirm=True, not
-        product startup behavior. Valid historical bars are never deleted.
-        """
+        isolated = isolated_bar_record(bar, isolated_at=utc_now())
+        cur.execute(
+            """
+            INSERT INTO price_bar_quarantine (
+                symbol, bar_size, bar_time, open_price, high_price,
+                low_price, close_price, volume, source, reason,
+                isolated_at, recoverable, raw_data
+            ) VALUES (
+                %(symbol)s, %(bar_size)s, %(bar_time)s, %(open_price)s,
+                %(high_price)s, %(low_price)s, %(close_price)s, %(volume)s,
+                %(source)s, %(reason)s, %(isolated_at)s, TRUE, %(raw_data)s
+            )
+            """,
+            {
+                "symbol": bar.get("symbol"),
+                "bar_size": bar.get("bar_size", "1d"),
+                "bar_time": bar.get("bar_time"),
+                "open_price": bar.get("open_price"),
+                "high_price": bar.get("high_price"),
+                "low_price": bar.get("low_price"),
+                "close_price": bar.get("close_price"),
+                "volume": bar.get("volume"),
+                "source": bar.get("source", source),
+                "reason": isolated["reason"],
+                "isolated_at": isolated["isolated_at"],
+                "raw_data": Jsonb(isolated),
+            },
+        )
+
+    def isolate_invalid_daily_bars(self, *, confirm: bool = False) -> dict[str, int]:
+        """Copy existing invalid daily bars into quarantine. Never deletes live rows."""
         if not confirm:
-            return 0
+            return {"isolated": 0, "deleted": 0, "valid_untouched": 0}
         from .bars import partition_ohlc_rows
 
         try:
@@ -183,24 +215,30 @@ class PersistMixin:
                 rows = conn.execute(
                     """
                     SELECT symbol, bar_size, bar_time, open_price, high_price,
-                           low_price, close_price
+                           low_price, close_price, volume, source, raw_data
                     FROM price_bars WHERE bar_size = '1d'
                     """
                 ).fetchall()
                 mapped = [dict(row) if not isinstance(row, dict) else row for row in rows]
-                removed = 0
-                for mapping in partition_ohlc_rows(mapped)["invalid"]:
-                    conn.execute(
-                        """
-                        DELETE FROM price_bars
-                        WHERE symbol = %s AND bar_size = %s AND bar_time = %s
-                        """,
-                        (mapping["symbol"], mapping["bar_size"], mapping["bar_time"]),
-                    )
-                    removed += 1
-                return removed
+                parts = partition_ohlc_rows(mapped)
+                isolated = 0
+                with conn.cursor() as cur:
+                    for mapping in parts["invalid"]:
+                        self._isolate_rejected_daily_bar(cur, mapping, source=str(mapping.get("source") or "alpaca"))
+                        isolated += 1
+                return {
+                    "isolated": isolated,
+                    "deleted": 0,
+                    "valid_untouched": len(parts["valid"]),
+                }
         except Exception as exc:
-            raise DatabaseError(f"Failed to quarantine invalid daily bars: {exc}") from exc
+            raise DatabaseError(f"Failed to isolate invalid daily bars: {exc}") from exc
+
+    def quarantine_invalid_daily_bars(self, *, confirm: bool = False) -> int:
+        """Compatibility wrapper. Production never deletes; confirm only isolates copies."""
+        if not confirm:
+            return 0
+        return int(self.isolate_invalid_daily_bars(confirm=True)["isolated"])
     def store_event(self, event: dict[str, Any]) -> None:
         try:
             with self.pool.connection() as conn:
@@ -391,6 +429,7 @@ class PersistMixin:
             "fundamentals": len(payload.get("fundamentals", [])),
             "earnings": len(payload.get("earnings", [])),
             "invalid_daily_bars_rejected": 0,
+            "invalid_daily_bars_isolated": 0,
         }
         try:
             with self.pool.connection() as conn, conn.transaction():
@@ -429,6 +468,12 @@ class PersistMixin:
                         for bar in series.get("bars", []):
                             if series.get("bar_size", "1d") == "1d" and not is_valid_ohlc(bar):
                                 counts["invalid_daily_bars_rejected"] += 1
+                                counts["invalid_daily_bars_isolated"] += 1
+                                self._isolate_rejected_daily_bar(
+                                    cur,
+                                    {**bar, "symbol": series["symbol"], "bar_size": series.get("bar_size", "1d")},
+                                    source=str(series.get("source", source)),
+                                )
                                 continue
                             cur.execute(
                                 """

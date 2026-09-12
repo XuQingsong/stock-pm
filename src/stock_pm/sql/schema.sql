@@ -50,6 +50,26 @@ CREATE TABLE IF NOT EXISTS price_bars (
 CREATE INDEX IF NOT EXISTS idx_price_bars_symbol_time
     ON price_bars (symbol, bar_time DESC);
 
+CREATE TABLE IF NOT EXISTS price_bar_quarantine (
+    id BIGSERIAL PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    bar_size TEXT NOT NULL,
+    bar_time TIMESTAMPTZ NOT NULL,
+    open_price NUMERIC,
+    high_price NUMERIC,
+    low_price NUMERIC,
+    close_price NUMERIC,
+    volume NUMERIC,
+    source TEXT,
+    reason TEXT NOT NULL DEFAULT 'invalid_ohlc',
+    isolated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    recoverable BOOLEAN NOT NULL DEFAULT TRUE,
+    raw_data JSONB NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_price_bar_quarantine_symbol_time
+    ON price_bar_quarantine (symbol, bar_time DESC);
+
 CREATE OR REPLACE VIEW daily_price_bars AS
 SELECT DISTINCT ON (symbol, bar_time::date)
        symbol, bar_size, bar_time, open_price, high_price, low_price,

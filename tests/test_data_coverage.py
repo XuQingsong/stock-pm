@@ -32,12 +32,12 @@ def _macro(metric: str, actual: float, observed: str, event_time: str, *, series
             "actual": actual,
             "prior": actual - 0.1,
             "source": "FRED",
-            "name": "广义美元代理" if metric == "usd_broad" else metric.upper(),
+            "name": "广义美元代理" if metric in {"usd_broad", "broad_usd_proxy"} else metric.upper(),
             "unit": unit,
             "notes": (
-                '{"series":"%s","symbol":"%s","observed_at":"%s","fetched_at":"%s",'
+                '{"series":"%s","symbol":"%s","series_or_symbol":"%s","observed_at":"%s","fetched_at":"%s",'
                 '"as_of":"%s","unit":"%s","frequency":"%s","status":"ok"}'
-                % (series_id, series_id, observed, observed, event_time[:10], unit, frequency)
+                % (series_id, series_id, series_id, observed, observed, event_time[:10], unit, frequency)
             ),
         }
     )
@@ -50,7 +50,7 @@ def _bundle(*, include_vix: bool = True) -> dict:
         _macro("us2y", 3.71, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DGS2", unit="percent"),
         _macro("gold", 2300, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="GOLDPMGBD228NLBM", unit="USD/oz"),
         _macro("wti", 78.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DCOILWTICO", unit="USD/bbl"),
-        _macro("usd_broad", 121.4, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DTWEXBGS"),
+        _macro("broad_usd_proxy", 121.4, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="DTWEXBGS"),
     ]
     if include_vix:
         macros.append(_macro("vix", 16.2, "2026-09-11T12:00:00+00:00", "2026-09-10T00:00:00+00:00", series="VIXCLS"))
@@ -105,25 +105,29 @@ def test_recorded_nvda_bundle_forms_complete_inputs():
     assert _ds(health, "macro_rates_confirm")["status"] == "ok"
     assert _ds(health, "macro_vix")["status"] == "ok"
     assert _ds(health, "macro_gold")["status"] == "ok"
-    assert _ds(health, "macro_usd_broad")["status"] == "ok"
-    assert _ds(health, "macro_usd_broad")["title_zh"] == "广义美元代理"
-    assert _ds(health, "macro_usd_broad")["series"] == "DTWEXBGS"
+    proxy = _ds(health, "macro_broad_usd_proxy")
+    assert proxy["status"] == "ok"
+    assert proxy["title_zh"] == "广义美元代理"
+    assert proxy["series_or_symbol"] == "DTWEXBGS"
+    assert proxy["metric"] == "broad_usd_proxy"
     assert health["overall"]["kind"] == "operational_health"
 
 
-def test_dxy_never_healthy_when_usd_broad_ok():
+def test_dxy_never_healthy_when_broad_usd_proxy_ok():
     health = build_data_health(_bundle(), settings=_settings())
     dxy = _ds(health, "macro_dxy")
-    proxy = _ds(health, "macro_usd_broad")
+    proxy = _ds(health, "macro_broad_usd_proxy")
     assert dxy["status"] == "not_configured"
     assert dxy["reason_code"] == "source_not_configured"
     assert dxy["title_zh"] == "ICE 美元指数"
     assert dxy["series"] is None
+    assert dxy["series_or_symbol"] is None
     assert proxy["status"] == "ok"
-    assert proxy["metric"] == "usd_broad"
+    assert proxy["metric"] == "broad_usd_proxy"
     assert proxy["title_zh"] == "广义美元代理"
     assert "DXY" not in proxy["title"]
     assert "DXY" not in proxy["title_zh"]
+    assert "DXY" not in (proxy.get("series_or_symbol") or "")
 
 
 def test_vix_failure_does_not_drop_other_facts_or_mint_direction():
@@ -144,3 +148,23 @@ def test_optional_gold_gap_does_not_unavail_macro_chain():
     health = build_data_health(bundle, settings=_settings())
     assert _ds(health, "macro_gold")["status"] == "missing"
     assert next(row for row in health["chains"] if row["id"] == "macro_rates")["health"] != "unavailable"
+
+
+def test_health_inputs_expose_contract_fields_for_each_macro():
+    health = build_data_health(_bundle(), settings=_settings())
+    for dataset, series in (
+        ("macro_cpi", "CPIAUCSL"),
+        ("macro_rates_confirm", "DGS2"),
+        ("macro_vix", "VIXCLS"),
+        ("macro_gold", "GOLDPMGBD228NLBM"),
+        ("macro_wti", "DCOILWTICO"),
+        ("macro_broad_usd_proxy", "DTWEXBGS"),
+    ):
+        row = _ds(health, dataset)
+        for field in ("source", "series_or_symbol", "as_of", "fetched_at", "unit", "frequency", "status"):
+            assert row.get(field) not in (None, ""), (dataset, field)
+        assert row["series_or_symbol"] == series
+        assert row["source"] in {"FRED", "cboe"}
+    dxy = _ds(health, "macro_dxy")
+    assert dxy["status"] == "not_configured"
+    assert dxy["source"] == "ice"

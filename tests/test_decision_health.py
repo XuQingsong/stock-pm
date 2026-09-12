@@ -200,8 +200,9 @@ def test_healthy_datasets_do_not_stack_l2_into_l3_or_mint_a_thesis():
     assert health["judgment"]["note"]
     assert view["overall"]["level"] != "L3" or view["can_form_direction"] is False
     assert _ds(health, "macro_dxy")["status"] == "not_configured"
-    assert _ds(health, "macro_usd_broad")["status"] == "ok"
-    assert _ds(health, "macro_usd_broad")["title_zh"] == "广义美元代理"
+    assert _ds(health, "macro_broad_usd_proxy")["status"] == "ok"
+    assert _ds(health, "macro_broad_usd_proxy")["title_zh"] == "广义美元代理"
+    assert _ds(health, "macro_broad_usd_proxy")["series_or_symbol"] == "DTWEXBGS"
 
 
 def test_health_preview_scenes_and_chain_order_untouched():
@@ -210,10 +211,12 @@ def test_health_preview_scenes_and_chain_order_untouched():
         assert health["synthetic"] is True
         assert health["preview"] == key
         assert "合成演示数据" in (health["preview_label"] or "")
+        assert "SYNTHETIC SCENARIO" in (health["preview_label"] or "")
         assert [row["id"] for row in health["chains"]] == ["price", "earnings", "macro_rates", "risk_sentiment"]
         for row in health["datasets"]:
             for field in (
                 "dataset", "metric", "title", "title_zh", "source", "series",
+                "series_or_symbol",
                 "status", "latest_observed_at", "latest_ingested_at", "as_of",
                 "fetched_at", "unit", "frequency", "freshness_age",
                 "freshness_threshold", "coverage_window", "sample_count",
@@ -250,7 +253,7 @@ def test_partial_and_missing_and_error_previews():
         for row in missing["datasets"]
     )
     assert _ds(partial, "macro_dxy")["status"] == "not_configured"
-    assert _ds(partial, "macro_usd_broad")["title_zh"] == "广义美元代理"
+    assert _ds(partial, "macro_broad_usd_proxy")["title_zh"] == "广义美元代理"
     assert _ds(error, "daily_price_bars")["status"] == "error"
     assert _ds(error, "macro_nfp")["status"] == "ok"
     assert _ds(invalid, "daily_price_bars")["status"] == "invalid"

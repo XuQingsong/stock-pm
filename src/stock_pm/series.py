@@ -28,6 +28,7 @@ FRED_MARKET_SERIES = {
         "required": True,
         "affects_chain": "macro_rates",
         "affects_stage": "what_changed",
+        "fixture": "tests/fixtures/fred_cpiaucsl.json",
     },
     "us2y": {
         "series_id": "DGS2",
@@ -38,6 +39,7 @@ FRED_MARKET_SERIES = {
         "required": True,
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
+        "fixture": "tests/fixtures/fred_dgs2.json",
     },
     "vix": {
         "series_id": "VIXCLS",
@@ -48,6 +50,7 @@ FRED_MARKET_SERIES = {
         "required": True,
         "affects_chain": "risk_sentiment",
         "affects_stage": "confirmation",
+        "fixture": "tests/fixtures/fred_vixcls.json",
     },
     "gold": {
         "series_id": "GOLDPMGBD228NLBM",
@@ -58,6 +61,7 @@ FRED_MARKET_SERIES = {
         "required": False,
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
+        "fixture": "tests/fixtures/fred_goldpmgbd228nlbm.json",
     },
     "wti": {
         "series_id": "DCOILWTICO",
@@ -68,8 +72,9 @@ FRED_MARKET_SERIES = {
         "required": False,
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
+        "fixture": "tests/fixtures/fred_dcoilwtico.json",
     },
-    "usd_broad": {
+    "broad_usd_proxy": {
         "series_id": "DTWEXBGS",
         "unit": "index",
         "frequency": "daily",
@@ -78,22 +83,29 @@ FRED_MARKET_SERIES = {
         "required": False,
         "affects_chain": "macro_rates",
         "affects_stage": "confirmation",
+        "fixture": "tests/fixtures/fred_dtwexbgs.json",
     },
 }
+
+PROXY_METRICS = frozenset({"broad_usd_proxy", "usd_broad"})
+LEGACY_PROXY_EVENT_TYPES = frozenset({"broad_usd_proxy", "usd_broad", "dxy"})
 
 # ICE DXY is not licensed or stably wired. Never fetch or label DTWEXBGS as DXY.
 DXY_UNAVAILABLE = {
     "metric": "dxy",
     "series_id": None,
+    "series_or_symbol": None,
     "status": "not_configured",
+    "availability": "unavailable",
     "reason_code": "source_not_configured",
+    "source": "ice",
     "name": "ICE DXY",
-    "note": "ICE DXY is not wired; FRED DTWEXBGS is usd_broad (广义美元代理) only",
+    "note": "ICE DXY is not wired; FRED DTWEXBGS is broad_usd_proxy (广义美元代理) only",
 }
 
 NORMALIZED_FIELDS = (
     "source",
-    "series",
+    "series_or_symbol",
     "observed_at",
     "as_of",
     "fetched_at",
@@ -122,17 +134,40 @@ def parse_fred_observations(payload: Any) -> list[dict[str, Any]]:
             number = float(value)
         except (TypeError, ValueError) as exc:
             raise FetchError("record_invalid", "FRED value is not numeric") from exc
-        period = str(row.get("date") or "")
-        if len(period) < 10:
-            raise FetchError("record_invalid", "FRED date is missing")
+        period = _require_period(row.get("date"))
         parsed.append(
             {
-                "period": period[:10],
+                "period": period,
                 "value": number,
                 "realtime_start": row.get("realtime_start"),
             }
         )
     return parsed
+
+
+def _require_period(value: Any) -> str:
+    period = str(value or "")
+    if len(period) < 10:
+        raise FetchError("record_invalid", "FRED date is missing")
+    stamp = period[:10]
+    try:
+        datetime.fromisoformat(stamp)
+    except ValueError as exc:
+        raise FetchError("record_invalid", "FRED date is invalid") from exc
+    return stamp
+
+
+def expected_unit(metric: str) -> str | None:
+    spec = FRED_MARKET_SERIES.get(metric)
+    return None if spec is None else spec["unit"]
+
+
+def validate_unit(metric: str, unit: str | None) -> None:
+    expected = expected_unit(metric)
+    if expected is None:
+        return
+    if not unit or unit != expected:
+        raise FetchError("record_invalid", f"unit {unit!r} does not match {expected}")
 
 
 def fetch_fred_series(series_id: str, api_key: str, *, limit: int = 16) -> FetchResult:
@@ -169,6 +204,7 @@ def observation_notes(
         {
             "series": series_id,
             "symbol": series_id,
+            "series_or_symbol": series_id,
             "observed_at": fetched_at,
             "as_of": None,
             "fetched_at": fetched_at,
@@ -199,16 +235,25 @@ def _notes_meta(row: dict[str, Any]) -> dict[str, Any]:
 def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
     payload = dict(row)
     meta = dict(_notes_meta(row))
-    series_id = meta.get("series") or meta.get("symbol") or payload.get("series")
+    series_id = (
+        meta.get("series_or_symbol")
+        or meta.get("series")
+        or meta.get("symbol")
+        or payload.get("series_or_symbol")
+        or payload.get("series")
+    )
     event_type = str(payload.get("event_type") or payload.get("metric") or "")
-    # Historical dxy+DTWEXBGS rows surface as the proxy, never as ICE DXY.
-    if series_id == "DTWEXBGS" or event_type == "dxy":
-        payload["event_type"] = "usd_broad"
+    # Historical dxy+DTWEXBGS / usd_broad rows surface as the proxy, never as ICE DXY.
+    if series_id == "DTWEXBGS" or event_type in PROXY_METRICS or (
+        event_type in LEGACY_PROXY_EVENT_TYPES and series_id in {None, "", "DTWEXBGS"}
+    ):
+        payload["event_type"] = "broad_usd_proxy"
         payload["name"] = "广义美元代理"
         series_id = series_id or "DTWEXBGS"
         meta["series"] = series_id
         meta["symbol"] = series_id
-        meta["metric"] = "usd_broad"
+        meta["series_or_symbol"] = series_id
+        meta["metric"] = "broad_usd_proxy"
     fetched = meta.get("fetched_at") or meta.get("observed_at") or payload.get("fetched_at") or payload.get("observed_at")
     period = meta.get("as_of") or payload.get("as_of") or payload.get("event_time")
     if hasattr(period, "isoformat"):
@@ -218,6 +263,7 @@ def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
         {
             "series": series_id,
             "symbol": series_id,
+            "series_or_symbol": series_id,
             "observed_at": fetched,
             "ingested_at": fetched,
             "synced_at": fetched,
@@ -233,11 +279,14 @@ def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def normalized_record(row: dict[str, Any]) -> dict[str, Any]:
-    """Machine-verifiable contract: source, series, clocks, unit, frequency, status."""
+    """Machine-verifiable contract: source, series_or_symbol, clocks, unit, frequency, status."""
+    if row.get("metric") == "dxy" and row.get("status") in {"not_configured", "unavailable"}:
+        return dxy_unavailable_record(fetched_at=row.get("fetched_at"))
     decorated = decorate_macro_row(row)
-    series = decorated.get("series") or decorated.get("symbol")
+    series = decorated.get("series_or_symbol") or decorated.get("series") or decorated.get("symbol")
     return {
         "source": decorated.get("source"),
+        "series_or_symbol": series,
         "series": series,
         "symbol": series,
         "observed_at": decorated.get("observed_at"),
@@ -246,6 +295,24 @@ def normalized_record(row: dict[str, Any]) -> dict[str, Any]:
         "unit": decorated.get("unit"),
         "frequency": decorated.get("frequency"),
         "status": decorated.get("status") or "ok",
+    }
+
+
+def dxy_unavailable_record(*, fetched_at: str | None = None) -> dict[str, Any]:
+    return {
+        "source": DXY_UNAVAILABLE["source"],
+        "series_or_symbol": None,
+        "series": None,
+        "symbol": None,
+        "observed_at": None,
+        "as_of": None,
+        "fetched_at": fetched_at,
+        "unit": None,
+        "frequency": None,
+        "status": "not_configured",
+        "availability": "unavailable",
+        "reason_code": DXY_UNAVAILABLE["reason_code"],
+        "note": DXY_UNAVAILABLE["note"],
     }
 
 
@@ -287,6 +354,9 @@ def build_macro_event(
         status="ok",
     ))
     notes["as_of"] = period
+    validate_unit(metric, spec["unit"])
+    if observation.get("unit"):
+        validate_unit(metric, str(observation["unit"]))
     return {
         "event_type": metric,
         "event_time": event_time.isoformat(),
@@ -295,6 +365,13 @@ def build_macro_event(
         "consensus": None,
         "prior": None,
         "unit": spec["unit"],
+        "series": spec["series_id"],
+        "series_or_symbol": spec["series_id"],
+        "frequency": spec["frequency"],
+        "observed_at": fetched_at,
+        "as_of": period,
+        "fetched_at": fetched_at,
+        "status": "stale" if from_cache else "ok",
         "surprise": "unknown",
         "confirmed": True,
         "source": "FRED",
@@ -302,27 +379,62 @@ def build_macro_event(
     }
 
 
+def _empty_series_report(*, fetched_at: str, reason_code: str, status: str) -> dict[str, Any]:
+    return {
+        "status": status,
+        "reason_code": reason_code,
+        "series_or_symbol": None,
+        "observed_at": None,
+        "as_of": None,
+        "fetched_at": fetched_at,
+        "unit": None,
+        "frequency": None,
+        "source": "FRED",
+    }
+
+
 def sync_fred_market_series(settings: Settings | None = None, store=None) -> dict[str, Any]:
     settings = settings or Settings()
-    report: dict[str, Any] = {"fetched_at": utc_now(), "series": {}}
+    fetched_at = utc_now()
+    report: dict[str, Any] = {"fetched_at": fetched_at, "series": {}}
+    dxy = dxy_unavailable_record(fetched_at=fetched_at)
     report["series"]["dxy"] = {
-        "status": DXY_UNAVAILABLE["status"],
-        "reason_code": DXY_UNAVAILABLE["reason_code"],
+        **dxy,
         "series_id": None,
         "note": DXY_UNAVAILABLE["note"],
     }
     if not settings.fred_api_key:
-        for metric in FRED_MARKET_SERIES:
-            report["series"][metric] = {"status": "not_configured", "reason_code": "source_not_configured"}
+        for metric, spec in FRED_MARKET_SERIES.items():
+            report["series"][metric] = {
+                **_empty_series_report(
+                    fetched_at=fetched_at,
+                    reason_code="source_not_configured",
+                    status="not_configured",
+                ),
+                "series_or_symbol": spec["series_id"],
+                "unit": spec["unit"],
+                "frequency": spec["frequency"],
+            }
         return report
     for metric, spec in FRED_MARKET_SERIES.items():
         try:
             result = fetch_fred_series(spec["series_id"], settings.fred_api_key)
             rows = parse_fred_observations(result.payload)
             if not rows:
-                report["series"][metric] = {"status": "missing", "reason_code": "upstream_empty"}
+                report["series"][metric] = {
+                    **_empty_series_report(
+                        fetched_at=result.fetched_at,
+                        reason_code="upstream_empty",
+                        status="missing",
+                    ),
+                    "series_or_symbol": spec["series_id"],
+                    "unit": spec["unit"],
+                    "frequency": spec["frequency"],
+                }
                 continue
             latest = rows[0]
+            if latest.get("unit"):
+                validate_unit(metric, str(latest["unit"]))
             event = build_macro_event(
                 metric,
                 latest,
@@ -332,13 +444,26 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
             )
             if store is not None:
                 store(event)
+            rec = normalized_record(event)
             report["series"][metric] = {
-                "status": "stale" if result.from_cache else "ok",
+                **rec,
                 "reason_code": result.reason_code,
                 "period": latest["period"],
                 "from_cache": result.from_cache,
                 "series_id": spec["series_id"],
             }
         except FetchError as exc:
-            report["series"][metric] = {"status": "error", "reason_code": exc.reason_code}
+            status = "stale" if exc.reason_code == "record_stale" else "error"
+            if exc.reason_code == "record_invalid":
+                status = "invalid"
+            report["series"][metric] = {
+                **_empty_series_report(
+                    fetched_at=fetched_at,
+                    reason_code=exc.reason_code,
+                    status=status,
+                ),
+                "series_or_symbol": spec["series_id"],
+                "unit": spec["unit"],
+                "frequency": spec["frequency"],
+            }
     return report
