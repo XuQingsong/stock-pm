@@ -64,8 +64,6 @@ FRESHNESS_DAYS = {
     "vix": 7,
 }
 
-SECRET_HINTS = ("api_key", "apikey", "secret", "token", "password", "authorization", "traceback")
-
 HEALTH_PREVIEW_LABELS = {
     "HEALTHY": "数据健康·全面可用（合成演示数据）",
     "PARTIAL": "数据健康·部分缺失（合成演示数据）",
@@ -135,16 +133,6 @@ def _source_configured(settings: Settings | None, family: str) -> bool:
     if family == "fmp":
         return bool(settings.fmp_api_key)
     return True
-
-
-def _safe_query_reason(exc: BaseException | str | None) -> str:
-    if exc is None:
-        return "查询失败"
-    text = exc if isinstance(exc, str) else type(exc).__name__
-    lowered = text.lower()
-    if any(hint in lowered for hint in SECRET_HINTS):
-        return "查询失败"
-    return "查询失败"
 
 
 def _dataset_row(
@@ -687,8 +675,6 @@ def _earnings_row(symbol: str = "NVDA", *, with_prior: bool = False) -> dict[str
         "symbol": symbol,
         "eps_actual": 0.81,
         "eps_estimate": 0.74,
-        "fiscal_period": "FY2026Q2",
-        "report_date": "2026-08-28",
         "source": "fmp",
         "synced_at": "2026-08-28T20:00:00+00:00",
         "observed_at": "2026-08-28T20:00:00+00:00",
@@ -717,7 +703,6 @@ def _macro(event_type: str, actual: float, prior: float, event_time: str, observ
 def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
     return {
         "symbol": symbol,
-        "watch": {"symbol": symbol, "themes": ["high_valuation_growth"], "rate_sensitivity": "high"},
         "bars": [
             _valid_bar("2026-09-10T20:00:00+00:00", 122, symbol),
             _valid_bar("2026-09-09T20:00:00+00:00", 116, symbol),
@@ -730,7 +715,6 @@ def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
             _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe"),
         ],
         "synthetic": True,
-        "_skip_previous": True,
     }
 
 
@@ -780,20 +764,13 @@ def build_health_preview(symbol: str, key: str, *, settings: Settings | None = N
     elif scene != "HEALTHY":
         bundle = _healthy_bundle(symbol)
 
-    from .assemble import assemble_from_bundle
-
-    view = assemble_from_bundle(bundle)
-    health = build_data_health(
+    # Preview health never calls the 3-A assembler. Judgment stays empty;
+    # the page continues to read L0–L3 from /decision.
+    return build_data_health(
         bundle,
         settings=settings,
-        judgment=view.get("overall"),
+        judgment=None,
         query_errors=errors,
         synthetic=True,
         preview=scene,
     )
-    health["preview_label"] = HEALTH_PREVIEW_LABELS.get(scene, "合成演示数据")
-    return health
-
-
-# Imported by tests that check price-move slogans never leak into health.
-PRICE_MOVE_FORBIDDEN = ("今日无重大变化", "上升且达到重要性阈值", "下降且达到重要性阈值")

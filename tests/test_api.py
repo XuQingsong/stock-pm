@@ -648,6 +648,17 @@ def test_stock_decision_live_and_preview(monkeypatch):
     vix = next(row for row in health_preview["datasets"] if row["dataset"] == "macro_vix")
     assert vix["status"] == "missing"
     assert vix["reason_label"] == "上游无记录"
+    live_level = live["overall"]["level"]
+    healthy_decision = c.get("/api/stock/NVDA/decision?preview=HEALTHY").json()
+    healthy_health = c.get("/api/stock/NVDA/data-health?preview=HEALTHY").json()
+    assert healthy_decision["synthetic"] is False
+    assert healthy_decision["preview"] in (None, "")
+    assert healthy_decision["overall"]["level"] == live_level
+    assert healthy_decision["overall"]["status"] == live["overall"]["status"]
+    assert healthy_health["overall"]["kind"] == "operational_health"
+    assert healthy_health["overall"]["status"] == "ok"
+    assert healthy_health["judgment"]["level"] is None
+    assert healthy_health["does_not_form_conclusion"] is True
 
 
 @pytest.mark.parametrize(

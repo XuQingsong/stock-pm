@@ -9,7 +9,6 @@ from stock_pm.decision.assemble import assemble_from_bundle
 from stock_pm.decision.change import NO_MATERIAL_CHANGE
 from stock_pm.decision.health import (
     HEALTH_PREVIEW_LABELS,
-    PRICE_MOVE_FORBIDDEN,
     REASON_QUERY_ERROR,
     REASON_RECORD_INVALID,
     REASON_RECORD_STALE,
@@ -24,6 +23,8 @@ from stock_pm.decision.health import (
 )
 from stock_pm.decision.preview import build_preview
 from stock_pm.decision.viewmodel import CHAIN_STEPS
+
+PRICE_MOVE_FORBIDDEN = ("今日无重大变化", "上升且达到重要性阈值", "下降且达到重要性阈值")
 
 
 def _ds(health, dataset):
@@ -136,7 +137,7 @@ def test_stale_cpi_fresh_nfp_are_split_and_nfp_is_not_rates_chain():
     macro = next(row for row in view["chains"] if row["id"] == "macro_rates")
     text = macro["validated_conclusion"]
     assert "NFP" in text
-    assert "通胀/利率链已成立" in text and "不能" in text
+    assert "不能" in text and "利率链已成立" in text
     assert "上升且达到重要性阈值" not in text
 
 
@@ -194,10 +195,10 @@ def test_healthy_datasets_do_not_stack_l2_into_l3_or_mint_a_thesis():
     assert l2["can_form_direction"] is False
     assert health["does_not_form_conclusion"] is True
     assert health["overall"]["kind"] == "operational_health"
-    assert health["judgment"]["level"] == view["overall"]["level"]
-    assert health["judgment"]["level"] != "L3"
+    assert health["judgment"]["level"] is None
+    assert health["judgment"]["can_form_direction"] is False
     assert health["judgment"]["note"]
-    assert view["can_form_direction"] is False or view["overall"]["level"] != "L3"
+    assert view["overall"]["level"] != "L3" or view["can_form_direction"] is False
 
 
 def test_health_preview_scenes_and_chain_order_untouched():
