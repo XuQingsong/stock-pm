@@ -135,12 +135,16 @@ def capture_pages() -> dict:
               }});
               const keep = document.querySelector('{selector}');
               if (keep) keep.scrollIntoView();
+              if (keep) {{
+                keep.style.maxHeight = '2400px';
+                keep.style.overflow = 'hidden';
+              }}
               const r = keep ? keep.getBoundingClientRect() : {{width: 1280, height: 1100}};
               return {{
                 ready: keep && keep.getAttribute('data-events-ready') === '1',
                 loading: Boolean(keep && keep.classList.contains('loading')),
                 width: Math.max(1280, Math.ceil(r.width + 24)),
-                height: Math.min(5000, Math.max(1100, Math.ceil(r.height + 80)))
+                height: Math.min(2400, Math.max(1100, Math.ceil(Math.min(r.height + 80, 2400))))
               }};
             }})()"""
         ) or {}
@@ -158,9 +162,15 @@ def capture_pages() -> dict:
                 "mobile": False,
             },
         )
-        time.sleep(0.2)
-        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True, "captureBeyondViewport": True})
-        dest.write_bytes(base64.b64decode(png["result"]["data"]))
+        time.sleep(0.3)
+        png = call(
+            "Page.captureScreenshot",
+            {"format": "png", "fromSurface": True, "captureBeyondViewport": False},
+        )
+        payload = png.get("result") or {}
+        if "data" not in payload:
+            raise RuntimeError(f"screenshot missing result: {png}")
+        dest.write_bytes(base64.b64decode(payload["data"]))
         return info
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -399,14 +409,15 @@ def main() -> int:
         for ref in (event.get("analysis") or {}).get("evidence_refs") or []:
             urls.append(ref.get("source_url"))
     unique = list(dict.fromkeys(item for item in urls if item))
-    probes = [probe_url(url) for url in unique[:24]]
+    preferred = [url for url in unique if _official_href(url)]
+    rest = [url for url in unique if url not in preferred]
+    probes = [probe_url(url) for url in (preferred[:16] + rest[:8])]
     screenshot_error = None
     shots = {}
     try:
         shots = capture_pages()
     except Exception as exc:
         screenshot_error = str(exc)
-        shots = {}
     report = score(center, cover, health, stocks, js.lower(), page, shots, probes)
     secrets = scan_incremental_secrets()
     report["incremental_scan"] = {"file_count": len(secrets["files"]), "hits": secrets["hits"]}

@@ -94,15 +94,31 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     }
 
 
+def _center_sort_key(event: TrustedEvent) -> tuple:
+    mapped = any(str(item).upper() in DISPLAY_SYMBOLS for item in event.entities)
+    type_rank = {
+        "central_bank_rates": 0,
+        "energy_supply": 1,
+        "inflation_employment": 2,
+        "sovereign_or_corporate_debt": 3,
+        "other": 4,
+        "company_filing": 5 if mapped else 8,
+        "vix_risk": 6,
+        "war_sanctions": 1,
+    }.get(event.event_type, 7)
+    return (type_rank, event.published_at or "", event.canonical_title)
+
+
 def market_center(settings: Settings | None = None) -> dict[str, Any]:
     events = build_event_book(settings)
     cover = coverage(settings, events)
+    ordered = sorted(events, key=_center_sort_key)
     return {
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
         "live": cover["live"],
         "coverage": cover,
-        "events": [event.as_dict() for event in events],
+        "events": [event.as_dict() for event in ordered],
     }
 
 
