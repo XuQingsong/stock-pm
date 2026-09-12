@@ -488,8 +488,15 @@ class FakeDatabase:
         return self.patched
 
 
+def _empty_live_overlay(settings=None):
+    return ([], set(), {"fetched_at": "2026-09-12T00:00:00+00:00", "series": {
+        "dxy": {"status": "not_configured", "source": "ice", "series_or_symbol": None},
+    }})
+
+
 def client(monkeypatch) -> TestClient:
     monkeypatch.setattr(api, "database", FakeDatabase())
+    monkeypatch.setattr("stock_pm.series.collect_live_macro_overlay", _empty_live_overlay)
     return TestClient(api.app)
 
 

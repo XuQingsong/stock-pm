@@ -534,6 +534,7 @@
   Promise.all([
     loadHeader(),
     loadDecision(),
+    loadDataHealth(),
     window.mountStockPmShell ? window.mountStockPmShell({ symbol: SYMBOL }) : Promise.resolve()
   ]).finally(() => activate(location.hash.slice(1) || "chart"));
 
@@ -737,8 +738,9 @@
       return `<li>${esc(row.kind || "fact")} · ${esc(row.metric || "")} · ${esc(ref.source || row.source || "")} · ${esc(ref.as_of || row.as_of || "")} · ${esc(ref.ref_table || "")}/${esc(ref.ref_id || "")}</li>`;
     }).join("") || "<li>没有可折叠的原始事实</li>";
     const noMove = payload.no_material_change ? `<p class="subline">无重大变化：${esc((payload.what_changed || {}).summary || "原判断不变")}</p>` : "";
-    $("decision-module").innerHTML = `${renderGradeBoard(payload)}
-      <div id="data-health-slot"></div>
+    const body = $("decision-body") || $("decision-module");
+    body.className = "";
+    body.innerHTML = `${renderGradeBoard(payload)}
       ${noMove}
       ${gaps ? `<ul class="decision-gaps">${gaps}</ul>` : ""}
       ${renderChainGroups(payload)}
@@ -770,17 +772,20 @@
     const list = (ids) => (ids || []).map((id) => names[id] || id).join("、") || "无";
     const banner = health.synthetic
       ? `<div class="decision-banner health-synthetic" role="status" data-runtime="synthetic">SYNTHETIC SCENARIO · 合成演示数据 · 非实时 · ${esc(health.preview_label || "preview")}。fixture 不得冒充实时。</div>`
-      : `<div class="health-mode" role="status" data-runtime="real">REAL RUNTIME · 实盘观察 · 非合成 fixture</div>`;
+      : `<div class="health-mode" role="status" data-runtime="real">REAL RUNTIME · 实盘观察 · 非合成 fixture${health.runtime_fetched_at ? ` · ${esc(health.runtime_fetched_at)}` : ""}</div>`;
     const inputRows = (health.datasets || []).map((row) => {
       const title = row.title_zh || row.dataset;
       const age = row.freshness_age == null ? "—" : `${row.freshness_age}天`;
       const series = row.series_or_symbol || row.series || "—";
+      const value = row.value == null || row.value === "" ? "—" : String(row.value);
+      const unit = row.unit || "—";
       return `<tr class="status-${esc(row.status)}">
         <td>${esc(title)}</td>
         <td>${esc(row.source || "—")}</td>
         <td>${esc(series)}</td>
         <td>${esc(row.as_of || "—")}</td>
-        <td>${esc(row.latest_observed_at || "—")}</td>
+        <td>${esc(value)}</td>
+        <td>${esc(unit)}</td>
         <td>${esc(age)}</td>
         <td>${statusPill(row.status)}</td>
       </tr>`;
@@ -792,7 +797,8 @@
         <h4>${esc(title)} · ${esc(row.dataset)} ${statusPill(row.status)}</h4>
         <div class="why">原因：${esc(healthReasonCopy(row))} <small>${esc(row.reason_code || "")}</small></div>
         <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")} · series_or_symbol ${esc(row.series_or_symbol || row.series || "—")}</div>
-        <div class="why">as_of ${esc(row.as_of || "—")} · 观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
+        <div class="why">as_of ${esc(row.as_of || "—")} · value ${esc(row.value == null ? "—" : String(row.value))} ${esc(row.unit || "")} · 观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
+        <div class="why">http_source ${esc(row.http_source || "—")} · transport ${esc(row.transport || "—")}</div>
         <div class="why">恢复：${esc(row.next_action || "—")}</div>
       </article>`;
     }).join("");
@@ -807,8 +813,8 @@
       </div>
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
       <table class="health-inputs">
-        <caption>各输入的 source / series_or_symbol / as_of / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。</caption>
-        <thead><tr><th>输入</th><th>source</th><th>series_or_symbol</th><th>as_of</th><th>观察</th><th>新鲜度</th><th>状态</th></tr></thead>
+        <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。</caption>
+        <thead><tr><th>输入</th><th>source</th><th>series_or_symbol</th><th>as_of</th><th>value</th><th>unit</th><th>新鲜度</th><th>状态</th></tr></thead>
         <tbody>${inputRows}</tbody>
       </table>
       <details class="health-details">
@@ -832,8 +838,8 @@
   }
 
   async function loadDecision() {
-    const root = $("decision-module");
-    if (!root) return;
+    const body = $("decision-body") || $("decision-module");
+    if (!body) return;
     const preview = new URLSearchParams(location.search).get("preview");
     // Same gate as GET /api/stock/{symbol}/decision: the API ignores preview
     // unless ENABLE_DECISION_PREVIEW is on and APP_ENV is development/test/local.
@@ -841,9 +847,9 @@
     try {
       const payload = await api(path);
       renderDecision(payload);
-      await loadDataHealth();
     } catch (error) {
-      root.innerHTML = `<div class="state error"><b>动态判断加载失败</b><span>${esc(error.message || "未知错误")}</span></div>`;
+      body.className = "";
+      body.innerHTML = `<div class="state error"><b>动态判断加载失败</b><span>${esc(error.message || "未知错误")}</span></div>`;
     }
   }
 })();

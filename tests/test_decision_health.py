@@ -218,7 +218,8 @@ def test_health_preview_scenes_and_chain_order_untouched():
                 "dataset", "metric", "title", "title_zh", "source", "series",
                 "series_or_symbol",
                 "status", "latest_observed_at", "latest_ingested_at", "as_of",
-                "fetched_at", "unit", "frequency", "freshness_age",
+                "fetched_at", "unit", "frequency", "value", "http_source",
+                "transport", "freshness_age",
                 "freshness_threshold", "coverage_window", "sample_count",
                 "reason_code", "affects_chain", "affects_stage", "next_action",
             ):

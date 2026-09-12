@@ -12,10 +12,11 @@ from typing import Any
 from urllib.parse import urlencode
 
 from .config import Settings
-from .fetch import FetchError, FetchResult, json_get, utc_now
+from .fetch import FetchError, FetchResult, json_get, text_get, utc_now
 
 
 FRED_API = "https://api.stlouisfed.org/fred/series/observations"
+FRED_GRAPH_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 
 # Official / first-hand series. ICE DXY is not wired; DTWEXBGS is a separate proxy.
 FRED_MARKET_SERIES = {
@@ -170,24 +171,81 @@ def validate_unit(metric: str, unit: str | None) -> None:
         raise FetchError("record_invalid", f"unit {unit!r} does not match {expected}")
 
 
-def fetch_fred_series(series_id: str, api_key: str, *, limit: int = 16) -> FetchResult:
-    if not api_key:
-        raise FetchError("source_not_configured", "FRED is not configured")
-    params = urlencode(
-        {
-            "series_id": series_id,
-            "api_key": api_key,
-            "file_type": "json",
-            "sort_order": "desc",
-            "limit": limit,
-        }
+def parse_fred_csv(payload: Any, series_id: str) -> list[dict[str, Any]]:
+    if not isinstance(payload, str) or not payload.strip():
+        raise FetchError("record_invalid", "FRED CSV payload is empty")
+    lines = [line.strip() for line in payload.splitlines() if line.strip()]
+    if not lines:
+        return []
+    header = [part.strip() for part in lines[0].split(",")]
+    if len(header) < 2 or header[0] not in {"observation_date", "DATE", "date"}:
+        raise FetchError("record_invalid", "FRED CSV header changed shape")
+    parsed: list[dict[str, Any]] = []
+    for line in lines[1:]:
+        cells = [part.strip() for part in line.split(",")]
+        if len(cells) < 2:
+            raise FetchError("record_invalid", "FRED CSV row changed shape")
+        value = cells[1]
+        if value in (None, "", "."):
+            continue
+        try:
+            number = float(value)
+        except (TypeError, ValueError) as exc:
+            raise FetchError("record_invalid", "FRED CSV value is not numeric") from exc
+        parsed.append({"period": _require_period(cells[0]), "value": number, "realtime_start": None})
+    parsed.sort(key=lambda row: row["period"], reverse=True)
+    return parsed
+
+
+def fetch_fred_keyless_csv(series_id: str, *, limit: int = 16) -> FetchResult:
+    """Official FRED graph CSV download. No API key. Not a third-party scrape."""
+    start = "2024-01-01"
+    url = f"{FRED_GRAPH_CSV}?{urlencode({'id': series_id, 'cosd': start})}"
+    result = text_get(url, timeout=20, retries=3, cache_key=f"fred-csv-{series_id}")
+    rows = parse_fred_csv(result.payload, series_id)[:limit]
+    return FetchResult(
+        payload={"observations": [{"date": row["period"], "value": str(row["value"])} for row in rows]},
+        status=result.status,
+        reason_code=result.reason_code,
+        fetched_at=result.fetched_at,
+        from_cache=result.from_cache,
+        cache_key=result.cache_key,
+        http_source=url,
+        transport="fredgraph_csv",
     )
-    return json_get(
-        f"{FRED_API}?{params}",
-        timeout=20,
-        retries=3,
-        cache_key=f"fred-{series_id}",
-    )
+
+
+def fetch_fred_series(series_id: str, api_key: str = "", *, limit: int = 16) -> FetchResult:
+    if api_key:
+        params = urlencode(
+            {
+                "series_id": series_id,
+                "api_key": api_key,
+                "file_type": "json",
+                "sort_order": "desc",
+                "limit": limit,
+            }
+        )
+        try:
+            result = json_get(
+                f"{FRED_API}?{params}",
+                timeout=20,
+                retries=3,
+                cache_key=f"fred-{series_id}",
+            )
+            return FetchResult(
+                payload=result.payload,
+                status=result.status,
+                reason_code=result.reason_code,
+                fetched_at=result.fetched_at,
+                from_cache=result.from_cache,
+                cache_key=result.cache_key,
+                http_source=f"{FRED_API}?series_id={series_id}",
+                transport="fred_api",
+            )
+        except FetchError:
+            pass
+    return fetch_fred_keyless_csv(series_id, limit=limit)
 
 
 def observation_notes(
@@ -199,6 +257,8 @@ def observation_notes(
     frequency: str,
     unit: str,
     status: str,
+    http_source: str | None = None,
+    transport: str | None = None,
 ) -> str:
     return json.dumps(
         {
@@ -213,6 +273,8 @@ def observation_notes(
             "status": "stale" if from_cache else status,
             "source": "FRED",
             "metric": metric,
+            "http_source": http_source,
+            "transport": transport,
         },
         ensure_ascii=False,
     )
@@ -272,6 +334,9 @@ def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
             "fetched_at": fetched,
             "frequency": payload.get("frequency") or meta.get("frequency"),
             "unit": payload.get("unit") or meta.get("unit"),
+            "value": payload.get("actual") if payload.get("actual") is not None else payload.get("value"),
+            "http_source": payload.get("http_source") or meta.get("http_source"),
+            "transport": payload.get("transport") or meta.get("transport"),
             "status": meta.get("status") or payload.get("status") or "ok",
         }
     )
@@ -295,6 +360,9 @@ def normalized_record(row: dict[str, Any]) -> dict[str, Any]:
         "unit": decorated.get("unit"),
         "frequency": decorated.get("frequency"),
         "status": decorated.get("status") or "ok",
+        "value": decorated.get("value") if decorated.get("value") is not None else decorated.get("actual"),
+        "http_source": decorated.get("http_source"),
+        "transport": decorated.get("transport"),
     }
 
 
@@ -341,6 +409,8 @@ def build_macro_event(
     *,
     fetched_at: str,
     from_cache: bool,
+    http_source: str | None = None,
+    transport: str | None = None,
 ) -> dict[str, Any]:
     period = observation["period"]
     event_time = datetime.fromisoformat(f"{period}T00:00:00+00:00")
@@ -352,6 +422,8 @@ def build_macro_event(
         frequency=spec["frequency"],
         unit=spec["unit"],
         status="ok",
+        http_source=http_source,
+        transport=transport,
     ))
     notes["as_of"] = period
     validate_unit(metric, spec["unit"])
@@ -362,6 +434,7 @@ def build_macro_event(
         "event_time": event_time.isoformat(),
         "name": spec["name"],
         "actual": observation["value"],
+        "value": observation["value"],
         "consensus": None,
         "prior": None,
         "unit": spec["unit"],
@@ -371,6 +444,8 @@ def build_macro_event(
         "observed_at": fetched_at,
         "as_of": period,
         "fetched_at": fetched_at,
+        "http_source": http_source,
+        "transport": transport,
         "status": "stale" if from_cache else "ok",
         "surprise": "unknown",
         "confirmed": True,
@@ -403,19 +478,6 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
         "series_id": None,
         "note": DXY_UNAVAILABLE["note"],
     }
-    if not settings.fred_api_key:
-        for metric, spec in FRED_MARKET_SERIES.items():
-            report["series"][metric] = {
-                **_empty_series_report(
-                    fetched_at=fetched_at,
-                    reason_code="source_not_configured",
-                    status="not_configured",
-                ),
-                "series_or_symbol": spec["series_id"],
-                "unit": spec["unit"],
-                "frequency": spec["frequency"],
-            }
-        return report
     for metric, spec in FRED_MARKET_SERIES.items():
         try:
             result = fetch_fred_series(spec["series_id"], settings.fred_api_key)
@@ -430,6 +492,8 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                     "series_or_symbol": spec["series_id"],
                     "unit": spec["unit"],
                     "frequency": spec["frequency"],
+                    "http_source": result.http_source,
+                    "transport": result.transport,
                 }
                 continue
             latest = rows[0]
@@ -441,6 +505,8 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                 spec,
                 fetched_at=result.fetched_at,
                 from_cache=result.from_cache,
+                http_source=result.http_source,
+                transport=result.transport,
             )
             if store is not None:
                 store(event)
@@ -451,6 +517,9 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                 "period": latest["period"],
                 "from_cache": result.from_cache,
                 "series_id": spec["series_id"],
+                "value": latest["value"],
+                "http_source": result.http_source,
+                "transport": result.transport,
             }
         except FetchError as exc:
             status = "stale" if exc.reason_code == "record_stale" else "error"
@@ -465,5 +534,60 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                 "series_or_symbol": spec["series_id"],
                 "unit": spec["unit"],
                 "frequency": spec["frequency"],
+                "http_source": f"{FRED_GRAPH_CSV}?id={spec['series_id']}",
+                "transport": "fredgraph_csv",
             }
     return report
+
+
+DATASET_FOR_METRIC = {
+    "cpi": "macro_cpi",
+    "us2y": "macro_rates_confirm",
+    "vix": "macro_vix",
+    "gold": "macro_gold",
+    "wti": "macro_wti",
+    "broad_usd_proxy": "macro_broad_usd_proxy",
+}
+
+
+def collect_live_macro_overlay(
+    settings: Settings | None = None,
+) -> tuple[list[dict[str, Any]], set[str], dict[str, Any]]:
+    """Official FRED prints for the real runtime. Never reads test fixtures."""
+    stored: list[dict[str, Any]] = []
+    report = sync_fred_market_series(settings or Settings(), store=stored.append)
+    errors: set[str] = set()
+    for metric, rec in report.get("series", {}).items():
+        if metric == "dxy":
+            continue
+        if rec.get("status") in {"error", "invalid"}:
+            dataset = DATASET_FOR_METRIC.get(metric)
+            if dataset:
+                errors.add(dataset)
+    return [decorate_macro_row(row) for row in stored], errors, report
+
+
+def collect_live_macro_events(settings: Settings | None = None) -> list[dict[str, Any]]:
+    """Fetch official FRED prints for the real runtime. Never reads test fixtures."""
+    events, _errors, _report = collect_live_macro_overlay(settings)
+    return events
+
+
+def merge_live_macros(bundle: dict[str, Any], live: list[dict[str, Any]]) -> dict[str, Any]:
+    payload = dict(bundle)
+    existing = list(payload.get("macro_events") or [])
+    live_types = {str(row.get("event_type")) for row in live}
+    kept = [row for row in existing if str(row.get("event_type")) not in live_types]
+    payload["macro_events"] = kept + live
+    payload["synthetic"] = False
+    return payload
+
+
+def empty_real_bundle(symbol: str) -> dict[str, Any]:
+    return {
+        "symbol": symbol.upper(),
+        "bars": [],
+        "earnings": [],
+        "macro_events": [],
+        "synthetic": False,
+    }

@@ -34,6 +34,8 @@ class FetchResult:
     fetched_at: str
     from_cache: bool
     cache_key: str | None = None
+    http_source: str | None = None
+    transport: str | None = None
 
 
 def utc_now() -> str:
@@ -110,6 +112,8 @@ def json_get(
                 fetched_at=utc_now(),
                 from_cache=False,
                 cache_key=cache_key,
+                http_source=url,
+                transport="json",
             )
         except HTTPError as exc:
             last_error = exc
@@ -134,6 +138,69 @@ def json_get(
             fetched_at=str(cached.get("fetched_at") or utc_now()),
             from_cache=True,
             cache_key=cache_key,
+            http_source=url,
+            transport="json",
         )
     message = _scrub(str(last_error or "query failed"))
     raise FetchError(reason if "reason" in locals() else "query_error", message)
+
+
+def text_get(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    timeout: float = 20,
+    retries: int = 3,
+    cache_key: str | None = None,
+    directory: Path | None = None,
+) -> FetchResult:
+    last_error: Exception | None = None
+    store = directory or cache_dir()
+    reason = "query_error"
+    for attempt in range(max(1, retries)):
+        try:
+            request = Request(
+                url,
+                headers=headers or {"Accept": "text/csv,text/plain;q=0.9,*/*;q=0.8", "User-Agent": "stock-pm/0.9"},
+            )
+            with urlopen(request, timeout=timeout) as response:
+                payload = response.read().decode("utf-8")
+            if cache_key:
+                write_cache(cache_key, payload, store)
+            return FetchResult(
+                payload=payload,
+                status="ok",
+                reason_code="within_threshold",
+                fetched_at=utc_now(),
+                from_cache=False,
+                cache_key=cache_key,
+                http_source=url,
+                transport="text",
+            )
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code == 429 and attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            reason = "rate_limited" if exc.code == 429 else "query_error"
+            break
+        except (TimeoutError, URLError, OSError) as exc:
+            last_error = exc
+            if attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            reason = "timeout"
+            break
+    cached = read_cache(cache_key, store) if cache_key else None
+    if cached:
+        return FetchResult(
+            payload=cached["payload"],
+            status="stale",
+            reason_code="record_stale",
+            fetched_at=str(cached.get("fetched_at") or utc_now()),
+            from_cache=True,
+            cache_key=cache_key,
+            http_source=url,
+            transport="text",
+        )
+    raise FetchError(reason, _scrub(str(last_error or "query failed")))

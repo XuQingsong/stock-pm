@@ -149,7 +149,8 @@ def _source_configured(settings: Settings | None, family: str) -> bool:
     if family == "alpaca":
         return bool(settings.alpaca_api_key_id and settings.alpaca_api_secret_key)
     if family == "fred":
-        return bool(settings.fred_api_key)
+        # Official fredgraph.csv is keyless. An API key is preferred, not required.
+        return True
     if family == "fmp":
         return bool(settings.fmp_api_key)
     return True
@@ -179,6 +180,9 @@ def _dataset_row(
     fetched_at: str | None = None,
     unit: str | None = None,
     frequency: str | None = None,
+    value: Any = None,
+    http_source: str | None = None,
+    transport: str | None = None,
     title: str | None = None,
     title_zh: str | None = None,
 ) -> dict[str, Any]:
@@ -198,6 +202,9 @@ def _dataset_row(
         "fetched_at": fetched_at,
         "unit": unit,
         "frequency": frequency,
+        "value": value,
+        "http_source": http_source,
+        "transport": transport,
         "freshness_age": freshness_age,
         "freshness_threshold": freshness_threshold,
         "coverage_window": coverage_window,
@@ -258,6 +265,9 @@ def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
     if as_of is None and latest.get("event_time"):
         event_time = latest.get("event_time")
         as_of = event_time.isoformat()[:10] if hasattr(event_time, "isoformat") else str(event_time)[:10]
+    value = latest.get("value")
+    if value is None:
+        value = latest.get("actual")
     return {
         "series": series,
         "series_or_symbol": series,
@@ -265,6 +275,9 @@ def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
         "fetched_at": latest.get("fetched_at") or latest.get("observed_at"),
         "unit": latest.get("unit"),
         "frequency": latest.get("frequency"),
+        "value": value,
+        "http_source": latest.get("http_source"),
+        "transport": latest.get("transport"),
     }
 
 
@@ -293,6 +306,14 @@ def _evaluate_rows(
     thresh = FRESHNESS_DAYS.get(metric) if threshold is None else threshold
     latest = rows[0] if rows else {}
     provenance = _row_provenance(latest)
+    spec = FRED_MARKET_SERIES.get(metric) or {}
+    if not provenance.get("series_or_symbol") and spec.get("series_id"):
+        provenance["series"] = spec["series_id"]
+        provenance["series_or_symbol"] = spec["series_id"]
+    if not provenance.get("unit") and spec.get("unit"):
+        provenance["unit"] = spec["unit"]
+    if not provenance.get("frequency") and spec.get("frequency"):
+        provenance["frequency"] = spec["frequency"]
     if query_error:
         return _dataset_row(
             dataset=dataset,

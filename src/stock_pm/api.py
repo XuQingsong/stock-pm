@@ -44,14 +44,20 @@ def _backfill_environment_snapshots() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    database.initialize()
+    try:
+        database.initialize()
+    except Exception as exc:
+        print(json.dumps({"database_init_error": str(exc)}, ensure_ascii=False))
     threading.Thread(
         target=_backfill_environment_snapshots,
         name="environment-backfill",
         daemon=True,
     ).start()
     yield
-    database.close()
+    try:
+        database.close()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -388,23 +394,62 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
 def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
     from .config import Settings
     from .decision.assemble import assemble_from_bundle
-    from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview, empty_query_error_health
+    from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview
     from .decision.preview import preview_allowed
+    from .series import collect_live_macro_overlay, empty_real_bundle, merge_live_macros
 
     key = (preview or "").strip().upper()
     try:
         if key in HEALTH_PREVIEW_LABELS and preview_allowed():
             return build_health_preview(symbol, key)
+        settings = Settings()
+        db_error = False
         try:
             bundle = database.decision_bundle(symbol)
         except DatabaseError:
-            return empty_query_error_health(symbol.upper())
+            db_error = True
+            bundle = empty_real_bundle(symbol.upper())
+        live, live_errors, live_report = collect_live_macro_overlay(settings)
+        bundle = merge_live_macros(bundle, live)
+        query_errors = set(live_errors)
+        if db_error:
+            query_errors.add("macro_nfp")
+            if settings.alpaca_api_key_id and settings.alpaca_api_secret_key:
+                query_errors.add("daily_price_bars")
+            if settings.fmp_api_key:
+                query_errors.update({"earnings_reports", "earnings_prior_consensus"})
         try:
             view = assemble_from_bundle(bundle)
             judgment = view.get("overall")
         except Exception:
             judgment = None
-        return build_data_health(bundle, settings=Settings(), judgment=judgment)
+        payload = build_data_health(
+            bundle,
+            settings=settings,
+            judgment=judgment,
+            query_errors=query_errors,
+            synthetic=False,
+        )
+        series_report = {}
+        for metric, rec in (live_report.get("series") or {}).items():
+            series_report[metric] = {
+                "source": rec.get("source"),
+                "series_or_symbol": rec.get("series_or_symbol"),
+                "as_of": rec.get("as_of"),
+                "value": rec.get("value"),
+                "unit": rec.get("unit"),
+                "status": rec.get("status"),
+                "reason_code": rec.get("reason_code"),
+                "http_source": rec.get("http_source"),
+                "transport": rec.get("transport"),
+            }
+        payload["runtime"] = "real"
+        payload["runtime_fetched_at"] = live_report.get("fetched_at")
+        payload["http_sources"] = {
+            metric: row.get("http_source") for metric, row in series_report.items()
+        }
+        payload["series_report"] = series_report
+        return payload
     except ValueError as exc:
         raise _http_error(exc) from exc
 

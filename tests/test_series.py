@@ -100,11 +100,38 @@ def test_map_earnings_does_not_invent_prior_or_edgar():
     assert row["edgar_status"] == "not_integrated"
 
 
-def test_sync_unconfigured_is_not_empty_or_error():
+def test_sync_without_api_key_uses_official_csv_not_not_configured(monkeypatch):
+    from stock_pm.fetch import FetchResult
+
+    def fake_csv(url, **kwargs):
+        series_id = "DGS2"
+        if "CPIAUCSL" in url:
+            series_id = "CPIAUCSL"
+        elif "VIXCLS" in url:
+            series_id = "VIXCLS"
+        elif "GOLDPMGBD228NLBM" in url:
+            series_id = "GOLDPMGBD228NLBM"
+        elif "DCOILWTICO" in url:
+            series_id = "DCOILWTICO"
+        elif "DTWEXBGS" in url:
+            series_id = "DTWEXBGS"
+        assert url.startswith("https://fred.stlouisfed.org/graph/fredgraph.csv")
+        return FetchResult(
+            payload=f"observation_date,{series_id}\n2026-09-10,1.25\n",
+            status="ok",
+            reason_code="within_threshold",
+            fetched_at="2026-09-12T00:00:00+00:00",
+            from_cache=False,
+            http_source=url,
+            transport="text",
+        )
+
+    monkeypatch.setattr("stock_pm.series.text_get", fake_csv)
     report = sync_fred_market_series(Settings(fred_api_key=""))
-    assert report["series"]["us2y"]["reason_code"] == "source_not_configured"
-    assert report["series"]["cpi"]["status"] == "not_configured"
-    assert report["series"]["broad_usd_proxy"]["status"] == "not_configured"
+    assert report["series"]["us2y"]["status"] == "ok"
+    assert report["series"]["us2y"]["transport"] == "fredgraph_csv"
+    assert report["series"]["cpi"]["status"] == "ok"
+    assert report["series"]["broad_usd_proxy"]["status"] == "ok"
     assert report["series"]["broad_usd_proxy"]["series_or_symbol"] == "DTWEXBGS"
     assert report["series"]["dxy"]["status"] == "not_configured"
     assert report["series"]["dxy"]["availability"] == "unavailable"
