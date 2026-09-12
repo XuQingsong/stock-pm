@@ -795,7 +795,8 @@
         <div class="why">恢复：${esc(row.next_action || "—")}</div>
       </article>`;
     }).join("");
-    return `${banner}<section class="data-health" aria-label="数据健康" data-mode="${health.synthetic ? "synthetic" : "live"}">
+    return `<section class="data-health" aria-label="数据健康" data-mode="${health.synthetic ? "synthetic" : "live"}">
+      ${banner}
       <div class="health-compact">
         <strong>数据健康</strong>
         <span class="status-pill ${esc(overall.status || "degraded")}">${esc(overall.status || "degraded")}</span>

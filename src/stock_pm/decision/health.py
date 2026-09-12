@@ -788,8 +788,13 @@ def _valid_bar(as_of: str, close: float, symbol: str = "NVDA") -> dict[str, Any]
         "volume": 10,
         "bar_time": as_of,
         "source": "alpaca_sip",
+        "series": symbol,
         "observed_at": as_of,
         "source_as_of": as_of,
+        "as_of": as_of[:10],
+        "fetched_at": as_of,
+        "frequency": "daily",
+        "status": "ok",
     }
 
 
