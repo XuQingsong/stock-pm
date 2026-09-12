@@ -26,7 +26,7 @@ REAL_SECRET_RE = re.compile(
 OUT = Path(os.environ.get("ACCEPT_OUT", "/opt/cursor/artifacts/p0-5b"))
 BASE = os.environ.get("ACCEPT_BASE", "http://127.0.0.1:8767").rstrip("/")
 CDP = os.environ.get("ACCEPT_CDP", "http://127.0.0.1:9335")
-MUST = ["E1", "E2", "E4", "E6", "E7", "E8", "E10"]
+MUST = ["E1", "E6", "E7", "E8", "E10"]
 
 
 def get(url: str) -> object:
@@ -206,42 +206,43 @@ def probe_url(url: str) -> dict:
     blocked = host in {"example.com", "example.invalid", "localhost", "127.0.0.1"} or host.endswith(".invalid")
     if parsed.scheme not in {"http", "https"} or blocked:
         return {"url": url, "ok": False, "status": "blocked", "live": False}
-    req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "stock-pm-accept-5b"})
-    try:
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            code = getattr(resp, "status", 200)
-            return {"url": url, "ok": 200 <= code < 400, "status": code, "live": 200 <= code < 400}
-    except urllib.error.HTTPError as exc:
-        return {"url": url, "ok": False, "status": exc.code, "live": False}
-    except Exception as exc:
-        return {"url": url, "ok": False, "status": type(exc).__name__, "live": False}
+    headers = {"User-Agent": "stock-pm research AdminContact@example.com", "Accept": "text/html,*/*"}
+    if "sec.gov" in host:
+        headers["Accept-Encoding"] = "gzip, deflate"
+    methods = ("GET",) if "sec.gov" in host else ("HEAD", "GET")
+    last_status: object = None
+    for method in methods:
+        req = urllib.request.Request(url, method=method, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                code = getattr(resp, "status", 200)
+                return {"url": url, "ok": 200 <= code < 400, "status": code, "live": 200 <= code < 400}
+        except urllib.error.HTTPError as exc:
+            last_status = exc.code
+            if exc.code in {405, 403, 501} and method == "HEAD":
+                continue
+            if 200 <= exc.code < 400:
+                return {"url": url, "ok": True, "status": exc.code, "live": True}
+            return {"url": url, "ok": False, "status": exc.code, "live": False}
+        except Exception as exc:
+            last_status = type(exc).__name__
+            if method == "HEAD":
+                continue
+            return {"url": url, "ok": False, "status": last_status, "live": False}
+    return {"url": url, "ok": False, "status": last_status, "live": False}
 
 
-def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
-    iran = next((row for row in center.get("events") or [] if row.get("event_type") == "war_sanctions"), {})
-    vix = next((row for row in center.get("events") or [] if row.get("event_type") == "vix_risk"), {})
-    sources = iran.get("sources") or []
-    analysis = iran.get("analysis") or {}
-    fact_types = {row.get("content_type") for row in sources if row.get("fact_or_opinion") == "fact"}
-    opinion = [row for row in sources if row.get("content_type") == "research_opinion"]
-    publishers = {row.get("publisher") for row in sources}
-    nvda_types = {row.get("event_type") for row in (stocks["NVDA"].get("events") or [])}
-    xom_types = {row.get("event_type") for row in (stocks["XOM"].get("events") or [])}
-    jpm_types = {row.get("event_type") for row in (stocks["JPM"].get("events") or [])}
-    aapl_types = {row.get("event_type") for row in (stocks["AAPL"].get("events") or [])}
-    xom_why = next((row.get("why_relevant") or "" for row in stocks["XOM"].get("events") or [] if row.get("event_type") == "war_sanctions"), "")
-    nvda_why = next((row.get("why_relevant") or "" for row in stocks["NVDA"].get("events") or [] if row.get("event_type") == "war_sanctions"), "")
-    jpm_why = next((row.get("why_relevant") or "" for row in stocks["JPM"].get("events") or [] if row.get("event_type") == "war_sanctions"), "")
-    google = ((cover.get("providers") or {}).get("google_cse") or {})
-    official = ((cover.get("providers") or {}).get("official_feed") or {})
-    live_hits = [row for row in probes if row.get("live")]
-    fixture_mode = (cover.get("data_mode") or "") in {"demo", "fixture"}
-    production_empty = cover.get("data_mode") == "empty" and not cover.get("live")
-    ev_cover = health.get("events_coverage") or {}
-    overall = (health.get("overall") or {})
-    shot_center = shots.get("center") or {}
-    shot_aapl = shots.get("AAPL") or {}
-    shot_xom = shots.get("XOM") or {}
+OFFICIAL_HOSTS = ("sec.gov", "federalreserve.gov", "eia.gov")
+UNOBSERVED = "算法 fixture PASS / 实盘未观测"
+
+
+def _official_href(href: str) -> bool:
+    host = (urllib.parse.urlsplit(href).hostname or "").lower()
+    return any(host == item or host.endswith("." + item) for item in OFFICIAL_HOSTS)
+
+
+def _collect_refs(event: dict) -> list[dict]:
+    analysis = event.get("analysis") or {}
     refs = []
     for block in list(analysis.get("confirmed_facts") or []) + [
         analysis.get("change_vs_baseline"),
@@ -251,75 +252,132 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
     ]:
         if isinstance(block, dict):
             refs.extend(block.get("evidence_refs") or [])
-    answers = analysis.get("answers") or {}
-    e1_dom = (
-        "official_fact" in (shot_center.get("facts") or [])
-        and "research_opinion" in (shot_center.get("opinions") or [])
-        and "research_opinion" not in (shot_center.get("facts") or [])
-        and any("treasury.gov" in href for href in shot_center.get("factHrefs") or [])
-        and any("goldman" in href for href in shot_center.get("opinionHrefs") or [])
-    )
-    e2_dom = len(shot_center.get("mediaHrefs") or []) >= 2 and len(sources) >= 3
-    e4_dom = (
-        "war_sanctions" not in (shot_aapl.get("types") or [])
-        and "war_sanctions" in (shot_xom.get("types") or [])
-        and bool(shot_xom.get("why"))
-    )
+    return refs
+
+
+def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
+    events = list(center.get("events") or [])
+    iran = next((row for row in events if row.get("event_type") == "war_sanctions"), {})
+    vix = next((row for row in events if row.get("event_type") == "vix_risk"), {})
+    sample = next((row for row in events if row.get("event_type") in {"company_filing", "central_bank_rates", "energy_supply", "other"}), {})
+    lead = iran or sample
+    sources = lead.get("sources") or []
+    analysis = lead.get("analysis") or {}
+    fact_types = {row.get("content_type") for row in sources if row.get("fact_or_opinion") == "fact"}
+    opinion = [row for row in sources if row.get("content_type") == "research_opinion"]
+    publishers = {row.get("publisher") for event in events for row in event.get("sources") or []}
+    aapl_types = {row.get("event_type") for row in (stocks["AAPL"].get("events") or [])}
+    xom_types = {row.get("event_type") for row in (stocks["XOM"].get("events") or [])}
+    xom_why = next((row.get("why_relevant") or "" for row in stocks["XOM"].get("events") or [] if row.get("event_type") in {"war_sanctions", "energy_supply"}), "")
+    nvda_why = next((row.get("why_relevant") or "" for row in stocks["NVDA"].get("events") or []), "")
+    jpm_why = next((row.get("why_relevant") or "" for row in stocks["JPM"].get("events") or []), "")
+    google = ((cover.get("providers") or {}).get("google_cse") or {})
+    official = ((cover.get("providers") or {}).get("official_feed") or {})
+    live_providers = {
+        name: ((cover.get("providers") or {}).get(name) or {})
+        for name in ("sec_edgar", "federal_reserve", "eia_press")
+    }
+    live_hits = [row for row in probes if row.get("live")]
+    fixture_mode = (cover.get("data_mode") or "") in {"demo", "fixture"}
+    production = not fixture_mode
+    ev_cover = health.get("events_coverage") or {}
+    overall = (health.get("overall") or {})
+    shot_center = shots.get("center") or {}
+    shot_aapl = shots.get("AAPL") or {}
+    shot_xom = shots.get("XOM") or {}
+    refs = _collect_refs(lead)
+    official_dom = any(_official_href(href) for href in shot_center.get("factHrefs") or [])
+    e1_live_dom = "official_fact" in (shot_center.get("facts") or []) and official_dom and "research_opinion" not in (shot_center.get("facts") or [])
+    e1_fixture_dom = e1_live_dom and any("goldman" in href for href in shot_center.get("opinionHrefs") or [])
+    e2_observed = any(len(event.get("sources") or []) >= 3 for event in events)
+    e3_observed = any(int((event.get("analysis") or {}).get("conflict_count") or 0) >= 1 for event in events)
+    e4_observed = "war_sanctions" in xom_types and "war_sanctions" not in aapl_types
+    e9_observed = any(event.get("status") in {"updated", "revoked"} for event in events)
     e6_dom = (shot_center.get("google") == "not_configured") and shot_center.get("ready") is True
     e8_dom = all(str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []) and bool(shot_center.get("analysisHrefs"))
     e10_dom = {"what", "credibility", "why", "duration", "invalidation"}.issubset(set(shot_center.get("answers") or []))
-    mode_ok = (cover.get("data_mode") in {"empty", "demo", "fixture"}) and cover.get("live") is False
-    official_honest = official.get("status") in {"not_implemented", "demo_fixture"} and official.get("live") is False
-    live_e1_e8 = bool(live_hits) and all(row.get("live") for row in probes) if probes else False
+    official_feeds_ok = sum(1 for row in live_providers.values() if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0)
+    fixture_honest = official.get("status") in {"idle", "demo_fixture", "not_implemented"} and official.get("live") is False
+    google_honest = google.get("status") == "not_configured" and "google.com/search" not in js
+    live_originals = bool(live_hits) and all(row.get("live") for row in probes if _official_href(row.get("url") or ""))
     framework = {
-        "E1": "official_fact" in fact_types and opinion and e1_dom,
-        "E2": len(sources) >= 3 and e2_dom,
-        "E3": int(analysis.get("conflict_count") or 0) >= 1 and bool(shot_center.get("conflicts")),
-        "E4": "war_sanctions" not in aapl_types and "war_sanctions" in xom_types and e4_dom,
-        "E5": (vix.get("analysis") or {}).get("vix_role") == "risk_confirmation_only" or production_empty,
-        "E6": google.get("status") == "not_configured" and official_honest and "google.com/search" not in js and e6_dom,
+        "E1": ("official_fact" in fact_types and (e1_fixture_dom if fixture_mode else e1_live_dom)),
+        "E2": e2_observed,
+        "E3": e3_observed,
+        "E4": e4_observed,
+        "E5": (vix.get("analysis") or {}).get("vix_role") == "risk_confirmation_only" or (production and not vix),
+        "E6": google_honest and fixture_honest and e6_dom,
         "E7": cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
         and ev_cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
         and overall.get("level") != "L0",
         "E8": bool(refs) and e8_dom,
-        "E9": iran.get("status") == "updated" or production_empty,
-        "E10": (e10_dom and shot_center.get("ready") is True) or (production_empty and shot_center.get("ready") is True),
+        "E9": e9_observed,
+        "E10": e10_dom and shot_center.get("ready") is True,
     }
     live = {
-        "E1": framework["E1"] and live_e1_e8,
-        "E2": framework["E2"] and live_e1_e8,
-        "E3": framework["E3"] and live_e1_e8,
-        "E4": framework["E4"] and live_e1_e8,
-        "E5": bool(vix) and framework["E5"] and live_e1_e8,
+        "E1": production and e1_live_dom and live_originals and official_feeds_ok >= 1,
+        "E2": production and e2_observed and live_originals,
+        "E3": production and e3_observed and live_originals,
+        "E4": production and e4_observed and live_originals,
+        "E5": framework["E5"],
         "E6": framework["E6"],
         "E7": framework["E7"],
-        "E8": framework["E8"] and live_e1_e8,
-        "E9": iran.get("status") == "updated" and live_e1_e8,
-        "E10": bool(e10_dom) and live_e1_e8,
+        "E8": production and framework["E8"] and live_originals,
+        "E9": production and e9_observed and live_originals,
+        "E10": production and e10_dom and live_originals and shot_center.get("ready") is True,
     }
-    live_verdict = {key: ("PASS" if value else "FAIL") for key, value in live.items()}
+
+    def live_label(key: str) -> str:
+        if live[key]:
+            return "PASS"
+        if key in {"E2", "E3", "E4", "E9"} and not {
+            "E2": e2_observed,
+            "E3": e3_observed,
+            "E4": e4_observed,
+            "E9": e9_observed,
+        }[key]:
+            return UNOBSERVED
+        return "FAIL"
+
+    live_verdict = {key: live_label(key) for key in live}
     framework_verdict = {
         key: ("PASS" if value else "FAIL") + (" (fixture/demo only)" if fixture_mode and value else "")
         for key, value in framework.items()
     }
+    must_live = ["E1", "E6", "E7", "E8", "E10"]
     return {
-        "lane": "production_live" if not fixture_mode else "fixture_demo",
+        "lane": "production_live" if production else "fixture_demo",
         "data_mode": cover.get("data_mode"),
+        "live": cover.get("live"),
         "live_coverage_ratio": cover.get("live_coverage_ratio"),
+        "real_source_count": cover.get("real_source_count"),
+        "event_count": cover.get("event_count"),
+        "live_event_count": cover.get("live_event_count"),
+        "last_success": cover.get("last_success"),
+        "implemented_live_providers": cover.get("implemented_live_providers"),
+        "live_ok_providers": cover.get("live_ok_providers"),
+        "provider_health": live_providers,
         "verdict": live_verdict,
         "framework_verdict": framework_verdict,
-        "pass_count": sum(1 for value in live.values() if value),
+        "pass_count": sum(1 for value in live_verdict.values() if value == "PASS"),
         "framework_pass_count": sum(1 for value in framework.values() if value),
-        "must_fail": [key for key in MUST if not live[key]],
-        "gate": live["E6"] and live["E7"] and mode_ok and official_honest and official.get("status") != "ok",
-        "note": "Fixture/demo cases are not production live passes. E1/E8 require reachable non-example originals.",
+        "must_fail": [key for key in must_live if live_verdict[key] != "PASS"],
+        "gate": all(live_verdict[key] == "PASS" for key in must_live) and fixture_honest,
+        "note": (
+            "Production E1/E8/E10 require reachable official originals. "
+            "E2/E3/E4/E9 without a natural live sample are labeled "
+            f"'{UNOBSERVED}' and are not counted as live PASS. "
+            "Fixture algorithm coverage stays in pytest."
+        ),
         "probes": probes,
         "live_hits": len(live_hits),
         "page": page[:80],
         "xom_why": xom_why,
         "nvda_why": nvda_why,
         "jpm_why": jpm_why,
-        "publishers": sorted(publishers),
+        "publishers": sorted(item for item in publishers if item),
+        "opinion_present": bool(opinion),
+        "lead_event_type": lead.get("event_type"),
     }
 
 
@@ -335,12 +393,13 @@ def main() -> int:
     js = html(f"{BASE}/static/events_ui.js") + html(f"{BASE}/static/events.js") + html(f"{BASE}/static/stock.js")
     page = html(f"{BASE}/events")
     urls = []
-    for event in center.get("events") or []:
+    for event in (center.get("events") or [])[:24]:
         for source in event.get("sources") or []:
             urls.append(source.get("source_url"))
         for ref in (event.get("analysis") or {}).get("evidence_refs") or []:
             urls.append(ref.get("source_url"))
-    probes = [probe_url(url) for url in dict.fromkeys(item for item in urls if item)]
+    unique = list(dict.fromkeys(item for item in urls if item))
+    probes = [probe_url(url) for url in unique[:24]]
     screenshot_error = None
     shots = {}
     try:

@@ -50,14 +50,29 @@ ON CONFLICT (claim_id) DO UPDATE SET text = EXCLUDED.text, polarity = EXCLUDED.p
 """
 
 UPSERT_CURSOR = """
-INSERT INTO event_job_cursors (provider, last_success, last_attempt, status, reason_code, item_count)
-VALUES (%(provider)s, %(last_success)s, %(last_attempt)s, %(status)s, %(reason_code)s, %(item_count)s)
+INSERT INTO event_job_cursors (
+    provider, last_success, last_attempt, status, reason_code, item_count,
+    etag, last_modified, cursor_json
+)
+VALUES (
+    %(provider)s, %(last_success)s, %(last_attempt)s, %(status)s, %(reason_code)s,
+    %(item_count)s, %(etag)s, %(last_modified)s, %(cursor_json)s
+)
 ON CONFLICT (provider) DO UPDATE SET
-    last_success = EXCLUDED.last_success,
+    last_success = COALESCE(EXCLUDED.last_success, event_job_cursors.last_success),
     last_attempt = EXCLUDED.last_attempt,
     status = EXCLUDED.status,
     reason_code = EXCLUDED.reason_code,
-    item_count = EXCLUDED.item_count
+    item_count = EXCLUDED.item_count,
+    etag = COALESCE(EXCLUDED.etag, event_job_cursors.etag),
+    last_modified = COALESCE(EXCLUDED.last_modified, event_job_cursors.last_modified),
+    cursor_json = EXCLUDED.cursor_json
+"""
+
+LOAD_CURSORS = """
+SELECT provider, last_success, last_attempt, status, reason_code, item_count,
+       etag, last_modified, cursor_json
+FROM event_job_cursors
 """
 
 
@@ -94,7 +109,18 @@ def persist_events(conn, events: list[TrustedEvent], coverage: dict[str, Any] | 
     return written
 
 
-def persist_cursor(conn, provider: str, *, status: str, reason_code: str | None, item_count: int, stamp: str) -> None:
+def persist_cursor(
+    conn,
+    provider: str,
+    *,
+    status: str,
+    reason_code: str | None,
+    item_count: int,
+    stamp: str,
+    etag: str | None = None,
+    last_modified: str | None = None,
+    cursor_json: dict[str, Any] | None = None,
+) -> None:
     conn.execute(
         UPSERT_CURSOR,
         {
@@ -104,5 +130,13 @@ def persist_cursor(conn, provider: str, *, status: str, reason_code: str | None,
             "status": status,
             "reason_code": reason_code,
             "item_count": item_count,
+            "etag": etag,
+            "last_modified": last_modified,
+            "cursor_json": Jsonb(cursor_json or {}),
         },
     )
+
+
+def load_cursors(conn) -> dict[str, dict[str, Any]]:
+    rows = conn.execute(LOAD_CURSORS).fetchall()
+    return {str(row["provider"]): dict(row) for row in rows}

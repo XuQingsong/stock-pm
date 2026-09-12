@@ -93,6 +93,8 @@ class EventDocument:
     body: str = ""
     provider: str = "official"
     status: str = "active"
+    etag: str | None = None
+    last_modified: str | None = None
 
 
 @dataclass(slots=True)

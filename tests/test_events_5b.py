@@ -266,6 +266,9 @@ def test_incremental_files_have_no_live_secrets():
     paths = [
         root / "src/stock_pm/data/events_5b.json",
         root / "src/stock_pm/sql/migrations/0002_trusted_events.sql",
+        root / "src/stock_pm/sql/migrations/0003_event_job_cursors.sql",
+        root / "src/stock_pm/events/live.py",
+        root / "src/stock_pm/events/feeds.py",
         root / ".env.example",
     ]
     for path in paths:

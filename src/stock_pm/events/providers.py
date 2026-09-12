@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 from stock_pm.config import Settings
 
+from .live import live_provider_coverage
 from .policy import events_data_mode, is_safe_public_http_url, redact_url, sanitize_untrusted
 from .types import EventDocument
 
@@ -64,7 +65,7 @@ def load_fixture_documents() -> list[EventDocument]:
 
 
 class OfficialFeedProvider:
-    """No live official event ingest exists. Fixtures are opt-in and labeled."""
+    """Fixture loader only. Production live ingest lives in live.py."""
 
     name = "official_feed"
 
@@ -75,7 +76,7 @@ class OfficialFeedProvider:
         self.last_error: str | None = None
 
     def configured(self) -> bool:
-        return False
+        return self.mode in {"demo", "fixture"}
 
     def status(self) -> dict[str, Any]:
         if self.mode in {"demo", "fixture"}:
@@ -92,14 +93,14 @@ class OfficialFeedProvider:
             }
         return {
             "provider": self.name,
-            "status": "not_implemented",
+            "status": "idle",
             "live": False,
-            "reason_code": "live_official_event_provider_absent",
-            "role": "none",
+            "reason_code": "fixture_loader_only",
+            "role": "seed_or_test_fixture",
             "request_url": None,
             "last_success_at": None,
             "event_count": 0,
-            "note": "No live Treasury/SEC/central-bank event ingest is implemented.",
+            "note": "Fixtures are not loaded in production. Live ingest is sec_edgar / federal_reserve / eia_press.",
         }
 
     def discover(self, *, query: str | None = None) -> list[EventDocument]:
@@ -244,11 +245,14 @@ class GoogleDiscoveryProvider:
 def provider_coverage(settings: Settings | None = None) -> dict[str, Any]:
     official = OfficialFeedProvider(settings)
     google = GoogleDiscoveryProvider(settings)
+    live = live_provider_coverage(settings)
     return {
         "official_feed": official.status(),
         "google_cse": google.status(),
+        **live,
         "note": (
-            "No live official event ingest provider is implemented. "
-            "Google CSE is discovery-only. Fixtures are never live coverage."
+            "Production uses verified SEC / Federal Reserve / EIA feeds only. "
+            "Google CSE is discovery-only and may stay not_configured. "
+            "Fixtures are never live coverage."
         ),
     }

@@ -10,44 +10,60 @@ from typing import Any
 from stock_pm.config import Settings
 from stock_pm.database import Database
 
+from .live import apply_cursor
 from .service import build_event_book, coverage, reset_cache
-from .store import persist_cursor, persist_events
+from .store import load_cursors, persist_cursor, persist_events
+
+
+LIVE_CURSOR_NAMES = ("sec_edgar", "federal_reserve", "eia_press", "official_feed", "google_cse")
+
+
+def _hydrate_cursors(conn) -> None:
+    try:
+        for name, row in load_cursors(conn).items():
+            apply_cursor(name, etag=row.get("etag"), last_modified=row.get("last_modified"))
+    except Exception:
+        return
 
 
 def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
     config = settings or Settings()
     reset_cache()
-    events = build_event_book(config, refresh=True)
-    cover = coverage(config, events)
-    stamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    persisted = 0
     persist_error = None
-    db = Database(config)
+    persisted = 0
+    stamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    db = None
     try:
+        db = Database(config)
         with db.pool.connection() as conn:
+            _hydrate_cursors(conn)
+            events = build_event_book(config, refresh=True)
+            cover = coverage(config, events)
             persisted = persist_events(conn, events, cover)
-            official = cover["providers"]["official_feed"]
-            persist_cursor(
-                conn,
-                "official_feed",
-                status=official.get("status") or "not_implemented",
-                reason_code=official.get("reason_code"),
-                item_count=persisted,
-                stamp=stamp,
-            )
-            google = cover["providers"]["google_cse"]
-            persist_cursor(
-                conn,
-                "google_cse",
-                status=google["status"],
-                reason_code=google.get("reason_code"),
-                item_count=0 if google["status"] != "ok" else persisted,
-                stamp=stamp,
-            )
+            providers = cover.get("providers") or {}
+            for name in LIVE_CURSOR_NAMES:
+                row = providers.get(name) or {}
+                persist_cursor(
+                    conn,
+                    name,
+                    status=str(row.get("status") or "idle"),
+                    reason_code=row.get("reason_code"),
+                    item_count=int(row.get("event_count") or 0),
+                    stamp=stamp,
+                    etag=row.get("etag"),
+                    last_modified=row.get("last_modified"),
+                    cursor_json={
+                        "request_url": row.get("request_url"),
+                        "live": row.get("live"),
+                    },
+                )
     except Exception as exc:
         persist_error = type(exc).__name__
+        events = build_event_book(config, refresh=True)
+        cover = coverage(config, events)
     finally:
-        db.close()
+        if db is not None:
+            db.close()
     return {
         "status": "ok" if persist_error is None else "degraded",
         "persisted": persisted,
