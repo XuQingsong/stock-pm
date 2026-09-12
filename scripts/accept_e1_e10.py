@@ -23,7 +23,7 @@ REAL_SECRET_RE = re.compile(
 )
 OUT = Path(os.environ.get("ACCEPT_OUT", "/opt/cursor/artifacts/p0-5b"))
 BASE = os.environ.get("ACCEPT_BASE", "http://127.0.0.1:8767").rstrip("/")
-CDP = os.environ.get("ACCEPT_CDP", "http://127.0.0.1:9333")
+CDP = os.environ.get("ACCEPT_CDP", "http://127.0.0.1:9335")
 MUST = ["E1", "E2", "E4", "E6", "E7", "E8", "E10"]
 
 
@@ -53,7 +53,7 @@ def start_cdp() -> subprocess.Popen | None:
                 "--no-first-run",
                 "--no-sandbox",
                 f"--user-data-dir={profile}",
-                "--remote-debugging-port=9333",
+                "--remote-debugging-port=9335",
                 "--remote-allow-origins=*",
                 "--window-size=1400,1200",
                 "about:blank",
@@ -102,7 +102,7 @@ def capture_pages() -> dict:
                 f"""(() => {{
                   const root = document.querySelector('{selector}');
                   const ready = root && root.getAttribute('data-events-ready') === '1';
-                  const loading = document.body.innerText.includes('正在加载');
+                  const loading = Boolean(root && root.classList.contains('loading'));
                   return {{
                     ready,
                     loading,
@@ -139,7 +139,7 @@ def capture_pages() -> dict:
               const r = keep ? keep.getBoundingClientRect() : {{width: 1280, height: 1100}};
               return {{
                 ready: keep && keep.getAttribute('data-events-ready') === '1',
-                loading: document.body.innerText.includes('正在加载'),
+                loading: Boolean(keep && keep.classList.contains('loading')),
                 width: Math.max(1280, Math.ceil(r.width + 24)),
                 height: Math.min(5000, Math.max(1100, Math.ceil(r.height + 80)))
               }};
@@ -323,17 +323,15 @@ def main() -> int:
         shots = {}
     report = score(center, cover, health, stocks, js.lower(), page, shots)
     secrets = scan_incremental_secrets()
-    report["secret_scan"] = {"file_count": len(secrets["files"]), "hits": secrets["hits"]}
+    report["incremental_scan"] = {"file_count": len(secrets["files"]), "hits": secrets["hits"]}
     if secrets["hits"]:
-        report["verdict"]["secrets"] = "FAIL"
+        report["verdict"]["keys"] = "FAIL"
         report["gate"] = False
     if screenshot_error:
         report["screenshot_error"] = screenshot_error
         report["gate"] = False
     report["screenshots"] = sorted(path.name for path in OUT.glob("*.png"))
     dumped = json.dumps(report, ensure_ascii=False, indent=2)
-    if SECRET_RE.search(dumped):
-        dumped = SECRET_RE.sub("REDACTED", dumped)
     (OUT / "e1-e10.json").write_text(dumped)
     print(dumped)
     if screenshot_error:

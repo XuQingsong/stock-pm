@@ -1064,6 +1064,8 @@
       body.dataset.eventsReady = "1";
       body.dataset.symbol = SYMBOL;
       body.dataset.eventCount = String((payload.events || []).length);
+      const module = $("event-module");
+      if (module) module.dataset.eventsReady = "1";
     } catch (error) {
       body.className = "";
       body.dataset.eventsReady = "error";
