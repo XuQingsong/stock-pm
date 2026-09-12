@@ -91,6 +91,28 @@
 .market-background{margin-top:10px}
 .fact-drawer{border:1px solid var(--line);border-radius:10px;padding:14px;max-width:560px;width:calc(100% - 32px)}
 .decision-chain-fold{margin-top:10px}
+.event-module .event-card{border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px;background:#fff}
+.event-module .event-meta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.event-module .tier-fact{background:#e4f7f1;color:#008661}
+.event-module .tier-opinion{background:#fff6e5;color:#735a21}
+.event-module .tier-media{background:#edf6ff;color:#1d4e89}
+.event-module .why-relevant{font-size:12px;color:#374151;margin-top:6px}
+.event-answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0}
+.event-center .event-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;background:#fff}
+.event-coverage{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:8px 0 12px;font-size:12px}
+.source-lane{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;background:#fbfcfe}
+.source-lane[data-lane="facts"]{border-color:#86d3b8;background:#f3fbf7}
+.source-lane[data-lane="media"]{border-color:#9ec4ea;background:#f5f9fd}
+.source-lane[data-lane="opinion"]{border-color:#e6c37a;background:#fffaf0}
+.source-lane h4{margin:0 0 6px;font-size:12px}
+.source-row,.claim-row,.exposure-row{margin:6px 0;font-size:13px}
+.event-answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:8px 0}
+.event-answers div{background:#f4f7fa;border-radius:8px;padding:8px}
+.event-answers span{display:block;color:var(--muted);font-size:11px}
+.event-answers b{display:block;margin-top:3px;font-size:13px}
+.evidence-refs{font-size:12px;margin-top:4px}
+.vix-risk{border-left:4px solid #7a55c7;background:#f6f3fc;padding:8px 10px;border-radius:0 8px 8px 0;margin:8px 0}
+.event-card-head h3{margin:0 0 4px;font-size:16px}
 .causal-block { margin-top: 10px; padding-top: 4px; }
 .causal-block h4{margin:8px 0 4px;font-size:12px;color:#4b5563;letter-spacing:.04em;text-transform:uppercase}
 .causal-block .why{margin:0 0 6px;font-size:12px;color:#374151}

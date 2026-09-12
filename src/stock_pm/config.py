@@ -68,6 +68,10 @@ DEFAULT_WATCHLIST: dict[str, Instrument] = {
                        "半导体", ("semis", "high_valuation_growth"), "high"),
     "NOK": Instrument("NOK", "NYSE", "Nokia Corp ADR", "stocks",
                       "通信设备", ("telecom",), "low"),
+    "XOM": Instrument("XOM", "NYSE", "Exxon Mobil Corp", "stocks",
+                      "能源", ("energy", "oil_producer"), "low"),
+    "JPM": Instrument("JPM", "NYSE", "JPMorgan Chase & Co", "stocks",
+                      "银行", ("banks", "credit"), "medium"),
     "AVGO": Instrument("AVGO", "NASDAQ", "Broadcom Inc", "stocks",
                        "半导体", ("semis", "high_valuation_growth"), "high"),
     "QQQ": Instrument("QQQ", "NASDAQ", "Invesco QQQ Trust Series 1", "etf",
@@ -101,3 +105,5 @@ class Settings:
         default_factory=lambda: (os.getenv("ENABLE_DECISION_INJECT") or "").strip().lower()
         in {"1", "true", "yes", "on"}
     )
+    google_cse_api_key: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_API_KEY", ""))
+    google_cse_id: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_ID", ""))
