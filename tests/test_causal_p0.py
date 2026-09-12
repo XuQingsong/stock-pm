@@ -268,6 +268,9 @@ def test_ui_renders_causal_layers_and_fact_drawer():
     assert "fact-drawer" in stock
     assert "sourceLink" in stock
     assert "can_form_direction=false" in stock
+    assert "function extraQuery()" in stock
+    assert "data-decision-ready" in stock
+    assert "next.set(\"inject\", inject)" in stock
     html = Path("src/stock_pm/static/stock.html").read_text()
     assert 'id="fact-drawer"' in html
     shell = Path("src/stock_pm/static/shell.js").read_text()

@@ -930,6 +930,19 @@
       <p class="subline">标的 ${esc(payload.symbol || SYMBOL)} · 数据截止 ${dateText(payload.as_of, true)} · 证据质量 ${esc(quality)} · Thesis ${statusPill(thesisStatus)} <b>${esc(directionLabel)}</b> · 相对上次 ${dateText(compared.as_of, true)}</p>
       <details class="decision-facts fold"><summary>原始 Facts（默认折叠）</summary><ul>${facts}</ul></details>`;
     bindFactLinks(body, payload);
+    body.dataset.decisionReady = "1";
+    body.setAttribute("data-decision-ready", "1");
+  }
+
+  function extraQuery() {
+    const params = new URLSearchParams(location.search);
+    const next = new URLSearchParams();
+    const preview = params.get("preview");
+    const inject = params.get("inject");
+    if (preview) next.set("preview", preview);
+    if (inject) next.set("inject", inject);
+    const qs = next.toString();
+    return qs ? `?${qs}` : "";
   }
 
   function healthReasonCopy(row) {
@@ -1010,8 +1023,7 @@
   async function loadDataHealth() {
     const slot = $("data-health-slot");
     if (!slot) return;
-    const preview = new URLSearchParams(location.search).get("preview");
-    const path = endpoint("data-health") + (preview ? `?preview=${encodeURIComponent(preview)}` : "");
+    const path = endpoint("data-health") + extraQuery();
     try {
       const health = await api(path);
       slot.innerHTML = renderDataHealth(health);
@@ -1023,15 +1035,16 @@
   async function loadDecision() {
     const body = $("decision-body") || $("decision-module");
     if (!body) return;
-    const preview = new URLSearchParams(location.search).get("preview");
     // Same gate as GET /api/stock/{symbol}/decision: the API ignores preview
-    // unless ENABLE_DECISION_PREVIEW is on and APP_ENV is development/test/local.
-    const path = endpoint("decision") + (preview ? `?preview=${encodeURIComponent(preview)}` : "");
+    // and inject unless the matching ENABLE_* flag is on and APP_ENV is
+    // development/test/local. Public query params cannot enable them.
+    const path = endpoint("decision") + extraQuery();
     try {
       const payload = await api(path);
       renderDecision(payload);
     } catch (error) {
       body.className = "";
+      body.dataset.decisionReady = "error";
       body.innerHTML = `<div class="state error"><b>动态判断加载失败</b><span>${esc(error.message || "未知错误")}</span></div>`;
     }
   }
