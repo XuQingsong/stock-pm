@@ -6,6 +6,7 @@ from datetime import date, datetime, timezone
 from typing import Any, Iterable
 
 from stock_pm.config import Settings
+from stock_pm.series import FRED_MARKET_SERIES
 
 from .causal import canonical_metric
 from .clock import (
@@ -328,6 +329,8 @@ def _evaluate_rows(
             **provenance,
         )
     if not rows:
+        spec = FRED_MARKET_SERIES.get(metric) or {}
+        wired = spec.get("series_id")
         if not configured:
             return _dataset_row(
                 dataset=dataset,
@@ -342,6 +345,10 @@ def _evaluate_rows(
                 coverage_window=coverage_window,
                 configured=False,
                 required=required,
+                series=wired,
+                series_or_symbol=wired,
+                unit=spec.get("unit"),
+                frequency=spec.get("frequency"),
             )
         return _dataset_row(
             dataset=dataset,
@@ -356,6 +363,10 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             configured=configured,
             required=required,
+            series=wired,
+            series_or_symbol=wired,
+            unit=spec.get("unit"),
+            frequency=spec.get("frequency"),
         )
     observed = _observed_iso(latest, kind=kind)
     ingested = _ingested_iso(latest)
