@@ -170,6 +170,8 @@ def test_nvda_rates_path_visible_aapl_nok_not_copied():
     aapl = assemble_from_bundle(_bundle("AAPL"))
     nok = assemble_from_bundle(_bundle("NOK"))
     assert nvda["rates_path"]["status"] == "visible"
+    assert nvda["rates_path"]["direction"] in {"pressure", "watch"}
+    assert nvda["rates_path"]["horizon"] == "short"
     assert [node["id"] for node in nvda["rates_path"]["nodes"]] == [
         "cpi",
         "us2y",
@@ -280,6 +282,12 @@ def test_ui_renders_causal_layers_and_fact_drawer():
     assert "function extraQuery()" in stock
     assert "data-decision-ready" in stock
     assert "next.set(\"inject\", inject)" in stock
+    assert "影响方向" in stock
+    assert "期限" in stock
+    fold_block = stock[stock.index("decision-chain-fold"):]
+    assert "renderChainGroups(payload)" in fold_block
+    assert stock.index("class=\"causal-flow\"") < stock.index("decision-chain-fold")
+    assert "item.metric || item.id" in stock
     html = Path("src/stock_pm/static/stock.html").read_text()
     assert 'id="fact-drawer"' in html
     shell = Path("src/stock_pm/static/shell.js").read_text()

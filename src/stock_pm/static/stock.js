@@ -568,7 +568,9 @@
   }
 
   function factId(item) {
-    return item.id || (item.ref && item.ref.ref_id) || item.ref_id || item.metric || "";
+    const aliases = { price: "close", price_pressure: "close", close: "close" };
+    const raw = String(item.metric || item.id || (item.ref && item.ref.ref_id) || item.ref_id || "").toLowerCase();
+    return aliases[raw] || raw;
   }
 
   function refLine(item) {
@@ -591,7 +593,7 @@
       <div><span>来源性质</span><b>${esc(originLabel(origin))}</b></div>
       <div><span>http_source</span><b>${sourceLink(http)}</b></div>
     </div>
-    <button type="button" class="fact-link" data-fact-id="${esc(factId(item))}">打开事实详情</button>`;
+    <button type="button" class="fact-link" data-fact-id="${esc(factId(item))}" data-metric="${esc(factId(item))}">打开事实详情</button>`;
   }
 
   function thesisItem(item) {
@@ -780,8 +782,9 @@
       <div class="counter">失效条件：${esc(edge.invalidation || path.invalidation || "—")}</div>
       <button type="button" class="fact-link" data-fact-id="${esc((edge.evidence || [])[0] || edge.from)}">引用事实</button>
     </article>`).join("");
-    return `<div class="rates-path" data-status="${esc(path.status || "")}">
+    return `<div class="rates-path" data-status="${esc(path.status || "")}" data-direction="${esc(path.direction || "")}" data-horizon="${esc(path.horizon || "")}">
       <p class="why">Fact → Change → Expectation → Impact → What changes。置信度 ${esc(path.confidence || "—")}。失效：${esc(path.invalidation || "—")}</p>
+      <p class="why">影响方向 ${esc(path.direction || "—")} · 期限 ${esc(path.horizon || "—")}。未形成个股交易方向时仍回答传导方向/期限，不输出买卖指令。</p>
       <div class="path-nodes">${nodes}</div>
       <div class="path-edges">${edges}</div>
     </div>`;
@@ -811,7 +814,7 @@
       } else if (layer.id === "what_changes") {
         body = (layer.items || []).map(thesisItem).join("") || `<div class="empty-note">主结论尚未改写方向</div>`;
       } else if (layer.id === "fact" || layer.id === "change") {
-        body = (layer.items || []).map((item) => `<article class="chain-item">
+        body = (layer.items || []).map((item) => `<article class="chain-item" data-metric="${esc(factId(item))}">
           ${statusPill(item.status || item.materiality)}
           <h4>${esc(item.name || item.metric || item.kind || "fact")}</h4>
           ${comparisonBlock(item)}
@@ -846,23 +849,32 @@
       .concat(payload.facts || [])
       .concat(payload.market_background || [])
       .concat(((payload.layers || []).find((row) => row.id === "change") || {}).items || [])
-      .concat(((payload.rates_path || {}).nodes || []));
+      .concat(((payload.rates_path || {}).nodes || []))
+      .concat(payload.risk_state ? [payload.risk_state] : []);
     const aliases = { price: "close", price_pressure: "close", close: "close" };
-    const wanted = aliases[factIdWanted] || factIdWanted;
+    const wanted = aliases[String(factIdWanted || "").toLowerCase()] || String(factIdWanted || "").toLowerCase();
     const item = catalog.find((row) => {
-      const id = factId(row);
-      return id === factIdWanted || id === wanted || row.metric === factIdWanted || row.metric === wanted || row.id === factIdWanted || row.id === wanted;
+      const id = String(factId(row) || "").toLowerCase();
+      const metric = String(row.metric || "").toLowerCase();
+      const rowId = String(row.id || "").toLowerCase();
+      return id === wanted || metric === wanted || rowId === wanted;
     });
     if (!item) {
       body.innerHTML = `<p>未找到内部事实 ${esc(factIdWanted)}</p>`;
     } else {
       const ref = item.ref || {};
-      body.innerHTML = `<h3>事实详情 · ${esc(item.name || item.metric || factIdWanted)}</h3>
-        <p>内部 id：${esc(factId(item))}</p>
+      const metric = factId(item) || wanted;
+      const source = item.source || ref.source || "";
+      const asOf = item.as_of || ref.as_of || "";
+      const unit = item.unit || ref.unit || "";
+      const status = item.status || ref.status || "";
+      const http = item.http_source || ref.http_source || "";
+      body.innerHTML = `<h3 data-drawer-metric="${esc(metric)}">事实详情 · ${esc(item.name || item.metric || factIdWanted)}</h3>
+        <p>内部 id：${esc(metric)}</p>
         ${comparisonBlock({ ...item, current: item.current ?? item.value })}
-        <p>source ${esc(item.source || ref.source || "—")} · as_of ${esc(item.as_of || ref.as_of || "—")} · unit ${esc(item.unit || ref.unit || "—")}</p>
-        <p>status ${esc(item.status || ref.status || "—")} · 原始/二手：${esc(originLabel(item.origin || ref.origin))}</p>
-        <p>http_source：${sourceLink(item.http_source || ref.http_source)}</p>`;
+        <p data-drawer-source="${esc(source)}" data-drawer-as-of="${esc(asOf)}" data-drawer-unit="${esc(unit)}" data-drawer-status="${esc(status)}">source ${esc(source || "—")} · as_of ${esc(asOf || "—")} · unit ${esc(unit || "—")}</p>
+        <p>status ${esc(status || "—")} · 原始/二手：${esc(originLabel(item.origin || ref.origin))}</p>
+        <p>http_source：${sourceLink(http)}</p>`;
     }
     if (typeof drawer.showModal === "function") drawer.showModal();
   }
@@ -908,11 +920,10 @@
     const withheld = !canDirect
       ? `<div class="decision-banner" role="status">历史事实与预测已区分：can_form_direction=false，页面不展示无来源方向或百分比预测。</div>`
       : "";
-    body.innerHTML = `${renderGradeBoard(payload)}
+    body.innerHTML = `      ${renderGradeBoard(payload)}
       ${injectNote}${withheld}
       ${noMove}
       ${gaps ? `<ul class="decision-gaps">${gaps}</ul>` : ""}
-      ${renderChainGroups(payload)}
       <section class="causal-flow" aria-label="Fact Change Expectation Impact What changes">
         <h3>Fact → Change → Expectation → Impact → What changes</h3>
         ${renderLayers(payload)}
@@ -920,6 +931,7 @@
         ${renderBackground(payload.market_background)}
       </section>
       <details class="decision-chain-fold fold"><summary>兼容技术链（默认折叠）</summary>
+        ${renderChainGroups(payload)}
         <div class="decision-chain">${renderChain(payload)}</div>
       </details>
       <div class="decision-sides">

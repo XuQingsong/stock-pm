@@ -40,6 +40,20 @@ ODDS_RULE = MaterialityRule(abs_delta=5.0)
 VIX_RULE = MaterialityRule(abs_delta=1.0)
 EPS_RULE = MaterialityRule(abs_delta=0.05)
 
+
+def _enrich_risk_state(risk_state: dict[str, Any] | None, facts: list[dict[str, Any]] | None) -> dict[str, Any] | None:
+    if not risk_state:
+        return risk_state
+    vix_fact = next((row for row in facts or [] if canonical_metric(str(row.get("metric") or "")) == "vix"), None)
+    if not vix_fact:
+        return risk_state
+    payload = dict(risk_state)
+    payload["http_source"] = vix_fact.get("http_source") or payload.get("http_source")
+    payload["status"] = vix_fact.get("status") or payload.get("status") or "ok"
+    payload["unit"] = payload.get("unit") or vix_fact.get("unit") or "index"
+    payload["name"] = vix_fact.get("name") or payload.get("name") or "VIX"
+    return payload
+
 UNVERIFIED_HINTS = (
     "war",
     "sanction",
@@ -773,7 +787,7 @@ def assemble_from_kernel(
             facts=facts,
         )
     if risk_state is None:
-        risk_state = build_risk_state(changes)
+        risk_state = _enrich_risk_state(build_risk_state(changes), facts)
     if not market_background:
         _main_facts, market_background = split_display_facts(facts, changes, seed_watch, symbol)
         if _main_facts:
@@ -976,7 +990,7 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         confirmation=confirmation,
         facts=facts,
     )
-    risk_state = build_risk_state(changes)
+    risk_state = _enrich_risk_state(build_risk_state(changes), facts)
     bulls, bears, disagreement, invalidation = _drivers(symbol, changes, expect_rows, impacts)
     stamp = iso_stamp(bundle.get("generated_at")) or datetime.now(timezone.utc).isoformat()
     thesis = build_thesis_snapshot(

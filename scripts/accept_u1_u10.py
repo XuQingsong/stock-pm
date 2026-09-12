@@ -65,7 +65,40 @@ def nfp_row(view: dict) -> dict:
     return {}
 
 
-def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, js, page) -> dict:
+def api_fact(view: dict, metric: str) -> dict:
+    for row in list(view.get("facts") or []) + list(view.get("market_background") or []):
+        if row.get("metric") == metric:
+            return row
+    risk = view.get("risk_state") or {}
+    if metric == "vix" and risk:
+        return risk
+    return {}
+
+
+def href_matches(href: str, expected: str) -> bool:
+    if not href.startswith("http"):
+        return False
+    if not expected:
+        return True
+    return expected.split("?")[0] in href or href.split("?")[0] in expected
+
+
+def drawer_matches(row: dict, metric: str, expected: dict) -> bool:
+    heading = str(row.get("heading") or "").lower()
+    text = str(row.get("text") or "").lower()
+    return (
+        row.get("metric") == metric
+        and bool(row.get("source"))
+        and bool(row.get("as_of"))
+        and bool(row.get("unit"))
+        and bool(row.get("status"))
+        and href_matches(str(row.get("href") or ""), str(expected.get("http_source") or ""))
+        and metric in (heading + " " + text)
+        and (metric == "close" or "事实详情 · close" not in heading)
+    )
+
+
+def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, js, page, dom=None) -> dict:
     ok_h = {
         "cpi": ds(h_nvda, "macro_cpi", "cpi").get("status"),
         "us2y": ds(h_nvda, "macro_rates_confirm", "us2y").get("status"),
@@ -80,6 +113,46 @@ def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, j
     layer_change = next((row for row in nvda.get("layers") or [] if row.get("id") == "change"), {})
     dxy = ds(h_nvda, "macro_dxy", "dxy")
     pred_blob = json.dumps(pred, ensure_ascii=False)
+    pages = (dom or {}).get("pages") or {}
+    drawers = (dom or {}).get("drawers") or {}
+
+    def snap(symbol: str) -> dict:
+        return pages.get(symbol) or {}
+
+    def main(symbol: str) -> str:
+        return snap(symbol).get("mainText") or ""
+
+    cpi_copied = re.compile(r"CPIAUCSL|CPI-U|CPI‑U", re.I)
+    u3_dom = (
+        snap("NVDA").get("ready") is True
+        and snap("NVDA").get("loading") is False
+        and snap("NVDA").get("whatChangesVisible") is True
+        and snap("NVDA").get("layers") == ["fact", "change", "expectation", "impact", "what_changes"]
+        and "Fact → Change → Expectation → Impact → What changes" in main("NVDA")
+        and "改变了哪个判断" in main("NVDA")
+    )
+    u4_dom = (
+        bool(cpi_copied.search(main("NVDA")))
+        and not cpi_copied.search(main("AAPL"))
+        and not cpi_copied.search(main("NOK"))
+        and "没有高估值久期暴露" in main("AAPL")
+        and "没有高估值久期暴露" in main("NOK")
+        and snap("AAPL").get("visibleChainGroups") == 0
+        and snap("NOK").get("visibleChainGroups") == 0
+        and snap("NVDA").get("visibleChainGroups") == 0
+    )
+    u9_dom = all(
+        drawer_matches(drawers.get(metric) or {}, metric, api_fact(nvda, metric))
+        for metric in ("cpi", "us2y", "vix")
+    )
+    u10_impact = (
+        bool(path.get("direction"))
+        and bool(path.get("horizon"))
+        and snap("NVDA").get("impactDirection") == path.get("direction")
+        and snap("NVDA").get("impactHorizon") == path.get("horizon")
+        and "影响方向" in main("NVDA")
+        and "期限" in main("NVDA")
+    )
     results = {
         "U1": h_nvda.get("runtime") == "real"
         and h_nvda.get("synthetic") is False
@@ -95,14 +168,16 @@ def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, j
         == ["cpi", "us2y", "discount", "industry", "exposure", "price_pressure"]
         and len(path.get("edges") or []) >= 5
         and "Fact → Change → Expectation → Impact → What changes" in js
-        and "data-decision-ready" in js,
+        and "data-decision-ready" in js
+        and u3_dom,
         "U4": "cpi" in facts(nvda)
         and "us2y" in facts(nvda)
         and "cpi" not in facts(aapl)
         and "cpi" not in facts(nok)
         and (aapl.get("rates_path") or {}).get("status") == "not_applicable"
         and (nok.get("rates_path") or {}).get("status") == "not_applicable"
-        and "gold" in facts(nvda, background=True),
+        and "gold" in facts(nvda, background=True)
+        and u4_dom,
         "U5": risk.get("affects") == "risk_state"
         and risk.get("does_not_imply") == "个股涨跌方向"
         and "missing_vix" not in codes(nvda)
@@ -129,15 +204,17 @@ def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, j
         "U8": dxy.get("status") in {"not_configured", "unavailable"}
         and "google news" not in js.lower()
         and "short_mid_long" not in js,
-        "U9": str((next(row for row in nvda.get("facts") or [] if row.get("metric") == "cpi")).get("http_source") or "").startswith("http")
+        "U9": str(api_fact(nvda, "cpi").get("http_source") or "").startswith("http")
         and "sourceLink" in js
         and "fact-drawer" in page
-        and "extraQuery" in js,
+        and "extraQuery" in js
+        and u9_dom,
         "U10": "missing_cpi" not in codes(nvda)
         and "missing_rates_confirmation" not in codes(nvda)
         and "missing_vix" not in codes(nvda)
         and ok_h["cpi"] == "ok"
-        and ok_h["vix"] == "ok",
+        and ok_h["vix"] == "ok"
+        and u10_impact,
     }
     verdict = {key: ("PASS" if value else "FAIL") for key, value in results.items()}
     must = ["U2", "U3", "U4", "U6", "U7", "U9", "U10"]
@@ -284,7 +361,7 @@ def capture_pages() -> dict[str, str]:
                     layerTitles,
                     loading: document.body.innerText.includes('正在加载动态判断'),
                     width: Math.max(1280, Math.ceil(r.width + 24)),
-                    height: Math.min(2400, Math.max(1000, Math.ceil(r.height + 36)))
+                    height: Math.min(4800, Math.max(1100, Math.ceil(r.height + 48)))
                   }};
                 }})()""",
                 "returnByValue": True,
@@ -309,19 +386,91 @@ def capture_pages() -> dict[str, str]:
         )
         time.sleep(0.25)
         info = isolate_module(keep_banner=keep_banner, open_drawer=open_drawer)
-        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True, "captureBeyondViewport": False})
+        png = call("Page.captureScreenshot", {"format": "png", "fromSurface": True, "captureBeyondViewport": True})
         dest.write_bytes(base64.b64decode(png["result"]["data"]))
         return info
 
+    def page_snapshot() -> dict:
+        ev = call(
+            "Runtime.evaluate",
+            {
+                "expression": """(() => {
+                  const body = document.getElementById('decision-body') || document.body;
+                  const clone = body.cloneNode(true);
+                  clone.querySelectorAll('.market-background, .decision-chain-fold, .decision-facts, dialog').forEach((n) => n.remove());
+                  const path = document.querySelector('.rates-path');
+                  const what = document.querySelector('.causal-layer[data-layer="what_changes"]');
+                  return {
+                    ready: Boolean(document.querySelector('[data-decision-ready="1"]')),
+                    loading: document.body.innerText.includes('正在加载动态判断'),
+                    heading: (document.querySelector('.causal-flow > h3') || {}).innerText || '',
+                    layers: [...document.querySelectorAll('.causal-layer')].map((n) => n.getAttribute('data-layer')),
+                    whatChangesVisible: Boolean(what) && ((what.innerText || '').includes('改变了哪个判断')),
+                    mainText: clone.innerText || '',
+                    visibleChainGroups: document.querySelectorAll('.causal-flow .chain-group, main.page-shell > .chain-groups, #decision-body > .chain-groups').length,
+                    impactDirection: path ? path.getAttribute('data-direction') : null,
+                    impactHorizon: path ? path.getAttribute('data-horizon') : null,
+                    sourceHrefs: [...document.querySelectorAll('.causal-flow a.source-link')].map((a) => a.href)
+                  };
+                })()""",
+                "returnByValue": True,
+            },
+        )
+        return ((ev.get("result") or {}).get("result") or {}).get("value") or {}
+
+    def open_drawer(metric: str) -> dict:
+        ev = call(
+            "Runtime.evaluate",
+            {
+                "expression": f"""(() => {{
+                  const drawer = document.getElementById('fact-drawer');
+                  if (drawer && drawer.open) drawer.close();
+                  const btn = document.querySelector('.fact-link[data-fact-id="{metric}"]')
+                    || document.querySelector('.fact-link[data-metric="{metric}"]');
+                  if (!btn) return {{metric: null, error: 'missing-button-{metric}'}};
+                  btn.click();
+                  const root = document.getElementById('fact-drawer-body');
+                  const heading = root && root.querySelector('h3');
+                  const meta = root && root.querySelector('[data-drawer-source]');
+                  const link = root && root.querySelector('a.source-link');
+                  return {{
+                    metric: heading ? heading.getAttribute('data-drawer-metric') : null,
+                    heading: heading ? heading.innerText : '',
+                    source: meta ? meta.getAttribute('data-drawer-source') : '',
+                    as_of: meta ? meta.getAttribute('data-drawer-as-of') : '',
+                    unit: meta ? meta.getAttribute('data-drawer-unit') : '',
+                    status: meta ? meta.getAttribute('data-drawer-status') : '',
+                    href: link ? link.href : '',
+                    text: root ? root.innerText : '',
+                    open: Boolean(drawer && drawer.open)
+                  }};
+                }})()""",
+                "returnByValue": True,
+            },
+        )
+        return ((ev.get("result") or {}).get("result") or {}).get("value") or {}
+
     OUT.mkdir(parents=True, exist_ok=True)
     texts = {}
+    pages = {}
     texts["NVDA"] = wait_ready(f"{BASE}/stock/NVDA")
+    pages["NVDA"] = page_snapshot()
+    drawers = {
+        "cpi": open_drawer("cpi"),
+    }
+    clip(OUT / "nvda-drawer-cpi.png", open_drawer=False)
+    drawers["us2y"] = open_drawer("us2y")
+    clip(OUT / "nvda-drawer-us2y.png", open_drawer=False)
+    drawers["vix"] = open_drawer("vix")
+    clip(OUT / "nvda-drawer-vix.png", open_drawer=False)
+    call("Runtime.evaluate", {"expression": "(() => { const d=document.getElementById('fact-drawer'); if (d && d.open) d.close(); return true; })()", "returnByValue": True})
     nvda_info = clip(OUT / "nvda-causal.png")
     clip(OUT / "nvda-facts.png")
-    clip(OUT / "nvda-fact-drawer.png", open_drawer=True)
     texts["AAPL"] = wait_ready(f"{BASE}/stock/AAPL")
+    pages["AAPL"] = page_snapshot()
     aapl_info = clip(OUT / "aapl-causal.png")
     texts["NOK"] = wait_ready(f"{BASE}/stock/NOK")
+    pages["NOK"] = page_snapshot()
     nok_info = clip(OUT / "nok-causal.png")
     texts["_capture_meta"] = {
         "NVDA": nvda_info,
@@ -344,7 +493,7 @@ def capture_pages() -> dict[str, str]:
     ws.close()
     if proc:
         proc.terminate()
-    return texts
+    return {"texts": texts, "pages": pages, "drawers": drawers, "capture_meta": texts["_capture_meta"]}
 
 
 def main() -> int:
@@ -365,7 +514,21 @@ def main() -> int:
         pred = get(f"{BASE}/api/shell?symbol=NVDA").get("prediction") or {}
     js = html(f"{BASE}/static/stock.js")
     page = html(f"{BASE}/stock/NVDA")
-    report = score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, js, page)
+    page_texts = {}
+    screenshot_error = None
+    captured = {}
+    try:
+        captured = capture_pages()
+        page_texts = captured.get("texts") or {}
+    except Exception as exc:
+        screenshot_error = str(exc)
+        captured = {"pages": {}, "drawers": {}, "capture_meta": {}, "texts": {}}
+    report = score(
+        nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, js, page,
+        dom={"pages": captured.get("pages") or {}, "drawers": captured.get("drawers") or {}},
+    )
+    report["drawers"] = captured.get("drawers") or {}
+    report["capture_meta"] = captured.get("capture_meta")
     evidence = {
         "public_inject": {"inject": pub.get("inject"), "overall": pub.get("overall")},
         "missing_gold": {
@@ -403,35 +566,23 @@ def main() -> int:
     if SECRET_RE.search(evidence_text):
         evidence_text = SECRET_RE.sub("REDACTED", evidence_text)
     (OUT / "api-evidence.json").write_text(evidence_text)
-    page_texts = {}
-    screenshot_error = None
-    try:
-        page_texts = capture_pages()
-        report["page"] = {
-            symbol: {
-                "layers": "Fact → Change → Expectation → Impact → What changes" in text,
-                "nfp_stock_bug": "158913" in text,
-                "pct_forecast": "当天补涨约" in text or "期间跌幅不超过1%" in text,
-                "loading": "正在加载动态判断" in text,
-            }
-            for symbol, text in page_texts.items()
-            if symbol in {"NVDA", "AAPL", "NOK"}
+    report["page"] = {
+        symbol: {
+            "layers": "Fact → Change → Expectation → Impact → What changes" in text,
+            "nfp_stock_bug": "158913" in text,
+            "pct_forecast": "当天补涨约" in text or "期间跌幅不超过1%" in text,
+            "loading": "正在加载动态判断" in text,
         }
-        report["capture_meta"] = page_texts.get("_capture_meta")
-        if any(row.get("loading") for row in report["page"].values()):
-            report["verdict"]["U3"] = "FAIL"
-            report["must_fail"] = sorted(set(report["must_fail"] + ["U3"]))
-            report["gate"] = False
-            screenshot_error = "captured a still-loading decision module"
-        meta = report.get("capture_meta") or {}
-        if not screenshot_error and any(
-            "Fact" not in str((meta.get(symbol) or {}).get("heading") or "")
-            for symbol in ("NVDA", "AAPL", "NOK")
-        ):
-            screenshot_error = "causal-flow heading missing from isolated capture"
-    except Exception as exc:
-        screenshot_error = str(exc)
+        for symbol, text in page_texts.items()
+        if symbol in {"NVDA", "AAPL", "NOK"}
+    }
+    if screenshot_error:
         report["screenshot_error"] = screenshot_error
+    if any(row.get("loading") for row in report["page"].values()):
+        report["verdict"]["U3"] = "FAIL"
+        report["must_fail"] = sorted(set(report["must_fail"] + ["U3"]))
+        report["gate"] = False
+        screenshot_error = screenshot_error or "captured a still-loading decision module"
     report["screenshots"] = sorted(path.name for path in OUT.glob("*.png"))
     dumped = json.dumps(report, ensure_ascii=False, indent=2)
     if SECRET_RE.search(dumped):

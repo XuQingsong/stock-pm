@@ -71,6 +71,7 @@ def build_risk_state(changes: list[ChangeSnapshot]) -> dict[str, Any] | None:
         "as_of": vix.current_as_of,
         "series": "VIXCLS",
         "source": (vix.fact_refs[0].source if vix.fact_refs else "FRED"),
+        "http_source": (vix.fact_refs[0].http_source if vix.fact_refs and getattr(vix.fact_refs[0], "http_source", None) else None),
         "affects": "risk_state",
         "does_not_imply": "个股涨跌方向",
         "invalidation": VIX_INVALIDATION,
@@ -94,6 +95,14 @@ def build_rates_path(
             "nodes": [],
             "edges": [],
         }
+
+    def _fact_field(metric: str, key: str) -> Any:
+        wanted = canonical_metric(metric)
+        for row in facts or []:
+            if canonical_metric(str(row.get("metric") or "")) == wanted:
+                return row.get(key)
+        return None
+
     cpi = _change_of(changes, "cpi")
     us2y = _change_of(changes, "us2y")
     price = next((row for row in changes if canonical_metric(row.metric) == "close" and row.subject == symbol), None)
@@ -117,6 +126,7 @@ def build_rates_path(
             "source": (cpi.fact_refs[0].source if cpi and cpi.fact_refs else "FRED"),
             "status": "ok" if cpi else "missing",
             "origin": "primary",
+            "http_source": _fact_field("cpi", "http_source"),
         },
         {
             "id": "us2y",
@@ -132,6 +142,7 @@ def build_rates_path(
             "source": (us2y.fact_refs[0].source if us2y and us2y.fact_refs else "FRED"),
             "status": "ok" if us2y else "missing",
             "origin": "primary",
+            "http_source": _fact_field("us2y", "http_source"),
         },
         {
             "id": "discount",
@@ -227,6 +238,7 @@ def build_rates_path(
         "status": "visible",
         "confidence": confidence,
         "direction": direction,
+        "horizon": "short",
         "invalidation": RATES_INVALIDATION,
         "nodes": nodes,
         "edges": edges,
