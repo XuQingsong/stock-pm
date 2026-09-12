@@ -193,6 +193,15 @@ def test_ping_against_closed_port_returns_false_quickly():
         assert status["status"] == "error"
         assert status["reason_code"] == "query_error"
         assert "stock_pm_dev" not in str(status)
+        started = time.monotonic()
+        try:
+            db.fetch_all("SELECT 1")
+            raise AssertionError("fetch_all must fail when the database is down")
+        except Exception as exc:
+            from stock_pm.errors import DatabaseError
+
+            assert isinstance(exc, DatabaseError)
+        assert time.monotonic() - started < 3
     finally:
         db.close()
 

@@ -20,6 +20,7 @@ class Database(QueryMixin, PersistMixin):
         self.settings = settings or Settings()
         self.pool = self._open_pool(self.settings)
         self._watchlist_cache: tuple[float, list[dict]] = (0.0, [])
+        self._pool_suspect = False
 
     @staticmethod
     def _open_pool(settings: Settings) -> ConnectionPool:
@@ -43,6 +44,13 @@ class Database(QueryMixin, PersistMixin):
         self.pool = self._open_pool(self.settings)
         return self.ping()
 
+    def _reset_pool(self) -> None:
+        try:
+            self.pool.close()
+        except Exception:
+            pass
+        self.pool = self._open_pool(self.settings)
+
     def ping(self) -> bool:
         """Health probe uses a short standalone connect so a wedged pool cannot hang /health."""
         try:
@@ -51,9 +59,17 @@ class Database(QueryMixin, PersistMixin):
                 connect_timeout=2,
                 row_factory=dict_row,
             ) as conn:
-                return conn.execute("SELECT 1").fetchone() is not None
+                ok = conn.execute("SELECT 1").fetchone() is not None
         except Exception:
+            ok = False
+        if not ok:
+            self._pool_suspect = True
+            self._reset_pool()
             return False
+        if self._pool_suspect:
+            self._reset_pool()
+            self._pool_suspect = False
+        return True
 
     def monitor_status(self) -> dict[str, Any]:
         reachable = self.ping()
@@ -100,8 +116,12 @@ class Database(QueryMixin, PersistMixin):
             raise DatabaseError(f"PostgreSQL initialization failed: {exc}") from exc
 
     def fetch_all(self, query: str, params: tuple[Any, ...] = ()) -> list[dict]:
+        if not self.ping():
+            raise DatabaseError("PostgreSQL unreachable")
         try:
-            with self.pool.connection() as conn:
+            with self.pool.connection(timeout=2) as conn:
                 return list(conn.execute(query, params).fetchall())
+        except DatabaseError:
+            raise
         except Exception as exc:
             raise DatabaseError(f"PostgreSQL query failed: {exc}") from exc
