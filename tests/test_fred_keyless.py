@@ -298,3 +298,62 @@ def test_overlay_reports_gold_unconfigured_without_dropping_other_series(monkeyp
     assert report["series"]["gold_fred_historical"]["status"] == "upstream_unavailable"
     assert any(row["event_type"] == "cpi" for row in events)
     assert all(row["event_type"] != "gold" for row in events)
+
+
+def test_data_health_overlays_live_alpaca_bars_without_postgres(monkeypatch):
+    from stock_pm.alpaca import daily_bars_http_source
+
+    live_bar = {
+        "symbol": "NVDA",
+        "bar_time": "2026-09-11T20:00:00+00:00",
+        "open_price": 217.0,
+        "high_price": 219.5,
+        "low_price": 216.4,
+        "close_price": 218.29,
+        "value": 218.29,
+        "as_of": "2026-09-11",
+        "unit": "USD",
+        "source": "alpaca_sip",
+        "series_or_symbol": "NVDA",
+        "fetched_at": FETCHED,
+        "observed_at": "2026-09-11T20:00:00+00:00",
+        "http_source": daily_bars_http_source("NVDA", "sip"),
+        "transport": "alpaca",
+        "status": "ok",
+        "frequency": "daily",
+    }
+    rec = {
+        "source": "alpaca_sip",
+        "series_or_symbol": "NVDA",
+        "as_of": "2026-09-11",
+        "value": 218.29,
+        "unit": "USD",
+        "status": "ok",
+        "reason_code": "within_threshold",
+        "http_source": daily_bars_http_source("NVDA", "sip"),
+        "transport": "alpaca",
+    }
+
+    monkeypatch.setattr(api, "database", FakeDatabase())
+    monkeypatch.setattr(api, "_database_reachable", False)
+    monkeypatch.setattr(
+        "stock_pm.series.collect_live_macro_overlay",
+        lambda settings=None: ([], set(), {"fetched_at": FETCHED, "series": {}}),
+    )
+    monkeypatch.setattr(
+        "stock_pm.alpaca.collect_live_daily_bars",
+        lambda symbol, settings=None, **kwargs: ([live_bar], set(), {"fetched_at": FETCHED, "daily_price_bars": rec}),
+    )
+
+    health = TestClient(api.app).get("/api/stock/NVDA/data-health").json()
+    dumped = str(health).lower()
+    assert "apikey=" not in dumped
+    assert "apca-api-" not in dumped
+    by_dataset = {row["dataset"]: row for row in health["datasets"]}
+    price = by_dataset["daily_price_bars"]
+    assert price["status"] == "ok"
+    assert price["as_of"] == "2026-09-11"
+    assert price["value"] == 218.29
+    assert price["unit"] == "USD"
+    assert price["series_or_symbol"] == "NVDA"
+    assert price["http_source"] == daily_bars_http_source("NVDA", "sip")

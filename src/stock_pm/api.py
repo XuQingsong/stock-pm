@@ -399,6 +399,7 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
 
 @app.get("/api/stock/{symbol}/data-health")
 def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
+    from .alpaca import collect_live_daily_bars
     from .config import Settings
     from .decision.assemble import assemble_from_bundle
     from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview
@@ -422,11 +423,13 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
                 bundle = empty_real_bundle(symbol.upper())
         live, live_errors, live_report = collect_live_macro_overlay(settings)
         bundle = merge_live_macros(bundle, live)
+        live_bars, bar_errors, bar_report = collect_live_daily_bars(symbol.upper(), settings)
+        if live_bars:
+            bundle["bars"] = live_bars
         query_errors = set(live_errors)
+        query_errors.update(bar_errors)
         if db_error:
             # NFP stays calendar/DB this phase: missing, not a FRED keyless query_error.
-            if settings.alpaca_api_key_id and settings.alpaca_api_secret_key:
-                query_errors.add("daily_price_bars")
             if settings.fmp_api_key:
                 query_errors.update({"earnings_reports", "earnings_prior_consensus"})
         try:
@@ -442,6 +445,19 @@ def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
             synthetic=False,
         )
         series_report = {}
+        close_rec = (bar_report or {}).get("daily_price_bars")
+        if close_rec:
+            series_report["close"] = {
+                "source": close_rec.get("source"),
+                "series_or_symbol": close_rec.get("series_or_symbol"),
+                "as_of": close_rec.get("as_of"),
+                "value": close_rec.get("value"),
+                "unit": close_rec.get("unit"),
+                "status": close_rec.get("status"),
+                "reason_code": close_rec.get("reason_code"),
+                "http_source": close_rec.get("http_source"),
+                "transport": close_rec.get("transport"),
+            }
         for metric, rec in (live_report.get("series") or {}).items():
             series_report[metric] = {
                 "source": rec.get("source"),

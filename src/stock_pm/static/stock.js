@@ -816,7 +816,7 @@
       </div>
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
       <table class="health-inputs">
-        <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。FRED GOLDPMGBD228NLBM 已停更，不得当作当前金价；实时黄金需 ALPHA_VANTAGE_API_KEY。</caption>
+        <caption>各输入的 source / series_or_symbol / as_of / value / unit / 新鲜度 / 状态。ICE DXY 保持 not_configured/unavailable；DTWEXBGS 只显示为 broad_usd_proxy 广义美元代理，不得称为 DXY。FRED GOLDPMGBD228NLBM 已停更，不得当作当前金价；实时黄金需 ALPHA_VANTAGE_API_KEY。NVDA 日线需 ALPACA_API_KEY_ID 与 ALPACA_API_SECRET_KEY，不在页面展示密钥。</caption>
         <thead><tr><th>输入</th><th>source</th><th>series_or_symbol</th><th>as_of</th><th>value</th><th>unit</th><th>新鲜度</th><th>状态</th></tr></thead>
         <tbody>${inputRows}</tbody>
       </table>

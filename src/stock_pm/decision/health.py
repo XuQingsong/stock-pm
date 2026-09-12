@@ -281,13 +281,18 @@ def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
     value = latest.get("value")
     if value is None:
         value = latest.get("actual")
+    if value is None:
+        value = latest.get("close_price")
+    unit = latest.get("unit")
+    if unit is None and latest.get("close_price") is not None:
+        unit = "USD"
     return {
         "series": series,
         "series_or_symbol": series,
         "as_of": as_of,
         "fetched_at": latest.get("fetched_at") or latest.get("observed_at"),
-        "unit": latest.get("unit"),
-        "frequency": latest.get("frequency"),
+        "unit": unit,
+        "frequency": latest.get("frequency") or ("daily" if latest.get("close_price") is not None else None),
         "value": value,
         "http_source": latest.get("http_source"),
         "transport": latest.get("transport"),
