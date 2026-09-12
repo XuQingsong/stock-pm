@@ -81,7 +81,14 @@ def persist_events(conn, events: list[TrustedEvent], coverage: dict[str, Any] | 
         for claim in event.claims:
             conn.execute(
                 UPSERT_CLAIM,
-                {**claim.as_dict(), "event_id": event.event_id},
+                {
+                    "claim_id": claim.claim_id,
+                    "event_id": event.event_id,
+                    "source_id": claim.source_id,
+                    "text": claim.text,
+                    "polarity": claim.polarity,
+                    "status": claim.status,
+                },
             )
         written += 1
     return written

@@ -69,20 +69,33 @@ def _conflicts(event: TrustedEvent) -> list[dict[str, str]]:
     return rows
 
 
-def _confidence(event: TrustedEvent) -> str:
+def confidence_rule(event: TrustedEvent) -> dict[str, Any]:
     official = [row for row in event.sources if row.source_tier == 1]
     media = [row for row in event.sources if row.source_tier == 2]
+    conflicts = _conflicts(event)
     if event.status == "revoked":
-        return "revoked"
-    if _conflicts(event):
-        return "low"
-    if official and media:
-        return "high"
-    if official:
-        return "medium"
-    if media:
-        return "limited"
-    return "insufficient"
+        result = "revoked"
+    elif conflicts:
+        result = "low"
+    elif official and media:
+        result = "high"
+    elif official:
+        result = "medium"
+    elif media:
+        result = "limited"
+    else:
+        result = "insufficient"
+    return {
+        "revoked": event.status == "revoked",
+        "conflict_count": len(conflicts),
+        "tier1_count": len(official),
+        "tier2_count": len(media),
+        "result": result,
+    }
+
+
+def _confidence(event: TrustedEvent) -> str:
+    return str(confidence_rule(event)["result"])
 
 
 def _withhold(reason: str) -> dict[str, Any]:
@@ -132,6 +145,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "evidence_refs": [],
             "opinion_refs": opinion_refs,
             "conflict_count": 0,
+            "confidence_rule": confidence_rule(event),
             "percent_forecast": None,
             "price_target": None,
             "answers": {
@@ -195,6 +209,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "evidence_refs": bound_refs,
         "opinion_refs": opinion_refs,
         "conflict_count": len(conflicts),
+        "confidence_rule": confidence_rule(event),
         "percent_forecast": None,
         "price_target": None,
         "vix_role": "risk_confirmation_only" if event.event_type == "vix_risk" else "not_applicable",

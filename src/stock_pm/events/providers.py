@@ -7,14 +7,18 @@ import os
 import time
 from pathlib import Path
 from typing import Any
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from stock_pm.config import Settings
 
-from .policy import sanitize_untrusted
+from .policy import events_data_mode, is_safe_public_http_url, redact_url, sanitize_untrusted
 from .types import EventDocument
+
+
+GOOGLE_API = "https://www.googleapis.com/customsearch/v1"
+FIXTURE_LABEL = "packaged seed/demo fixture · not live official ingest"
 
 
 class RateLimiter:
@@ -60,47 +64,80 @@ def load_fixture_documents() -> list[EventDocument]:
 
 
 class OfficialFeedProvider:
+    """No live official event ingest exists. Fixtures are opt-in and labeled."""
+
     name = "official_feed"
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or Settings()
         self.limiter = RateLimiter(0.2)
+        self.mode = events_data_mode(self.settings)
+        self.last_error: str | None = None
 
     def configured(self) -> bool:
-        return True
+        return False
 
     def status(self) -> dict[str, Any]:
+        if self.mode in {"demo", "fixture"}:
+            return {
+                "provider": self.name,
+                "status": "demo_fixture",
+                "live": False,
+                "reason_code": "fixture_not_live",
+                "role": "seed_or_test_fixture",
+                "request_url": None,
+                "last_success_at": None,
+                "event_count": len(load_fixture_documents()),
+                "note": FIXTURE_LABEL,
+            }
         return {
             "provider": self.name,
-            "status": "ok",
-            "reason_code": None,
-            "role": "official_fact",
+            "status": "not_implemented",
+            "live": False,
+            "reason_code": "live_official_event_provider_absent",
+            "role": "none",
+            "request_url": None,
+            "last_success_at": None,
+            "event_count": 0,
+            "note": "No live Treasury/SEC/central-bank event ingest is implemented.",
         }
 
     def discover(self, *, query: str | None = None) -> list[EventDocument]:
+        if self.mode not in {"demo", "fixture"}:
+            return []
         self.limiter.wait()
         docs = [row for row in load_fixture_documents() if row.provider in {"official", "media", "research"}]
         if query:
             needle = query.lower()
             docs = [row for row in docs if needle in row.title.lower() or needle in row.event_type]
-        return [row for row in docs if row.provider != "google"]
+        return docs
 
 
 class GoogleDiscoveryProvider:
     """Official Programmable Search JSON API only. Missing keys => not_configured."""
 
     name = "google_cse"
-    API = "https://www.googleapis.com/customsearch/v1"
+    API = GOOGLE_API
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or Settings()
         self.limiter = RateLimiter(1.0)
+        self.last_error: str | None = None
+        self.last_request_url: str | None = None
+        self.last_success_at: str | None = None
+        self.last_count = 0
+
+    def _clean(self, raw: str) -> str:
+        value = (raw or "").strip()
+        if not value or value.startswith("your_"):
+            return ""
+        return value
 
     def _key(self) -> str:
-        return (getattr(self.settings, "google_cse_api_key", None) or os.getenv("GOOGLE_CSE_API_KEY") or "").strip()
+        return self._clean(getattr(self.settings, "google_cse_api_key", None) or os.getenv("GOOGLE_CSE_API_KEY") or "")
 
     def _cx(self) -> str:
-        return (getattr(self.settings, "google_cse_id", None) or os.getenv("GOOGLE_CSE_ID") or "").strip()
+        return self._clean(getattr(self.settings, "google_cse_id", None) or os.getenv("GOOGLE_CSE_ID") or "")
 
     def configured(self) -> bool:
         return bool(self._key() and self._cx())
@@ -110,17 +147,37 @@ class GoogleDiscoveryProvider:
             return {
                 "provider": self.name,
                 "status": "not_configured",
+                "live": False,
                 "reason_code": "source_not_configured",
                 "role": "discovery_only",
+                "request_url": self.API,
+                "last_success_at": None,
+                "event_count": 0,
+            }
+        if self.last_error:
+            return {
+                "provider": self.name,
+                "status": "upstream_error",
+                "live": False,
+                "reason_code": self.last_error,
+                "role": "discovery_only",
+                "request_url": self.API,
+                "last_success_at": self.last_success_at,
+                "event_count": self.last_count,
             }
         return {
             "provider": self.name,
-            "status": "ok",
+            "status": "configured_unverified" if self.last_success_at is None else "ok",
+            "live": bool(self.last_success_at),
             "reason_code": None,
             "role": "discovery_only",
+            "request_url": self.API,
+            "last_success_at": self.last_success_at,
+            "event_count": self.last_count,
         }
 
     def discover(self, *, query: str | None = None) -> list[EventDocument]:
+        self.last_error = None
         if not self.configured():
             return []
         self.limiter.wait()
@@ -131,7 +188,9 @@ class GoogleDiscoveryProvider:
                 "q": query or "site:treasury.gov OR site:sec.gov",
             }
         )
-        req = Request(f"{self.API}?{params}", headers={"User-Agent": "stock-pm-events/5b"})
+        raw_url = f"{self.API}?{params}"
+        self.last_request_url = redact_url(raw_url)
+        req = Request(raw_url, headers={"User-Agent": "stock-pm-events/5b"})
         payload: dict[str, Any] = {}
         last_error: Exception | None = None
         for attempt in range(3):
@@ -140,18 +199,29 @@ class GoogleDiscoveryProvider:
                     payload = json.loads(resp.read().decode("utf-8"))
                 last_error = None
                 break
-            except (URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
+            except HTTPError as exc:
                 last_error = exc
+                self.last_error = f"http_{exc.code}"
+                if exc.code in {400, 401, 403, 429}:
+                    break
+                time.sleep(0.4 * (2 ** attempt))
+            except TimeoutError as exc:
+                last_error = exc
+                self.last_error = "timeout"
+                time.sleep(0.4 * (2 ** attempt))
+            except (URLError, json.JSONDecodeError, OSError) as exc:
+                last_error = exc
+                self.last_error = "request_failed"
                 time.sleep(0.4 * (2 ** attempt))
         if last_error is not None:
             return []
         rows = []
         for item in payload.get("items") or []:
             link = str(item.get("link") or "")
+            if not is_safe_public_http_url(link):
+                continue
             host = link.lower()
             if "google.com" in host and "/search" in host:
-                continue
-            if host.startswith("https://www.google.com/search") or host.startswith("http://www.google.com/search"):
                 continue
             rows.append(
                 EventDocument(
@@ -164,6 +234,10 @@ class GoogleDiscoveryProvider:
                     provider="google",
                 )
             )
+        from datetime import datetime, timezone
+
+        self.last_success_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        self.last_count = len(rows)
         return rows
 
 
@@ -173,5 +247,8 @@ def provider_coverage(settings: Settings | None = None) -> dict[str, Any]:
     return {
         "official_feed": official.status(),
         "google_cse": google.status(),
-        "note": "Google is discovery only. Missing keys stay not_configured. HTML search pages are never fetched.",
+        "note": (
+            "No live official event ingest provider is implemented. "
+            "Google CSE is discovery-only. Fixtures are never live coverage."
+        ),
     }

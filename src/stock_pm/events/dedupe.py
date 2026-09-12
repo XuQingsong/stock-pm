@@ -26,6 +26,16 @@ def _overlap(left: set[str], right: set[str]) -> float:
     return len(left & right) / len(left | right)
 
 
+def _published_day(doc: EventDocument):
+    raw = doc.published_at
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
 def same_event(left: EventDocument, right: EventDocument) -> bool:
     if left.event_type != right.event_type:
         return False
@@ -43,6 +53,11 @@ def same_event(left: EventDocument, right: EventDocument) -> bool:
     title_score = _overlap(_tokens(left.title), _tokens(right.title))
     entity_score = _overlap(left_entities, right_entities)
     claim_score = _overlap(_tokens(" ".join(left.claims)), _tokens(" ".join(right.claims)))
+    left_day = _published_day(left)
+    right_day = _published_day(right)
+    evolving = {left.status, right.status} & {"updated", "revoked"}
+    if left_day and right_day and abs((left_day - right_day).days) > 45 and not evolving:
+        return False
     # Curated entity fingerprints beat noisy titles. Require enough overlap
     # so "Iran oil sanctions" does not swallow "Russia oil sanctions".
     if left_entities - right_entities and right_entities - left_entities and entity_score < 0.66:
@@ -148,6 +163,8 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                         text=sanitize_untrusted(claim),
                         polarity=polarity,
                         source_id=source.source_id,
+                        source_url=source.source_url,
+                        publisher=source.publisher,
                     )
                 )
         times = [row.published_at for row in cluster if row.published_at]
