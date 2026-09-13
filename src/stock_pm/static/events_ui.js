@@ -250,8 +250,8 @@
     const loopNote = closed
       ? ""
       : factOnly
-        ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`
-        : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
+        ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 当前仅作为事实展示；在基准与传导规则补齐前，不纳入方向判断，也不影响其他事件的正常分析。</p>`
+        : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 本事件不形成方向，也不阻断其他事件的正常分析。</p>`;
     return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
