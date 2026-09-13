@@ -27,7 +27,10 @@ from stock_pm.config import Settings
 
 from .bodies import (
     extract_sec_index_items,
+    extract_sec_primary_document_url,
+    extract_sec_primary_facts,
     fetch_official_page,
+    is_allowed_eia_host,
     official_html_excerpt,
     reset_body_cache,
     resolve_redirect_url,
@@ -115,6 +118,14 @@ def _now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _stamp_fetched(doc: EventDocument | None, fetched_at: str) -> EventDocument | None:
+    if doc is None:
+        return None
+    if not doc.last_fetched_at:
+        doc.last_fetched_at = fetched_at
+    return doc
+
+
 def _status_from_title(title: str) -> str:
     lowered = title.lower()
     if any(marker in lowered for marker in REVOKE_MARKERS):
@@ -130,10 +141,9 @@ def _pad_cik(raw: str) -> str:
 
 
 def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
-    """Recover official Item lines when the company Atom summary is empty."""
+    """Index Item lines are filing metadata only. Valid facts come from the primary 8-K."""
     if (doc.body or "").strip():
         doc.body_source = doc.body_source or "rss_summary"
-        return doc
     if "-index.htm" not in (doc.url or "").lower():
         return doc
     page = fetch_official_page(
@@ -143,16 +153,34 @@ def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
         limiter=_SEC_LIMITER,
         fetch=fetch_feed,
     )
-    doc.last_fetched_at = page.get("fetched_at")
+    doc.last_fetched_at = page.get("fetched_at") or doc.last_fetched_at
     if page.get("error"):
         doc.fetch_error = str(page["error"])
         return doc
-    items = extract_sec_index_items(str(page.get("html") or ""))
-    if not items:
+    html = str(page.get("html") or "")
+    items = extract_sec_index_items(html)
+    if items:
+        doc.filing_items = items
+    primary_url = extract_sec_primary_document_url(html, doc.url)
+    if not primary_url:
         return doc
-    doc.claims = items
-    doc.body = "\n".join(items)
-    doc.body_source = "sec_index_items"
+    primary = fetch_official_page(
+        primary_url,
+        user_agent=user_agent,
+        extra_headers={"Host": "www.sec.gov"},
+        limiter=_SEC_LIMITER,
+        fetch=fetch_feed,
+    )
+    doc.last_fetched_at = primary.get("fetched_at") or doc.last_fetched_at
+    if primary.get("error"):
+        doc.fetch_error = str(primary["error"])
+        return doc
+    facts = extract_sec_primary_facts(str(primary.get("html") or ""))
+    if not facts:
+        return doc
+    doc.claims = facts
+    doc.body = facts[0]
+    doc.body_source = "sec_primary_document"
     return doc
 
 
@@ -171,7 +199,7 @@ def _enrich_eia_html(doc: EventDocument) -> EventDocument:
         return doc
     html = str(page.get("html") or "")
     redirect = resolve_redirect_url(doc.url, html)
-    if redirect and redirect != doc.url and is_safe_public_http_url(redirect) and "eia.gov" in redirect.lower():
+    if redirect and redirect != doc.url and is_allowed_eia_host(redirect):
         page = fetch_official_page(
             redirect, user_agent="stock-pm official-feed/5c", limiter=_DEFAULT_LIMITER, fetch=fetch_feed
         )
@@ -459,8 +487,9 @@ class SecEdgarProvider:
                 )
             docs: list[EventDocument] = []
             seen: set[str] = set()
+            fetched_at = _now()
             for item in items:
-                doc = self._to_doc(item)
+                doc = _stamp_fetched(self._to_doc(item), fetched_at)
                 if doc is None or doc.url in seen:
                     continue
                 seen.add(doc.url)
@@ -479,8 +508,12 @@ class SecEdgarProvider:
                 )
                 if company_meta.get("error"):
                     continue
+                company_fetched = _now()
                 for item in company_items:
-                    doc = self._to_doc(item, mapped_symbol=symbol, expected_cik=cik)
+                    doc = _stamp_fetched(
+                        self._to_doc(item, mapped_symbol=symbol, expected_cik=cik),
+                        company_fetched,
+                    )
                     if doc is None or doc.url in seen:
                         continue
                     seen.add(doc.url)
@@ -593,6 +626,7 @@ class FederalReserveProvider:
                             body=strip_markup(str(item.get("summary") or "")),
                             provider="official",
                             status=_status_from_title(title),
+                            last_fetched_at=_now(),
                         )
                     )
             if not docs and errors:
@@ -697,7 +731,7 @@ class EiaPressProvider:
                     link = "https://www.eia.gov" + link
                 if link.startswith("http://www.eia.gov"):
                     link = "https://" + link[len("http://") :]
-                if not is_safe_public_http_url(link) or "eia.gov" not in link.lower():
+                if not is_allowed_eia_host(link):
                     continue
                 title = strip_markup(str(item.get("title") or ""))
                 slug = _slug(link)
@@ -716,6 +750,7 @@ class EiaPressProvider:
                             body=strip_markup(str(item.get("summary") or "")),
                             provider="official",
                             status=_status_from_title(title),
+                            last_fetched_at=_now(),
                         )
                     )
                 )

@@ -238,9 +238,14 @@
     const closed = analysis.closed_loop === true;
     const lastFetch = withheld.last_fetched_at || gap.last_fetched_at || "";
     const reasonCode = withheld.primary_reason || gap.primary_reason || "";
+    const fetchNote = lastFetch ? ` 最后抓取：${esc(lastFetch)}。` : " 暂无成功抓取记录。";
+    const filingItems = [...new Set((event.sources || []).flatMap((row) => row.filing_items || []))];
+    const filingNote = filingItems.length
+      ? `<p class="subline" data-filing-items="1">申报栏目（发现/元数据，不是正文事实）：${esc(filingItems.join("；"))}</p>`
+      : "";
     const loopNote = closed
       ? ""
-      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${lastFetch ? ` 最后抓取：${esc(lastFetch)}。` : ""} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
+      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
     return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
@@ -257,6 +262,7 @@
         </div>
       </header>
       ${loopNote}
+      ${filingNote}
       ${answersHtml(event, why)}
       ${causalChainHtml(analysis)}
       ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}

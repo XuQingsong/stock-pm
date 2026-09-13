@@ -2,13 +2,23 @@
   "audit_id": "events_5c_a_baseline",
   "fetched_at": "2026-09-13T09:39:00+00:00",
   "data_class": "frozen_official_audit",
+  "live": false,
+  "not_production_live": true,
   "fixture": false,
+  "note": "Frozen official-audit snapshot. Not live runtime evidence and not production live latest.",
   "summary": {
     "valid_conclusion_count": 31,
     "withheld_count": 92,
     "unsupported_count": 44,
     "leaked_observable_count": 0,
     "evidence_event_count": 79
+  },
+  "after_official_extracts": {
+    "valid_conclusion_count": 34,
+    "withheld_count": 89,
+    "unsupported_count": 41,
+    "leaked_observable_count": 0,
+    "evidence_event_count": 82
   },
   "reason_counts": {
     "no_exposure": 48,
@@ -28,10 +38,16 @@
   },
   "honest_not_fixable": {
     "unmapped_sec_filings": 40,
+    "watchlist_8k_item_metadata_only": 40,
     "fed_bank_applications": 3,
     "eia_electricity_no_watchlist_exposure": 2,
     "fomc_minutes_classified_other": 4
   },
-  "fixable_sources": ["sec_edgar_watchlist_index_items", "eia_official_html_excerpt"],
-  "note": "no_exposure is mostly events that should not form a direction. body_missing is watchlist 8-K Atom pages with empty summaries. claim_not_supported is EIA RSS abstracts that do not token-match the title while the official HTML does."
+  "gained_event_ids": [
+    "evt_55733c70cd1dd721",
+    "evt_b39a38314637dcde",
+    "evt_30ab371b5e192e82"
+  ],
+  "fixable_sources": ["eia_official_html_body_beyond_title"],
+  "note_honest_read": "SEC index Item lines are discovery metadata only and cannot close a loop. Valid count is not a target; the three gained events have official body sentences beyond the page title."
 }

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .bodies import is_sec_item_metadata
 from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
@@ -198,6 +199,8 @@ def causal_chain_is_complete(chain: dict[str, Any] | None) -> bool:
     refs = [row for row in (fact.get("evidence_refs") or []) if isinstance(row, dict)]
     if not excerpt or not any(str(row.get("source_url") or "").startswith("http") for row in refs):
         return False
+    if is_sec_item_metadata(excerpt):
+        return False
     if not excerpt_supports_claim(str(fact.get("text") or ""), excerpt):
         return False
     exp = layers["expectation"]
@@ -289,7 +292,7 @@ def build_causal_chain(
 def _supporting_fact(live_claims: list[EventClaim], fallback_text: str) -> tuple[str, str, bool]:
     for claim in live_claims:
         excerpt = str(claim.excerpt or "")
-        if excerpt and excerpt_supports_claim(claim.text, excerpt):
+        if excerpt and not is_sec_item_metadata(excerpt) and excerpt_supports_claim(claim.text, excerpt):
             return claim.text, excerpt, True
     display = fallback_text
     if live_claims:
@@ -427,7 +430,7 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
     fetch_error = None
     body_source = None
     for source in sources:
-        stamp = _row_field(source, "last_fetched_at") or _row_field(source, "first_seen_at")
+        stamp = _row_field(source, "last_fetched_at")
         if stamp and (last_fetched is None or stamp > last_fetched):
             last_fetched = stamp
         fetch_error = fetch_error or _row_field(source, "fetch_error") or None
@@ -436,6 +439,8 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
     secondary: list[str] = []
     if row["valid"]:
         primary = None
+    elif status in {"revoked", "superseded"}:
+        primary = "superseded_or_no_material_change"
     elif not row["official_ok"]:
         primary = "no_official_url"
     elif fetch_error and not row["excerpt_ok"]:
@@ -445,8 +450,6 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         primary = "body_missing" if not any(item.strip() for item in excerpts) else "claim_not_supported"
     elif not row["exposure_ok"]:
         primary = "no_exposure"
-    elif status in {"revoked", "superseded"}:
-        primary = "superseded_or_no_material_change"
     else:
         primary = "chain_incomplete"
     if primary != "no_exposure" and not row["exposure_ok"]:

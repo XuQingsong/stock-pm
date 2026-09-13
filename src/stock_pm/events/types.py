@@ -43,6 +43,7 @@ class EventSource:
     last_fetched_at: str | None = None
     body_source: str | None = None
     fetch_error: str | None = None
+    filing_items: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -63,6 +64,7 @@ class EventSource:
             "last_fetched_at": self.last_fetched_at,
             "body_source": self.body_source,
             "fetch_error": self.fetch_error,
+            "filing_items": list(self.filing_items),
         }
 
 
@@ -121,6 +123,7 @@ class EventDocument:
     last_fetched_at: str | None = None
     body_source: str = ""
     fetch_error: str | None = None
+    filing_items: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

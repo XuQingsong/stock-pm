@@ -244,6 +244,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 last_fetched_at=payload.get("last_fetched_at"),  # type: ignore[arg-type]
                 body_source=payload.get("body_source"),  # type: ignore[arg-type]
                 fetch_error=payload.get("fetch_error"),  # type: ignore[arg-type]
+                filing_items=list(payload.get("filing_items") or []),
             )
             sources.append(source)
             for index, claim in enumerate(doc.claims or [doc.title]):
