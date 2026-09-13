@@ -55,7 +55,7 @@ class RateLimiter:
         self._last = time.monotonic()
 
 
-def strip_markup(text: str) -> str:
+def strip_markup(text: str, *, max_len: int | None = 4000) -> str:
     """Drop HTML/script so feed bodies cannot execute or inject instructions."""
     raw = unescape(str(text or ""))
     raw = SCRIPT_RE.sub(" ", raw)
@@ -66,7 +66,7 @@ def strip_markup(text: str) -> str:
         collapsed = SPACE_RE.sub(" ", line).strip()
         if collapsed:
             lines.append(collapsed)
-    return sanitize_untrusted("\n".join(lines))
+    return sanitize_untrusted("\n".join(lines), max_len=max_len)
 
 
 def parse_datetime(raw: str | None) -> str | None:

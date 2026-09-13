@@ -182,7 +182,7 @@ def classify_source(url: str, publisher: str = "") -> dict[str, object]:
     }
 
 
-def sanitize_untrusted(text: str) -> str:
+def sanitize_untrusted(text: str, *, max_len: int | None = 4000) -> str:
     """Article bodies are untrusted data only. Never execute or promote instructions."""
     lines = []
     for line in str(text or "").splitlines():
@@ -191,7 +191,9 @@ def sanitize_untrusted(text: str) -> str:
             continue
         lines.append(line)
     cleaned = "\n".join(lines)
-    return cleaned[:4000]
+    if max_len is None:
+        return cleaned
+    return cleaned[:max_len]
 
 
 def source_id_for(url: str) -> str:

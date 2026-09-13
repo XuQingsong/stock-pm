@@ -120,6 +120,7 @@
       `<div class="claim-row" data-polarity="${esc(claim.polarity)}" data-claim-status="${esc(claim.status || "")}" data-claim-source="${esc(claim.source_url || "")}">
         ${pill(claim.polarity, claim.polarity === "contradicts" && claim.status !== "superseded" ? "conflict" : "")}
         ${esc(claim.text)}
+        ${claim.excerpt ? `<div class="subline" data-claim-excerpt="1">${esc(claim.excerpt)}</div>` : ""}
         <div class="evidence-refs">${claim.source_url ? sourceLink(claim.source_url, claim.publisher || "原文") : "<span class='no-url'>无来源</span>"}</div>
       </div>`
     ).join("")}</div>`;
@@ -157,10 +158,16 @@
           ? "生产默认 · 无 fixture · 等待官方源"
           : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
     const bannerClass = live ? "is-live" : replay ? "is-replay" : "is-fixture";
+    const providerHealth = coverage.provider_health_gate === true;
     return {
-      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}" data-replay="${replay ? "1" : "0"}">
+      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}" data-replay="${replay ? "1" : "0"}" data-provider-health-gate="${providerHealth ? "1" : "0"}" data-live-e1-e10-gate="accept-only" data-capability-e1-e10-gate="accept-only">
         <div class="event-mode-banner ${bannerClass}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
-        ${pill(`verdict ${coverage.verdict || coverage.status || "incomplete"}`, live ? "ok" : "not_configured")}
+        <div class="accept-gates">
+          <div class="gate-row" data-gate="provider_health">${pill(`provider_health_gate ${providerHealth}`, providerHealth ? "ok" : "not_configured")}<span>SEC / Fed / EIA 是否健康且有实时数据。不是 E1–E10 验收。</span></div>
+          <div class="gate-row" data-gate="live_e1_e10">${pill("live_e1_e10_gate accept-only")}<span>只由 live-current 验收计分；UNOBSERVED 不计 PASS，不得与 provider health 混写。</span></div>
+          <div class="gate-row" data-gate="capability_e1_e10">${pill("capability_e1_e10_gate accept-only")}<span>只由 capability-black-box 验收计分；允许 RECORDED REPLAY 走完整生产流水线。</span></div>
+        </div>
+        ${pill(`coverage_verdict ${coverage.verdict || coverage.status || "incomplete"}`, live ? "ok" : "not_configured")}
         ${pill(`data_mode ${mode}`)}
         ${pill(`google_cse ${status}`, status)}
         ${providerPill(coverage, "sec_edgar")}

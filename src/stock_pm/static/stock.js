@@ -1050,7 +1050,7 @@
     if (!cover) return "";
     const google = ((cover.providers || {}).google_cse || {}).status || cover.reason_code || "unknown";
     const mode = cover.data_mode || "empty";
-    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(mode)}/${esc(cover.verdict || cover.status || "incomplete")} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
+    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-provider-health-gate="${cover.provider_health_gate ? "1" : "0"}" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(mode)}/${esc(cover.verdict || cover.status || "incomplete")} · provider_health_gate ${cover.provider_health_gate === true} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
   }
 
   async function loadEvents() {
