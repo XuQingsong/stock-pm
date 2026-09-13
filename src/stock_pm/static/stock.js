@@ -1060,6 +1060,15 @@
       const payload = await api(`/api/stock/${encodeURIComponent(SYMBOL)}/events`);
       const ui = window.StockPmEvents;
       if (!ui) throw new Error("事件渲染未加载");
+      const coverNode = $("event-coverage");
+      if (coverNode) {
+        const cover = ui.renderCoverage(payload.coverage || {});
+        coverNode.innerHTML = cover.html;
+        coverNode.dataset.googleStatus = cover.googleStatus;
+        coverNode.dataset.dataMode = cover.dataMode || payload.data_mode || "empty";
+        coverNode.dataset.live = payload.live ? "1" : "0";
+        coverNode.dataset.replay = payload.recorded_replay ? "1" : "0";
+      }
       body.className = "";
       body.innerHTML = ui.renderStock(payload);
       body.dataset.eventsReady = "1";
@@ -1067,6 +1076,7 @@
       body.dataset.eventCount = String((payload.events || []).length);
       body.dataset.dataMode = payload.data_mode || "empty";
       body.dataset.live = payload.live ? "1" : "0";
+      body.dataset.replay = payload.recorded_replay ? "1" : "0";
       const module = $("event-module");
       if (module) module.dataset.eventsReady = "1";
     } catch (error) {

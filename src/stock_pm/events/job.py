@@ -11,6 +11,7 @@ from stock_pm.config import Settings
 from stock_pm.database import Database
 
 from .live import apply_cursor
+from .policy import events_data_mode
 from .service import build_event_book, coverage, reset_cache
 from .store import load_cursors, persist_cursor, persist_events
 
@@ -32,6 +33,20 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
     persist_error = None
     persisted = 0
     stamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    mode = events_data_mode(config)
+    if mode == "recorded_replay":
+        events = build_event_book(config, refresh=True)
+        cover = coverage(config, events)
+        return {
+            "status": "ok",
+            "persisted": 0,
+            "coverage": cover,
+            "job": "events_ingest",
+            "idempotent": True,
+            "persist_error": None,
+            "persist_skipped": "recorded_replay",
+            "affects_chain": "events",
+        }
     db = None
     try:
         db = Database(config)

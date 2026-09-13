@@ -98,6 +98,21 @@
     </div>`;
   };
 
+  const timelineHtml = (timeline) => {
+    if (!timeline || !timeline.length) return "";
+    return `<div class="event-timeline" data-timeline="1">
+      <h4>同一事件时间线</h4>
+      ${timeline.map((row) =>
+        `<div class="timeline-item" data-timeline-item="1" data-timeline-status="${esc(row.status || "")}" data-polarity="${esc(row.polarity || "")}" data-what-changes="${esc(row.what_changes || "")}">
+          <div class="news-meta">${esc(row.event_time || "时间未标注")} · ${esc(row.publisher || "")} · ${esc(row.status || "")}</div>
+          <div>${esc(row.claim || "")}</div>
+          <div class="subline">${esc(row.what_changes || "")}</div>
+          <div class="evidence-refs">${row.source_url ? sourceLink(row.source_url, row.publisher || "原文") : "<span class='no-url'>无来源</span>"}</div>
+        </div>`
+      ).join("")}
+    </div>`;
+  };
+
   const claimsHtml = (claims) => {
     if (!claims || !claims.length) return "";
     return `<div class="event-claims">${claims.map((claim) =>
@@ -131,15 +146,19 @@
     const status = google.status || "not_configured";
     const mode = coverage.data_mode || "empty";
     const live = coverage.live === true;
+    const replay = coverage.recorded_replay === true || mode === "recorded_replay";
     const ratio = coverage.live_coverage_ratio;
     const modeLabel = live
       ? `LIVE · 生产实时 · 覆盖率 ${ratio == null ? "—" : Math.round(Number(ratio) * 100) + "%"}`
-      : mode === "empty"
-        ? "生产默认 · 无 fixture · 等待官方源"
-        : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
+      : replay
+        ? "RECORDED REPLAY · 真实官方原文回放 · 不是生产最新事件"
+        : mode === "empty"
+          ? "生产默认 · 无 fixture · 等待官方源"
+          : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
+    const bannerClass = live ? "is-live" : replay ? "is-replay" : "is-fixture";
     return {
-      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}">
-        <div class="event-mode-banner ${live ? "is-live" : "is-fixture"}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
+      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}" data-replay="${replay ? "1" : "0"}">
+        <div class="event-mode-banner ${bannerClass}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
         ${pill(`verdict ${coverage.verdict || coverage.status || "incomplete"}`, live ? "ok" : "not_configured")}
         ${pill(`data_mode ${mode}`)}
         ${pill(`google_cse ${status}`, status)}
@@ -191,6 +210,7 @@
         <h4>${esc(laneLabel.research_opinion)}</h4>
         ${lanes.research_opinion.length ? lanes.research_opinion.map(sourceRow).join("") : "<p class='subline'>无机构观点</p>"}
       </div>
+      ${timelineHtml(event.timeline)}
       ${claimsHtml(event.claims)}
       <div class="causal-block" data-analysis="1">
         <h4>已确认事实</h4>

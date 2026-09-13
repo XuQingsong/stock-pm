@@ -199,6 +199,7 @@ def test_e9_update_and_revoke_refresh_what_changes():
     analyze_event(iran)
     analyze_event(apple)
     assert iran.status == "updated"
+    assert len(iran.timeline) >= 2
     assert "不重复" in iran.analysis["what_changes"]["text"]
     assert apple.status == "revoked"
     assert "撤销" in apple.analysis["what_changes"]["text"]

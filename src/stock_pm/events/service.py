@@ -11,6 +11,7 @@ from .dedupe import build_events
 from .live import discover_live_documents, reset_live_state
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
+from .replay import RecordedReplayProvider
 from .types import TrustedEvent
 
 
@@ -21,15 +22,21 @@ REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
 def build_event_book(settings: Settings | None = None, *, refresh: bool = False) -> list[TrustedEvent]:
     if _CACHE["events"] is not None and not refresh:
         return list(_CACHE["events"])
-    official = OfficialFeedProvider(settings).discover()
-    live = discover_live_documents(settings)
-    google = GoogleDiscoveryProvider(settings)
-    discovered = list(official) + list(live)
-    if google.configured():
-        try:
-            discovered.extend(google.discover())
-        except Exception:
-            pass
+    mode = events_data_mode(settings)
+    discovered: list = []
+    if mode == "recorded_replay":
+        discovered.extend(RecordedReplayProvider().discover())
+    else:
+        official = OfficialFeedProvider(settings).discover()
+        live = discover_live_documents(settings)
+        discovered.extend(official)
+        discovered.extend(live)
+        google = GoogleDiscoveryProvider(settings)
+        if google.configured():
+            try:
+                discovered.extend(google.discover())
+            except Exception:
+                pass
     events = build_events(discovered)
     for event in events:
         analyze_event(event)
@@ -44,14 +51,18 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     google = providers["google_cse"]
     mode = events_data_mode(settings)
     fixture_count = len(rows) if mode in {"demo", "fixture"} else 0
+    replay_count = len(rows) if mode == "recorded_replay" else 0
     live_rows = [providers[name] for name in REQUIRED_LIVE if name in providers]
     live_ok = [
         row for row in live_rows if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0
     ]
-    live_event_count = 0 if mode in {"demo", "fixture"} else len(rows)
-    ratio = (len(live_ok) / len(REQUIRED_LIVE)) if mode not in {"demo", "fixture"} else 0.0
-    is_live = mode not in {"demo", "fixture"} and bool(live_ok)
-    if mode in {"demo", "fixture"}:
+    live_event_count = 0 if mode in {"demo", "fixture", "recorded_replay"} else len(rows)
+    ratio = (len(live_ok) / len(REQUIRED_LIVE)) if mode not in {"demo", "fixture", "recorded_replay"} else 0.0
+    is_live = mode not in {"demo", "fixture", "recorded_replay"} and bool(live_ok)
+    if mode == "recorded_replay":
+        verdict = "recorded_replay"
+        note = "RECORDED REPLAY of reachable official originals. Not production live latest events."
+    elif mode in {"demo", "fixture"}:
         verdict = "framework_complete_live_coverage_incomplete"
         note = "Labeled fixture/demo only. Not production live coverage."
     elif len(live_ok) == len(REQUIRED_LIVE):
@@ -77,6 +88,8 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "live_event_count": live_event_count,
         "live_coverage_ratio": ratio,
         "fixture_event_count": fixture_count,
+        "recorded_replay_event_count": replay_count,
+        "recorded_replay": mode == "recorded_replay",
         "coverage": "live_official" if is_live else "incomplete_live",
         "last_success": last_success,
         "source_count": sum(len(event.sources) for event in rows),
@@ -121,6 +134,7 @@ def market_center(settings: Settings | None = None) -> dict[str, Any]:
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
         "live": cover["live"],
+        "recorded_replay": cover.get("recorded_replay") is True,
         "coverage": cover,
         "events": [event.as_dict() for event in ordered],
     }
@@ -150,6 +164,7 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         "symbol": symbol.upper(),
         "data_mode": cover["data_mode"],
         "live": cover["live"],
+        "recorded_replay": cover.get("recorded_replay") is True,
         "coverage": cover,
         "events": selected,
         "risk_state": risk_state,

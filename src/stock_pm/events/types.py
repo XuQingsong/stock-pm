@@ -117,6 +117,7 @@ class TrustedEvent:
     scope: str
     duration: str | None
     invalidation: str | None
+    timeline: list[dict[str, Any]] = field(default_factory=list)
     analysis: dict[str, Any] = field(default_factory=dict)
     coverage: dict[str, Any] = field(default_factory=dict)
 
@@ -133,6 +134,7 @@ class TrustedEvent:
             "updated_at": self.updated_at,
             "sources": [row.as_dict() for row in self.sources],
             "claims": [row.as_dict() for row in self.claims],
+            "timeline": [dict(row) for row in self.timeline],
             "dedupe_group": self.dedupe_group,
             "status": self.status,
             "freshness": self.freshness,

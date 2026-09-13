@@ -1,0 +1,196 @@
+{
+  "pack_id": "events_recorded_5b",
+  "data_class": "recorded_replay",
+  "live": false,
+  "note": "Minimal excerpts from reachable official originals. Not production live prints. Full pages are not stored.",
+  "recorded_at": "2026-09-13T03:05:30+00:00",
+  "documents": [
+    {
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+      "published_at": "2026-06-17T18:00:21+00:00",
+      "event_time": "2026-06-17T18:00:21+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "ae20cdf646b7354d00eadfc95d24801a601c889cf91b2123c34b8dc95c9eb35a",
+      "excerpt": "﻿\nFederal Reserve Board - Federal Reserve issues FOMC statement\nSkip to main content\nAn official website of the United States Government Here's how you know Official websites use .gov A .gov website belongs to an official government organization in the United States. Secure .gov websites use HTTPS A lock ( Lock Locked padlock icon ) or https:// means you've safely connected to the .gov website. Sh",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement; maintains the federal funds target range."
+      ],
+      "status": "active",
+      "scenario": "e2_fomc",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Federal Reserve Board - Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting",
+      "published_at": "2026-06-17T18:01:25+00:00",
+      "event_time": "2026-06-17T18:01:25+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "463ade9dcaeb9f01c447c703b14f427b742dce621b207b115db0fdab4de99cfd",
+      "excerpt": "﻿\nFederal Reserve Board - Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting\nSkip to main content\nAn official website of the United States Government Here's how you know Official websites use .gov A .gov website belongs to an official government organization in the United States. Secure .gov websites use HTTPS A lock ( Lock Locked ",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board and FOMC release economic projections from the June 16-17 FOMC meeting."
+      ],
+      "status": "active",
+      "scenario": "e2_fomc",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20260617.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
+      "published_at": "2026-07-08T18:00:13+00:00",
+      "event_time": "2026-07-08T18:00:13+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "4f100f3f7d88404613ba2609b15004868f081369580d7008a8338594799f44c5",
+      "excerpt": "﻿\nThe Fed - Monetary Policy:\nSkip to main content\nAn official website of the United States Government Here's how you know Official websites use .gov A .gov website belongs to an official government organization in the United States. Secure .gov websites use HTTPS A lock ( Lock Locked padlock icon ) or https:// means you've safely connected to the .gov website. Share sensitive information only on o",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "FOMC minutes for the June 16-17, 2026 meeting update the same rate decision record."
+      ],
+      "status": "updated",
+      "scenario": "e2_fomc",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press588.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (05/12/2026): EIA updates forecast amid continued Mideast disruption; will publish new energy security datasets",
+      "published_at": "2026-05-12T12:00:00+00:00",
+      "event_time": "2026-05-12T12:00:00+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "c36d22329423daecfa246a186a7226b5e811e84ae70b73c6ec39c98e71a36311",
+      "excerpt": "EIA Press Release (05/12/2026): EIA updates forecast amid continued Mideast disruption; will publish new energy security datasets\nSkip to sub-navigation\nU.S. Energy Information Administration - EIA - Independent Statistics and Analysis\nMenu\nStatistics\nAnalysis\nTools\nEducation\nNews\nEnter Search Term(s):\nSearch\nPress Room\nGlossary › FAQS ›\nOverview\nPress Releases\nTestimony\nPresentations\nRadio -->\nEv",
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "EIA updates forecast amid continued Mideast disruption to Middle Eastern oil flows through Hormuz."
+      ],
+      "status": "active",
+      "scenario": "e3_e4_e9_hormuz",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press589.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (06/09/2026): EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions",
+      "published_at": "2026-06-09T12:00:00+00:00",
+      "event_time": "2026-06-09T12:00:00+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "9639d2a989878c9e7e56c5d39474c08951a88e5335e283aa54f936971fca9ec2",
+      "excerpt": "EIA Press Release (06/09/2026): EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions\nSkip to sub-navigation\nU.S. Energy Information Administration - EIA - Independent Statistics and Analysis\nMenu\nStatistics\nAnalysis\nTools\nEducation\nNews\nEnter Search Term(s):\nSearch\nPress Room\nGlossary › FAQS ›\nOverview\nPress Releases\nTestimony\nPresentations\nRadio -->\nEvents\nU.",
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions."
+      ],
+      "status": "updated",
+      "scenario": "e3_e4_e9_hormuz",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press590.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (07/07/2026): EIA increases global oil production forecast after the opening of the Strait of Hormuz",
+      "published_at": "2026-07-07T12:00:00+00:00",
+      "event_time": "2026-07-07T12:00:00+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "44744d237a3a3ccf55ad9e7856eba27ac7a594aa84320be2912a1d332ff09145",
+      "excerpt": "EIA Press Release (07/07/2026): EIA increases global oil production forecast after the opening of the Strait of Hormuz\nSkip to sub-navigation\nU.S. Energy Information Administration - EIA - Independent Statistics and Analysis\nMenu\nStatistics\nAnalysis\nTools\nEducation\nNews\nEnter Search Term(s):\nSearch\nPress Room\nGlossary › FAQS ›\nOverview\nPress Releases\nTestimony\nPresentations\nRadio -->\nEvents\nU.S. E",
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "并非霍尔木兹持续中断：EIA increases global oil production forecast after the opening of the Strait of Hormuz."
+      ],
+      "status": "updated",
+      "scenario": "e3_e4_e9_hormuz",
+      "provider": "official"
+    },
+    {
+      "source_url": "https://ofac.treasury.gov/sanctions-programs-and-country-information/iran-sanctions",
+      "publisher": "U.S. Department of the Treasury / OFAC",
+      "title": "Iran Sanctions | Office of Foreign Assets Control",
+      "published_at": "2026-09-10T12:00:00+00:00",
+      "event_time": "2026-09-10T12:00:00+00:00",
+      "fetched_at": "2026-09-13T03:05:30+00:00",
+      "http_status": 200,
+      "content_sha256": "37a189d9dd083e70a2af59c71161c4ae659e05be678e6ac5bbc52631103dd004",
+      "excerpt": "Iran Sanctions | Office of Foreign Assets Control\nSkip to main content\nAn official website of the United States government\nHere’s how you know\nHere’s how you know\nThe .gov means it’s official.\nFederal government websites often end in .gov or .mil. Before sharing sensitive information, make sure you’re on a federal government site.\nThe site is secure.\nThe https:// ensures that you are connecting to",
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "OFAC Iran sanctions materials include Hormuz passage and teapot oil refinery sanctions-risk alerts."
+      ],
+      "status": "active",
+      "scenario": "e3_e4_e9_hormuz",
+      "provider": "official"
+    }
+  ],
+  "integrity_sha256": "395229267a27cde6d6a2b5730168ebb6e5302f2414768f273a1cc2f09b9aa36e"
+}

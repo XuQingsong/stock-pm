@@ -15,6 +15,7 @@ from stock_pm.config import Settings
 
 from .live import live_provider_coverage
 from .policy import events_data_mode, is_safe_public_http_url, redact_url, sanitize_untrusted
+from .replay import RecordedReplayProvider
 from .types import EventDocument
 
 
@@ -246,9 +247,25 @@ def provider_coverage(settings: Settings | None = None) -> dict[str, Any]:
     official = OfficialFeedProvider(settings)
     google = GoogleDiscoveryProvider(settings)
     live = live_provider_coverage(settings)
+    mode = events_data_mode(settings)
+    if mode == "recorded_replay":
+        replay = RecordedReplayProvider().status()
+    else:
+        replay = {
+            "provider": "recorded_replay",
+            "status": "idle",
+            "live": False,
+            "reason_code": "replay_not_enabled",
+            "role": "recorded_replay",
+            "request_url": None,
+            "last_success_at": None,
+            "event_count": 0,
+            "note": "Recorded replay is off. Production latest events stay live-only.",
+        }
     return {
         "official_feed": official.status(),
         "google_cse": google.status(),
+        "recorded_replay": replay,
         **live,
         "note": (
             "Production uses verified SEC / Federal Reserve / EIA feeds only. "
