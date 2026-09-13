@@ -159,10 +159,11 @@ def capture_pages() -> dict:
                 keep.style.maxHeight = '2400px';
                 keep.style.overflow = 'hidden';
               }}
+              const readyNode = keep && (keep.matches('[data-events-ready]') ? keep : keep.querySelector('[data-events-ready]'));
               const r = keep ? keep.getBoundingClientRect() : {{width: 1280, height: 1100}};
               return {{
-                ready: keep && keep.getAttribute('data-events-ready') === '1',
-                loading: Boolean(keep && keep.classList.contains('loading')),
+                ready: readyNode && readyNode.getAttribute('data-events-ready') === '1',
+                loading: Boolean(readyNode && readyNode.classList.contains('loading')),
                 width: Math.max(1280, Math.ceil(r.width + 24)),
                 height: Math.min(2400, Math.max(1100, Math.ceil(Math.min(r.height + 80, 2400))))
               }};
