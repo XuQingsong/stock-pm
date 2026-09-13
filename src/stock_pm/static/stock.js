@@ -738,6 +738,7 @@
     }).join("") || "<li>没有可折叠的原始事实</li>";
     const noMove = payload.no_material_change ? `<p class="subline">无重大变化：${esc((payload.what_changed || {}).summary || "原判断不变")}</p>` : "";
     $("decision-module").innerHTML = `${renderGradeBoard(payload)}
+      <div id="data-health-slot"></div>
       ${noMove}
       ${gaps ? `<ul class="decision-gaps">${gaps}</ul>` : ""}
       ${renderChainGroups(payload)}
@@ -751,6 +752,64 @@
       <details class="decision-facts fold"><summary>原始 Facts（默认折叠）</summary><ul>${facts}</ul></details>`;
   }
 
+  function healthReasonCopy(row) {
+    const code = row.reason_code || "";
+    if (code === "source_not_configured") return "源未配置";
+    if (code === "upstream_empty") return "上游无记录";
+    if (code === "record_stale") return "记录过旧";
+    if (code === "record_invalid") return "记录格式非法";
+    if (code === "query_error") return "查询异常";
+    if (code === "missing_observation") return "缺少观察时间";
+    return row.reason_label || code || "状态未知";
+  }
+
+  function renderDataHealth(health) {
+    if (!health) return "";
+    const overall = health.overall || {};
+    const names = { price: "价格", earnings: "盈利", macro_rates: "宏观", risk_sentiment: "风险" };
+    const list = (ids) => (ids || []).map((id) => names[id] || id).join("、") || "无";
+    const banner = health.synthetic
+      ? `<div class="decision-banner" role="status">合成演示数据 · ${esc(health.preview_label || "preview")}。生产环境不会用 fixture 顶替真实数据。</div>`
+      : "";
+    const rows = (health.datasets || []).map((row) => {
+      const age = row.freshness_age == null ? "—" : `${row.freshness_age} 天 / 阈值 ${row.freshness_threshold ?? "—"} 天`;
+      return `<article class="health-row status-${esc(row.status)}">
+        <h4>${esc(row.dataset)} · ${esc(row.metric)} ${statusPill(row.status)}</h4>
+        <div class="why">原因：${esc(healthReasonCopy(row))} <small>${esc(row.reason_code || "")}</small></div>
+        <div class="why">作用：${esc(row.affects_chain || "—")} / ${esc(row.affects_stage || "—")} · source ${esc(row.source || "—")}</div>
+        <div class="why">观察 ${esc(row.latest_observed_at || "—")} · 入库 ${esc(row.latest_ingested_at || "—")} · 陈旧程度 ${esc(age)}</div>
+        <div class="why">恢复：${esc(row.next_action || "—")}</div>
+      </article>`;
+    }).join("");
+    return `${banner}<section class="data-health" aria-label="数据健康">
+      <div class="health-compact">
+        <strong>数据健康</strong>
+        <span class="status-pill ${esc(overall.status || "degraded")}">${esc(overall.status || "degraded")}</span>
+        <span>可用链：${esc(list(overall.available_chains))}</span>
+        <span>受限链：${esc(list(overall.limited_chains))}</span>
+        <span>不可用链：${esc(list(overall.unavailable_chains))}</span>
+      </div>
+      <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
+      <details class="health-details">
+        <summary>展开缺口、陈旧程度、作用范围和恢复条件</summary>
+        <div class="health-rows">${rows}</div>
+      </details>
+    </section>`;
+  }
+
+  async function loadDataHealth() {
+    const slot = $("data-health-slot");
+    if (!slot) return;
+    const preview = new URLSearchParams(location.search).get("preview");
+    const path = endpoint("data-health") + (preview ? `?preview=${encodeURIComponent(preview)}` : "");
+    try {
+      const health = await api(path);
+      slot.innerHTML = renderDataHealth(health);
+    } catch (error) {
+      slot.innerHTML = `<section class="data-health"><p class="subline">数据健康加载失败：${esc(error.message || "未知错误")}</p></section>`;
+    }
+  }
+
   async function loadDecision() {
     const root = $("decision-module");
     if (!root) return;
@@ -761,6 +820,7 @@
     try {
       const payload = await api(path);
       renderDecision(payload);
+      await loadDataHealth();
     } catch (error) {
       root.innerHTML = `<div class="state error"><b>动态判断加载失败</b><span>${esc(error.message || "未知错误")}</span></div>`;
     }
