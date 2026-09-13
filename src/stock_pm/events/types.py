@@ -38,6 +38,8 @@ class EventSource:
     published_at: str | None = None
     first_seen_at: str | None = None
     event_id: str | None = None
+    document_role: str | None = None
+    evidence_role: str = "event_fact"
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -53,6 +55,8 @@ class EventSource:
             "published_at": self.published_at,
             "first_seen_at": self.first_seen_at,
             "event_id": self.event_id,
+            "document_role": self.document_role,
+            "evidence_role": self.evidence_role,
         }
 
 
@@ -65,6 +69,11 @@ class EventClaim:
     status: str = "open"
     source_url: str = ""
     publisher: str = ""
+    valid_from: str | None = None
+    observed_at: str | None = None
+    supersedes: str | None = None
+    superseded_by: str | None = None
+    excerpt: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -75,6 +84,11 @@ class EventClaim:
             "status": self.status,
             "source_url": self.source_url,
             "publisher": self.publisher,
+            "valid_from": self.valid_from,
+            "observed_at": self.observed_at,
+            "supersedes": self.supersedes,
+            "superseded_by": self.superseded_by,
+            "excerpt": self.excerpt,
         }
 
 
@@ -95,6 +109,9 @@ class EventDocument:
     status: str = "active"
     etag: str | None = None
     last_modified: str | None = None
+    document_role: str | None = None
+    evidence_role: str = "event_fact"
+    supersedes_url: str | None = None
 
 
 @dataclass(slots=True)

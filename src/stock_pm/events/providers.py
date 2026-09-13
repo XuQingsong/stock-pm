@@ -60,6 +60,9 @@ def load_fixture_documents() -> list[EventDocument]:
                 body=sanitize_untrusted(str(item.get("body") or "")),
                 provider=str(item.get("provider") or "official"),
                 status=str(item.get("status") or "active"),
+                document_role=item.get("document_role"),
+                evidence_role=str(item.get("evidence_role") or "event_fact"),
+                supersedes_url=item.get("supersedes_url"),
             )
         )
     return rows
