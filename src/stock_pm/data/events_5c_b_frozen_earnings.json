@@ -285,35 +285,37 @@
       "synced_at": "2026-09-13 06:24:13+00:00"
     }
   ],
-  "integrity_sha256": "9f404fa40683cb4c68f18a514c8d9e7476eb66b50570ce590ecd9cff3ec544b6",
   "before": {
     "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 0,
     "note": "No company_earnings conclusion before structured YoY/surprise."
   },
   "after": {
-    "valid_conclusion_count": 1,
-    "withheld_count": 0,
-    "gained_event_ids": [
-      "evt_da5b66c6f5a55f24"
-    ]
+    "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 1,
+    "withheld_count": 1,
+    "gained_valid_event_ids": [],
+    "price_direction": "withheld"
   },
   "gained_detail": [
     {
-      "event_id": "evt_da5b66c6f5a55f24",
       "symbol": "AAPL",
       "metric": "eps",
       "fiscal_date_ending": "2026-06-30",
       "actual": 2.02,
       "prior_year_actual": 1.57,
       "consensus": 1.88,
+      "consensus_role": "provider_reported_consensus_at_print",
       "yoy": 0.286624,
       "surprise": 0.074468,
       "yoy_formula": "(2.02 - 1.57) / 1.57",
       "surprise_formula": "(2.02 - 1.88) / abs(1.88)",
       "implication": "beat_and_grow",
       "rule_id": "earnings_implication.v1",
+      "valid_conclusion": false,
       "source_url": "https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
-      "sec_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm"
+      "sec_association_only": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm"
     }
-  ]
+  ],
+  "integrity_sha256": "429bed61865f566f544c974163a4c1cf71cde40308c3853711252f16f74af20d"
 }

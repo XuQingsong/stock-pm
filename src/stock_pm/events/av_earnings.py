@@ -13,9 +13,14 @@ from .bodies import is_allowed_sec_host
 from .policy import events_data_mode
 from .earnings import (
     AV_EARNINGS_SOURCE,
+    AV_ESTIMATES_SOURCE,
+    apply_estimate_snapshot,
     attach_transcript,
     documents_from_evidence,
     evidence_from_av_quarters,
+    fiscal_quarter_id,
+    load_frozen_earnings_documents,
+    local_degraded_earnings_documents,
     parse_number,
     reset_earnings_registry,
 )
@@ -195,12 +200,31 @@ class AvEarningsProvider:
             "reason_code": None,
             "role": "structured_earnings",
             "request_url": av_http_source("EARNINGS", "AAPL"),
+            "request_urls": {
+                "EARNINGS": av_http_source("EARNINGS", "AAPL"),
+                "EARNINGS_ESTIMATES": av_http_source("EARNINGS_ESTIMATES", "AAPL"),
+                "EARNINGS_CALL_TRANSCRIPT": av_http_source("EARNINGS_CALL_TRANSCRIPT", "AAPL", quarter="2026Q3"),
+            },
             "event_count": 0,
             "required_env": AV_ENV,
         }
 
+    def _fetch_isolated(self, function: str, symbol: str, extra: dict[str, str] | None = None) -> tuple[dict[str, Any] | None, str | None]:
+        try:
+            return fetch_av_function(function, symbol, settings=self.settings, extra=extra), None
+        except FetchError as exc:
+            return None, exc.reason_code
+
     def discover(self) -> list[EventDocument]:
-        if events_data_mode(self.settings) not in {"empty", "live"}:
+        mode = events_data_mode(self.settings)
+        if mode in {"demo", "fixture"}:
+            if os.getenv("PYTEST_CURRENT_TEST") and os.getenv("STOCK_PM_EARNINGS_FIXTURE") != "1":
+                return []
+            reset_earnings_registry()
+            rows = load_frozen_earnings_documents()
+            rows.extend(local_degraded_earnings_documents())
+            return rows
+        if mode not in {"empty", "live"}:
             return []
         if os.getenv("PYTEST_CURRENT_TEST") and os.getenv("STOCK_PM_EARNINGS_LIVE") != "1":
             return []
@@ -209,44 +233,85 @@ class AvEarningsProvider:
         rows: list[EventDocument] = []
         fetched_at = utc_now()
         for symbol in WATCH_SYMBOLS:
+            payload, _earn_err = self._fetch_isolated("EARNINGS", symbol)
+            if not payload:
+                continue
             try:
-                payload = fetch_av_function("EARNINGS", symbol, settings=self.settings)
                 quarters = parse_av_earnings(payload)
-                if not quarters:
-                    continue
-                evidence = evidence_from_av_quarters(
-                    quarters,
-                    symbol=symbol,
-                    fetched_at=fetched_at,
-                    source_url=AV_EARNINGS_SOURCE.format(symbol=symbol),
-                )
-                sec_url = match_sec_8k_for_print(
-                    symbol, evidence.published_at or "", settings=self.settings
-                )
-                rows.extend(documents_from_evidence(evidence, sec_url=sec_url))
             except FetchError:
                 continue
+            if not quarters:
+                continue
+            evidence = evidence_from_av_quarters(
+                quarters,
+                symbol=symbol,
+                fetched_at=fetched_at,
+                source_url=AV_EARNINGS_SOURCE.format(symbol=symbol),
+            )
+            estimates, _est_err = self._fetch_isolated("EARNINGS_ESTIMATES", symbol)
+            if estimates:
+                try:
+                    estimate_rows = parse_av_estimates(estimates)
+                except FetchError:
+                    estimate_rows = []
+                apply_estimate_snapshot(
+                    evidence,
+                    estimate_rows,
+                    fetched_at=fetched_at,
+                    source_url=AV_ESTIMATES_SOURCE.format(symbol=symbol),
+                )
+            elif _est_err and "EARNINGS_ESTIMATES" not in evidence.endpoints_called:
+                evidence.endpoints_called.append("EARNINGS_ESTIMATES")
+            quarter = evidence.fiscal_quarter or fiscal_quarter_id(symbol, evidence.fiscal_date_ending)
+            if quarter:
+                transcript, _tr_err = self._fetch_isolated(
+                    "EARNINGS_CALL_TRANSCRIPT", symbol, extra={"quarter": quarter}
+                )
+                if transcript:
+                    try:
+                        excerpts = parse_av_transcript(
+                            transcript, symbol=symbol, quarter=quarter, fetched_at=fetched_at
+                        )
+                    except FetchError:
+                        excerpts = []
+                    attach_transcript(
+                        evidence,
+                        excerpts,
+                        quarter=quarter,
+                        fetched_at=fetched_at,
+                        symbol=symbol,
+                    )
+                elif _tr_err and "EARNINGS_CALL_TRANSCRIPT" not in evidence.endpoints_called:
+                    evidence.endpoints_called.append("EARNINGS_CALL_TRANSCRIPT")
+            sec_url = match_sec_8k_for_print(symbol, evidence.published_at or "", settings=self.settings)
+            rows.extend(documents_from_evidence(evidence, sec_url=sec_url))
         return rows
 
 
 def load_frozen_as_provider() -> list[EventDocument]:
-    from .earnings import load_frozen_earnings_documents
-
     reset_earnings_registry()
     return load_frozen_earnings_documents()
 
 
-def optional_transcript(symbol: str, quarter: str, evidence) -> None:
-    try:
-        payload = fetch_av_function(
-            "EARNINGS_CALL_TRANSCRIPT",
-            symbol,
-            extra={"quarter": quarter},
-        )
-    except FetchError:
-        return
-    excerpts = []
-    for item in list(payload.get("transcript") or [])[:8]:
+def parse_av_estimates(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = payload.get("estimates")
+    if rows is None:
+        rows = payload.get("data")
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        raise FetchError("record_invalid", "Alpha Vantage estimates changed shape")
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def parse_av_transcript(payload: dict[str, Any], *, symbol: str, quarter: str, fetched_at: str) -> list[dict[str, Any]]:
+    rows = payload.get("transcript")
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        raise FetchError("record_invalid", "Alpha Vantage transcript changed shape")
+    excerpts: list[dict[str, Any]] = []
+    for item in rows[:8]:
         if not isinstance(item, dict):
             continue
         excerpts.append(
@@ -255,7 +320,9 @@ def optional_transcript(symbol: str, quarter: str, evidence) -> None:
                 "title": item.get("title"),
                 "content": item.get("content"),
                 "quarter": payload.get("quarter") or quarter,
+                "symbol": symbol,
                 "source_url": av_http_source("EARNINGS_CALL_TRANSCRIPT", symbol, quarter=quarter),
+                "fetched_at": fetched_at,
             }
         )
-    attach_transcript(evidence, excerpts, quarter=quarter)
+    return excerpts

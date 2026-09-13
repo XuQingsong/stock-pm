@@ -5,13 +5,46 @@ from __future__ import annotations
 from typing import Any
 
 from .bodies import is_sec_item_metadata
-from .earnings import earnings_for_event, implication_text
+from .earnings import binding_refs, earnings_for_event, implication_text
 from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
 
 
 DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL")
+EARNINGS_IMPLICATION_LABELS = {
+    "beat_and_grow",
+    "beat_but_contract",
+    "miss_but_grow",
+    "miss_and_contract",
+    "beat_flat",
+    "miss_flat",
+    "inline_and_grow",
+    "inline_or_mixed",
+}
+
+
+def can_form_direction(
+    *,
+    event_type: str = "",
+    withheld: dict[str, Any] | None = None,
+    earnings_implication: dict[str, Any] | None = None,
+    direction: str | None = None,
+) -> bool:
+    """Market/price direction only. An earnings implication never forms direction."""
+    if event_type == "company_earnings":
+        return False
+    label = str((earnings_implication or {}).get("label") or "")
+    hint = direction or (withheld or {}).get("direction")
+    if label in EARNINGS_IMPLICATION_LABELS or hint in EARNINGS_IMPLICATION_LABELS:
+        return False
+    if (earnings_implication or {}).get("is_price_direction") is False and not hint:
+        return False
+    if (withheld or {}).get("status") != "observable":
+        return False
+    if hint in {None, "", "withheld"}:
+        return False
+    return True
 
 
 def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool = False) -> list[dict[str, str]]:
@@ -19,6 +52,8 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
     current_urls = {row.source_url for row in current_claims(event)} if current_only else None
     for source in event.sources:
         if getattr(source, "evidence_role", "event_fact") == "regime_catalog":
+            continue
+        if getattr(source, "evidence_role", "event_fact") == "association_metadata":
             continue
         if facts_only and source.fact_or_opinion != "fact":
             continue
@@ -109,7 +144,8 @@ def confidence_rule(event: TrustedEvent) -> dict[str, Any]:
     official = [
         row
         for row in event.sources
-        if row.source_tier == 1 and getattr(row, "evidence_role", "event_fact") != "regime_catalog"
+        if row.source_tier == 1
+        and getattr(row, "evidence_role", "event_fact") not in {"regime_catalog", "association_metadata"}
     ]
     media = [row for row in event.sources if row.source_tier == 2]
     metrics = source_metrics(event.sources, event.claims)
@@ -323,7 +359,10 @@ def _official_http_on_event(analysis: dict[str, Any], sources: list[Any] | None 
         if not url.startswith("http"):
             continue
         content_type = _row_field(row, "content_type")
+        role = _row_field(row, "evidence_role") or _row_field(row, "document_role")
         if content_type in {"research_opinion", "aggregator"}:
+            continue
+        if role in {"association_metadata", "filing_association", "structured_field_bindings"}:
             continue
         return True
     return False
@@ -446,6 +485,8 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         primary = None
     elif status in {"revoked", "superseded"}:
         primary = "superseded_or_no_material_change"
+    elif isinstance(analysis, dict) and (analysis.get("earnings_evidence") or {}).get("gap"):
+        primary = str(analysis["earnings_evidence"]["gap"])
     elif not row["official_ok"]:
         primary = "no_official_url"
     elif fetch_error and not row["excerpt_ok"]:
@@ -486,6 +527,11 @@ def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = N
     analysis["closed_loop"] = row["valid"]
     analysis["unsupported"] = row["unsupported"]
     analysis["evidence_gap"] = gap
+    if analysis.get("event_type") == "company_earnings" or analysis.get("earnings_implication"):
+        analysis["can_form_direction"] = False
+        direction_text = (analysis.get("direction") or {}).get("text") if isinstance(analysis.get("direction"), dict) else analysis.get("direction")
+        if direction_text in EARNINGS_IMPLICATION_LABELS:
+            analysis["direction"] = _bound(None, [])
     if analysis.get("withheld", {}).get("status") == "observable" and not row["valid"]:
         if row["unsupported"]:
             reason = "正文摘录不支持当前事实，不形成方向"
@@ -543,6 +589,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         what = "把该事件纳入相关标的的观察清单，不改写无暴露股票的主结论"
     earnings_row = earnings_for_event(event) if event.event_type == "company_earnings" else None
     filing_fact_only = event.event_type == "company_filing" and event.status != "revoked"
+    earnings_implication = None
     if earnings_row and earnings_row.complete():
         change = (
             f"YoY {earnings_row.yoy:+.2%} = ({earnings_row.actual} - {earnings_row.prior_year_actual}) "
@@ -553,6 +600,12 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "下一份可观察财报、共识修订或官方更正将改写该盈利含义。"
             f"规则 {earnings_row.rule_id}。股价方向与价格区间对本阶段仍 withheld。"
         )
+        earnings_implication = {
+            "label": earnings_row.implication,
+            "rule_id": earnings_row.rule_id,
+            "text": implication_text(earnings_row),
+            "is_price_direction": False,
+        }
     elif earnings_row:
         change = ""
         what = "已获得部分结构化财报字段；缺少可对齐基准或分母不可用，因此不形成盈利含义"
@@ -561,7 +614,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         change = ""
         what = "已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向"
 
-    if not bound_refs:
+    if not bound_refs and not earnings_row:
         analysis = {
             "confirmed_facts": [],
             "change_vs_baseline": _bound(None, []),
@@ -638,8 +691,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         direction_hint = "pressure"
         horizon = "days_to_weeks"
         invalidation = "若官方确认海峡通行恢复或撤回中断预测，则该影响链失效"
-    elif earnings_row and earnings_row.complete():
-        direction_hint = earnings_row.implication or "withheld"
+    elif earnings_row:
+        direction_hint = "withheld"
         horizon = "until_next_earnings"
         invalidation = "若公司重述、后续 8-K/10-Q 更正或供应商撤回该期实际值/共识，则该盈利含义失效"
     else:
@@ -647,7 +700,20 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     confirmed_text, fact_excerpt, fact_supported = _supporting_fact(
         live_claims, latest_claim.text if latest_claim else event.canonical_title
     )
-    if confidence in {"insufficient", "revoked"} or not official_refs:
+    earnings_fact_refs = binding_refs(earnings_row, ("actual", "prior_year_actual", "consensus")) if earnings_row else []
+    if earnings_row:
+        confirmed_text = (
+            f"{earnings_row.symbol} {earnings_row.fiscal_period} EPS actual {earnings_row.actual} {earnings_row.unit}"
+            if earnings_row.actual is not None
+            else f"{earnings_row.symbol} {earnings_row.fiscal_period} EPS actual missing"
+        )
+        fact_excerpt = ""
+        fact_supported = False
+    if event.event_type == "company_earnings":
+        withheld = _withhold("结构化盈利含义不是股价方向；市场/价格方向 withheld")
+        direction = None
+        direction_hint = "withheld"
+    elif confidence in {"insufficient", "revoked"} or not official_refs:
         withheld = _withhold("缺少 Tier 1 官方事实或事件已撤销，不输出方向")
     elif conflicts:
         withheld = _withhold("同一 as-of 窗口存在不同发布方冲突 claim，方向 withhold")
@@ -655,18 +721,12 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         withheld = _withhold("正文摘录不支持当前事实，不形成方向")
     elif not exposures:
         withheld = _withhold("没有行业/个股暴露映射，不形成方向")
-    elif earnings_row and not earnings_row.complete():
-        withheld = _withhold("结构化财报链不完整，不形成盈利含义")
     elif filing_fact_only:
         withheld = _withhold("已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向")
     else:
         withheld = {
             "status": "observable",
-            "reason": (
-                implication_text(earnings_row)
-                if earnings_row and earnings_row.complete()
-                else "可观察传导方向/期限，不是个股交易指令或价格区间"
-            ),
+            "reason": "可观察传导方向/期限，不是个股交易指令或价格区间",
             "direction": direction_hint,
             "horizon": horizon,
             "percent_forecast": None,
@@ -678,10 +738,10 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "confirmed_facts": [
             {
                 "text": confirmed_text,
-                "evidence_refs": current_refs[:1] or official_refs[:1] or bound_refs[:1],
+                "evidence_refs": earnings_fact_refs or current_refs[:1] or official_refs[:1] or bound_refs[:1],
             }
         ],
-        "change_vs_baseline": _bound(change, current_refs or bound_refs),
+        "change_vs_baseline": _bound(change, earnings_fact_refs or current_refs or bound_refs),
         "mechanism": _bound(mechanism, official_refs or bound_refs),
         "affected_markets": sorted({row["channel"] for row in exposures}) or ["market_background"],
         "exposures": exposures,
@@ -709,9 +769,9 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             event,
             fact_text=confirmed_text,
             fact_excerpt=fact_excerpt,
-            fact_refs=current_refs[:1] or official_refs[:1] or bound_refs[:1],
+            fact_refs=earnings_fact_refs or current_refs[:1] or official_refs[:1] or bound_refs[:1],
             change_text=change,
-            change_refs=current_refs or bound_refs,
+            change_refs=earnings_fact_refs or current_refs or bound_refs,
             direction=direction or withheld.get("direction") or "withheld",
             horizon=horizon,
             confidence=confidence,
@@ -731,6 +791,16 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "filing_fact_only": bool(filing_fact_only and fact_supported),
         "event_type": event.event_type,
         "earnings_evidence": earnings_row.as_dict() if earnings_row else None,
+        "earnings_implication": earnings_implication,
+        "earnings_chain_complete": bool(earnings_row and earnings_row.complete()),
+        "can_form_direction": can_form_direction(
+            event_type=event.event_type,
+            withheld=withheld,
+            earnings_implication=earnings_implication,
+            direction=direction or withheld.get("direction"),
+        )
+        if event.event_type == "company_earnings" or earnings_implication
+        else None,
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)

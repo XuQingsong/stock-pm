@@ -3,19 +3,23 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from stock_pm.events.analyze import analyze_event, classify_evidence_gap, inspect_closed_loop
-from stock_pm.events.av_earnings import AvEarningsProvider, parse_av_earnings, pick_sec_8k_url
+from stock_pm.events.analyze import analyze_event, can_form_direction, classify_evidence_gap, inspect_closed_loop
+from stock_pm.events.av_earnings import AvEarningsProvider, parse_av_earnings, parse_av_estimates, pick_sec_8k_url
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.earnings import (
+    CONSENSUS_ROLE,
     EPS_UNIT,
     RULE_ID,
     EarningsEvidence,
     FrozenEarningsError,
+    apply_estimate_snapshot,
     attach_transcript,
     compute_changes,
     compute_frozen_earnings_integrity,
+    derive_frozen_acceptance,
     documents_from_evidence,
     evidence_from_av_quarters,
+    fiscal_quarter_id,
     load_frozen_earnings,
     load_frozen_earnings_documents,
     register_earnings,
@@ -55,33 +59,60 @@ def test_frozen_pack_is_unchanged_and_not_live():
     tampered = json.loads(FROZEN.read_text())
     tampered["av_earnings"]["quarterlyEarnings"][0]["reportedEPS"] = "9.99"
     assert compute_frozen_earnings_integrity(tampered) != pack["integrity_sha256"]
+    after_edit = json.loads(FROZEN.read_text())
+    after_edit["after"]["valid_conclusion_count"] = 99
+    assert compute_frozen_earnings_integrity(after_edit) != pack["integrity_sha256"]
+    derived = derive_frozen_acceptance(pack)
+    assert derived["valid_conclusion_count"] == pack["after"]["valid_conclusion_count"] == 0
+    assert derived["earnings_chain_complete_count"] == pack["after"]["earnings_chain_complete_count"] == 1
+    assert derived["gained_valid_event_ids"] == pack["after"]["gained_valid_event_ids"] == []
 
 
-def test_complete_aapl_eps_closes_with_formulas_not_price():
+def test_complete_aapl_eps_is_structured_but_not_tier1_closed():
     docs = load_frozen_earnings_documents()
     events = _closed(docs)
     event = next(row for row in events if row.event_type == "company_earnings")
     row = inspect_closed_loop(event)
     evidence = event.analysis["earnings_evidence"]
-    assert row["valid"] is True
-    assert event.analysis["closed_loop"] is True
+    assert row["valid"] is False
+    assert event.analysis["closed_loop"] is False
+    assert event.analysis["earnings_chain_complete"] is True
     assert evidence["actual"] == 2.02
     assert evidence["prior_year_actual"] == 1.57
     assert evidence["consensus"] == 1.88
+    assert evidence["consensus_role"] == CONSENSUS_ROLE
     assert evidence["yoy"] == round((2.02 - 1.57) / 1.57, 6)
     assert evidence["surprise"] == round((2.02 - 1.88) / 1.88, 6)
     assert evidence["implication"] == "beat_and_grow"
     assert evidence["rule_id"] == RULE_ID
+    assert evidence["field_bindings"]["actual"]["raw_field"] == "reportedEPS"
+    assert evidence["field_bindings"]["consensus"]["function"] == "EARNINGS"
+    assert evidence["estimate_snapshot"]["used_for_surprise"] is False
     assert "(2.02 - 1.57) / 1.57" in event.analysis["change_vs_baseline"]["text"]
     assert "(2.02 - 1.88) / abs(1.88)" in event.analysis["change_vs_baseline"]["text"]
     assert event.analysis["percent_forecast"] is None
     assert event.analysis["price_target"] is None
-    assert event.analysis["withheld"]["status"] == "observable"
-    assert "股价" in event.analysis["what_changes"]["text"] or "价格区间" in event.analysis["withheld"]["reason"]
+    assert event.analysis["withheld"]["status"] == "withheld"
+    assert event.analysis["can_form_direction"] is False
+    assert (event.analysis["direction"] or {}).get("text") in {None, "", "withheld"}
+    assert event.analysis["earnings_implication"]["label"] == "beat_and_grow"
+    assert event.analysis["earnings_implication"]["is_price_direction"] is False
+    fact = next(layer for layer in event.analysis["causal_chain"]["layers"] if layer["id"] == "fact")
+    change = next(layer for layer in event.analysis["causal_chain"]["layers"] if layer["id"] == "change")
+    assert fact["excerpt"] == ""
+    assert all(ref.get("raw_field") for ref in fact["evidence_refs"])
+    assert all(ref.get("function") == "EARNINGS" for ref in fact["evidence_refs"])
+    assert all(ref.get("raw_field") for ref in change["evidence_refs"])
+    assert can_form_direction(
+        event_type="company_earnings",
+        withheld={"status": "observable", "direction": "beat_and_grow"},
+        earnings_implication=event.analysis["earnings_implication"],
+        direction="beat_and_grow",
+    ) is False
+    assert not any("2.02" in (source.title or "") and "sec.gov" in (source.source_url or "") for source in event.sources)
     assert why_relevant(event, "AAPL")
     assert why_relevant(event, "NVDA") is None
     assert why_relevant(event, "XOM") is None
-    assert classify_evidence_gap(event)["primary_reason"] is None
 
 
 def test_period_and_currency_mismatch_do_not_infer():
@@ -92,6 +123,7 @@ def test_period_and_currency_mismatch_do_not_infer():
     )
     assert bad_unit.gap == "period_mismatch"
     assert bad_unit.yoy is None
+    reset_earnings_registry()
     other = evidence_from_av_quarters(
         [row for row in quarters if row["fiscalDateEnding"] != "2025-06-30"],
         symbol="AAPL",
@@ -144,30 +176,34 @@ def test_zero_and_negative_denominators_are_undefined():
     )
     assert zero.gap == "undefined_change"
     assert zero.yoy is None
-    neg = register_earnings(
-        EarningsEvidence(
-            symbol="AAPL",
-            fiscal_period="2026-06",
-            fiscal_date_ending="2026-06-30",
-            metric="eps",
-            actual=2.02,
-            prior_year_actual=1.57,
-            consensus=0.0,
-            unit=EPS_UNIT,
-            currency="USD",
-            source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
-            provider="alpha_vantage",
-            published_at="2026-07-30",
-            as_of="2026-07-30",
-            fetched_at="t",
-        )
+    # Same issuer/metric/period with a different consensus is a restatement if
+    # registered; evaluate zero/negative consensus on a bare row.
+    neg = EarningsEvidence(
+        symbol="AAPL",
+        fiscal_period="2026-06",
+        fiscal_date_ending="2026-06-30",
+        metric="eps",
+        actual=2.02,
+        prior_year_actual=1.57,
+        consensus=0.0,
+        unit=EPS_UNIT,
+        currency="USD",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+        provider="alpha_vantage",
+        published_at="2026-07-30",
+        as_of="2026-07-30",
+        fetched_at="t",
     )
+    compute_changes(neg)
     assert neg.gap == "undefined_change"
     assert neg.surprise is None
-    compute_changes(neg)
+    neg.gap = None
     neg.consensus = -1.5
     compute_changes(neg)
     assert neg.gap == "undefined_change"
+    from stock_pm.events.earnings import earnings_for
+
+    assert earnings_for("AAPL", fiscal_date_ending="2026-06-30") is zero
 
 
 def test_duplicate_quarters_keep_one_print():
@@ -188,7 +224,9 @@ def test_transcript_is_supporting_only_and_quarter_linked():
     evidence = events[0].analysis["earnings_evidence"]
     assert evidence["transcript_excerpts"]
     assert all(item.get("quarter") == "2026Q3" for item in evidence["transcript_excerpts"])
+    assert all(item.get("symbol") == "AAPL" for item in evidence["transcript_excerpts"])
     assert all(item.get("source_url") for item in evidence["transcript_excerpts"])
+    assert all(item.get("fetched_at") for item in evidence["transcript_excerpts"])
     assert all("sentiment" not in item for item in evidence["transcript_excerpts"])
     mismatched = attach_transcript(
         evidence_from_av_quarters(
@@ -197,10 +235,12 @@ def test_transcript_is_supporting_only_and_quarter_linked():
             fetched_at="t",
             source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
         ),
-        [{"speaker": "CEO", "content": "We ship phones.", "quarter": "2024Q1", "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2024Q1"}],
+        [{"speaker": "CEO", "content": "We ship phones.", "quarter": "2024Q1", "symbol": "AAPL", "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2024Q1"}],
         quarter="2024Q1",
+        fetched_at="t",
+        symbol="AAPL",
     )
-    assert mismatched.transcript_excerpts[0]["quarter"] == "2024Q1"
+    assert mismatched.transcript_excerpts == []
     assert mismatched.complete() is True
     assert mismatched.implication == "beat_and_grow"
 
@@ -298,6 +338,10 @@ def test_ui_shows_actual_prior_consensus_and_degraded_copy():
     assert 'data-earnings-field="actual"' in ui
     assert 'data-earnings-field="prior"' in ui
     assert 'data-earnings-field="consensus"' in ui
+    assert "data-earnings-binding" in ui
+    assert "data-earnings-implication" in ui
+    assert 'data-price-direction="withheld"' in ui
+    assert "data-can-form-direction" in ui
     assert "本链缺失" in ui
     assert "只降级本事件，不阻断其他事件" in ui
 
@@ -338,9 +382,169 @@ def test_parse_av_earnings_rejects_non_list():
         raise AssertionError("shape")
     except FetchError as exc:
         assert exc.reason_code == "record_invalid"
+    assert parse_av_estimates({"data": [{"date": "2026-09-30", "horizon": "next fiscal quarter"}]})
+    try:
+        parse_av_estimates({"estimates": {"bad": True}})
+        raise AssertionError("shape")
+    except FetchError as exc:
+        assert exc.reason_code == "record_invalid"
 
 
 def test_restatement_invalidation_is_explicit():
     docs = load_frozen_earnings_documents()
     event = _closed(docs)[0]
     assert "重述" in event.analysis["invalidation"]["text"]
+
+
+def test_same_day_unrelated_8k_does_not_upgrade_av_to_sec_or_close():
+    pack = load_frozen_earnings()
+    row = evidence_from_av_quarters(
+        pack["av_earnings"]["quarterlyEarnings"],
+        symbol="AAPL",
+        fetched_at="t",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+    )
+    docs = documents_from_evidence(row, sec_url=pack["sec_filing"]["url"])
+    from stock_pm.events.types import EventDocument
+
+    unrelated = EventDocument(
+        title="8-K - Current report",
+        url="https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm",
+        publisher="SEC EDGAR",
+        published_at="2026-07-30T21:29:51+00:00",
+        event_type="company_filing",
+        entities=["AAPL"],
+        countries=["US"],
+        claims=["The Board appointed an officer under Item 5.02."],
+        body="Item 5.02 Departure of Directors or Certain Officers. The Board appointed an officer.",
+        provider="official",
+    )
+    events = _closed(docs + [unrelated])
+    earnings = next(item for item in events if item.event_type == "company_earnings")
+    assert inspect_closed_loop(earnings)["valid"] is False
+    assert earnings.analysis["can_form_direction"] is False
+    for doc in docs:
+        assert "2.02" not in (doc.body or "")
+        assert "2.02" not in " ".join(doc.claims)
+        assert "sec.gov" not in (doc.url or "")
+    assert (earnings.analysis["earnings_evidence"] or {}).get("sec_association", {}).get("verified") is False
+
+
+def test_estimates_snapshot_is_not_historical_surprise():
+    pack = load_frozen_earnings()
+    row = evidence_from_av_quarters(
+        pack["av_earnings"]["quarterlyEarnings"],
+        symbol="AAPL",
+        fetched_at="2026-09-13T11:20:00+00:00",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+    )
+    apply_estimate_snapshot(
+        row,
+        pack["av_estimates"]["estimates"],
+        fetched_at="2026-09-13T11:20:00+00:00",
+        source_url=pack["av_estimates"]["http_source"],
+    )
+    assert row.consensus == 1.88
+    assert row.field_bindings["consensus"]["raw_field"] == "estimatedEPS"
+    assert row.estimate_snapshot["used_for_surprise"] is False
+    assert row.surprise == round((2.02 - 1.88) / 1.88, 6)
+
+
+def test_ambiguous_month_and_restatement_withhold():
+    pack = load_frozen_earnings()
+    quarters = list(pack["av_earnings"]["quarterlyEarnings"])
+    assert fiscal_quarter_id("AAPL", "2026-06-30") == "2026Q3"
+    evidence_from_av_quarters(
+        quarters,
+        symbol="AAPL",
+        fetched_at="t",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+        fiscal_date_ending="2026-06-30",
+    )
+    evidence_from_av_quarters(
+        [{"fiscalDateEnding": "2026-06-27", "reportedEPS": "2.10", "estimatedEPS": "1.80", "reportedDate": "2026-07-29"}]
+        + quarters,
+        symbol="AAPL",
+        fetched_at="t",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+        fiscal_date_ending="2026-06-27",
+    )
+    from stock_pm.events.earnings import earnings_for
+
+    assert earnings_for("AAPL", fiscal_date_ending="2026-06") is None
+    first = evidence_from_av_quarters(
+        quarters, symbol="AAPL", fetched_at="t", source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL"
+    )
+    restated = register_earnings(
+        EarningsEvidence(
+            symbol="AAPL",
+            fiscal_period="2026Q3",
+            fiscal_date_ending="2026-06-30",
+            metric="eps",
+            actual=9.99,
+            prior_year_actual=1.57,
+            consensus=1.88,
+            unit=EPS_UNIT,
+            currency="USD",
+            source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+            provider="alpha_vantage",
+            published_at="2026-07-30",
+            as_of="2026-07-30",
+            fetched_at="t",
+        )
+    )
+    assert restated.gap == "restatement_or_ambiguous"
+    assert restated.yoy is None
+    assert first.gap == "restatement_or_ambiguous"
+
+
+def test_discover_invokes_all_three_av_endpoints(monkeypatch):
+    calls = []
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        calls.append(function)
+        pack = load_frozen_earnings()
+        if function == "EARNINGS":
+            return pack["av_earnings"]
+        if function == "EARNINGS_ESTIMATES":
+            return pack["av_estimates"]
+        if function == "EARNINGS_CALL_TRANSCRIPT":
+            return {"quarter": extra["quarter"] if extra else "2026Q3", "transcript": pack["av_transcript"]["excerpts"]}
+        raise AssertionError(function)
+
+    monkeypatch.setattr("stock_pm.events.av_earnings.fetch_av_function", fake_fetch)
+    monkeypatch.setattr("stock_pm.events.av_earnings.match_sec_8k_for_print", lambda *args, **kwargs: "")
+    monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    from stock_pm.config import Settings
+
+    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    assert "EARNINGS" in calls
+    assert "EARNINGS_ESTIMATES" in calls
+    assert "EARNINGS_CALL_TRANSCRIPT" in calls
+    assert docs
+    assert all("sec.gov" not in doc.url for doc in docs)
+    assert all(doc.body == "" for doc in docs)
+
+
+def test_estimates_failure_does_not_drop_earnings_print(monkeypatch):
+    from stock_pm.fetch import FetchError
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        if function == "EARNINGS_ESTIMATES":
+            raise FetchError("rate_limited", "upstream")
+        pack = load_frozen_earnings()
+        if function == "EARNINGS":
+            return pack["av_earnings"]
+        return {"quarter": "2026Q3", "transcript": []}
+
+    monkeypatch.setattr("stock_pm.events.av_earnings.fetch_av_function", fake_fetch)
+    monkeypatch.setattr("stock_pm.events.av_earnings.match_sec_8k_for_print", lambda *args, **kwargs: "")
+    monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    from stock_pm.config import Settings
+
+    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    assert docs
