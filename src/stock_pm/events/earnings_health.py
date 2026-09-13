@@ -22,6 +22,7 @@ REASON_CODES = (
     "query_error",
     "source_not_configured",
     "skipped_dependency",
+    "record_invalid",
 )
 FIELD_NAMES = ("actual", "prior", "consensus", "transcript")
 AV_ENDPOINTS = ("EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT")
@@ -50,6 +51,7 @@ RETRY_BY_REASON = {
     "period_mismatch": timedelta(hours=24),
     "baseline_missing": timedelta(hours=6),
     "skipped_dependency": timedelta(hours=24),
+    "record_invalid": timedelta(hours=6),
 }
 
 _STATE: dict[str, Any] = {}
@@ -182,22 +184,24 @@ def endpoint_record(
     reason_code: str | None = None,
     source: str = "none",
     quarter: str | None = None,
+    period: str | None = None,
     this_round: bool = False,
     next_retry: str | None = None,
 ) -> dict[str, Any]:
     fresh = "unknown"
-    if last_success_at and not is_stale(last_success_at) and status in {"ok", "stale"}:
+    if last_success_at and status in {"ok", "stale"} and not is_stale(last_success_at):
         fresh = "fresh" if status == "ok" and source == "live" else "stale"
-    elif last_success_at:
+    elif last_success_at and status in {"ok", "stale"}:
         fresh = "stale"
     return {
         "status": status,
         "last_attempt_at": last_attempt_at,
-        "last_success_at": last_success_at,
+        "last_success_at": last_success_at if status in {"ok", "stale"} else None,
         "reason_code": reason_code or "",
         "source": source,
         "freshness": fresh,
         "quarter": quarter or "",
+        "period": period or "",
         "this_round": bool(this_round),
         "next_retry_at": next_retry or (
             next_retry_at(reason_code or status, now=last_attempt_at) if last_attempt_at or reason_code else None
@@ -239,14 +243,19 @@ def _legacy_endpoint(row: dict[str, Any], endpoint: str) -> dict[str, Any]:
 
 
 def _is_fresh_success(rec: dict[str, Any]) -> bool:
-    if rec.get("status") in {"skipped_dependency", "unsupported"}:
+    """Semantic last-success only. skipped_dependency is not a success and not fresh."""
+    if rec.get("status") == "unsupported":
         return True
+    if rec.get("status") not in {"ok", "stale"}:
+        return False
     success = rec.get("last_success_at")
     return bool(success) and not is_stale(str(success))
 
 
 def _retry_due(rec: dict[str, Any]) -> bool:
-    if rec.get("status") in {"skipped_dependency", "unsupported"}:
+    if rec.get("status") == "unsupported":
+        return False
+    if rec.get("status") == "skipped_dependency":
         return False
     if _is_fresh_success(rec):
         return False
@@ -263,9 +272,11 @@ def _retry_due(rec: dict[str, Any]) -> bool:
 
 
 def earnings_usable(rec: dict[str, Any]) -> bool:
-    if rec.get("quarter"):
-        return True
-    return bool(rec.get("last_success_at")) and rec.get("status") not in {"failed", "skipped_dependency"}
+    if rec.get("status") not in {"ok", "stale"}:
+        return False
+    if not rec.get("last_success_at"):
+        return False
+    return bool(rec.get("quarter") or rec.get("period"))
 
 
 def symbol_health(
@@ -501,12 +512,13 @@ def endpoint_coverage(payload: dict[str, Any] | None) -> dict[str, Any]:
             continue
         for name in AV_ENDPOINTS:
             rec = _legacy_endpoint(row, name)
-            if rec.get("this_round") and rec.get("last_success_at") and rec.get("source") == "live":
+            semantic_ok = rec.get("status") in {"ok", "stale"} and rec.get("last_success_at")
+            if rec.get("this_round") and semantic_ok and rec.get("source") == "live":
                 this_round[name]["success"] += 1
             if rec.get("last_attempt_at") or rec.get("status") == "skipped_dependency":
                 if symbol not in cumulative[name]["attempted_symbols"]:
                     cumulative[name]["attempted_symbols"].append(symbol)
-            if rec.get("last_success_at") and symbol not in cumulative[name]["success_symbols"]:
+            if semantic_ok and symbol not in cumulative[name]["success_symbols"]:
                 cumulative[name]["success_symbols"].append(symbol)
             if rec.get("status") == "skipped_dependency":
                 cumulative[name]["skipped_dependency_symbols"].append(symbol)

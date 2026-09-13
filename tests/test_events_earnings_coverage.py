@@ -4,7 +4,13 @@ from pathlib import Path
 
 from stock_pm.config import Settings
 from stock_pm.events.analyze import analyze_event
-from stock_pm.events.av_earnings import AvEarningsProvider, _LIMITER, av_cache_key, reset_earnings_runtime
+from stock_pm.events.av_earnings import (
+    AvEarningsProvider,
+    _LIMITER,
+    av_cache_key,
+    evaluate_av_endpoint,
+    reset_earnings_runtime,
+)
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.earnings import (
     FROZEN_EARNINGS_DATA_CLASS,
@@ -19,6 +25,7 @@ from stock_pm.events.earnings_health import (
     current_earnings_health,
     health_cache_path,
     health_for_symbol,
+    persist_health,
     purge_earnings_health_persist,
     set_earnings_inject,
     summarize_health,
@@ -587,3 +594,288 @@ def test_complete_chain_forms_across_restart_jobs(monkeypatch, tmp_path):
     assert {"EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"} <= {
         function for function, symbol, _ in calls if symbol == "AAPL"
     }
+
+
+def test_evaluate_av_endpoint_rejects_empty_and_wrong_shape():
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    earn = evaluate_av_endpoint("EARNINGS", aapl["av_earnings"], symbol="AAPL")
+    assert earn["usable"] is True
+    assert earn["quarter"] == "2026Q3"
+    assert evaluate_av_endpoint("EARNINGS", {"quarterlyEarnings": []}, symbol="AAPL") == {
+        "usable": False,
+        "reason_code": "upstream_empty",
+        "quarter": "",
+        "period": "",
+    }
+    assert evaluate_av_endpoint("EARNINGS", {"quarterlyEarnings": "oops"}, symbol="AAPL")["reason_code"] == "record_invalid"
+    assert evaluate_av_endpoint("EARNINGS_ESTIMATES", {"estimates": []}, symbol="AAPL", quarter="2026Q3")["reason_code"] == "upstream_empty"
+    assert evaluate_av_endpoint("EARNINGS_ESTIMATES", {"estimates": {}}, symbol="AAPL", quarter="2026Q3")["reason_code"] == "record_invalid"
+    assert evaluate_av_endpoint(
+        "EARNINGS_ESTIMATES",
+        {"estimates": [{"date": "2020-03-31", "horizon": "current fiscal quarter", "eps_estimate_average": "1.00"}]},
+        symbol="AAPL",
+        quarter="2026Q3",
+    )["reason_code"] == "period_mismatch"
+    assert evaluate_av_endpoint("EARNINGS_CALL_TRANSCRIPT", {"quarter": "2026Q3", "transcript": []}, symbol="AAPL", quarter="2026Q3")["reason_code"] == "upstream_empty"
+    assert evaluate_av_endpoint("EARNINGS_CALL_TRANSCRIPT", {"quarter": "2026Q3", "transcript": "oops"}, symbol="AAPL", quarter="2026Q3")["reason_code"] == "record_invalid"
+    assert evaluate_av_endpoint(
+        "EARNINGS_CALL_TRANSCRIPT",
+        {"quarter": "2020Q1", "transcript": [{"content": "hello", "quarter": "2020Q1", "symbol": "AAPL"}]},
+        symbol="AAPL",
+        quarter="2026Q3",
+    )["reason_code"] == "period_mismatch"
+    valid_est = evaluate_av_endpoint("EARNINGS_ESTIMATES", aapl["av_estimates"], symbol="AAPL", quarter="2026Q3")
+    assert valid_est["usable"] is True
+    valid_tr = evaluate_av_endpoint(
+        "EARNINGS_CALL_TRANSCRIPT",
+        {"quarter": "2026Q3", "transcript": aapl["av_transcript"]["excerpts"]},
+        symbol="AAPL",
+        quarter="2026Q3",
+    )
+    assert valid_tr["usable"] is True
+
+
+def _two_watch():
+    return [{"symbol": "AAPL", "asset_class": "stocks"}, {"symbol": "NVDA", "asset_class": "stocks"}]
+
+
+def test_empty_and_invalid_endpoints_are_not_success(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "20")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        if symbol == "AAPL":
+            if function == "EARNINGS":
+                return {"quarterlyEarnings": []}
+            if function == "EARNINGS_ESTIMATES":
+                return {"estimates": []}
+            return {"quarter": extra.get("quarter") if extra else "2026Q3", "transcript": []}
+        if function == "EARNINGS":
+            payload = dict(aapl["av_earnings"])
+            payload["symbol"] = symbol
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        if function == "EARNINGS_ESTIMATES":
+            payload = dict(aapl["av_estimates"])
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        payload = {"quarter": (extra or {}).get("quarter") or "2026Q3", "transcript": [
+            {**aapl["av_transcript"]["excerpts"][0], "symbol": symbol, "quarter": (extra or {}).get("quarter") or "2026Q3"}
+        ]}
+        write_cache(av_cache_key(function, symbol, extra), payload)
+        return payload
+
+    _restart_style_discover(
+        monkeypatch,
+        fake_fetch,
+        settings=Settings(events_mode="empty", earnings_av_budget=20),
+        watchlist=_two_watch(),
+    )
+    health = current_earnings_health()
+    summary = summarize_health(health)
+    bad = health["symbols"]["AAPL"]
+    good = health["symbols"]["NVDA"]
+    assert bad["endpoints"]["EARNINGS"]["status"] == "failed"
+    assert bad["endpoints"]["EARNINGS"]["reason_code"] == "upstream_empty"
+    assert bad["endpoints"]["EARNINGS"]["last_success_at"] is None
+    assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS"]["success_symbols"]
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "skipped_dependency"
+    assert good["endpoints"]["EARNINGS"]["status"] == "ok"
+    assert good["endpoints"]["EARNINGS"]["last_success_at"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS"]["success_symbols"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_CALL_TRANSCRIPT"]["success_symbols"]
+
+
+def test_wrong_shape_and_wrong_quarter_are_not_success(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "20")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        if symbol == "AAPL":
+            if function == "EARNINGS":
+                return {"quarterlyEarnings": "oops"}
+            if function == "EARNINGS_ESTIMATES":
+                return {"estimates": {"not": "a-list"}}
+            return {"quarter": "2020Q1", "transcript": [{"content": "old call", "quarter": "2020Q1", "symbol": "AAPL"}]}
+        if function == "EARNINGS":
+            payload = dict(aapl["av_earnings"])
+            payload["symbol"] = symbol
+            return payload
+        if function == "EARNINGS_ESTIMATES":
+            return dict(aapl["av_estimates"])
+        return {
+            "quarter": (extra or {}).get("quarter") or "2026Q3",
+            "transcript": [{**aapl["av_transcript"]["excerpts"][0], "symbol": symbol, "quarter": (extra or {}).get("quarter") or "2026Q3"}],
+        }
+
+    _restart_style_discover(
+        monkeypatch,
+        fake_fetch,
+        settings=Settings(events_mode="empty", earnings_av_budget=20),
+        watchlist=_two_watch(),
+    )
+    bad = health_for_symbol("AAPL")
+    good = health_for_symbol("NVDA")
+    summary = summarize_health()
+    assert bad["endpoints"]["EARNINGS"]["reason_code"] == "record_invalid"
+    assert bad["endpoints"]["EARNINGS"]["last_success_at"] is None
+    assert bad["endpoints"]["EARNINGS"]["status"] == "failed"
+    assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS"]["success_symbols"]
+    assert good["endpoints"]["EARNINGS"]["status"] == "ok"
+    assert good["endpoints"]["EARNINGS_ESTIMATES"]["status"] == "ok"
+
+
+def test_empty_earnings_retry_unlocks_transcript(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "20")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    phase = {"valid": False}
+    calls = []
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol))
+        if symbol == "AAPL" and function == "EARNINGS" and not phase["valid"]:
+            return {"quarterlyEarnings": []}
+        if function == "EARNINGS":
+            payload = dict(aapl["av_earnings"])
+            payload["symbol"] = symbol
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        if function == "EARNINGS_ESTIMATES":
+            payload = dict(aapl["av_estimates"])
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        quarter = (extra or {}).get("quarter") or "2026Q3"
+        payload = {
+            "quarter": quarter,
+            "transcript": [{**aapl["av_transcript"]["excerpts"][0], "symbol": symbol, "quarter": quarter}],
+        }
+        write_cache(av_cache_key(function, symbol, extra), payload)
+        return payload
+
+    settings = Settings(events_mode="empty", earnings_av_budget=20)
+    watch = _two_watch()
+    _restart_style_discover(monkeypatch, fake_fetch, settings=settings, watchlist=watch)
+    bad = health_for_symbol("AAPL")
+    assert bad["endpoints"]["EARNINGS"]["last_success_at"] is None
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "skipped_dependency"
+    assert ("EARNINGS_CALL_TRANSCRIPT", "AAPL") not in calls
+    health = current_earnings_health()
+    health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]["next_retry_at"] = "2020-01-01T00:00:00+00:00"
+    persist_health(health)
+    phase["valid"] = True
+    _restart_style_discover(monkeypatch, fake_fetch, settings=settings, watchlist=watch)
+    bad = health_for_symbol("AAPL")
+    assert bad["endpoints"]["EARNINGS"]["status"] == "ok"
+    assert bad["endpoints"]["EARNINGS"]["last_success_at"]
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "ok"
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["last_success_at"]
+    assert ("EARNINGS_CALL_TRANSCRIPT", "AAPL") in calls
+
+
+def test_empty_complements_do_not_form_complete_chain_or_count_success(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "20")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        if function == "EARNINGS":
+            payload = dict(aapl["av_earnings"])
+            payload["symbol"] = symbol
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        if symbol == "AAPL":
+            if function == "EARNINGS_ESTIMATES":
+                return {"estimates": []}
+            return {"quarter": (extra or {}).get("quarter") or "2026Q3", "transcript": []}
+        if function == "EARNINGS_ESTIMATES":
+            payload = dict(aapl["av_estimates"])
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        quarter = (extra or {}).get("quarter") or "2026Q3"
+        payload = {
+            "quarter": quarter,
+            "transcript": [{**aapl["av_transcript"]["excerpts"][0], "symbol": symbol, "quarter": quarter}],
+        }
+        write_cache(av_cache_key(function, symbol, extra), payload)
+        return payload
+
+    _restart_style_discover(
+        monkeypatch,
+        fake_fetch,
+        settings=Settings(events_mode="empty", earnings_av_budget=20),
+        watchlist=_two_watch(),
+    )
+    bad = health_for_symbol("AAPL")
+    good = health_for_symbol("NVDA")
+    summary = summarize_health()
+    assert bad["endpoints"]["EARNINGS"]["status"] == "ok"
+    assert bad["endpoints"]["EARNINGS_ESTIMATES"]["status"] == "failed"
+    assert bad["endpoints"]["EARNINGS_ESTIMATES"]["reason_code"] == "upstream_empty"
+    assert bad["endpoints"]["EARNINGS_ESTIMATES"]["last_success_at"] is None
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "failed"
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["reason_code"] == "upstream_empty"
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["last_success_at"] is None
+    assert bad["fields"]["transcript"]["status"] != "ok"
+    assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
+    assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS_CALL_TRANSCRIPT"]["success_symbols"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_CALL_TRANSCRIPT"]["success_symbols"]
+    assert good["fields"]["transcript"]["status"] in {"ok", "stale"}
+
+
+def test_wrong_quarter_complements_are_not_success(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "20")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        if function == "EARNINGS":
+            payload = dict(aapl["av_earnings"])
+            payload["symbol"] = symbol
+            write_cache(av_cache_key(function, symbol, extra), payload)
+            return payload
+        if symbol == "AAPL":
+            if function == "EARNINGS_ESTIMATES":
+                return {"estimates": [{"date": "2020-03-31", "horizon": "current fiscal quarter", "eps_estimate_average": "1.00"}]}
+            return {"quarter": "2020Q1", "transcript": [{"content": "old call", "quarter": "2020Q1", "symbol": "AAPL"}]}
+        if function == "EARNINGS_ESTIMATES":
+            return dict(aapl["av_estimates"])
+        quarter = (extra or {}).get("quarter") or "2026Q3"
+        return {"quarter": quarter, "transcript": [{**aapl["av_transcript"]["excerpts"][0], "symbol": symbol, "quarter": quarter}]}
+
+    _restart_style_discover(
+        monkeypatch,
+        fake_fetch,
+        settings=Settings(events_mode="empty", earnings_av_budget=20),
+        watchlist=_two_watch(),
+    )
+    bad = health_for_symbol("AAPL")
+    good = health_for_symbol("NVDA")
+    summary = summarize_health()
+    assert bad["endpoints"]["EARNINGS"]["status"] == "ok"
+    assert bad["endpoints"]["EARNINGS_ESTIMATES"]["reason_code"] == "period_mismatch"
+    assert bad["endpoints"]["EARNINGS_ESTIMATES"]["last_success_at"] is None
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["reason_code"] == "period_mismatch"
+    assert bad["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["last_success_at"] is None
+    assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
+    assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
+    assert good["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "ok"

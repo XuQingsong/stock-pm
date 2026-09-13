@@ -14,6 +14,7 @@ from .bodies import is_allowed_sec_host
 from .earnings import (
     AV_EARNINGS_SOURCE,
     AV_ESTIMATES_SOURCE,
+    EPS_UNIT,
     apply_estimate_snapshot,
     associate_sec_filing,
     attach_transcript,
@@ -24,6 +25,7 @@ from .earnings import (
     load_frozen_earnings_documents,
     local_degraded_earnings_documents,
     parse_number,
+    period_month_key,
     reset_earnings_registry,
 )
 from .earnings_health import (
@@ -480,6 +482,9 @@ class AvEarningsProvider:
         cached = read_av_cache("EARNINGS", symbol)
         if not cached:
             return None, outcomes
+        judged_earn = evaluate_av_endpoint("EARNINGS", cached["payload"], symbol=symbol, fetched_at=fetched_at)
+        if not judged_earn["usable"]:
+            return None, outcomes
         outcomes["EARNINGS"] = {
             "reason_code": "stale",
             "source": "cache",
@@ -489,12 +494,21 @@ class AvEarningsProvider:
         estimates_cached = read_av_cache("EARNINGS_ESTIMATES", symbol)
         estimates = estimates_cached["payload"] if estimates_cached else None
         if estimates_cached:
+            judged_est = evaluate_av_endpoint(
+                "EARNINGS_ESTIMATES",
+                estimates_cached["payload"],
+                symbol=symbol,
+                quarter=judged_earn["quarter"],
+                fetched_at=fetched_at,
+            )
             outcomes["EARNINGS_ESTIMATES"] = {
-                "reason_code": "stale",
-                "source": "cache",
+                "reason_code": None if judged_est["usable"] else (judged_est["reason_code"] or "stale"),
+                "source": "cache" if judged_est["usable"] else "none",
                 "fetched_at": str(estimates_cached.get("fetched_at") or fetched_at),
-                "last_success_at": str(estimates_cached.get("fetched_at") or fetched_at),
+                "last_success_at": str(estimates_cached.get("fetched_at") or fetched_at) if judged_est["usable"] else None,
             }
+            if not judged_est["usable"]:
+                estimates = None
         evidence = self._evidence_from_payload(
             symbol,
             cached["payload"],
@@ -509,20 +523,28 @@ class AvEarningsProvider:
         if quarter:
             tr_cached = read_av_cache("EARNINGS_CALL_TRANSCRIPT", symbol, {"quarter": quarter})
             if tr_cached:
-                outcomes["EARNINGS_CALL_TRANSCRIPT"] = {
-                    "reason_code": "stale",
-                    "source": "cache",
-                    "fetched_at": str(tr_cached.get("fetched_at") or fetched_at),
-                    "last_success_at": str(tr_cached.get("fetched_at") or fetched_at),
-                }
-                evidence = self._evidence_from_payload(
-                    symbol,
-                    cached["payload"],
-                    fetched_at=str(cached.get("fetched_at") or fetched_at),
-                    estimates=estimates,
-                    transcript=tr_cached["payload"],
+                judged_tr = evaluate_av_endpoint(
+                    "EARNINGS_CALL_TRANSCRIPT",
+                    tr_cached["payload"],
+                    symbol=symbol,
                     quarter=quarter,
+                    fetched_at=fetched_at,
                 )
+                outcomes["EARNINGS_CALL_TRANSCRIPT"] = {
+                    "reason_code": None if judged_tr["usable"] else (judged_tr["reason_code"] or "stale"),
+                    "source": "cache" if judged_tr["usable"] else "none",
+                    "fetched_at": str(tr_cached.get("fetched_at") or fetched_at),
+                    "last_success_at": str(tr_cached.get("fetched_at") or fetched_at) if judged_tr["usable"] else None,
+                }
+                if judged_tr["usable"]:
+                    evidence = self._evidence_from_payload(
+                        symbol,
+                        cached["payload"],
+                        fetched_at=str(cached.get("fetched_at") or fetched_at),
+                        estimates=estimates,
+                        transcript=tr_cached["payload"],
+                        quarter=quarter,
+                    )
         return evidence, outcomes
 
     def _health_from_evidence(
@@ -581,11 +603,19 @@ class AvEarningsProvider:
         prev_eps = (previous_row or {}).get("endpoints") or {}
         quarter = str((prev_eps.get("EARNINGS") or {}).get("quarter") or "")
         cached_earn = read_av_cache("EARNINGS", symbol)
-        if cached_earn and not quarter:
-            quarter = self._quarter_from_payload(symbol, cached_earn["payload"], fetched_at)
+        payload = None
+        source = None
+        if cached_earn:
+            judged = evaluate_av_endpoint(
+                "EARNINGS", cached_earn["payload"], symbol=symbol, fetched_at=fetched_at
+            )
+            if judged["usable"]:
+                payload = cached_earn["payload"]
+                source = "cache"
+                quarter = quarter or judged["quarter"]
         return {
-            "payload": cached_earn["payload"] if cached_earn else None,
-            "earnings_source": "cache" if cached_earn else None,
+            "payload": payload,
+            "earnings_source": source,
             "estimates": None,
             "transcript": None,
             "quarter": quarter,
@@ -602,29 +632,41 @@ class AvEarningsProvider:
         source: str,
         payload: dict[str, Any] | None,
         quarter: str = "",
+        period: str = "",
+        usable: bool = False,
         this_round: bool,
         attempted: bool,
     ) -> None:
         prev = ((previous_row or {}).get("endpoints") or {}).get(endpoint) or {}
-        success = fetched_at if payload else prev.get("last_success_at")
-        if payload and source == "live":
+        if usable:
+            status = "stale" if reason in {"rate_limited", "stale"} else "ok"
             success = fetched_at
-        elif payload and not success:
-            success = fetched_at
-        status = "ok" if payload and not reason else (
-            "skipped_dependency" if reason == "skipped_dependency" else (
-                "failed" if attempted and not payload else (prev.get("status") or "pending")
-            )
-        )
-        if payload and reason in {"rate_limited", "stale"}:
-            status = "stale"
+        elif reason == "skipped_dependency":
+            status = "skipped_dependency"
+            success = None
+        elif attempted:
+            status = "failed"
+            prior_ok = prev.get("status") in {"ok", "stale"} and prev.get("last_success_at")
+            success = prev.get("last_success_at") if prior_ok else None
+        else:
+            status = str(prev.get("status") or "pending")
+            success = prev.get("last_success_at") if prev.get("status") in {"ok", "stale"} else None
         updates[endpoint] = endpoint_record(
             status=status,
             last_attempt_at=fetched_at if attempted else prev.get("last_attempt_at"),
-            last_success_at=success,
+            last_success_at=success if status in {"ok", "stale"} else None,
             reason_code=reason,
-            source=source if payload or reason else str(prev.get("source") or "none"),
-            quarter=quarter or prev.get("quarter") or "",
+            source=source if usable or reason else str(prev.get("source") or "none"),
+            quarter=(
+                quarter
+                if usable
+                else (str(prev.get("quarter") or "") if success else "")
+            ),
+            period=(
+                period
+                if usable
+                else (str(prev.get("period") or "") if success else "")
+            ),
             this_round=this_round,
             next_retry=next_retry_at(reason or status, now=fetched_at) if attempted or reason else prev.get("next_retry_at"),
         )
@@ -824,19 +866,35 @@ class AvEarningsProvider:
             payload, err, src = self._fetch_isolated(endpoint, symbol, extra=extra)
             bump(symbol, 1)
             attempted_tasks.append({"symbol": symbol, "endpoint": endpoint})
+            quarter = str(bundles[symbol].get("quarter") or "")
+            judged = evaluate_av_endpoint(
+                endpoint, payload, symbol=symbol, quarter=quarter, fetched_at=fetched_at
+            )
+            usable = bool(judged["usable"])
+            if not err:
+                err = judged["reason_code"]
+            elif usable and err in {"rate_limited", "stale"}:
+                pass
+            elif not usable and not judged["reason_code"]:
+                err = err or "upstream_empty"
+            if not usable and err in {None, ""}:
+                err = judged["reason_code"] or "upstream_empty"
             outcomes_by.setdefault(symbol, {})[endpoint] = {
                 "reason_code": err,
-                "source": src,
+                "source": src if usable or payload else "none",
                 "fetched_at": fetched_at,
-                "last_success_at": fetched_at if payload else None,
+                "last_success_at": fetched_at if usable else None,
             }
-            quarter = str(bundles[symbol].get("quarter") or "")
+            period = str(judged.get("period") or "")
             if endpoint == "EARNINGS":
-                if payload:
+                if usable and payload:
                     bundles[symbol]["payload"] = payload
                     bundles[symbol]["earnings_source"] = src
-                    quarter = self._quarter_from_payload(symbol, payload, fetched_at)
+                    quarter = judged["quarter"] or self._quarter_from_payload(symbol, payload, fetched_at)
                     bundles[symbol]["quarter"] = quarter
+                else:
+                    quarter = ""
+                    bundles[symbol]["quarter"] = ""
                 if not quarter:
                     self._record_endpoint(
                         previous_row=previous_rows.get(symbol) or {},
@@ -846,6 +904,7 @@ class AvEarningsProvider:
                         reason="skipped_dependency",
                         source="none",
                         payload=None,
+                        usable=False,
                         this_round=True,
                         attempted=False,
                     )
@@ -856,9 +915,9 @@ class AvEarningsProvider:
                         "last_success_at": None,
                     }
             elif endpoint == "EARNINGS_ESTIMATES":
-                bundles[symbol]["estimates"] = payload
+                bundles[symbol]["estimates"] = payload if usable else payload
             else:
-                bundles[symbol]["transcript"] = payload
+                bundles[symbol]["transcript"] = payload if usable else payload
             self._record_endpoint(
                 previous_row=previous_rows.get(symbol) or {},
                 updates=endpoint_updates[symbol],
@@ -868,10 +927,12 @@ class AvEarningsProvider:
                 source=src,
                 payload=payload,
                 quarter=quarter if endpoint == "EARNINGS" else bundles[symbol].get("quarter") or "",
+                period=period,
+                usable=usable,
                 this_round=True,
                 attempted=True,
             )
-            if endpoint == "EARNINGS" and payload:
+            if endpoint == "EARNINGS" and usable:
                 if quarter:
                     skipped = endpoint_updates[symbol].get("EARNINGS_CALL_TRANSCRIPT") or {}
                     if skipped.get("status") == "skipped_dependency":
@@ -910,22 +971,36 @@ class AvEarningsProvider:
                 if bundle.get("estimates") is None:
                     cached_est = read_av_cache("EARNINGS_ESTIMATES", symbol)
                     if cached_est:
+                        judged_est = evaluate_av_endpoint(
+                            "EARNINGS_ESTIMATES",
+                            cached_est["payload"],
+                            symbol=symbol,
+                            quarter=str(bundle.get("quarter") or ""),
+                            fetched_at=fetched_at,
+                        )
                         bundle["estimates"] = cached_est["payload"]
                         outcomes.setdefault("EARNINGS_ESTIMATES", {
-                            "reason_code": "stale",
-                            "source": "cache",
+                            "reason_code": None if judged_est["usable"] else (judged_est["reason_code"] or "stale"),
+                            "source": "cache" if judged_est["usable"] else "none",
                             "fetched_at": str(cached_est.get("fetched_at") or fetched_at),
-                            "last_success_at": str(cached_est.get("fetched_at") or fetched_at),
+                            "last_success_at": str(cached_est.get("fetched_at") or fetched_at) if judged_est["usable"] else None,
                         })
                 if bundle.get("transcript") is None and bundle.get("quarter"):
                     cached_tr = read_av_cache("EARNINGS_CALL_TRANSCRIPT", symbol, {"quarter": bundle["quarter"]})
                     if cached_tr:
+                        judged_tr = evaluate_av_endpoint(
+                            "EARNINGS_CALL_TRANSCRIPT",
+                            cached_tr["payload"],
+                            symbol=symbol,
+                            quarter=str(bundle.get("quarter") or ""),
+                            fetched_at=fetched_at,
+                        )
                         bundle["transcript"] = cached_tr["payload"]
                         outcomes.setdefault("EARNINGS_CALL_TRANSCRIPT", {
-                            "reason_code": "stale",
-                            "source": "cache",
+                            "reason_code": None if judged_tr["usable"] else (judged_tr["reason_code"] or "stale"),
+                            "source": "cache" if judged_tr["usable"] else "none",
                             "fetched_at": str(cached_tr.get("fetched_at") or fetched_at),
-                            "last_success_at": str(cached_tr.get("fetched_at") or fetched_at),
+                            "last_success_at": str(cached_tr.get("fetched_at") or fetched_at) if judged_tr["usable"] else None,
                         })
                 evidence = self._evidence_from_payload(
                     symbol,
@@ -1077,6 +1152,129 @@ def parse_av_transcript(payload: dict[str, Any], *, symbol: str, quarter: str, f
             }
         )
     return excerpts
+
+
+def _next_fiscal_quarter(quarter: str) -> str:
+    raw = str(quarter or "")
+    if "Q" not in raw:
+        return ""
+    year_text, _, q_text = raw.partition("Q")
+    try:
+        year = int(year_text)
+        qn = int(q_text)
+    except ValueError:
+        return ""
+    if qn >= 4:
+        return f"{year + 1}Q1"
+    return f"{year}Q{qn + 1}"
+
+
+def _estimate_number(row: dict[str, Any]) -> float | None:
+    for key in ("eps_estimate_average", "estimatedEPS", "consensus", "eps"):
+        value = parse_number(row.get(key))
+        if value is not None:
+            return value
+    return None
+
+
+def _estimate_unit_currency_ok(row: dict[str, Any]) -> bool:
+    unit = str(row.get("unit") or EPS_UNIT).strip()
+    currency = str(row.get("currency") or "USD").strip().upper()
+    if unit and unit not in {EPS_UNIT, "USD/share", "eps"}:
+        return False
+    return currency in {"", "USD"}
+
+
+def evaluate_av_endpoint(
+    endpoint: str,
+    payload: dict[str, Any] | None,
+    *,
+    symbol: str = "",
+    quarter: str = "",
+    fetched_at: str = "",
+) -> dict[str, Any]:
+    """Semantic success only. A non-empty dict is not last-success."""
+    empty = {"usable": False, "reason_code": "upstream_empty", "quarter": "", "period": ""}
+    if not isinstance(payload, dict):
+        return {**empty, "reason_code": "record_invalid" if payload is not None else "upstream_empty"}
+    if endpoint == "EARNINGS":
+        try:
+            rows = parse_av_earnings(payload)
+        except FetchError as exc:
+            return {**empty, "reason_code": exc.reason_code or "record_invalid"}
+        if payload.get("quarterlyEarnings") is not None and not isinstance(payload.get("quarterlyEarnings"), list):
+            return {**empty, "reason_code": "record_invalid"}
+        if not rows:
+            return empty
+        preview = evidence_from_av_quarters(
+            rows,
+            symbol=symbol,
+            fetched_at=fetched_at or utc_now(),
+            source_url=AV_EARNINGS_SOURCE.format(symbol=symbol or "UNKNOWN"),
+        )
+        qid = preview.fiscal_quarter or fiscal_quarter_id(symbol, preview.fiscal_date_ending)
+        period = preview.fiscal_date_ending or period_month_key(preview.fiscal_date_ending)
+        if not period and not qid:
+            return {**empty, "reason_code": "record_invalid"}
+        return {"usable": True, "reason_code": None, "quarter": qid, "period": period}
+    if endpoint == "EARNINGS_ESTIMATES":
+        try:
+            rows = parse_av_estimates(payload)
+        except FetchError as exc:
+            return {**empty, "reason_code": exc.reason_code or "record_invalid"}
+        if not rows:
+            return empty
+        mismatch = False
+        for row in rows:
+            if _estimate_number(row) is None:
+                continue
+            if not _estimate_unit_currency_ok(row):
+                mismatch = True
+                continue
+            horizon = str(row.get("horizon") or "").lower()
+            if "historical" in horizon:
+                continue
+            item_date = str(row.get("date") or row.get("fiscalDateEnding") or "")
+            item_q = fiscal_quarter_id(symbol, item_date) if item_date else ""
+            if quarter and item_q and item_q != quarter and item_q != _next_fiscal_quarter(quarter) and "next" not in horizon:
+                mismatch = True
+                continue
+            if quarter and item_q == quarter:
+                return {"usable": True, "reason_code": None, "quarter": quarter, "period": item_date}
+            if "next" in horizon or (quarter and item_q == _next_fiscal_quarter(quarter)):
+                return {"usable": True, "reason_code": None, "quarter": quarter or item_q, "period": item_date}
+            if not quarter and (item_q or item_date):
+                return {"usable": True, "reason_code": None, "quarter": item_q, "period": item_date}
+            if quarter and not item_q and "current" in horizon:
+                return {"usable": True, "reason_code": None, "quarter": quarter, "period": item_date}
+        return {**empty, "reason_code": "period_mismatch" if mismatch else "upstream_empty"}
+    if endpoint == "EARNINGS_CALL_TRANSCRIPT":
+        rows = payload.get("transcript")
+        if rows is None:
+            rows = payload.get("excerpts")
+        if rows is None:
+            return empty
+        if not isinstance(rows, list):
+            return {**empty, "reason_code": "record_invalid"}
+        payload_q = str(payload.get("quarter") or "")
+        if quarter and payload_q and payload_q != quarter:
+            return {**empty, "reason_code": "period_mismatch"}
+        mismatch = bool(quarter and payload_q and payload_q != quarter)
+        usable_text = False
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            text = str(item.get("content") or item.get("excerpt") or "").strip()
+            item_q = str(item.get("quarter") or payload_q or quarter or "")
+            if quarter and item_q and item_q != quarter:
+                mismatch = True
+                continue
+            if text:
+                usable_text = True
+        if usable_text:
+            return {"usable": True, "reason_code": None, "quarter": quarter or payload_q, "period": quarter or payload_q}
+        return {**empty, "reason_code": "period_mismatch" if mismatch else "upstream_empty"}
+    return {**empty, "reason_code": "record_invalid"}
 
 
 def reset_earnings_runtime() -> None:
