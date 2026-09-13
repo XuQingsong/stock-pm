@@ -197,7 +197,7 @@ def capture_pages() -> dict:
     shots = {}
     try:
         shots["center"] = wait_ready(f"{BASE}/events", "#event-center")
-        clip(OUT / "event-center.png", "#event-center")
+        clip(OUT / "event-center.png", ".event-module")
         for symbol in ("NVDA", "XOM", "JPM", "AAPL"):
             shots[symbol] = wait_ready(f"{BASE}/stock/{symbol}", "#event-body")
             clip(OUT / f"{symbol.lower()}-events.png", "#event-module")
