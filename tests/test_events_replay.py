@@ -66,6 +66,8 @@ def test_recorded_pack_integrity_and_pipeline():
     assert set(fomc.coverage["document_roles"]) == {"statement", "projections", "minutes"}
     assert fomc.analysis["confidence"]["text"] == "medium"
     assert fomc.analysis["confidence_rule"]["independent_publisher_count"] == 1
+    disruption = next(row for row in first if row.event_type == "war_sanctions").claims
+    assert any("strait of hormuz" in (row.excerpt or "").lower() for row in disruption)
     statement = next(row for row in pack["documents"] if row["document_role"] == "statement")
     assert "maintain the target range" in statement["claim_support_excerpt"].lower()
     assert "federal funds" in statement["claim_support_excerpt"].lower()
