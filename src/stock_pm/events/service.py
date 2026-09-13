@@ -89,6 +89,8 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         earnings_cover["live"] = False
         earnings_cover["data_class"] = "frozen_provider_audit"
         earnings_cover["live_complete_count"] = 0
+        earnings_cover["fresh_live_complete_count"] = 0
+        earnings_cover["cache_stale_complete_count"] = 0
         earnings_cover["fixture_complete_count"] = int(earnings_cover.get("complete_count") or 0)
         earnings_cover["note"] = "Frozen/fixture coverage is not production live coverage."
     elif not earnings_report:
@@ -259,10 +261,10 @@ def reset_cache() -> None:
     _CACHE["events"] = None
     _CACHE["coverage"] = None
     reset_live_state()
-    from .earnings_health import reset_earnings_health
+    from .earnings_health import clear_earnings_health_memory
     from .watchlist import reset_watchlist_override
 
-    reset_earnings_health()
+    clear_earnings_health_memory()
     reset_watchlist_override()
 
 

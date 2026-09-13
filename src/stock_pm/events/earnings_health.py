@@ -23,8 +23,17 @@ REASON_CODES = (
     "source_not_configured",
 )
 FIELD_NAMES = ("actual", "prior", "consensus", "transcript")
+# Raw Alpha Vantage payload cache (json_get) is last-success. Older than this is stale, not deleted.
 FRESHNESS_DAYS = 120
+# Scheduling last_attempt_at stays valid for rotation. It is not an inferred number fill.
+SCHEDULE_TTL_DAYS = 30
 HEALTH_CACHE_NAME = "earnings_coverage.json"
+CACHE_TTL = {
+    "av_payload_freshness_days": FRESHNESS_DAYS,
+    "schedule_ttl_days": SCHEDULE_TTL_DAYS,
+    "health_persist": "until_explicit_purge",
+    "note": "AV raw cache and earnings_coverage.json are separate. reset_cache/job refresh must not delete either.",
+}
 RETRY_BY_REASON = {
     "rate_limited": timedelta(minutes=15),
     "upstream_empty": timedelta(hours=6),
@@ -41,14 +50,25 @@ _STATE: dict[str, Any] = {}
 _INJECT: dict[str, str] = {}
 
 
-def reset_earnings_health() -> None:
+def clear_earnings_health_memory() -> None:
+    """Drop in-process health only. Persistent schedule/health files stay on disk."""
     _STATE.clear()
+
+
+def purge_earnings_health_persist() -> None:
+    """Explicit fixture/test cleanup. Production reset_cache/job must not call this."""
+    clear_earnings_health_memory()
     try:
         path = health_cache_path()
         if path.is_file():
             path.unlink()
     except OSError:
         pass
+
+
+def reset_earnings_health() -> None:
+    """Request/job refresh alias: memory only. Does not delete persist."""
+    clear_earnings_health_memory()
 
 
 def reset_earnings_inject() -> None:
@@ -162,6 +182,9 @@ def symbol_health(
     source: str = "none",
     gap: str | None = None,
     missing_fields: list[str] | None = None,
+    last_attempt_at: str | None = None,
+    this_round_calls: int = 0,
+    this_round: str | None = None,
 ) -> dict[str, Any]:
     rows = fields or empty_fields(reason_code=reason_code or ("unsupported" if not supported else "upstream_empty"), source=source)
     successes = [str(row.get("last_success_at") or "") for row in rows.values() if row.get("last_success_at")]
@@ -175,7 +198,10 @@ def symbol_health(
         "reason_code": primary,
         "fields": rows,
         "last_success_at": stamp,
-        "next_retry_at": next_retry or next_retry_at(primary or None, now=stamp),
+        "last_attempt_at": last_attempt_at,
+        "this_round_calls": int(this_round_calls or 0),
+        "this_round": this_round,
+        "next_retry_at": next_retry or next_retry_at(primary or None, now=stamp or last_attempt_at),
         "implication": implication,
         "scenario": scenario,
         "source": source,
@@ -191,6 +217,8 @@ def health_cache_path() -> Any:
 
 
 def persist_health(report: dict[str, Any]) -> None:
+    report = dict(report)
+    report.setdefault("cache_ttl", CACHE_TTL)
     _STATE.clear()
     _STATE.update(deepcopy(report))
     path = health_cache_path()
@@ -229,6 +257,59 @@ def health_for_symbol(symbol: str) -> dict[str, Any]:
     return deepcopy(rows.get(str(symbol or "").upper()) or {})
 
 
+def print_is_complete(row: dict[str, Any]) -> bool:
+    if row.get("supported") is False:
+        return False
+    if row.get("gap"):
+        return False
+    if row.get("scenario") == "complete":
+        return True
+    fields = row.get("fields") or {}
+    needed = ("actual", "prior", "consensus")
+    return all((fields.get(name) or {}).get("status") in {"ok", "stale"} and (fields.get(name) or {}).get("source") != "none" for name in needed) and not row.get("missing_fields")
+
+
+def _fresh_live_complete(row: dict[str, Any]) -> bool:
+    if not print_is_complete(row):
+        return False
+    if row.get("source") != "live":
+        return False
+    if int(row.get("this_round_calls") or 0) <= 0:
+        return False
+    if row.get("this_round") == "deferred":
+        return False
+    fields = row.get("fields") or {}
+    if any((fields.get(name) or {}).get("freshness") == "stale" for name in ("actual", "prior", "consensus")):
+        return False
+    return True
+
+
+def _cache_stale_complete(row: dict[str, Any]) -> bool:
+    if not print_is_complete(row):
+        return False
+    return not _fresh_live_complete(row)
+
+
+def prioritize_symbols(stocks: list[str], previous: dict[str, Any] | None) -> list[str]:
+    """Never-attempted first, then oldest last_attempt_at. Failed attempts still rotate."""
+    rows = (previous or {}).get("symbols") or {}
+    schedule = (previous or {}).get("schedule") or {}
+
+    def attempted_at(symbol: str) -> str:
+        row = rows.get(symbol) or {}
+        return str(row.get("last_attempt_at") or "")
+
+    never = [symbol for symbol in stocks if not attempted_at(symbol)]
+    seen = [symbol for symbol in stocks if attempted_at(symbol)]
+    seen.sort(key=lambda symbol: (attempted_at(symbol), stocks.index(symbol)))
+    ordered = never + seen
+    nxt = str(schedule.get("next_symbol") or "")
+    if nxt in ordered and not never:
+        idx = ordered.index(nxt)
+        ordered = ordered[idx:] + ordered[:idx]
+    return ordered
+
+
 def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
     payload = report or current_earnings_health()
     symbols = payload.get("symbols") or {}
@@ -237,6 +318,9 @@ def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
     unsupported = 0
     rate_limited = 0
     not_configured = 0
+    deferred = 0
+    fresh_live = 0
+    cache_stale = 0
     for row in symbols.values():
         if not isinstance(row, dict):
             continue
@@ -246,20 +330,21 @@ def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
         if row.get("reason_code") in {"not_configured", "source_not_configured"}:
             not_configured += 1
             continue
+        if row.get("this_round") == "deferred" or row.get("scenario") == "deferred":
+            deferred += 1
         fields = row.get("fields") or {}
         limited = any(item.get("reason_code") == "rate_limited" for item in fields.values())
         if limited:
             rate_limited += 1
-        missing = row.get("missing_fields") or [
-            name for name, item in fields.items() if item.get("status") not in {"ok"}
-        ]
-        if row.get("gap") or missing:
-            if row.get("scenario") == "complete" and not row.get("gap"):
-                complete += 1
-            else:
-                partial += 1
-        else:
+        if print_is_complete(row):
             complete += 1
+            if _fresh_live_complete(row):
+                fresh_live += 1
+            else:
+                cache_stale += 1
+        else:
+            if row.get("scenario") != "deferred":
+                partial += 1
     live = bool(payload.get("live"))
     return {
         "live": live,
@@ -270,14 +355,19 @@ def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
         "unsupported_count": unsupported,
         "rate_limited_count": rate_limited,
         "not_configured_count": not_configured,
+        "deferred_count": deferred,
         "symbol_count": len(symbols),
         "fixture_complete_count": 0 if live else complete,
-        "live_complete_count": complete if live else 0,
+        "fresh_live_complete_count": fresh_live if live else 0,
+        "cache_stale_complete_count": cache_stale if live else 0,
+        "live_complete_count": fresh_live if live else 0,
         "budget": payload.get("budget") or {},
+        "schedule": payload.get("schedule") or {},
+        "cache_ttl": payload.get("cache_ttl") or CACHE_TTL,
         "symbols": symbols,
         "note": payload.get("note")
         or (
-            "Live-current coverage only. Fixture success is not production coverage."
+            "Live-current coverage only. Cache/stale complete is not this-round live complete."
             if live
             else "Frozen/fixture coverage is not production live coverage."
         ),

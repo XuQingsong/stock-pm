@@ -263,11 +263,13 @@
     return `<section class="earnings-coverage" data-earnings-coverage="1" data-live="${live ? "1" : "0"}" data-class="${esc(row.data_class || "")}">
       <h4>财报覆盖 / 健康</h4>
       ${pill(`完整 ${row.complete_count ?? 0}`, "ok")}
+      ${pill(`本轮 live ${row.fresh_live_complete_count ?? row.live_complete_count ?? 0}`, live ? "ok" : "")}
+      ${pill(`cache/stale ${row.cache_stale_complete_count ?? 0}`)}
       ${pill(`部分 ${row.partial_count ?? 0}`)}
+      ${pill(`延后 ${row.deferred_count ?? 0}`)}
       ${pill(`不支持 ${row.unsupported_count ?? 0}`, "not_configured")}
-      ${pill(`限速 ${row.rate_limited_count ?? 0}`)}
       ${pill(live ? "live-current" : "frozen/fixture", live ? "ok" : "not_configured")}
-      <div class="subline" data-earnings-coverage-note="1">fixture 完整 ${esc(row.fixture_complete_count ?? 0)} · live 完整 ${esc(row.live_complete_count ?? 0)}。${esc(row.note || "Fixture 成功不是上线覆盖。")} 预算 ${esc((row.budget && row.budget.used) ?? "—")}/${esc((row.budget && row.budget.max_calls) ?? "—")}。</div>
+      <div class="subline" data-earnings-coverage-note="1">fixture 完整 ${esc(row.fixture_complete_count ?? 0)} · 本轮 fresh-live 完整 ${esc(row.fresh_live_complete_count ?? 0)} · cache/stale 完整 ${esc(row.cache_stale_complete_count ?? 0)}。${esc(row.note || "Fixture 成功不是上线覆盖。")} 预算 ${esc((row.budget && row.budget.used) ?? "—")}/${esc((row.budget && row.budget.max_calls) ?? "—")}。下次 ${esc((row.schedule && row.schedule.next_symbol) || "—")}。</div>
     </section>`;
   };
 

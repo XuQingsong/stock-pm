@@ -539,9 +539,10 @@ def test_discover_invokes_all_three_av_endpoints(monkeypatch):
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
     monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "30")
     from stock_pm.config import Settings
 
-    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    docs = AvEarningsProvider(Settings(events_mode="empty", earnings_av_budget=30)).discover()
     assert "EARNINGS" in calls
     assert "EARNINGS_ESTIMATES" in calls
     assert "EARNINGS_CALL_TRANSCRIPT" in calls
