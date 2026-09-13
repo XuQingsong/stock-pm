@@ -69,6 +69,50 @@
     what_changes: "What changes · 什么变了"
   };
 
+  const earningsPrintHtml = (row) => {
+    if (!row) return "";
+    const missing = [];
+    if (row.actual == null) missing.push("actual");
+    if (row.prior_year_actual == null) missing.push("prior");
+    if (row.consensus == null) missing.push("consensus");
+    if (!row.yoy && row.yoy !== 0) missing.push("yoy");
+    if (!row.surprise && row.surprise !== 0) missing.push("surprise");
+    const fmt = (value) => (value == null || value === "" ? "—" : esc(String(value)));
+    const pct = (value) => (value == null || value === "" ? "—" : `${(Number(value) * 100).toFixed(2)}%`);
+    const href = safeUrl(row.source_url);
+    const binding = (name) => (row.field_bindings && row.field_bindings[name]) || {};
+    const bindingHtml = (name, label) => {
+      const item = binding(name);
+      const src = safeUrl(item.source_url);
+      return `<div class="subline" data-earnings-binding="${esc(name)}">字段 ${esc(label)} · ${esc(item.provider || "—")} / ${esc(item.function || "—")} / ${esc(item.raw_field || "—")} · as-of ${esc(item.as_of || "—")} · 抓取 ${esc(item.fetched_at || "—")} · ${esc(item.role || "—")}${src ? ` ${sourceLink(src, "字段来源")}` : " 无字段来源"}</div>`;
+    };
+    const implication = row.implication || "";
+    const secMeta = row.sec_association || {};
+    const secHref = safeUrl(secMeta.url);
+    return `<section class="earnings-print" data-earnings-print="1" data-earnings-complete="${row.gap ? "0" : "1"}" data-earnings-gap="${esc(row.gap || "")}">
+      <h4>结构化财报对照</h4>
+      <div class="earnings-grid">
+        <div data-earnings-field="actual"><span>Actual</span><b>${fmt(row.actual)}</b></div>
+        <div data-earnings-field="prior"><span>Prior</span><b>${fmt(row.prior_year_actual)}</b></div>
+        <div data-earnings-field="consensus"><span>Consensus</span><b>${fmt(row.consensus)}</b></div>
+        <div data-earnings-field="yoy"><span>YoY</span><b>${pct(row.yoy)}</b></div>
+        <div data-earnings-field="surprise"><span>Surprise</span><b>${pct(row.surprise)}</b></div>
+        <div data-earnings-field="unit"><span>Unit / Currency</span><b>${esc(row.unit || "—")} · ${esc(row.currency || "—")}</b></div>
+      </div>
+      ${bindingHtml("actual", "Actual")}
+      ${bindingHtml("prior_year_actual", "Prior")}
+      ${bindingHtml("consensus", "Consensus")}
+      <p class="subline" data-consensus-role="${esc(row.consensus_role || "")}">共识角色 ${esc(row.consensus_role || "—")}。EARNINGS_ESTIMATES 只作当前/未来修订快照，不回填历史 surprise。</p>
+      <p class="subline">期间 ${esc(row.fiscal_period || "—")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 规则 ${esc(row.rule_id || "—")}</p>
+      <p class="subline">公式：${esc((row.yoy_inputs && row.yoy_inputs.formula) || "—")} ； ${esc((row.surprise_inputs && row.surprise_inputs.formula) || "—")}</p>
+      ${href ? `<div class="evidence-refs">供应商来源：${sourceLink(href, row.provider || "earnings")}</div>` : "<p class='subline'>缺少可点击来源。</p>"}
+      ${secHref ? `<p class="subline" data-sec-association="1">SEC 申报关联（未验证正文）：${sourceLink(secHref, "8-K metadata")}。同一日 8-K 不构成 EPS 证据。</p>` : secMeta.reason_code ? `<p class="subline" data-sec-association="1" data-sec-reason="${esc(secMeta.reason_code)}">SEC 申报未请求：${esc(secMeta.reason_code)}。不升级为官方证据。</p>` : ""}
+      <p class="subline" data-earnings-implication="${esc(implication)}" data-price-direction="withheld">盈利含义 ${esc(implication || "未形成")} · 股价方向 withheld</p>
+      ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本链缺失：${esc(missing.join(" / "))}。只降级本事件，不阻断其他事件。</p>` : ""}
+      ${(row.transcript_excerpts || []).map((item) => `<p class="subline" data-transcript-excerpt="1">纪要 ${esc(item.quarter || "")} · ${esc(item.speaker || "")}：${esc(item.content || "")}${item.source_url ? ` <a class="source-link" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>` : ""}</p>`).join("")}
+    </section>`;
+  };
+
   const causalChainHtml = (analysis) => {
     const chain = (analysis && analysis.causal_chain) || {};
     const layers = chain.layers || [];
@@ -84,7 +128,9 @@
           extra.push(`<div class="subline" data-baseline-missing="1">缺少可比较的当前值 vs 历史/consensus 基准，Change 未闭环。</div>`);
         }
         if (layer.id === "expectation") {
-          extra.push(`<div class="subline">方向 ${esc(layer.direction || "—")} · 期限 ${esc(layer.horizon || "—")} · 置信度 ${esc(layer.confidence || "—")}</div>`);
+          const implication = (analysis.earnings_implication || {}).label || "";
+          extra.push(`<div class="subline" data-price-direction="${esc(layer.direction || "withheld")}">市场/价格方向 ${esc(layer.direction || "withheld")} · 期限 ${esc(layer.horizon || "—")} · 置信度 ${esc(layer.confidence || "—")}</div>`);
+          extra.push(`<div class="subline" data-earnings-implication="${esc(implication)}">盈利含义 ${esc(implication || "未形成")}（不是股价方向）</div>`);
         }
         if (layer.id === "impact") {
           extra.push(exposuresHtml(layer.exposures || analysis.exposures || []));
@@ -246,13 +292,15 @@
     const filingNote = filingItems.length
       ? `<p class="subline" data-filing-items="1">申报栏目（发现/元数据，不是正文事实）：${esc(filingItems.join("；"))}</p>`
       : "";
+    const earnings = analysis.earnings_evidence || null;
+    const earningsHtml = earningsPrintHtml(earnings);
     const factOnly = analysis.filing_fact_only === true || reasonCode === "baseline_missing";
     const loopNote = closed
       ? ""
       : factOnly
         ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 当前仅作为事实展示；在基准与传导规则补齐前，不纳入方向判断，也不影响其他事件的正常分析。</p>`
         : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 本事件不形成方向，也不阻断其他事件的正常分析。</p>`;
-    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}">
+    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}" data-can-form-direction="${analysis.can_form_direction === true ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
         <div class="event-meta">
@@ -269,6 +317,7 @@
       </header>
       ${loopNote}
       ${filingNote}
+      ${earningsHtml}
       ${answersHtml(event, why)}
       ${causalChainHtml(analysis)}
       ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}

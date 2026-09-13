@@ -1,0 +1,321 @@
+{
+  "audit_id": "events_5c_b_frozen_earnings",
+  "data_class": "frozen_provider_audit",
+  "live": false,
+  "not_production_live": true,
+  "note": "Frozen provider sample: Alpha Vantage EARNINGS / EARNINGS_ESTIMATES / EARNINGS_CALL_TRANSCRIPT plus stored FMP AAPL rows and SEC filing metadata captured 2026-09-13. Aggregator/provider material and unverified SEC association only. Not official_fact and not live runtime evidence.",
+  "fetched_at": "2026-09-13T11:20:00+00:00",
+  "sec_filing": {
+    "symbol": "AAPL",
+    "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+    "publisher": "SEC EDGAR",
+    "report_date": "2026-07-30",
+    "accession": "0000320193-26-000018"
+  },
+  "av_earnings": {
+    "symbol": "AAPL",
+    "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+    "quarterlyEarnings": [
+      {
+        "fiscalDateEnding": "2026-06-30",
+        "reportedDate": "2026-07-30",
+        "reportedEPS": "2.02",
+        "estimatedEPS": "1.88",
+        "surprise": "0.14",
+        "surprisePercentage": "7.4468",
+        "reportTime": "post-market"
+      },
+      {
+        "fiscalDateEnding": "2026-03-31",
+        "reportedDate": "2026-04-30",
+        "reportedEPS": "2.01",
+        "estimatedEPS": "1.94",
+        "surprise": "0.07",
+        "surprisePercentage": "3.6082",
+        "reportTime": "post-market"
+      },
+      {
+        "fiscalDateEnding": "2025-12-31",
+        "reportedDate": "2026-01-29",
+        "reportedEPS": "2.84",
+        "estimatedEPS": "2.67",
+        "surprise": "0.17",
+        "surprisePercentage": "6.367",
+        "reportTime": "post-market"
+      },
+      {
+        "fiscalDateEnding": "2025-09-30",
+        "reportedDate": "2025-10-30",
+        "reportedEPS": "1.85",
+        "estimatedEPS": "1.77",
+        "surprise": "0.08",
+        "surprisePercentage": "4.5198",
+        "reportTime": "post-market"
+      },
+      {
+        "fiscalDateEnding": "2025-06-30",
+        "reportedDate": "2025-07-31",
+        "reportedEPS": "1.57",
+        "estimatedEPS": "1.43",
+        "surprise": "0.14",
+        "surprisePercentage": "9.7902",
+        "reportTime": "post-market"
+      },
+      {
+        "fiscalDateEnding": "2025-03-31",
+        "reportedDate": "2025-05-01",
+        "reportedEPS": "1.65",
+        "estimatedEPS": "1.62",
+        "surprise": "0.03",
+        "surprisePercentage": "1.8519",
+        "reportTime": "post-market"
+      }
+    ]
+  },
+  "av_estimates": {
+    "symbol": "AAPL",
+    "http_source": "https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=AAPL",
+    "estimates": [
+      {
+        "date": "2026-06-30",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "1.8924",
+        "eps_estimate_high": "1.9900",
+        "eps_estimate_low": "1.8200",
+        "eps_estimate_analyst_count": "30.0000",
+        "eps_estimate_average_7_days_ago": "1.8940",
+        "eps_estimate_average_30_days_ago": "1.8943",
+        "eps_estimate_average_60_days_ago": "1.8943",
+        "eps_estimate_average_90_days_ago": "1.7395",
+        "eps_estimate_revision_up_trailing_7_days": "0.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "24.0000",
+        "eps_estimate_revision_down_trailing_30_days": "0.0000",
+        "revenue_estimate_average": "108959817930.00",
+        "revenue_estimate_high": "112168000000.00",
+        "revenue_estimate_low": "107516300000.00",
+        "revenue_estimate_analyst_count": "27.00"
+      },
+      {
+        "date": "2026-03-31",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "1.9404",
+        "eps_estimate_high": "2.1600",
+        "eps_estimate_low": "1.5600",
+        "eps_estimate_analyst_count": "33.0000",
+        "eps_estimate_average_7_days_ago": "1.9428",
+        "eps_estimate_average_30_days_ago": "1.9514",
+        "eps_estimate_average_60_days_ago": "1.9489",
+        "eps_estimate_average_90_days_ago": "1.9428",
+        "eps_estimate_revision_up_trailing_7_days": "3.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "4.0000",
+        "eps_estimate_revision_down_trailing_30_days": "1.0000",
+        "revenue_estimate_average": "109578690550.00",
+        "revenue_estimate_high": "115368900000.00",
+        "revenue_estimate_low": "104636000000.00",
+        "revenue_estimate_analyst_count": "32.00"
+      },
+      {
+        "date": "2025-12-31",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "2.6708",
+        "eps_estimate_high": "2.8000",
+        "eps_estimate_low": "2.4500",
+        "eps_estimate_analyst_count": "33.0000",
+        "eps_estimate_average_7_days_ago": "2.6731",
+        "eps_estimate_average_30_days_ago": "2.6672",
+        "eps_estimate_average_60_days_ago": "2.6632",
+        "eps_estimate_average_90_days_ago": "2.6509",
+        "eps_estimate_revision_up_trailing_7_days": "3.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "5.0000",
+        "eps_estimate_revision_down_trailing_30_days": "1.0000",
+        "revenue_estimate_average": "138522147180.00",
+        "revenue_estimate_high": "142460000000.00",
+        "revenue_estimate_low": "136656000000.00",
+        "revenue_estimate_analyst_count": "32.00"
+      },
+      {
+        "date": "2025-09-30",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "1.7699",
+        "eps_estimate_high": "1.8300",
+        "eps_estimate_low": "1.5900",
+        "eps_estimate_analyst_count": "32.0000",
+        "eps_estimate_average_7_days_ago": "1.7649",
+        "eps_estimate_average_30_days_ago": "1.7605",
+        "eps_estimate_average_60_days_ago": "1.7596",
+        "eps_estimate_average_90_days_ago": "1.6556",
+        "eps_estimate_revision_up_trailing_7_days": "6.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "8.0000",
+        "eps_estimate_revision_down_trailing_30_days": "1.0000",
+        "revenue_estimate_average": "102250480070.00",
+        "revenue_estimate_high": "107790700000.00",
+        "revenue_estimate_low": "97854000000.00",
+        "revenue_estimate_analyst_count": "31.00"
+      },
+      {
+        "date": "2025-06-30",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "1.4257",
+        "eps_estimate_high": "1.5400",
+        "eps_estimate_low": "1.3200",
+        "eps_estimate_analyst_count": "29.0000",
+        "eps_estimate_average_7_days_ago": "1.4199",
+        "eps_estimate_average_30_days_ago": "1.4159",
+        "eps_estimate_average_60_days_ago": "1.4166",
+        "eps_estimate_average_90_days_ago": "1.4724",
+        "eps_estimate_revision_up_trailing_7_days": "5.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "6.0000",
+        "eps_estimate_revision_down_trailing_30_days": "1.0000",
+        "revenue_estimate_average": "89162375340.00",
+        "revenue_estimate_high": "92135000000.00",
+        "revenue_estimate_low": "86919000000.00",
+        "revenue_estimate_analyst_count": "28.00"
+      },
+      {
+        "date": "2025-03-31",
+        "horizon": "fiscal quarter",
+        "eps_estimate_average": "1.6118",
+        "eps_estimate_high": "1.6600",
+        "eps_estimate_low": "1.4700",
+        "eps_estimate_analyst_count": "26.0000",
+        "eps_estimate_average_7_days_ago": "1.6052",
+        "eps_estimate_average_30_days_ago": "1.6067",
+        "eps_estimate_average_60_days_ago": "1.6080",
+        "eps_estimate_average_90_days_ago": "1.6571",
+        "eps_estimate_revision_up_trailing_7_days": "1.0000",
+        "eps_estimate_revision_down_trailing_7_days": null,
+        "eps_estimate_revision_up_trailing_30_days": "1.0000",
+        "eps_estimate_revision_down_trailing_30_days": "4.0000",
+        "revenue_estimate_average": "94231024860.00",
+        "revenue_estimate_high": "95785000000.00",
+        "revenue_estimate_low": "89400000000.00",
+        "revenue_estimate_analyst_count": "26.00"
+      }
+    ]
+  },
+  "av_transcript": {
+    "symbol": "AAPL",
+    "quarter": "2026Q3",
+    "http_source": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3",
+    "excerpts": [
+      {
+        "speaker": "Suhasini Chandramouli",
+        "title": "Director of Investor Relations",
+        "content": "Good afternoon, welcome to the Apple Q3 fiscal year 2026 earnings conference call. My name is Suhasini Chandramouli, Director of Investor Relations. Today's call is being recorded. Speaking first today is Apple CEO Tim Cook, followed by CFO Kevan Parekh. Also joining us on today's call is incoming CEO John Ternus. After the prepared remarks, we'll open the call to questions from analysts. Please note that some of the information you'll hear during our discussion today will co",
+        "quarter": "2026Q3",
+        "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3"
+      },
+      {
+        "speaker": "Tim Cook",
+        "title": "Chief Executive Officer",
+        "content": "Thank you, Suhasini. Good afternoon, everyone, thanks for joining the call. Today, Apple is pleased to report $109.4 billion in revenue, up 16% from a year ago and a June quarter record. We were able to achieve this despite supply constraints and sequential foreign exchange headwinds. We continue to see enormous customer enthusiasm for our most popular lineup ever, with iPhone revenue growing 22% from a year ago to reach a June quarter record. We saw so much excitement around",
+        "quarter": "2026Q3",
+        "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3"
+      },
+      {
+        "speaker": "Kevan Parekh",
+        "title": "Chief Financial Officer",
+        "content": "Thanks, Tim, good afternoon, everyone. Here's a quick rundown of our key financial metrics. Our revenue of $109.4 billion was up 16% year-over-year, a June quarter revenue record. We saw strong performance around the world, with double-digit growth in every geographic segment despite supply constraints. Products revenue was $78.7 billion, up 18% year-over-year, driven by double-digit growth on iPhone and Mac, both of which set new June quarter records. Our installed base of o",
+        "quarter": "2026Q3",
+        "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3"
+      }
+    ],
+    "segment_count": 61
+  },
+  "stored_fmp": [
+    {
+      "symbol": "AAPL",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q3",
+      "period_end": "2026-06-27",
+      "report_date": "2026-07-30",
+      "currency": "USD",
+      "eps_actual": 2.02,
+      "eps_estimate": 1.89,
+      "revenue_actual": 109417000000.0,
+      "revenue_estimate": 109038900000.0,
+      "source": "fmp",
+      "synced_at": "2026-09-13 06:24:13+00:00"
+    },
+    {
+      "symbol": "AAPL",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q2",
+      "period_end": "2026-03-28",
+      "report_date": "2026-04-30",
+      "currency": "USD",
+      "eps_actual": 2.01,
+      "eps_estimate": 1.95,
+      "revenue_actual": 111184000000.0,
+      "revenue_estimate": 109457600000.0,
+      "source": "fmp",
+      "synced_at": "2026-09-13 06:24:13+00:00"
+    },
+    {
+      "symbol": "AAPL",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_end": "2025-12-27",
+      "report_date": "2026-01-29",
+      "currency": "USD",
+      "eps_actual": 2.85,
+      "eps_estimate": 2.67,
+      "revenue_actual": 143756000000.0,
+      "revenue_estimate": 138391000000.0,
+      "source": "fmp",
+      "synced_at": "2026-09-13 06:24:13+00:00"
+    },
+    {
+      "symbol": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "Q4",
+      "period_end": "2025-09-27",
+      "report_date": "2025-10-30",
+      "currency": "USD",
+      "eps_actual": 1.85,
+      "eps_estimate": 1.73,
+      "revenue_actual": 102466000000.0,
+      "revenue_estimate": 102227100000.0,
+      "source": "fmp",
+      "synced_at": "2026-09-13 06:24:13+00:00"
+    }
+  ],
+  "before": {
+    "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 0,
+    "note": "No company_earnings conclusion before structured YoY/surprise."
+  },
+  "after": {
+    "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 1,
+    "withheld_count": 1,
+    "gained_valid_event_ids": [],
+    "price_direction": "withheld"
+  },
+  "gained_detail": [
+    {
+      "symbol": "AAPL",
+      "metric": "eps",
+      "fiscal_date_ending": "2026-06-30",
+      "actual": 2.02,
+      "prior_year_actual": 1.57,
+      "consensus": 1.88,
+      "consensus_role": "provider_reported_consensus_at_print",
+      "yoy": 0.286624,
+      "surprise": 0.074468,
+      "yoy_formula": "(2.02 - 1.57) / 1.57",
+      "surprise_formula": "(2.02 - 1.88) / abs(1.88)",
+      "implication": "beat_and_grow",
+      "rule_id": "earnings_implication.v1",
+      "valid_conclusion": false,
+      "source_url": "https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+      "sec_association_only": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm"
+    }
+  ],
+  "integrity_sha256": "066cbb92aa0a1db23403571a44fc3e2827fd73158b8d79aa490a03bed6d2aa28"
+}

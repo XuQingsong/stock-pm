@@ -234,11 +234,12 @@ def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]
     cls = classify_source(doc.url, doc.publisher)
     canonical = normalize_url(doc.url)
     document_role = doc.document_role or infer_document_role(doc.url, doc.title)
-    evidence_role = (
-        "regime_catalog"
-        if document_role == "regime_catalog" or doc.evidence_role == "regime_catalog"
-        else infer_evidence_role(doc.url, document_role)
-    )
+    if document_role == "regime_catalog" or doc.evidence_role == "regime_catalog":
+        evidence_role = "regime_catalog"
+    elif doc.evidence_role in {"association_metadata", "structured_field_bindings"}:
+        evidence_role = doc.evidence_role
+    else:
+        evidence_role = infer_evidence_role(doc.url, document_role)
     return {
         "source_id": source_id_for(doc.url),
         "source_url": doc.url,

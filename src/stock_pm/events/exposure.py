@@ -69,7 +69,7 @@ def event_channels(event: TrustedEvent) -> set[str]:
         channels.add("credit")
     if event.event_type in {"central_bank_rates", "inflation_employment"}:
         channels.add("rates")
-    if event.event_type == "company_filing":
+    if event.event_type in {"company_filing", "company_earnings"}:
         channels.add("company")
     if event.event_type == "war_sanctions" and "energy" in channels:
         channels.add("geo_energy")
@@ -88,8 +88,12 @@ def why_relevant(event: TrustedEvent, symbol: str) -> dict[str, Any] | None:
             return {
                 "relevant": True,
                 "channel": "company",
-                "mechanism": "company_filing",
-                "why_relevant": "公司原文公告直接对应本标的",
+                "mechanism": "company_earnings" if event.event_type == "company_earnings" else "company_filing",
+                "why_relevant": (
+                    "结构化财报实际值只对应本发行人，不复制到无关股票"
+                    if event.event_type == "company_earnings"
+                    else "公司原文公告直接对应本标的"
+                ),
             }
         return None
     if "energy" in channels or "geo_energy" in channels:

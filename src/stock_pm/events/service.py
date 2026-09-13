@@ -180,6 +180,7 @@ def _center_sort_key(event: TrustedEvent | dict[str, Any]) -> tuple:
         "sovereign_or_corporate_debt": 3,
         "other": 4,
         "company_filing": 5 if mapped else 8,
+        "company_earnings": 5 if mapped else 8,
         "vix_risk": 6,
         "war_sanctions": 1,
     }.get(event_type, 7)

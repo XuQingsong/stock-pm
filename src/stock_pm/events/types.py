@@ -16,6 +16,7 @@ EVENT_TYPES = (
     "fx_usd",
     "vix_risk",
     "company_filing",
+    "company_earnings",
     "other",
 )
 

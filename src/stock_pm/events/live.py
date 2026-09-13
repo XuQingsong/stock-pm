@@ -24,6 +24,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from stock_pm.config import Settings
+from .av_earnings import AvEarningsProvider
 
 from .bodies import (
     extract_sec_index_items,
@@ -787,7 +788,7 @@ class EiaPressProvider:
             )
 
 
-LIVE_PROVIDERS = (SecEdgarProvider, FederalReserveProvider, EiaPressProvider)
+LIVE_PROVIDERS = (SecEdgarProvider, FederalReserveProvider, EiaPressProvider, AvEarningsProvider)
 
 
 def live_provider_instances(settings: Settings | None = None) -> list[Any]:
