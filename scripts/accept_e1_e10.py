@@ -605,7 +605,14 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     if lane == "capability-black-box":
         if accept_host_violations:
             capability = {key: False for key in capability}
-        banner_ok = "RECORDED REPLAY" in str(shot_center.get("banner") or "") or "LIVE" in str(shot_center.get("banner") or "")
+        banner = str(shot_center.get("banner") or "")
+        banner_ok = (
+            shot_center.get("replay") == "1"
+            or "RECORDED REPLAY" in banner
+            or "正在回放已记录的官方原文" in banner
+            or "正在使用官方实时来源" in banner
+            or "LIVE" in banner
+        )
         if not banner_ok:
             capability["E1"] = False
             capability["E6"] = False
