@@ -180,9 +180,9 @@ def symbol_health(
         "scenario": scenario,
         "source": source,
         "gap": gap,
-        "missing_fields": missing_fields or [
-            name for name, row in rows.items() if row.get("status") not in {"ok"}
-        ],
+        "missing_fields": list(missing_fields)
+        if missing_fields is not None
+        else [name for name, row in rows.items() if row.get("status") not in {"ok"}],
     }
 
 
