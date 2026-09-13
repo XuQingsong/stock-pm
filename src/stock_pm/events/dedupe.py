@@ -255,7 +255,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                         publisher=source.publisher,
                         valid_from=doc.published_at,
                         observed_at=doc.published_at,
-                        excerpt=sanitize_untrusted(doc.body or "")[:400],
+                        excerpt=sanitize_untrusted(doc.body or ""),
                     )
                 )
         docs_by_url = {row.url: row for row in cluster}

@@ -318,7 +318,7 @@ def _claim_evidence_rows(events: list[dict], pack: dict | None) -> list[dict]:
         for claim in event.get("claims") or []:
             url = str(claim.get("source_url") or "")
             doc = docs.get(url) or {}
-            excerpt = str(claim.get("excerpt") or doc.get("claim_support_excerpt") or doc.get("excerpt") or "")
+            excerpt = str(doc.get("claim_support_excerpt") or claim.get("excerpt") or doc.get("excerpt") or "")
             required = list(doc.get("required_tokens") or [])
             supports = excerpt_supports_claim(str(claim.get("text") or ""), excerpt, required=required or None)
             rows.append(
