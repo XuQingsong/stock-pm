@@ -198,6 +198,8 @@ def causal_chain_is_complete(chain: dict[str, Any] | None) -> bool:
     refs = [row for row in (fact.get("evidence_refs") or []) if isinstance(row, dict)]
     if not excerpt or not any(str(row.get("source_url") or "").startswith("http") for row in refs):
         return False
+    if not excerpt_supports_claim(str(fact.get("text") or ""), excerpt):
+        return False
     exp = layers["expectation"]
     if not str(exp.get("direction") or "").strip():
         return False
@@ -284,15 +286,157 @@ def build_causal_chain(
     return chain
 
 
-def _supporting_fact(live_claims: list[EventClaim], fallback_text: str) -> tuple[str, str]:
+def _supporting_fact(live_claims: list[EventClaim], fallback_text: str) -> tuple[str, str, bool]:
     for claim in live_claims:
         excerpt = str(claim.excerpt or "")
         if excerpt and excerpt_supports_claim(claim.text, excerpt):
-            return claim.text, excerpt
+            return claim.text, excerpt, True
+    display = fallback_text
     if live_claims:
-        latest = live_claims[-1]
-        return latest.text or fallback_text, str(latest.excerpt or "")
-    return fallback_text, ""
+        display = live_claims[-1].text or fallback_text
+    return display, "", False
+
+
+def _row_url(row: Any) -> str:
+    if isinstance(row, dict):
+        return str(row.get("source_url") or row.get("canonical_url") or "")
+    return str(getattr(row, "source_url", "") or getattr(row, "canonical_url", "") or "")
+
+
+def _row_field(row: Any, name: str) -> str:
+    if isinstance(row, dict):
+        return str(row.get(name) or "")
+    return str(getattr(row, name, "") or "")
+
+
+def _official_http_on_event(analysis: dict[str, Any], sources: list[Any] | None = None) -> bool:
+    layers = {str(row.get("id")): row for row in ((analysis.get("causal_chain") or {}).get("layers") or []) if isinstance(row, dict)}
+    rows = list((layers.get("fact") or {}).get("evidence_refs") or [])
+    rows.extend(analysis.get("evidence_refs") or [])
+    rows.extend(sources or [])
+    for row in rows:
+        url = _row_url(row)
+        if not url.startswith("http"):
+            continue
+        content_type = _row_field(row, "content_type")
+        if content_type in {"research_opinion", "aggregator"}:
+            continue
+        return True
+    return False
+
+
+def _exposure_ok(analysis: dict[str, Any]) -> bool:
+    layers = {str(row.get("id")): row for row in ((analysis.get("causal_chain") or {}).get("layers") or []) if isinstance(row, dict)}
+    exposures = (layers.get("impact") or {}).get("exposures") or analysis.get("exposures") or []
+    rows = [row for row in exposures if isinstance(row, dict)]
+    return bool(rows) and all(
+        str(row.get("symbol") or "").strip()
+        and str(row.get("channel") or "").strip()
+        and str(row.get("mechanism") or "").strip()
+        for row in rows
+    )
+
+
+def _excerpt_ok(analysis: dict[str, Any], claims: list[Any] | None = None) -> bool:
+    layers = {str(row.get("id")): row for row in ((analysis.get("causal_chain") or {}).get("layers") or []) if isinstance(row, dict)}
+    fact = layers.get("fact") or {}
+    if excerpt_supports_claim(str(fact.get("text") or ""), str(fact.get("excerpt") or "")):
+        return True
+    for claim in claims or []:
+        text = _row_field(claim, "text")
+        excerpt = _row_field(claim, "excerpt") or _row_field(claim, "claim_support_excerpt")
+        status = _row_field(claim, "status")
+        if status in {"superseded", "revoked"}:
+            continue
+        if excerpt_supports_claim(text, excerpt):
+            return True
+    return False
+
+
+def inspect_closed_loop(payload: TrustedEvent | dict[str, Any]) -> dict[str, Any]:
+    """Per-event evidence loop. Official URL, supporting excerpt, chain, and exposure must be the same event."""
+    if isinstance(payload, TrustedEvent):
+        analysis = payload.analysis or {}
+        claims = list(payload.claims)
+        sources = list(payload.sources)
+    else:
+        analysis = payload.get("analysis") if isinstance(payload.get("analysis"), dict) else payload
+        if not isinstance(analysis, dict):
+            analysis = {}
+        claims = list(payload.get("claims") or [])
+        sources = list(payload.get("sources") or [])
+    official_ok = _official_http_on_event(analysis, sources)
+    excerpt_ok = _excerpt_ok(analysis, claims)
+    chain_ok = causal_chain_is_complete(analysis.get("causal_chain"))
+    exposure_ok = _exposure_ok(analysis)
+    marked_observable = (analysis.get("withheld") or {}).get("status") == "observable"
+    valid = bool(marked_observable and official_ok and excerpt_ok and chain_ok and exposure_ok)
+    return {
+        "valid": valid,
+        "official_ok": official_ok,
+        "excerpt_ok": excerpt_ok,
+        "chain_ok": chain_ok,
+        "exposure_ok": exposure_ok,
+        "evidence_ok": official_ok and excerpt_ok,
+        "marked_observable": marked_observable,
+        "unsupported": not excerpt_ok,
+        "leaked_observable": marked_observable and not valid,
+    }
+
+
+def closed_loop_summary(events: list[Any] | None) -> dict[str, Any]:
+    valid = 0
+    withheld = 0
+    unsupported = 0
+    leaked = 0
+    evidence = 0
+    for event in events or []:
+        row = inspect_closed_loop(event)
+        if row["valid"]:
+            valid += 1
+        if row["evidence_ok"]:
+            evidence += 1
+        if row["unsupported"]:
+            unsupported += 1
+        if row["leaked_observable"]:
+            leaked += 1
+        if not row["marked_observable"]:
+            withheld += 1
+    return {
+        "valid_conclusion_count": valid,
+        "withheld_count": withheld,
+        "unsupported_count": unsupported,
+        "leaked_observable_count": leaked,
+        "evidence_event_count": evidence,
+        "ok": valid >= 1 and leaked == 0,
+    }
+
+
+def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = None, claims: list[Any] | None = None) -> dict[str, Any]:
+    row = inspect_closed_loop({"analysis": analysis, "sources": sources or analysis.get("evidence_refs") or [], "claims": claims or []})
+    analysis["closed_loop"] = row["valid"]
+    analysis["unsupported"] = row["unsupported"]
+    if analysis.get("withheld", {}).get("status") == "observable" and not row["valid"]:
+        if row["unsupported"]:
+            reason = "正文摘录不支持当前事实，不形成方向"
+        elif not row["official_ok"]:
+            reason = "缺少可点击官方原文，不形成方向"
+        elif not row["exposure_ok"]:
+            reason = "没有行业/个股暴露映射，不形成方向"
+        else:
+            reason = "因果链不完整，不形成方向"
+        analysis["withheld"] = _withhold(reason)
+        analysis["direction"] = _bound(None, [])
+        analysis["closed_loop"] = False
+        chain = analysis.get("causal_chain") or {}
+        for layer in chain.get("layers") or []:
+            if layer.get("id") == "expectation":
+                layer["direction"] = "withheld"
+                layer["text"] = (
+                    f"方向 withheld · 期限 {layer.get('horizon') or 'unspecified'} · 置信度 {layer.get('confidence') or 'insufficient'}"
+                )
+        chain["complete"] = False
+    return analysis
 
 
 def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> dict[str, Any]:
@@ -365,8 +509,10 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
                 "how_long": event.duration,
                 "invalidates_when": event.invalidation,
             },
+            "closed_loop": False,
+            "unsupported": True,
         }
-        event.analysis = analysis
+        event.analysis = _seal_closed_loop(analysis, sources=[], claims=event.claims)
         return analysis
 
     mechanism = {
@@ -398,10 +544,17 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         invalidation = "若官方确认海峡通行恢复或撤回中断预测，则该影响链失效"
     else:
         direction_hint = "pressure" if event.severity in {"high", "critical"} else "watch"
+    confirmed_text, fact_excerpt, fact_supported = _supporting_fact(
+        live_claims, latest_claim.text if latest_claim else event.canonical_title
+    )
     if confidence in {"insufficient", "revoked"} or not official_refs:
         withheld = _withhold("缺少 Tier 1 官方事实或事件已撤销，不输出方向")
     elif conflicts:
         withheld = _withhold("同一 as-of 窗口存在不同发布方冲突 claim，方向 withhold")
+    elif not fact_supported:
+        withheld = _withhold("正文摘录不支持当前事实，不形成方向")
+    elif not exposures:
+        withheld = _withhold("没有行业/个股暴露映射，不形成方向")
     else:
         withheld = {
             "status": "observable",
@@ -412,8 +565,6 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "price_target": None,
         }
         direction = withheld["direction"]
-
-    confirmed_text, fact_excerpt = _supporting_fact(live_claims, latest_claim.text if latest_claim else event.canonical_title)
     follow_up = "继续观察后续官方文档是否改写该时间线或暴露映射"
     analysis = {
         "confirmed_facts": [
@@ -471,7 +622,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         },
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
-    event.analysis = analysis
+    event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)
     return analysis
 
 

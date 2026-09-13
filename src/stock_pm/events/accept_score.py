@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .analyze import causal_chain_is_complete
+from .analyze import causal_chain_is_complete, closed_loop_summary
 from .evidence import excerpt_supports_claim
 
 LAYER_ORDER = ("fact", "change", "expectation", "impact", "what_changes")
@@ -49,10 +49,10 @@ def e8_live_excerpt_ok(
     *,
     claims: list[dict[str, Any]] | None = None,
 ) -> bool:
-    """True only when at least one current claim excerpt supports its claim."""
-    rows = list(claims or [])
-    rows.extend(collect_event_claims(events))
-    return bool(current_supporting_excerpts(rows))
+    """Event lists use the per-event closed loop. Bare claims stay excerpt-only."""
+    if events:
+        return closed_loop_summary(events)["ok"]
+    return bool(current_supporting_excerpts(claims))
 
 
 def e8_metadata_only_passes(
@@ -82,11 +82,8 @@ def e8_metadata_only_passes(
 
 
 def events_have_complete_chain(events: list[dict[str, Any]] | None) -> bool:
-    for event in events or []:
-        chain = (event.get("analysis") or {}).get("causal_chain")
-        if causal_chain_is_complete(chain):
-            return True
-    return False
+    """True only when a valid observable closed loop exists and none is leaked."""
+    return closed_loop_summary(events)["ok"]
 
 
 def _one_dom_chain_ok(layers: list[dict[str, Any]] | None) -> bool:

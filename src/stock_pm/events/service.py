@@ -6,8 +6,7 @@ from typing import Any
 
 from stock_pm.config import Settings
 
-from .analyze import DISPLAY_SYMBOLS, analyze_event, causal_chain_is_complete, symbol_event_view
-from .evidence import excerpt_supports_claim
+from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol_event_view
 from .dedupe import build_events
 from .live import discover_live_documents, reset_live_state
 from .policy import events_data_mode
@@ -115,30 +114,19 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
 
 
 def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, note: str) -> dict[str, Any]:
-    supporting = 0
-    official = 0
-    observable = 0
-    for event in events:
-        analysis = event.analysis or {}
-        if analysis.get("evidence_refs"):
-            official += 1
-        if (analysis.get("withheld") or {}).get("status") == "observable" and causal_chain_is_complete(
-            analysis.get("causal_chain")
-        ):
-            observable += 1
-        for claim in event.claims:
-            if claim.status in {"superseded", "revoked"}:
-                continue
-            if excerpt_supports_claim(claim.text, claim.excerpt or ""):
-                supporting += 1
+    summary = closed_loop_summary(events)
+    valid = int(summary["valid_conclusion_count"])
+    withheld = int(summary["withheld_count"])
+    unsupported = int(summary["unsupported_count"])
+    evidence_ok = int(summary["evidence_event_count"]) > 0 and int(summary["leaked_observable_count"]) == 0
+    can_conclude = summary["ok"]
     reasons: list[str] = []
-    if events and supporting == 0:
-        reasons.append("当前没有绑定正文摘录的有效主张")
-    if events and official == 0:
-        reasons.append("缺少可点击官方原文")
-    if observable == 0:
+    if events and int(summary["evidence_event_count"]) == 0:
+        reasons.append("没有同一事件同时具备官方原文和支持性正文摘录")
+    if int(summary["leaked_observable_count"]) > 0:
+        reasons.append("存在仍标为可观察但证据或链条不合格的事件")
+    if valid == 0:
         reasons.append(note or "证据不足，不形成方向结论")
-    evidence_ok = supporting > 0 and official > 0
     return {
         "source_health": {
             "ok": provider_health_gate,
@@ -150,13 +138,18 @@ def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, n
         "evidence_sufficiency": {
             "ok": evidence_ok,
             "label": "证据充分" if evidence_ok else "证据不足",
-            "detail": f"{supporting} 条正文摘录支持当前主张" if supporting else "没有正文摘录支持当前主张",
+            "detail": (
+                f"有效结论 {valid} · 不形成方向 {withheld} · 摘录不支持 {unsupported}"
+            ),
         },
         "can_conclude": {
-            "ok": observable > 0,
-            "label": "可以形成观察结论" if observable > 0 else "尚不能形成结论",
+            "ok": can_conclude,
+            "label": "可以形成观察结论" if can_conclude else "尚不能形成结论",
             "reason": "；".join(reasons) if reasons else "已确认事实并完成行业/个股暴露映射",
         },
+        "valid_conclusion_count": valid,
+        "withheld_count": withheld,
+        "unsupported_count": unsupported,
     }
 
 

@@ -221,7 +221,7 @@
         ${providerPill(coverage, "sec_edgar")}
         ${providerPill(coverage, "federal_reserve")}
         ${providerPill(coverage, "eia_press")}
-        <div class="subline">${esc(conclude.reason || coverage.note || "")} 只影响事件观察，不影响价格、盈利或宏观利率。</div>
+        <div class="subline">${esc(conclude.reason || coverage.note || "")} 有效结论 ${esc(coverage.valid_conclusion_count ?? product.valid_conclusion_count ?? 0)} · 不形成方向 ${esc(coverage.withheld_count ?? product.withheld_count ?? 0)} · 摘录不支持 ${esc(coverage.unsupported_count ?? product.unsupported_count ?? 0)}。只影响事件观察，不影响价格、盈利或宏观利率。</div>
       </div>`,
       googleStatus: status,
       dataMode: mode
@@ -234,7 +234,11 @@
     const lanes = sourcesByLane(event.sources);
     const withheld = analysis.withheld || {};
     const conflicts = analysis.conflict_count || 0;
-    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}">
+    const closed = analysis.closed_loop === true;
+    const loopNote = closed
+      ? ""
+      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}">证据不足，不形成方向。${esc(withheld.reason || "")} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
+    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
         <div class="event-meta">
@@ -249,6 +253,7 @@
           ${pill(`superseded ${analysis.superseded_count ?? (event.coverage && event.coverage.superseded_count) ?? 0}`)}
         </div>
       </header>
+      ${loopNote}
       ${answersHtml(event, why)}
       ${causalChainHtml(analysis)}
       ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}
