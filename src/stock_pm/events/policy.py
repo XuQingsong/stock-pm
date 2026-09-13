@@ -146,6 +146,34 @@ def host_of(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def is_https_registrable_host(url: str, root: str) -> bool:
+    """True only for https and a hostname that is exactly root or a subdomain of root."""
+    if not is_safe_public_http_url(url):
+        return False
+    parts = urlsplit(url)
+    if parts.scheme != "https":
+        return False
+    host = (parts.hostname or "").lower().rstrip(".")
+    if host.startswith("www."):
+        host = host[4:]
+    return host == root or host.endswith(f".{root}")
+
+
+def http_redirect_allowed(from_url: str, to_url: str) -> bool:
+    """Do not follow official fetches onto a different registrable host or off https."""
+    if is_https_registrable_host(from_url, "sec.gov"):
+        return is_https_registrable_host(to_url, "sec.gov")
+    if is_https_registrable_host(from_url, "eia.gov"):
+        return is_https_registrable_host(to_url, "eia.gov")
+    if is_https_registrable_host(from_url, "federalreserve.gov"):
+        return is_https_registrable_host(to_url, "federalreserve.gov")
+    return (
+        is_safe_public_http_url(to_url)
+        and urlsplit(to_url).scheme == "https"
+        and host_of(from_url) == host_of(to_url)
+    )
+
+
 def classify_source(url: str, publisher: str = "") -> dict[str, object]:
     host = host_of(url)
     name = (publisher or "").lower()

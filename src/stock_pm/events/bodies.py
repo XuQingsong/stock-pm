@@ -5,11 +5,11 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 from typing import Any
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin
 
 from .evidence import STOP, drop_chrome_lines, excerpt_supports_claim, normalize_evidence_text, select_claim_support_excerpt
 from .feeds import FeedResponse, fetch_feed, strip_markup
-from .policy import host_of, is_safe_public_http_url, sanitize_untrusted
+from .policy import host_of, is_https_registrable_host, sanitize_untrusted
 
 ITEM_LINE_RE = re.compile(r"^Item\s+(\d+\.\d+)\s*[:\-]?\s*(.+)$", re.I)
 ITEM_HEADING_RE = re.compile(
@@ -123,15 +123,12 @@ def excerpt_has_body_substance(excerpt: str, claim: str) -> bool:
 
 def is_allowed_eia_host(url: str) -> bool:
     """https only; hostname is eia.gov or a subdomain of eia.gov."""
-    if not is_safe_public_http_url(url):
-        return False
-    parts = urlsplit(url)
-    if parts.scheme != "https":
-        return False
-    host = (parts.hostname or "").lower().rstrip(".")
-    if host.startswith("www."):
-        host = host[4:]
-    return host == "eia.gov" or host.endswith(".eia.gov")
+    return is_https_registrable_host(url, "eia.gov")
+
+
+def is_allowed_sec_host(url: str) -> bool:
+    """https only; hostname is sec.gov or a subdomain of sec.gov."""
+    return is_https_registrable_host(url, "sec.gov")
 
 
 def extract_sec_index_items(html: str) -> list[str]:
@@ -173,8 +170,12 @@ def extract_sec_primary_document_url(index_html: str, index_url: str) -> str:
         index_html or "",
         flags=re.I,
     )
+    def _abs(href: str) -> str:
+        target = urljoin(index_url or "https://www.sec.gov", href)
+        return target if is_allowed_sec_host(target) else ""
+
     if ix:
-        return urljoin(index_url or "https://www.sec.gov", ix.group(1))
+        return _abs(ix.group(1))
     candidates: list[str] = []
     for href in re.findall(r"""href=["']([^"']+)["']""", index_html or "", flags=re.I):
         low = href.lower()
@@ -186,13 +187,15 @@ def extract_sec_primary_document_url(index_html: str, index_url: str) -> str:
             continue
         if "/archives/edgar/data/" not in low:
             continue
+        if not _abs(href):
+            continue
         candidates.append(href)
     if not candidates:
         return ""
     for href in candidates:
         if re.search(r"8-?k", href, re.I):
-            return urljoin(index_url or "https://www.sec.gov", href)
-    return urljoin(index_url or "https://www.sec.gov", candidates[0])
+            return _abs(href)
+    return _abs(candidates[0])
 
 
 def _is_sec_boilerplate(text: str) -> bool:

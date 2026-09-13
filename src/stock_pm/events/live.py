@@ -31,6 +31,7 @@ from .bodies import (
     extract_sec_primary_facts,
     fetch_official_page,
     is_allowed_eia_host,
+    is_allowed_sec_host,
     is_sec_item_metadata,
     official_html_excerpt,
     reset_body_cache,
@@ -172,7 +173,7 @@ def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
     if items:
         doc.filing_items = items
     primary_url = extract_sec_primary_document_url(html, doc.url)
-    if not primary_url:
+    if not primary_url or not is_allowed_sec_host(primary_url):
         return doc
     primary = fetch_official_page(
         primary_url,
@@ -331,8 +332,8 @@ def _fetch_items(
         etag=etag,
         last_modified=last_modified,
         limiter=limiter,
-        timeout=40 if "sec.gov" in url else 25,
-        retries=3 if "sec.gov" in url else 2,
+        timeout=40 if is_allowed_sec_host(url) else 25,
+        retries=3 if is_allowed_sec_host(url) else 2,
     )
     meta = {
         "status_code": resp.status_code,
@@ -412,7 +413,7 @@ class SecEdgarProvider:
         expected_cik: str | None = None,
     ) -> EventDocument | None:
         url = str(item.get("url") or "")
-        if not is_safe_public_http_url(url) or "sec.gov" not in url.lower():
+        if not is_allowed_sec_host(url):
             return None
         title = strip_markup(str(item.get("title") or ""))
         blob = f"{title} {item.get('summary') or ''} {item.get('entry_id') or ''}"

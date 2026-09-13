@@ -13,10 +13,23 @@ from html import unescape
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 from xml.etree import ElementTree as ET
 
-from .policy import sanitize_untrusted
+from .policy import http_redirect_allowed, sanitize_untrusted
+
+
+class _OfficialHostRedirectHandler(HTTPRedirectHandler):
+    """Follow HTTP redirects only when the next hop stays on the same official host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        current = getattr(req, "full_url", None) or req.get_full_url()
+        if not http_redirect_allowed(current, newurl):
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = build_opener(_OfficialHostRedirectHandler)
 
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
@@ -126,7 +139,7 @@ def fetch_feed(
             limiter.wait()
         req = Request(url, headers=headers, method="GET")
         try:
-            with urlopen(req, timeout=timeout) as resp:
+            with _OPENER.open(req, timeout=timeout) as resp:
                 raw = _decode_body(resp.read(), resp.headers.get("Content-Encoding"))
                 return FeedResponse(
                     url=url,

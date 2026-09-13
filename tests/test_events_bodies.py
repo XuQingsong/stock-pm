@@ -12,11 +12,13 @@ from stock_pm.events.bodies import (
     extract_sec_primary_facts,
     fetch_official_page,
     is_allowed_eia_host,
+    is_allowed_sec_host,
     is_sec_item_metadata,
     official_html_excerpt,
     reset_body_cache,
     resolve_redirect_url,
 )
+from stock_pm.events.policy import http_redirect_allowed
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.exposure import why_relevant
 from stock_pm.events.feeds import FeedResponse
@@ -128,17 +130,92 @@ def test_item_only_filings_are_withheld():
         assert events[0].analysis["withheld"]["status"] != "observable"
 
 
-def test_primary_8k_fact_can_close_and_boilerplate_cannot():
+def test_primary_8k_fact_is_displayable_but_not_closed():
     url = extract_sec_primary_document_url(AAPL_INDEX, "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm")
     assert "/ix?doc=" in url
     assert "a8-kex" not in url
+    assert is_allowed_sec_host(url)
     facts = extract_sec_primary_facts(PRIMARY_FACT_HTML)
     assert facts and "94.0 billion" in facts[0]
     assert extract_sec_primary_facts(PRIMARY_BOILERPLATE_HTML) == []
     events = _closed([_doc(claims=facts, body=facts[0])])
-    assert inspect_closed_loop(events[0])["valid"] is True
-    assert why_relevant(events[0], "AAPL")
-    assert why_relevant(events[0], "XOM") is None
+    event = events[0]
+    row = inspect_closed_loop(event)
+    assert row["valid"] is False
+    assert row["excerpt_ok"] is True
+    assert row["official_ok"] is True
+    assert row["chain_ok"] is False
+    assert event.analysis["closed_loop"] is False
+    assert event.analysis["causal_chain"]["complete"] is False
+    assert event.analysis["filing_fact_only"] is True
+    assert event.analysis["withheld"]["status"] != "observable"
+    assert event.analysis["withheld"]["primary_reason"] == "baseline_missing"
+    gap = classify_evidence_gap(event)
+    assert gap["primary_reason"] == "baseline_missing"
+    assert gap["primary_reason"] != "body_missing"
+    layers = {item["id"]: item for item in event.analysis["causal_chain"]["layers"]}
+    assert "94.0" in (layers["fact"]["text"] or "") or "94.0" in (layers["fact"]["excerpt"] or "")
+    assert layers["fact"]["excerpt"]
+    assert not (layers["change"]["text"] or "").strip()
+    assert (event.analysis["direction"] or {}).get("text") in {None, "", "withheld"}
+    assert any(source.source_url.startswith("https://") and is_allowed_sec_host(source.source_url) for source in event.sources)
+    assert why_relevant(event, "AAPL")
+    assert why_relevant(event, "XOM") is None
+
+
+def test_numeric_8k_sentences_do_not_auto_valid():
+    sentences = (
+        "On July 30, 2026, Apple Inc. appointed a new principal accounting officer.",
+        "Apple Inc. will pay a cash dividend of $0.25 per share on August 14, 2026.",
+        "The company hired 1,200 additional full-time employees during the quarter.",
+        "The Board authorized the repurchase of 40,000,000 shares of common stock.",
+        "Apple Inc. reported quarterly revenue of $94.0 billion for the fiscal quarter ended June 27, 2026, compared with $85.8 billion a year ago.",
+    )
+    for sentence in sentences:
+        events = _closed([_doc(title="8-K - Current report", claims=[sentence], body=sentence)])
+        event = events[0]
+        row = inspect_closed_loop(event)
+        assert row["valid"] is False, sentence
+        assert event.analysis["closed_loop"] is False, sentence
+        assert event.analysis["causal_chain"]["complete"] is False, sentence
+        assert event.analysis["withheld"]["status"] != "observable", sentence
+        gap = classify_evidence_gap(event)
+        assert gap["primary_reason"] != "body_missing", sentence
+        assert event.analysis.get("filing_fact_only") is True, sentence
+        assert gap["primary_reason"] == "baseline_missing", sentence
+
+
+def test_sec_primary_url_hostname_is_strict_https_sec_gov():
+    index = "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm"
+    assert is_allowed_sec_host("https://www.sec.gov/Archives/edgar/data/320193/a.htm")
+    assert is_allowed_sec_host("https://sec.gov/cgi-bin/browse-edgar")
+    assert is_allowed_sec_host("https://efts.sec.gov/LATEST/search-index")
+    assert not is_allowed_sec_host("http://www.sec.gov/Archives/edgar/data/320193/a.htm")
+    assert not is_allowed_sec_host("https://sec.gov.evil.com/Archives/edgar/data/320193/a.htm")
+    assert not is_allowed_sec_host("https://evil.com/sec.gov/Archives/edgar/data/320193/a.htm")
+    assert not is_allowed_sec_host("https://notsec.gov/Archives/edgar/data/320193/a.htm")
+    evil = extract_sec_primary_document_url(
+        '<html><body><a href="https://sec.gov.evil.com/Archives/edgar/data/320193/000032019326000018/aapl-20260730.htm">8-K</a></body></html>',
+        index,
+    )
+    assert evil == ""
+    off = extract_sec_primary_document_url(
+        '<html><body><a href="https://evil.com/Archives/edgar/data/320193/000032019326000018/aapl-8k.htm">8-K</a></body></html>',
+        index,
+    )
+    assert off == ""
+    assert http_redirect_allowed(
+        "https://www.sec.gov/Archives/edgar/data/320193/a.htm",
+        "https://www.sec.gov/ix?doc=/Archives/edgar/data/320193/a.htm",
+    )
+    assert not http_redirect_allowed(
+        "https://www.sec.gov/Archives/edgar/data/320193/a.htm",
+        "https://sec.gov.evil.com/Archives/edgar/data/320193/a.htm",
+    )
+    assert not http_redirect_allowed(
+        "https://www.sec.gov/Archives/edgar/data/320193/a.htm",
+        "https://evil.com/sec.gov/a.htm",
+    )
 
 
 def test_eia_title_h1_and_empty_rss_cannot_masquerade_as_body():
@@ -328,6 +405,14 @@ def test_frozen_pack_integrity_and_exact_counts():
         if event.analysis.get("closed_loop") and not inspect_closed_loop(before_by_id[event.event_id])["valid"]
     ]
     assert {event.event_id for event in gained} == set(pack["gained_event_ids"])
+    assert {event.event_id for event in gained} == {
+        "evt_55733c70cd1dd721",
+        "evt_b39a38314637dcde",
+        "evt_30ab371b5e192e82",
+    }
+    assert all(event.event_type == "energy_supply" for event in gained)
+    assert not any(event.event_type == "company_filing" for event in gained)
+    assert not any(event.event_type == "company_filing" and event.analysis.get("closed_loop") for event in after_events)
     for event in gained:
         excerpt = event.analysis["causal_chain"]["layers"][0]["excerpt"]
         assert excerpt

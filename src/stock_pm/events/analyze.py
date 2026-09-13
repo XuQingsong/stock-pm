@@ -422,10 +422,14 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         sources = list(payload.sources)
         status = payload.status
         claims = list(payload.claims)
+        analysis = payload.analysis or {}
     else:
         sources = list(payload.get("sources") or [])
         status = str(payload.get("status") or "")
         claims = list(payload.get("claims") or [])
+        analysis = payload.get("analysis") if isinstance(payload.get("analysis"), dict) else payload
+        if not isinstance(analysis, dict):
+            analysis = {}
     last_fetched = None
     fetch_error = None
     body_source = None
@@ -450,11 +454,13 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         primary = "body_missing" if not any(item.strip() for item in excerpts) else "claim_not_supported"
     elif not row["exposure_ok"]:
         primary = "no_exposure"
+    elif isinstance(analysis, dict) and analysis.get("filing_fact_only"):
+        primary = "baseline_missing"
     else:
         primary = "chain_incomplete"
     if primary != "no_exposure" and not row["exposure_ok"]:
         secondary.append("no_exposure")
-    if primary != "chain_incomplete" and not row["chain_ok"]:
+    if primary not in {"chain_incomplete", "baseline_missing"} and not row["chain_ok"]:
         secondary.append("chain_incomplete")
     return {
         "primary_reason": primary,
@@ -466,7 +472,12 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
 
 
 def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = None, claims: list[Any] | None = None) -> dict[str, Any]:
-    payload = {"analysis": analysis, "sources": sources or analysis.get("evidence_refs") or [], "claims": claims or []}
+    payload = {
+        "analysis": analysis,
+        "sources": sources or analysis.get("evidence_refs") or [],
+        "claims": claims or [],
+        "event_type": analysis.get("event_type") or "",
+    }
     row = inspect_closed_loop(payload)
     gap = classify_evidence_gap(payload)
     analysis["closed_loop"] = row["valid"]
@@ -527,6 +538,11 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     else:
         change = "相对此前无该事件的基线，市场首次纳入该已确认事实"
         what = "把该事件纳入相关标的的观察清单，不改写无暴露股票的主结论"
+    filing_fact_only = event.event_type == "company_filing" and event.status != "revoked"
+    if filing_fact_only:
+        # This phase has no structured current-vs-history/consensus baseline or filing rule.
+        change = ""
+        what = "已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向"
 
     if not bound_refs:
         analysis = {
@@ -617,6 +633,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         withheld = _withhold("正文摘录不支持当前事实，不形成方向")
     elif not exposures:
         withheld = _withhold("没有行业/个股暴露映射，不形成方向")
+    elif filing_fact_only:
+        withheld = _withhold("已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向")
     else:
         withheld = {
             "status": "observable",
@@ -682,6 +700,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "how_long": horizon,
             "invalidates_when": invalidation,
         },
+        "filing_fact_only": bool(filing_fact_only and fact_supported),
+        "event_type": event.event_type,
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)

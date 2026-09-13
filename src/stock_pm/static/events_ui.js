@@ -80,6 +80,9 @@
         if (layer.id === "fact" && layer.excerpt) {
           extra.push(`<div class="subline" data-fact-excerpt="1">原文：${esc(layer.excerpt)}</div>`);
         }
+        if (layer.id === "change" && !(layer.text || "").trim() && (analysis.filing_fact_only || (analysis.evidence_gap && analysis.evidence_gap.primary_reason === "baseline_missing"))) {
+          extra.push(`<div class="subline" data-baseline-missing="1">缺少可比较的当前值 vs 历史/consensus 基准，Change 未闭环。</div>`);
+        }
         if (layer.id === "expectation") {
           extra.push(`<div class="subline">方向 ${esc(layer.direction || "—")} · 期限 ${esc(layer.horizon || "—")} · 置信度 ${esc(layer.confidence || "—")}</div>`);
         }
@@ -92,7 +95,7 @@
         }
         return `<li class="event-causal-layer" data-causal-layer="1" data-layer="${esc(layer.id)}" data-layer-id="${esc(layer.layer_id || "")}" data-cites="${esc(cites)}">
           <div class="chain-kicker">${esc(LAYER_LABELS[layer.id] || layer.id)}</div>
-          <div data-layer-text="1">${esc(layer.text || "")}</div>
+          <div data-layer-text="1">${esc((layer.text || "").trim() ? layer.text : "—")}</div>
           ${layer.evidence_refs && layer.evidence_refs.length ? `<div class="evidence-refs">证据：${refsHtml(layer.evidence_refs)}</div>` : ""}
           ${extra.join("")}
         </li>`;
@@ -243,10 +246,13 @@
     const filingNote = filingItems.length
       ? `<p class="subline" data-filing-items="1">申报栏目（发现/元数据，不是正文事实）：${esc(filingItems.join("；"))}</p>`
       : "";
+    const factOnly = analysis.filing_fact_only === true || reasonCode === "baseline_missing";
     const loopNote = closed
       ? ""
-      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
-    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}">
+      : factOnly
+        ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`
+        : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
+    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
         <div class="event-meta">
