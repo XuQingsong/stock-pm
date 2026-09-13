@@ -150,6 +150,7 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 
 - **阶段一**：只建立本内核与 Golden Tests A–AM。不含 UI、API、schema migration、外部数据源。
 - **阶段二**：只把本内核接到现有 `/stock/{symbol}` 页面，并增加只读 `GET /api/stock/{symbol}/decision`。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap。页面链必须含独立 Tension，不得把 Confirmation 与 Tension 合并。合成 A/B/C 必须 `ENABLE_DECISION_PREVIEW=true` 且 `APP_ENV` 为 development/test/local，页面标注「合成演示数据」；缺省或生产环境绝不返回 fixture。
+- **阶段三-A**：只增加分级判断（L0/L1/L2/L3）与按链隔离的降级矩阵。不接新数据源、不做数据健康页、不做预测。缺口只降低对应链；overall 取最高可用且不冲突的链级别，没有 L3 不得合成完整个股方向。合成 L1/L2/L3/CONFLICT 与 A/B/C 共用 preview 双条件门禁。
 - **明确不含**：schema migration、Alpha Vantage / SEC / 新闻等新外部数据源、预测价格/概率、Outcome 回检、多周期、自动学习。不合并阶段 1 Draft。
 
 数据集时钟只使用 `observed_at` / `ingested_at` / `synced_at` / `source_as_of` / 已成交 `bar_time`。`event_time`、`release_date`、`fiscal_period` 是事件或计划时间，不得推进时钟；无可靠观察时间返回 `clock_insufficient`，不得用 `date.today()` 或未来日程代替。

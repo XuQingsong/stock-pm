@@ -617,6 +617,25 @@ def test_stock_decision_live_and_preview(monkeypatch):
     assert scene_b["what_changed"]["thesis_changed"] is False
     scene_c = c.get("/api/stock/AAPL/decision?preview=C").json()
     assert scene_c["no_material_change"] is True
+    l1 = c.get("/api/stock/NVDA/decision?preview=L1").json()
+    assert l1["preview"] == "L1"
+    assert l1["overall"]["level"] == "L1"
+    assert l1["can_form_direction"] is False
+    l2 = c.get("/api/stock/NVDA/decision?preview=L2").json()
+    assert l2["preview"] == "L2"
+    assert l2["overall"]["level"] == "L2"
+    assert l2["can_form_direction"] is False
+    l3 = c.get("/api/stock/NVDA/decision?preview=L3").json()
+    assert l3["overall"]["level"] == "L3"
+    conflict = c.get("/api/stock/NVDA/decision?preview=CONFLICT").json()
+    assert conflict["overall"]["status"] == "conflict"
+    assert conflict["overall"]["conflict"] is True
+    assert conflict["can_form_direction"] is False
+    l0 = c.get("/api/stock/NVDA/decision?preview=L0").json()
+    assert l0["preview"] == "L0"
+    assert l0["overall"]["level"] == "L0"
+    assert l0["overall"]["status"] == "unavailable"
+    assert l0["cannot_form_judgment"] is True
 
 
 @pytest.mark.parametrize(
@@ -643,7 +662,7 @@ def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env,
     if flag is not None:
         monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
     c = client(monkeypatch)
-    for scene in ("A", "B", "C"):
+    for scene in ("A", "B", "C", "L0", "L1", "L2", "L3", "CONFLICT"):
         body = c.get(f"/api/stock/NVDA/decision?preview={scene}").json()
         assert body["synthetic"] is False, (env, flag, scene)
         assert body.get("preview") in (None, "")
