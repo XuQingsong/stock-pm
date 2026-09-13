@@ -221,7 +221,7 @@
         ${providerPill(coverage, "sec_edgar")}
         ${providerPill(coverage, "federal_reserve")}
         ${providerPill(coverage, "eia_press")}
-        <div class="subline">${esc(conclude.reason || coverage.note || "")} 有效结论 ${esc(coverage.valid_conclusion_count ?? product.valid_conclusion_count ?? 0)} · 不形成方向 ${esc(coverage.withheld_count ?? product.withheld_count ?? 0)} · 摘录不支持 ${esc(coverage.unsupported_count ?? product.unsupported_count ?? 0)}。只影响事件观察，不影响价格、盈利或宏观利率。</div>
+        <div class="subline">${esc(conclude.reason || coverage.note || "")} ${esc(evidence.detail || "摘录不支持是不形成方向的原因子集，三项不是互斥总数。")} 只影响事件观察，不影响价格、盈利或宏观利率。</div>
       </div>`,
       googleStatus: status,
       dataMode: mode

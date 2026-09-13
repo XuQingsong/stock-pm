@@ -315,6 +315,7 @@ def test_split_excerpt_and_url_is_not_evidence_sufficient():
     analyze_event(only_url)
     status = _product_status([only_excerpt, only_url], provider_health_gate=False, note="split")
     assert status["evidence_sufficiency"]["ok"] is False
+    assert status["evidence_sufficiency"]["label"] == "证据不足"
     assert status["can_conclude"]["ok"] is False
     assert status["valid_conclusion_count"] == 0
 
@@ -337,10 +338,41 @@ def test_after_downgrade_one_valid_event_allows_e8_e10():
     assert summary["unsupported_count"] == 1
     status = _product_status([good, bad], provider_health_gate=False, note="ok")
     assert status["evidence_sufficiency"]["ok"] is True
+    assert status["evidence_sufficiency"]["label"] == "部分事件证据充分"
+    assert "原因子集" in status["evidence_sufficiency"]["detail"]
+    assert "有效结论 1" in status["evidence_sufficiency"]["detail"]
+    assert "不形成方向 1" in status["evidence_sufficiency"]["detail"]
+    assert "摘录不支持 1" in status["evidence_sufficiency"]["detail"]
     assert status["can_conclude"]["ok"] is True
     assert status["valid_conclusion_count"] == 1
     assert status["withheld_count"] == 1
     assert status["unsupported_count"] == 1
+
+
+def test_product_evidence_copy_has_three_grades():
+    from stock_pm.events.service import _evidence_sufficiency_copy
+
+    full_label, full_detail = _evidence_sufficiency_copy(valid=2, withheld=0, unsupported=0)
+    assert full_label == "证据充分"
+    assert "有效结论 2" in full_detail
+    assert "原因子集" in full_detail
+    partial_label, partial_detail = _evidence_sufficiency_copy(valid=31, withheld=92, unsupported=44)
+    assert partial_label == "部分事件证据充分"
+    assert "有效结论 31" in partial_detail
+    assert "不形成方向 92" in partial_detail
+    assert "摘录不支持 44" in partial_detail
+    empty_label, _ = _evidence_sufficiency_copy(valid=0, withheld=3, unsupported=2)
+    assert empty_label == "证据不足"
+    good = build_events([_rate_event(OFFICIAL, GOOD_BODY)])[0]
+    analyze_event(good)
+    full = _product_status([good], provider_health_gate=True, note="ok")
+    assert full["valid_conclusion_count"] == 1
+    assert full["withheld_count"] == 0
+    assert full["unsupported_count"] == 0
+    assert full["evidence_sufficiency"]["label"] == "证据充分"
+    none = _product_status([], provider_health_gate=False, note="empty")
+    assert none["evidence_sufficiency"]["label"] == "证据不足"
+    assert none["valid_conclusion_count"] == 0
 
 
 def test_fixture_iran_chain_is_not_mechanical_copy():
