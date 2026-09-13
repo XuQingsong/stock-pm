@@ -410,7 +410,10 @@ def test_frozen_pack_integrity_and_exact_counts():
         "evt_b39a38314637dcde",
         "evt_30ab371b5e192e82",
     }
-    assert all(event.event_type == "energy_supply" for event in gained)
+    assert all(
+        any(is_allowed_eia_host(source.source_url) for source in event.sources)
+        for event in gained
+    )
     assert not any(event.event_type == "company_filing" for event in gained)
     assert not any(event.event_type == "company_filing" and event.analysis.get("closed_loop") for event in after_events)
     for event in gained:
