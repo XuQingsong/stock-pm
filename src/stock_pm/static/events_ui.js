@@ -246,10 +246,9 @@
   };
 
   const cacheAgeLabel = (row) => {
-    if (row && row.cache_age_days != null && row.cache_age_days !== "") return `${row.cache_age_days}天`;
-    const stamp = row && (row.last_success_at || row.fetched_at);
-    if (!stamp) return "";
-    const then = Date.parse(stamp);
+    if (!row || !row.last_success_at) return "";
+    if (row.cache_age_days != null && row.cache_age_days !== "") return `${row.cache_age_days}天`;
+    const then = Date.parse(row.last_success_at);
     if (!Number.isFinite(then)) return "";
     return `${((Date.now() - then) / 86400000).toFixed(1)}天`;
   };
