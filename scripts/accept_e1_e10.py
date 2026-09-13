@@ -131,11 +131,11 @@ def capture_pages() -> dict:
                     vixRole: (document.querySelector('[data-vix-role]') && document.querySelector('[data-vix-role]').getAttribute('data-vix-role')) || '',
                     banner: (document.querySelector('.event-mode-banner') && document.querySelector('.event-mode-banner').innerText) || '',
                     replay: (document.querySelector('[data-replay]') && document.querySelector('[data-replay]').getAttribute('data-replay')) || '',
-                    timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({
+                    timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({{
                       status: n.getAttribute('data-timeline-status') || '',
                       polarity: n.getAttribute('data-polarity') || '',
                       what: n.getAttribute('data-what-changes') || n.innerText
-                    }))
+                    }}))
                   }};
                 }})()"""
             ) or {}
@@ -191,15 +191,24 @@ def capture_pages() -> dict:
 
     OUT.mkdir(parents=True, exist_ok=True)
     shots = {}
-    shots["center"] = wait_ready(f"{BASE}/events", "#event-center")
-    clip(OUT / "event-center.png", "#event-center")
-    for symbol in ("NVDA", "XOM", "JPM", "AAPL"):
-        shots[symbol] = wait_ready(f"{BASE}/stock/{symbol}", "#event-body")
-        clip(OUT / f"{symbol.lower()}-events.png", "#event-module")
-    ws.close()
-    if proc:
-        proc.terminate()
-    return shots
+    try:
+        shots["center"] = wait_ready(f"{BASE}/events", "#event-center")
+        clip(OUT / "event-center.png", "#event-center")
+        for symbol in ("NVDA", "XOM", "JPM", "AAPL"):
+            shots[symbol] = wait_ready(f"{BASE}/stock/{symbol}", "#event-body")
+            clip(OUT / f"{symbol.lower()}-events.png", "#event-module")
+        return shots
+    finally:
+        try:
+            ws.close()
+        except Exception:
+            pass
+        if proc:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                proc.kill()
 
 
 def scan_incremental_secrets() -> dict:
