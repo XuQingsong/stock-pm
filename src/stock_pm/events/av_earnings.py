@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from stock_pm.config import Settings
 from stock_pm.fetch import FetchError, json_get, utc_now
 
+from .bodies import is_allowed_sec_host
 from .policy import events_data_mode
 from .earnings import (
     AV_EARNINGS_SOURCE,
@@ -18,13 +19,16 @@ from .earnings import (
     parse_number,
     reset_earnings_registry,
 )
-from .feeds import RateLimiter
+from .feeds import RateLimiter, fetch_feed, parse_feed_items
 from .types import EventDocument
 
 
 AV_API = "https://www.alphavantage.co/query"
 AV_ENV = "ALPHA_VANTAGE_API_KEY"
+SEC_COMPANY_ATOM = "https://www.sec.gov/cgi-bin/browse-edgar"
+DEFAULT_SEC_UA = "stock-pm research AdminContact@example.com"
 _LIMITER = RateLimiter(1.1)
+_SEC_LIMITER = RateLimiter(0.15)
 WATCH_SYMBOLS = ("AAPL", "NVDA", "XOM", "JPM")
 WATCH_CIKS = {
     "AAPL": "0000320193",
@@ -32,6 +36,7 @@ WATCH_CIKS = {
     "XOM": "0000034088",
     "JPM": "0000019617",
 }
+_SEC_ATOM_CACHE: dict[str, list[dict[str, Any]]] = {}
 
 
 def av_http_source(function: str, symbol: str, **extra: str) -> str:
@@ -91,10 +96,75 @@ def parse_av_earnings(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def sec_company_8k_url(symbol: str) -> str:
+    """Company 8-K search page. Not a citation of a specific earnings print."""
     cik = WATCH_CIKS.get(symbol.upper(), "")
     if not cik:
         return ""
-    return f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=8-K&owner=include&count=8"
+    return f"{SEC_COMPANY_ATOM}?action=getcompany&CIK={cik}&type=8-K&owner=include&count=8"
+
+
+def company_8k_atom_url(symbol: str) -> str:
+    cik = WATCH_CIKS.get(symbol.upper(), "")
+    if not cik:
+        return ""
+    return (
+        f"{SEC_COMPANY_ATOM}?action=getcompany&CIK={cik}&type=8-K"
+        "&dateb=&owner=include&start=0&count=20&output=atom"
+    )
+
+
+def pick_sec_8k_url(items: list[dict[str, Any]], reported_date: str) -> str:
+    """Same calendar day, current 8-K only. Ambiguous or amended filings stay unmatched."""
+    day = str(reported_date or "")[:10]
+    if len(day) != 10:
+        return ""
+    hits: list[str] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        published = str(item.get("published_at") or "")[:10]
+        title = str(item.get("title") or "")
+        url = str(item.get("url") or "")
+        if published != day:
+            continue
+        if "8-K/A" in title.upper() or "[Amend]" in title:
+            continue
+        if not url.startswith("https://www.sec.gov/Archives/edgar/"):
+            continue
+        if url not in hits:
+            hits.append(url)
+    if len(hits) != 1:
+        return ""
+    return hits[0]
+
+
+def fetch_company_8k_items(symbol: str, *, settings: Settings | None = None) -> list[dict[str, Any]]:
+    key = symbol.upper()
+    if key in _SEC_ATOM_CACHE:
+        return list(_SEC_ATOM_CACHE[key])
+    url = company_8k_atom_url(key)
+    if not url:
+        return []
+    user_agent = (
+        getattr(settings or Settings(), "sec_edgar_user_agent", None) or DEFAULT_SEC_UA
+    ).strip()
+    resp = fetch_feed(
+        url,
+        user_agent=user_agent,
+        extra_headers={"Host": "www.sec.gov"},
+        limiter=_SEC_LIMITER,
+        timeout=40 if is_allowed_sec_host(url) else 25,
+        retries=2,
+    )
+    if not resp.ok:
+        return []
+    rows = parse_feed_items(resp.body, base_url=url)
+    _SEC_ATOM_CACHE[key] = rows
+    return list(rows)
+
+
+def match_sec_8k_for_print(symbol: str, reported_date: str, *, settings: Settings | None = None) -> str:
+    return pick_sec_8k_url(fetch_company_8k_items(symbol, settings=settings), reported_date)
 
 
 class AvEarningsProvider:
@@ -150,7 +220,10 @@ class AvEarningsProvider:
                     fetched_at=fetched_at,
                     source_url=AV_EARNINGS_SOURCE.format(symbol=symbol),
                 )
-                rows.extend(documents_from_evidence(evidence, sec_url=sec_company_8k_url(symbol)))
+                sec_url = match_sec_8k_for_print(
+                    symbol, evidence.published_at or "", settings=self.settings
+                )
+                rows.extend(documents_from_evidence(evidence, sec_url=sec_url))
             except FetchError:
                 continue
         return rows

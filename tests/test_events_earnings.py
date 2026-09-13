@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from stock_pm.events.analyze import analyze_event, classify_evidence_gap, inspect_closed_loop
-from stock_pm.events.av_earnings import AvEarningsProvider, parse_av_earnings
+from stock_pm.events.av_earnings import AvEarningsProvider, parse_av_earnings, pick_sec_8k_url
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.earnings import (
     EPS_UNIT,
@@ -300,6 +300,35 @@ def test_ui_shows_actual_prior_consensus_and_degraded_copy():
     assert 'data-earnings-field="consensus"' in ui
     assert "本链缺失" in ui
     assert "只降级本事件，不阻断其他事件" in ui
+
+
+def test_sec_8k_match_requires_unique_same_day_current_filing():
+    day = "2026-07-30"
+    hit = {
+        "title": "8-K - Current report",
+        "published_at": "2026-07-30T20:30:28+00:00",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+    }
+    assert pick_sec_8k_url([hit], day) == hit["url"]
+    amend = {
+        "title": "8-K/A [Amend] - Current report",
+        "published_at": "2026-07-30T21:00:00+00:00",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
+    }
+    assert pick_sec_8k_url([hit, amend], day) == hit["url"]
+    other = {
+        "title": "8-K - Current report",
+        "published_at": "2026-07-30T22:00:00+00:00",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000099/0000320193-26-000099-index.htm",
+    }
+    assert pick_sec_8k_url([hit, other], day) == ""
+    assert pick_sec_8k_url([hit], "2026-07-31") == ""
+    browse = {
+        "title": "8-K - Current report",
+        "published_at": day,
+        "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=8-K",
+    }
+    assert pick_sec_8k_url([browse], day) == ""
 
 
 def test_parse_av_earnings_rejects_non_list():
