@@ -69,6 +69,35 @@
     what_changes: "What changes · 什么变了"
   };
 
+  const earningsPrintHtml = (row) => {
+    if (!row) return "";
+    const missing = [];
+    if (row.actual == null) missing.push("actual");
+    if (row.prior_year_actual == null) missing.push("prior");
+    if (row.consensus == null) missing.push("consensus");
+    if (!row.yoy && row.yoy !== 0) missing.push("yoy");
+    if (!row.surprise && row.surprise !== 0) missing.push("surprise");
+    const fmt = (value) => (value == null || value === "" ? "—" : esc(String(value)));
+    const pct = (value) => (value == null || value === "" ? "—" : `${(Number(value) * 100).toFixed(2)}%`);
+    const href = safeUrl(row.source_url);
+    return `<section class="earnings-print" data-earnings-print="1" data-earnings-complete="${row.gap ? "0" : "1"}" data-earnings-gap="${esc(row.gap || "")}">
+      <h4>结构化财报对照</h4>
+      <div class="earnings-grid">
+        <div data-earnings-field="actual"><span>Actual</span><b>${fmt(row.actual)}</b></div>
+        <div data-earnings-field="prior"><span>Prior</span><b>${fmt(row.prior_year_actual)}</b></div>
+        <div data-earnings-field="consensus"><span>Consensus</span><b>${fmt(row.consensus)}</b></div>
+        <div data-earnings-field="yoy"><span>YoY</span><b>${pct(row.yoy)}</b></div>
+        <div data-earnings-field="surprise"><span>Surprise</span><b>${pct(row.surprise)}</b></div>
+        <div data-earnings-field="unit"><span>Unit / Currency</span><b>${esc(row.unit || "—")} · ${esc(row.currency || "—")}</b></div>
+      </div>
+      <p class="subline">期间 ${esc(row.fiscal_period || "—")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 规则 ${esc(row.rule_id || "—")}</p>
+      <p class="subline">公式：${esc((row.yoy_inputs && row.yoy_inputs.formula) || "—")} ； ${esc((row.surprise_inputs && row.surprise_inputs.formula) || "—")}</p>
+      ${href ? `<div class="evidence-refs">来源：${sourceLink(href, row.provider || "earnings")}</div>` : "<p class='subline'>缺少可点击来源。</p>"}
+      ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本链缺失：${esc(missing.join(" / "))}。只降级本事件，不阻断其他事件。</p>` : ""}
+      ${(row.transcript_excerpts || []).map((item) => `<p class="subline" data-transcript-excerpt="1">纪要 ${esc(item.quarter || "")} · ${esc(item.speaker || "")}：${esc(item.content || "")}${item.source_url ? ` <a class="source-link" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>` : ""}</p>`).join("")}
+    </section>`;
+  };
+
   const causalChainHtml = (analysis) => {
     const chain = (analysis && analysis.causal_chain) || {};
     const layers = chain.layers || [];
@@ -246,6 +275,8 @@
     const filingNote = filingItems.length
       ? `<p class="subline" data-filing-items="1">申报栏目（发现/元数据，不是正文事实）：${esc(filingItems.join("；"))}</p>`
       : "";
+    const earnings = analysis.earnings_evidence || null;
+    const earningsHtml = earningsPrintHtml(earnings);
     const factOnly = analysis.filing_fact_only === true || reasonCode === "baseline_missing";
     const loopNote = closed
       ? ""
@@ -269,6 +300,7 @@
       </header>
       ${loopNote}
       ${filingNote}
+      ${earningsHtml}
       ${answersHtml(event, why)}
       ${causalChainHtml(analysis)}
       ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}

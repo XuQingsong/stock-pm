@@ -122,6 +122,12 @@
 .source-lane[data-lane="opinion"]{border-color:#e6c37a;background:#fffaf0}
 .source-lane h4{margin:0 0 6px;font-size:12px}
 .source-row,.claim-row,.exposure-row{margin:6px 0;font-size:13px}
+.earnings-print{margin:10px 0;padding:10px;border:1px solid #86d3b8;border-radius:8px;background:#f3fbf7}
+.earnings-print h4{margin:0 0 8px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#0f766e}
+.earnings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.earnings-grid div{background:#fff;border-radius:8px;padding:8px}
+.earnings-grid span{display:block;color:var(--muted);font-size:11px}
+.earnings-print[data-earnings-complete="0"]{border-color:#f1d9a0;background:#fff8f1}
 .event-answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:8px 0}
 .event-answers div{background:#f4f7fa;border-radius:8px;padding:8px}
 .event-answers span{display:block;color:var(--muted);font-size:11px}

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .bodies import is_sec_item_metadata
+from .earnings import earnings_for_event, implication_text
 from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
@@ -456,11 +457,13 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         primary = "no_exposure"
     elif isinstance(analysis, dict) and analysis.get("filing_fact_only"):
         primary = "baseline_missing"
+    elif isinstance(analysis, dict) and (analysis.get("earnings_evidence") or {}).get("gap"):
+        primary = str(analysis["earnings_evidence"]["gap"])
     else:
         primary = "chain_incomplete"
     if primary != "no_exposure" and not row["exposure_ok"]:
         secondary.append("no_exposure")
-    if primary not in {"chain_incomplete", "baseline_missing"} and not row["chain_ok"]:
+    if primary not in {"chain_incomplete", "baseline_missing", "period_mismatch", "stale_estimate", "undefined_change"} and not row["chain_ok"]:
         secondary.append("chain_incomplete")
     return {
         "primary_reason": primary,
@@ -538,9 +541,23 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     else:
         change = "相对此前无该事件的基线，市场首次纳入该已确认事实"
         what = "把该事件纳入相关标的的观察清单，不改写无暴露股票的主结论"
+    earnings_row = earnings_for_event(event) if event.event_type == "company_earnings" else None
     filing_fact_only = event.event_type == "company_filing" and event.status != "revoked"
-    if filing_fact_only:
-        # This phase has no structured current-vs-history/consensus baseline or filing rule.
+    if earnings_row and earnings_row.complete():
+        change = (
+            f"YoY {earnings_row.yoy:+.2%} = ({earnings_row.actual} - {earnings_row.prior_year_actual}) "
+            f"/ {earnings_row.prior_year_actual}; surprise {earnings_row.surprise:+.2%} = "
+            f"({earnings_row.actual} - {earnings_row.consensus}) / abs({earnings_row.consensus})"
+        )
+        what = (
+            "下一份可观察财报、共识修订或官方更正将改写该盈利含义。"
+            f"规则 {earnings_row.rule_id}。股价方向与价格区间对本阶段仍 withheld。"
+        )
+    elif earnings_row:
+        change = ""
+        what = "已获得部分结构化财报字段；缺少可对齐基准或分母不可用，因此不形成盈利含义"
+    elif filing_fact_only:
+        # Generic 8-K sentences stay Fact-only. Do not restore watch conclusions.
         change = ""
         what = "已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向"
 
@@ -601,6 +618,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "vix_risk": "VIX 只确认风险状态，经风险溢价放大，不直接推个股涨跌",
         "gold_wti": "商品价格事实 → 对应商品链，不跨链复制",
         "company_filing": "公司原文公告只传导到该主体，不复制到无关股票",
+        "company_earnings": "结构化实际值相对上年同期与共识的变化只传导到该发行人，不复制宏观事件",
     }.get(event.event_type, "仅在有行业映射和公司暴露时传导")
 
     exposures = attach_exposures(event, wanted)
@@ -620,6 +638,10 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         direction_hint = "pressure"
         horizon = "days_to_weeks"
         invalidation = "若官方确认海峡通行恢复或撤回中断预测，则该影响链失效"
+    elif earnings_row and earnings_row.complete():
+        direction_hint = earnings_row.implication or "withheld"
+        horizon = "until_next_earnings"
+        invalidation = "若公司重述、后续 8-K/10-Q 更正或供应商撤回该期实际值/共识，则该盈利含义失效"
     else:
         direction_hint = "pressure" if event.severity in {"high", "critical"} else "watch"
     confirmed_text, fact_excerpt, fact_supported = _supporting_fact(
@@ -633,12 +655,18 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         withheld = _withhold("正文摘录不支持当前事实，不形成方向")
     elif not exposures:
         withheld = _withhold("没有行业/个股暴露映射，不形成方向")
+    elif earnings_row and not earnings_row.complete():
+        withheld = _withhold("结构化财报链不完整，不形成盈利含义")
     elif filing_fact_only:
         withheld = _withhold("已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向")
     else:
         withheld = {
             "status": "observable",
-            "reason": "可观察传导方向/期限，不是个股交易指令或价格区间",
+            "reason": (
+                implication_text(earnings_row)
+                if earnings_row and earnings_row.complete()
+                else "可观察传导方向/期限，不是个股交易指令或价格区间"
+            ),
             "direction": direction_hint,
             "horizon": horizon,
             "percent_forecast": None,
@@ -702,6 +730,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         },
         "filing_fact_only": bool(filing_fact_only and fact_supported),
         "event_type": event.event_type,
+        "earnings_evidence": earnings_row.as_dict() if earnings_row else None,
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)
