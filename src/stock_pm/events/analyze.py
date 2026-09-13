@@ -4,21 +4,27 @@ from __future__ import annotations
 
 from typing import Any
 
+from .evidence import current_claims, evolution_path, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
-from .types import TrustedEvent
+from .types import EventClaim, TrustedEvent
 
 
 DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL")
 
 
-def _refs(event: TrustedEvent, *, facts_only: bool = False) -> list[dict[str, str]]:
+def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool = False) -> list[dict[str, str]]:
     rows = []
+    current_urls = {row.source_url for row in current_claims(event)} if current_only else None
     for source in event.sources:
+        if getattr(source, "evidence_role", "event_fact") == "regime_catalog":
+            continue
         if facts_only and source.fact_or_opinion != "fact":
             continue
         if source.content_type == "aggregator":
             continue
         if source.content_type == "research_opinion":
+            continue
+        if current_urls is not None and source.source_url not in current_urls:
             continue
         rows.append(
             {
@@ -28,6 +34,8 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False) -> list[dict[str, st
                 "source_tier": str(source.source_tier),
                 "content_type": source.content_type,
                 "fact_or_opinion": source.fact_or_opinion,
+                "document_role": getattr(source, "document_role", None),
+                "published_at": source.published_at,
             }
         )
     return rows
@@ -55,29 +63,61 @@ def _bound(text: str | None, refs: list[dict[str, str]]) -> dict[str, Any]:
     return {"text": text, "evidence_refs": list(refs)}
 
 
+def _as_of_window(left: EventClaim, right: EventClaim, *, days: int = 14) -> bool:
+    from datetime import datetime
+
+    raw = [left.observed_at or left.valid_from, right.observed_at or right.valid_from]
+    stamps = []
+    for item in raw:
+        if not item:
+            return False
+        try:
+            stamps.append(datetime.fromisoformat(str(item).replace("Z", "+00:00")))
+        except ValueError:
+            return False
+    return abs((stamps[0] - stamps[1]).days) <= days
+
+
 def _conflicts(event: TrustedEvent) -> list[dict[str, str]]:
-    support = [row for row in event.claims if row.polarity == "supports"]
-    contra = [row for row in event.claims if row.polarity == "contradicts"]
+    """Only contemporaneous, different-publisher contradictions count.
+
+    Same-publisher sequential forecasts are supersession, not conflict.
+    """
+    live = current_claims(event)
+    support = [row for row in live if row.polarity == "supports"]
+    contra = [row for row in live if row.polarity == "contradicts"]
     rows = []
-    if support and contra:
-        rows.append(
-            {
-                "code": "claim_conflict",
-                "text": "同一事件存在互相矛盾的 claim，降低置信度，不把任一侧写成已定价方向",
-            }
-        )
+    for left in support:
+        for right in contra:
+            if publisher_key(left.publisher, left.source_url) == publisher_key(right.publisher, right.source_url):
+                continue
+            if not _as_of_window(left, right):
+                continue
+            rows.append(
+                {
+                    "code": "claim_conflict",
+                    "text": "同一 as-of 窗口内不同发布方对同一可比较 claim 冲突，降低当前置信度，不把任一侧写成已定价方向",
+                }
+            )
+            return rows
     return rows
 
 
 def confidence_rule(event: TrustedEvent) -> dict[str, Any]:
-    official = [row for row in event.sources if row.source_tier == 1]
+    official = [
+        row
+        for row in event.sources
+        if row.source_tier == 1 and getattr(row, "evidence_role", "event_fact") != "regime_catalog"
+    ]
     media = [row for row in event.sources if row.source_tier == 2]
+    metrics = source_metrics(event.sources, event.claims)
+    independent = int(metrics.get("independent_publisher_count") or 0)
     conflicts = _conflicts(event)
     if event.status == "revoked":
         result = "revoked"
     elif conflicts:
         result = "low"
-    elif official and media:
+    elif official and media and independent >= 2:
         result = "high"
     elif official:
         result = "medium"
@@ -90,6 +130,10 @@ def confidence_rule(event: TrustedEvent) -> dict[str, Any]:
         "conflict_count": len(conflicts),
         "tier1_count": len(official),
         "tier2_count": len(media),
+        "independent_publisher_count": independent,
+        "document_count": metrics.get("document_count"),
+        "publisher_count": metrics.get("publisher_count"),
+        "superseded_count": metrics.get("superseded_count"),
         "result": result,
     }
 
@@ -112,18 +156,26 @@ def _withhold(reason: str) -> dict[str, Any]:
 def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> dict[str, Any]:
     wanted = [item.upper() for item in (symbols or DISPLAY_SYMBOLS)]
     official_refs = [row for row in _refs(event, facts_only=True) if row["content_type"] == "official_fact"]
+    current_official = [row for row in _refs(event, facts_only=True, current_only=True) if row["content_type"] == "official_fact"]
     fact_refs = _refs(event, facts_only=True)
     all_refs = _refs(event)
     opinion_refs = _opinion_refs(event)
     conflicts = _conflicts(event)
     confidence = _confidence(event)
     bound_refs = official_refs or fact_refs or all_refs
+    current_refs = current_official or official_refs or bound_refs
+    path = evolution_path(event)
+    live_claims = sorted(current_claims(event), key=lambda row: row.observed_at or row.valid_from or "")
+    latest_claim = live_claims[-1] if live_claims else None
     if event.status == "revoked":
         change = "官方/后续报道撤销或否定先前表述"
         what = "撤销后主结论回到事件发生前的观察状态"
+    elif path:
+        change = "官方预测基线随事实演化：" + " → ".join(path)
+        what = " → ".join(path) + "。旧预测保留在时间线并由后续官方预测替代，不作为当前冲突。"
     elif event.status == "updated":
-        change = "同一事件出现更新报道，刷新时间线，不重复制造一条新影响结论"
-        what = "更新时间线与失效条件，不重复叠加一条新方向"
+        change = "同一事件出现后续官方文档，刷新时间线"
+        what = "单发布方多文档进入同一时间线，不视为独立多源确认，也不重复叠加一条新方向"
     else:
         change = "相对此前无该事件的基线，市场首次纳入该已确认事实"
         what = "把该事件纳入相关标的的观察清单，不改写无暴露股票的主结论"
@@ -172,55 +224,78 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     exposures = attach_exposures(event, wanted)
     direction = None
     horizon = event.duration
+    invalidation = event.invalidation
+    latest_phase = infer_phase(latest_claim.text) if latest_claim else (path[-1] if path else None)
+    if (path and path[-1] == "重开/供应恢复") or latest_phase == "reopen_supply":
+        direction_hint = "relief"
+        horizon = "weeks_to_months"
+        invalidation = "若霍尔木兹再次中断或 EIA 撤回供应恢复预测，则该演化失效"
+    elif (path and path[-1] == "需求缓冲") or latest_phase == "demand_buffer":
+        direction_hint = "watch"
+        horizon = "weeks_to_months"
+        invalidation = "若需求回升使价格缓冲失效或中断扩大，则该观察失效"
+    elif (path and path[-1] == "中断") or latest_phase == "disruption":
+        direction_hint = "pressure"
+        horizon = "days_to_weeks"
+        invalidation = "若官方确认海峡通行恢复或撤回中断预测，则该影响链失效"
+    else:
+        direction_hint = "pressure" if event.severity in {"high", "critical"} else "watch"
     if confidence in {"insufficient", "revoked"} or not official_refs:
         withheld = _withhold("缺少 Tier 1 官方事实或事件已撤销，不输出方向")
     elif conflicts:
-        withheld = _withhold("矛盾 claim 存在，方向 withhold")
+        withheld = _withhold("同一 as-of 窗口存在不同发布方冲突 claim，方向 withhold")
     else:
         withheld = {
             "status": "observable",
             "reason": "可观察传导方向/期限，不是个股交易指令或价格区间",
-            "direction": "pressure" if event.severity in {"high", "critical"} else "watch",
+            "direction": direction_hint,
             "horizon": horizon,
             "percent_forecast": None,
             "price_target": None,
         }
         direction = withheld["direction"]
 
+    confirmed_text = (latest_claim.text if latest_claim else event.canonical_title)
     analysis = {
         "confirmed_facts": [
             {
-                "text": event.canonical_title,
-                "evidence_refs": official_refs or bound_refs[:1],
+                "text": confirmed_text,
+                "evidence_refs": current_refs[:1] or official_refs[:1] or bound_refs[:1],
             }
         ],
-        "change_vs_baseline": _bound(change, bound_refs),
-        "mechanism": _bound(mechanism, bound_refs),
+        "change_vs_baseline": _bound(change, current_refs or bound_refs),
+        "mechanism": _bound(mechanism, official_refs or bound_refs),
         "affected_markets": sorted({row["channel"] for row in exposures}) or ["market_background"],
         "exposures": exposures,
-        "direction": _bound(direction, bound_refs if direction else []),
-        "horizon": _bound(horizon, bound_refs),
-        "confidence": _bound(confidence, bound_refs),
+        "direction": _bound(direction, current_refs if direction else []),
+        "horizon": _bound(horizon, current_refs or bound_refs),
+        "confidence": _bound(confidence, current_refs or bound_refs),
         "counter_evidence": [_bound(row["text"], bound_refs) for row in conflicts]
-        + [_bound(event.invalidation or "", bound_refs)],
-        "invalidation": _bound(event.invalidation, bound_refs),
-        "what_changes": _bound(what, bound_refs),
+        + [_bound(invalidation or "", bound_refs)],
+        "invalidation": _bound(invalidation, bound_refs),
+        "what_changes": _bound(what, current_refs or bound_refs),
         "withheld": withheld,
         "evidence_refs": bound_refs,
         "opinion_refs": opinion_refs,
         "conflict_count": len(conflicts),
         "confidence_rule": confidence_rule(event),
+        "evolution_path": path,
+        "document_count": confidence_rule(event).get("document_count"),
+        "publisher_count": confidence_rule(event).get("publisher_count"),
+        "independent_publisher_count": confidence_rule(event).get("independent_publisher_count"),
+        "superseded_count": confidence_rule(event).get("superseded_count"),
         "percent_forecast": None,
         "price_target": None,
         "vix_role": "risk_confirmation_only" if event.event_type == "vix_risk" else "not_applicable",
         "answers": {
-            "what_happened": event.canonical_title,
+            "what_happened": confirmed_text,
             "credibility": confidence,
             "why_relevant": "市场事件中心完整展示；个股页只保留有暴露映射的事件",
             "how_long": horizon,
-            "invalidates_when": event.invalidation,
+            "invalidates_when": invalidation,
         },
     }
+    event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = analysis
     return analysis
 

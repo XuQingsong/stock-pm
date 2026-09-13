@@ -93,6 +93,7 @@
       ${pill(source.content_type, tierClass(source))}
       ${pill(`Tier ${source.source_tier}`)}
       ${pill(source.fact_or_opinion, source.fact_or_opinion === "fact" ? "tier-fact" : "tier-opinion")}
+      ${source.document_role ? pill(source.document_role) : ""}
       ${href ? sourceLink(href, source.publisher || source.title) : `<span class="no-url">${esc(source.publisher || "无原文")}</span>`}
       <div class="news-meta">${esc(source.title || "")} · ${esc(source.published_at || "")}</div>
     </div>`;
@@ -103,8 +104,8 @@
     return `<div class="event-timeline" data-timeline="1">
       <h4>同一事件时间线</h4>
       ${timeline.map((row) =>
-        `<div class="timeline-item" data-timeline-item="1" data-timeline-status="${esc(row.status || "")}" data-polarity="${esc(row.polarity || "")}" data-what-changes="${esc(row.what_changes || "")}">
-          <div class="news-meta">${esc(row.event_time || "时间未标注")} · ${esc(row.publisher || "")} · ${esc(row.status || "")}</div>
+        `<div class="timeline-item" data-timeline-item="1" data-timeline-status="${esc(row.status || "")}" data-polarity="${esc(row.polarity || "")}" data-phase="${esc(row.phase || "")}" data-what-changes="${esc(row.what_changes || "")}">
+          <div class="news-meta">${esc(row.observed_at || row.event_time || "时间未标注")} · valid_from ${esc(row.valid_from || "—")} · ${esc(row.publisher || "")} · ${esc(row.status || "")}${row.supersedes ? ` · supersedes ${esc(row.supersedes)}` : ""}</div>
           <div>${esc(row.claim || "")}</div>
           <div class="subline">${esc(row.what_changes || "")}</div>
           <div class="evidence-refs">${row.source_url ? sourceLink(row.source_url, row.publisher || "原文") : "<span class='no-url'>无来源</span>"}</div>
@@ -116,8 +117,8 @@
   const claimsHtml = (claims) => {
     if (!claims || !claims.length) return "";
     return `<div class="event-claims">${claims.map((claim) =>
-      `<div class="claim-row" data-polarity="${esc(claim.polarity)}" data-claim-source="${esc(claim.source_url || "")}">
-        ${pill(claim.polarity, claim.polarity === "contradicts" ? "conflict" : "")}
+      `<div class="claim-row" data-polarity="${esc(claim.polarity)}" data-claim-status="${esc(claim.status || "")}" data-claim-source="${esc(claim.source_url || "")}">
+        ${pill(claim.polarity, claim.polarity === "contradicts" && claim.status !== "superseded" ? "conflict" : "")}
         ${esc(claim.text)}
         <div class="evidence-refs">${claim.source_url ? sourceLink(claim.source_url, claim.publisher || "原文") : "<span class='no-url'>无来源</span>"}</div>
       </div>`
@@ -194,6 +195,10 @@
           ${pill(`严重度 ${event.severity}`)}
           ${pill(`范围 ${event.scope}`)}
           ${pill(`置信度 ${(analysis.confidence && analysis.confidence.text) || "—"}`, conflicts ? "conflict" : "")}
+          ${pill(`documents ${analysis.document_count ?? (event.coverage && event.coverage.document_count) ?? (event.sources || []).length}`)}
+          ${pill(`publishers ${analysis.publisher_count ?? (event.coverage && event.coverage.publisher_count) ?? "—"}`)}
+          ${pill(`independent ${analysis.independent_publisher_count ?? (event.coverage && event.coverage.independent_publisher_count) ?? "—"}`)}
+          ${pill(`superseded ${analysis.superseded_count ?? (event.coverage && event.coverage.superseded_count) ?? 0}`)}
         </div>
       </header>
       ${answersHtml(event, why)}

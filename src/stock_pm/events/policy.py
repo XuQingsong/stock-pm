@@ -199,8 +199,16 @@ def source_id_for(url: str) -> str:
 
 
 def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]:
+    from .evidence import infer_document_role, infer_evidence_role
+
     cls = classify_source(doc.url, doc.publisher)
     canonical = normalize_url(doc.url)
+    document_role = doc.document_role or infer_document_role(doc.url, doc.title)
+    evidence_role = (
+        "regime_catalog"
+        if document_role == "regime_catalog" or doc.evidence_role == "regime_catalog"
+        else infer_evidence_role(doc.url, document_role)
+    )
     return {
         "source_id": source_id_for(doc.url),
         "source_url": doc.url,
@@ -209,5 +217,7 @@ def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]
         "title": doc.title,
         "published_at": doc.published_at,
         "first_seen_at": seen_at,
+        "document_role": document_role,
+        "evidence_role": evidence_role,
         **cls,
     }

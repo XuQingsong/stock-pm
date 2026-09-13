@@ -271,6 +271,7 @@ def probe_url(url: str) -> dict:
 
 OFFICIAL_HOSTS = ACCEPT_HOSTS
 UNOBSERVED = "算法 fixture PASS / 实盘未观测"
+UNVERIFIED = "UNVERIFIED"
 
 
 def _official_href(href: str) -> bool:
@@ -281,6 +282,57 @@ def _official_href(href: str) -> bool:
 def accept_host_allowed(url: str) -> bool:
     """Accept-only host check. Does not change production source policy."""
     return _official_href(url)
+
+
+def _metrics(event: dict) -> dict:
+    analysis = event.get("analysis") or {}
+    cover = event.get("coverage") or {}
+    sources = event.get("sources") or []
+    publishers = {
+        str(row.get("publisher") or "").strip().lower()
+        for row in sources
+        if row.get("evidence_role") != "regime_catalog"
+    }
+    return {
+        "document_count": int(analysis.get("document_count") or cover.get("document_count") or len(sources) or 0),
+        "publisher_count": int(analysis.get("publisher_count") or cover.get("publisher_count") or len(publishers) or 0),
+        "independent_publisher_count": int(
+            analysis.get("independent_publisher_count") or cover.get("independent_publisher_count") or len(publishers) or 0
+        ),
+        "superseded_count": int(analysis.get("superseded_count") or cover.get("superseded_count") or 0),
+        "conflict_count": int(analysis.get("conflict_count") or cover.get("conflict_count") or 0),
+        "document_roles": sorted({str(row.get("document_role") or "") for row in sources if row.get("document_role")}),
+    }
+
+
+def _claim_evidence_rows(events: list[dict], pack: dict | None) -> list[dict]:
+    from stock_pm.events.evidence import excerpt_supports_claim
+
+    docs = {str(row.get("source_url") or ""): row for row in (pack or {}).get("documents") or []}
+    rows = []
+    for event in events:
+        for claim in event.get("claims") or []:
+            url = str(claim.get("source_url") or "")
+            doc = docs.get(url) or {}
+            excerpt = str(claim.get("excerpt") or doc.get("excerpt") or "")
+            title = str(doc.get("title") or "")
+            required = list(doc.get("required_tokens") or [])
+            supports = excerpt_supports_claim(str(claim.get("text") or ""), excerpt, title, required=required or None)
+            rows.append(
+                {
+                    "claim": claim.get("text"),
+                    "source_url": url,
+                    "publisher": claim.get("publisher"),
+                    "as_of": claim.get("observed_at") or claim.get("valid_from") or doc.get("published_at"),
+                    "status": claim.get("status"),
+                    "polarity": claim.get("polarity"),
+                    "excerpt": excerpt[:240],
+                    "supports_claim": supports,
+                    "event_id": event.get("event_id"),
+                    "event_type": event.get("event_type"),
+                }
+            )
+    return rows
 
 
 def _collect_refs(event: dict) -> list[dict]:
@@ -332,10 +384,27 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     official_dom = any(_official_href(href) for href in shot_center.get("factHrefs") or [])
     e1_live_dom = "official_fact" in (shot_center.get("facts") or []) and official_dom and "research_opinion" not in (shot_center.get("facts") or [])
     e1_fixture_dom = e1_live_dom and any("goldman" in href for href in shot_center.get("opinionHrefs") or [])
-    e2_observed = any(len(event.get("sources") or []) >= 3 for event in events)
-    e3_observed = any(int((event.get("analysis") or {}).get("conflict_count") or 0) >= 1 for event in events)
+    fomc = next((row for row in events if row.get("event_type") == "central_bank_rates"), {})
+    fomc_metrics = _metrics(fomc) if fomc else {}
+    hormuz = iran
+    hormuz_metrics = _metrics(hormuz) if hormuz else {}
+    hormuz_urls = {str(row.get("source_url") or "") for row in (hormuz.get("sources") or [])}
+    ofac_catalog = any("sanctions-programs-and-country-information" in url for url in hormuz_urls)
+    e2_independent = any(int((_metrics(event).get("independent_publisher_count") or 0) >= 2) and int(_metrics(event).get("document_count") or 0) >= 3 for event in events)
+    e2_fomc_docs = (
+        int(fomc_metrics.get("document_count") or 0) >= 3
+        and int(fomc_metrics.get("publisher_count") or 0) == 1
+        and int(fomc_metrics.get("independent_publisher_count") or 0) == 1
+        and {"statement", "projections", "minutes"}.issubset(set(fomc_metrics.get("document_roles") or []))
+    )
+    e3_observed = any(
+        int((_metrics(event).get("conflict_count") or 0) >= 1)
+        and int((_metrics(event).get("independent_publisher_count") or 0) >= 2)
+        for event in events
+    )
     nvda_types = {row.get("event_type") for row in (stocks["NVDA"].get("events") or [])}
     jpm_types = {row.get("event_type") for row in (stocks["JPM"].get("events") or [])}
+    hormuz_eia_only = bool(hormuz_urls) and all("eia.gov" in url for url in hormuz_urls) and not ofac_catalog
     e4_observed = (
         "war_sanctions" in xom_types
         and "war_sanctions" not in aapl_types
@@ -345,10 +414,25 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         and bool(nvda_why)
         and bool(jpm_why)
         and xom_why != nvda_why
+        and (not replay_mode or hormuz_eia_only)
     )
-    e9_observed = any(
-        event.get("status") in {"updated", "revoked"} and len(event.get("timeline") or []) >= 2
-        for event in events
+    hormuz_what = (hormuz.get("analysis") or {}).get("what_changes")
+    hormuz_what_text = hormuz_what.get("text") if isinstance(hormuz_what, dict) else str(hormuz_what or "")
+    e9_text = " ".join(
+        [
+            hormuz_what_text,
+            " ".join(str(item.get("what_changes") or "") for item in (hormuz.get("timeline") or [])),
+            " ".join((hormuz.get("analysis") or {}).get("evolution_path") or []),
+        ]
+    )
+    e9_observed = (
+        hormuz.get("status") in {"updated", "revoked"}
+        and len(hormuz.get("timeline") or []) >= 3
+        and "中断" in e9_text
+        and "需求缓冲" in e9_text
+        and ("重开" in e9_text or "供应恢复" in e9_text)
+        and int(hormuz_metrics.get("superseded_count") or 0) >= 2
+        and int(hormuz_metrics.get("conflict_count") or 0) == 0
     )
     e6_dom = (shot_center.get("google") == "not_configured") and shot_center.get("ready") is True
     e8_dom = all(str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []) and bool(shot_center.get("analysisHrefs"))
@@ -390,9 +474,25 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
             )
             for url in lead_urls
         )
+    pack = {}
+    if replay_mode:
+        try:
+            from stock_pm.events.replay import load_recorded_pack
+
+            pack = load_recorded_pack()
+        except Exception:
+            pack = {}
+    claim_evidence = _claim_evidence_rows([row for row in (fomc, hormuz) if row], pack)
+    current_evidence = [row for row in claim_evidence if row.get("status") != "superseded"]
+    e8_semantic = bool(current_evidence) and all(
+        row.get("supports_claim") and row.get("publisher") and row.get("as_of") and row.get("source_url")
+        for row in current_evidence
+    )
+    if not replay_mode:
+        e8_semantic = bool(refs) and all(str(row.get("source_url") or "").startswith("http") and row.get("publisher") for row in refs)
     framework = {
         "E1": ("official_fact" in fact_types and (e1_fixture_dom if fixture_mode else e1_live_dom)),
-        "E2": e2_observed,
+        "E2": e2_independent or (replay_mode and e2_fomc_docs),
         "E3": e3_observed,
         "E4": e4_observed,
         "E5": (vix.get("analysis") or {}).get("vix_role") == "risk_confirmation_only" or not vix,
@@ -400,13 +500,13 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "E7": cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
         and ev_cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
         and overall.get("level") != "L0",
-        "E8": bool(refs) and e8_dom,
+        "E8": bool(refs) and e8_dom and e8_semantic,
         "E9": e9_observed,
         "E10": e10_dom and shot_center.get("ready") is True,
     }
     live = {
         "E1": production and e1_live_dom and live_originals and official_feeds_ok >= 1,
-        "E2": production and e2_observed and live_originals,
+        "E2": production and e2_independent and live_originals,
         "E3": production and e3_observed and live_originals,
         "E4": production and e4_observed and live_originals,
         "E5": framework["E5"],
@@ -421,7 +521,7 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         if live[key]:
             return "PASS"
         if key in {"E2", "E3", "E4", "E9"} and not {
-            "E2": e2_observed,
+            "E2": e2_independent,
             "E3": e3_observed,
             "E4": e4_observed,
             "E9": e9_observed,
@@ -436,20 +536,14 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     }
     capability = {
         "E1": (e1_live_dom or ("official_fact" in fact_types and official_dom)) and live_originals,
-        "E2": e2_observed and live_originals,
-        "E3": e3_observed and bool(shot_center.get("conflicts") or analysis.get("conflict_count")),
-        "E4": e4_observed and live_originals,
+        "E2": e2_fomc_docs and live_originals,
+        "E3": e3_observed,
+        "E4": e4_observed and live_originals and hormuz_eia_only,
         "E5": framework["E5"],
         "E6": google_honest and e6_dom and replay_honest,
         "E7": framework["E7"],
-        "E8": framework["E8"] and live_originals,
-        "E9": e9_observed
-        and (
-            "不重复" in str((analysis.get("what_changes") or {}).get("text") or "")
-            or any("不重复" in str(item.get("what") or "") for item in (shot_center.get("timeline") or []))
-            or bool(shot_center.get("what"))
-        )
-        and bool(shot_center.get("timeline") or lead.get("timeline")),
+        "E8": framework["E8"] and live_originals and e8_semantic,
+        "E9": e9_observed and bool(shot_center.get("timeline") or hormuz.get("timeline")),
         "E10": e10_dom and shot_center.get("ready") is True,
     }
     accept_host_violations = [
@@ -466,11 +560,14 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
             capability["E1"] = False
             capability["E6"] = False
         verdict = {key: ("PASS" if capability[key] else "FAIL") for key in capability}
+        if not e3_observed:
+            verdict["E3"] = UNVERIFIED
         must = MUST_CAPABILITY
-        gate = all(verdict[key] == "PASS" for key in must) and sum(1 for value in capability.values() if value) >= 8
+        gate = all(verdict[key] == "PASS" for key in must) and sum(1 for value in verdict.values() if value == "PASS") >= 8
         note = (
             "Capability black-box: LIVE or RECORDED REPLAY through the production pipeline and browser. "
-            "Unit tests are not counted as black-box PASS."
+            "Unit tests are not counted as black-box PASS. "
+            "E3 is UNVERIFIED without a same-window multi-publisher conflict sample."
         )
     else:
         verdict = live_verdict
@@ -511,6 +608,11 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "lead_event_type": lead.get("event_type"),
         "accept_host_violations": accept_host_violations,
         "banner": shot_center.get("banner"),
+        "fomc_metrics": fomc_metrics,
+        "hormuz_metrics": hormuz_metrics,
+        "claim_evidence": claim_evidence,
+        "e8_semantic": e8_semantic,
+        "ofac_bound_to_hormuz": ofac_catalog,
     }
 
 

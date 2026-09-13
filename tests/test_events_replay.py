@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 
 from stock_pm.config import Settings
+from stock_pm.events.analyze import analyze_event
 from stock_pm.events.dedupe import build_events
+from stock_pm.events.evidence import excerpt_supports_claim
 from stock_pm.events.exposure import why_relevant
 from stock_pm.events.job import run_event_job
 from stock_pm.events.policy import classify_source, events_data_mode, sanitize_untrusted
@@ -30,35 +32,40 @@ def test_recorded_pack_integrity_and_pipeline():
     assert pack["integrity_sha256"] == compute_pack_hash(pack)
     assert all(str(row["source_url"]).startswith("https://") for row in pack["documents"])
     assert not any("example." in row["source_url"] for row in pack["documents"])
+    assert not any("iran-sanctions" in row["source_url"] for row in pack["documents"])
     docs = RecordedReplayProvider().discover()
-    assert len(docs) >= 6
+    assert len(docs) == 6
     first = build_events(docs)
     second = build_events(docs)
     assert [row.event_id for row in first] == [row.event_id for row in second]
     hormuz = next(row for row in first if row.event_type == "war_sanctions")
     fomc = next(row for row in first if row.event_type == "central_bank_rates")
-    assert len(hormuz.sources) >= 3
-    assert len(fomc.sources) >= 3
+    assert {row.publisher for row in hormuz.sources} == {"U.S. Energy Information Administration"}
+    assert len(hormuz.sources) == 3
     assert hormuz.status == "updated"
-    assert len(hormuz.timeline) >= 3
-    assert {row.publisher for row in hormuz.sources} >= {
-        "U.S. Energy Information Administration",
-        "U.S. Department of the Treasury / OFAC",
-    }
-    from stock_pm.events.analyze import analyze_event
-
+    assert len(hormuz.timeline) == 3
     analyze_event(hormuz)
-    assert hormuz.analysis["conflict_count"] >= 1
-    assert hormuz.analysis["confidence"]["text"] == "low"
-    assert any(row.polarity == "contradicts" for row in hormuz.claims)
-    assert any(row.polarity == "supports" for row in hormuz.claims)
+    analyze_event(fomc)
+    assert hormuz.analysis["conflict_count"] == 0
+    assert hormuz.analysis["confidence"]["text"] == "medium"
+    assert hormuz.analysis["superseded_count"] >= 2
+    assert not any(row.polarity == "contradicts" for row in hormuz.claims)
+    assert "中断" in (hormuz.analysis["what_changes"]["text"] or "")
+    assert "需求缓冲" in (hormuz.analysis["what_changes"]["text"] or "")
+    assert "重开" in (hormuz.analysis["what_changes"]["text"] or "") or "供应恢复" in (
+        hormuz.analysis["what_changes"]["text"] or ""
+    )
+    assert hormuz.analysis["direction"]["text"] == "relief"
     assert why_relevant(hormuz, "XOM")
     assert why_relevant(hormuz, "NVDA")
     assert why_relevant(hormuz, "JPM")
     assert why_relevant(hormuz, "AAPL") is None
-    assert why_relevant(hormuz, "XOM")["why_relevant"] != why_relevant(hormuz, "NVDA")["why_relevant"]
-    assert "不重复" in (hormuz.analysis["what_changes"]["text"] or "")
-    assert any("不重复" in (row.get("what_changes") or "") for row in hormuz.timeline)
+    assert fomc.coverage["document_count"] == 3
+    assert fomc.coverage["publisher_count"] == 1
+    assert fomc.coverage["independent_publisher_count"] == 1
+    assert set(fomc.coverage["document_roles"]) == {"statement", "projections", "minutes"}
+    assert fomc.analysis["confidence"]["text"] == "medium"
+    assert fomc.analysis["confidence_rule"]["independent_publisher_count"] == 1
 
 
 def test_recorded_pack_tamper_is_rejected(tmp_path: Path):
@@ -91,7 +98,7 @@ def test_production_empty_does_not_load_recorded_pack():
     center = market_center(settings)
     assert center["recorded_replay"] is False
     urls = [src["source_url"] for event in center["events"] for src in event["sources"]]
-    assert not any("iran-sanctions" in url for url in urls)
+    assert not any("press588" in url or "iran-sanctions" in url for url in urls)
 
 
 def test_accept_host_whitelist_does_not_change_production_policy():
@@ -110,6 +117,19 @@ def test_accept_host_whitelist_does_not_change_production_policy():
     reuters = classify_source("https://www.reuters.com/world/iran-oil-2026", "Reuters")
     assert reuters["source_tier"] == 2
     assert reuters["content_type"] == "media_report"
+
+
+def test_excerpt_must_support_claim():
+    assert excerpt_supports_claim(
+        "EIA increases global oil production forecast after the opening of the Strait of Hormuz.",
+        "EIA Press Release (07/07/2026): EIA increases global oil production forecast after the opening of the Strait of Hormuz",
+        required=["opening of the strait of hormuz"],
+    )
+    assert not excerpt_supports_claim(
+        "EIA increases global oil production forecast after the opening of the Strait of Hormuz.",
+        "Iran Sanctions | Office of Foreign Assets Control. The .gov means it's official.",
+        required=["opening of the strait of hormuz"],
+    )
 
 
 def test_prompt_injection_still_stripped_from_excerpts():
