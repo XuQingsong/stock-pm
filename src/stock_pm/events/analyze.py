@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .evidence import current_claims, evolution_path, infer_phase, publisher_key, source_metrics
+from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
 
@@ -153,6 +153,148 @@ def _withhold(reason: str) -> dict[str, Any]:
     }
 
 
+LAYER_ORDER = ("fact", "change", "expectation", "impact", "what_changes")
+_EMPTY_LAYER_TEXT = {"", "—", "-", "withhold", "none", "null"}
+
+
+def _layer(
+    event_id: str,
+    name: str,
+    text: str | None,
+    cites: list[str],
+    refs: list[dict[str, Any]] | None = None,
+    **extra: Any,
+) -> dict[str, Any]:
+    return {
+        "id": name,
+        "layer_id": f"{name}:{event_id}",
+        "text": text or "",
+        "cites": list(cites),
+        "evidence_refs": list(refs or []),
+        **extra,
+    }
+
+
+def causal_chain_is_complete(chain: dict[str, Any] | None) -> bool:
+    """True only when all five layers are non-empty and cite the previous layer."""
+    layers = {str(row.get("id")): row for row in (chain or {}).get("layers") or [] if isinstance(row, dict)}
+    prev_id = None
+    for name in LAYER_ORDER:
+        row = layers.get(name)
+        if not row:
+            return False
+        text = str(row.get("text") or "").strip()
+        if text.lower() in _EMPTY_LAYER_TEXT:
+            return False
+        layer_id = str(row.get("layer_id") or "")
+        if not layer_id:
+            return False
+        cites = {str(item) for item in (row.get("cites") or []) if item}
+        if prev_id and prev_id not in cites:
+            return False
+        prev_id = layer_id
+    fact = layers["fact"]
+    excerpt = str(fact.get("excerpt") or "").strip()
+    refs = [row for row in (fact.get("evidence_refs") or []) if isinstance(row, dict)]
+    if not excerpt or not any(str(row.get("source_url") or "").startswith("http") for row in refs):
+        return False
+    exp = layers["expectation"]
+    if not str(exp.get("direction") or "").strip():
+        return False
+    if not str(exp.get("horizon") or "").strip():
+        return False
+    if not str(exp.get("confidence") or "").strip():
+        return False
+    exposures = [row for row in (layers["impact"].get("exposures") or []) if isinstance(row, dict)]
+    if not exposures:
+        return False
+    if not all(
+        str(row.get("symbol") or "").strip()
+        and str(row.get("channel") or "").strip()
+        and str(row.get("mechanism") or "").strip()
+        for row in exposures
+    ):
+        return False
+    what = layers["what_changes"]
+    if not str(what.get("invalidation") or "").strip() and not str(what.get("follow_up") or "").strip():
+        return False
+    return True
+
+
+def build_causal_chain(
+    event: TrustedEvent,
+    *,
+    fact_text: str,
+    fact_excerpt: str,
+    fact_refs: list[dict[str, Any]],
+    change_text: str,
+    change_refs: list[dict[str, Any]],
+    direction: str | None,
+    horizon: str | None,
+    confidence: str | None,
+    exposures: list[dict[str, Any]],
+    what_text: str,
+    invalidation: str | None,
+    follow_up: str | None,
+    what_refs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    eid = event.event_id
+    fact_id = f"fact:{eid}"
+    change_id = f"change:{eid}"
+    expectation_id = f"expectation:{eid}"
+    impact_id = f"impact:{eid}"
+    markets = sorted({str(row.get("channel") or "") for row in exposures if row.get("channel")})
+    if exposures:
+        impact_text = "先市场/行业：" + (" / ".join(markets) if markets else "市场背景")
+        impact_text += "".join(
+            f"；{row.get('symbol')} 经 {row.get('channel')}（{row.get('mechanism')}）" for row in exposures
+        )
+    else:
+        impact_text = ""
+    exp_direction = direction or "withheld"
+    exp_horizon = horizon or event.duration or "unspecified"
+    exp_confidence = confidence or "insufficient"
+    exp_text = f"方向 {exp_direction} · 期限 {exp_horizon} · 置信度 {exp_confidence}"
+    layers = [
+        _layer(eid, "fact", fact_text, [], fact_refs, excerpt=fact_excerpt, bound_to="original_text"),
+        _layer(eid, "change", change_text, [fact_id], change_refs),
+        _layer(
+            eid,
+            "expectation",
+            exp_text,
+            [change_id],
+            change_refs,
+            direction=exp_direction,
+            horizon=exp_horizon,
+            confidence=exp_confidence,
+        ),
+        _layer(eid, "impact", impact_text, [expectation_id], [], exposures=list(exposures), markets=markets),
+        _layer(
+            eid,
+            "what_changes",
+            what_text,
+            [impact_id],
+            what_refs,
+            invalidation=invalidation or "",
+            follow_up=follow_up or "",
+        ),
+    ]
+    chain = {"layers": layers}
+    chain["complete"] = causal_chain_is_complete(chain)
+    return chain
+
+
+def _supporting_fact(live_claims: list[EventClaim], fallback_text: str) -> tuple[str, str]:
+    for claim in live_claims:
+        excerpt = str(claim.excerpt or "")
+        if excerpt and excerpt_supports_claim(claim.text, excerpt):
+            return claim.text, excerpt
+    if live_claims:
+        latest = live_claims[-1]
+        return latest.text or fallback_text, str(latest.excerpt or "")
+    return fallback_text, ""
+
+
 def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> dict[str, Any]:
     wanted = [item.upper() for item in (symbols or DISPLAY_SYMBOLS)]
     official_refs = [row for row in _refs(event, facts_only=True) if row["content_type"] == "official_fact"]
@@ -200,6 +342,22 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "confidence_rule": confidence_rule(event),
             "percent_forecast": None,
             "price_target": None,
+            "causal_chain": build_causal_chain(
+                event,
+                fact_text="",
+                fact_excerpt="",
+                fact_refs=[],
+                change_text="",
+                change_refs=[],
+                direction="withheld",
+                horizon=event.duration,
+                confidence="insufficient",
+                exposures=[],
+                what_text="",
+                invalidation=event.invalidation,
+                follow_up="",
+                what_refs=[],
+            ),
             "answers": {
                 "what_happened": "证据不足，withhold",
                 "credibility": "insufficient",
@@ -255,7 +413,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         }
         direction = withheld["direction"]
 
-    confirmed_text = (latest_claim.text if latest_claim else event.canonical_title)
+    confirmed_text, fact_excerpt = _supporting_fact(live_claims, latest_claim.text if latest_claim else event.canonical_title)
+    follow_up = "继续观察后续官方文档是否改写该时间线或暴露映射"
     analysis = {
         "confirmed_facts": [
             {
@@ -287,6 +446,22 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "percent_forecast": None,
         "price_target": None,
         "vix_role": "risk_confirmation_only" if event.event_type == "vix_risk" else "not_applicable",
+        "causal_chain": build_causal_chain(
+            event,
+            fact_text=confirmed_text,
+            fact_excerpt=fact_excerpt,
+            fact_refs=current_refs[:1] or official_refs[:1] or bound_refs[:1],
+            change_text=change,
+            change_refs=current_refs or bound_refs,
+            direction=direction or withheld.get("direction") or "withheld",
+            horizon=horizon,
+            confidence=confidence,
+            exposures=exposures,
+            what_text=what,
+            invalidation=invalidation,
+            follow_up=follow_up,
+            what_refs=current_refs or bound_refs,
+        ),
         "answers": {
             "what_happened": confirmed_text,
             "credibility": confidence,

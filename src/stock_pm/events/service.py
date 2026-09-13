@@ -6,7 +6,8 @@ from typing import Any
 
 from stock_pm.config import Settings
 
-from .analyze import DISPLAY_SYMBOLS, analyze_event, symbol_event_view
+from .analyze import DISPLAY_SYMBOLS, analyze_event, causal_chain_is_complete, symbol_event_view
+from .evidence import excerpt_supports_claim
 from .dedupe import build_events
 from .live import discover_live_documents, reset_live_state
 from .policy import events_data_mode
@@ -81,6 +82,7 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
             last_success = stamp
     failed = [f"{row.get('provider')}:{row.get('reason_code')}" for row in live_rows if row.get("status") != "ok"]
     provider_health_gate = mode not in {"demo", "fixture", "recorded_replay"} and len(live_ok) == len(REQUIRED_LIVE)
+    product_status = _product_status(rows, provider_health_gate=provider_health_gate, note=note)
     return {
         "status": verdict,
         "verdict": verdict,
@@ -108,6 +110,53 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "does_not_affect": ["price", "earnings", "macro_rates"],
         "note": note,
         "google_cse": google.get("status"),
+        "product_status": product_status,
+    }
+
+
+def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, note: str) -> dict[str, Any]:
+    supporting = 0
+    official = 0
+    observable = 0
+    for event in events:
+        analysis = event.analysis or {}
+        if analysis.get("evidence_refs"):
+            official += 1
+        if (analysis.get("withheld") or {}).get("status") == "observable" and causal_chain_is_complete(
+            analysis.get("causal_chain")
+        ):
+            observable += 1
+        for claim in event.claims:
+            if claim.status in {"superseded", "revoked"}:
+                continue
+            if excerpt_supports_claim(claim.text, claim.excerpt or ""):
+                supporting += 1
+    reasons: list[str] = []
+    if events and supporting == 0:
+        reasons.append("当前没有绑定正文摘录的有效主张")
+    if events and official == 0:
+        reasons.append("缺少可点击官方原文")
+    if observable == 0:
+        reasons.append(note or "证据不足，不形成方向结论")
+    evidence_ok = supporting > 0 and official > 0
+    return {
+        "source_health": {
+            "ok": provider_health_gate,
+            "label": "数据源健康" if provider_health_gate else "数据源不完整",
+            "detail": "SEC / Fed / EIA 官方源已接通并有实时数据"
+            if provider_health_gate
+            else "SEC / Fed / EIA 官方源未全部接通或没有实时数据",
+        },
+        "evidence_sufficiency": {
+            "ok": evidence_ok,
+            "label": "证据充分" if evidence_ok else "证据不足",
+            "detail": f"{supporting} 条正文摘录支持当前主张" if supporting else "没有正文摘录支持当前主张",
+        },
+        "can_conclude": {
+            "ok": observable > 0,
+            "label": "可以形成观察结论" if observable > 0 else "尚不能形成结论",
+            "reason": "；".join(reasons) if reasons else "已确认事实并完成行业/个股暴露映射",
+        },
     }
 
 

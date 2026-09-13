@@ -134,7 +134,17 @@ def capture_pages() -> dict:
                     providerHealthGate: (document.querySelector('[data-provider-health-gate]') && document.querySelector('[data-provider-health-gate]').getAttribute('data-provider-health-gate')) || '',
                     liveE1E10Gate: (document.querySelector('[data-live-e1-e10-gate]') && document.querySelector('[data-live-e1-e10-gate]').getAttribute('data-live-e1-e10-gate')) || '',
                     capabilityE1E10Gate: (document.querySelector('[data-capability-e1-e10-gate]') && document.querySelector('[data-capability-e1-e10-gate]').getAttribute('data-capability-e1-e10-gate')) || '',
-                    claimExcerpts: [...document.querySelectorAll('[data-claim-excerpt]')].map((n) => n.innerText),
+                    sourceHealth: (document.querySelector('[data-source-health]') && document.querySelector('[data-source-health]').getAttribute('data-source-health')) || '',
+                    productStatus: [...document.querySelectorAll('[data-product]')].map((n) => n.getAttribute('data-product')),
+                    causalChains: [...document.querySelectorAll('[data-causal-chain]')].map((chain) =>
+                      [...chain.querySelectorAll('[data-causal-layer]')].map((n) => ({
+                        id: n.getAttribute('data-layer') || '',
+                        layerId: n.getAttribute('data-layer-id') || '',
+                        cites: n.getAttribute('data-cites') || '',
+                        text: ((n.querySelector('[data-layer-text]') && n.querySelector('[data-layer-text]').innerText) || n.innerText || '')
+                      }))
+                    ),
+                    claimExcerpts: [...document.querySelectorAll('[data-claim-excerpt], [data-fact-excerpt]')].map((n) => n.innerText),
                     timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({{
                       status: n.getAttribute('data-timeline-status') || '',
                       polarity: n.getAttribute('data-polarity') || '',
@@ -202,6 +212,21 @@ def capture_pages() -> dict:
         for symbol in ("NVDA", "XOM", "JPM", "AAPL"):
             shots[symbol] = wait_ready(f"{BASE}/stock/{symbol}", "#event-body")
             clip(OUT / f"{symbol.lower()}-events.png", "#event-module")
+        try:
+            call("Page.navigate", {"url": f"{BASE}/accept/e1-e10"})
+            time.sleep(1.2)
+            shots["accept"] = evaluate(
+                """(() => ({
+                  ready: (document.querySelector('[data-accept-ready]') && document.querySelector('[data-accept-ready]').getAttribute('data-accept-ready')) === '1',
+                  text: document.body.innerText.slice(0, 8000),
+                  providerHealthGate: (document.querySelector('[data-provider-health-gate]') && document.querySelector('[data-provider-health-gate]').getAttribute('data-provider-health-gate')) || '',
+                  liveE1E10Gate: (document.querySelector('[data-live-e1-e10-gate]') && document.querySelector('[data-live-e1-e10-gate]').getAttribute('data-live-e1-e10-gate')) || '',
+                  capabilityE1E10Gate: (document.querySelector('[data-capability-e1-e10-gate]') && document.querySelector('[data-capability-e1-e10-gate]').getAttribute('data-capability-e1-e10-gate')) || ''
+                }))()"""
+            ) or {}
+            clip(OUT / "accept-e1-e10.png", ".event-module")
+        except Exception:
+            shots["accept"] = {}
         return shots
     finally:
         try:
@@ -444,8 +469,12 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         and int(hormuz_metrics.get("conflict_count") or 0) == 0
     )
     e6_dom = (shot_center.get("google") == "not_configured") and shot_center.get("ready") is True
-    e8_dom = all(str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []) and bool(shot_center.get("analysisHrefs"))
-    e10_dom = {"what", "credibility", "why", "duration", "invalidation"}.issubset(set(shot_center.get("answers") or []))
+    from stock_pm.events.accept_score import e10_dom_chains_ok, e8_live_excerpt_ok, events_have_complete_chain
+
+    e8_dom = bool(shot_center.get("claimExcerpts")) and bool(shot_center.get("analysisHrefs")) and all(
+        str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []
+    )
+    e10_dom = e10_dom_chains_ok(shot_center.get("causalChains") or [])
     official_feeds_ok = sum(1 for row in live_providers.values() if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0)
     provider_health_gate = official_feeds_ok == 3 and all(
         row.get("status") == "ok" and int(row.get("event_count") or 0) > 0 for row in live_providers.values()
@@ -505,16 +534,7 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         for row in current_evidence
     )
     if not replay_mode:
-        live_excerpts = [
-            row
-            for row in (lead.get("claims") or [])
-            if row.get("excerpt") and row.get("status") != "superseded"
-        ]
-        from stock_pm.events.evidence import excerpt_supports_claim as _excerpt_ok
-
-        live_excerpt_ok = all(
-            _excerpt_ok(str(row.get("text") or ""), str(row.get("excerpt") or "")) for row in live_excerpts
-        ) if live_excerpts else True
+        live_excerpt_ok = e8_live_excerpt_ok(events)
         e8_semantic = (
             bool(refs)
             and all(str(row.get("source_url") or "").startswith("http") and row.get("publisher") for row in refs)
@@ -532,7 +552,7 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         and overall.get("level") != "L0",
         "E8": bool(refs) and e8_dom and e8_semantic,
         "E9": e9_observed,
-        "E10": e10_dom and shot_center.get("ready") is True,
+        "E10": e10_dom and events_have_complete_chain(events) and shot_center.get("ready") is True,
     }
     live = {
         "E1": production and e1_live_dom and live_originals and official_feeds_ok >= 1,
@@ -544,7 +564,7 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "E7": framework["E7"],
         "E8": production and framework["E8"] and live_originals,
         "E9": production and e9_observed and live_originals,
-        "E10": production and e10_dom and live_originals and shot_center.get("ready") is True,
+        "E10": production and e10_dom and events_have_complete_chain(events) and live_originals and shot_center.get("ready") is True,
     }
 
     def live_label(key: str) -> str:
@@ -574,7 +594,7 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "E7": framework["E7"],
         "E8": framework["E8"] and live_originals and e8_semantic,
         "E9": e9_observed and bool(shot_center.get("timeline") or hormuz.get("timeline")),
-        "E10": e10_dom and shot_center.get("ready") is True,
+        "E10": e10_dom and events_have_complete_chain(events) and shot_center.get("ready") is True,
     }
     accept_host_violations = [
         str(row.get("source_url") or "")
@@ -651,10 +671,15 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "accept_host_violations": accept_host_violations,
         "banner": shot_center.get("banner"),
         "ui_gates": {
-            "provider_health_gate": shot_center.get("providerHealthGate"),
-            "live_e1_e10_gate": shot_center.get("liveE1E10Gate"),
-            "capability_e1_e10_gate": shot_center.get("capabilityE1E10Gate"),
+            "product_source_health": shot_center.get("sourceHealth"),
+            "product_status": shot_center.get("productStatus") or [],
+            "accept_page": {
+                "provider_health_gate": (shots.get("accept") or {}).get("providerHealthGate"),
+                "live_e1_e10_gate": (shots.get("accept") or {}).get("liveE1E10Gate"),
+                "capability_e1_e10_gate": (shots.get("accept") or {}).get("capabilityE1E10Gate"),
+            },
         },
+        "e10_chain": events_have_complete_chain(events),
         "claim_excerpts_dom": shot_center.get("claimExcerpts") or [],
         "fomc_metrics": fomc_metrics,
         "hormuz_metrics": hormuz_metrics,

@@ -209,6 +209,8 @@ def test_e9_update_and_revoke_refresh_what_changes():
 
 
 def test_e10_answers_cover_the_five_questions():
+    from stock_pm.events.analyze import causal_chain_is_complete
+
     center = market_center()
     iran = next(row for row in center["events"] if row["event_type"] == "war_sanctions")
     answers = iran["analysis"]["answers"]
@@ -217,6 +219,18 @@ def test_e10_answers_cover_the_five_questions():
     assert answers["why_relevant"]
     assert answers["how_long"]
     assert answers["invalidates_when"]
+    assert causal_chain_is_complete(iran["analysis"]["causal_chain"])
+    layers = {row["id"]: row for row in iran["analysis"]["causal_chain"]["layers"]}
+    assert layers["change"]["cites"] == [layers["fact"]["layer_id"]]
+    assert layers["expectation"]["cites"] == [layers["change"]["layer_id"]]
+    assert layers["impact"]["cites"] == [layers["expectation"]["layer_id"]]
+    assert layers["what_changes"]["cites"] == [layers["impact"]["layer_id"]]
+    assert layers["fact"]["excerpt"]
+    assert layers["expectation"]["direction"]
+    assert layers["expectation"]["horizon"]
+    assert layers["expectation"]["confidence"]
+    assert layers["impact"]["exposures"]
+    assert layers["what_changes"]["invalidation"] or layers["what_changes"]["follow_up"]
     xom = stock_events("XOM")
     hit = next(row for row in xom["events"] if row["event_type"] == "war_sanctions")
     assert "原油" in hit["analysis"]["answers"]["why_relevant"] or "油" in hit["why_relevant"]

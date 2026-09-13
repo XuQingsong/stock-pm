@@ -1048,9 +1048,13 @@
 
   function eventsCoverageChip(cover) {
     if (!cover) return "";
-    const google = ((cover.providers || {}).google_cse || {}).status || cover.reason_code || "unknown";
+    const product = cover.product_status || {};
+    const health = product.source_health || {};
+    const evidence = product.evidence_sufficiency || {};
+    const conclude = product.can_conclude || {};
+    const google = ((cover.providers || {}).google_cse || {}).status || "not_configured";
     const mode = cover.data_mode || "empty";
-    return `<span class="status-pill ${(cover.status || "ok")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-provider-health-gate="${cover.provider_health_gate ? "1" : "0"}" data-google-status="${esc(((cover.providers || {}).google_cse || {}).status || "not_configured")}">事件链 ${esc(mode)}/${esc(cover.verdict || cover.status || "incomplete")} · provider_health_gate ${cover.provider_health_gate === true} · google ${esc(google)} · 不影响 ${(cover.does_not_affect || ["price", "earnings", "macro_rates"]).join("/")}</span>`;
+    return `<span class="status-pill ${(health.ok ? "ok" : "not_configured")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-source-health="${health.ok ? "1" : "0"}" data-google-status="${esc(google)}">${esc(health.label || "数据源不完整")} · ${esc(evidence.label || "证据不足")} · ${esc(conclude.label || "尚不能形成结论")} · ${esc(conclude.reason || "")}</span>`;
   }
 
   async function loadEvents() {

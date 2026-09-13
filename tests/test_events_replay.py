@@ -56,6 +56,8 @@ def test_recorded_pack_integrity_and_pipeline():
         hormuz.analysis["what_changes"]["text"] or ""
     )
     assert hormuz.analysis["direction"]["text"] == "relief"
+    assert hormuz.analysis["causal_chain"]["complete"] is True
+    assert fomc.analysis["causal_chain"]["complete"] is True
     assert why_relevant(hormuz, "XOM")
     assert why_relevant(hormuz, "NVDA")
     assert why_relevant(hormuz, "JPM")
