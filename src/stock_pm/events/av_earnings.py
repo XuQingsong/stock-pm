@@ -1002,6 +1002,19 @@ class AvEarningsProvider:
                 continue
             bundle = bundles.get(symbol) or {}
             outcomes = dict(outcomes_by.get(symbol) or {})
+            for name, rec in endpoints.items():
+                if not isinstance(rec, dict) or not rec.get("last_success_at"):
+                    continue
+                existing = dict(outcomes.get(name) or {})
+                if not existing.get("last_success_at"):
+                    existing["last_success_at"] = rec.get("last_success_at")
+                if not existing.get("fetched_at"):
+                    existing["fetched_at"] = rec.get("last_success_at")
+                if not existing.get("source"):
+                    existing["source"] = rec.get("source") or "none"
+                if existing.get("next_retry_at") is None:
+                    existing["next_retry_at"] = rec.get("next_retry_at")
+                outcomes[name] = existing
             live_source = str(bundle.get("earnings_source") or (outcomes.get("EARNINGS") or {}).get("source") or "none")
             evidence = None
             if bundle.get("payload"):
@@ -1040,8 +1053,12 @@ class AvEarningsProvider:
                             "last_success_at": str(cached_tr.get("fetched_at") or fetched_at) if judged_tr["usable"] else None,
                         })
                 earn_out = outcomes.get("EARNINGS") or {}
+                earn_ep = endpoints.get("EARNINGS") or {}
                 evidence_at = str(
-                    earn_out.get("last_success_at") or earn_out.get("fetched_at") or fetched_at
+                    earn_out.get("last_success_at")
+                    or earn_ep.get("last_success_at")
+                    or earn_out.get("fetched_at")
+                    or fetched_at
                 )
                 evidence = self._evidence_from_payload(
                     symbol,

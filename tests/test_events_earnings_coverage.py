@@ -1107,3 +1107,32 @@ def test_summary_and_ui_times_stay_consistent_with_cache_age(monkeypatch, tmp_pa
     assert _same_stamp(shown["last_success_at"], old)
     assert _same_stamp(shown["endpoints"]["EARNINGS"]["last_success_at"], old)
     assert shown["next_retry_at"] == shown["endpoints"]["EARNINGS"]["next_retry_at"]
+
+
+def test_later_round_does_not_rewrite_field_success_time(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "1")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    calls = []
+    fake = _aapl_like_fetch(calls, aapl)
+    first = Settings(events_mode="empty", earnings_av_budget=1)
+    watch = _one_watch()
+    _restart_style_discover(monkeypatch, fake, settings=first, watchlist=watch)
+    first_row = health_for_symbol("AAPL")
+    first_success = first_row["endpoints"]["EARNINGS"]["last_success_at"]
+    assert first_success
+    assert _same_stamp(first_row["fields"]["actual"]["last_success_at"], first_success)
+    later = Settings(events_mode="empty", earnings_av_budget=4)
+    _restart_style_discover(monkeypatch, fake, settings=later, watchlist=watch)
+    health = current_earnings_health()
+    row = health["symbols"]["AAPL"]
+    earn = row["endpoints"]["EARNINGS"]
+    actual = row["fields"]["actual"]
+    assert _same_stamp(earn["last_success_at"], first_success)
+    assert _same_stamp(actual["last_success_at"], first_success)
+    assert _same_stamp(row["last_success_at"], first_success)
+    assert health["as_of"] != first_success or earn.get("this_round") is False
+    assert not any(function == "EARNINGS" and symbol == "AAPL" for function, symbol, _ in calls[1:])
