@@ -1,8 +1,6 @@
 # Investment Decision Kernel v1
 
-阶段 1 只建立投资分析内核与 Golden Tests。不改页面、API、schema，不接外部数据。
-
-本内核是新的决策主链，不是旧 `impact.macro_impact` / `environment.causal_one_liner` / `prediction.synthesize_prediction` 的平行产品。那些模块继续服务现有页面；宏观→个股方向必须走本内核，不得复用会跳层的 `MACRO_RULES`。
+本内核是新的决策主链，不是旧 `impact.macro_impact` / `environment.causal_one_liner` / `prediction.synthesize_prediction` 的平行产品。那些模块继续服务现有页面；宏观→个股方向必须走本内核，不得复用会跳层的 `MACRO_RULES`。阶段范围只维护在文末「阶段边界」，此处不重复。
 
 复用：`analytics._number`（缺失保持 `None`，不转 0）、`impact.THEME_NAMES`（行业/主题命名）。
 
@@ -15,7 +13,8 @@ Facts
   → Price / Expectation Tension
   → Causal Impact
   → Thesis
-  →（后续阶段）Prediction / UI / Outcome
+  →（阶段 2）现有 `/stock/{symbol}` 页面 + 只读 decision endpoint
+  →（后续阶段）Prediction / Outcome
 ```
 
 禁止跨层跳跃：没有通过事实校验的 OHLC 不得生成 Change；没有比较基准不得声称涨跌；没有最新财报前共识不得把 actual 去跟更早预期比；没有传导机制+exposure 不得从宏观得出个股方向；没有市场确认不得把宏观印成有效 CausalImpact；未确认新闻不得改 Thesis。
@@ -28,7 +27,7 @@ Facts
 | Change | 同一指标 previous vs current：delta 与重要性分离 | 无基准不说上升/下降；missing ≠ 0 |
 | Expectation | actual vs **最新**财报前共识；共识修订 vs 更早共识 | 不把 surprise 写成「超预期利好」；缺历史共识无 revision trend |
 | Tension | 基本面修订 vs 价格 vs 估值，描述谁跑得更快 | 不输出 `priced_in` |
-| Causal | cause + 机制 + exposure + 市场确认 → 对**该**标的的方向 | 宏观事实不直接跳个股；未确认新闻只做线索 |
+| Causal | cause + 机制 + exposure + 市场确认 → 对**该**标的的方向 | 宏观事实不直接跳个股；未确认新闻只做线索；Market Confirmation 不能代替 Expectation 或 Tension |
 | Thesis | 同时保留多空、核心分歧、失效条件 | 不给涨跌区间或概率 |
 | WhatChanged | 回答变了什么、为何重要、影响谁、Thesis 变没变 | 不用旧新闻或条目数量填充 |
 
@@ -72,6 +71,15 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 
 `MarketConfirmation(status="confirmed")` 不可伪造：`__post_init__` 与 `build_causal_impact` 均重新验证 `used`（≥2 个去重合格独立通道、方向、materiality、窗口、as_of、refs）。空 `used`、重复指标、无 refs 或方向不合均不得 confirmed/valid。
 
+### 机制是否需要 Expectation 层
+
+契约常量 `MECHANISMS_REQUIRING_EXPECTATION` / `MECHANISMS_WITHOUT_EXPECTATION`（`causal.py`）。不得由 UI 静默跳过 Expectation。
+
+- **需要**：`inflation_to_rates_to_discount`。投资逻辑依赖「通胀改变利率预期」时，必须有可追溯的利率路径/降息概率 expectation delta（current vs prior + as_of + source）。`expectation.status != ok` 或 Price/Expectation Tension 为 `insufficient` 时，不得把该链标 `complete`，不得形成有效 bullish/bearish driver，只能 observation/watch。Market Confirmation 回答的是通道是否共同确认传导方向，不能补丁式代替 Expectation 或 Tension。
+- **不需要（显式例外）**：`commodity_price_to_producer_revenue`、`commodity_price_to_input_cost`。油价对生产商收入/消费者成本的传导不经过利率预期层。
+
+阶段 2 页面链：What Changed → Expectation Change → Price / Expectation Tension → Causal Impact（内含 Market Confirmation + Transmission）→ Thesis Impact。Tension 必须独立可见。
+
 ### `ThesisSnapshot` ← `build_thesis_snapshot`
 
 `direction`, `bull_drivers`≤3, `bear_drivers`≤3, `key_disagreement`, `invalidation`, `evidence_quality`, `based_on_change_ids`, `based_on_expectation_ids`, `based_on_causal_impact_ids`, `generated_at`, `status`。
@@ -92,6 +100,7 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 4. `MACRO_RULES` / 新闻标题不得替代 CausalImpact。
 5. 无机制或缺 exposure 不得给个股 `direction`。
 6. 未确认新闻不得写入有效 CausalImpact，也不得把 Thesis 标成已改变。
+7. `inflation_to_rates_to_discount` 在 Expectation 非 ok 或 Tension 为 insufficient 时不得形成有效方向；Market Confirmation 不得代替这两层。
 
 ## Golden Tests 映射
 
@@ -137,6 +146,10 @@ Change / Expectation 带 `scope`（global/sector/symbol）与 `subject`。公司
 | AL | 无 as_of / 不可解析 as_of 的 ValidatedBar 与 FactRef 不得进入后续层 | `ValidatedBar` / `FactRef` |
 | AM | 负数 materiality 阈值不得构造，不能把任意变化变成 material | `MaterialityRule` |
 
-## 明确不在本阶段
+## 阶段边界
 
-Prediction、UI、API、数据库、Outcome 回检、概率、多周期、外部数据源、自动学习。
+- **阶段一**：只建立本内核与 Golden Tests A–AM。不含 UI、API、schema migration、外部数据源。
+- **阶段二**：只把本内核接到现有 `/stock/{symbol}` 页面，并增加只读 `GET /api/stock/{symbol}/decision`。生产路径只读现有表；缺 US2Y/VIX/前次共识时必须显示 gap。页面链必须含独立 Tension，不得把 Confirmation 与 Tension 合并。合成 A/B/C 必须 `ENABLE_DECISION_PREVIEW=true` 且 `APP_ENV` 为 development/test/local，页面标注「合成演示数据」；缺省或生产环境绝不返回 fixture。
+- **明确不含**：schema migration、Alpha Vantage / SEC / 新闻等新外部数据源、预测价格/概率、Outcome 回检、多周期、自动学习。不合并阶段 1 Draft。
+
+数据集时钟只使用 `observed_at` / `ingested_at` / `synced_at` / `source_as_of` / 已成交 `bar_time`。`event_time`、`release_date`、`fiscal_period` 是事件或计划时间，不得推进时钟；无可靠观察时间返回 `clock_insufficient`，不得用 `date.today()` 或未来日程代替。

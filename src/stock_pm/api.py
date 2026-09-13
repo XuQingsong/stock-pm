@@ -368,6 +368,22 @@ def stock_overview(symbol: str) -> dict:
         raise _http_error(exc) from exc
 
 
+@app.get("/api/stock/{symbol}/decision")
+def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
+    from .decision.assemble import assemble_from_bundle
+    from .decision.preview import build_preview, preview_allowed
+
+    key = (preview or "").strip().upper()
+    try:
+        if key in {"A", "B", "C"} and preview_allowed():
+            return build_preview(symbol, key)
+        return assemble_from_bundle(database.decision_bundle(symbol))
+    except ValueError as exc:
+        raise _http_error(exc) from exc
+    except DatabaseError as exc:
+        raise _http_error(exc) from exc
+
+
 @app.get("/api/stock/{symbol}/fundamentals")
 def stock_fundamentals(symbol: str) -> dict:
     try:

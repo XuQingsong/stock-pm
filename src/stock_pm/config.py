@@ -64,3 +64,8 @@ class Settings:
     llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", ""))
     llm_base_url: str = field(default_factory=lambda: os.getenv("LLM_BASE_URL", ""))
     large_trade_notional: float = field(default_factory=lambda: float(os.getenv("LARGE_TRADE_NOTIONAL", "200000")))
+    app_env: str = field(default_factory=lambda: (os.getenv("APP_ENV") or "").strip().lower())
+    enable_decision_preview: bool = field(
+        default_factory=lambda: (os.getenv("ENABLE_DECISION_PREVIEW") or "").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )

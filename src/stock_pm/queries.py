@@ -81,6 +81,7 @@ EARNINGS_SQL = """
                 e.revenue_estimate, e.revenue_surprise_pct,
                 e.net_income_actual, e.net_income_estimate,
                 e.net_income_surprise_pct, e.provider_fields, e.source,
+                e.synced_at,
                 before_5.close_price AS price_5d_before,
                 before_1.close_price AS price_before,
                 after_1.close_price AS price_after_1d,
@@ -529,6 +530,62 @@ class QueryMixin:
             "valuation": self.latest_fundamentals(normalized),
             "earnings": self.earnings_history(normalized),
             "thesis": self.fundamentals_thesis_view(normalized),
+        }
+
+    def decision_bundle(self, symbol: str) -> dict:
+        from .decision.clock import classify_macros, dataset_as_of, macro_window
+
+        normalized = self._watchlist_symbol(symbol)
+        watch = next(
+            (row for row in self.watchlist_rows() if row["symbol"] == normalized),
+            {"symbol": normalized, "themes": [], "rate_sensitivity": "medium"},
+        )
+        bars = self.fetch_all(
+            """
+            SELECT symbol, bar_size, bar_time, open_price, high_price,
+                   low_price, close_price, volume, source
+            FROM daily_price_bars
+            WHERE symbol = %s AND bar_size = '1d'
+            ORDER BY bar_time DESC
+            LIMIT 8
+            """,
+            (normalized,),
+        )
+        earnings = self.earnings_history(normalized)[:4]
+        macros = self.fetch_all(
+            """
+            SELECT event_type, event_time, name, actual, consensus, prior,
+                   unit, surprise, confirmed, source, notes
+            FROM macro_events
+            ORDER BY event_time DESC
+            LIMIT 200
+            """
+        )
+        clock = dataset_as_of(bars=bars, earnings=earnings, macros=macros)
+        parts = classify_macros(macros, clock)
+        window = None
+        if clock is not None:
+            start, end = macro_window(clock)
+            window = {
+                "start": start.isoformat(),
+                "end": end.isoformat(),
+                "dataset_as_of": clock.isoformat(),
+            }
+        return {
+            "symbol": normalized,
+            "watch": watch,
+            "bars": bars,
+            "earnings": earnings,
+            "fundamentals": self.latest_fundamentals(normalized),
+            "macro_events": parts.inside,
+            "macro_events_stale": parts.stale,
+            "macro_events_window_mismatch": parts.mismatch,
+            "macro_events_scheduled": parts.scheduled,
+            "macro_window": window,
+            "clock_status": "ok" if clock is not None else "clock_insufficient",
+            "news": self.news([normalized], 12),
+            "cboe": self.cboe_option_stats(),
+            "synthetic": False,
         }
 
     def chart_history(

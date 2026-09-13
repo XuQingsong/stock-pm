@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
 
 from stock_pm import api
@@ -120,6 +121,20 @@ class FakeDatabase:
 
     def latest_fundamentals(self, symbol):
         return {"symbol": symbol.upper(), "pe_ttm": 25.4}
+
+    def decision_bundle(self, symbol):
+        row = next((item for item in WATCH if item["symbol"] == symbol.upper()), WATCH[0])
+        return {
+            "symbol": symbol.upper(),
+            "watch": row,
+            "bars": [],
+            "earnings": [],
+            "fundamentals": None,
+            "macro_events": list(self.macro),
+            "news": [],
+            "cboe": None,
+            "synthetic": False,
+        }
 
     def earnings_history(self, symbol):
         return [{"symbol": symbol.upper(), "fiscal_period": "Q2"}]
@@ -505,6 +520,8 @@ def test_pages_render(monkeypatch):
     assert "规则对照" in c.get("/static/stock.js").text
     assert "旧口径" not in c.get("/review").text
     assert "旧口径" not in c.get("/static/stock.js").text
+    assert "动态判断" in c.get("/stock/NVDA").text
+    assert "decision-module" in c.get("/stock/NVDA").text
     assert c.get("/live", follow_redirects=False).status_code == 307
 
 
@@ -570,6 +587,66 @@ def test_stock_group(monkeypatch):
     assert c.get("/api/market/session?date=bad").status_code == 400
     chart = c.get("/api/stock/NVDA/chart?interval=1m").json()
     assert chart["daily_ma"]["ma50"] == 240
+
+
+def test_stock_decision_live_and_preview(monkeypatch):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
+    c = client(monkeypatch)
+    live = c.get("/api/stock/NVDA/decision").json()
+    assert live["symbol"] == "NVDA"
+    assert live["synthetic"] is False
+    assert live["preview"] is None
+    assert [step["id"] for step in live["chain"]] == [
+        "what_changed", "expectation", "tension", "causal_impact", "thesis_impact"
+    ]
+    # Default-off: a leaked ?preview= must never return fixture.
+    leaked = c.get("/api/stock/NVDA/decision?preview=A").json()
+    assert leaked["synthetic"] is False
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("ENABLE_DECISION_PREVIEW", "true")
+    preview = c.get("/api/stock/NVDA/decision?preview=A").json()
+    assert preview["synthetic"] is True
+    assert preview["preview"] == "A"
+    assert "合成演示数据" in preview["preview_label"]
+    assert preview["chain"][3]["id"] == "causal_impact"
+    assert preview["chain"][3]["confirmation"]["status"] == "confirmed"
+    assert preview["chain"][2]["id"] == "tension"
+    assert preview["chain"][1]["status"] == "ok"
+    scene_b = c.get("/api/stock/NVDA/decision?preview=B").json()
+    assert scene_b["what_changed"]["thesis_changed"] is False
+    scene_c = c.get("/api/stock/AAPL/decision?preview=C").json()
+    assert scene_c["no_material_change"] is True
+
+
+@pytest.mark.parametrize(
+    "env,flag",
+    [
+        (None, None),
+        ("", "true"),
+        ("   ", "true"),
+        ("unknown", "true"),
+        ("production", "true"),
+        ("prod", "true"),
+        (" PRODUCTION ", "true"),
+        ("Prod", "true"),
+        ("development", None),
+        ("development", "false"),
+        (None, "true"),
+    ],
+)
+def test_decision_preview_never_returns_fixture_without_opt_in(monkeypatch, env, flag):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENABLE_DECISION_PREVIEW", raising=False)
+    if env is not None:
+        monkeypatch.setenv("APP_ENV", env)
+    if flag is not None:
+        monkeypatch.setenv("ENABLE_DECISION_PREVIEW", flag)
+    c = client(monkeypatch)
+    for scene in ("A", "B", "C"):
+        body = c.get(f"/api/stock/NVDA/decision?preview={scene}").json()
+        assert body["synthetic"] is False, (env, flag, scene)
+        assert body.get("preview") in (None, "")
 
 
 def test_patch_review(monkeypatch):
