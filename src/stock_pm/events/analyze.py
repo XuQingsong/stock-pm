@@ -6,6 +6,7 @@ from typing import Any
 
 from .bodies import is_sec_item_metadata
 from .earnings import binding_refs, earnings_for_event, implication_text
+from .earnings_health import health_for_symbol
 from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
@@ -22,6 +23,24 @@ EARNINGS_IMPLICATION_LABELS = {
     "inline_and_grow",
     "inline_or_mixed",
 }
+
+
+def _earnings_evidence_payload(earnings_row: Any) -> dict[str, Any] | None:
+    if earnings_row is None:
+        return None
+    payload = earnings_row.as_dict()
+    extra = health_for_symbol(getattr(earnings_row, "symbol", ""))
+    if extra:
+        payload["field_health"] = extra.get("fields")
+        payload["last_success_at"] = extra.get("last_success_at") or payload.get("fetched_at")
+        payload["next_retry_at"] = extra.get("next_retry_at")
+        payload["health_source"] = extra.get("source")
+        payload["health_reason_code"] = extra.get("reason_code")
+        if extra.get("missing_fields") and not payload.get("gap"):
+            payload["missing_fields"] = extra.get("missing_fields")
+        elif extra.get("missing_fields"):
+            payload["missing_fields"] = extra.get("missing_fields")
+    return payload
 
 
 def can_form_direction(
@@ -512,6 +531,8 @@ def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, A
         "last_fetched_at": last_fetched,
         "fetch_error": fetch_error,
         "body_source": body_source,
+        "last_success_at": (analysis.get("earnings_evidence") or {}).get("last_success_at") if isinstance(analysis, dict) else None,
+        "next_retry_at": (analysis.get("earnings_evidence") or {}).get("next_retry_at") if isinstance(analysis, dict) else None,
     }
 
 
@@ -790,7 +811,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         },
         "filing_fact_only": bool(filing_fact_only and fact_supported),
         "event_type": event.event_type,
-        "earnings_evidence": earnings_row.as_dict() if earnings_row else None,
+        "earnings_evidence": _earnings_evidence_payload(earnings_row),
         "earnings_implication": earnings_implication,
         "earnings_chain_complete": bool(earnings_row and earnings_row.complete()),
         "can_form_direction": can_form_direction(

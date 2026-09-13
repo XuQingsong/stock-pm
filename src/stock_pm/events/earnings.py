@@ -14,6 +14,7 @@ from .types import EventDocument
 
 
 FROZEN_EARNINGS_PATH = Path(__file__).resolve().parent.parent / "data" / "events_5c_b_frozen_earnings.json"
+FROZEN_COVERAGE_PATH = Path(__file__).resolve().parent.parent / "data" / "events_5c_c_frozen_earnings.json"
 FROZEN_EARNINGS_DATA_CLASS = "frozen_provider_audit"
 RULE_ID = "earnings_implication.v1"
 ALIGN_ID = "period_align.v2"
@@ -25,7 +26,18 @@ AV_ESTIMATES_SOURCE = "https://www.alphavantage.co/query?function=EARNINGS_ESTIM
 AV_TRANSCRIPT_SOURCE = "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol={symbol}&quarter={quarter}"
 CONSENSUS_ROLE = "provider_reported_consensus_at_print"
 # Issuer FYE month. October-start FY for September FYE (AAPL). Calendar FY for December FYE.
-FISCAL_YEAR_END_MONTH = {"AAPL": 9, "NVDA": 1, "XOM": 12, "JPM": 12}
+# Issuer FYE month. Unknown issuers omit a quarter id and skip transcript; do not invent numbers.
+FISCAL_YEAR_END_MONTH = {
+    "AAPL": 9,
+    "NVDA": 1,
+    "XOM": 12,
+    "JPM": 12,
+    "INTC": 12,
+    "GOOGL": 12,
+    "NOK": 12,
+    "MU": 8,
+    "AVGO": 10,
+}
 
 _REGISTRY: dict[str, "EarningsEvidence"] = {}
 
@@ -157,7 +169,11 @@ def earnings_for(symbol: str, *, metric: str = "eps", fiscal_date_ending: str = 
 
 def earnings_for_event(event: Any) -> EarningsEvidence | None:
     entities = [str(item).upper() for item in getattr(event, "entities", []) or []]
-    symbol = next((item for item in entities if item.isalpha() and len(item) <= 5), "")
+    metric_tokens = {"EPS", "REV", "REVENUE", "EARNINGS", "USD"}
+    symbol = next(
+        (item for item in entities if item.isalpha() and 1 <= len(item) <= 5 and item not in metric_tokens),
+        "",
+    )
     ending = next((item for item in entities if len(item) >= 7 and item[4:5] == "-"), "")
     if not symbol:
         return None
@@ -621,33 +637,30 @@ def documents_from_evidence(row: EarningsEvidence, *, sec_url: str = "") -> list
     return [vendor]
 
 
-def load_frozen_earnings_documents(path: Path | None = None, payload: dict[str, Any] | None = None) -> list[EventDocument]:
-    pack = payload or load_frozen_earnings(path)
-    av = pack.get("av_earnings") or {}
-    tr = pack.get("av_transcript") or {}
-    estimates = pack.get("av_estimates") or {}
-    sec = pack.get("sec_filing") or {}
-    fetched_at = str(pack.get("fetched_at") or "")
-    source = str(av.get("http_source") or AV_EARNINGS_SOURCE.format(symbol="AAPL"))
+def documents_from_frozen_symbol(
+    av: dict[str, Any],
+    tr: dict[str, Any],
+    estimates: dict[str, Any],
+    sec: dict[str, Any],
+    fetched_at: str,
+    *,
+    extra_refs: list[dict[str, Any]] | None = None,
+) -> list[EventDocument]:
+    symbol = str(av.get("symbol") or "AAPL").upper()
+    source = str(av.get("http_source") or AV_EARNINGS_SOURCE.format(symbol=symbol))
     row = evidence_from_av_quarters(
         list(av.get("quarterlyEarnings") or []),
-        symbol=str(av.get("symbol") or "AAPL"),
+        symbol=symbol,
         fetched_at=fetched_at,
         source_url=source,
-        extra_refs=[
+        extra_refs=extra_refs or [
             {
                 "provider": "alpha_vantage",
                 "function": "EARNINGS_ESTIMATES",
                 "source_url": estimates.get("http_source"),
                 "role": "current_or_future_revision_snapshot",
                 "used_for_surprise": False,
-            },
-            {
-                "provider": "fmp",
-                "function": "stored_earnings_reports",
-                "raw": (pack.get("stored_fmp") or [None])[0],
-                "used_for_surprise": False,
-            },
+            }
         ],
     )
     apply_estimate_snapshot(
@@ -664,6 +677,58 @@ def load_frozen_earnings_documents(path: Path | None = None, payload: dict[str, 
         symbol=row.symbol,
     )
     return documents_from_evidence(row, sec_url=str(sec.get("url") or ""))
+
+
+def load_frozen_earnings_documents(path: Path | None = None, payload: dict[str, Any] | None = None) -> list[EventDocument]:
+    pack = payload or load_frozen_earnings(path)
+    return documents_from_frozen_symbol(
+        pack.get("av_earnings") or {},
+        pack.get("av_transcript") or {},
+        pack.get("av_estimates") or {},
+        pack.get("sec_filing") or {},
+        str(pack.get("fetched_at") or ""),
+        extra_refs=[
+            {
+                "provider": "alpha_vantage",
+                "function": "EARNINGS_ESTIMATES",
+                "source_url": (pack.get("av_estimates") or {}).get("http_source"),
+                "role": "current_or_future_revision_snapshot",
+                "used_for_surprise": False,
+            },
+            {
+                "provider": "fmp",
+                "function": "stored_earnings_reports",
+                "raw": (pack.get("stored_fmp") or [None])[0],
+                "used_for_surprise": False,
+            },
+        ],
+    )
+
+
+def load_frozen_coverage(path: Path | None = None) -> dict[str, Any]:
+    return load_frozen_earnings(path or FROZEN_COVERAGE_PATH)
+
+
+def load_frozen_coverage_documents(path: Path | None = None, payload: dict[str, Any] | None = None) -> list[EventDocument]:
+    pack = payload or load_frozen_coverage(path)
+    fetched_at = str(pack.get("fetched_at") or "")
+    rows: list[EventDocument] = []
+    for item in pack.get("symbols") or []:
+        if not isinstance(item, dict):
+            continue
+        av = item.get("av_earnings") or {}
+        if not av.get("quarterlyEarnings") and not av.get("symbol"):
+            continue
+        rows.extend(
+            documents_from_frozen_symbol(
+                av,
+                item.get("av_transcript") or {},
+                item.get("av_estimates") or {},
+                item.get("sec_filing") or {},
+                str(item.get("fetched_at") or fetched_at),
+            )
+        )
+    return rows
 
 
 def local_degraded_earnings_documents() -> list[EventDocument]:

@@ -8,6 +8,7 @@ from stock_pm.config import Settings
 
 from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol_event_view
 from .dedupe import build_events
+from .earnings_health import current_earnings_health, health_for_symbol, summarize_health
 from .live import discover_live_documents, reset_live_state
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
@@ -82,6 +83,18 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     failed = [f"{row.get('provider')}:{row.get('reason_code')}" for row in live_rows if row.get("status") != "ok"]
     provider_health_gate = mode not in {"demo", "fixture", "recorded_replay"} and len(live_ok) == len(REQUIRED_LIVE)
     product_status = _product_status(rows, provider_health_gate=provider_health_gate, note=note)
+    earnings_report = current_earnings_health()
+    earnings_cover = summarize_health(earnings_report)
+    if mode in {"demo", "fixture"}:
+        earnings_cover["live"] = False
+        earnings_cover["data_class"] = "frozen_provider_audit"
+        earnings_cover["live_complete_count"] = 0
+        earnings_cover["fixture_complete_count"] = int(earnings_cover.get("complete_count") or 0)
+        earnings_cover["note"] = "Frozen/fixture coverage is not production live coverage."
+    elif not earnings_report:
+        earnings_cover["live"] = False
+        earnings_cover["data_class"] = "live_current"
+        earnings_cover["note"] = "No live earnings discover has run. Fixture was not loaded."
     return {
         "status": verdict,
         "verdict": verdict,
@@ -110,6 +123,7 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "note": note,
         "google_cse": google.get("status"),
         "product_status": product_status,
+        "earnings_coverage": earnings_cover,
     }
 
 
@@ -229,7 +243,8 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         "coverage": cover,
         "events": selected,
         "risk_state": risk_state,
-        "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。",
+        "earnings_health": health_for_symbol(symbol),
+        "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。宏观事件不会复制到全部股票。",
     }
 
 
@@ -244,6 +259,11 @@ def reset_cache() -> None:
     _CACHE["events"] = None
     _CACHE["coverage"] = None
     reset_live_state()
+    from .earnings_health import reset_earnings_health
+    from .watchlist import reset_watchlist_override
+
+    reset_earnings_health()
+    reset_watchlist_override()
 
 
 def display_symbols() -> tuple[str, ...]:

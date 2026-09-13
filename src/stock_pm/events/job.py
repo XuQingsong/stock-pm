@@ -16,7 +16,14 @@ from .service import build_event_book, coverage, reset_cache
 from .store import load_cursors, persist_cursor, persist_events
 
 
-LIVE_CURSOR_NAMES = ("sec_edgar", "federal_reserve", "eia_press", "official_feed", "google_cse")
+LIVE_CURSOR_NAMES = (
+    "sec_edgar",
+    "federal_reserve",
+    "eia_press",
+    "official_feed",
+    "google_cse",
+    "alpha_vantage_earnings",
+)
 
 
 def _hydrate_cursors(conn) -> None:
@@ -52,6 +59,12 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
         db = Database(config)
         with db.pool.connection() as conn:
             _hydrate_cursors(conn)
+            try:
+                from stock_pm.events.watchlist import apply_watchlist_rows
+
+                apply_watchlist_rows(db.watchlist_rows())
+            except Exception:
+                pass
             events = build_event_book(config, refresh=True)
             cover = coverage(config, events)
             persisted = persist_events(conn, events, cover)
