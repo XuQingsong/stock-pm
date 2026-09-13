@@ -113,6 +113,19 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     }
 
 
+def _evidence_sufficiency_copy(*, valid: int, withheld: int, unsupported: int) -> tuple[str, str]:
+    """User-facing evidence label. Does not change accept scoring."""
+    detail = (
+        f"有效结论 {valid} · 不形成方向 {withheld} · 摘录不支持 {unsupported}。"
+        "摘录不支持是不形成方向的原因子集，三项不是互斥总数。"
+    )
+    if valid <= 0:
+        return "证据不足", detail
+    if withheld > 0 or unsupported > 0:
+        return "部分事件证据充分", detail
+    return "证据充分", detail
+
+
 def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, note: str) -> dict[str, Any]:
     summary = closed_loop_summary(events)
     valid = int(summary["valid_conclusion_count"])
@@ -127,6 +140,9 @@ def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, n
         reasons.append("存在仍标为可观察但证据或链条不合格的事件")
     if valid == 0:
         reasons.append(note or "证据不足，不形成方向结论")
+    evidence_label, evidence_detail = _evidence_sufficiency_copy(
+        valid=valid, withheld=withheld, unsupported=unsupported
+    )
     return {
         "source_health": {
             "ok": provider_health_gate,
@@ -137,10 +153,8 @@ def _product_status(events: list[TrustedEvent], *, provider_health_gate: bool, n
         },
         "evidence_sufficiency": {
             "ok": evidence_ok,
-            "label": "证据充分" if evidence_ok else "证据不足",
-            "detail": (
-                f"有效结论 {valid} · 不形成方向 {withheld} · 摘录不支持 {unsupported}"
-            ),
+            "label": evidence_label,
+            "detail": evidence_detail,
         },
         "can_conclude": {
             "ok": can_conclude,
