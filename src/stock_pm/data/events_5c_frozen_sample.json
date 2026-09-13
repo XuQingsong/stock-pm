@@ -1,0 +1,4053 @@
+{
+  "audit_id": "events_5c_a_frozen_sample",
+  "data_class": "frozen_official_audit",
+  "live": false,
+  "not_production_live": true,
+  "note": "Frozen official documents and extracts captured 2026-09-13. Not live runtime evidence and not production live latest.",
+  "fetched_at": "2026-09-13T10:20:00+00:00",
+  "before": {
+    "valid_conclusion_count": 31,
+    "withheld_count": 92,
+    "unsupported_count": 44,
+    "leaked_observable_count": 0,
+    "evidence_event_count": 79,
+    "ok": true
+  },
+  "after": {
+    "valid_conclusion_count": 34,
+    "withheld_count": 89,
+    "unsupported_count": 41,
+    "leaked_observable_count": 0,
+    "evidence_event_count": 82,
+    "ok": true
+  },
+  "documents": [
+    {
+      "title": "8-K - Fly-E Group, Inc. (0001975940) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1975940/000121390026099368/0001213900-26-099368-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:29:31+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001975940",
+        "0001213900-26-099368",
+        "Fly-E Group, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Fly-E Group, Inc. (0001975940) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099368 Size: 305 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099368 Size: 305 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - SharonAI Holdings Inc. (0002068385) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/2068385/000149315226042434/0001493152-26-042434-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:28:00+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0002068385",
+        "0001493152-26-042434",
+        "SharonAI Holdings Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - SharonAI Holdings Inc. (0002068385) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042434 Size: 343 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042434 Size: 343 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - DeFi Development Corp. (0001805526) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1805526/000180552626000104/0001805526-26-000104-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:27:46+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001805526",
+        "0001805526-26-000104",
+        "DeFi Development Corp.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - DeFi Development Corp. (0001805526) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001805526-26-000104 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001805526-26-000104 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - T3 Defense Inc. (0001787518) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1787518/000118518526003953/0001185185-26-003953-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:25:26+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001787518",
+        "0001185185-26-003953",
+        "T3 Defense Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - T3 Defense Inc. (0001787518) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001185185-26-003953 Size: 339 KB\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001185185-26-003953 Size: 339 KB\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - KULR Technology Group, Inc. (0001662684) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1662684/000110465926107130/0001104659-26-107130-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:25:25+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001662684",
+        "0001104659-26-107130",
+        "KULR Technology Group, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - KULR Technology Group, Inc. (0001662684) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107130 Size: 188 KB\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107130 Size: 188 KB\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Volato Group, Inc. (0001853070) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1853070/000149315226042429/0001493152-26-042429-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:25:16+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001853070",
+        "0001493152-26-042429",
+        "Volato Group, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Volato Group, Inc. (0001853070) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042429 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 3.02: Unregistered Sales of Equity Securities\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042429 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 3.02: Unregistered Sales of Equity Securities\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Greenwave Technology Solutions, Inc. (0001589149) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1589149/000149315226042431/0001493152-26-042431-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:25:15+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001589149",
+        "0001493152-26-042431",
+        "Greenwave Technology Solutions, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Greenwave Technology Solutions, Inc. (0001589149) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042431 Size: 653 KB\nItem 3.02: Unregistered Sales of Equity Securities\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042431 Size: 653 KB\nItem 3.02: Unregistered Sales of Equity Securities\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - VISIUM TECHNOLOGIES, INC. (0001082733) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008309/0001654954-26-008309-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:24:58+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001082733",
+        "0001654954-26-008309",
+        "VISIUM TECHNOLOGIES, INC.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - VISIUM TECHNOLOGIES, INC. (0001082733) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001654954-26-008309 Size: 176 KB\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001654954-26-008309 Size: 176 KB\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - IMMUNIC, INC. (0001280776) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1280776/000119380526001219/0001193805-26-001219-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:24:44+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001280776",
+        "0001193805-26-001219",
+        "IMMUNIC, INC.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - IMMUNIC, INC. (0001280776) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001193805-26-001219 Size: 187 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001193805-26-001219 Size: 187 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Glucotrack, Inc. (0001506983) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1506983/000149315226042428/0001493152-26-042428-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:20:19+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001506983",
+        "0001493152-26-042428",
+        "Glucotrack, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Glucotrack, Inc. (0001506983) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042428 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 3.02: Unregistered Sales of Equity Securities\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042428 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 3.02: Unregistered Sales of Equity Securities\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Amesite Inc. (0001807166) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1807166/000121390026099345/0001213900-26-099345-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:16:32+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001807166",
+        "0001213900-26-099345",
+        "Amesite Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Amesite Inc. (0001807166) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099345 Size: 12 MB\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099345 Size: 12 MB\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Banzai International, Inc. (0001826011) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1826011/000149315226042422/0001493152-26-042422-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:15:18+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001826011",
+        "0001493152-26-042422",
+        "Banzai International, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Banzai International, Inc. (0001826011) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042422 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042422 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Brightline Interactive, Inc./NV (0001854445) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1854445/000149315226042421/0001493152-26-042421-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:15:17+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001854445",
+        "0001493152-26-042421",
+        "Brightline Interactive, Inc./NV",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Brightline Interactive, Inc./NV (0001854445) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042421 Size: 209 KB\nItem 3.01: Notice of Delisting or Failure to Satisfy a Continued Listing Rule or Standard; Transfer of Listing"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042421 Size: 209 KB\nItem 3.01: Notice of Delisting or Failure to Satisfy a Continued Listing Rule or Standard; Transfer of Listing",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - ACADIA PHARMACEUTICALS INC (0001070494) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1070494/000119312526389400/0001193125-26-389400-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:15:06+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001070494",
+        "0001193125-26-389400",
+        "ACADIA PHARMACEUTICALS INC",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - ACADIA PHARMACEUTICALS INC (0001070494) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001193125-26-389400 Size: 604 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001193125-26-389400 Size: 604 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - GMR Solutions Inc. (0001898718) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1898718/000110465926107124/0001104659-26-107124-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:14:46+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001898718",
+        "0001104659-26-107124",
+        "GMR Solutions Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - GMR Solutions Inc. (0001898718) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107124 Size: 204 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107124 Size: 204 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Flux Power Holdings, Inc. (0001083743) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1083743/000149315226042419/0001493152-26-042419-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:14:28+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001083743",
+        "0001493152-26-042419",
+        "Flux Power Holdings, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Flux Power Holdings, Inc. (0001083743) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042419 Size: 211 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042419 Size: 211 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - COTY INC. (0001024305) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1024305/000102430526000054/0001024305-26-000054-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:10:18+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001024305",
+        "0001024305-26-000054",
+        "COTY INC.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - COTY INC. (0001024305) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001024305-26-000054 Size: 143 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001024305-26-000054 Size: 143 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K/A - BELDEN INC. (0000913142) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/913142/000091314226000037/0000913142-26-000037-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:05:58+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000913142",
+        "0000913142-26-000037",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K/A - BELDEN INC. (0000913142) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0000913142-26-000037 Size: 1 MB\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0000913142-26-000037 Size: 1 MB\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - FLEXSTEEL INDUSTRIES INC (0000037472) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/37472/000119312526389381/0001193125-26-389381-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:04:31+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000037472",
+        "0001193125-26-389381",
+        "FLEXSTEEL INDUSTRIES INC",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - FLEXSTEEL INDUSTRIES INC (0000037472) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001193125-26-389381 Size: 176 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001193125-26-389381 Size: 176 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K/A - VISIUM TECHNOLOGIES, INC. (0001082733) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008305/0001654954-26-008305-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:01:48+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001082733",
+        "0001654954-26-008305",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K/A - VISIUM TECHNOLOGIES, INC. (0001082733) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001654954-26-008305 Size: 123 KB\nItem 3.02: Unregistered Sales of Equity Securities\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001654954-26-008305 Size: 123 KB\nItem 3.02: Unregistered Sales of Equity Securities\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Transcode Therapeutics, Inc. (0001829635) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1829635/000110465926107115/0001104659-26-107115-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:00:52+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001829635",
+        "0001104659-26-107115",
+        "Transcode Therapeutics, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Transcode Therapeutics, Inc. (0001829635) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107115 Size: 279 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107115 Size: 279 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - INTELLIGENT BIO SOLUTIONS INC. (0001725430) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1725430/000149315226042411/0001493152-26-042411-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:00:21+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001725430",
+        "0001493152-26-042411",
+        "INTELLIGENT BIO SOLUTIONS INC.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - INTELLIGENT BIO SOLUTIONS INC. (0001725430) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042411 Size: 197 KB\nItem 8.01: Other Events"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042411 Size: 197 KB\nItem 8.01: Other Events",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - NATIONAL BEVERAGE CORP (0000069891) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/69891/000143774926030186/0001437749-26-030186-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:00:19+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000069891",
+        "0001437749-26-030186",
+        "NATIONAL BEVERAGE CORP",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - NATIONAL BEVERAGE CORP (0000069891) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001437749-26-030186 Size: 294 KB\nItem 2.02: Results of Operations and Financial Condition\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001437749-26-030186 Size: 294 KB\nItem 2.02: Results of Operations and Financial Condition\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Sunshine Biopharma Inc. (0001402328) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1402328/000168316826007090/0001683168-26-007090-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:00:14+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001402328",
+        "0001683168-26-007090",
+        "Sunshine Biopharma Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Sunshine Biopharma Inc. (0001402328) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001683168-26-007090 Size: 234 KB\nItem 8.01: Other Events"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001683168-26-007090 Size: 234 KB\nItem 8.01: Other Events",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Toppoint Holdings Inc. (0001960847) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1960847/000121390026099323/0001213900-26-099323-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T21:00:13+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001960847",
+        "0001213900-26-099323",
+        "Toppoint Holdings Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Toppoint Holdings Inc. (0001960847) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099323 Size: 206 KB\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 8.01: Other Events"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099323 Size: 206 KB\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 8.01: Other Events",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Professional Diversity Network, Inc. (0001546296) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1546296/000143774926030185/0001437749-26-030185-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:59:26+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001546296",
+        "0001437749-26-030185",
+        "Professional Diversity Network, Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Professional Diversity Network, Inc. (0001546296) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001437749-26-030185 Size: 194 KB\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001437749-26-030185 Size: 194 KB\nItem 3.03: Material Modifications to Rights of Security Holders\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - DEERE JOHN CAPITAL CORP (0000027673) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/27673/000110465926107111/0001104659-26-107111-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:52:40+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000027673",
+        "0001104659-26-107111",
+        "DEERE JOHN CAPITAL CORP",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - DEERE JOHN CAPITAL CORP (0000027673) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107111 Size: 197 KB\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107111 Size: 197 KB\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K/A - CUMBERLAND PHARMACEUTICALS INC (0001087294) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1087294/000108729426000068/0001087294-26-000068-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:51:49+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001087294",
+        "0001087294-26-000068",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K/A - CUMBERLAND PHARMACEUTICALS INC (0001087294) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001087294-26-000068 Size: 160 KB\nItem 5.07: Submission of Matters to a Vote of Security Holders"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001087294-26-000068 Size: 160 KB\nItem 5.07: Submission of Matters to a Vote of Security Holders",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - DAILY JOURNAL CORP (0000783412) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/783412/000143774926030183/0001437749-26-030183-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:46:55+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000783412",
+        "0001437749-26-030183",
+        "DAILY JOURNAL CORP",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - DAILY JOURNAL CORP (0000783412) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001437749-26-030183 Size: 324 KB\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001437749-26-030183 Size: 324 KB\nItem 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - CENTRUS ENERGY CORP (0001065059) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1065059/000110465926107103/0001104659-26-107103-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:45:40+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001065059",
+        "0001104659-26-107103",
+        "CENTRUS ENERGY CORP",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - CENTRUS ENERGY CORP (0001065059) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107103 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 7.01: Regulation FD Disclosure\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107103 Size: 1 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 7.01: Regulation FD Disclosure\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Zone Frontier Inc. (0001956741) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1956741/000121390026099309/0001213900-26-099309-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:45:39+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001956741",
+        "0001213900-26-099309",
+        "Zone Frontier Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Zone Frontier Inc. (0001956741) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099309 Size: 186 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099309 Size: 186 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - BONK, INC. (0001760903) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1760903/000149315226042401/0001493152-26-042401-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:45:38+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001760903",
+        "0001493152-26-042401",
+        "BONK, INC.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - BONK, INC. (0001760903) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001493152-26-042401 Size: 338 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001493152-26-042401 Size: 338 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 7.01: Regulation FD Disclosure\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Cardinal Infrastructure Group Inc. (0002079999) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/2079999/000119312526389363/0001193125-26-389363-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:45:17+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0002079999",
+        "0001193125-26-389363",
+        "Cardinal Infrastructure Group Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Cardinal Infrastructure Group Inc. (0002079999) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001193125-26-389363 Size: 3 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001193125-26-389363 Size: 3 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - GridAI Technologies Corp. (0001604191) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1604191/000110465926107100/0001104659-26-107100-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:43:26+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001604191",
+        "0001104659-26-107100",
+        "GridAI Technologies Corp.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - GridAI Technologies Corp. (0001604191) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107100 Size: 293 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107100 Size: 293 KB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - AIB Data Centers Inc. (0002070542) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/2070542/000121390026099305/0001213900-26-099305-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:42:25+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0002070542",
+        "0001213900-26-099305",
+        "AIB Data Centers Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - AIB Data Centers Inc. (0002070542) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099305 Size: 32 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099305 Size: 32 MB\nItem 1.01: Entry into a Material Definitive Agreement\nItem 2.01: Completion of Acquisition or Disposition of Assets\nItem 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Oportun Financial Corp (0001538716) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1538716/000153871626000101/0001538716-26-000101-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:40:48+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001538716",
+        "0001538716-26-000101",
+        "Oportun Financial Corp",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Oportun Financial Corp (0001538716) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001538716-26-000101 Size: 285 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001538716-26-000101 Size: 285 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Rainier Acquisition Corp (0002147219) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/2147219/000110465926107095/0001104659-26-107095-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:40:21+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0002147219",
+        "0001104659-26-107095",
+        "Rainier Acquisition Corp",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Rainier Acquisition Corp (0002147219) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107095 Size: 305 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107095 Size: 305 KB\nItem 8.01: Other Events\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Quetta Acquisition Corp (0001978528) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1978528/000182912626010050/0001829126-26-010050-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:35:14+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0001978528",
+        "0001829126-26-010050",
+        "Quetta Acquisition Corp",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Quetta Acquisition Corp (0001978528) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001829126-26-010050 Size: 252 KB\nItem 8.01: Other Events"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001829126-26-010050 Size: 252 KB\nItem 8.01: Other Events",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - AMREP CORP. (0000006207) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/6207/000110465926107091/0001104659-26-107091-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:35:13+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000006207",
+        "0001104659-26-107091",
+        "AMREP CORP.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - AMREP CORP. (0000006207) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001104659-26-107091 Size: 516 KB\nItem 2.02: Results of Operations and Financial Condition\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001104659-26-107091 Size: 516 KB\nItem 2.02: Results of Operations and Financial Condition\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Peraso Inc. (0000890394) (Filer)",
+      "url": "https://www.sec.gov/Archives/edgar/data/890394/000121390026099297/0001213900-26-099297-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-11T20:30:38+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "0000890394",
+        "0001213900-26-099297",
+        "Peraso Inc.",
+        "UNMAPPED_FILER"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Peraso Inc. (0000890394) (Filer)",
+        "Filed: 2026-09-11 AccNo: 0001213900-26-099297 Size: 347 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 9.01: Financial Statements and Exhibits"
+      ],
+      "body": "Filed: 2026-09-11 AccNo: 0001213900-26-099297 Size: 347 KB\nItem 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers\nItem 5.07: Submission of Matters to a Vote of Security Holders\nItem 9.01: Financial Statements and Exhibits",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K/A [Amend] - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-01T20:30:35+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0001140361-26-035325"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K/A [Amend] - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-30T20:30:28+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0000320193-26-000018"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-04-30T20:30:41+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0000320193-26-000011"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-04-20T21:29:51+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0001140361-26-015711"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/0001140361-26-006577-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-02-24T21:55:58+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0001140361-26-006577"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/0000320193-26-000005-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-01-29T21:30:33+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0000320193-26-000005"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/0001140361-26-000199-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-01-02T21:30:52+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0001140361-26-000199"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/0001140361-25-044561-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2025-12-05T21:31:42+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0001140361-25-044561"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/0000320193-25-000077-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2025-10-30T20:30:35+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0000320193-25-000077"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/0000320193-25-000071-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2025-07-31T20:30:25+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "AAPL",
+        "0000320193-25-000071"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000078/0001045810-26-000078-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-09-03T12:03:56+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000078"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/0001045810-26-000073-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-08-26T20:21:19+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000073"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000069/0001045810-26-000069-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-08-17T12:41:33+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000069"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000060/0001045810-26-000060-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-02T13:23:16+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000060"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000056/0001045810-26-000056-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-30T20:27:26+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000056"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000119312526275783/0001193125-26-275783-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-18T20:00:24+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001193125-26-275783"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/0001045810-26-000051-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-20T20:21:19+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000051"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000028/0001045810-26-000028-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-08T20:35:07+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000028"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000026/0001045810-26-000026-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-04-27T20:10:30+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000024/0001045810-26-000024-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-03-06T21:11:25+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "NVDA",
+        "0001045810-26-000024"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000119312526291986/0001193125-26-291986-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-01T16:34:56+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0001193125-26-291986"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000078/0000034088-26-000078-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-29T19:37:06+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000078"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000069/0000034088-26-000069-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-04T20:14:04+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000069"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000065/0000034088-26-000065-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-01T10:31:52+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000065"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000056/0000034088-26-000056-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-04-08T10:45:20+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000056"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000119312526134838/0001193125-26-134838-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-03-31T20:52:12+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0001193125-26-134838"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000047/0000034088-26-000047-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-02-20T21:15:04+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000047"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000033/0000034088-26-000033-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-01-30T11:31:24+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000033"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000030/0000034088-26-000030-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-01-07T21:03:17+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-26-000030"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000122/0000034088-25-000122-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2025-12-09T18:16:10+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "XOM",
+        "0000034088-25-000122"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526314128/0001193125-26-314128-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-23T20:15:21+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001193125-26-314128"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000001961726000288/0000019617-26-000288-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-23T20:15:21+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0000019617-26-000288"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026048086/0001628280-26-048086-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-14T13:52:21+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001628280-26-048086"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/0001628280-26-048078-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-07-14T10:30:38+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001628280-26-048078"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000001961726000241/0000019617-26-000241-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-25T11:59:33+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0000019617-26-000241"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026045169/0001628280-26-045169-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-24T20:07:40+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001628280-26-045169"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026045167/0001628280-26-045167-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-24T20:06:40+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001628280-26-045167"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526253533/0001193125-26-253533-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-06-02T20:15:25+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001193125-26-253533"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000119312526242018/0001193125-26-242018-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-27T20:39:34+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0001193125-26-242018"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "8-K - Current report",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000001961726000228/0000019617-26-000228-index.htm",
+      "publisher": "SEC EDGAR",
+      "published_at": "2026-05-21T20:15:13+00:00",
+      "event_type": "company_filing",
+      "entities": [
+        "JPM",
+        "0000019617-26-000228"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "8-K - Current report"
+      ],
+      "body": "",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Board's discount rate meetings on July 20 and July 29, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260825a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-25T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260825a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Board's discount rate meetings on July 20 and July 29, 2026"
+      ],
+      "body": "Minutes of the Board's discount rate meetings on July 20 and July 29, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Federal Open Market Committee, July 28–29, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260819a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-19T18:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "monetary20260819a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Federal Open Market Committee, July 28–29, 2026"
+      ],
+      "body": "Minutes of the Federal Open Market Committee, July 28–29, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-29T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260729a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement"
+      ],
+      "body": "Federal Reserve issues FOMC statement",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Board's discount rate meetings on June 8 and June 17, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-14T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260714a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Board's discount rate meetings on June 8 and June 17, 2026"
+      ],
+      "body": "Minutes of the Board's discount rate meetings on June 8 and June 17, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve announces the leadership and objectives of its task forces to advance the conduct of monetary policy",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260709a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-09T19:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260709a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve announces the leadership and objectives of its task forces to advance the conduct of monetary policy"
+      ],
+      "body": "Federal Reserve announces the leadership and objectives of its task forces to advance the conduct of monetary policy",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260708a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-08T18:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "monetary20260708a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Federal Open Market Committee, June 16-17, 2026"
+      ],
+      "body": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-06-17T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260617a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement"
+      ],
+      "body": "Federal Reserve issues FOMC statement",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-06-17T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260617b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting"
+      ],
+      "body": "Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Board's discount rate meeting on April 20 and 29, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260526a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-05-26T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260526a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Board's discount rate meeting on April 20 and 29, 2026"
+      ],
+      "body": "Minutes of the Board's discount rate meeting on April 20 and 29, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-05-20T18:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "monetary20260520a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Federal Open Market Committee, April 28-29, 2026"
+      ],
+      "body": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-04-29T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260429a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement"
+      ],
+      "body": "Federal Reserve issues FOMC statement",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Board’s discount rate meetings on February 9 and March 18, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260414a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-04-14T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260414a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Board’s discount rate meetings on February 9 and March 18, 2026"
+      ],
+      "body": "Minutes of the Board’s discount rate meetings on February 9 and March 18, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Minutes of the Federal Open Market Committee, March 17–18, 2026",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260408a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-04-08T18:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "monetary20260408a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Minutes of the Federal Open Market Committee, March 17–18, 2026"
+      ],
+      "body": "Minutes of the Federal Open Market Committee, March 17–18, 2026",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve issues FOMC statement",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-03-18T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260318a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement"
+      ],
+      "body": "Federal Reserve issues FOMC statement",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board and Federal Open Market Committee release economic projections from the March 17-18 FOMC meeting",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-03-18T18:00:00+00:00",
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "monetary20260318b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board and Federal Open Market Committee release economic projections from the March 17-18 FOMC meeting"
+      ],
+      "body": "Federal Reserve Board and Federal Open Market Committee release economic projections from the March 17-18 FOMC meeting",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Agencies seek comment on proposed third-party risk management guidance and issue statement on community bank engagement with core service providers",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260911a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-09-11T14:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "bcreg20260911a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Agencies seek comment on proposed third-party risk management guidance and issue statement on community bank engagement with core service providers"
+      ],
+      "body": "Agencies seek comment on proposed third-party risk management guidance and issue statement on community bank engagement with core service providers",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Agencies reduce regulatory burden for community banks, increase eligibility for 18-month exam cycle",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260910a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-09-10T20:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "bcreg20260910a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Agencies reduce regulatory burden for community banks, increase eligibility for 18-month exam cycle"
+      ],
+      "body": "Agencies reduce regulatory burden for community banks, increase eligibility for 18-month exam cycle",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board announces termination of enforcement actions with United Texas Bank, Quontic Bank Acquisition Corp., and Quontic Bank Holdings Corp.",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260904a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-09-04T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260904a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board announces termination of enforcement actions with United Texas Bank, Quontic Bank Acquisition Corp., and Quontic Bank Holdings Corp."
+      ],
+      "body": "Federal Reserve Board announces termination of enforcement actions with United Texas Bank, Quontic Bank Acquisition Corp., and Quontic Bank Holdings Corp.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement action with former employee of Banco Popular de Puerto Rico",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260827a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-27T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260827a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement action with former employee of Banco Popular de Puerto Rico"
+      ],
+      "body": "Federal Reserve Board issues enforcement action with former employee of Banco Popular de Puerto Rico",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board announces approval of application by National Westminster Bank Plc",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20260820a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-20T20:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "orders20260820a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board announces approval of application by National Westminster Bank Plc"
+      ],
+      "body": "Federal Reserve Board announces approval of application by National Westminster Bank Plc",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement action with SouthPoint Bancshares, Inc. and announces termination of enforcement action with Deutsche Bank AG, DB USA Corporation, and Deutsche Bank AG New York Branch",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-20T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260820b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement action with SouthPoint Bancshares, Inc. and announces termination of enforcement action with Deutsche Bank AG, DB USA Corporation, and Deutsche Bank AG New York Branch"
+      ],
+      "body": "Federal Reserve Board issues enforcement action with SouthPoint Bancshares, Inc. and announces termination of enforcement action with Deutsche Bank AG, DB USA Corporation, and Deutsche Bank AG New York Branch",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of United Community Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-20T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260820a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of United Community Bank"
+      ],
+      "body": "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of United Community Bank",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement action with former employee of Regions Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260813a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-13T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260813a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement action with former employee of Regions Bank"
+      ],
+      "body": "Federal Reserve Board issues enforcement action with former employee of Regions Bank",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board announces approval of the application by Coastal Bend Bancshares, Inc.",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804c.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-04T20:30:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "orders20260804c.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board announces approval of the application by Coastal Bend Bancshares, Inc."
+      ],
+      "body": "Federal Reserve Board announces approval of the application by Coastal Bend Bancshares, Inc.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board announces approval of the application by FS Bancorp, Inc.",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-04T20:30:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "orders20260804b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board announces approval of the application by FS Bancorp, Inc."
+      ],
+      "body": "Federal Reserve Board announces approval of the application by FS Bancorp, Inc.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board announces approval of the application by Banco Santander, S.A. and Santander Holdings USA, Inc.",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-08-04T20:30:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "FederalReserve",
+        "orders20260804a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board announces approval of the application by Banco Santander, S.A. and Santander Holdings USA, Inc."
+      ],
+      "body": "Federal Reserve Board announces approval of the application by Banco Santander, S.A. and Santander Holdings USA, Inc.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board requests comment on a proposal to modernize rules for mutual banking organizations",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-31T14:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "bcreg20260731a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board requests comment on a proposal to modernize rules for mutual banking organizations"
+      ],
+      "body": "Federal Reserve Board requests comment on a proposal to modernize rules for mutual banking organizations",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board requests comment on a proposal to modernize its rule governing the extension of credit to bank \"insiders\"—bank executives, board members and major shareholders who could potentially influence a bank's lending decisions",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-31T14:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "bcreg20260731b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board requests comment on a proposal to modernize its rule governing the extension of credit to bank \"insiders\"—bank executives, board members and major shareholders who could potentially influence a bank's lending decisions"
+      ],
+      "body": "Federal Reserve Board requests comment on a proposal to modernize its rule governing the extension of credit to bank \"insiders\"—bank executives, board members and major shareholders who could potentially influence a bank's lending decisions",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement action with Iuka Bancshares, Inc. and The Iuka State Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730b.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-30T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260730b.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement action with Iuka Bancshares, Inc. and The Iuka State Bank"
+      ],
+      "body": "Federal Reserve Board issues enforcement action with Iuka Bancshares, Inc. and The Iuka State Bank",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of First Interstate Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-30T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260730a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of First Interstate Bank"
+      ],
+      "body": "Federal Reserve Board issues enforcement actions with former employee of Regions Bank and former employee of First Interstate Bank",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Agencies issue joint statement on handling of highly sensitive information during bank examinations",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260716a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-16T18:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "bcreg20260716a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Agencies issue joint statement on handling of highly sensitive information during bank examinations"
+      ],
+      "body": "Agencies issue joint statement on handling of highly sensitive information during bank examinations",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Federal Reserve Board issues enforcement action with former chief lending officer of Heritage State Bank",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260716a.htm",
+      "publisher": "Federal Reserve Board",
+      "published_at": "2026-07-16T15:00:00+00:00",
+      "event_type": "sovereign_or_corporate_debt",
+      "entities": [
+        "banks",
+        "credit",
+        "enforcement20260716a.htm"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board issues enforcement action with former chief lending officer of Heritage State Bank"
+      ],
+      "body": "Federal Reserve Board issues enforcement action with former chief lending officer of Heritage State Bank",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA expects record electricity generation in 2026 and 2027",
+      "url": "https://www.eia.gov/pressroom/releases/press592.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-09-09T17:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press592.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA expects record electricity generation in 2026 and 2027"
+      ],
+      "body": "The U.S. Energy Information Administration (EIA) expects U.S. electricity generation will grow 2.2% to a record 4,368 billion kilowatthours (BkWh) this year. EIA expects an additional 1.7% growth in electricity generation next year.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA expects highest natural gas inventories in a decade heading into winter",
+      "url": "https://www.eia.gov/pressroom/releases/press591.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-08-11T17:00:00+00:00",
+      "event_type": "energy_supply",
+      "entities": [
+        "EIA",
+        "oil",
+        "energy",
+        "press591.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA expects highest natural gas inventories in a decade heading into winter"
+      ],
+      "body": "The U.S. Energy Information Administration expects natural gas inventories will increase to 3,985 billion cubic feet (Bcf) in October, the most gas in inventories ahead of the winter heating season since 2016.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA increases global oil production forecast after the opening of the Strait of Hormuz",
+      "url": "https://www.eia.gov/pressroom/releases/press590.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-07-07T17:00:00+00:00",
+      "event_type": "energy_supply",
+      "entities": [
+        "EIA",
+        "oil",
+        "energy",
+        "press590.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA increases global oil production forecast after the opening of the Strait of Hormuz"
+      ],
+      "body": "The U.S. Energy Information Administration published its July Short-Term Energy Outlook (STEO), increasing its expectations for global oil production.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions",
+      "url": "https://www.eia.gov/pressroom/releases/press589.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-06-09T17:00:00+00:00",
+      "event_type": "energy_supply",
+      "entities": [
+        "EIA",
+        "oil",
+        "energy",
+        "press589.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions"
+      ],
+      "body": "The U.S. Energy Information Administration published its June Short-Term Energy Outlook (STEO), reducing its expectation for global oil demand in 2026. High fuel prices, reduced fuel availability, and government initiatives are curbing oil consumption this year, particularly in Asia, resulting in the world consuming 1 million fewer barrels of oil each day on average than it did last year. The reduced demand could limit crude oil price increases resulting from near-term disruptions in the flow of oil out of the Middle East through the Strait of Hormuz.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA updates forecast amid continued Mideast disruption; will publish new energy security datasets",
+      "url": "https://www.eia.gov/pressroom/releases/press588.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-05-12T17:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press588.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA updates forecast amid continued Mideast disruption; will publish new energy security datasets"
+      ],
+      "body": "The U.S. Energy Information Administration published its May Short-Term Energy Outlook, reflecting a continued disruption to Middle Eastern oil flows.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA releases the Annual Energy Outlook 2026",
+      "url": "https://www.eia.gov/pressroom/releases/press587.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-04-08T20:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press587.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA releases the Annual Energy Outlook 2026"
+      ],
+      "body": "The Annual Energy Outlook 2026 (AEO2026) explores medium- and long-term alternative futures in the United States through 2050. AEO2026 enables the public to explore a suite of alternative pathways for our energy future depending on assumptions made about markets, technological breakthroughs, and policy. It includes a narrative report, as well as the full set of data tables and visualizations, assumptions and methodologies, and detailed descriptions of the 11 cases we ran to explore these alternative futures.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "Hormuz closure and related production outages are key drivers in EIA's latest forecast",
+      "url": "https://www.eia.gov/pressroom/releases/press586.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-04-07T17:00:00+00:00",
+      "event_type": "energy_supply",
+      "entities": [
+        "EIA",
+        "oil",
+        "energy",
+        "press586.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Hormuz closure and related production outages are key drivers in EIA's latest forecast"
+      ],
+      "body": "The U.S. Energy Information Administration published its April Short Term Energy Outlook this week, examining the implications of the closure of the Strait of Hormuz.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA launches pilot survey on energy use at data centers",
+      "url": "https://www.eia.gov/pressroom/releases/press585.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-03-25T16:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press585.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA launches pilot survey on energy use at data centers"
+      ],
+      "body": "EIA is launching three voluntary pilot field studies to evaluate energy consumption in data centers, with web-based pilot surveys in Texas and Washington state as well as in-person interviews in Northern Virginia and Washington, DC.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA releases latest Short-Term Energy Outlook amid Middle East conflict",
+      "url": "https://www.eia.gov/pressroom/releases/press584.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-03-10T17:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press584.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA releases latest Short-Term Energy Outlook amid Middle East conflict"
+      ],
+      "body": "Crude oil price movements. The Brent crude oil spot price has risen sharply following the onset of military action in the Middle East. Brent settled at $94 per barrel (b) on March 9, up about 50% from the beginning of the year and the highest since September 2023. Crude oil prices have risen as petroleum shipments through the Strait of Hormuz have fallen, and some Middle East oil production has been shut in.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA raises natural gas price forecast following increased heating demand amid severe winter weather",
+      "url": "https://www.eia.gov/pressroom/releases/press583.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-02-10T17:00:00+00:00",
+      "event_type": "energy_supply",
+      "entities": [
+        "EIA",
+        "oil",
+        "energy",
+        "press583.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA raises natural gas price forecast following increased heating demand amid severe winter weather"
+      ],
+      "body": "Natural gas prices rose sharply in January, averaging $7.72 per million British thermal units (MMBtu), as cold weather increased heating demand, reduced production, and led to record storage withdrawals during Winter Storm Fern. The drawdown for the week ending January 30 was the largest weekly net withdrawal recorded in the history of EIA's Weekly Natural Gas Storage Report.",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    },
+    {
+      "title": "EIA forecasts strongest four-year growth in U.S. electricity demand since 2000, fueled by data centers",
+      "url": "https://www.eia.gov/pressroom/releases/press582.php",
+      "publisher": "U.S. Energy Information Administration",
+      "published_at": "2026-01-13T17:00:00+00:00",
+      "event_type": "other",
+      "entities": [
+        "EIA",
+        "press582.php"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "EIA forecasts strongest four-year growth in U.S. electricity demand since 2000, fueled by data centers"
+      ],
+      "body": "The U.S. Energy Information Administration (EIA) published its first energy-sector forecasts through 2027 in the January Short-Term Energy Outlook (STEO).",
+      "provider": "official",
+      "status": "active",
+      "document_role": null,
+      "evidence_role": "event_fact",
+      "supersedes_url": null
+    }
+  ],
+  "official_extracts": {
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/0001140361-26-006577-index.htm": {
+      "filing_items": [
+        "Item 5.07: Submission of Matters to a Vote of Security Holders",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/0000320193-26-000005-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/0001140361-26-000199-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/0001140361-25-044561-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/0000320193-25-000077-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/0000320193-25-000071-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000078/0001045810-26-000078-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/0001045810-26-000073-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000069/0001045810-26-000069-index.htm": {
+      "filing_items": [
+        "Item 1.01: Entry into a Material Definitive Agreement",
+        "Item 2.03: Creation of a Direct Financial Obligation or an Obligation under an Off-Balance Sheet Arrangement of a Registrant",
+        "Item 7.01: Regulation FD Disclosure"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000060/0001045810-26-000060-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000056/0001045810-26-000056-index.htm": {
+      "filing_items": [
+        "Item 5.07: Submission of Matters to a Vote of Security Holders"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000119312526275783/0001193125-26-275783-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/0001045810-26-000051-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000028/0001045810-26-000028-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000026/0001045810-26-000026-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000024/0001045810-26-000024-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526291986/0001193125-26-291986-index.htm": {
+      "filing_items": [
+        "Item 1.01: Entry into a Material Definitive Agreement",
+        "Item 2.01: Completion of Acquisition or Disposition of Assets",
+        "Item 3.01: Notice of Delisting or Failure to Satisfy a Continued Listing Rule or Standard; Transfer of Listing",
+        "Item 3.03: Material Modifications to Rights of Security Holders",
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers",
+        "Item 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000078/0000034088-26-000078-index.htm": {
+      "filing_items": [
+        "Item 5.07: Submission of Matters to a Vote of Security Holders"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000069/0000034088-26-000069-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000065/0000034088-26-000065-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 7.01: Regulation FD Disclosure"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000056/0000034088-26-000056-index.htm": {
+      "filing_items": [
+        "Item 7.01: Regulation FD Disclosure"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526134838/0001193125-26-134838-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000047/0000034088-26-000047-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000033/0000034088-26-000033-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 7.01: Regulation FD Disclosure"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000030/0000034088-26-000030-index.htm": {
+      "filing_items": [
+        "Item 7.01: Regulation FD Disclosure"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000122/0000034088-25-000122-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526314128/0001193125-26-314128-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000288/0000019617-26-000288-index.htm": {
+      "filing_items": [
+        "Item 5.03: Amendments to Articles of Incorporation or Bylaws; Change in Fiscal Year"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048086/0001628280-26-048086-index.htm": {
+      "filing_items": [
+        "Item 7.01: Regulation FD Disclosure",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/0001628280-26-048078-index.htm": {
+      "filing_items": [
+        "Item 2.02: Results of Operations and Financial Condition",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000241/0000019617-26-000241-index.htm": {
+      "filing_items": [
+        "Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compensatory Arrangements of Certain Officers"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045169/0001628280-26-045169-index.htm": {
+      "filing_items": [
+        "Item 7.01: Regulation FD Disclosure",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045167/0001628280-26-045167-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526253533/0001193125-26-253533-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526242018/0001193125-26-242018-index.htm": {
+      "filing_items": [
+        "Item 8.01: Other Events",
+        "Item 9.01: Financial Statements and Exhibits"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000228/0000019617-26-000228-index.htm": {
+      "filing_items": [
+        "Item 5.07: Submission of Matters to a Vote of Security Holders"
+      ],
+      "claims": [],
+      "body": "",
+      "body_source": "sec_index_metadata",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null,
+      "valid": false
+    },
+    "https://www.eia.gov/pressroom/releases/press590.php": {
+      "claims": [
+        "EIA increases global oil production forecast after the opening of the Strait of Hormuz"
+      ],
+      "body": "Shipping traffic through the Strait of Hormuz has increased following the June 18 memorandum of understanding (MOU) between the United States and Iran to end a months-long conflict and reopen the strait. EIA now expects worldwide crude oil production and trade flows to rebound to near pre-conflict levels.",
+      "body_source": "official_html",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null
+    },
+    "https://www.eia.gov/pressroom/releases/press586.php": {
+      "claims": [
+        "Hormuz closure and related production outages are key drivers in EIA's latest forecast"
+      ],
+      "body": "\"Our petroleum forecasts are highly contingent on the interaction of three variables,\" EIA Administrator Tristan Abbey said. \"First, to even run our model we have to make an assumption about the duration of the Strait of Hormuz closure. Second, we know that the closure is forcing production to shut in.\"",
+      "body_source": "official_html",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null
+    },
+    "https://www.eia.gov/pressroom/releases/press584.php": {
+      "claims": [
+        "EIA releases latest Short-Term Energy Outlook amid Middle East conflict"
+      ],
+      "body": "The Brent crude oil spot price has risen sharply following the onset of military action in the Middle East. Brent settled at $94 per barrel (b) on March 9, up about 50% from the beginning of the year and the highest since September 2023. The full March 2026 Short-Term Energy Outlook is available on the EIA website.",
+      "body_source": "official_html",
+      "fetched_at": "2026-09-13T10:20:00+00:00",
+      "http_status": 200,
+      "error": null
+    }
+  },
+  "document_urls": [
+    "https://www.sec.gov/Archives/edgar/data/1975940/000121390026099368/0001213900-26-099368-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/2068385/000149315226042434/0001493152-26-042434-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1805526/000180552626000104/0001805526-26-000104-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1787518/000118518526003953/0001185185-26-003953-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1662684/000110465926107130/0001104659-26-107130-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1853070/000149315226042429/0001493152-26-042429-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1589149/000149315226042431/0001493152-26-042431-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008309/0001654954-26-008309-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1280776/000119380526001219/0001193805-26-001219-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1506983/000149315226042428/0001493152-26-042428-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1807166/000121390026099345/0001213900-26-099345-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1826011/000149315226042422/0001493152-26-042422-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1854445/000149315226042421/0001493152-26-042421-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1070494/000119312526389400/0001193125-26-389400-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1898718/000110465926107124/0001104659-26-107124-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1083743/000149315226042419/0001493152-26-042419-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1024305/000102430526000054/0001024305-26-000054-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/913142/000091314226000037/0000913142-26-000037-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/37472/000119312526389381/0001193125-26-389381-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008305/0001654954-26-008305-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1829635/000110465926107115/0001104659-26-107115-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1725430/000149315226042411/0001493152-26-042411-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/69891/000143774926030186/0001437749-26-030186-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1402328/000168316826007090/0001683168-26-007090-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1960847/000121390026099323/0001213900-26-099323-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1546296/000143774926030185/0001437749-26-030185-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/27673/000110465926107111/0001104659-26-107111-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1087294/000108729426000068/0001087294-26-000068-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/783412/000143774926030183/0001437749-26-030183-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1065059/000110465926107103/0001104659-26-107103-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1956741/000121390026099309/0001213900-26-099309-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1760903/000149315226042401/0001493152-26-042401-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/2079999/000119312526389363/0001193125-26-389363-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1604191/000110465926107100/0001104659-26-107100-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/2070542/000121390026099305/0001213900-26-099305-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1538716/000153871626000101/0001538716-26-000101-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/2147219/000110465926107095/0001104659-26-107095-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1978528/000182912626010050/0001829126-26-010050-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/6207/000110465926107091/0001104659-26-107091-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/890394/000121390026099297/0001213900-26-099297-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/0001140361-26-006577-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/0000320193-26-000005-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/0001140361-26-000199-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/0001140361-25-044561-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/0000320193-25-000077-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/0000320193-25-000071-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000078/0001045810-26-000078-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/0001045810-26-000073-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000069/0001045810-26-000069-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000060/0001045810-26-000060-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000056/0001045810-26-000056-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000119312526275783/0001193125-26-275783-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/0001045810-26-000051-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000028/0001045810-26-000028-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000026/0001045810-26-000026-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000024/0001045810-26-000024-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526291986/0001193125-26-291986-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000078/0000034088-26-000078-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000069/0000034088-26-000069-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000065/0000034088-26-000065-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000056/0000034088-26-000056-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526134838/0001193125-26-134838-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000047/0000034088-26-000047-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000033/0000034088-26-000033-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000030/0000034088-26-000030-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000122/0000034088-25-000122-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526314128/0001193125-26-314128-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000288/0000019617-26-000288-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048086/0001628280-26-048086-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/0001628280-26-048078-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000241/0000019617-26-000241-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045169/0001628280-26-045169-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045167/0001628280-26-045167-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526253533/0001193125-26-253533-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526242018/0001193125-26-242018-index.htm",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000228/0000019617-26-000228-index.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260825a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260819a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260709a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260708a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260526a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260414a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260408a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260911a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260910a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260904a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260827a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260820a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260813a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804c.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730b.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260716a.htm",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260716a.htm",
+    "https://www.eia.gov/pressroom/releases/press592.php",
+    "https://www.eia.gov/pressroom/releases/press591.php",
+    "https://www.eia.gov/pressroom/releases/press590.php",
+    "https://www.eia.gov/pressroom/releases/press589.php",
+    "https://www.eia.gov/pressroom/releases/press588.php",
+    "https://www.eia.gov/pressroom/releases/press587.php",
+    "https://www.eia.gov/pressroom/releases/press586.php",
+    "https://www.eia.gov/pressroom/releases/press585.php",
+    "https://www.eia.gov/pressroom/releases/press584.php",
+    "https://www.eia.gov/pressroom/releases/press583.php",
+    "https://www.eia.gov/pressroom/releases/press582.php"
+  ],
+  "event_ids": [
+    "evt_975bee970832e659",
+    "evt_025506cb401cd123",
+    "evt_9457713fc63b15a7",
+    "evt_61864c75ea3be5c6",
+    "evt_8d2b3e900e46d3be",
+    "evt_becd5b7ff41727e8",
+    "evt_985c969fcfd059d3",
+    "evt_b0c9df920699c052",
+    "evt_102a1547ce4f2648",
+    "evt_e0f5d472d4c99e95",
+    "evt_2e5518432e8fee80",
+    "evt_cb7d6491281bda84",
+    "evt_846a6920d8277d6d",
+    "evt_0996c37d5c671741",
+    "evt_02bf7af52e3fc83f",
+    "evt_30dcc8a89171e396",
+    "evt_bfa511ecf408f813",
+    "evt_fb04b2f02854092e",
+    "evt_5247ea3891044c37",
+    "evt_774fa2db4a0e2e46",
+    "evt_ec314e41ec7d1773",
+    "evt_0bb9f357506051a8",
+    "evt_615b265b4b209639",
+    "evt_ce5db61602a987e7",
+    "evt_fa9b83830314554a",
+    "evt_badf1d171bc05737",
+    "evt_962af74b20285197",
+    "evt_9e39eb325be06b2c",
+    "evt_1f540d5f2b4c129a",
+    "evt_467bfb874c2bb20f",
+    "evt_124e9379e8c7aa03",
+    "evt_43afbf8f4545d550",
+    "evt_f602a4b758d3ca64",
+    "evt_b314645119ba5872",
+    "evt_a330648c94ef22ea",
+    "evt_69b94d9a8a6893b6",
+    "evt_12e1189e72417371",
+    "evt_044ddfdeac3776a1",
+    "evt_5a07f51df3cb458e",
+    "evt_b75c5fc4fc9db4c2",
+    "evt_ae689b32f959e8e5",
+    "evt_298df7216c1e64bd",
+    "evt_dcffd25397461dc9",
+    "evt_53084640d69a89fe",
+    "evt_3da0556f8801175d",
+    "evt_8a98c3a1463fbda6",
+    "evt_99bd2ed5b92ed7ba",
+    "evt_5c0cad72d340d51a",
+    "evt_c26b9647d08d3d20",
+    "evt_993f3d5a7c7ad16c",
+    "evt_4bdc8b681f24d23d",
+    "evt_1fca7fd9d4778e18",
+    "evt_c74a054eb43d81cd",
+    "evt_dc475d61db673fa5",
+    "evt_3e9b49f513048225",
+    "evt_b27a333ff5db88ba",
+    "evt_f7dd08a6c4aec674",
+    "evt_d7707aee78e09ef2",
+    "evt_5f995e1e4e662300",
+    "evt_fc28d76df9489d02",
+    "evt_cc9e4cd8c402e623",
+    "evt_866b54d1ef143a75",
+    "evt_a72467a25cb9b6f4",
+    "evt_50474a3ba7b54bf3",
+    "evt_ab6bbb04667714f5",
+    "evt_d736b497a6b1c1a4",
+    "evt_3dd54a42824dc22a",
+    "evt_209d1905b5f50507",
+    "evt_6d7744b6d60806a0",
+    "evt_e2f5bf72b64a32d2",
+    "evt_7158277ade49df8a",
+    "evt_619c78582477518a",
+    "evt_78cb19160fc06f43",
+    "evt_546c606f95768dcc",
+    "evt_705aa63871f2482b",
+    "evt_83e2529cc1ec22a0",
+    "evt_5f03d0b1f935120c",
+    "evt_9ca6bec91214173d",
+    "evt_80ce26cd9cf47b1e",
+    "evt_a561699085620050",
+    "evt_cff64283774ed1b7",
+    "evt_f823e257cda19741",
+    "evt_7884fbd4ca53312f",
+    "evt_c01839d4e36fa57e",
+    "evt_4f28bc8849f58db0",
+    "evt_5a01403053c38cef",
+    "evt_80458cd2131f5aff",
+    "evt_4ef32d6a7478218a",
+    "evt_0b070412744598f8",
+    "evt_6cce8581864f8973",
+    "evt_865ca91d48221ced",
+    "evt_f2ce989a64edd8fb",
+    "evt_718dd7ffeb101312",
+    "evt_d07f1f1019b1f896",
+    "evt_371e93cd3c9fb8e5",
+    "evt_bda0193c8bb56143",
+    "evt_c9ce6ccb51c78fe7",
+    "evt_58693c3677b0bdd5",
+    "evt_473b3f0d3e1856b1",
+    "evt_20c72389cea00fee",
+    "evt_8d2b4469a36fef3f",
+    "evt_ccbc41568ba20ff4",
+    "evt_9a09501293612b81",
+    "evt_5de74b1698ae08ca",
+    "evt_d5e4f0685d75b2b5",
+    "evt_47c5e74a5501cede",
+    "evt_5b163f967185ac73",
+    "evt_cf1bc922c1287f24",
+    "evt_2a834d69c4103321",
+    "evt_8e9a9b04160d59e1",
+    "evt_d27fdc717bc1d5a7",
+    "evt_a11130bc34f0708f",
+    "evt_ed2098242820d934",
+    "evt_8c4fd564c6308a33",
+    "evt_55733c70cd1dd721",
+    "evt_0f1070e5db5d415d",
+    "evt_fe6b9720b185586e",
+    "evt_f609f911b443cb31",
+    "evt_b39a38314637dcde",
+    "evt_ff387af2678e0c28",
+    "evt_30ab371b5e192e82",
+    "evt_bdc769e538ba25e2",
+    "evt_8cfe7239b999c23f"
+  ],
+  "url_body_sha256": {
+    "https://www.sec.gov/Archives/edgar/data/1975940/000121390026099368/0001213900-26-099368-index.htm": "9dbeeb938fa33dff03127e868d4ddda14a1a249bd90ea6c18d563b411179f129",
+    "https://www.sec.gov/Archives/edgar/data/2068385/000149315226042434/0001493152-26-042434-index.htm": "29d65a05cd2af26d401ef933a7fd4b1751c18de511d8abe62217d5eb4fd42469",
+    "https://www.sec.gov/Archives/edgar/data/1805526/000180552626000104/0001805526-26-000104-index.htm": "f2f4591c995787f097edbcb7f485df1c40d7dba771fc3889253bb0833996a8d7",
+    "https://www.sec.gov/Archives/edgar/data/1787518/000118518526003953/0001185185-26-003953-index.htm": "8afc2a38d8505fddebde46d69095dcf7ef3d537a62cb51b6baf5a195157caa32",
+    "https://www.sec.gov/Archives/edgar/data/1662684/000110465926107130/0001104659-26-107130-index.htm": "cf4bf4f7c2b883048321e9345778f23af1c3383686de9f8985a91e54543a3bf5",
+    "https://www.sec.gov/Archives/edgar/data/1853070/000149315226042429/0001493152-26-042429-index.htm": "d3ce37bc1f21e4038ff4921875c83244cdca485d8b0ad6d501dfd6662da5b5de",
+    "https://www.sec.gov/Archives/edgar/data/1589149/000149315226042431/0001493152-26-042431-index.htm": "eef3b566daf39962ab4b9e84745b3a21ef902d611d4188005dc4f24727924b8f",
+    "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008309/0001654954-26-008309-index.htm": "6fe3b53ec7de4405ba0185ca89d64999ab18469259184bc82d8cb57e1aebaee6",
+    "https://www.sec.gov/Archives/edgar/data/1280776/000119380526001219/0001193805-26-001219-index.htm": "c6c722e35603bdd6cea1a56dc516a1e7e24bfac4a55dbb4365508c90e1d822e5",
+    "https://www.sec.gov/Archives/edgar/data/1506983/000149315226042428/0001493152-26-042428-index.htm": "2f9007bc7b0523bf512e3ba567dcb9ac8b977d2e0c2a20417e7a80338e6febae",
+    "https://www.sec.gov/Archives/edgar/data/1807166/000121390026099345/0001213900-26-099345-index.htm": "def1166ad5cb31ffa0e5e6bab1e1b717861387fe40530ead5c5b48f353525015",
+    "https://www.sec.gov/Archives/edgar/data/1826011/000149315226042422/0001493152-26-042422-index.htm": "f0ba4ae2b932a3b1f0634010a41e6b4b08724405884320e397a46c9ce34ea602",
+    "https://www.sec.gov/Archives/edgar/data/1854445/000149315226042421/0001493152-26-042421-index.htm": "bc116b8f8e75b23ed444c3e396a21b3f9b9ca250e949d0f5bcebd219cba825be",
+    "https://www.sec.gov/Archives/edgar/data/1070494/000119312526389400/0001193125-26-389400-index.htm": "e959d67e38e88cfd2315fb9e6207f85c0e4ff0cde3b702fb701e7134b546a33c",
+    "https://www.sec.gov/Archives/edgar/data/1898718/000110465926107124/0001104659-26-107124-index.htm": "a8b29b08e80a091c2d5b10586b10de795a23578359ce8a6b26e9d86e2cefdfe6",
+    "https://www.sec.gov/Archives/edgar/data/1083743/000149315226042419/0001493152-26-042419-index.htm": "decdb6544b245005fd60dbb2cf1937e9366a74ce7f7426c4858d886dc7ad7305",
+    "https://www.sec.gov/Archives/edgar/data/1024305/000102430526000054/0001024305-26-000054-index.htm": "0ff262285eb7055e6dc4b45c372ca92893b16c57d74bd3b317bfd6b9a06d15dc",
+    "https://www.sec.gov/Archives/edgar/data/913142/000091314226000037/0000913142-26-000037-index.htm": "312d34d8e95dbd1d4daaa216a391d9b58dd2a1c9ed539f22c2a319ba12f24c39",
+    "https://www.sec.gov/Archives/edgar/data/37472/000119312526389381/0001193125-26-389381-index.htm": "477cf6bc01ebc668065a3206fbbe0eb90d0de64d849448edd8565b125d5bf601",
+    "https://www.sec.gov/Archives/edgar/data/1082733/000165495426008305/0001654954-26-008305-index.htm": "ea112a77b292932ba20ef199c45d26e7518602b24a4d37153e4aef8882d72088",
+    "https://www.sec.gov/Archives/edgar/data/1829635/000110465926107115/0001104659-26-107115-index.htm": "e80a394a0a01950294ce13aa8576153646a9462b7152ff6e3f89c4f5b5e12fd9",
+    "https://www.sec.gov/Archives/edgar/data/1725430/000149315226042411/0001493152-26-042411-index.htm": "bec3b00e5d2e21d4c381f595240746edf010fa65fe7c0d7cf6c7b42b2a360659",
+    "https://www.sec.gov/Archives/edgar/data/69891/000143774926030186/0001437749-26-030186-index.htm": "630b3cfbbaaf91b8191531ab01b19992f52949cbdbfee42e0821df5c65e7bbf6",
+    "https://www.sec.gov/Archives/edgar/data/1402328/000168316826007090/0001683168-26-007090-index.htm": "a95b404e32ce31aa0c232084d3d5971bfb6bf6a0b99fcf5bd02bcf6bbb82389f",
+    "https://www.sec.gov/Archives/edgar/data/1960847/000121390026099323/0001213900-26-099323-index.htm": "10090df852fff24667bd97d2dbd215ea964dcdc18a13eda06ba7c1a2daef503c",
+    "https://www.sec.gov/Archives/edgar/data/1546296/000143774926030185/0001437749-26-030185-index.htm": "0cd521fd12835a80c0d807ecfc0530b6d42c1fb62f075461f994852520bc8e37",
+    "https://www.sec.gov/Archives/edgar/data/27673/000110465926107111/0001104659-26-107111-index.htm": "3790c32d5b9998edea53d0f5824b6e047bf45d10d443aae525f91f89402631de",
+    "https://www.sec.gov/Archives/edgar/data/1087294/000108729426000068/0001087294-26-000068-index.htm": "aa86e10b15577c3984fbb3b17194ec413c82f450bda18ab8d8293538e073f40c",
+    "https://www.sec.gov/Archives/edgar/data/783412/000143774926030183/0001437749-26-030183-index.htm": "829363f6e49670b5082a8bb803896e5bdff60250d3e08b6be3cdad612e11a2f8",
+    "https://www.sec.gov/Archives/edgar/data/1065059/000110465926107103/0001104659-26-107103-index.htm": "490a7b7112fef12c13782c9281f71f81f4ba717a6ed658db54f6814f0724370b",
+    "https://www.sec.gov/Archives/edgar/data/1956741/000121390026099309/0001213900-26-099309-index.htm": "dcb16bb4a71aa3bd5afb1bcfe29b039d4362251724102ce952e79145e443c4b9",
+    "https://www.sec.gov/Archives/edgar/data/1760903/000149315226042401/0001493152-26-042401-index.htm": "f98f56185f4eb4386cae026f29eb7e33a6b6c968bfb3085912b1231a0a1b82c5",
+    "https://www.sec.gov/Archives/edgar/data/2079999/000119312526389363/0001193125-26-389363-index.htm": "445ec0254f49e0eaa241f0421e8f5336e0b928a82c1b4b9595d62354d6bcb327",
+    "https://www.sec.gov/Archives/edgar/data/1604191/000110465926107100/0001104659-26-107100-index.htm": "81d1d35430c7b734ef5825bcdf0fae5632b8e260065c974bb4e0488611f38602",
+    "https://www.sec.gov/Archives/edgar/data/2070542/000121390026099305/0001213900-26-099305-index.htm": "1e3072746f6d7ff6e966cdda073e39d945e39bfcfb95a7be3f42fa145d6c3387",
+    "https://www.sec.gov/Archives/edgar/data/1538716/000153871626000101/0001538716-26-000101-index.htm": "0cb03289b666c0d43f86a359e746929f2c46ef93c12be7caee4363e2dd693ad7",
+    "https://www.sec.gov/Archives/edgar/data/2147219/000110465926107095/0001104659-26-107095-index.htm": "5544bf71f4ff27ec42e60f38b1561c6494a77871e65af07490f30edea945e72a",
+    "https://www.sec.gov/Archives/edgar/data/1978528/000182912626010050/0001829126-26-010050-index.htm": "fe24067c712172773a814af047641b3eac97a3c984bf473892bdaaff895c30e6",
+    "https://www.sec.gov/Archives/edgar/data/6207/000110465926107091/0001104659-26-107091-index.htm": "c07d5ca7751da13e45fff25438afb45cf9773b17217efec42251bee383da1413",
+    "https://www.sec.gov/Archives/edgar/data/890394/000121390026099297/0001213900-26-099297-index.htm": "259a6719edf4efbb931bab2f0476e41dce13d5052c25ba1d87eddb34b847d5c1",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/0001140361-26-006577-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/0000320193-26-000005-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/0001140361-26-000199-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/0001140361-25-044561-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/0000320193-25-000077-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/0000320193-25-000071-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000078/0001045810-26-000078-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000073/0001045810-26-000073-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000069/0001045810-26-000069-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000060/0001045810-26-000060-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000056/0001045810-26-000056-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000119312526275783/0001193125-26-275783-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/0001045810-26-000051-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000028/0001045810-26-000028-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000026/0001045810-26-000026-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000024/0001045810-26-000024-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526291986/0001193125-26-291986-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000078/0000034088-26-000078-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000069/0000034088-26-000069-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000065/0000034088-26-000065-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000056/0000034088-26-000056-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000119312526134838/0001193125-26-134838-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000047/0000034088-26-000047-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000033/0000034088-26-000033-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408826000030/0000034088-26-000030-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000122/0000034088-25-000122-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526314128/0001193125-26-314128-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000288/0000019617-26-000288-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048086/0001628280-26-048086-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/0001628280-26-048078-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000241/0000019617-26-000241-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045169/0001628280-26-045169-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000162828026045167/0001628280-26-045167-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526253533/0001193125-26-253533-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000119312526242018/0001193125-26-242018-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.sec.gov/Archives/edgar/data/19617/000001961726000228/0000019617-26-000228-index.htm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260825a.htm": "c1b1bf936fbc38eabcc5e5e07e19f99769a86ddf966949428e665ff75b42d24b",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260819a.htm": "f56b16a88f7588639bd3c2602188359ba36a0f93c837c018d059fd2f174d2f66",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm": "08600faaa1aa24c58ff36f849d3eda66adceb0bef62f00e74aece293cfbc1b18",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260714a.htm": "81feed5f32ddcb110a72917fc04a52e3ddd1bdc0c5d224d70ff5b7387934cedc",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260709a.htm": "5141184e383a88fd2dcd88e06086c7d8c8f9437b8e2c9a7416a2f659e3fe9875",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260708a.htm": "250bde1d3f460362d26de867d04c0f8b771a65dcbfc3815420b016301dd5d45c",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm": "08600faaa1aa24c58ff36f849d3eda66adceb0bef62f00e74aece293cfbc1b18",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm": "c925c60696ce7a9c778336b8cbeaa75665ccf4bc39c0bc8f5325b3742684bb0e",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260526a.htm": "cfd2a47b52e7e9701781e975c775ba85451139b93a68154495ad7446631b3c24",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm": "95f6638ac5460d8254bcdef38dca9edf8f7ad9c0c929426f9d43329f7ec1664f",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm": "08600faaa1aa24c58ff36f849d3eda66adceb0bef62f00e74aece293cfbc1b18",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260414a.htm": "e26a6b74134994c6d53bb700f5e2e87f3904481f139e3ef8c45d79be75550547",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260408a.htm": "64c82950bd89c19c700fc6f3362bcd883fb276c6491f3c264339783cabc5e2e6",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm": "08600faaa1aa24c58ff36f849d3eda66adceb0bef62f00e74aece293cfbc1b18",
+    "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318b.htm": "337fa11ce033cbe11db56a631fb837f417413e0c5226a60173bc7e546777fc53",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260911a.htm": "2ec01e5eacabb1a4ad939b54c22fd96de9c7ef92c2c210428ab03a508c7c0aa7",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260910a.htm": "79cac1e94224394a29f9ab529f15bea5f8907296f225c918ea047cfbcd2e1501",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260904a.htm": "b798bd9cc7b7d7bfaa7a03fa5aed35de8165b108a5cd1791dd281b35ed6f4881",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260827a.htm": "6225e4003a69e2e575e2ec95cde01de89b917c3bd485c6a2b4fbb3291b6d7725",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260820a.htm": "3b52fc3598a524e62a3a687ea0cc7bc14f39402d0df36084b4314916dafbc6e4",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820b.htm": "53d9749060f1dc9bd2496b2b9dea0c86892edd0d645d59dbb96e285201d6e867",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260820a.htm": "4261c044fa7794e1c060e8206f43f2a1c2861b7d12e32bf5028651f57a0f56a5",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260813a.htm": "ab90e3b6868b194020cff598d4d6961c3e22867dde3038c2a766461a59514c7c",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804c.htm": "7b8eb5d1f96e9b9f651e37ee99faccce616385d030b404b92da59195c7e19360",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804b.htm": "93a0da77663dfb0d4f1b356506ae587b707049ed9f664541d2b090aa7d52da14",
+    "https://www.federalreserve.gov/newsevents/pressreleases/orders20260804a.htm": "119bf49884eda63f94d04df158ff89f266fc188269c7254406e0f642dd746369",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731a.htm": "8ead6cb40cc69627bcbc349b83311d1a08dd060077680d497d995a087fa66359",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260731b.htm": "84504558f2811f0d54281df05239530a5ccc3faf9f0a742419238de0433e8702",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730b.htm": "632a909454ce8786bb5a21db3c0bcab926cddec0139769c611e1080df6d79bbf",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260730a.htm": "ef0711b2f2d7a335bcc5982e239bd14d80f743549e044ca3972bf791613a064e",
+    "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260716a.htm": "a12bea63ac5c4137ce2c534718acc20bc6b51b65dc2155dc9a98a87343c1d82f",
+    "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20260716a.htm": "c45bd609a8080f3dfcafd556ad696f4054f272c002e1eb0210a3f2a1a7d41ea8",
+    "https://www.eia.gov/pressroom/releases/press592.php": "5b708f8461b5afa1b0b3373e5b8f81bd226a03dd22d731f9ef2112b2d02ee9ba",
+    "https://www.eia.gov/pressroom/releases/press591.php": "228d297fa8ae64b754c9abb4f735dbb9137bd1850be2365e6afa21e21f62d740",
+    "https://www.eia.gov/pressroom/releases/press590.php": "dfb47347b8c96e0253ddc8f55847504f48eb425a03c6cee98c4772e96b5482a0",
+    "https://www.eia.gov/pressroom/releases/press589.php": "c2022874981540bf87ba1657e01b721ffbc27ddc9b42edea1aeb335e091362ae",
+    "https://www.eia.gov/pressroom/releases/press588.php": "64171b054022f8689235522384abd55aa9f052e5eb62ee8daf7e1a919ebc392f",
+    "https://www.eia.gov/pressroom/releases/press587.php": "e48dd416ba5c7787b97e6e2560a00417ad2835060eddc29119c7dafa22dc8f5e",
+    "https://www.eia.gov/pressroom/releases/press586.php": "185d8b7c96718cc08a25c2a88e578524718038779c28cf91f794d31fe46898ab",
+    "https://www.eia.gov/pressroom/releases/press585.php": "5754e32e8e83633f814981e94282c1f4b7927c62b781c86ac4c13003e66c8e6a",
+    "https://www.eia.gov/pressroom/releases/press584.php": "3307b284b1a2d3c698c013014e78eae310bbb03bfcaa4f22fb0108cbbabc2084",
+    "https://www.eia.gov/pressroom/releases/press583.php": "ac6cf979959be19c6ee9e0faa53e254ae04e1082e20ea8946d14c350e47607d9",
+    "https://www.eia.gov/pressroom/releases/press582.php": "483d2019812a41a951b6ff321f4735c201f145e8a7033e0fc9904ecaabab9ef2"
+  },
+  "must_remain_withheld": [
+    "evt_025506cb401cd123",
+    "evt_02bf7af52e3fc83f",
+    "evt_044ddfdeac3776a1",
+    "evt_0996c37d5c671741",
+    "evt_0bb9f357506051a8",
+    "evt_102a1547ce4f2648",
+    "evt_124e9379e8c7aa03",
+    "evt_12e1189e72417371",
+    "evt_1f540d5f2b4c129a",
+    "evt_1fca7fd9d4778e18",
+    "evt_209d1905b5f50507",
+    "evt_298df7216c1e64bd",
+    "evt_2e5518432e8fee80",
+    "evt_30dcc8a89171e396",
+    "evt_3da0556f8801175d",
+    "evt_3dd54a42824dc22a",
+    "evt_3e9b49f513048225",
+    "evt_43afbf8f4545d550",
+    "evt_467bfb874c2bb20f",
+    "evt_47c5e74a5501cede",
+    "evt_4bdc8b681f24d23d",
+    "evt_50474a3ba7b54bf3",
+    "evt_5247ea3891044c37",
+    "evt_53084640d69a89fe",
+    "evt_546c606f95768dcc",
+    "evt_5a01403053c38cef",
+    "evt_5a07f51df3cb458e",
+    "evt_5c0cad72d340d51a",
+    "evt_5de74b1698ae08ca",
+    "evt_5f03d0b1f935120c",
+    "evt_5f995e1e4e662300",
+    "evt_615b265b4b209639",
+    "evt_61864c75ea3be5c6",
+    "evt_619c78582477518a",
+    "evt_69b94d9a8a6893b6",
+    "evt_6cce8581864f8973",
+    "evt_6d7744b6d60806a0",
+    "evt_705aa63871f2482b",
+    "evt_7158277ade49df8a",
+    "evt_718dd7ffeb101312",
+    "evt_774fa2db4a0e2e46",
+    "evt_78cb19160fc06f43",
+    "evt_80ce26cd9cf47b1e",
+    "evt_83e2529cc1ec22a0",
+    "evt_846a6920d8277d6d",
+    "evt_866b54d1ef143a75",
+    "evt_8a98c3a1463fbda6",
+    "evt_8cfe7239b999c23f",
+    "evt_8d2b3e900e46d3be",
+    "evt_9457713fc63b15a7",
+    "evt_962af74b20285197",
+    "evt_975bee970832e659",
+    "evt_985c969fcfd059d3",
+    "evt_993f3d5a7c7ad16c",
+    "evt_99bd2ed5b92ed7ba",
+    "evt_9ca6bec91214173d",
+    "evt_9e39eb325be06b2c",
+    "evt_a330648c94ef22ea",
+    "evt_a561699085620050",
+    "evt_a72467a25cb9b6f4",
+    "evt_ab6bbb04667714f5",
+    "evt_ae689b32f959e8e5",
+    "evt_b0c9df920699c052",
+    "evt_b27a333ff5db88ba",
+    "evt_b314645119ba5872",
+    "evt_b75c5fc4fc9db4c2",
+    "evt_badf1d171bc05737",
+    "evt_becd5b7ff41727e8",
+    "evt_bfa511ecf408f813",
+    "evt_c26b9647d08d3d20",
+    "evt_c74a054eb43d81cd",
+    "evt_cb7d6491281bda84",
+    "evt_cc9e4cd8c402e623",
+    "evt_ce5db61602a987e7",
+    "evt_d5e4f0685d75b2b5",
+    "evt_d736b497a6b1c1a4",
+    "evt_d7707aee78e09ef2",
+    "evt_dc475d61db673fa5",
+    "evt_dcffd25397461dc9",
+    "evt_e0f5d472d4c99e95",
+    "evt_e2f5bf72b64a32d2",
+    "evt_ec314e41ec7d1773",
+    "evt_ed2098242820d934",
+    "evt_f602a4b758d3ca64",
+    "evt_f7dd08a6c4aec674",
+    "evt_f823e257cda19741",
+    "evt_fa9b83830314554a",
+    "evt_fb04b2f02854092e",
+    "evt_fc28d76df9489d02"
+  ],
+  "representative_fixable": [
+    "evt_55733c70cd1dd721",
+    "evt_b39a38314637dcde",
+    "evt_30ab371b5e192e82"
+  ],
+  "gained_event_ids": [
+    "evt_55733c70cd1dd721",
+    "evt_b39a38314637dcde",
+    "evt_30ab371b5e192e82"
+  ],
+  "gained_detail": [
+    {
+      "event_id": "evt_55733c70cd1dd721",
+      "claim": "EIA increases global oil production forecast after the opening of the Strait of Hormuz",
+      "excerpt": "Shipping traffic through the Strait of Hormuz has increased following the June 18 memorandum of understanding (MOU) between the United States and Iran to end a months-long conflict and reopen the strait. EIA now expects worldwide crude oil production and trade flows to rebound to near pre-conflict levels.",
+      "source_url": "https://www.eia.gov/pressroom/releases/press590.php",
+      "change": "官方预测基线随事实演化：重开/供应恢复",
+      "expectation": "方向 relief · 期限 weeks_to_months · 置信度 medium",
+      "impact": "先市场/行业：commodity_revenue；XOM 经 commodity_revenue（commodity_price_to_producer_revenue）"
+    },
+    {
+      "event_id": "evt_b39a38314637dcde",
+      "claim": "Hormuz closure and related production outages are key drivers in EIA's latest forecast",
+      "excerpt": "\"Our petroleum forecasts are highly contingent on the interaction of three variables,\" EIA Administrator Tristan Abbey said. \"First, to even run our model we have to make an assumption about the duration of the Strait of Hormuz closure. Second, we know that the closure is forcing production to shut in.\"",
+      "source_url": "https://www.eia.gov/pressroom/releases/press586.php",
+      "change": "相对此前无该事件的基线，市场首次纳入该已确认事实",
+      "expectation": "方向 pressure · 期限 days_to_weeks · 置信度 medium",
+      "impact": "先市场/行业：commodity_revenue；XOM 经 commodity_revenue（commodity_price_to_producer_revenue）"
+    },
+    {
+      "event_id": "evt_30ab371b5e192e82",
+      "claim": "EIA releases latest Short-Term Energy Outlook amid Middle East conflict",
+      "excerpt": "The Brent crude oil spot price has risen sharply following the onset of military action in the Middle East. Brent settled at $94 per barrel (b) on March 9, up about 50% from the beginning of the year and the highest since September 2023. The full March 2026 Short-Term Energy Outlook is available on the EIA website.",
+      "source_url": "https://www.eia.gov/pressroom/releases/press584.php",
+      "change": "相对此前无该事件的基线，市场首次纳入该已确认事实",
+      "expectation": "方向 watch · 期限 unspecified · 置信度 medium",
+      "impact": "先市场/行业：commodity_revenue；XOM 经 commodity_revenue（commodity_price_to_producer_revenue）"
+    }
+  ],
+  "integrity_sha256": "8dafa5398b0398fb564889d227cfc64b358170070a1f2c1853b1df20a347dfeb"
+}

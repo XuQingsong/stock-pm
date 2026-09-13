@@ -25,6 +25,18 @@ from urllib.parse import urlencode
 
 from stock_pm.config import Settings
 
+from .bodies import (
+    extract_sec_index_items,
+    extract_sec_primary_document_url,
+    extract_sec_primary_facts,
+    fetch_official_page,
+    is_allowed_eia_host,
+    is_allowed_sec_host,
+    is_sec_item_metadata,
+    official_html_excerpt,
+    reset_body_cache,
+    resolve_redirect_url,
+)
 from .feeds import RateLimiter, fetch_feed, parse_feed_items, strip_markup
 from .policy import events_data_mode, is_safe_public_http_url
 from .types import EventDocument
@@ -94,6 +106,7 @@ _DEFAULT_LIMITER = RateLimiter(0.25)
 
 def reset_live_state() -> None:
     _STATE.clear()
+    reset_body_cache()
 
 
 def live_ingest_enabled(settings: Settings | None = None) -> bool:
@@ -105,6 +118,14 @@ def live_ingest_enabled(settings: Settings | None = None) -> bool:
 
 def _now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _stamp_fetched(doc: EventDocument | None, fetched_at: str) -> EventDocument | None:
+    if doc is None:
+        return None
+    if not doc.last_fetched_at:
+        doc.last_fetched_at = fetched_at
+    return doc
 
 
 def _status_from_title(title: str) -> str:
@@ -119,6 +140,95 @@ def _status_from_title(title: str) -> str:
 def _pad_cik(raw: str) -> str:
     digits = re.sub(r"\D", "", raw)
     return digits.zfill(10) if digits else ""
+
+
+def _is_watchlist_filing(doc: EventDocument) -> bool:
+    wanted = set(WATCHLIST_CIKS.values())
+    return any(item in wanted for item in (doc.entities or []))
+
+
+def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
+    """Index Item lines are filing metadata only. Valid facts come from the primary 8-K."""
+    if (doc.body or "").strip():
+        doc.body_source = doc.body_source or "rss_summary"
+        if is_sec_item_metadata(doc.body):
+            doc.filing_items = extract_sec_index_items(f"<p>{doc.body}</p>") or doc.filing_items
+    if "-index.htm" not in (doc.url or "").lower():
+        return doc
+    if not _is_watchlist_filing(doc):
+        return doc
+    page = fetch_official_page(
+        doc.url,
+        user_agent=user_agent,
+        extra_headers={"Host": "www.sec.gov"},
+        limiter=_SEC_LIMITER,
+        fetch=fetch_feed,
+    )
+    doc.last_fetched_at = page.get("fetched_at") or doc.last_fetched_at
+    if page.get("error"):
+        doc.fetch_error = str(page["error"])
+        return doc
+    html = str(page.get("html") or "")
+    items = extract_sec_index_items(html)
+    if items:
+        doc.filing_items = items
+    primary_url = extract_sec_primary_document_url(html, doc.url)
+    if not primary_url or not is_allowed_sec_host(primary_url):
+        return doc
+    primary = fetch_official_page(
+        primary_url,
+        user_agent=user_agent,
+        extra_headers={"Host": "www.sec.gov"},
+        limiter=_SEC_LIMITER,
+        fetch=fetch_feed,
+    )
+    doc.last_fetched_at = primary.get("fetched_at") or doc.last_fetched_at
+    if primary.get("error"):
+        doc.fetch_error = str(primary["error"])
+        return doc
+    facts = extract_sec_primary_facts(str(primary.get("html") or ""))
+    if not facts:
+        return doc
+    doc.claims = facts
+    doc.body = facts[0]
+    doc.body_source = "sec_primary_document"
+    return doc
+
+
+def _enrich_eia_html(doc: EventDocument) -> EventDocument:
+    """Replace RSS abstract with a claim-support excerpt from the official press page."""
+    if not doc.url:
+        return doc
+    page = fetch_official_page(
+        doc.url, user_agent="stock-pm official-feed/5c", limiter=_DEFAULT_LIMITER, fetch=fetch_feed
+    )
+    doc.last_fetched_at = page.get("fetched_at")
+    if page.get("error"):
+        doc.fetch_error = str(page["error"])
+        if (doc.body or "").strip():
+            doc.body_source = doc.body_source or "rss_summary"
+        return doc
+    html = str(page.get("html") or "")
+    redirect = resolve_redirect_url(doc.url, html)
+    if redirect and redirect != doc.url and is_allowed_eia_host(redirect):
+        page = fetch_official_page(
+            redirect, user_agent="stock-pm official-feed/5c", limiter=_DEFAULT_LIMITER, fetch=fetch_feed
+        )
+        doc.last_fetched_at = page.get("fetched_at") or doc.last_fetched_at
+        html = str(page.get("html") or html)
+        if page.get("error"):
+            doc.fetch_error = str(page["error"])
+    claim = (doc.claims[0] if doc.claims else doc.title) or doc.title
+    excerpt = official_html_excerpt(html, claim)
+    if excerpt:
+        doc.body = excerpt
+        doc.body_source = "official_html"
+        if claim not in doc.claims:
+            doc.claims = [claim, *list(doc.claims or [])]
+        return doc
+    if (doc.body or "").strip():
+        doc.body_source = doc.body_source or "rss_summary"
+    return doc
 
 
 def _slug(url: str) -> str:
@@ -222,8 +332,8 @@ def _fetch_items(
         etag=etag,
         last_modified=last_modified,
         limiter=limiter,
-        timeout=40 if "sec.gov" in url else 25,
-        retries=3 if "sec.gov" in url else 2,
+        timeout=40 if is_allowed_sec_host(url) else 25,
+        retries=3 if is_allowed_sec_host(url) else 2,
     )
     meta = {
         "status_code": resp.status_code,
@@ -303,7 +413,7 @@ class SecEdgarProvider:
         expected_cik: str | None = None,
     ) -> EventDocument | None:
         url = str(item.get("url") or "")
-        if not is_safe_public_http_url(url) or "sec.gov" not in url.lower():
+        if not is_allowed_sec_host(url):
             return None
         title = strip_markup(str(item.get("title") or ""))
         blob = f"{title} {item.get('summary') or ''} {item.get('entry_id') or ''}"
@@ -388,12 +498,13 @@ class SecEdgarProvider:
                 )
             docs: list[EventDocument] = []
             seen: set[str] = set()
+            fetched_at = _now()
             for item in items:
-                doc = self._to_doc(item)
+                doc = _stamp_fetched(self._to_doc(item), fetched_at)
                 if doc is None or doc.url in seen:
                     continue
                 seen.add(doc.url)
-                docs.append(doc)
+                docs.append(_enrich_sec_index(doc, user_agent=self.user_agent()))
             # Documented per-company Atom for the four display names, so mapping is explicit.
             for cik in DISPLAY_CIKS:
                 symbol = WATCHLIST_CIKS[cik]
@@ -408,12 +519,16 @@ class SecEdgarProvider:
                 )
                 if company_meta.get("error"):
                     continue
+                company_fetched = _now()
                 for item in company_items:
-                    doc = self._to_doc(item, mapped_symbol=symbol, expected_cik=cik)
+                    doc = _stamp_fetched(
+                        self._to_doc(item, mapped_symbol=symbol, expected_cik=cik),
+                        company_fetched,
+                    )
                     if doc is None or doc.url in seen:
                         continue
                     seen.add(doc.url)
-                    docs.append(doc)
+                    docs.append(_enrich_sec_index(doc, user_agent=self.user_agent()))
             return _record(
                 self.name,
                 status="ok",
@@ -522,6 +637,7 @@ class FederalReserveProvider:
                             body=strip_markup(str(item.get("summary") or "")),
                             provider="official",
                             status=_status_from_title(title),
+                            last_fetched_at=_now(),
                         )
                     )
             if not docs and errors:
@@ -626,24 +742,27 @@ class EiaPressProvider:
                     link = "https://www.eia.gov" + link
                 if link.startswith("http://www.eia.gov"):
                     link = "https://" + link[len("http://") :]
-                if not is_safe_public_http_url(link) or "eia.gov" not in link.lower():
+                if not is_allowed_eia_host(link):
                     continue
                 title = strip_markup(str(item.get("title") or ""))
                 slug = _slug(link)
                 event_type, entities = self._classify(title, slug)
                 docs.append(
-                    EventDocument(
-                        title=title,
-                        url=link,
-                        publisher="U.S. Energy Information Administration",
-                        published_at=item.get("published_at"),
-                        event_type=event_type,
-                        entities=entities,
-                        countries=["US"],
-                        claims=[title],
-                        body=strip_markup(str(item.get("summary") or "")),
-                        provider="official",
-                        status=_status_from_title(title),
+                    _enrich_eia_html(
+                        EventDocument(
+                            title=title,
+                            url=link,
+                            publisher="U.S. Energy Information Administration",
+                            published_at=item.get("published_at"),
+                            event_type=event_type,
+                            entities=entities,
+                            countries=["US"],
+                            claims=[title],
+                            body=strip_markup(str(item.get("summary") or "")),
+                            provider="official",
+                            status=_status_from_title(title),
+                            last_fetched_at=_now(),
+                        )
                     )
                 )
             return _record(

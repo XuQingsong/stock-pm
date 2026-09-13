@@ -202,6 +202,16 @@ def test_withhold_without_sources_fails_e10_chain():
     assert e10_event_passes(analysis, dom_answers=list(analysis["answers"])) is False
 
 
+def test_withheld_card_copy_does_not_deny_real_world_impact():
+    ui = (Path(__file__).resolve().parents[1] / "src" / "stock_pm" / "static" / "events_ui.js").read_text(encoding="utf-8")
+    fact_only = 'data-filing-fact-only="1"'
+    assert fact_only in ui
+    fact_block = ui.split(fact_only, 1)[1]
+    assert "当前仅作为事实展示；在基准与传导规则补齐前，不纳入方向判断，也不影响其他事件的正常分析。" in fact_block
+    assert "本事件不形成方向，也不阻断其他事件的正常分析。" in ui
+    assert "只影响本事件，不影响价格、盈利或宏观利率。" not in ui
+
+
 def test_product_pages_do_not_show_accept_gates_or_debug_none():
     root = Path(__file__).resolve().parents[1] / "src" / "stock_pm" / "static"
     product = (root / "events_ui.js").read_text(encoding="utf-8") + (root / "stock.js").read_text(encoding="utf-8")

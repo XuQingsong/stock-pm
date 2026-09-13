@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .bodies import is_sec_item_metadata
 from .evidence import current_claims, evolution_path, excerpt_supports_claim, infer_phase, publisher_key, source_metrics
 from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
@@ -198,6 +199,8 @@ def causal_chain_is_complete(chain: dict[str, Any] | None) -> bool:
     refs = [row for row in (fact.get("evidence_refs") or []) if isinstance(row, dict)]
     if not excerpt or not any(str(row.get("source_url") or "").startswith("http") for row in refs):
         return False
+    if is_sec_item_metadata(excerpt):
+        return False
     if not excerpt_supports_claim(str(fact.get("text") or ""), excerpt):
         return False
     exp = layers["expectation"]
@@ -289,7 +292,7 @@ def build_causal_chain(
 def _supporting_fact(live_claims: list[EventClaim], fallback_text: str) -> tuple[str, str, bool]:
     for claim in live_claims:
         excerpt = str(claim.excerpt or "")
-        if excerpt and excerpt_supports_claim(claim.text, excerpt):
+        if excerpt and not is_sec_item_metadata(excerpt) and excerpt_supports_claim(claim.text, excerpt):
             return claim.text, excerpt, True
     display = fallback_text
     if live_claims:
@@ -412,10 +415,74 @@ def closed_loop_summary(events: list[Any] | None) -> dict[str, Any]:
     }
 
 
+def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, Any]:
+    """Machine reason for withheld/unsupported. Does not change pass/fail gates."""
+    row = inspect_closed_loop(payload)
+    if isinstance(payload, TrustedEvent):
+        sources = list(payload.sources)
+        status = payload.status
+        claims = list(payload.claims)
+        analysis = payload.analysis or {}
+    else:
+        sources = list(payload.get("sources") or [])
+        status = str(payload.get("status") or "")
+        claims = list(payload.get("claims") or [])
+        analysis = payload.get("analysis") if isinstance(payload.get("analysis"), dict) else payload
+        if not isinstance(analysis, dict):
+            analysis = {}
+    last_fetched = None
+    fetch_error = None
+    body_source = None
+    for source in sources:
+        stamp = _row_field(source, "last_fetched_at")
+        if stamp and (last_fetched is None or stamp > last_fetched):
+            last_fetched = stamp
+        fetch_error = fetch_error or _row_field(source, "fetch_error") or None
+        body_source = body_source or _row_field(source, "body_source") or None
+    primary = None
+    secondary: list[str] = []
+    if row["valid"]:
+        primary = None
+    elif status in {"revoked", "superseded"}:
+        primary = "superseded_or_no_material_change"
+    elif not row["official_ok"]:
+        primary = "no_official_url"
+    elif fetch_error and not row["excerpt_ok"]:
+        primary = "fetch_failure"
+    elif not row["excerpt_ok"]:
+        excerpts = [_row_field(claim, "excerpt") for claim in claims]
+        primary = "body_missing" if not any(item.strip() for item in excerpts) else "claim_not_supported"
+    elif not row["exposure_ok"]:
+        primary = "no_exposure"
+    elif isinstance(analysis, dict) and analysis.get("filing_fact_only"):
+        primary = "baseline_missing"
+    else:
+        primary = "chain_incomplete"
+    if primary != "no_exposure" and not row["exposure_ok"]:
+        secondary.append("no_exposure")
+    if primary not in {"chain_incomplete", "baseline_missing"} and not row["chain_ok"]:
+        secondary.append("chain_incomplete")
+    return {
+        "primary_reason": primary,
+        "secondary_reasons": secondary,
+        "last_fetched_at": last_fetched,
+        "fetch_error": fetch_error,
+        "body_source": body_source,
+    }
+
+
 def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = None, claims: list[Any] | None = None) -> dict[str, Any]:
-    row = inspect_closed_loop({"analysis": analysis, "sources": sources or analysis.get("evidence_refs") or [], "claims": claims or []})
+    payload = {
+        "analysis": analysis,
+        "sources": sources or analysis.get("evidence_refs") or [],
+        "claims": claims or [],
+        "event_type": analysis.get("event_type") or "",
+    }
+    row = inspect_closed_loop(payload)
+    gap = classify_evidence_gap(payload)
     analysis["closed_loop"] = row["valid"]
     analysis["unsupported"] = row["unsupported"]
+    analysis["evidence_gap"] = gap
     if analysis.get("withheld", {}).get("status") == "observable" and not row["valid"]:
         if row["unsupported"]:
             reason = "正文摘录不支持当前事实，不形成方向"
@@ -436,6 +503,12 @@ def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = N
                     f"方向 withheld · 期限 {layer.get('horizon') or 'unspecified'} · 置信度 {layer.get('confidence') or 'insufficient'}"
                 )
         chain["complete"] = False
+        gap = classify_evidence_gap({"analysis": analysis, "sources": sources or [], "claims": claims or []})
+        analysis["evidence_gap"] = gap
+    withheld = dict(analysis.get("withheld") or {})
+    withheld["last_fetched_at"] = gap.get("last_fetched_at")
+    withheld["primary_reason"] = gap.get("primary_reason")
+    analysis["withheld"] = withheld
     return analysis
 
 
@@ -465,6 +538,11 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     else:
         change = "相对此前无该事件的基线，市场首次纳入该已确认事实"
         what = "把该事件纳入相关标的的观察清单，不改写无暴露股票的主结论"
+    filing_fact_only = event.event_type == "company_filing" and event.status != "revoked"
+    if filing_fact_only:
+        # This phase has no structured current-vs-history/consensus baseline or filing rule.
+        change = ""
+        what = "已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向"
 
     if not bound_refs:
         analysis = {
@@ -555,6 +633,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         withheld = _withhold("正文摘录不支持当前事实，不形成方向")
     elif not exposures:
         withheld = _withhold("没有行业/个股暴露映射，不形成方向")
+    elif filing_fact_only:
+        withheld = _withhold("已获得官方正文事实；缺少可比较基准与明确传导规则，因此不形成方向")
     else:
         withheld = {
             "status": "observable",
@@ -620,6 +700,8 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "how_long": horizon,
             "invalidates_when": invalidation,
         },
+        "filing_fact_only": bool(filing_fact_only and fact_supported),
+        "event_type": event.event_type,
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)
