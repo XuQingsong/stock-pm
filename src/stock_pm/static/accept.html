@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Stock PM · E1–E10 验收</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/shell.css">
+  <script defer src="/static/shell.js"></script>
+  <script defer src="/static/accept.js"></script>
+</head>
+<body>
+  <header class="stock-header">
+    <div class="header-inner">
+      <nav class="global-nav" aria-label="主导航">
+        <a class="brand" href="/">Stock PM</a>
+        <a href="/">总览</a><a href="/events">事件中心</a><a href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a>
+      </nav>
+      <div class="instrument">
+        <div>
+          <div class="symbol-line"><strong>E1–E10 验收页</strong><span>开发验收，不是用户产品页</span></div>
+          <div class="muted">三个精确 gate 与机器可读报告一致。产品页不展示这些字段。</div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="page-shell event-center">
+    <section class="decision-module event-module" aria-labelledby="accept-heading">
+      <h2 id="accept-heading">live / capability / provider health</h2>
+      <p class="subline">本页只读验收脚本写出的 JSON。后端 coverage 里的 live_e1_e10_gate / capability_e1_e10_gate 保持 null，不得在产品页写成 accept-only。</p>
+      <div id="accept-report" class="event-coverage" data-accept-ready="0">加载验收报告…</div>
+    </section>
+  </main>
+</body>
+</html>

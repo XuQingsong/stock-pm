@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/shell.css">
   <script defer src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
   <script defer src="/static/shell.js"></script>
+  <script defer src="/static/events_ui.js"></script>
   <script defer src="/static/stock.js"></script>
 </head>
 <body>
@@ -15,7 +16,7 @@
     <div class="header-inner">
       <nav class="global-nav" aria-label="主导航">
         <a class="brand" href="/">Stock PM</a>
-        <a href="/">总览</a><a href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a>
+        <a href="/">总览</a><a href="/events">事件中心</a><a href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a>
       </nav>
       <div class="symbol-tools">
         <label for="symbol-switcher">切换标的</label>
@@ -44,6 +45,11 @@
         <article id="fact-drawer-body"></article>
         <form method="dialog"><button type="submit">关闭</button></form>
       </dialog>
+    </section>
+    <section id="event-module" class="decision-module event-module" aria-labelledby="event-heading">
+      <h2 id="event-heading">相关重大事件</h2>
+      <div id="event-coverage" class="event-coverage" data-google-status="pending">加载覆盖状态…</div>
+      <div id="event-body" class="state loading"><span class="spinner"></span>正在加载相关事件…</div>
     </section>
     <div id="stock-pm-shell"></div>
     <div class="tabs" role="tablist" aria-label="个股详情">
