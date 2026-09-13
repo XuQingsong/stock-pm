@@ -9,12 +9,17 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from .bars import DAILY_ADJUSTMENT, decorate_bar, is_valid_ohlc, last_completed_session_end
 from .config import Settings
 from .database import Database
+from .fetch import utc_now
 
 
 DATA_API = "https://data.alpaca.markets"
 TRADING_API = "https://paper-api.alpaca.markets"
+BARS_ENV_ID = "ALPACA_API_KEY_ID"
+BARS_ENV_SECRET = "ALPACA_API_SECRET_KEY"
+DAILY_BAR_UNIT = "USD"
 OPTION_SYMBOL = re.compile(r"^([A-Z.]+)(\d{6})([CP])(\d{8})$")
 
 
@@ -77,7 +82,7 @@ def _bars(client: AlpacaClient, symbols: list[str], timeframe: str, start: datet
             "start": start.isoformat(),
             "end": end.isoformat(),
             "feed": client.settings.alpaca_bars_feed,
-            "adjustment": "all",
+            "adjustment": DAILY_ADJUSTMENT if timeframe == "1Day" else "raw",
             "limit": 10000,
             "sort": "asc",
         }
@@ -101,6 +106,90 @@ def _bars(client: AlpacaClient, symbols: list[str], timeframe: str, start: datet
         token = response.get("next_page_token")
         if not token:
             return collected
+
+
+def daily_bars_http_source(symbol: str, feed: str) -> str:
+    return (
+        f"{DATA_API}/v2/stocks/bars?symbols={symbol.upper()}"
+        f"&timeframe=1Day&adjustment={DAILY_ADJUSTMENT}&feed={feed}"
+    )
+
+
+def _empty_bar_record(symbol: str, feed: str, *, fetched_at: str, status: str, reason_code: str) -> dict:
+    return {
+        "source": f"alpaca_{feed}",
+        "series_or_symbol": symbol.upper(),
+        "as_of": None,
+        "value": None,
+        "unit": DAILY_BAR_UNIT,
+        "frequency": "daily",
+        "status": status,
+        "reason_code": reason_code,
+        "http_source": daily_bars_http_source(symbol, feed),
+        "transport": "alpaca",
+        "required_env": f"{BARS_ENV_ID}+{BARS_ENV_SECRET}",
+    }
+
+
+def collect_live_daily_bars(
+    symbol: str,
+    settings: Settings | None = None,
+    *,
+    days: int = 40,
+) -> tuple[list[dict], set[str], dict]:
+    """Official Alpaca daily bars for the real runtime. Keys stay in headers, not URLs."""
+    settings = settings or Settings()
+    fetched_at = utc_now()
+    symbol = symbol.upper()
+    feed = settings.alpaca_bars_feed or "sip"
+    if not settings.alpaca_api_key_id or not settings.alpaca_api_secret_key:
+        rec = _empty_bar_record(
+            symbol, feed, fetched_at=fetched_at, status="not_configured", reason_code="source_not_configured"
+        )
+        return [], set(), {"fetched_at": fetched_at, "daily_price_bars": rec}
+    try:
+        client = AlpacaClient(settings)
+        end = last_completed_session_end()
+        start = end - timedelta(days=days)
+        rows = (_bars(client, [symbol], "1Day", start, end).get(symbol) or [])
+    except AlpacaError:
+        rec = _empty_bar_record(symbol, feed, fetched_at=fetched_at, status="error", reason_code="query_error")
+        return [], {"daily_price_bars"}, {"fetched_at": fetched_at, "daily_price_bars": rec}
+    bars: list[dict] = []
+    http_source = daily_bars_http_source(symbol, feed)
+    for row in reversed(rows):
+        decorated = decorate_bar(row, fetched_at=fetched_at, source=f"alpaca_{feed}")
+        if not is_valid_ohlc(decorated):
+            continue
+        decorated.update(
+            {
+                "symbol": symbol,
+                "value": decorated.get("close_price"),
+                "unit": DAILY_BAR_UNIT,
+                "series_or_symbol": symbol,
+                "http_source": http_source,
+                "transport": "alpaca",
+            }
+        )
+        bars.append(decorated)
+    if not bars:
+        rec = _empty_bar_record(symbol, feed, fetched_at=fetched_at, status="missing", reason_code="upstream_empty")
+        return [], set(), {"fetched_at": fetched_at, "daily_price_bars": rec}
+    latest = bars[0]
+    rec = {
+        "source": f"alpaca_{feed}",
+        "series_or_symbol": symbol,
+        "as_of": latest.get("as_of"),
+        "value": latest.get("close_price"),
+        "unit": DAILY_BAR_UNIT,
+        "frequency": "daily",
+        "status": "ok",
+        "reason_code": "within_threshold",
+        "http_source": http_source,
+        "transport": "alpaca",
+        "required_env": f"{BARS_ENV_ID}+{BARS_ENV_SECRET}",
+    }
+    return bars, set(), {"fetched_at": fetched_at, "daily_price_bars": rec}
 
 
 def _trades(client: AlpacaClient, symbol: str, start: datetime, end: datetime) -> list[dict]:
@@ -273,9 +362,12 @@ def collect(mode: str = "intraday", symbols: list[str] | None = None) -> tuple[d
     delayed_end = now - timedelta(minutes=16)
     snapshots = _snapshots(client, requested)
     prices = {row["symbol"]: row["last_price"] for row in snapshots}
-    start = delayed_end - (timedelta(days=3) if mode == "intraday" else timedelta(days=430))
+    daily_end = last_completed_session_end(now)
+    end = delayed_end if mode == "intraday" else daily_end
+    start = end - (timedelta(days=3) if mode == "intraday" else timedelta(days=430))
     timeframe, bar_size = ("1Min", "1m") if mode == "intraday" else ("1Day", "1d")
-    bars = _bars(client, requested, timeframe, start, delayed_end)
+    fetched_at = utc_now()
+    bars = _bars(client, requested, timeframe, start, end)
     errors: dict[str, str] = {}
     options = []
     for symbol in requested:
@@ -291,8 +383,17 @@ def collect(mode: str = "intraday", symbols: list[str] | None = None) -> tuple[d
             {
                 "symbol": symbol,
                 "bar_size": bar_size,
-                "source": f"alpaca_{client.settings.alpaca_bars_feed}_delayed",
-                "bars": rows,
+                "source": f"alpaca_{client.settings.alpaca_bars_feed}",
+                "adjustment": DAILY_ADJUSTMENT if bar_size == "1d" else "raw",
+                "bars": [
+                    decorate_bar(
+                        row,
+                        fetched_at=fetched_at,
+                        adjustment=DAILY_ADJUSTMENT if bar_size == "1d" else "raw",
+                        source=f"alpaca_{client.settings.alpaca_bars_feed}",
+                    )
+                    for row in rows
+                ],
             }
             for symbol, rows in bars.items() if rows
         ],

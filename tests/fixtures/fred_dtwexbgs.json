@@ -1,0 +1,10 @@
+{
+  "label": "recorded fixture, not a live broad USD print; DTWEXBGS is broad_usd_proxy, not ICE DXY",
+  "series_id": "DTWEXBGS",
+  "frequency": "daily",
+  "unit": "index",
+  "observations": [
+    {"date": "2026-09-10", "value": "121.40", "realtime_start": "2026-09-11"},
+    {"date": "2026-09-09", "value": "120.80", "realtime_start": "2026-09-10"}
+  ]
+}

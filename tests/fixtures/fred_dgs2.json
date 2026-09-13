@@ -1,0 +1,10 @@
+{
+  "label": "recorded fixture, not a live US2Y print",
+  "series_id": "DGS2",
+  "frequency": "daily",
+  "unit": "percent",
+  "observations": [
+    {"date": "2026-09-10", "value": "3.71", "realtime_start": "2026-09-11"},
+    {"date": "2026-09-09", "value": "3.68", "realtime_start": "2026-09-10"}
+  ]
+}

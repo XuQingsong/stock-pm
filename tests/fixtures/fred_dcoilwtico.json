@@ -1,0 +1,10 @@
+{
+  "label": "recorded fixture, not a live WTI print",
+  "series_id": "DCOILWTICO",
+  "frequency": "daily",
+  "unit": "USD/bbl",
+  "observations": [
+    {"date": "2026-09-10", "value": "78.25", "realtime_start": "2026-09-11"},
+    {"date": "2026-09-09", "value": "77.80", "realtime_start": "2026-09-10"}
+  ]
+}

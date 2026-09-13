@@ -1,0 +1,10 @@
+{
+  "label": "recorded fixture, not a live VIX print",
+  "series_id": "VIXCLS",
+  "frequency": "daily",
+  "unit": "index",
+  "observations": [
+    {"date": "2026-09-10", "value": "16.24", "realtime_start": "2026-09-11"},
+    {"date": "2026-09-09", "value": "15.81", "realtime_start": "2026-09-10"}
+  ]
+}

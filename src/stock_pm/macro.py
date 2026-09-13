@@ -119,6 +119,13 @@ def sync(fill_actuals: bool = True) -> dict:
                 }
             )
             counts["upserted"] += 1
+        from .series import sync_fred_market_series
+
+        series_report = sync_fred_market_series(
+            settings,
+            store=database.store_macro_event,
+        )
+        counts["series"] = series_report.get("series")
     finally:
         database.close()
     return counts

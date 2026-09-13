@@ -9,9 +9,13 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from .config import Settings
+from .fetch import utc_now
+from .series import map_earnings_health
 
 
 FMP_API = "https://financialmodelingprep.com/stable"
+FMP_ENV_VAR = "FMP_API_KEY"
+EARNINGS_UNIT = "USD/share"
 
 
 class FundamentalsProvider(Protocol):
@@ -262,6 +266,90 @@ def _merge_fmp_earnings(symbol: str, reported: list[dict], income: list[dict]) -
         )
     result.sort(key=lambda row: row["report_date"], reverse=True)
     return result[:12]
+
+
+def earnings_http_source(symbol: str) -> str:
+    return f"{FMP_API}/earnings?symbol={symbol.upper()}"
+
+
+def _empty_earnings_record(symbol: str, *, fetched_at: str, status: str, reason_code: str) -> dict[str, Any]:
+    return {
+        "source": "fmp",
+        "series_or_symbol": symbol.upper(),
+        "as_of": None,
+        "value": None,
+        "unit": EARNINGS_UNIT,
+        "frequency": "quarterly",
+        "status": status,
+        "reason_code": reason_code,
+        "http_source": earnings_http_source(symbol),
+        "transport": "fmp",
+        "required_env": FMP_ENV_VAR,
+    }
+
+
+def collect_live_earnings(
+    symbol: str,
+    settings: Settings | None = None,
+) -> tuple[list[dict], set[str], dict]:
+    """Official FMP earnings for the real runtime. apikey never enters http_source."""
+    settings = settings or Settings()
+    fetched_at = utc_now()
+    symbol = symbol.upper()
+    if not settings.fmp_api_key:
+        rec = _empty_earnings_record(
+            symbol, fetched_at=fetched_at, status="not_configured", reason_code="source_not_configured"
+        )
+        return [], set(), {"fetched_at": fetched_at, "earnings_reports": rec}
+    try:
+        provider = FMPProvider(settings.fmp_api_key)
+        reported = provider._try_get("earnings", {"symbol": symbol}) or []
+        income = provider._try_get("income-statement", {"symbol": symbol, "period": "quarter"}) or []
+        if not isinstance(reported, list):
+            reported = []
+        if not isinstance(income, list):
+            income = []
+        rows = _merge_fmp_earnings(symbol, reported, income)
+    except Exception:
+        rec = _empty_earnings_record(symbol, fetched_at=fetched_at, status="error", reason_code="query_error")
+        return [], {"earnings_reports"}, {"fetched_at": fetched_at, "earnings_reports": rec}
+    http_source = earnings_http_source(symbol)
+    mapped: list[dict] = []
+    for row in rows:
+        item = map_earnings_health(
+            {
+                **row,
+                "source": "fmp",
+                "synced_at": fetched_at,
+                "observed_at": fetched_at,
+                "fetched_at": fetched_at,
+                "as_of": row.get("report_date"),
+                "value": row.get("eps_actual"),
+                "unit": EARNINGS_UNIT,
+                "series_or_symbol": symbol,
+                "http_source": http_source,
+                "transport": "fmp",
+            }
+        )
+        mapped.append(item)
+    if not mapped:
+        rec = _empty_earnings_record(symbol, fetched_at=fetched_at, status="missing", reason_code="upstream_empty")
+        return [], set(), {"fetched_at": fetched_at, "earnings_reports": rec}
+    latest = mapped[0]
+    rec = {
+        "source": "fmp",
+        "series_or_symbol": symbol,
+        "as_of": latest.get("as_of") or latest.get("report_date"),
+        "value": latest.get("eps_actual"),
+        "unit": EARNINGS_UNIT,
+        "frequency": "quarterly",
+        "status": "ok",
+        "reason_code": "within_threshold",
+        "http_source": http_source,
+        "transport": "fmp",
+        "required_env": FMP_ENV_VAR,
+    }
+    return mapped, set(), {"fetched_at": fetched_at, "earnings_reports": rec}
 
 
 def get_fundamentals_provider(name: str | None = None) -> FundamentalsProvider:

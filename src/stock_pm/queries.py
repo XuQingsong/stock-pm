@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from datetime import date as date_cls
+from datetime import date as date_cls, datetime, timezone
 from typing import Any
 
 from .calendar import last_trading_day, ny_today, session_status
@@ -540,10 +540,13 @@ class QueryMixin:
             (row for row in self.watchlist_rows() if row["symbol"] == normalized),
             {"symbol": normalized, "themes": [], "rate_sensitivity": "medium"},
         )
-        bars = self.fetch_all(
+        from .bars import decorate_bar, usable_daily_bars
+        from .series import decorate_macro_row, map_earnings_health
+
+        raw_bars = self.fetch_all(
             """
             SELECT symbol, bar_size, bar_time, open_price, high_price,
-                   low_price, close_price, volume, source
+                   low_price, close_price, volume, source, raw_data
             FROM daily_price_bars
             WHERE symbol = %s AND bar_size = '1d'
             ORDER BY bar_time DESC
@@ -551,16 +554,29 @@ class QueryMixin:
             """,
             (normalized,),
         )
-        earnings = self.earnings_history(normalized)[:4]
-        macros = self.fetch_all(
-            """
-            SELECT event_type, event_time, name, actual, consensus, prior,
-                   unit, surprise, confirmed, source, notes
-            FROM macro_events
-            ORDER BY event_time DESC
-            LIMIT 200
-            """
-        )
+        fetched = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        bars_all = [
+            decorate_bar(
+                row,
+                fetched_at=fetched,
+                source=str(row.get("source") or "alpaca"),
+            )
+            for row in raw_bars
+        ]
+        bars = usable_daily_bars(bars_all)
+        earnings = [map_earnings_health(row) for row in self.earnings_history(normalized)[:4]]
+        macros = [
+            decorate_macro_row(row)
+            for row in self.fetch_all(
+                """
+                SELECT event_type, event_time, name, actual, consensus, prior,
+                       unit, surprise, confirmed, source, notes
+                FROM macro_events
+                ORDER BY event_time DESC
+                LIMIT 200
+                """
+            )
+        ]
         clock = dataset_as_of(bars=bars, earnings=earnings, macros=macros)
         parts = classify_macros(macros, clock)
         window = None
@@ -575,6 +591,7 @@ class QueryMixin:
             "symbol": normalized,
             "watch": watch,
             "bars": bars,
+            "bars_rejected": [row for row in bars_all if row not in bars],
             "earnings": earnings,
             "fundamentals": self.latest_fundamentals(normalized),
             "macro_events": parts.inside,

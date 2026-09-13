@@ -6,6 +6,13 @@ from datetime import date, datetime, timezone
 from typing import Any, Iterable
 
 from stock_pm.config import Settings
+from stock_pm.gold import (
+    GOLD_ENV_VAR,
+    GOLD_LIVE,
+    historical_gold_fields,
+    is_deprecated_fred_gold,
+)
+from stock_pm.series import FRED_MARKET_SERIES
 
 from .causal import canonical_metric
 from .clock import (
@@ -34,6 +41,7 @@ STATUS_STALE = "stale"
 STATUS_INVALID = "invalid"
 STATUS_ERROR = "error"
 STATUS_NOT_CONFIGURED = "not_configured"
+STATUS_UNAVAILABLE = "upstream_unavailable"
 
 REASON_SOURCE_NOT_CONFIGURED = "source_not_configured"
 REASON_UPSTREAM_EMPTY = "upstream_empty"
@@ -42,6 +50,8 @@ REASON_RECORD_INVALID = "record_invalid"
 REASON_QUERY_ERROR = "query_error"
 REASON_WITHIN_THRESHOLD = "within_threshold"
 REASON_MISSING_OBSERVATION = "missing_observation"
+REASON_UPSTREAM_UNAVAILABLE = "upstream_unavailable"
+REASON_DEPRECATED = "deprecated"
 
 # Catch-all UI copy is forbidden. Each reason_code maps to a distinct label.
 REASON_LABELS = {
@@ -52,6 +62,8 @@ REASON_LABELS = {
     REASON_QUERY_ERROR: "查询异常",
     REASON_WITHIN_THRESHOLD: "在新鲜度阈值内",
     REASON_MISSING_OBSERVATION: "缺少观察时间",
+    REASON_UPSTREAM_UNAVAILABLE: "上游已不可用",
+    REASON_DEPRECATED: "序列已停更",
 }
 
 FRESHNESS_DAYS = {
@@ -62,15 +74,34 @@ FRESHNESS_DAYS = {
     "cpi": 50,
     "us2y": 14,
     "vix": 7,
+    "gold": 7,
+    "wti": 7,
+    "broad_usd_proxy": 7,
+    "usd_broad": 7,
+    "dxy": 7,
+}
+
+DATASET_TITLES = {
+    "daily_price_bars": ("Daily price bars", "日线价格"),
+    "earnings_reports": ("Earnings reports", "盈利报告"),
+    "earnings_prior_consensus": ("Prior consensus", "前次共识"),
+    "macro_nfp": ("NFP", "非农"),
+    "macro_cpi": ("CPI-U", "CPI"),
+    "macro_rates_confirm": ("US 2Y", "美债2年"),
+    "macro_gold": ("Gold", "黄金"),
+    "macro_wti": ("WTI", "WTI 原油"),
+    "macro_broad_usd_proxy": ("USD broad proxy", "广义美元代理"),
+    "macro_dxy": ("ICE DXY", "ICE 美元指数"),
+    "macro_vix": ("VIX", "VIX"),
 }
 
 HEALTH_PREVIEW_LABELS = {
-    "HEALTHY": "数据健康·全面可用（合成演示数据）",
-    "PARTIAL": "数据健康·部分缺失（合成演示数据）",
-    "MISSING": "数据健康·全面缺失（合成演示数据）",
-    "STALE": "数据健康·陈旧（合成演示数据）",
-    "INVALID": "数据健康·非法记录（合成演示数据）",
-    "ERROR": "数据健康·查询异常（合成演示数据）",
+    "HEALTHY": "SYNTHETIC SCENARIO · 数据健康·全面可用（合成演示数据，非实时）",
+    "PARTIAL": "SYNTHETIC SCENARIO · 数据健康·部分缺失（合成演示数据，非实时）",
+    "MISSING": "SYNTHETIC SCENARIO · 数据健康·全面缺失（合成演示数据，非实时）",
+    "STALE": "SYNTHETIC SCENARIO · 数据健康·陈旧（合成演示数据，非实时）",
+    "INVALID": "SYNTHETIC SCENARIO · 数据健康·非法记录（合成演示数据，非实时）",
+    "ERROR": "SYNTHETIC SCENARIO · 数据健康·查询异常（合成演示数据，非实时）",
 }
 
 
@@ -129,9 +160,12 @@ def _source_configured(settings: Settings | None, family: str) -> bool:
     if family == "alpaca":
         return bool(settings.alpaca_api_key_id and settings.alpaca_api_secret_key)
     if family == "fred":
-        return bool(settings.fred_api_key)
+        # Official fredgraph.csv is keyless. An API key is preferred, not required.
+        return True
     if family == "fmp":
         return bool(settings.fmp_api_key)
+    if family == "alpha_vantage":
+        return bool(settings.alpha_vantage_api_key)
     return True
 
 
@@ -152,14 +186,38 @@ def _dataset_row(
     coverage_window: dict[str, str] | None = None,
     sample_count: int = 0,
     configured: bool = True,
+    required: bool = True,
+    series: str | None = None,
+    series_or_symbol: str | None = None,
+    as_of: str | None = None,
+    fetched_at: str | None = None,
+    unit: str | None = None,
+    frequency: str | None = None,
+    value: Any = None,
+    http_source: str | None = None,
+    transport: str | None = None,
+    title: str | None = None,
+    title_zh: str | None = None,
 ) -> dict[str, Any]:
+    en, zh = DATASET_TITLES.get(dataset, (dataset, dataset))
     return {
         "dataset": dataset,
         "metric": metric,
+        "title": title or en,
+        "title_zh": title_zh or zh,
         "source": source,
+        "series": series_or_symbol or series,
+        "series_or_symbol": series_or_symbol or series,
         "status": status,
         "latest_observed_at": latest_observed_at,
         "latest_ingested_at": latest_ingested_at,
+        "as_of": as_of,
+        "fetched_at": fetched_at,
+        "unit": unit,
+        "frequency": frequency,
+        "value": value,
+        "http_source": http_source,
+        "transport": transport,
         "freshness_age": freshness_age,
         "freshness_threshold": freshness_threshold,
         "coverage_window": coverage_window,
@@ -170,6 +228,7 @@ def _dataset_row(
         "affects_stage": affects_stage,
         "next_action": next_action,
         "configured": configured,
+        "required": required,
     }
 
 
@@ -212,6 +271,38 @@ def _macros_of(events: Iterable[dict[str, Any]], *metrics: str) -> list[dict[str
     return [row for row in events if canonical_metric(str(row.get("event_type") or row.get("metric") or "")) in wanted]
 
 
+def _row_provenance(row: dict[str, Any] | None) -> dict[str, Any]:
+    latest = row or {}
+    series = latest.get("series_or_symbol") or latest.get("series") or latest.get("symbol")
+    as_of = latest.get("as_of")
+    if as_of is None and latest.get("event_time"):
+        event_time = latest.get("event_time")
+        as_of = event_time.isoformat()[:10] if hasattr(event_time, "isoformat") else str(event_time)[:10]
+    if as_of is None and latest.get("report_date"):
+        as_of = str(latest.get("report_date"))[:10]
+    value = latest.get("value")
+    if value is None:
+        value = latest.get("actual")
+    if value is None:
+        value = latest.get("close_price")
+    if value is None:
+        value = latest.get("eps_actual")
+    unit = latest.get("unit")
+    if unit is None and latest.get("close_price") is not None:
+        unit = "USD"
+    return {
+        "series": series,
+        "series_or_symbol": series,
+        "as_of": as_of,
+        "fetched_at": latest.get("fetched_at") or latest.get("observed_at"),
+        "unit": unit,
+        "frequency": latest.get("frequency") or ("daily" if latest.get("close_price") is not None else None),
+        "value": value,
+        "http_source": latest.get("http_source"),
+        "transport": latest.get("transport"),
+    }
+
+
 def _evaluate_rows(
     *,
     dataset: str,
@@ -231,9 +322,26 @@ def _evaluate_rows(
     query_error: bool = False,
     threshold: int | None = None,
     coverage_window: dict[str, str] | None = None,
+    required: bool = True,
 ) -> dict[str, Any]:
     configured = _source_configured(settings, family)
     thresh = FRESHNESS_DAYS.get(metric) if threshold is None else threshold
+    latest = rows[0] if rows else {}
+    provenance = _row_provenance(latest)
+    spec = FRED_MARKET_SERIES.get(metric) or {}
+    if metric == "gold":
+        spec = {
+            "series_id": GOLD_LIVE["symbol"],
+            "unit": GOLD_LIVE["unit"],
+            "frequency": GOLD_LIVE["frequency"],
+        }
+    if not provenance.get("series_or_symbol") and spec.get("series_id"):
+        provenance["series"] = spec["series_id"]
+        provenance["series_or_symbol"] = spec["series_id"]
+    if not provenance.get("unit") and spec.get("unit"):
+        provenance["unit"] = spec["unit"]
+    if not provenance.get("frequency") and spec.get("frequency"):
+        provenance["frequency"] = spec["frequency"]
     if query_error:
         return _dataset_row(
             dataset=dataset,
@@ -247,9 +355,10 @@ def _evaluate_rows(
             freshness_threshold=thresh,
             coverage_window=coverage_window,
             configured=configured,
+            required=required,
+            **provenance,
         )
     if invalid:
-        latest = rows[0] if rows else {}
         return _dataset_row(
             dataset=dataset,
             metric=metric,
@@ -265,8 +374,11 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
+            **provenance,
         )
     if not rows:
+        wired = spec.get("series_id") or provenance.get("series_or_symbol")
         if not configured:
             return _dataset_row(
                 dataset=dataset,
@@ -276,10 +388,19 @@ def _evaluate_rows(
                 reason_code=REASON_SOURCE_NOT_CONFIGURED,
                 affects_chain=chain,
                 affects_stage=stage,
-                next_action=f"配置 {source} 后重新同步（不在页面展示密钥）",
+                next_action=(
+                    empty_action
+                    if metric == "gold"
+                    else f"配置 {source} 后重新同步（不在页面展示密钥）"
+                ),
                 freshness_threshold=thresh,
                 coverage_window=coverage_window,
                 configured=False,
+                required=required,
+                series=wired,
+                series_or_symbol=wired,
+                unit=spec.get("unit"),
+                frequency=spec.get("frequency"),
             )
         return _dataset_row(
             dataset=dataset,
@@ -293,8 +414,12 @@ def _evaluate_rows(
             freshness_threshold=thresh,
             coverage_window=coverage_window,
             configured=configured,
+            required=required,
+            series=wired,
+            series_or_symbol=wired,
+            unit=spec.get("unit"),
+            frequency=spec.get("frequency"),
         )
-    latest = rows[0]
     observed = _observed_iso(latest, kind=kind)
     ingested = _ingested_iso(latest)
     age = _age_days(clock, observed)
@@ -316,6 +441,8 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
+            **provenance,
         )
     if observed is None and kind != "bar":
         return _dataset_row(
@@ -334,6 +461,8 @@ def _evaluate_rows(
             coverage_window=coverage_window,
             sample_count=len(rows),
             configured=configured,
+            required=required,
+            **provenance,
         )
     return _dataset_row(
         dataset=dataset,
@@ -351,13 +480,16 @@ def _evaluate_rows(
         coverage_window=coverage_window,
         sample_count=len(rows),
         configured=configured,
+        required=required,
+        **provenance,
     )
 
 
 def _price_health(bundle: dict[str, Any], clock: date | None, settings: Settings | None, errors: set[str]) -> dict[str, Any]:
-    bars = list(bundle.get("bars") or [])
+    bars = list(bundle.get("bars_all") or bundle.get("bars") or [])
     window = _window_payload(clock, days=FRESHNESS_DAYS["close"])
-    invalid = any(_bar_invalid(row) for row in bars)
+    latest = bars[0] if bars else None
+    invalid = bool(latest) and _bar_invalid(latest)
     return _evaluate_rows(
         dataset="daily_price_bars",
         metric="close",
@@ -437,6 +569,7 @@ def _macro_metric_health(
     errors: set[str],
     empty_action: str,
     stale_action: str,
+    required: bool = True,
 ) -> dict[str, Any]:
     window = _window_payload(clock)
     inside = _macros_of(parts_inside, metric)
@@ -460,12 +593,14 @@ def _macro_metric_health(
         coverage_stale=coverage_stale,
         query_error=dataset in errors or metric in errors,
         coverage_window=window,
+        required=required,
     )
 
 
 def _chain_payload(chain_id: str, datasets: list[dict[str, Any]]) -> dict[str, Any]:
     owned = [row for row in datasets if row["affects_chain"] == chain_id]
-    statuses = {row["status"] for row in owned}
+    core = [row for row in owned if row.get("required", True)]
+    statuses = {row["status"] for row in (core or owned)}
     if STATUS_INVALID in statuses or STATUS_ERROR in statuses:
         health = "unavailable"
     elif not owned or statuses <= {STATUS_MISSING, STATUS_NOT_CONFIGURED}:
@@ -577,12 +712,53 @@ def build_data_health(
             empty_action="补利率确认通道（US2Y/实际利率/降息概率）",
             stale_action="更新利率确认观察",
         ),
+        _gold_health(
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+        ),
+        _macro_metric_health(
+            metric="wti",
+            dataset="macro_wti",
+            stage="confirmation",
+            family="fred",
+            source="FRED",
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+            empty_action="同步 WTI 观察（FRED DCOILWTICO）",
+            stale_action="更新 WTI 观察；缺失原油不得伪造利率链",
+            required=False,
+        ),
+        _macro_metric_health(
+            metric="broad_usd_proxy",
+            dataset="macro_broad_usd_proxy",
+            stage="confirmation",
+            family="fred",
+            source="FRED",
+            parts_inside=parts.inside,
+            parts_stale=parts.stale,
+            all_events=macros,
+            clock=clock,
+            settings=settings,
+            errors=errors,
+            empty_action="同步广义美元代理 broad_usd_proxy（FRED DTWEXBGS）；不得写成 DXY",
+            stale_action="更新广义美元代理观察；单项缺失不得删除其他事实，也不得冒充 ICE DXY",
+            required=False,
+        ),
+        _dxy_unavailable_health(),
         _macro_metric_health(
             metric="vix",
             dataset="macro_vix",
             stage="confirmation",
-            family="cboe",
-            source="cboe",
+            family="fred",
+            source="FRED",
             parts_inside=parts.inside,
             parts_stale=parts.stale,
             all_events=macros,
@@ -617,6 +793,72 @@ def build_data_health(
     }
 
 
+def _gold_health(
+    *,
+    parts_inside: list[dict[str, Any]],
+    parts_stale: list[dict[str, Any]],
+    all_events: list[dict[str, Any]],
+    clock: date | None,
+    settings: Settings | None,
+    errors: set[str],
+) -> dict[str, Any]:
+    window = _window_payload(clock)
+    inside = [row for row in _macros_of(parts_inside, "gold") if not is_deprecated_fred_gold(row)]
+    stale = [row for row in _macros_of(parts_stale, "gold") if not is_deprecated_fred_gold(row)]
+    any_rows = [row for row in _macros_of(all_events, "gold") if not is_deprecated_fred_gold(row)]
+    coverage_stale = bool(stale) and not inside
+    rows = inside or stale or any_rows
+    row = _evaluate_rows(
+        dataset="macro_gold",
+        metric="gold",
+        source="alpha_vantage",
+        family="alpha_vantage",
+        chain="macro_rates",
+        stage="confirmation",
+        rows=rows,
+        clock=clock,
+        settings=settings,
+        kind="macro",
+        empty_action=f"配置 {GOLD_ENV_VAR} 后同步 Alpha Vantage {GOLD_LIVE['symbol']} 日度金价（不在页面展示密钥）",
+        stale_action="更新 Alpha Vantage 黄金观察；不得把已停更的 FRED LBMA 价格当作当前金价",
+        coverage_stale=coverage_stale,
+        query_error="macro_gold" in errors or "gold" in errors,
+        coverage_window=window,
+        required=False,
+    )
+    row.update(historical_gold_fields())
+    if row["status"] in {STATUS_NOT_CONFIGURED, STATUS_UNAVAILABLE, STATUS_MISSING, STATUS_ERROR}:
+        if not rows:
+            row["value"] = None
+    if is_deprecated_fred_gold({"series_or_symbol": row.get("series_or_symbol"), "source": row.get("source")}):
+        row["value"] = None
+        row["status"] = STATUS_UNAVAILABLE
+        row["reason_code"] = REASON_DEPRECATED
+        row["reason_label"] = REASON_LABELS[REASON_DEPRECATED]
+        row["series_or_symbol"] = GOLD_LIVE["symbol"]
+        row["series"] = GOLD_LIVE["symbol"]
+        row["source"] = "alpha_vantage"
+    return row
+
+
+def _dxy_unavailable_health() -> dict[str, Any]:
+    return _dataset_row(
+        dataset="macro_dxy",
+        metric="dxy",
+        source="ice",
+        status=STATUS_NOT_CONFIGURED,
+        reason_code=REASON_SOURCE_NOT_CONFIGURED,
+        affects_chain="macro_rates",
+        affects_stage="confirmation",
+        next_action="ICE DXY 未合法稳定接入；不得把 FRED DTWEXBGS 写成 DXY 或用代理冒充健康",
+        freshness_threshold=FRESHNESS_DAYS["dxy"],
+        configured=False,
+        required=False,
+        series=None,
+        series_or_symbol=None,
+    )
+
+
 def empty_query_error_health(symbol: str) -> dict[str, Any]:
     bundle = {"symbol": symbol, "bars": [], "earnings": [], "macro_events": [], "synthetic": False}
     return build_data_health(
@@ -628,6 +870,9 @@ def empty_query_error_health(symbol: str) -> dict[str, Any]:
             "macro_nfp",
             "macro_cpi",
             "macro_rates_confirm",
+            "macro_gold",
+            "macro_wti",
+            "macro_broad_usd_proxy",
             "macro_vix",
         },
     )
@@ -651,8 +896,13 @@ def _valid_bar(as_of: str, close: float, symbol: str = "NVDA") -> dict[str, Any]
         "volume": 10,
         "bar_time": as_of,
         "source": "alpaca_sip",
+        "series": symbol,
         "observed_at": as_of,
         "source_as_of": as_of,
+        "as_of": as_of[:10],
+        "fetched_at": as_of,
+        "frequency": "daily",
+        "status": "ok",
     }
 
 
@@ -685,7 +935,18 @@ def _earnings_row(symbol: str = "NVDA", *, with_prior: bool = False) -> dict[str
     return row
 
 
-def _macro(event_type: str, actual: float, prior: float, event_time: str, observed: str, source: str = "FRED") -> dict[str, Any]:
+def _macro(
+    event_type: str,
+    actual: float,
+    prior: float,
+    event_time: str,
+    observed: str,
+    source: str = "FRED",
+    *,
+    series: str | None = None,
+    unit: str | None = None,
+    frequency: str = "daily",
+) -> dict[str, Any]:
     return _stamp_row(
         {
             "event_type": event_type,
@@ -693,7 +954,14 @@ def _macro(event_type: str, actual: float, prior: float, event_time: str, observ
             "actual": actual,
             "prior": prior,
             "source": source,
-            "name": event_type.upper(),
+            "name": "广义美元代理" if event_type in {"usd_broad", "broad_usd_proxy"} else event_type.upper(),
+            "series": series or event_type,
+            "series_or_symbol": series or event_type,
+            "as_of": event_time[:10],
+            "fetched_at": observed,
+            "unit": unit,
+            "frequency": frequency,
+            "status": "ok",
         },
         observed,
         observed,
@@ -709,10 +977,11 @@ def _healthy_bundle(symbol: str = "NVDA") -> dict[str, Any]:
         ],
         "earnings": [_earnings_row(symbol, with_prior=True)],
         "macro_events": [
-            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00"),
-            _macro("cpi", 3.1, 3.0, "2026-09-01T12:30:00+00:00", "2026-09-01T14:00:00+00:00"),
-            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00"),
-            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe"),
+            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
+            _macro("cpi", 3.1, 3.0, "2026-09-01T12:30:00+00:00", "2026-09-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
+            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
+            _macro("broad_usd_proxy", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ],
         "synthetic": True,
     }
@@ -727,6 +996,7 @@ def _preview_settings(settings: Settings | None) -> Settings:
         alpaca_api_secret_key="set",
         fred_api_key="set",
         fmp_api_key="set",
+        alpha_vantage_api_key="set",
     )
 
 
@@ -748,10 +1018,11 @@ def build_health_preview(symbol: str, key: str, *, settings: Settings | None = N
         }
     elif scene == "STALE":
         bundle["macro_events"] = [
-            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00"),
-            _macro("cpi", 3.1, 3.0, "2025-12-01T12:30:00+00:00", "2025-12-01T14:00:00+00:00"),
-            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00"),
-            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe"),
+            _macro("nfp", 220, 140, "2026-09-05T12:30:00+00:00", "2026-09-05T14:00:00+00:00", series="PAYEMS", unit="thousands"),
+            _macro("cpi", 3.1, 3.0, "2025-12-01T12:30:00+00:00", "2025-12-01T14:00:00+00:00", series="CPIAUCSL", unit="index", frequency="monthly"),
+            _macro("us2y", 3.9, 3.7, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DGS2", unit="percent"),
+            _macro("broad_usd_proxy", 121.4, 120.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", series="DTWEXBGS", unit="index"),
+            _macro("vix", 16.2, 15.8, "2026-09-10T20:00:00+00:00", "2026-09-10T20:00:00+00:00", "cboe", series="VIXCLS", unit="index"),
         ]
     elif scene == "INVALID":
         bundle["bars"] = [

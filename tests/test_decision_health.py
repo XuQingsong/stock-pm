@@ -41,6 +41,7 @@ def _configured() -> Settings:
         alpaca_api_secret_key="set",
         fred_api_key="set",
         fmp_api_key="set",
+        alpha_vantage_api_key="set",
     )
 
 
@@ -50,6 +51,7 @@ def _unconfigured() -> Settings:
         alpaca_api_secret_key="",
         fred_api_key="",
         fmp_api_key="",
+        alpha_vantage_api_key="",
     )
 
 
@@ -161,7 +163,8 @@ def test_not_configured_is_not_query_error_and_secrets_stay_out():
     assert "sk-" not in dumped
     assert "traceback" not in dumped
     assert "secret" not in dumped
-    assert "api_key" not in dumped
+    assert "api_key=" not in dumped
+    assert "apikey=" not in dumped
 
 
 def test_future_release_date_does_not_make_freshness_newer():
@@ -199,6 +202,10 @@ def test_healthy_datasets_do_not_stack_l2_into_l3_or_mint_a_thesis():
     assert health["judgment"]["can_form_direction"] is False
     assert health["judgment"]["note"]
     assert view["overall"]["level"] != "L3" or view["can_form_direction"] is False
+    assert _ds(health, "macro_dxy")["status"] == "not_configured"
+    assert _ds(health, "macro_broad_usd_proxy")["status"] == "ok"
+    assert _ds(health, "macro_broad_usd_proxy")["title_zh"] == "广义美元代理"
+    assert _ds(health, "macro_broad_usd_proxy")["series_or_symbol"] == "DTWEXBGS"
 
 
 def test_health_preview_scenes_and_chain_order_untouched():
@@ -207,13 +214,17 @@ def test_health_preview_scenes_and_chain_order_untouched():
         assert health["synthetic"] is True
         assert health["preview"] == key
         assert "合成演示数据" in (health["preview_label"] or "")
+        assert "SYNTHETIC SCENARIO" in (health["preview_label"] or "")
         assert [row["id"] for row in health["chains"]] == ["price", "earnings", "macro_rates", "risk_sentiment"]
         for row in health["datasets"]:
             for field in (
-                "dataset", "metric", "source", "status", "latest_observed_at",
-                "latest_ingested_at", "freshness_age", "freshness_threshold",
-                "coverage_window", "sample_count", "reason_code",
-                "affects_chain", "affects_stage", "next_action",
+                "dataset", "metric", "title", "title_zh", "source", "series",
+                "series_or_symbol",
+                "status", "latest_observed_at", "latest_ingested_at", "as_of",
+                "fetched_at", "unit", "frequency", "value", "http_source",
+                "transport", "freshness_age",
+                "freshness_threshold", "coverage_window", "sample_count",
+                "reason_code", "affects_chain", "affects_stage", "next_action",
             ):
                 assert field in row, (key, row.get("dataset"), field)
             assert row["reason_label"] != "缺数据"
@@ -225,6 +236,10 @@ def test_missing_preview_stays_upstream_empty_with_unconfigured_host_settings():
     health = build_health_preview("NVDA", "MISSING", settings=_unconfigured())
     assert health["overall"]["status"] == "unavailable"
     for row in health["datasets"]:
+        if row["dataset"] == "macro_dxy":
+            assert row["status"] == "not_configured", row
+            assert row["reason_code"] == REASON_SOURCE_NOT_CONFIGURED
+            continue
         assert row["status"] == "missing", row["dataset"]
         assert row["reason_code"] == REASON_UPSTREAM_EMPTY, row["dataset"]
         assert row["reason_label"] == "上游无记录"
@@ -237,7 +252,12 @@ def test_partial_and_missing_and_error_previews():
     invalid = build_health_preview("NVDA", "INVALID", settings=_configured())
     assert _ds(partial, "macro_vix")["status"] == "missing"
     assert _ds(partial, "daily_price_bars")["status"] == "ok"
-    assert all(row["status"] in {"missing"} for row in missing["datasets"])
+    assert all(
+        row["status"] == "not_configured" if row["dataset"] == "macro_dxy" else row["status"] == "missing"
+        for row in missing["datasets"]
+    )
+    assert _ds(partial, "macro_dxy")["status"] == "not_configured"
+    assert _ds(partial, "macro_broad_usd_proxy")["title_zh"] == "广义美元代理"
     assert _ds(error, "daily_price_bars")["status"] == "error"
     assert _ds(error, "macro_nfp")["status"] == "ok"
     assert _ds(invalid, "daily_price_bars")["status"] == "invalid"

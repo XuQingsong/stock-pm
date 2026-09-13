@@ -21,6 +21,7 @@ from .review import retry_reviews_for_llm
 SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
 
 database = Database()
+_database_reachable = False
 
 
 def _backfill_environment_snapshots() -> None:
@@ -44,14 +45,26 @@ def _backfill_environment_snapshots() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    database.initialize()
-    threading.Thread(
-        target=_backfill_environment_snapshots,
-        name="environment-backfill",
-        daemon=True,
-    ).start()
+    global _database_reachable
+    try:
+        _database_reachable = bool(database.ping())
+        if _database_reachable:
+            database.initialize()
+            threading.Thread(
+                target=_backfill_environment_snapshots,
+                name="environment-backfill",
+                daemon=True,
+            ).start()
+        else:
+            print(json.dumps({"database_init_error": "postgres unreachable; real health still serves official FRED"}, ensure_ascii=False))
+    except Exception as exc:
+        _database_reachable = False
+        print(json.dumps({"database_init_error": str(exc)}, ensure_ascii=False))
     yield
-    database.close()
+    try:
+        database.close()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -386,25 +399,103 @@ def stock_decision(symbol: str, preview: str | None = Query(None)) -> dict:
 
 @app.get("/api/stock/{symbol}/data-health")
 def stock_data_health(symbol: str, preview: str | None = Query(None)) -> dict:
+    from .alpaca import collect_live_daily_bars
     from .config import Settings
     from .decision.assemble import assemble_from_bundle
-    from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview, empty_query_error_health
+    from .decision.health import HEALTH_PREVIEW_LABELS, build_data_health, build_health_preview
     from .decision.preview import preview_allowed
+    from .providers import collect_live_earnings
+    from .series import collect_live_macro_overlay, empty_real_bundle, merge_live_macros
 
     key = (preview or "").strip().upper()
     try:
         if key in HEALTH_PREVIEW_LABELS and preview_allowed():
             return build_health_preview(symbol, key)
-        try:
-            bundle = database.decision_bundle(symbol)
-        except DatabaseError:
-            return empty_query_error_health(symbol.upper())
+        settings = Settings()
+        db_error = False
+        if not _database_reachable:
+            db_error = True
+            bundle = empty_real_bundle(symbol.upper())
+        else:
+            try:
+                bundle = database.decision_bundle(symbol)
+            except DatabaseError:
+                db_error = True
+                bundle = empty_real_bundle(symbol.upper())
+        live, live_errors, live_report = collect_live_macro_overlay(settings)
+        bundle = merge_live_macros(bundle, live)
+        live_bars, bar_errors, bar_report = collect_live_daily_bars(symbol.upper(), settings)
+        if live_bars:
+            bundle["bars"] = live_bars
+        live_earnings, earn_errors, earn_report = collect_live_earnings(symbol.upper(), settings)
+        if live_earnings:
+            bundle["earnings"] = live_earnings
+        query_errors = set(live_errors)
+        query_errors.update(bar_errors)
+        query_errors.update(earn_errors)
         try:
             view = assemble_from_bundle(bundle)
             judgment = view.get("overall")
         except Exception:
             judgment = None
-        return build_data_health(bundle, settings=Settings(), judgment=judgment)
+        payload = build_data_health(
+            bundle,
+            settings=settings,
+            judgment=judgment,
+            query_errors=query_errors,
+            synthetic=False,
+        )
+        series_report = {}
+        eps_rec = (earn_report or {}).get("earnings_reports")
+        if eps_rec:
+            series_report["eps"] = {
+                "source": eps_rec.get("source"),
+                "series_or_symbol": eps_rec.get("series_or_symbol"),
+                "as_of": eps_rec.get("as_of"),
+                "value": eps_rec.get("value"),
+                "unit": eps_rec.get("unit"),
+                "status": eps_rec.get("status"),
+                "reason_code": eps_rec.get("reason_code"),
+                "http_source": eps_rec.get("http_source"),
+                "transport": eps_rec.get("transport"),
+            }
+        close_rec = (bar_report or {}).get("daily_price_bars")
+        if close_rec:
+            series_report["close"] = {
+                "source": close_rec.get("source"),
+                "series_or_symbol": close_rec.get("series_or_symbol"),
+                "as_of": close_rec.get("as_of"),
+                "value": close_rec.get("value"),
+                "unit": close_rec.get("unit"),
+                "status": close_rec.get("status"),
+                "reason_code": close_rec.get("reason_code"),
+                "http_source": close_rec.get("http_source"),
+                "transport": close_rec.get("transport"),
+            }
+        for metric, rec in (live_report.get("series") or {}).items():
+            series_report[metric] = {
+                "source": rec.get("source"),
+                "series_or_symbol": rec.get("series_or_symbol"),
+                "as_of": rec.get("as_of"),
+                "value": rec.get("value"),
+                "unit": rec.get("unit"),
+                "status": rec.get("status"),
+                "reason_code": rec.get("reason_code"),
+                "http_source": rec.get("http_source"),
+                "transport": rec.get("transport"),
+            }
+        payload["runtime"] = "real"
+        payload["runtime_fetched_at"] = live_report.get("fetched_at")
+        payload["http_sources"] = {
+            metric: row.get("http_source") for metric, row in series_report.items()
+        }
+        payload["series_report"] = series_report
+        for row in payload.get("datasets") or []:
+            rec = series_report.get(row.get("metric") or "") or {}
+            if not row.get("http_source") and rec.get("http_source"):
+                row["http_source"] = rec.get("http_source")
+                row["transport"] = rec.get("transport") or row.get("transport")
+        return payload
     except ValueError as exc:
         raise _http_error(exc) from exc
 
