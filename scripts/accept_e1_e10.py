@@ -137,12 +137,12 @@ def capture_pages() -> dict:
                     sourceHealth: (document.querySelector('[data-source-health]') && document.querySelector('[data-source-health]').getAttribute('data-source-health')) || '',
                     productStatus: [...document.querySelectorAll('[data-product]')].map((n) => n.getAttribute('data-product')),
                     causalChains: [...document.querySelectorAll('[data-causal-chain]')].map((chain) =>
-                      [...chain.querySelectorAll('[data-causal-layer]')].map((n) => ({
+                      [...chain.querySelectorAll('[data-causal-layer]')].map((n) => ({{
                         id: n.getAttribute('data-layer') || '',
                         layerId: n.getAttribute('data-layer-id') || '',
                         cites: n.getAttribute('data-cites') || '',
                         text: ((n.querySelector('[data-layer-text]') && n.querySelector('[data-layer-text]').innerText) || n.innerText || '')
-                      }))
+                      }}))
                     ),
                     claimExcerpts: [...document.querySelectorAll('[data-claim-excerpt], [data-fact-excerpt]')].map((n) => n.innerText),
                     timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({{
