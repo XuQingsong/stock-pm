@@ -32,7 +32,8 @@ from .types import EventDocument
 AV_API = "https://www.alphavantage.co/query"
 AV_ENV = "ALPHA_VANTAGE_API_KEY"
 SEC_COMPANY_ATOM = "https://www.sec.gov/cgi-bin/browse-edgar"
-_PLACEHOLDER_UA_MARKERS = ("example.com", "example.org")
+_RESERVED_UA_HOSTS = frozenset({"example.com", "example.net", "example.org", "localhost"})
+_RESERVED_UA_TLDS = frozenset({"test", "invalid", "localhost", "example"})
 _LIMITER = RateLimiter(1.1)
 _SEC_LIMITER = RateLimiter(0.15)
 WATCH_SYMBOLS = ("AAPL", "NVDA", "XOM", "JPM")
@@ -161,12 +162,23 @@ def configured_sec_user_agent(settings: Settings | None = None) -> str:
     return value
 
 
+def _email_host(value: str) -> str:
+    for token in reversed(value.replace("<", " ").replace(">", " ").split()):
+        if "@" in token:
+            return token.rsplit("@", 1)[-1].strip(".,;>").lower()
+    return ""
+
+
 def _usable_sec_user_agent(value: str) -> bool:
+    """Reject empty values and reserved/placeholder mailbox hosts."""
     text = str(value or "").strip()
     if not text or "@" not in text:
         return False
-    lowered = text.lower()
-    return not any(marker in lowered for marker in _PLACEHOLDER_UA_MARKERS)
+    host = _email_host(text)
+    if not host or host in _RESERVED_UA_HOSTS:
+        return False
+    tld = host.rsplit(".", 1)[-1]
+    return tld not in _RESERVED_UA_TLDS
 
 
 def fetch_company_8k_items(symbol: str, *, settings: Settings | None = None) -> list[dict[str, Any]]:

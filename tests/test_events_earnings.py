@@ -577,14 +577,25 @@ def test_sec_atom_is_skipped_without_real_user_agent(monkeypatch):
         raise AssertionError("sec atom must not be requested")
 
     monkeypatch.setattr("stock_pm.events.av_earnings.fetch_feed", boom)
+    monkeypatch.delenv("SEC_EDGAR_USER_AGENT", raising=False)
     from stock_pm.config import Settings
 
     blank = Settings(sec_edgar_user_agent="")
-    placeholder = Settings(sec_edgar_user_agent="Stock PM research desk@example.com")
+    assert Settings().sec_edgar_user_agent == ""
+    reserved = [
+        "Stock PM research desk@example.com",
+        "Stock PM research desk@example.net",
+        "Stock PM research desk@example.org",
+        "Stock PM research desk@stock-pm.test",
+        "Stock PM research desk@stock-pm.invalid",
+        "Stock PM research desk@localhost",
+    ]
     assert configured_sec_user_agent(blank) == ""
-    assert configured_sec_user_agent(placeholder) == ""
+    assert configured_sec_user_agent(Settings()) == ""
     assert fetch_company_8k_items("AAPL", settings=blank) == []
-    assert fetch_company_8k_items("AAPL", settings=placeholder) == []
+    for value in reserved:
+        assert configured_sec_user_agent(Settings(sec_edgar_user_agent=value)) == ""
+        assert fetch_company_8k_items("AAPL", settings=Settings(sec_edgar_user_agent=value)) == []
     pack = load_frozen_earnings()
     row = evidence_from_av_quarters(
         pack["av_earnings"]["quarterlyEarnings"],
@@ -605,7 +616,7 @@ def test_sec_atom_is_skipped_without_real_user_agent(monkeypatch):
     assert not any(source.content_type == "official_fact" for source in events[0].sources)
 
 
-def test_sec_atom_request_requires_real_user_agent(monkeypatch):
+def test_sec_atom_passes_explicit_nonreserved_user_agent(monkeypatch):
     calls = []
 
     class _Resp:
@@ -620,7 +631,8 @@ def test_sec_atom_request_requires_real_user_agent(monkeypatch):
     monkeypatch.setattr("stock_pm.events.av_earnings.parse_feed_items", lambda *_args, **_kwargs: [])
     from stock_pm.config import Settings
 
-    ua = "Stock PM Research desk@stock-pm.test"
+    # Explicit non-reserved format only. Not a live contact identity.
+    ua = "Stock PM Research sec-ua@nonreserved.cihost"
     settings = Settings(sec_edgar_user_agent=ua)
     assert configured_sec_user_agent(settings) == ua
     assert fetch_company_8k_items("AAPL", settings=settings) == []
