@@ -14,6 +14,7 @@ from .types import EventDocument
 
 
 FROZEN_EARNINGS_PATH = Path(__file__).resolve().parent.parent / "data" / "events_5c_b_frozen_earnings.json"
+FROZEN_EARNINGS_DATA_CLASS = "frozen_provider_audit"
 RULE_ID = "earnings_implication.v1"
 ALIGN_ID = "period_align.v2"
 QUARTER_ID = "fiscal_quarter.v1"
@@ -344,8 +345,8 @@ def load_frozen_earnings(path: Path | None = None) -> dict[str, Any]:
     payload = json.loads(target.read_text(encoding="utf-8"))
     if payload.get("live") is True:
         raise FrozenEarningsError("frozen_earnings_marked_live")
-    if payload.get("data_class") != "frozen_official_audit":
-        raise FrozenEarningsError("frozen_earnings_not_audit")
+    if payload.get("data_class") != FROZEN_EARNINGS_DATA_CLASS:
+        raise FrozenEarningsError("frozen_earnings_not_provider_audit")
     expected = str(payload.get("integrity_sha256") or "")
     actual = compute_frozen_earnings_integrity(payload)
     if not expected or expected != actual:
@@ -578,13 +579,21 @@ def attach_transcript(
     return row
 
 
-def associate_sec_filing(row: EarningsEvidence, sec_url: str) -> EarningsEvidence:
+def associate_sec_filing(
+    row: EarningsEvidence, sec_url: str = "", *, reason_code: str | None = None
+) -> EarningsEvidence:
     """Same-day 8-K is filing metadata until a primary excerpt supports the actual."""
+    note = (
+        "SEC Atom skipped until a real contact User-Agent is configured"
+        if reason_code == "sec_user_agent_not_configured"
+        else "Accession proves a filing exists, not that it contains this EPS print"
+    )
     row.sec_association = {
         "url": sec_url or "",
         "role": "filing_metadata",
         "verified": False,
-        "note": "Accession proves a filing exists, not that it contains this EPS print",
+        "note": note,
+        "reason_code": reason_code,
     }
     return row
 

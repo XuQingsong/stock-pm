@@ -1,9 +1,9 @@
 {
   "audit_id": "events_5c_b_frozen_earnings",
-  "data_class": "frozen_official_audit",
+  "data_class": "frozen_provider_audit",
   "live": false,
   "not_production_live": true,
-  "note": "Frozen Alpha Vantage EARNINGS / EARNINGS_ESTIMATES / EARNINGS_CALL_TRANSCRIPT plus stored FMP AAPL rows captured 2026-09-13. Unchanged acceptance sample. Not live runtime evidence.",
+  "note": "Frozen provider sample: Alpha Vantage EARNINGS / EARNINGS_ESTIMATES / EARNINGS_CALL_TRANSCRIPT plus stored FMP AAPL rows and SEC filing metadata captured 2026-09-13. Aggregator/provider material and unverified SEC association only. Not official_fact and not live runtime evidence.",
   "fetched_at": "2026-09-13T11:20:00+00:00",
   "sec_filing": {
     "symbol": "AAPL",
@@ -317,5 +317,5 @@
       "sec_association_only": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm"
     }
   ],
-  "integrity_sha256": "429bed61865f566f544c974163a4c1cf71cde40308c3853711252f16f74af20d"
+  "integrity_sha256": "066cbb92aa0a1db23403571a44fc3e2827fd73158b8d79aa490a03bed6d2aa28"
 }

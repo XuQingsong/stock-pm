@@ -106,7 +106,7 @@
       <p class="subline">期间 ${esc(row.fiscal_period || "—")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 规则 ${esc(row.rule_id || "—")}</p>
       <p class="subline">公式：${esc((row.yoy_inputs && row.yoy_inputs.formula) || "—")} ； ${esc((row.surprise_inputs && row.surprise_inputs.formula) || "—")}</p>
       ${href ? `<div class="evidence-refs">供应商来源：${sourceLink(href, row.provider || "earnings")}</div>` : "<p class='subline'>缺少可点击来源。</p>"}
-      ${secHref ? `<p class="subline" data-sec-association="1">SEC 申报关联（未验证正文）：${sourceLink(secHref, "8-K metadata")}。同一日 8-K 不构成 EPS 证据。</p>` : ""}
+      ${secHref ? `<p class="subline" data-sec-association="1">SEC 申报关联（未验证正文）：${sourceLink(secHref, "8-K metadata")}。同一日 8-K 不构成 EPS 证据。</p>` : secMeta.reason_code ? `<p class="subline" data-sec-association="1" data-sec-reason="${esc(secMeta.reason_code)}">SEC 申报未请求：${esc(secMeta.reason_code)}。不升级为官方证据。</p>` : ""}
       <p class="subline" data-earnings-implication="${esc(implication)}" data-price-direction="withheld">盈利含义 ${esc(implication || "未形成")} · 股价方向 withheld</p>
       ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本链缺失：${esc(missing.join(" / "))}。只降级本事件，不阻断其他事件。</p>` : ""}
       ${(row.transcript_excerpts || []).map((item) => `<p class="subline" data-transcript-excerpt="1">纪要 ${esc(item.quarter || "")} · ${esc(item.speaker || "")}：${esc(item.content || "")}${item.source_url ? ` <a class="source-link" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>` : ""}</p>`).join("")}

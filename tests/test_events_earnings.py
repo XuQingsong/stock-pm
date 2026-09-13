@@ -4,11 +4,21 @@ import json
 from pathlib import Path
 
 from stock_pm.events.analyze import analyze_event, can_form_direction, classify_evidence_gap, inspect_closed_loop
-from stock_pm.events.av_earnings import AvEarningsProvider, parse_av_earnings, parse_av_estimates, pick_sec_8k_url
+from stock_pm.events.av_earnings import (
+    AvEarningsProvider,
+    bind_sec_association,
+    configured_sec_user_agent,
+    fetch_company_8k_items,
+    parse_av_earnings,
+    parse_av_estimates,
+    pick_sec_8k_url,
+    reset_sec_atom_cache,
+)
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.earnings import (
     CONSENSUS_ROLE,
     EPS_UNIT,
+    FROZEN_EARNINGS_DATA_CLASS,
     RULE_ID,
     EarningsEvidence,
     FrozenEarningsError,
@@ -36,6 +46,7 @@ FROZEN = Path(__file__).resolve().parents[1] / "src/stock_pm/data/events_5c_b_fr
 
 def setup_function() -> None:
     reset_earnings_registry()
+    reset_sec_atom_cache()
 
 
 def _closed(docs):
@@ -48,7 +59,7 @@ def _closed(docs):
 def test_frozen_pack_is_unchanged_and_not_live():
     pack = load_frozen_earnings()
     assert pack["live"] is False
-    assert pack["data_class"] == "frozen_official_audit"
+    assert pack["data_class"] == FROZEN_EARNINGS_DATA_CLASS == "frozen_provider_audit"
     assert compute_frozen_earnings_integrity(pack) == pack["integrity_sha256"]
     latest = pack["av_earnings"]["quarterlyEarnings"][0]
     assert latest["fiscalDateEnding"] == "2026-06-30"
@@ -110,6 +121,12 @@ def test_complete_aapl_eps_is_structured_but_not_tier1_closed():
         direction="beat_and_grow",
     ) is False
     assert not any("2.02" in (source.title or "") and "sec.gov" in (source.source_url or "") for source in event.sources)
+    assert all(source.content_type == "aggregator" for source in event.sources)
+    assert all("alphavantage.co" in (source.source_url or "") for source in event.sources)
+    assert all(source.publisher == "Alpha Vantage" for source in event.sources)
+    assert not any(source.content_type == "official_fact" for source in event.sources)
+    assert evidence["sec_association"]["role"] == "filing_metadata"
+    assert evidence["sec_association"]["verified"] is False
     assert why_relevant(event, "AAPL")
     assert why_relevant(event, "NVDA") is None
     assert why_relevant(event, "XOM") is None
@@ -341,6 +358,8 @@ def test_ui_shows_actual_prior_consensus_and_degraded_copy():
     assert "data-earnings-binding" in ui
     assert "data-earnings-implication" in ui
     assert 'data-price-direction="withheld"' in ui
+    assert "data-sec-reason" in ui
+    assert "data-sec-association" in ui
     assert "data-can-form-direction" in ui
     assert "本链缺失" in ui
     assert "只降级本事件，不阻断其他事件" in ui
@@ -548,3 +567,73 @@ def test_estimates_failure_does_not_drop_earnings_print(monkeypatch):
 
     docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
     assert docs
+
+
+def test_sec_atom_is_skipped_without_real_user_agent(monkeypatch):
+    calls = []
+
+    def boom(*_args, **_kwargs):
+        calls.append(1)
+        raise AssertionError("sec atom must not be requested")
+
+    monkeypatch.setattr("stock_pm.events.av_earnings.fetch_feed", boom)
+    from stock_pm.config import Settings
+
+    blank = Settings(sec_edgar_user_agent="")
+    placeholder = Settings(sec_edgar_user_agent="Stock PM research desk@example.com")
+    assert configured_sec_user_agent(blank) == ""
+    assert configured_sec_user_agent(placeholder) == ""
+    assert fetch_company_8k_items("AAPL", settings=blank) == []
+    assert fetch_company_8k_items("AAPL", settings=placeholder) == []
+    pack = load_frozen_earnings()
+    row = evidence_from_av_quarters(
+        pack["av_earnings"]["quarterlyEarnings"],
+        symbol="AAPL",
+        fetched_at="t",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+    )
+    bind_sec_association(row, settings=blank)
+    docs = documents_from_evidence(row)
+    events = _closed(docs)
+    assert calls == []
+    assert docs
+    assert row.actual == 2.02
+    assert row.sec_association["reason_code"] == "sec_user_agent_not_configured"
+    assert row.sec_association["verified"] is False
+    assert not row.sec_association.get("url")
+    assert inspect_closed_loop(events[0])["valid"] is False
+    assert not any(source.content_type == "official_fact" for source in events[0].sources)
+
+
+def test_sec_atom_request_requires_real_user_agent(monkeypatch):
+    calls = []
+
+    class _Resp:
+        ok = True
+        body = b"<feed></feed>"
+
+    def fake_feed(url, **kwargs):
+        calls.append({"url": url, "user_agent": kwargs.get("user_agent")})
+        return _Resp()
+
+    monkeypatch.setattr("stock_pm.events.av_earnings.fetch_feed", fake_feed)
+    monkeypatch.setattr("stock_pm.events.av_earnings.parse_feed_items", lambda *_args, **_kwargs: [])
+    from stock_pm.config import Settings
+
+    ua = "Stock PM Research desk@stock-pm.test"
+    settings = Settings(sec_edgar_user_agent=ua)
+    assert configured_sec_user_agent(settings) == ua
+    assert fetch_company_8k_items("AAPL", settings=settings) == []
+    assert calls and calls[0]["user_agent"] == ua
+    assert "sec.gov" in calls[0]["url"]
+    pack = load_frozen_earnings()
+    row = evidence_from_av_quarters(
+        pack["av_earnings"]["quarterlyEarnings"],
+        symbol="AAPL",
+        fetched_at="t",
+        source_url="https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+    )
+    bind_sec_association(row, settings=settings)
+    assert row.sec_association["reason_code"] is None
+    assert row.sec_association["verified"] is False
+    assert row.sec_association["role"] == "filing_metadata"

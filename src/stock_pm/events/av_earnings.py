@@ -15,6 +15,7 @@ from .earnings import (
     AV_EARNINGS_SOURCE,
     AV_ESTIMATES_SOURCE,
     apply_estimate_snapshot,
+    associate_sec_filing,
     attach_transcript,
     documents_from_evidence,
     evidence_from_av_quarters,
@@ -31,7 +32,7 @@ from .types import EventDocument
 AV_API = "https://www.alphavantage.co/query"
 AV_ENV = "ALPHA_VANTAGE_API_KEY"
 SEC_COMPANY_ATOM = "https://www.sec.gov/cgi-bin/browse-edgar"
-DEFAULT_SEC_UA = "stock-pm research AdminContact@example.com"
+_PLACEHOLDER_UA_MARKERS = ("example.com", "example.org")
 _LIMITER = RateLimiter(1.1)
 _SEC_LIMITER = RateLimiter(0.15)
 WATCH_SYMBOLS = ("AAPL", "NVDA", "XOM", "JPM")
@@ -143,16 +144,41 @@ def pick_sec_8k_url(items: list[dict[str, Any]], reported_date: str) -> str:
     return hits[0]
 
 
+def reset_sec_atom_cache() -> None:
+    _SEC_ATOM_CACHE.clear()
+
+
+def configured_sec_user_agent(settings: Settings | None = None) -> str:
+    """Real contact UA only. Empty or documented placeholder values do not go to SEC."""
+    settings = settings or Settings()
+    value = (
+        getattr(settings, "sec_edgar_user_agent", None)
+        or os.getenv("SEC_EDGAR_USER_AGENT")
+        or ""
+    ).strip()
+    if not _usable_sec_user_agent(value):
+        return ""
+    return value
+
+
+def _usable_sec_user_agent(value: str) -> bool:
+    text = str(value or "").strip()
+    if not text or "@" not in text:
+        return False
+    lowered = text.lower()
+    return not any(marker in lowered for marker in _PLACEHOLDER_UA_MARKERS)
+
+
 def fetch_company_8k_items(symbol: str, *, settings: Settings | None = None) -> list[dict[str, Any]]:
+    user_agent = configured_sec_user_agent(settings)
+    if not user_agent:
+        return []
     key = symbol.upper()
     if key in _SEC_ATOM_CACHE:
         return list(_SEC_ATOM_CACHE[key])
     url = company_8k_atom_url(key)
     if not url:
         return []
-    user_agent = (
-        getattr(settings or Settings(), "sec_edgar_user_agent", None) or DEFAULT_SEC_UA
-    ).strip()
     resp = fetch_feed(
         url,
         user_agent=user_agent,
@@ -169,7 +195,19 @@ def fetch_company_8k_items(symbol: str, *, settings: Settings | None = None) -> 
 
 
 def match_sec_8k_for_print(symbol: str, reported_date: str, *, settings: Settings | None = None) -> str:
+    if not configured_sec_user_agent(settings):
+        return ""
     return pick_sec_8k_url(fetch_company_8k_items(symbol, settings=settings), reported_date)
+
+
+def bind_sec_association(row: Any, *, settings: Settings | None = None) -> Any:
+    """Associate a same-day 8-K only when a real SEC User-Agent is configured."""
+    if not configured_sec_user_agent(settings):
+        return associate_sec_filing(row, "", reason_code="sec_user_agent_not_configured")
+    return associate_sec_filing(
+        row,
+        match_sec_8k_for_print(row.symbol, row.published_at or "", settings=settings),
+    )
 
 
 class AvEarningsProvider:
@@ -283,8 +321,8 @@ class AvEarningsProvider:
                     )
                 elif _tr_err and "EARNINGS_CALL_TRANSCRIPT" not in evidence.endpoints_called:
                     evidence.endpoints_called.append("EARNINGS_CALL_TRANSCRIPT")
-            sec_url = match_sec_8k_for_print(symbol, evidence.published_at or "", settings=self.settings)
-            rows.extend(documents_from_evidence(evidence, sec_url=sec_url))
+            bind_sec_association(evidence, settings=self.settings)
+            rows.extend(documents_from_evidence(evidence))
         return rows
 
 
