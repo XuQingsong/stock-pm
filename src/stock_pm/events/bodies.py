@@ -29,6 +29,8 @@ NAV_NOISE = (
     "form 8-k - current report",
     "page form 8-k",
     "sec accession no",
+    "u.s. energy information administration washington",
+    "for immediate release",
 )
 SEC_BOILERPLATE = (
     "hereby furnished",

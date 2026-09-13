@@ -108,6 +108,8 @@ CHROME_LINE_RE = re.compile(
     r"education$|news$|enter search|overview$|press releases$|testimony$|"
     r"presentations$|radio -->|back to home|chapters -->|events$|recent postings|"
     r"u\.s\. energy information administration - eia|"
+    r"u\.s\. energy information administration washington|"
+    r"^for immediate release|"
     r"federal reserve (facebook|instagram|youtube|flickr|linkedin|threads|x page|bluesky)|"
     r"board of governors of the federal reserve system$)"
 )
