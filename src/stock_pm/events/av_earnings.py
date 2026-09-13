@@ -8,7 +8,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from stock_pm.config import Settings
-from stock_pm.fetch import FetchError, json_get, read_cache, utc_now
+from stock_pm.fetch import FetchError, FetchResult, json_get, read_cache, utc_now
 
 from .bodies import is_allowed_sec_host
 from .earnings import (
@@ -98,7 +98,17 @@ def _key(settings: Settings | None = None) -> str:
     ).strip()
 
 
-def fetch_av_function(function: str, symbol: str, *, settings: Settings | None = None, extra: dict[str, str] | None = None) -> dict[str, Any]:
+def _cache_fallback_reason(result: FetchResult) -> str:
+    cause = result.cause or result.reason_code or "stale"
+    if cause == "timeout":
+        return "query_error"
+    if cause in {"rate_limited", "query_error", "stale"}:
+        return cause
+    return "stale"
+
+
+def fetch_av_function(function: str, symbol: str, *, settings: Settings | None = None, extra: dict[str, str] | None = None) -> FetchResult:
+    """Return the raw FetchResult. Cache fallbacks keep from_cache/fetched_at/cause."""
     key = _key(settings)
     if not key:
         raise FetchError("source_not_configured", f"{AV_ENV} is required")
@@ -115,18 +125,26 @@ def fetch_av_function(function: str, symbol: str, *, settings: Settings | None =
     payload = result.payload
     if not isinstance(payload, dict):
         raise FetchError("record_invalid", "Alpha Vantage earnings payload is not an object")
-    if result.from_cache:
-        cause = result.cause or "stale"
-        if cause == "timeout":
-            cause = "query_error"
-        if cause not in {"rate_limited", "query_error", "stale"}:
-            cause = "stale"
-        raise FetchError(cause, "using last-success cache")
     if payload.get("Note") or payload.get("Information"):
         raise FetchError("rate_limited", "Alpha Vantage earnings rate limited")
     if payload.get("Error Message"):
         raise FetchError("unsupported", "Alpha Vantage earnings query is not supported for this symbol")
-    return payload
+    return result
+
+
+def _result_from_av_fetch(raw: Any) -> FetchResult:
+    """Accept FetchResult or a test-double payload dict (treated as live)."""
+    if isinstance(raw, FetchResult):
+        return raw
+    if isinstance(raw, dict):
+        return FetchResult(
+            payload=raw,
+            status="ok",
+            reason_code="within_threshold",
+            fetched_at="",
+            from_cache=False,
+        )
+    raise FetchError("record_invalid", "Alpha Vantage earnings payload is not an object")
 
 
 def read_av_cache(function: str, symbol: str, extra: dict[str, str] | None = None) -> dict[str, Any] | None:
@@ -421,7 +439,13 @@ class AvEarningsProvider:
                 return cached["payload"], inject, "cache", str(cached.get("fetched_at") or "") or None
             return None, inject, "none", None
         try:
-            payload = fetch_av_function(function, symbol, settings=self.settings, extra=extra)
+            result = _result_from_av_fetch(fetch_av_function(function, symbol, settings=self.settings, extra=extra))
+            payload = result.payload if isinstance(result.payload, dict) else None
+            if payload is None:
+                return None, "record_invalid", "none", None
+            if result.from_cache:
+                reason = _cache_fallback_reason(result)
+                return payload, reason, "cache", str(result.fetched_at or "") or None
             return payload, None, "live", None
         except FetchError as exc:
             cached = read_av_cache(function, symbol, extra)

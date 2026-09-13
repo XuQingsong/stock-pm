@@ -10,6 +10,7 @@ from stock_pm.events.av_earnings import (
     _LIMITER,
     av_cache_key,
     evaluate_av_endpoint,
+    fetch_av_function,
     reset_earnings_runtime,
 )
 from stock_pm.events.dedupe import build_events
@@ -38,7 +39,7 @@ from stock_pm.events.earnings_health import (
 )
 from stock_pm.events.service import coverage, reset_cache, stock_events
 from stock_pm.events.watchlist import apply_watchlist_rows
-from stock_pm.fetch import FetchError, write_cache
+from stock_pm.fetch import FetchError, FetchResult, write_cache
 
 
 FROZEN = Path(__file__).resolve().parents[1] / "src/stock_pm/data/events_5c_c_frozen_earnings.json"
@@ -1136,3 +1137,176 @@ def test_later_round_does_not_rewrite_field_success_time(monkeypatch, tmp_path):
     assert _same_stamp(row["last_success_at"], first_success)
     assert health["as_of"] != first_success or earn.get("this_round") is False
     assert not any(function == "EARNINGS" and symbol == "AAPL" for function, symbol, _ in calls[1:])
+
+
+def _discover_through_json_get(monkeypatch, fake_json_get, *, settings=None, watchlist=None):
+    """Production path: do not mock fetch_av_function; only replace json_get."""
+    reset_cache()
+    apply_watchlist_rows(watchlist or _one_watch())
+    monkeypatch.setattr("stock_pm.events.av_earnings.json_get", fake_json_get)
+    monkeypatch.setattr("stock_pm.events.av_earnings.match_sec_8k_for_print", lambda *args, **kwargs: "")
+    monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
+    monkeypatch.setattr(_LIMITER, "wait", lambda: None)
+    return AvEarningsProvider(settings or Settings(events_mode="empty", earnings_av_budget=8)).discover()
+
+
+def _json_get_result(payload, *, from_cache, fetched_at, cause=None):
+    return FetchResult(
+        payload=payload,
+        status="stale" if from_cache else "ok",
+        reason_code="record_stale" if from_cache else "within_threshold",
+        fetched_at=fetched_at,
+        from_cache=from_cache,
+        cause=cause,
+    )
+
+
+def test_fetch_av_function_keeps_json_get_cache_metadata(monkeypatch):
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+
+    def fake_json_get(url, **kwargs):
+        return _json_get_result(aapl["av_earnings"], from_cache=True, fetched_at=old, cause="rate_limited")
+
+    monkeypatch.setattr("stock_pm.events.av_earnings.json_get", fake_json_get)
+    monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
+    monkeypatch.setattr(_LIMITER, "wait", lambda: None)
+    result = fetch_av_function("EARNINGS", "AAPL")
+    assert isinstance(result, FetchResult)
+    assert result.from_cache is True
+    assert result.fetched_at == old
+    assert result.cause == "rate_limited"
+    assert result.payload["quarterlyEarnings"]
+
+
+def test_json_get_429_cache_is_not_this_round_live(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+
+    def fake_json_get(url, **kwargs):
+        return _json_get_result(aapl["av_earnings"], from_cache=True, fetched_at=old, cause="rate_limited")
+
+    _discover_through_json_get(
+        monkeypatch,
+        fake_json_get,
+        settings=Settings(events_mode="empty", earnings_av_budget=8),
+        watchlist=_one_watch(),
+    )
+    health = current_earnings_health()
+    summary = summarize_health(health)
+    earn = health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]
+    assert earn["source"] == "cache"
+    assert earn["status"] == "stale"
+    assert earn["reason_code"] == "rate_limited"
+    assert _same_stamp(earn["last_success_at"], old)
+    assert not _is_fresh_success(earn)
+    assert summary["endpoints"]["this_round"]["EARNINGS"]["success"] == 0
+    assert summary["fresh_live_complete_count"] == 0
+    assert summary["live_complete_count"] == 0
+    attempt = _parse_stamp(earn["last_attempt_at"])
+    retry = _parse_stamp(earn["next_retry_at"])
+    assert attempt and retry and retry - attempt == timedelta(minutes=15)
+
+
+def test_json_get_timeout_cache_is_not_this_round_live(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(21)
+
+    def fake_json_get(url, **kwargs):
+        return _json_get_result(aapl["av_earnings"], from_cache=True, fetched_at=old, cause="timeout")
+
+    _discover_through_json_get(
+        monkeypatch,
+        fake_json_get,
+        settings=Settings(events_mode="empty", earnings_av_budget=8),
+        watchlist=_one_watch(),
+    )
+    earn = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    summary = summarize_health()
+    assert earn["source"] == "cache"
+    assert earn["status"] == "stale"
+    assert earn["reason_code"] == "query_error"
+    assert _same_stamp(earn["last_success_at"], old)
+    assert not _is_fresh_success(earn)
+    assert summary["endpoints"]["this_round"]["EARNINGS"]["success"] == 0
+
+
+def test_json_get_query_error_cache_is_not_this_round_live(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(10)
+
+    def fake_json_get(url, **kwargs):
+        return _json_get_result(aapl["av_earnings"], from_cache=True, fetched_at=old, cause="query_error")
+
+    _discover_through_json_get(
+        monkeypatch,
+        fake_json_get,
+        settings=Settings(events_mode="empty", earnings_av_budget=8),
+        watchlist=_one_watch(),
+    )
+    earn = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert earn["source"] == "cache"
+    assert earn["status"] == "stale"
+    assert earn["reason_code"] == "query_error"
+    assert _same_stamp(earn["last_success_at"], old)
+    assert summarize_health()["endpoints"]["this_round"]["EARNINGS"]["success"] == 0
+
+
+def test_json_get_live_only_when_not_from_cache(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+    phase = {"live": False}
+
+    def fake_json_get(url, **kwargs):
+        key = str(kwargs.get("cache_key") or url)
+        if "EARNINGS_ESTIMATES" in key:
+            payload = aapl["av_estimates"]
+        elif "EARNINGS_CALL_TRANSCRIPT" in key:
+            payload = {
+                "quarter": "2026Q3",
+                "transcript": [{**aapl["av_transcript"]["excerpts"][0], "symbol": "AAPL", "quarter": "2026Q3"}],
+            }
+        else:
+            payload = aapl["av_earnings"]
+        if not phase["live"]:
+            return _json_get_result(payload, from_cache=True, fetched_at=old, cause="rate_limited")
+        return _json_get_result(payload, from_cache=False, fetched_at="2026-09-13T18:00:00+00:00")
+
+    settings = Settings(events_mode="empty", earnings_av_budget=8)
+    watch = _one_watch()
+    _discover_through_json_get(monkeypatch, fake_json_get, settings=settings, watchlist=watch)
+    cached = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert cached["source"] == "cache"
+    assert _same_stamp(cached["last_success_at"], old)
+    assert summarize_health()["endpoints"]["this_round"]["EARNINGS"]["success"] == 0
+    health = current_earnings_health()
+    health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]["next_retry_at"] = "2020-01-01T00:00:00+00:00"
+    persist_health(health)
+    phase["live"] = True
+    _discover_through_json_get(monkeypatch, fake_json_get, settings=settings, watchlist=watch)
+    live = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert live["source"] == "live"
+    assert live["status"] == "ok"
+    assert _is_fresh_success(live)
+    assert not _same_stamp(live["last_success_at"], old)
+    assert summarize_health()["endpoints"]["this_round"]["EARNINGS"]["success"] == 1
