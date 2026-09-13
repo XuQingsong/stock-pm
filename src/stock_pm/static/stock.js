@@ -535,6 +535,7 @@
     loadHeader(),
     loadDecision(),
     loadDataHealth(),
+    loadEvents(),
     window.mountStockPmShell ? window.mountStockPmShell({ symbol: SYMBOL }) : Promise.resolve()
   ]).finally(() => activate(location.hash.slice(1) || "chart"));
 
@@ -1017,6 +1018,7 @@
         <span>受限链：${esc(list(overall.limited_chains))}</span>
         <span>不可用链：${esc(list(overall.unavailable_chains))}</span>
         <span class="status-pill ${esc((health.database && health.database.status) || "ok")}">数据库 ${esc((health.database && (health.database.database || health.database.status)) || "unknown")}</span>
+        ${eventsCoverageChip(health.events_coverage)}
       </div>
       ${health.database && health.database.status === "error" ? `<p class="subline">数据库不可达或写入失败：${esc(health.database.note || "PostgreSQL unreachable; live overlay does not hide this")}</p>` : ""}
       <p class="subline">${esc((overall.note) || "数据健康只描述证据可用性，不是投资结论")}</p>
@@ -1041,6 +1043,50 @@
       slot.innerHTML = renderDataHealth(health);
     } catch (error) {
       slot.innerHTML = `<section class="data-health"><p class="subline">数据健康加载失败：${esc(error.message || "未知错误")}</p></section>`;
+    }
+  }
+
+  function eventsCoverageChip(cover) {
+    if (!cover) return "";
+    const product = cover.product_status || {};
+    const health = product.source_health || {};
+    const evidence = product.evidence_sufficiency || {};
+    const conclude = product.can_conclude || {};
+    const google = ((cover.providers || {}).google_cse || {}).status || "not_configured";
+    const mode = cover.data_mode || "empty";
+    return `<span class="status-pill ${(health.ok ? "ok" : "not_configured")}" data-events-coverage="1" data-data-mode="${esc(mode)}" data-live="${cover.live ? "1" : "0"}" data-source-health="${health.ok ? "1" : "0"}" data-google-status="${esc(google)}">${esc(health.label || "数据源不完整")} · ${esc(evidence.label || "证据不足")} · ${esc(conclude.label || "尚不能形成结论")} · ${esc(conclude.reason || "")}</span>`;
+  }
+
+  async function loadEvents() {
+    const body = $("event-body");
+    if (!body) return;
+    try {
+      const payload = await api(`/api/stock/${encodeURIComponent(SYMBOL)}/events`);
+      const ui = window.StockPmEvents;
+      if (!ui) throw new Error("事件渲染未加载");
+      const coverNode = $("event-coverage");
+      if (coverNode) {
+        const cover = ui.renderCoverage(payload.coverage || {});
+        coverNode.innerHTML = cover.html;
+        coverNode.dataset.googleStatus = cover.googleStatus;
+        coverNode.dataset.dataMode = cover.dataMode || payload.data_mode || "empty";
+        coverNode.dataset.live = payload.live ? "1" : "0";
+        coverNode.dataset.replay = payload.recorded_replay ? "1" : "0";
+      }
+      body.className = "";
+      body.innerHTML = ui.renderStock(payload);
+      body.dataset.eventsReady = "1";
+      body.dataset.symbol = SYMBOL;
+      body.dataset.eventCount = String((payload.events || []).length);
+      body.dataset.dataMode = payload.data_mode || "empty";
+      body.dataset.live = payload.live ? "1" : "0";
+      body.dataset.replay = payload.recorded_replay ? "1" : "0";
+      const module = $("event-module");
+      if (module) module.dataset.eventsReady = "1";
+    } catch (error) {
+      body.className = "";
+      body.dataset.eventsReady = "error";
+      body.innerHTML = `<div class="empty-note">相关事件暂不可用，只影响事件链：${esc(error.message || "未知错误")}</div>`;
     }
   }
 

@@ -24,6 +24,15 @@ database = Database()
 _database_reachable = False
 
 
+def _warm_event_book() -> None:
+    try:
+        from .events.service import build_event_book
+
+        build_event_book()
+    except Exception as exc:
+        print(json.dumps({"events_warm_error": type(exc).__name__, "affects_chain": "events"}, ensure_ascii=False))
+
+
 def _backfill_environment_snapshots() -> None:
     try:
         if not hasattr(database, "append_environment_snapshot"):
@@ -53,6 +62,11 @@ async def lifespan(_: FastAPI):
             threading.Thread(
                 target=_backfill_environment_snapshots,
                 name="environment-backfill",
+                daemon=True,
+            ).start()
+            threading.Thread(
+                target=_warm_event_book,
+                name="events-warm",
                 daemon=True,
             ).start()
         else:
@@ -175,6 +189,23 @@ def legacy_live() -> RedirectResponse:
 @app.get("/review", response_class=HTMLResponse, include_in_schema=False)
 def review_page() -> str:
     return _page("review.html")
+
+
+@app.get("/events", response_class=HTMLResponse, include_in_schema=False)
+def events_page() -> str:
+    return _page("events.html")
+
+
+@app.get("/accept/e1-e10", response_class=HTMLResponse, include_in_schema=False)
+def accept_e1_e10_page() -> str:
+    return _page("accept.html")
+
+
+@app.get("/api/accept/e1-e10")
+def api_accept_e1_e10() -> dict:
+    from .events.accept_report import load_accept_reports
+
+    return load_accept_reports()
 
 
 # ---------------------------------------------------------------- health & watchlist
@@ -305,6 +336,37 @@ def market_events(
         return database.market_events(symbol, limit)
     except (DatabaseError, ValueError):
         return []
+
+
+@app.get("/api/events")
+def api_market_events() -> dict:
+    from .events.service import market_center
+
+    return market_center()
+
+
+@app.get("/api/events/coverage")
+def api_events_coverage() -> dict:
+    from .events.service import coverage
+
+    return coverage()
+
+
+@app.get("/api/events/{event_id}")
+def api_event_detail(event_id: str) -> dict:
+    from .events.service import event_detail
+
+    payload = event_detail(event_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail="event_not_found")
+    return payload
+
+
+@app.get("/api/stock/{symbol}/events")
+def api_stock_events(symbol: str) -> dict:
+    from .events.service import stock_events
+
+    return stock_events(symbol)
 
 
 @app.get("/api/market/news")
@@ -563,6 +625,16 @@ def stock_data_health(
         payload["series_report"] = series_report
         payload["database"] = db_status
         payload["persistence"] = persistence
+        try:
+            from .events.service import coverage as event_coverage
+
+            payload["events_coverage"] = event_coverage(settings)
+        except Exception:
+            payload["events_coverage"] = {
+                "status": "degraded",
+                "affects_chain": "events",
+                "does_not_affect": ["price", "earnings", "macro_rates"],
+            }
         for row in payload.get("datasets") or []:
             rec = series_report.get(row.get("metric") or "") or {}
             if not row.get("http_source") and rec.get("http_source"):

@@ -1,0 +1,242 @@
+{
+  "pack_id": "events_recorded_5b",
+  "data_class": "recorded_replay",
+  "live": false,
+  "note": "Minimal excerpts from reachable official originals. Not production live prints. Full pages are not stored.",
+  "recorded_at": "2026-09-13T06:14:56+00:00",
+  "documents": [
+    {
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Federal Reserve Board - Federal Reserve issues FOMC statement",
+      "published_at": "2026-06-17T18:00:21+00:00",
+      "event_time": "2026-06-17T18:00:21+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "49965039e13a64e34cd84751e7317e8aeb9f00202472325a5fea72853e94affd",
+      "body_hash": "466ea1e91a57c6c0a8528a7a83fc2ec57ff4d0600ad41b7f0c68c854bba721fe",
+      "excerpt": "Committee decided to maintain the target range for the federal funds rate at 3-1/2 to 3-3/4",
+      "claim_support_excerpt": "Committee decided to maintain the target range for the federal funds rate at 3-1/2 to 3-3/4",
+      "excerpt_start": 7923,
+      "excerpt_end": 8014,
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve issues FOMC statement; maintains the federal funds target range."
+      ],
+      "status": "active",
+      "scenario": "e2_fomc",
+      "document_role": "statement",
+      "evidence_role": "event_fact",
+      "phase": null,
+      "supersedes_url": null,
+      "required_tokens": [
+        "maintain the target range",
+        "federal funds rate"
+      ],
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Federal Reserve Board - Federal Reserve Board and Federal Open Market Committee release economic projections from the June 16-17 FOMC meeting",
+      "published_at": "2026-06-17T18:01:25+00:00",
+      "event_time": "2026-06-17T18:01:25+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "7d09480dd4a57884a12e97d814aacf5757c678c76ab722d6f60744018d95eb01",
+      "body_hash": "3e1b10241ec197ff0e9b13f30850ce0165b0d852ce8bfc237b580eba9c666f38",
+      "excerpt": "p.m. EDT Share The attached tables and charts released on Wednesday summarize the economic projections made by Federal Open Market Committee participants in conjunction with the June 16-17 meeting. For media inquiries,",
+      "claim_support_excerpt": "p.m. EDT Share The attached tables and charts released on Wednesday summarize the economic projections made by Federal Open Market Committee participants in conjunction with the June 16-17 meeting. For media inquiries,",
+      "excerpt_start": 7963,
+      "excerpt_end": 8181,
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "Federal Reserve Board and FOMC release economic projections from the June 16-17 FOMC meeting."
+      ],
+      "status": "active",
+      "scenario": "e2_fomc",
+      "document_role": "projections",
+      "evidence_role": "event_fact",
+      "phase": null,
+      "supersedes_url": null,
+      "required_tokens": [
+        "attached tables and charts",
+        "june 16-17 meeting"
+      ],
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20260617.htm",
+      "publisher": "Federal Reserve Board",
+      "title": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
+      "published_at": "2026-07-08T18:00:13+00:00",
+      "event_time": "2026-07-08T18:00:13+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "7c16ea8997612c30e163d64832b2cc812a7e0e1af63a1745c08b4c8266014395",
+      "body_hash": "2418594ee30b77a7bd6926282aa9257da5cab6813fa07cda07a8bf4f3519a5b6",
+      "excerpt": "below. FOMC Minutes Minutes of the Federal Open Market Committee June 16 –1 7, 2026 A joint meeting of the Federal Open",
+      "claim_support_excerpt": "below. FOMC Minutes Minutes of the Federal Open Market Committee June 16 –1 7, 2026 A joint meeting of the Federal Open",
+      "excerpt_start": 6884,
+      "excerpt_end": 7003,
+      "event_type": "central_bank_rates",
+      "entities": [
+        "FOMC",
+        "US",
+        "June 2026"
+      ],
+      "countries": [
+        "US"
+      ],
+      "claims": [
+        "FOMC minutes for the June 16-17, 2026 meeting update the same rate decision record."
+      ],
+      "status": "updated",
+      "scenario": "e2_fomc",
+      "document_role": "minutes",
+      "evidence_role": "event_fact",
+      "phase": null,
+      "supersedes_url": null,
+      "required_tokens": [
+        "minutes of the federal open market committee",
+        "joint meeting"
+      ],
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press588.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (05/12/2026): EIA updates forecast amid continued Mideast disruption; will publish new energy security datasets",
+      "published_at": "2026-05-12T12:00:00+00:00",
+      "event_time": "2026-05-12T12:00:00+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "c36d22329423daecfa246a186a7226b5e811e84ae70b73c6ec39c98e71a36311",
+      "body_hash": "f061be10c852bb9242eeec7175491d0c770adfb1ac653aea8e1988298b8758a8",
+      "excerpt": "continued disruption to Middle Eastern oil flows. On Wednesday, May 13, EIA will release a new energy security dataset , which will be published quarterly, with information on global strategic petroleum reserves and flows through key shipping chokepoints for petroleum and liquefied natural gas (LNG). This new dataset will typically be published separately from the primary STEO release, based on the availability of underlying datasets necessary for the analysis. \"The timing of resumed oil flows through the Strait of Hormuz",
+      "claim_support_excerpt": "continued disruption to Middle Eastern oil flows. On Wednesday, May 13, EIA will release a new energy security dataset , which will be published quarterly, with information on global strategic petroleum reserves and flows through key shipping chokepoints for petroleum and liquefied natural gas (LNG). This new dataset will typically be published separately from the primary STEO release, based on the availability of underlying datasets necessary for the analysis. \"The timing of resumed oil flows through the Strait of Hormuz",
+      "excerpt_start": 699,
+      "excerpt_end": 1226,
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "EIA updates forecast amid continued Mideast disruption to Middle Eastern oil flows through Hormuz."
+      ],
+      "status": "active",
+      "scenario": "e9_hormuz",
+      "document_role": "forecast_update",
+      "evidence_role": "event_fact",
+      "phase": "disruption",
+      "supersedes_url": null,
+      "required_tokens": [
+        "continued disruption",
+        "middle eastern oil",
+        "strait of hormuz"
+      ],
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press589.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (06/09/2026): EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions",
+      "published_at": "2026-06-09T12:00:00+00:00",
+      "event_time": "2026-06-09T12:00:00+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "7e451df86803853f92b3d8023f1a22c78390b0177459dd4f8b4af8a03e2d86c5",
+      "body_hash": "c7a19adb6cbcf44532a1d7238481d57db990fc9deee2504d45a154477ee97750",
+      "excerpt": "(06/09/2026): EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions U.S.",
+      "claim_support_excerpt": "(06/09/2026): EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions U.S.",
+      "excerpt_start": 18,
+      "excerpt_end": 127,
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "EIA expects a drop in global oil demand will limit price increases from Hormuz disruptions."
+      ],
+      "status": "updated",
+      "scenario": "e9_hormuz",
+      "document_role": "forecast_update",
+      "evidence_role": "event_fact",
+      "phase": "demand_buffer",
+      "supersedes_url": "https://www.eia.gov/pressroom/releases/press588.php",
+      "required_tokens": [
+        "drop in global oil demand",
+        "hormuz"
+      ],
+      "provider": "official"
+    },
+    {
+      "source_url": "https://www.eia.gov/pressroom/releases/press590.php",
+      "publisher": "U.S. Energy Information Administration",
+      "title": "EIA Press Release (07/07/2026): EIA increases global oil production forecast after the opening of the Strait of Hormuz",
+      "published_at": "2026-07-07T12:00:00+00:00",
+      "event_time": "2026-07-07T12:00:00+00:00",
+      "fetched_at": "2026-09-13T06:14:56+00:00",
+      "http_status": 200,
+      "content_sha256": "44744d237a3a3ccf55ad9e7856eba27ac7a594aa84320be2912a1d332ff09145",
+      "body_hash": "0230185122095a6c90ac72234da3230a5df3eda6b2e02cad7ccd7d7a19916406",
+      "excerpt": "increases global oil production forecast after the opening of the Strait of Hormuz U.S. ENERGY INFORMATION",
+      "claim_support_excerpt": "increases global oil production forecast after the opening of the Strait of Hormuz U.S. ENERGY INFORMATION",
+      "excerpt_start": 36,
+      "excerpt_end": 142,
+      "event_type": "war_sanctions",
+      "entities": [
+        "Iran",
+        "oil",
+        "Hormuz"
+      ],
+      "countries": [
+        "US",
+        "IR"
+      ],
+      "claims": [
+        "EIA increases global oil production forecast after the opening of the Strait of Hormuz."
+      ],
+      "status": "updated",
+      "scenario": "e9_hormuz",
+      "document_role": "forecast_update",
+      "evidence_role": "event_fact",
+      "phase": "reopen_supply",
+      "supersedes_url": "https://www.eia.gov/pressroom/releases/press589.php",
+      "required_tokens": [
+        "opening of the strait of hormuz",
+        "production forecast"
+      ],
+      "provider": "official"
+    }
+  ],
+  "integrity_sha256": "d6088f268c87e0ec7d5ec660ca87353de55431690acabb235d37e1e1abc4ce79"
+}

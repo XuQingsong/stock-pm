@@ -34,6 +34,7 @@ stock-pm-tape = "stock_pm.tape_job:main"
 stock-pm-prediction = "stock_pm.prediction_job:main"
 stock-pm-migrate = "stock_pm.migrate:main"
 stock-pm-persist-live = "stock_pm.persist_live:main"
+stock-pm-events = "stock_pm.events.job:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
