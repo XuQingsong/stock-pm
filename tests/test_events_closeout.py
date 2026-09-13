@@ -7,11 +7,12 @@ from stock_pm.events.accept_score import (
     e10_event_passes,
     e8_live_excerpt_ok,
     e8_metadata_only_passes,
+    events_have_complete_chain,
 )
-from stock_pm.events.analyze import analyze_event, causal_chain_is_complete
+from stock_pm.events.analyze import analyze_event, causal_chain_is_complete, closed_loop_summary
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.providers import load_fixture_documents
-from stock_pm.events.service import coverage, market_center, reset_cache
+from stock_pm.events.service import _product_status, coverage, market_center, reset_cache
 from stock_pm.events.types import EventDocument
 
 
@@ -152,6 +153,32 @@ def test_e10_fails_when_layers_empty_or_missing_evidence_or_exposure():
     assert e10_event_passes(no_exposure, dom_answers=list(_answers())) is False
 
 
+def test_e10_fails_when_excerpt_does_not_support_fact():
+    layers = _complete_layers(
+        excerpt="Skip to main content. An official website of the United States Government."
+    )
+    assert causal_chain_is_complete({"layers": layers}) is False
+    analysis = {
+        "answers": _answers(),
+        "causal_chain": {"layers": layers},
+        "withheld": {"status": "observable"},
+        "exposures": layers[3]["exposures"],
+        "evidence_refs": [{"source_url": OFFICIAL, "content_type": "official_fact"}],
+    }
+    assert e10_event_passes(analysis, dom_answers=list(_answers())) is False
+    leaked = {
+        "analysis": analysis,
+        "claims": [{"text": CLAIM, "excerpt": "Skip to main content.", "status": "current"}],
+        "sources": [{"source_url": OFFICIAL, "content_type": "official_fact"}],
+    }
+    summary = closed_loop_summary([leaked])
+    assert summary["ok"] is False
+    assert summary["leaked_observable_count"] == 1
+    assert summary["valid_conclusion_count"] == 0
+    product = _product_status([], provider_health_gate=False, note="x")
+    assert product["can_conclude"]["ok"] is False
+
+
 def test_e10_complete_chain_passes_without_relying_on_dom_markers():
     analysis = {"answers": {}, "causal_chain": {"layers": _complete_layers()}}
     assert causal_chain_is_complete(analysis["causal_chain"])
@@ -215,6 +242,105 @@ def test_accept_report_api_matches_files(tmp_path: Path):
     assert loaded["capability_e1_e10_gate"] is True
     assert loaded["live"]["pass_count"] == 6
     assert loaded["capability"]["pass_count"] == 9
+
+
+GOOD_BODY = (
+    "The Committee decided to maintain the target range for the federal funds rate "
+    "at 3-1/2 to 3-3/4 percent."
+)
+BAD_BODY = "Skip to main content. An official website of the United States Government. Menu Search."
+
+
+def _rate_event(url: str, body: str) -> EventDocument:
+    return EventDocument(
+        title="Federal Reserve issues FOMC statement",
+        url=url,
+        publisher="Federal Reserve Board",
+        published_at="2026-06-17T18:00:00+00:00",
+        event_type="central_bank_rates",
+        entities=["FOMC"],
+        claims=[CLAIM],
+        body=body,
+        provider="official",
+    )
+
+
+def _as_event_payload(document: EventDocument) -> dict:
+    event = build_events([document])[0]
+    analyze_event(event)
+    return event.as_dict()
+
+
+def test_leaked_observable_bad_excerpt_blocks_global_e8_e10():
+    good = _as_event_payload(_rate_event(OFFICIAL, GOOD_BODY))
+    bad_layers = _complete_layers(
+        excerpt="Skip to main content. An official website of the United States Government."
+    )
+    leaked = {
+        "analysis": {
+            "causal_chain": {"layers": bad_layers, "complete": True},
+            "withheld": {"status": "observable", "reason": "should be downgraded"},
+            "exposures": bad_layers[3]["exposures"],
+            "evidence_refs": [{"source_url": OFFICIAL, "content_type": "official_fact"}],
+        },
+        "claims": [{"text": CLAIM, "excerpt": BAD_BODY, "status": "current"}],
+        "sources": [{"source_url": OFFICIAL, "content_type": "official_fact"}],
+    }
+    assert good["analysis"]["withheld"]["status"] == "observable"
+    assert e8_live_excerpt_ok(events=[good, leaked]) is False
+    assert events_have_complete_chain([good, leaked]) is False
+    downgraded = analyze_event(build_events([_rate_event(OFFICIAL.replace("0617a", "0318a"), BAD_BODY)])[0])
+    assert downgraded["withheld"]["status"] == "withheld"
+    assert downgraded["closed_loop"] is False
+    assert downgraded["unsupported"] is True
+    assert downgraded["direction"]["text"] is None
+
+
+def test_split_excerpt_and_url_is_not_evidence_sufficient():
+    only_excerpt = build_events(
+        [
+            EventDocument(
+                title="Federal Reserve issues FOMC statement",
+                url="",
+                publisher="Unknown",
+                published_at="2026-06-17T18:00:00+00:00",
+                event_type="central_bank_rates",
+                claims=[CLAIM],
+                body=GOOD_BODY,
+            )
+        ]
+    )[0]
+    analyze_event(only_excerpt)
+    only_url = build_events([_rate_event("https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm", BAD_BODY)])[0]
+    analyze_event(only_url)
+    status = _product_status([only_excerpt, only_url], provider_health_gate=False, note="split")
+    assert status["evidence_sufficiency"]["ok"] is False
+    assert status["can_conclude"]["ok"] is False
+    assert status["valid_conclusion_count"] == 0
+
+
+def test_after_downgrade_one_valid_event_allows_e8_e10():
+    good = build_events([_rate_event(OFFICIAL, GOOD_BODY)])[0]
+    bad = build_events([_rate_event("https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm", BAD_BODY)])[0]
+    analyze_event(good)
+    analyze_event(bad)
+    assert good.analysis["withheld"]["status"] == "observable"
+    assert good.analysis["closed_loop"] is True
+    assert bad.analysis["withheld"]["status"] == "withheld"
+    assert bad.analysis["unsupported"] is True
+    rows = [good.as_dict(), bad.as_dict()]
+    assert e8_live_excerpt_ok(events=rows) is True
+    assert events_have_complete_chain(rows) is True
+    summary = closed_loop_summary(rows)
+    assert summary["valid_conclusion_count"] == 1
+    assert summary["withheld_count"] == 1
+    assert summary["unsupported_count"] == 1
+    status = _product_status([good, bad], provider_health_gate=False, note="ok")
+    assert status["evidence_sufficiency"]["ok"] is True
+    assert status["can_conclude"]["ok"] is True
+    assert status["valid_conclusion_count"] == 1
+    assert status["withheld_count"] == 1
+    assert status["unsupported_count"] == 1
 
 
 def test_fixture_iran_chain_is_not_mechanical_copy():
