@@ -26,6 +26,10 @@ class FactRef:
     source: str | None = None
     text: str | None = None
     synthetic: bool = True
+    http_source: str | None = None
+    unit: str | None = None
+    status: str | None = None
+    origin: str | None = None
 
     def __post_init__(self) -> None:
         table = (self.ref_table or "").strip()

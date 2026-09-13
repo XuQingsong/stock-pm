@@ -35,23 +35,44 @@ NFP_SERIES = {
 }
 
 
+NFP_FORMULA = "ΔPAYEMS[t] = PAYEMS[t] − PAYEMS[t−1]（千人）；current/prior/delta 只比较同口径月度差分，禁止与就业存量比较"
+
+
 def nfp_from_payems(observations: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Latest monthly employment change in thousands. Needs two PAYEMS prints."""
+    """Latest monthly employment *change* in thousands.
+
+    Needs two PAYEMS levels for the current print. A third level is required
+    before prior may be set — prior is the previous month's ΔPAYEMS, never the
+    employment stock.
+    """
     rows = [row for row in observations if row.get("value") is not None and row.get("period")]
     rows.sort(key=lambda row: str(row["period"]), reverse=True)
     if len(rows) < 2:
         return None
-    latest, prior = rows[0], rows[1]
     try:
-        value = round(float(latest["value"]) - float(prior["value"]), 1)
+        current = round(float(rows[0]["value"]) - float(rows[1]["value"]), 1)
     except (TypeError, ValueError):
         return None
+    prior_change = None
+    prior_change_period = None
+    if len(rows) >= 3:
+        try:
+            prior_change = round(float(rows[1]["value"]) - float(rows[2]["value"]), 1)
+            prior_change_period = rows[1]["period"]
+        except (TypeError, ValueError):
+            prior_change = None
     return {
-        "period": latest["period"],
-        "value": value,
-        "payems_level": float(latest["value"]),
-        "prior_level": float(prior["value"]),
-        "prior_period": prior["period"],
+        "period": rows[0]["period"],
+        "value": current,
+        "payems_level": float(rows[0]["value"]),
+        "prior_level": float(rows[1]["value"]),
+        "prior_period": rows[1]["period"],
+        "prior_change": prior_change,
+        "prior_change_period": prior_change_period,
+        "series_or_symbol": NFP_SERIES["series_id"],
+        "unit": NFP_SERIES["unit"],
+        "formula": NFP_FORMULA,
+        "comparison": "same_definition_monthly_diff",
     }
 
 
@@ -103,7 +124,12 @@ def sync_nfp_from_fred(settings: Settings | None = None, store=None) -> dict[str
             http_source=result.http_source,
             transport=result.transport,
         )
-        event["prior"] = derived["prior_level"]
+        event["prior"] = derived.get("prior_change")
+        event["prior_as_of"] = derived.get("prior_change_period")
+        event["formula"] = derived["formula"]
+        event["comparison"] = derived["comparison"]
+        event["payems_level"] = derived["payems_level"]
+        event["prior_level"] = derived["prior_level"]
         if store is not None:
             store(event)
         rec = normalized_record(event)
@@ -113,6 +139,9 @@ def sync_nfp_from_fred(settings: Settings | None = None, store=None) -> dict[str
             "value": derived["value"],
             "payems_level": derived["payems_level"],
             "prior_level": derived["prior_level"],
+            "prior_change": derived.get("prior_change"),
+            "formula": derived["formula"],
+            "comparison": derived["comparison"],
             "http_source": result.http_source,
             "transport": result.transport,
             "event": event,

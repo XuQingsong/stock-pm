@@ -331,6 +331,9 @@ def decorate_macro_row(row: dict[str, Any]) -> dict[str, Any]:
             "http_source": payload.get("http_source") or meta.get("http_source"),
             "transport": payload.get("transport") or meta.get("transport"),
             "status": meta.get("status") or payload.get("status") or "ok",
+            "formula": payload.get("formula") or meta.get("formula"),
+            "comparison": payload.get("comparison") or meta.get("comparison"),
+            "prior_as_of": payload.get("prior_as_of") or meta.get("prior_as_of"),
         }
     )
     return payload
@@ -404,6 +407,7 @@ def build_macro_event(
     from_cache: bool,
     http_source: str | None = None,
     transport: str | None = None,
+    prior_observation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     period = observation["period"]
     event_time = datetime.fromisoformat(f"{period}T00:00:00+00:00")
@@ -419,6 +423,14 @@ def build_macro_event(
         transport=transport,
     ))
     notes["as_of"] = period
+    prior_value = None
+    prior_as_of = None
+    if prior_observation and prior_observation.get("value") is not None and prior_observation.get("period"):
+        prior_value = prior_observation["value"]
+        prior_as_of = prior_observation["period"]
+        notes["prior_as_of"] = prior_as_of
+        notes["formula"] = f"{spec['series_id']}[t] vs {spec['series_id']}[t−1] ({spec['unit']})"
+        notes["comparison"] = "same_series_same_unit"
     validate_unit(metric, spec["unit"])
     if observation.get("unit"):
         validate_unit(metric, str(observation["unit"]))
@@ -429,7 +441,8 @@ def build_macro_event(
         "actual": observation["value"],
         "value": observation["value"],
         "consensus": None,
-        "prior": None,
+        "prior": prior_value,
+        "prior_as_of": prior_as_of,
         "unit": spec["unit"],
         "series": spec["series_id"],
         "series_or_symbol": spec["series_id"],
@@ -489,7 +502,9 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                     "transport": result.transport,
                 }
                 continue
-            latest = rows[0]
+            ordered = sorted(rows, key=lambda row: str(row["period"]), reverse=True)
+            latest = ordered[0]
+            previous = ordered[1] if len(ordered) > 1 else None
             if latest.get("unit"):
                 validate_unit(metric, str(latest["unit"]))
             event = build_macro_event(
@@ -500,6 +515,7 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                 from_cache=result.from_cache,
                 http_source=result.http_source,
                 transport=result.transport,
+                prior_observation=previous,
             )
             if store is not None:
                 store(event)

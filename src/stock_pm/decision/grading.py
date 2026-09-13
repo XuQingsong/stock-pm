@@ -53,6 +53,11 @@ GAP_EFFECTS: dict[str, dict[str, str]] = {
     "stale_dataset": {"chain": "macro_rates", "stage": "what_changed"},
     "window_mismatch": {"chain": "macro_rates", "stage": "what_changed"},
     "below_materiality": {"chain": "macro_rates", "stage": "change"},
+    "nfp_unit_mismatch": {"chain": "labor", "stage": "what_changed"},
+    "missing_nfp": {"chain": "labor", "stage": "what_changed"},
+    "missing_gold": {"chain": "commodity", "stage": "facts"},
+    "missing_news": {"chain": "news", "stage": "facts"},
+    "missing_options": {"chain": "options", "stage": "facts"},
 }
 
 FACT_METRIC_LABELS = {

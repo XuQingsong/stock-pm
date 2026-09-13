@@ -21,6 +21,43 @@ from .ux_copy import (
     named_missing_line,
 )
 
+def withhold_unsourced_prediction(pred: dict[str, Any] | None, *, can_form_direction: bool) -> dict[str, Any]:
+    """When the decision kernel cannot form a direction, never show a % path."""
+    payload = dict(pred or {})
+    payload["can_form_direction"] = bool(can_form_direction)
+    payload["kind"] = "prediction" if can_form_direction else "historical_or_withheld"
+    if can_form_direction:
+        return payload
+    payload["direction_withheld"] = True
+    payload["prediction_ready"] = False
+    payload["therefore"] = "决策未形成方向：不展示无来源涨跌或百分比预测。下面若有数字，只可能是已发生事实。"
+    payload["upside_bound_pct"] = None
+    payload["downside_bound_pct"] = None
+    payload["upside_price"] = None
+    payload["downside_price"] = None
+    payload["window_label"] = None
+    payload["window_start"] = None
+    payload["window_end"] = None
+    payload["badge"] = None
+    payload["one_liner"] = None
+    payload["target"] = None
+    payload["thesis"] = None
+    payload["state"] = "withheld"
+    payload["missing_label"] = "决策未形成方向，不展示百分比预测"
+    payload["prediction_half"] = payload["missing_label"]
+    payload["missingFlags"] = list(payload.get("missingFlags") or []) + ["decision_direction"]
+    struct = dict(payload.get("struct") or {})
+    if struct:
+        struct["therefore"] = payload["therefore"]
+        struct["target"] = None
+        struct["action"] = None
+        struct["window_label"] = None
+        struct["prediction_ready"] = False
+        struct["missing_label"] = payload["missing_label"]
+        payload["struct"] = struct
+    return payload
+
+
 PUBLISH_STATES = ("published", "draft", "stale", "missing")
 PREDICTION_STATES = (
     "auto_gen",

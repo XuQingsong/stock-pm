@@ -216,7 +216,9 @@ async function main(){
     const thesis=conflict?(b.row_thesis||envHalf):null;
     const news=b.env_news;
     const newsBit=news?`<div class="hint">${copy.newsHeadline?copy.newsHeadline(news):esc(news.headline||'')}<div class="news-stance">${esc(news.stance_line||'')}</div></div>`:'';
-    const predText=(copy.predictionDisplay?copy.predictionDisplay(pred):null)||b.prediction_half||pred.badge||'到期未产出';
+    const predText=(pred.direction_withheld||pred.can_form_direction===false||pred.state==='withheld')
+      ? (pred.therefore||pred.missing_label||'决策未形成方向，不展示百分比预测')
+      : ((copy.predictionDisplay?copy.predictionDisplay(pred):null)||b.prediction_half||pred.badge||'到期未产出');
     const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
     const halfCells=conflict
       ? `<td class="row-thesis tone-conflict" colspan="2">${esc(thesis)}${newsBit}</td>`

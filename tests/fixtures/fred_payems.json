@@ -6,6 +6,7 @@
   "transform": "diff",
   "observations": [
     {"date": "2026-08-01", "value": "159832", "realtime_start": "2026-09-05"},
-    {"date": "2026-07-01", "value": "159612", "realtime_start": "2026-08-01"}
+    {"date": "2026-07-01", "value": "159612", "realtime_start": "2026-08-01"},
+    {"date": "2026-06-01", "value": "159400", "realtime_start": "2026-07-01"}
   ]
 }

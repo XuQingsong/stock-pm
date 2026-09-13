@@ -44,7 +44,8 @@
     support: "缺下沿",
     resistance: "缺上沿",
     window: "缺时间窗",
-    price: "缺对照行情"
+    price: "缺对照行情",
+    decision_direction: "决策方向"
   };
 
   const PUBLISH_LABELS = {
@@ -70,6 +71,9 @@
   }
 
   function predictionDisplay(pred) {
+    if (pred && (pred.direction_withheld || pred.can_form_direction === false || pred.state === "withheld")) {
+      return pred.therefore || pred.missing_label || "决策未形成方向，不展示百分比预测";
+    }
     if (!pred || pred.state === "missing" || !pred.prediction_ready) {
       const named = missingFlagText(pred && pred.missingFlags);
       return (pred && (pred.missing_label || pred.therefore)) || (named ? `${named}，未编造时间窗口或涨跌边界。` : "到期未产出");

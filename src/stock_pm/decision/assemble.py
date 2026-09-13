@@ -25,8 +25,11 @@ from .tension import PriceExpectationTension, build_price_expectation_tension
 from .thesis import Driver, ThesisSnapshot, build_thesis_snapshot
 from .types import PRICE_METRICS, FactRef, MaterialityRule
 from .grading import GAP_EFFECTS, annotate_gaps, grade_decision, _is_symbol_price
+from .path import BACKGROUND_METRICS, LABOR_METRICS, RISK_METRICS, build_rates_path, build_risk_state, split_display_facts
 from .viewmodel import render_decision_view
 from .what_changed import build_what_changed
+from stock_pm.config import DEFAULT_WATCHLIST
+from stock_pm.nfp import NFP_FORMULA
 
 
 PRICE_RULE = MaterialityRule(pct_delta=2.0)
@@ -36,6 +39,20 @@ YIELD_RULE = MaterialityRule(abs_delta=0.05)
 ODDS_RULE = MaterialityRule(abs_delta=5.0)
 VIX_RULE = MaterialityRule(abs_delta=1.0)
 EPS_RULE = MaterialityRule(abs_delta=0.05)
+
+
+def _enrich_risk_state(risk_state: dict[str, Any] | None, facts: list[dict[str, Any]] | None) -> dict[str, Any] | None:
+    if not risk_state:
+        return risk_state
+    vix_fact = next((row for row in facts or [] if canonical_metric(str(row.get("metric") or "")) == "vix"), None)
+    if not vix_fact:
+        return risk_state
+    payload = dict(risk_state)
+    payload["http_source"] = vix_fact.get("http_source") or payload.get("http_source")
+    payload["status"] = vix_fact.get("status") or payload.get("status") or "ok"
+    payload["unit"] = payload.get("unit") or vix_fact.get("unit") or "index"
+    payload["name"] = vix_fact.get("name") or payload.get("name") or "VIX"
+    return payload
 
 UNVERIFIED_HINTS = (
     "war",
@@ -124,13 +141,13 @@ def _macro_coverage_gaps(
         else:
             gaps.append(_gap("missing_cpi", "缺失 CPI/PCE 原因序列"))
     rate_keys = {"us2y", "real_rate", "cut_odds"}
-    if "us2y" in in_metrics and "real_rate" in in_metrics:
+    if in_metrics & rate_keys:
         pass
-    elif not (in_metrics & rate_keys) and (stale_metrics & rate_keys):
+    elif stale_metrics & rate_keys:
         gaps.append(_gap("stale_dataset", "利率确认通道存在于决策窗口之前，不是数据缺失", affects_chain="macro_rates", affects_stage="confirmation"))
-    elif not (in_metrics & rate_keys) and (scheduled_metrics & rate_keys):
+    elif scheduled_metrics & rate_keys:
         pass
-    elif not (in_metrics & rate_keys) and (mismatch_metrics & rate_keys):
+    elif mismatch_metrics & rate_keys:
         gaps.append(_gap("window_mismatch", "利率确认通道存在但落在决策窗口之外，不是数据缺失", affects_chain="macro_rates", affects_stage="confirmation"))
     else:
         gaps.append(_gap("missing_rates_confirmation", "缺失利率确认通道（US2Y/实际利率/降息预期）"))
@@ -173,7 +190,18 @@ def _exposure(watch: dict[str, Any] | None, symbol: str) -> Exposure | None:
     return None
 
 
-def _make_ref(table: str, ref_id: Any, as_of: str, source: str, *, synthetic: bool) -> FactRef | None:
+def _make_ref(
+    table: str,
+    ref_id: Any,
+    as_of: str,
+    source: str,
+    *,
+    synthetic: bool,
+    http_source: str | None = None,
+    unit: str | None = None,
+    status: str | None = None,
+    origin: str | None = None,
+) -> FactRef | None:
     try:
         return FactRef(
             ref_table=table,
@@ -181,6 +209,10 @@ def _make_ref(table: str, ref_id: Any, as_of: str, source: str, *, synthetic: bo
             as_of=as_of,
             source=source,
             synthetic=synthetic,
+            http_source=http_source,
+            unit=unit,
+            status=status,
+            origin=origin,
         )
     except FactValidationError:
         return None
@@ -256,20 +288,142 @@ def _price_changes(symbol: str, bars: list[dict[str, Any]], *, synthetic: bool) 
     changes.append(change)
     facts.append(
         {
+            "id": f"fact|close|{symbol}|{current_as_of}",
             "kind": "bar",
             "metric": "close",
             "subject": symbol,
             "as_of": current_as_of,
             "source": current_source,
+            "value": current_bar.price_for("close") if hasattr(current_bar, "price_for") else None,
+            "unit": "USD",
+            "status": "ok",
+            "origin": "primary",
+            "http_source": bars[0].get("http_source") if bars else None,
             "ref": {
                 "ref_table": "daily_price_bars",
                 "ref_id": f"{symbol}|{current_as_of}",
                 "as_of": current_as_of,
                 "source": current_source,
+                "http_source": bars[0].get("http_source") if bars else None,
+                "unit": "USD",
+                "status": "ok",
+                "origin": "primary",
             },
         }
     )
     return changes, gaps, facts
+
+
+def _macro_fact_payload(
+    *,
+    metric: str,
+    as_of: str,
+    source: str,
+    current: Any,
+    previous: Any,
+    unit: str | None,
+    series: str,
+    formula: str,
+    event: dict[str, Any],
+    http_source: Any,
+    status: str = "ok",
+    delta: float | None = None,
+) -> dict[str, Any]:
+    prior_as_of = iso_stamp(event.get("prior_as_of") or event.get("prior_period"))
+    return {
+        "id": f"fact|{metric}|{as_of}",
+        "kind": "macro",
+        "metric": metric,
+        "as_of": as_of,
+        "source": source,
+        "name": event.get("name"),
+        "value": current,
+        "previous": previous,
+        "delta": delta,
+        "unit": unit,
+        "series": series or None,
+        "period": as_of[:10],
+        "previous_period": str(prior_as_of)[:10] if prior_as_of else None,
+        "formula": formula or None,
+        "comparison": event.get("comparison"),
+        "status": status,
+        "origin": "primary",
+        "http_source": http_source,
+        "transport": event.get("transport"),
+        "ref": {
+            "ref_table": "macro_events",
+            "ref_id": f"{metric}|{as_of}",
+            "as_of": as_of,
+            "source": source,
+            "http_source": http_source,
+            "unit": unit,
+            "status": status,
+            "origin": "primary",
+        },
+    }
+
+
+def _leftover_macro_facts(
+    events: Iterable[dict[str, Any]],
+    already: set[str],
+) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    for event in events:
+        metric = canonical_metric(str(event.get("event_type") or ""))
+        if not metric or metric in already:
+            continue
+        if metric not in (BACKGROUND_METRICS | LABOR_METRICS | RISK_METRICS):
+            continue
+        if "probe" in metric:
+            continue
+        as_of = iso_stamp(event.get("event_time"))
+        source = str(event.get("source") or "").strip()
+        if not as_of or not source:
+            continue
+        current = event.get("actual")
+        if current is None:
+            current = event.get("value")
+        facts.append(
+            _macro_fact_payload(
+                metric=metric,
+                as_of=as_of,
+                source=source,
+                current=current,
+                previous=event.get("prior"),
+                unit=str(event.get("unit") or "") or None,
+                series=str(event.get("series_or_symbol") or event.get("series") or ""),
+                formula=str(event.get("formula") or ""),
+                event=event,
+                http_source=event.get("http_source"),
+                status=str(event.get("status") or "ok"),
+            )
+        )
+    return facts
+
+
+def _inject_gaps(tokens: Iterable[str]) -> list[dict[str, str]]:
+    gaps: list[dict[str, str]] = []
+    wanted = {str(item).strip().lower() for item in tokens}
+    if "missing_gold" in wanted:
+        gaps.append(_gap("missing_gold", "注入：黄金缺失，只影响商品链，不撤销价格/利率/盈利结论"))
+    if "missing_nfp" in wanted:
+        gaps.append(_gap("missing_nfp", "注入：NFP 缺失，只影响劳动链，不撤销全部股票结论"))
+    if "missing_prior_consensus" in wanted:
+        gaps.append(_gap("missing_prior_consensus", "注入：前次盈利共识缺失，只限制盈利预期链"))
+    if "missing_news" in wanted:
+        gaps.append(_gap("missing_news", "注入：新闻缺失，只影响新闻线索，不改变已成立事实链"))
+    if "missing_options" in wanted:
+        gaps.append(_gap("missing_options", "注入：期权缺失，只影响期权层，不撤销宏观/价格结论"))
+    return gaps
+
+
+def _watch_from_seed(symbol: str, watch: dict[str, Any] | None) -> dict[str, Any]:
+    row = dict(watch or {})
+    seed = DEFAULT_WATCHLIST.get(symbol.upper())
+    if seed is not None:
+        row.setdefault("themes", list(seed.themes))
+        row.setdefault("rate_sensitivity", seed.rate_sensitivity)
+    return row
 
 
 def _macro_changes(events: Iterable[dict[str, Any]], *, synthetic: bool) -> tuple[list[ChangeSnapshot], list[dict[str, str]], list[dict[str, Any]]]:
@@ -290,45 +444,98 @@ def _macro_changes(events: Iterable[dict[str, Any]], *, synthetic: bool) -> tupl
         if current is None or previous is None:
             gaps.append(_gap("missing_macro_baseline", f"{metric} 缺 actual/prior，不能声称变化"))
             continue
-        ref = _make_ref("macro_events", f"{metric}|{as_of}", as_of, source, synthetic=synthetic)
+        try:
+            current_n = float(current)
+            previous_n = float(previous)
+        except (TypeError, ValueError):
+            continue
+        unit = str(event.get("unit") or "") or None
+        series = str(event.get("series_or_symbol") or event.get("series") or "")
+        formula = str(event.get("formula") or "") or (NFP_FORMULA if metric == "nfp" else "")
+        http_source = event.get("http_source")
+        if metric == "nfp" and abs(previous_n) >= 10000 and abs(current_n) < 5000:
+            gaps.append(
+                _gap(
+                    "nfp_unit_mismatch",
+                    "NFP 只能比较同口径月度差分，禁止用 就业存量 当 prior",
+                    affects_chain="labor",
+                    affects_stage="what_changed",
+                )
+            )
+            facts.append(
+                _macro_fact_payload(
+                    metric=metric,
+                    as_of=as_of,
+                    source=source,
+                    current=current_n,
+                    previous=None,
+                    unit=unit,
+                    series=series,
+                    formula=formula or NFP_FORMULA,
+                    event=event,
+                    http_source=http_source,
+                    status="nfp_unit_mismatch",
+                )
+            )
+            continue
+        prior_as_of = iso_stamp(event.get("prior_as_of") or event.get("prior_period")) or as_of
+        ref = _make_ref(
+            "macro_events",
+            f"{metric}|{as_of}",
+            as_of,
+            source,
+            synthetic=synthetic,
+            http_source=http_source,
+            unit=unit,
+            status=str(event.get("status") or "ok"),
+            origin="primary",
+        )
         if ref is None:
             continue
         try:
             current_fact = ValidatedFact(
                 metric=metric,
-                value=float(current),
+                value=current_n,
                 as_of=as_of,
+                unit=unit,
                 refs=(ref,),
                 synthetic=synthetic,
             )
             previous_fact = ValidatedFact(
                 metric=metric,
-                value=float(previous),
-                as_of=as_of,
+                value=previous_n,
+                as_of=prior_as_of,
+                unit=unit,
                 refs=(ref,),
                 synthetic=synthetic,
             )
         except (FactValidationError, TypeError, ValueError):
             continue
-        changes.append(
-            build_change_snapshot(
-                metric=metric,
-                current_fact=current_fact,
-                previous_fact=previous_fact,
-                comparison_window="event",
-                materiality_rule=rule,
-                synthetic=synthetic,
-            )
+        change = build_change_snapshot(
+            metric=metric,
+            current_fact=current_fact,
+            previous_fact=previous_fact,
+            comparison_window="event",
+            materiality_rule=rule,
+            unit=unit,
+            synthetic=synthetic,
         )
+        changes.append(change)
         facts.append(
-            {
-                "kind": "macro",
-                "metric": metric,
-                "as_of": as_of,
-                "source": source,
-                "name": event.get("name"),
-                "ref": {"ref_table": "macro_events", "ref_id": f"{metric}|{as_of}", "as_of": as_of, "source": source},
-            }
+            _macro_fact_payload(
+                metric=metric,
+                as_of=as_of,
+                source=source,
+                current=current_n,
+                previous=previous_n,
+                unit=unit,
+                series=series,
+                formula=formula,
+                event=event,
+                http_source=http_source,
+                status=str(event.get("status") or "ok"),
+                delta=change.delta,
+            )
         )
     return changes, gaps, facts
 
@@ -388,17 +595,27 @@ def _expectation_gaps(symbol: str, earnings: list[dict[str, Any]], *, synthetic:
     gaps_out.append(gap)
     facts.append(
         {
+            "id": f"fact|eps|{symbol}|{actual_as_of}",
             "kind": "earnings",
             "metric": "eps",
             "subject": symbol,
             "as_of": actual_as_of,
             "source": source,
+            "value": float(actual),
+            "unit": "USD/share",
+            "status": "ok",
+            "origin": "primary",
             "fiscal_period": period,
+            "http_source": row.get("http_source"),
             "ref": {
                 "ref_table": "earnings_reports",
                 "ref_id": f"{symbol}|{period}|actual",
                 "as_of": actual_as_of,
                 "source": source,
+                "http_source": row.get("http_source"),
+                "unit": "USD/share",
+                "status": "ok",
+                "origin": "primary",
             },
         }
     )
@@ -554,8 +771,27 @@ def assemble_from_kernel(
     preview: str | None = None,
     as_of: str | None = None,
     clock_status: str = "ok",
+    rates_path: dict[str, Any] | None = None,
+    risk_state: dict[str, Any] | None = None,
+    market_background: list[dict[str, Any]] | None = None,
+    inject: list[str] | None = None,
 ) -> dict[str, Any]:
     changes = _exclude_price_changes_if_invalid_ohlc(changes, data_gaps)
+    seed_watch = _watch_from_seed(symbol, None)
+    if rates_path is None:
+        rates_path = build_rates_path(
+            symbol=symbol,
+            watch=seed_watch,
+            changes=changes,
+            confirmation=confirmation,
+            facts=facts,
+        )
+    if risk_state is None:
+        risk_state = _enrich_risk_state(build_risk_state(changes), facts)
+    if not market_background:
+        _main_facts, market_background = split_display_facts(facts, changes, seed_watch, symbol)
+        if _main_facts:
+            facts = _main_facts
     tension = resolve_price_expectation_tension(changes, expectations, synthetic=synthetic)
     blocked = rates_chain_incomplete(impacts, expectations, tension)
     gaps = list(data_gaps)
@@ -637,13 +873,17 @@ def assemble_from_kernel(
         tension=tension,
         rates_chain_blocked=blocked,
         graded=graded,
+        rates_path=rates_path,
+        risk_state=risk_state,
+        market_background=market_background or [],
+        inject=inject or [],
     )
 
 
 def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     symbol = _watch_symbol(bundle)
     synthetic = bool(bundle.get("synthetic"))
-    watch = bundle.get("watch") or {}
+    watch = _watch_from_seed(symbol, bundle.get("watch") or {})
     data_gaps: list[dict[str, str]] = []
     facts: list[dict[str, Any]] = []
 
@@ -672,7 +912,10 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     macro_changes, macro_gaps, macro_facts = _macro_changes(parts.inside, synthetic=synthetic)
     data_gaps.extend(macro_gaps)
     facts.extend(macro_facts)
+    already = {canonical_metric(str(row.get("metric") or "")) for row in macro_facts}
+    facts.extend(_leftover_macro_facts(parts.inside, already))
     data_gaps.extend(_scheduled_gaps(parts.scheduled))
+    data_gaps.extend(_inject_gaps(list(bundle.get("inject") or [])))
 
     expect_rows, expect_gaps, expect_facts = _expectation_gaps(symbol, list(bundle.get("earnings") or []), synthetic=synthetic)
     data_gaps.extend(expect_gaps)
@@ -680,7 +923,7 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
 
     data_gaps.extend(_macro_coverage_gaps(macro_changes, parts.stale, parts.mismatch, parts.scheduled))
 
-    confirm_series = [row for row in macro_changes if canonical_metric(row.metric) in CONFIRM_TYPES]
+    confirm_series = [row for row in macro_changes if canonical_metric(row.metric) in {"us2y", "real_rate", "cut_odds"}]
     confirmation = assess_market_confirmation(
         path="rates_tightening",
         series=tuple(confirm_series),
@@ -688,21 +931,23 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     )
 
     exposure = _exposure(watch, symbol)
-    inflation_causes = [row for row in macro_changes if canonical_metric(row.metric) in INFLATION_TYPES and row.materiality == "material"]
+    inflation_causes = [row for row in macro_changes if canonical_metric(row.metric) in INFLATION_TYPES]
+    material_inflation = [row for row in inflation_causes if row.materiality == "material"]
     impacts = []
-    if inflation_causes and exposure is not None:
+    cause = (material_inflation or inflation_causes or [None])[0]
+    if cause is not None and exposure is not None:
         impacts.append(
             build_causal_impact(
-                cause=inflation_causes[0],
+                cause=cause,
                 mechanism=RATES_DISCOUNT_MECHANISM,
                 exposure=exposure,
                 market_confirmation=confirmation,
                 synthetic=synthetic,
             )
         )
-    elif exposure is not None:
+    elif exposure is not None and not inflation_causes:
         data_gaps.append(_gap("missing_mechanism", "缺通胀原因，不能把非农或新闻直接跳到个股"))
-    else:
+    elif exposure is None:
         data_gaps.append(_gap("missing_exposure", "该标的没有利率久期暴露，不把宏观直接写成个股方向"))
 
     clues = _unverified_clues(list(bundle.get("news") or []))
@@ -737,6 +982,15 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         )
 
     changes = price_changes + macro_changes
+    main_facts, background_facts = split_display_facts(facts, changes, watch, symbol)
+    rates_path = build_rates_path(
+        symbol=symbol,
+        watch=watch,
+        changes=changes,
+        confirmation=confirmation,
+        facts=facts,
+    )
+    risk_state = _enrich_risk_state(build_risk_state(changes), facts)
     bulls, bears, disagreement, invalidation = _drivers(symbol, changes, expect_rows, impacts)
     stamp = iso_stamp(bundle.get("generated_at")) or datetime.now(timezone.utc).isoformat()
     thesis = build_thesis_snapshot(
@@ -782,11 +1036,15 @@ def assemble_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         thesis=thesis,
         previous_thesis=previous,
         data_gaps=unique_gaps,
-        facts=facts,
+        facts=main_facts,
         clues=clues,
         synthetic=synthetic,
         as_of=as_of,
         clock_status=clock_status,
+        rates_path=rates_path,
+        risk_state=risk_state,
+        market_background=background_facts,
+        inject=list(bundle.get("inject") or []),
     )
 
 
