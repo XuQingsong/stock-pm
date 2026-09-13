@@ -80,9 +80,13 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         if stamp and (last_success is None or str(stamp) > str(last_success)):
             last_success = stamp
     failed = [f"{row.get('provider')}:{row.get('reason_code')}" for row in live_rows if row.get("status") != "ok"]
+    provider_health_gate = mode not in {"demo", "fixture", "recorded_replay"} and len(live_ok) == len(REQUIRED_LIVE)
     return {
         "status": verdict,
         "verdict": verdict,
+        "provider_health_gate": provider_health_gate,
+        "live_e1_e10_gate": None,
+        "capability_e1_e10_gate": None,
         "data_mode": mode if mode != "test" else "fixture",
         "live": is_live,
         "live_event_count": live_event_count,

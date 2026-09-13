@@ -8,7 +8,7 @@ import pytest
 from stock_pm.config import Settings
 from stock_pm.events.analyze import analyze_event
 from stock_pm.events.dedupe import build_events
-from stock_pm.events.evidence import excerpt_supports_claim
+from stock_pm.events.evidence import excerpt_supports_claim, select_claim_support_excerpt
 from stock_pm.events.exposure import why_relevant
 from stock_pm.events.job import run_event_job
 from stock_pm.events.policy import classify_source, events_data_mode, sanitize_untrusted
@@ -66,6 +66,17 @@ def test_recorded_pack_integrity_and_pipeline():
     assert set(fomc.coverage["document_roles"]) == {"statement", "projections", "minutes"}
     assert fomc.analysis["confidence"]["text"] == "medium"
     assert fomc.analysis["confidence_rule"]["independent_publisher_count"] == 1
+    statement = next(row for row in pack["documents"] if row["document_role"] == "statement")
+    assert "maintain the target range" in statement["claim_support_excerpt"].lower()
+    assert "federal funds" in statement["claim_support_excerpt"].lower()
+    assert "skip to main content" not in statement["claim_support_excerpt"].lower()
+    assert statement["excerpt_start"] is not None
+    assert statement["body_hash"]
+    assert not any("iran-sanctions" in str(row.get("source_url")) for row in pack["documents"])
+    cover = coverage(Settings(events_mode="recorded_replay", app_env=""))
+    assert cover["provider_health_gate"] is False
+    assert cover["live_e1_e10_gate"] is None
+    assert cover["capability_e1_e10_gate"] is None
 
 
 def test_recorded_pack_tamper_is_rejected(tmp_path: Path):
@@ -97,6 +108,8 @@ def test_production_empty_does_not_load_recorded_pack():
     reset_cache()
     center = market_center(settings)
     assert center["recorded_replay"] is False
+    assert center["coverage"]["provider_health_gate"] is False
+    assert center["coverage"]["live_e1_e10_gate"] is None
     urls = [src["source_url"] for event in center["events"] for src in event["sources"]]
     assert not any("press588" in url or "iran-sanctions" in url for url in urls)
 
@@ -130,6 +143,26 @@ def test_excerpt_must_support_claim():
         "Iran Sanctions | Office of Foreign Assets Control. The .gov means it's official.",
         required=["opening of the strait of hormuz"],
     )
+    assert not excerpt_supports_claim(
+        "Federal Reserve issues FOMC statement; maintains the federal funds target range.",
+        "Skip to main content An official website of the United States Government",
+        title="Federal Reserve issues FOMC statement",
+        required=["maintain the target range"],
+    )
+
+
+def test_select_claim_support_excerpt_uses_body_not_chrome():
+    body = (
+        "Skip to main content\n"
+        "An official website of the United States Government\n"
+        "The Committee decided to maintain the target range for the federal funds rate "
+        "at 3-1/2 to 3-3/4 percent, in support of the Federal Reserve's dual mandate.\n"
+    )
+    window = select_claim_support_excerpt(body, ["maintain the target range", "federal funds rate"])
+    assert "maintain the target range" in window["claim_support_excerpt"].lower()
+    assert "skip to main content" not in window["claim_support_excerpt"].lower()
+    with pytest.raises(ValueError, match="token_not_found"):
+        select_claim_support_excerpt(body, ["opening of the strait of hormuz"])
 
 
 def test_prompt_injection_still_stripped_from_excerpts():

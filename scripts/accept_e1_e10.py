@@ -131,6 +131,10 @@ def capture_pages() -> dict:
                     vixRole: (document.querySelector('[data-vix-role]') && document.querySelector('[data-vix-role]').getAttribute('data-vix-role')) || '',
                     banner: (document.querySelector('.event-mode-banner') && document.querySelector('.event-mode-banner').innerText) || '',
                     replay: (document.querySelector('[data-replay]') && document.querySelector('[data-replay]').getAttribute('data-replay')) || '',
+                    providerHealthGate: (document.querySelector('[data-provider-health-gate]') && document.querySelector('[data-provider-health-gate]').getAttribute('data-provider-health-gate')) || '',
+                    liveE1E10Gate: (document.querySelector('[data-live-e1-e10-gate]') && document.querySelector('[data-live-e1-e10-gate]').getAttribute('data-live-e1-e10-gate')) || '',
+                    capabilityE1E10Gate: (document.querySelector('[data-capability-e1-e10-gate]') && document.querySelector('[data-capability-e1-e10-gate]').getAttribute('data-capability-e1-e10-gate')) || '',
+                    claimExcerpts: [...document.querySelectorAll('[data-claim-excerpt]')].map((n) => n.innerText),
                     timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({{
                       status: n.getAttribute('data-timeline-status') || '',
                       polarity: n.getAttribute('data-polarity') || '',
@@ -270,7 +274,7 @@ def probe_url(url: str) -> dict:
 
 
 OFFICIAL_HOSTS = ACCEPT_HOSTS
-UNOBSERVED = "算法 fixture PASS / 实盘未观测"
+UNOBSERVED = "UNOBSERVED"
 UNVERIFIED = "UNVERIFIED"
 
 
@@ -314,10 +318,9 @@ def _claim_evidence_rows(events: list[dict], pack: dict | None) -> list[dict]:
         for claim in event.get("claims") or []:
             url = str(claim.get("source_url") or "")
             doc = docs.get(url) or {}
-            excerpt = str(claim.get("excerpt") or doc.get("excerpt") or "")
-            title = str(doc.get("title") or "")
+            excerpt = str(claim.get("excerpt") or doc.get("claim_support_excerpt") or doc.get("excerpt") or "")
             required = list(doc.get("required_tokens") or [])
-            supports = excerpt_supports_claim(str(claim.get("text") or ""), excerpt, title, required=required or None)
+            supports = excerpt_supports_claim(str(claim.get("text") or ""), excerpt, required=required or None)
             rows.append(
                 {
                     "claim": claim.get("text"),
@@ -326,8 +329,13 @@ def _claim_evidence_rows(events: list[dict], pack: dict | None) -> list[dict]:
                     "as_of": claim.get("observed_at") or claim.get("valid_from") or doc.get("published_at"),
                     "status": claim.get("status"),
                     "polarity": claim.get("polarity"),
-                    "excerpt": excerpt[:240],
+                    "excerpt": excerpt[:320],
+                    "claim_support_excerpt": excerpt,
+                    "excerpt_start": doc.get("excerpt_start"),
+                    "excerpt_end": doc.get("excerpt_end"),
+                    "body_hash": doc.get("body_hash"),
                     "supports_claim": supports,
+                    "used_title": False,
                     "event_id": event.get("event_id"),
                     "event_type": event.get("event_type"),
                 }
@@ -438,6 +446,9 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     e8_dom = all(str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []) and bool(shot_center.get("analysisHrefs"))
     e10_dom = {"what", "credibility", "why", "duration", "invalidation"}.issubset(set(shot_center.get("answers") or []))
     official_feeds_ok = sum(1 for row in live_providers.values() if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0)
+    provider_health_gate = official_feeds_ok == 3 and all(
+        row.get("status") == "ok" and int(row.get("event_count") or 0) > 0 for row in live_providers.values()
+    )
     fixture_honest = official.get("status") in {"idle", "demo_fixture", "not_implemented"} and official.get("live") is False
     google_honest = google.get("status") == "not_configured" and "google.com/search" not in js
     replay_honest = (not replay_mode) or (
@@ -485,11 +496,29 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     claim_evidence = _claim_evidence_rows([row for row in (fomc, hormuz) if row], pack)
     current_evidence = [row for row in claim_evidence if row.get("status") != "superseded"]
     e8_semantic = bool(current_evidence) and all(
-        row.get("supports_claim") and row.get("publisher") and row.get("as_of") and row.get("source_url")
+        row.get("supports_claim")
+        and row.get("publisher")
+        and row.get("as_of")
+        and row.get("source_url")
+        and row.get("claim_support_excerpt")
         for row in current_evidence
     )
     if not replay_mode:
-        e8_semantic = bool(refs) and all(str(row.get("source_url") or "").startswith("http") and row.get("publisher") for row in refs)
+        live_excerpts = [
+            row
+            for row in (lead.get("claims") or [])
+            if row.get("excerpt") and row.get("status") != "superseded"
+        ]
+        from stock_pm.events.evidence import excerpt_supports_claim as _excerpt_ok
+
+        live_excerpt_ok = all(
+            _excerpt_ok(str(row.get("text") or ""), str(row.get("excerpt") or "")) for row in live_excerpts
+        ) if live_excerpts else True
+        e8_semantic = (
+            bool(refs)
+            and all(str(row.get("source_url") or "").startswith("http") and row.get("publisher") for row in refs)
+            and live_excerpt_ok
+        )
     framework = {
         "E1": ("official_fact" in fact_types and (e1_fixture_dom if fixture_mode else e1_live_dom)),
         "E2": e2_independent or (replay_mode and e2_fomc_docs),
@@ -563,25 +592,37 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         if not e3_observed:
             verdict["E3"] = UNVERIFIED
         must = MUST_CAPABILITY
-        gate = all(verdict[key] == "PASS" for key in must) and sum(1 for value in verdict.values() if value == "PASS") >= 8
+        capability_e1_e10_gate = (
+            all(verdict[key] == "PASS" for key in must)
+            and sum(1 for value in verdict.values() if value == "PASS") >= 8
+            and replay_honest
+        )
+        live_e1_e10_gate = None
+        gate = capability_e1_e10_gate
         note = (
-            "Capability black-box: LIVE or RECORDED REPLAY through the production pipeline and browser. "
-            "Unit tests are not counted as black-box PASS. "
-            "E3 is UNVERIFIED without a same-window multi-publisher conflict sample."
+            "capability_e1_e10_gate only. RECORDED REPLAY may use the production pipeline. "
+            "E3 is UNVERIFIED without a same-window multi-publisher conflict and is not PASS. "
+            "provider_health_gate and live_e1_e10_gate are separate fields."
         )
     else:
         verdict = live_verdict
         must = MUST_LIVE
-        gate = all(verdict[key] == "PASS" for key in must) and fixture_honest
+        live_pass = sum(1 for value in verdict.values() if value == "PASS")
+        live_e1_e10_gate = live_pass == 10 and fixture_honest
+        capability_e1_e10_gate = None
+        gate = live_e1_e10_gate
         note = (
-            "live-current counts only the current online book. "
-            f"E2/E3/E4/E9 without a natural live sample are '{UNOBSERVED}'."
+            "live_e1_e10_gate only. UNOBSERVED is not PASS. "
+            "provider_health_gate is independent and must not be written as E1–E10 PASS."
         )
     return {
         "lane": lane,
         "data_mode": cover.get("data_mode"),
         "live": cover.get("live"),
         "recorded_replay": replay_mode,
+        "provider_health_gate": provider_health_gate,
+        "live_e1_e10_gate": live_e1_e10_gate,
+        "capability_e1_e10_gate": capability_e1_e10_gate,
         "live_coverage_ratio": cover.get("live_coverage_ratio"),
         "real_source_count": cover.get("real_source_count"),
         "event_count": cover.get("event_count"),
@@ -608,6 +649,12 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         "lead_event_type": lead.get("event_type"),
         "accept_host_violations": accept_host_violations,
         "banner": shot_center.get("banner"),
+        "ui_gates": {
+            "provider_health_gate": shot_center.get("providerHealthGate"),
+            "live_e1_e10_gate": shot_center.get("liveE1E10Gate"),
+            "capability_e1_e10_gate": shot_center.get("capabilityE1E10Gate"),
+        },
+        "claim_excerpts_dom": shot_center.get("claimExcerpts") or [],
         "fomc_metrics": fomc_metrics,
         "hormuz_metrics": hormuz_metrics,
         "claim_evidence": claim_evidence,

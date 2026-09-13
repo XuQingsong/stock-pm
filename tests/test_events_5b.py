@@ -151,6 +151,9 @@ def test_e6_google_not_configured_official_feeds_continue(monkeypatch):
     assert cover["affects_chain"] == "events"
     assert cover["event_count"] >= 3
     assert cover["data_mode"] == "fixture"
+    assert cover["provider_health_gate"] is False
+    assert cover["live_e1_e10_gate"] is None
+    assert cover["capability_e1_e10_gate"] is None
 
 
 def test_google_never_scrapes_html_search_pages(monkeypatch):

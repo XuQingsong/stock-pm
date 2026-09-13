@@ -14,7 +14,9 @@ from html import unescape
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+from stock_pm.events.evidence import select_claim_support_excerpt
 from stock_pm.events.feeds import parse_datetime, strip_markup
+from stock_pm.events.policy import sanitize_untrusted
 from stock_pm.events.replay import RECORDED_PACK_PATH, compute_pack_hash
 
 UA = "stock-pm research AdminContact@example.com"
@@ -34,7 +36,7 @@ SPECS = [
         "document_role": "statement",
         "title_override": None,
         "claim": "Federal Reserve issues FOMC statement; maintains the federal funds target range.",
-        "required_tokens": ["fomc statement"],
+        "required_tokens": ["maintain the target range", "federal funds rate"],
     },
     {
         "source_url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617b.htm",
@@ -47,7 +49,7 @@ SPECS = [
         "document_role": "projections",
         "title_override": None,
         "claim": "Federal Reserve Board and FOMC release economic projections from the June 16-17 FOMC meeting.",
-        "required_tokens": ["economic projections", "june 16-17"],
+        "required_tokens": ["attached tables and charts", "june 16-17 meeting"],
     },
     {
         "source_url": "https://www.federalreserve.gov/monetarypolicy/fomcminutes20260617.htm",
@@ -60,7 +62,7 @@ SPECS = [
         "document_role": "minutes",
         "title_override": "Minutes of the Federal Open Market Committee, June 16-17, 2026",
         "claim": "FOMC minutes for the June 16-17, 2026 meeting update the same rate decision record.",
-        "required_tokens": ["minutes", "june 16-17"],
+        "required_tokens": ["minutes of the federal open market committee", "joint meeting"],
     },
     {
         "source_url": "https://www.eia.gov/pressroom/releases/press588.php",
@@ -74,7 +76,7 @@ SPECS = [
         "phase": "disruption",
         "title_override": None,
         "claim": "EIA updates forecast amid continued Mideast disruption to Middle Eastern oil flows through Hormuz.",
-        "required_tokens": ["continued mideast disruption"],
+        "required_tokens": ["continued disruption", "middle eastern oil", "strait of hormuz"],
     },
     {
         "source_url": "https://www.eia.gov/pressroom/releases/press589.php",
@@ -154,7 +156,9 @@ def record() -> dict:
             raise RuntimeError(f"{spec['source_url']} HTTP {status}")
         html = raw.decode("utf-8", "replace")
         title = spec.get("title_override") or _title(html)
-        excerpt = strip_markup(html)[:400]
+        cleaned = strip_markup(html, max_len=None)
+        window = select_claim_support_excerpt(cleaned, list(spec.get("required_tokens") or []))
+        excerpt = sanitize_untrusted(window["claim_support_excerpt"])
         published = _published(title, html, last_modified)
         documents.append(
             {
@@ -166,7 +170,11 @@ def record() -> dict:
                 "fetched_at": fetched_at,
                 "http_status": status,
                 "content_sha256": hashlib.sha256(raw).hexdigest(),
+                "body_hash": window["body_hash"],
                 "excerpt": excerpt,
+                "claim_support_excerpt": excerpt,
+                "excerpt_start": window["excerpt_start"],
+                "excerpt_end": window["excerpt_end"],
                 "event_type": spec["event_type"],
                 "entities": spec["entities"],
                 "countries": spec["countries"],
