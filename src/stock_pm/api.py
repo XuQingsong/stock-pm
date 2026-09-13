@@ -196,6 +196,18 @@ def events_page() -> str:
     return _page("events.html")
 
 
+@app.get("/accept/e1-e10", response_class=HTMLResponse, include_in_schema=False)
+def accept_e1_e10_page() -> str:
+    return _page("accept.html")
+
+
+@app.get("/api/accept/e1-e10")
+def api_accept_e1_e10() -> dict:
+    from .events.accept_report import load_accept_reports
+
+    return load_accept_reports()
+
+
 # ---------------------------------------------------------------- health & watchlist
 
 @app.get("/health")

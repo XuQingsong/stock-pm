@@ -61,6 +61,45 @@
     return `${text}<div class="evidence-refs">证据：${refsHtml(item.evidence_refs)}</div>`;
   };
 
+  const LAYER_LABELS = {
+    fact: "Fact · 已确认事实",
+    change: "Change · 相对基线的变化",
+    expectation: "Expectation · 方向 / 期限 / 置信度",
+    impact: "Impact · 市场与暴露",
+    what_changes: "What changes · 什么变了"
+  };
+
+  const causalChainHtml = (analysis) => {
+    const chain = (analysis && analysis.causal_chain) || {};
+    const layers = chain.layers || [];
+    if (!layers.length) return "";
+    return `<ol class="event-causal-chain" data-causal-chain="1" data-chain-complete="${chain.complete ? "1" : "0"}">
+      ${layers.map((layer) => {
+        const cites = (layer.cites || []).join(" ");
+        const extra = [];
+        if (layer.id === "fact" && layer.excerpt) {
+          extra.push(`<div class="subline" data-fact-excerpt="1">原文：${esc(layer.excerpt)}</div>`);
+        }
+        if (layer.id === "expectation") {
+          extra.push(`<div class="subline">方向 ${esc(layer.direction || "—")} · 期限 ${esc(layer.horizon || "—")} · 置信度 ${esc(layer.confidence || "—")}</div>`);
+        }
+        if (layer.id === "impact") {
+          extra.push(exposuresHtml(layer.exposures || analysis.exposures || []));
+        }
+        if (layer.id === "what_changes") {
+          if (layer.invalidation) extra.push(`<div class="subline">失效：${esc(layer.invalidation)}</div>`);
+          if (layer.follow_up) extra.push(`<div class="subline">后续观察：${esc(layer.follow_up)}</div>`);
+        }
+        return `<li class="event-causal-layer" data-causal-layer="1" data-layer="${esc(layer.id)}" data-layer-id="${esc(layer.layer_id || "")}" data-cites="${esc(cites)}">
+          <div class="chain-kicker">${esc(LAYER_LABELS[layer.id] || layer.id)}</div>
+          <div data-layer-text="1">${esc(layer.text || "")}</div>
+          ${layer.evidence_refs && layer.evidence_refs.length ? `<div class="evidence-refs">证据：${refsHtml(layer.evidence_refs)}</div>` : ""}
+          ${extra.join("")}
+        </li>`;
+      }).join("")}
+    </ol>`;
+  };
+
   const answersHtml = (event, why) => {
     const analysis = event.analysis || {};
     const answers = analysis.answers || {};
@@ -142,6 +181,15 @@
     return `${pill(`${name} ${status}`, status)}<span>${esc(name)} events ${esc(row.event_count ?? 0)} · last_success ${esc(row.last_success_at || "—")} · ${esc(row.reason_code || "ok")}</span>`;
   };
 
+  const productRow = (key, block) => {
+    const row = block || {};
+    const ok = row.ok === true;
+    return `<div class="status-row" data-product="${esc(key)}" data-ok="${ok ? "1" : "0"}">
+      ${pill(row.label || key, ok ? "ok" : "not_configured")}
+      <span>${esc(row.detail || row.reason || "")}</span>
+    </div>`;
+  };
+
   const renderCoverage = (coverage) => {
     const google = ((coverage || {}).providers || {}).google_cse || {};
     const official = ((coverage || {}).providers || {}).official_feed || {};
@@ -149,38 +197,31 @@
     const mode = coverage.data_mode || "empty";
     const live = coverage.live === true;
     const replay = coverage.recorded_replay === true || mode === "recorded_replay";
-    const ratio = coverage.live_coverage_ratio;
+    const product = coverage.product_status || {};
+    const sourceHealth = product.source_health || {};
+    const evidence = product.evidence_sufficiency || {};
+    const conclude = product.can_conclude || {};
     const modeLabel = live
-      ? `LIVE · 生产实时 · 覆盖率 ${ratio == null ? "—" : Math.round(Number(ratio) * 100) + "%"}`
+      ? "正在使用官方实时来源"
       : replay
-        ? "RECORDED REPLAY · 真实官方原文回放 · 不是生产最新事件"
+        ? "正在回放已记录的官方原文，不是当前最新事件"
         : mode === "empty"
-          ? "生产默认 · 无 fixture · 等待官方源"
-          : "TEST FIXTURE / DEMO · 非生产实时 · 不得当作最新官方事件";
+          ? "等待官方源，当前没有演示数据"
+          : "当前为测试/演示数据，不是生产实时事件";
     const bannerClass = live ? "is-live" : replay ? "is-replay" : "is-fixture";
-    const providerHealth = coverage.provider_health_gate === true;
+    const healthOk = sourceHealth.ok === true;
     return {
-      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}" data-replay="${replay ? "1" : "0"}" data-provider-health-gate="${providerHealth ? "1" : "0"}" data-live-e1-e10-gate="accept-only" data-capability-e1-e10-gate="accept-only">
+      html: `<div class="event-coverage-inner" data-google-status="${esc(status)}" data-official-status="${esc(official.status || "idle")}" data-mode="${esc(mode)}" data-live="${live ? "1" : "0"}" data-replay="${replay ? "1" : "0"}" data-source-health="${healthOk ? "1" : "0"}">
         <div class="event-mode-banner ${bannerClass}" data-data-mode="${esc(mode)}">${esc(modeLabel)}</div>
-        <div class="accept-gates">
-          <div class="gate-row" data-gate="provider_health">${pill(`provider_health_gate ${providerHealth}`, providerHealth ? "ok" : "not_configured")}<span>SEC / Fed / EIA 是否健康且有实时数据。不是 E1–E10 验收。</span></div>
-          <div class="gate-row" data-gate="live_e1_e10">${pill("live_e1_e10_gate accept-only")}<span>只由 live-current 验收计分；UNOBSERVED 不计 PASS，不得与 provider health 混写。</span></div>
-          <div class="gate-row" data-gate="capability_e1_e10">${pill("capability_e1_e10_gate accept-only")}<span>只由 capability-black-box 验收计分；允许 RECORDED REPLAY 走完整生产流水线。</span></div>
+        <div class="product-status">
+          ${productRow("source_health", sourceHealth.ok == null ? { ok: healthOk, label: healthOk ? "数据源健康" : "数据源不完整", detail: "SEC / Fed / EIA 官方源" } : sourceHealth)}
+          ${productRow("evidence_sufficiency", evidence.label ? evidence : { ok: false, label: "证据不足", detail: "尚未核对正文摘录" })}
+          ${productRow("can_conclude", conclude.label ? conclude : { ok: false, label: "尚不能形成结论", reason: coverage.note || "证据不足" })}
         </div>
-        ${pill(`coverage_verdict ${coverage.verdict || coverage.status || "incomplete"}`, live ? "ok" : "not_configured")}
-        ${pill(`data_mode ${mode}`)}
-        ${pill(`google_cse ${status}`, status)}
         ${providerPill(coverage, "sec_edgar")}
         ${providerPill(coverage, "federal_reserve")}
         ${providerPill(coverage, "eia_press")}
-        <span>live_event_count ${esc(coverage.live_event_count ?? 0)}</span>
-        <span>fixture_event_count ${esc(coverage.fixture_event_count ?? 0)}</span>
-        <span>source_count ${esc(coverage.source_count ?? 0)}</span>
-        <span>real_source_count ${esc(coverage.real_source_count ?? 0)}</span>
-        <span>conflict_count ${esc(coverage.conflict_count ?? 0)}</span>
-        <span>last_success ${esc(coverage.last_success || "—")}</span>
-        <span>reason_code ${esc(coverage.reason_code || "—")}</span>
-        <div class="subline">${esc(coverage.note || "")} 只影响事件链：${esc(coverage.affects_chain || "events")}。不影响 ${esc((coverage.does_not_affect || []).join(" / ") || "price / earnings / macro_rates")}。</div>
+        <div class="subline">${esc(conclude.reason || coverage.note || "")} 只影响事件观察，不影响价格、盈利或宏观利率。</div>
       </div>`,
       googleStatus: status,
       dataMode: mode
@@ -209,6 +250,7 @@
         </div>
       </header>
       ${answersHtml(event, why)}
+      ${causalChainHtml(analysis)}
       ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}
       <div class="source-lane" data-lane="facts">
         <h4>${esc(laneLabel.official_fact)}</h4>
@@ -244,7 +286,7 @@
         ${(analysis.counter_evidence || []).map((row) => `<p>${boundHtml(row)}</p>`).join("")}
         <h4>What changes</h4>
         <p data-what-changes="1">${boundHtml(analysis.what_changes)}</p>
-        <p class="subline">方向状态：${esc(withheld.status || "withheld")} · ${esc(withheld.reason || "")}。禁止无来源数字或价格预测。percent_forecast=${esc(analysis.percent_forecast)} price_target=${esc(analysis.price_target)}</p>
+        <p class="subline">方向状态：${esc(withheld.status || "withheld")} · ${esc(withheld.reason || "")}。禁止无来源数字或价格预测。</p>
       </div>
     </article>`;
   };
