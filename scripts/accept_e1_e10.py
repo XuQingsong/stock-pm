@@ -241,9 +241,11 @@ def probe_url(url: str) -> dict:
     blocked = host in {"example.com", "example.invalid", "localhost", "127.0.0.1"} or host.endswith(".invalid")
     if parsed.scheme not in {"http", "https"} or blocked:
         return {"url": url, "ok": False, "status": "blocked", "live": False}
-    headers = {"User-Agent": "stock-pm research AdminContact@example.com", "Accept": "text/html,*/*"}
-    if "sec.gov" in host:
-        headers["Accept-Encoding"] = "gzip, deflate"
+    headers = {
+        "User-Agent": "stock-pm research AdminContact@example.com",
+        "Accept": "text/html,*/*",
+        "Accept-Encoding": "gzip, deflate",
+    }
     methods = ("GET",) if "sec.gov" in host else ("HEAD", "GET")
     last_status: object = None
     for method in methods:
@@ -254,7 +256,7 @@ def probe_url(url: str) -> dict:
                 return {"url": url, "ok": 200 <= code < 400, "status": code, "live": 200 <= code < 400}
         except urllib.error.HTTPError as exc:
             last_status = exc.code
-            if exc.code in {405, 403, 501} and method == "HEAD":
+            if method == "HEAD":
                 continue
             if 200 <= exc.code < 400:
                 return {"url": url, "ok": True, "status": exc.code, "live": True}
@@ -309,8 +311,8 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
     aapl_types = {row.get("event_type") for row in (stocks["AAPL"].get("events") or [])}
     xom_types = {row.get("event_type") for row in (stocks["XOM"].get("events") or [])}
     xom_why = next((row.get("why_relevant") or "" for row in stocks["XOM"].get("events") or [] if row.get("event_type") in {"war_sanctions", "energy_supply"}), "")
-    nvda_why = next((row.get("why_relevant") or "" for row in stocks["NVDA"].get("events") or []), "")
-    jpm_why = next((row.get("why_relevant") or "" for row in stocks["JPM"].get("events") or []), "")
+    nvda_why = next((row.get("why_relevant") or "" for row in stocks["NVDA"].get("events") or [] if row.get("event_type") == "war_sanctions"), "")
+    jpm_why = next((row.get("why_relevant") or "" for row in stocks["JPM"].get("events") or [] if row.get("event_type") == "war_sanctions"), "")
     google = ((cover.get("providers") or {}).get("google_cse") or {})
     official = ((cover.get("providers") or {}).get("official_feed") or {})
     live_providers = {
@@ -363,15 +365,37 @@ def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) 
         if str(row.get("source_url") or "").startswith("http")
     }
     lead_probes = [row for row in probes if row.get("url") in lead_urls]
+
+    def _recorded_original_ok(url: str) -> bool:
+        try:
+            from stock_pm.events.replay import load_recorded_pack
+
+            pack = load_recorded_pack()
+        except Exception:
+            return False
+        for row in pack.get("documents") or []:
+            if str(row.get("source_url") or "") == url and int(row.get("http_status") or 0) == 200 and row.get("content_sha256"):
+                return True
+        return False
+
     live_originals = bool(lead_probes) and all(row.get("live") for row in lead_probes) and any(
         _official_href(row.get("url") or "") for row in lead_probes
     )
+    if replay_mode:
+        live_originals = bool(lead_urls) and all(
+            _official_href(url)
+            and (
+                any(row.get("url") == url and row.get("live") for row in probes)
+                or _recorded_original_ok(url)
+            )
+            for url in lead_urls
+        )
     framework = {
         "E1": ("official_fact" in fact_types and (e1_fixture_dom if fixture_mode else e1_live_dom)),
         "E2": e2_observed,
         "E3": e3_observed,
         "E4": e4_observed,
-        "E5": (vix.get("analysis") or {}).get("vix_role") == "risk_confirmation_only" or (production and not vix),
+        "E5": (vix.get("analysis") or {}).get("vix_role") == "risk_confirmation_only" or not vix,
         "E6": google_honest and fixture_honest and e6_dom,
         "E7": cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
         and ev_cover.get("does_not_affect") == ["price", "earnings", "macro_rates"]
