@@ -123,6 +123,16 @@ def _status(docs: list[EventDocument]) -> str:
     return "active"
 
 
+def _timeline_what(status: str, polarity: str) -> str:
+    if polarity == "revokes" or status == "revoked":
+        return "后续原文撤销或否定先前表述，刷新 What changes，不新开事件"
+    if polarity == "contradicts":
+        return "后续原文修正先前 claim，同一时间线记录冲突并降低置信度"
+    if polarity == "updates" or status == "updated":
+        return "同一事件出现更新报道，刷新时间线，不重复叠加一条新方向"
+    return "纳入同一事件时间线"
+
+
 def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> list[TrustedEvent]:
     stamp = seen_at or _now()
     events: list[TrustedEvent] = []
@@ -168,6 +178,27 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                     )
                 )
         times = [row.published_at for row in cluster if row.published_at]
+        event_status = _status(cluster)
+        timeline = []
+        for claim in claims:
+            source = next((row for row in sources if row.source_id == claim.source_id), None)
+            entry_status = (
+                "revoked"
+                if claim.polarity == "revokes"
+                else ("updated" if claim.polarity in {"updates", "contradicts"} else "active")
+            )
+            timeline.append(
+                {
+                    "event_time": source.published_at if source else None,
+                    "status": entry_status,
+                    "polarity": claim.polarity,
+                    "publisher": claim.publisher,
+                    "source_url": claim.source_url,
+                    "claim": claim.text,
+                    "what_changes": _timeline_what(entry_status, claim.polarity),
+                }
+            )
+        timeline.sort(key=lambda row: (row.get("event_time") or "", row.get("source_url") or ""))
         events.append(
             TrustedEvent(
                 event_id=event_id,
@@ -181,8 +212,9 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 updated_at=max(times) if times else stamp,
                 sources=sources,
                 claims=claims,
+                timeline=timeline,
                 dedupe_group=event_id,
-                status=_status(cluster),
+                status=event_status,
                 freshness="fresh",
                 severity=_severity(lead.event_type),
                 scope="market",

@@ -26,7 +26,16 @@ REAL_SECRET_RE = re.compile(
 OUT = Path(os.environ.get("ACCEPT_OUT", "/opt/cursor/artifacts/p0-5b"))
 BASE = os.environ.get("ACCEPT_BASE", "http://127.0.0.1:8767").rstrip("/")
 CDP = os.environ.get("ACCEPT_CDP", "http://127.0.0.1:9335")
-MUST = ["E1", "E6", "E7", "E8", "E10"]
+MUST_LIVE = ["E1", "E6", "E7", "E8", "E10"]
+MUST_CAPABILITY = ["E1", "E2", "E4", "E6", "E7", "E8", "E10"]
+ACCEPT_HOSTS = (
+    "sec.gov",
+    "federalreserve.gov",
+    "eia.gov",
+    "treasury.gov",
+    "ofac.treasury.gov",
+    "home.treasury.gov",
+)
 
 
 def get(url: str) -> object:
@@ -119,7 +128,14 @@ def capture_pages() -> dict:
                     conflicts: [...document.querySelectorAll('[data-polarity="contradicts"]')].map((n) => n.innerText),
                     what: [...document.querySelectorAll('[data-what-changes]')].map((n) => n.innerText),
                     analysisHrefs: [...document.querySelectorAll('.causal-block a.source-link')].map((a) => a.href),
-                    vixRole: (document.querySelector('[data-vix-role]') && document.querySelector('[data-vix-role]').getAttribute('data-vix-role')) || ''
+                    vixRole: (document.querySelector('[data-vix-role]') && document.querySelector('[data-vix-role]').getAttribute('data-vix-role')) || '',
+                    banner: (document.querySelector('.event-mode-banner') && document.querySelector('.event-mode-banner').innerText) || '',
+                    replay: (document.querySelector('[data-replay]') && document.querySelector('[data-replay]').getAttribute('data-replay')) || '',
+                    timeline: [...document.querySelectorAll('[data-timeline-item]')].map((n) => ({
+                      status: n.getAttribute('data-timeline-status') || '',
+                      polarity: n.getAttribute('data-polarity') || '',
+                      what: n.getAttribute('data-what-changes') || n.innerText
+                    }))
                   }};
                 }})()"""
             ) or {}
@@ -242,13 +258,18 @@ def probe_url(url: str) -> dict:
     return {"url": url, "ok": False, "status": last_status, "live": False}
 
 
-OFFICIAL_HOSTS = ("sec.gov", "federalreserve.gov", "eia.gov")
+OFFICIAL_HOSTS = ACCEPT_HOSTS
 UNOBSERVED = "算法 fixture PASS / 实盘未观测"
 
 
 def _official_href(href: str) -> bool:
     host = (urllib.parse.urlsplit(href).hostname or "").lower()
     return any(host == item or host.endswith("." + item) for item in OFFICIAL_HOSTS)
+
+
+def accept_host_allowed(url: str) -> bool:
+    """Accept-only host check. Does not change production source policy."""
+    return _official_href(url)
 
 
 def _collect_refs(event: dict) -> list[dict]:
@@ -265,7 +286,7 @@ def _collect_refs(event: dict) -> list[dict]:
     return refs
 
 
-def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
+def score(center, cover, health, stocks, js, page, shots, probes, *, lane: str) -> dict:
     events = list(center.get("events") or [])
     iran = next((row for row in events if row.get("event_type") == "war_sanctions"), {})
     vix = next((row for row in events if row.get("event_type") == "vix_risk"), {})
@@ -289,7 +310,8 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
     }
     live_hits = [row for row in probes if row.get("live")]
     fixture_mode = (cover.get("data_mode") or "") in {"demo", "fixture"}
-    production = not fixture_mode
+    replay_mode = (cover.get("data_mode") or "") == "recorded_replay" or cover.get("recorded_replay") is True
+    production = not fixture_mode and not replay_mode
     ev_cover = health.get("events_coverage") or {}
     overall = (health.get("overall") or {})
     shot_center = shots.get("center") or {}
@@ -301,14 +323,31 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
     e1_fixture_dom = e1_live_dom and any("goldman" in href for href in shot_center.get("opinionHrefs") or [])
     e2_observed = any(len(event.get("sources") or []) >= 3 for event in events)
     e3_observed = any(int((event.get("analysis") or {}).get("conflict_count") or 0) >= 1 for event in events)
-    e4_observed = "war_sanctions" in xom_types and "war_sanctions" not in aapl_types
-    e9_observed = any(event.get("status") in {"updated", "revoked"} for event in events)
+    nvda_types = {row.get("event_type") for row in (stocks["NVDA"].get("events") or [])}
+    jpm_types = {row.get("event_type") for row in (stocks["JPM"].get("events") or [])}
+    e4_observed = (
+        "war_sanctions" in xom_types
+        and "war_sanctions" not in aapl_types
+        and "war_sanctions" in nvda_types
+        and "war_sanctions" in jpm_types
+        and bool(xom_why)
+        and bool(nvda_why)
+        and bool(jpm_why)
+        and xom_why != nvda_why
+    )
+    e9_observed = any(
+        event.get("status") in {"updated", "revoked"} and len(event.get("timeline") or []) >= 2
+        for event in events
+    )
     e6_dom = (shot_center.get("google") == "not_configured") and shot_center.get("ready") is True
     e8_dom = all(str(href).startswith("http") for href in shot_center.get("analysisHrefs") or []) and bool(shot_center.get("analysisHrefs"))
     e10_dom = {"what", "credibility", "why", "duration", "invalidation"}.issubset(set(shot_center.get("answers") or []))
     official_feeds_ok = sum(1 for row in live_providers.values() if row.get("status") == "ok" and int(row.get("event_count") or 0) > 0)
     fixture_honest = official.get("status") in {"idle", "demo_fixture", "not_implemented"} and official.get("live") is False
     google_honest = google.get("status") == "not_configured" and "google.com/search" not in js
+    replay_honest = (not replay_mode) or (
+        cover.get("live") is False and ((cover.get("providers") or {}).get("recorded_replay") or {}).get("live") is False
+    )
     lead_urls = {
         str(row.get("source_url") or "")
         for row in list(lead.get("sources") or []) + refs
@@ -362,11 +401,57 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
         key: ("PASS" if value else "FAIL") + (" (fixture/demo only)" if fixture_mode and value else "")
         for key, value in framework.items()
     }
-    must_live = ["E1", "E6", "E7", "E8", "E10"]
+    capability = {
+        "E1": (e1_live_dom or ("official_fact" in fact_types and official_dom)) and live_originals,
+        "E2": e2_observed and live_originals,
+        "E3": e3_observed and bool(shot_center.get("conflicts") or analysis.get("conflict_count")),
+        "E4": e4_observed and live_originals,
+        "E5": framework["E5"],
+        "E6": google_honest and e6_dom and replay_honest,
+        "E7": framework["E7"],
+        "E8": framework["E8"] and live_originals,
+        "E9": e9_observed
+        and (
+            "不重复" in str((analysis.get("what_changes") or {}).get("text") or "")
+            or any("不重复" in str(item.get("what") or "") for item in (shot_center.get("timeline") or []))
+            or bool(shot_center.get("what"))
+        )
+        and bool(shot_center.get("timeline") or lead.get("timeline")),
+        "E10": e10_dom and shot_center.get("ready") is True,
+    }
+    accept_host_violations = [
+        str(row.get("source_url") or "")
+        for event in events
+        for row in event.get("sources") or []
+        if str(row.get("source_url") or "").startswith("http") and not accept_host_allowed(str(row.get("source_url") or ""))
+    ]
+    if lane == "capability-black-box":
+        if accept_host_violations:
+            capability = {key: False for key in capability}
+        banner_ok = "RECORDED REPLAY" in str(shot_center.get("banner") or "") or "LIVE" in str(shot_center.get("banner") or "")
+        if not banner_ok:
+            capability["E1"] = False
+            capability["E6"] = False
+        verdict = {key: ("PASS" if capability[key] else "FAIL") for key in capability}
+        must = MUST_CAPABILITY
+        gate = all(verdict[key] == "PASS" for key in must) and sum(1 for value in capability.values() if value) >= 8
+        note = (
+            "Capability black-box: LIVE or RECORDED REPLAY through the production pipeline and browser. "
+            "Unit tests are not counted as black-box PASS."
+        )
+    else:
+        verdict = live_verdict
+        must = MUST_LIVE
+        gate = all(verdict[key] == "PASS" for key in must) and fixture_honest
+        note = (
+            "live-current counts only the current online book. "
+            f"E2/E3/E4/E9 without a natural live sample are '{UNOBSERVED}'."
+        )
     return {
-        "lane": "production_live" if production else "fixture_demo",
+        "lane": lane,
         "data_mode": cover.get("data_mode"),
         "live": cover.get("live"),
+        "recorded_replay": replay_mode,
         "live_coverage_ratio": cover.get("live_coverage_ratio"),
         "real_source_count": cover.get("real_source_count"),
         "event_count": cover.get("event_count"),
@@ -375,18 +460,13 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
         "implemented_live_providers": cover.get("implemented_live_providers"),
         "live_ok_providers": cover.get("live_ok_providers"),
         "provider_health": live_providers,
-        "verdict": live_verdict,
+        "verdict": verdict,
         "framework_verdict": framework_verdict,
-        "pass_count": sum(1 for value in live_verdict.values() if value == "PASS"),
+        "pass_count": sum(1 for value in verdict.values() if value == "PASS"),
         "framework_pass_count": sum(1 for value in framework.values() if value),
-        "must_fail": [key for key in must_live if live_verdict[key] != "PASS"],
-        "gate": all(live_verdict[key] == "PASS" for key in must_live) and fixture_honest,
-        "note": (
-            "Production E1/E8/E10 require reachable official originals. "
-            "E2/E3/E4/E9 without a natural live sample are labeled "
-            f"'{UNOBSERVED}' and are not counted as live PASS. "
-            "Fixture algorithm coverage stays in pytest."
-        ),
+        "must_fail": [key for key in must if verdict[key] != "PASS"],
+        "gate": gate and replay_honest,
+        "note": note,
         "probes": probes,
         "live_hits": len(live_hits),
         "page": page[:80],
@@ -396,10 +476,18 @@ def score(center, cover, health, stocks, js, page, shots, probes) -> dict:
         "publishers": sorted(item for item in publishers if item),
         "opinion_present": bool(opinion),
         "lead_event_type": lead.get("event_type"),
+        "accept_host_violations": accept_host_violations,
+        "banner": shot_center.get("banner"),
     }
 
 
 def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Black-box E1-E10 accept")
+    parser.add_argument("--lane", choices=("live-current", "capability-black-box"), default=os.environ.get("ACCEPT_LANE", "live-current"))
+    parser.add_argument("--out-name", default="")
+    args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     center = get(f"{BASE}/api/events")
     cover = get(f"{BASE}/api/events/coverage")
@@ -432,7 +520,7 @@ def main() -> int:
         shots = capture_pages()
     except Exception as exc:
         screenshot_error = str(exc)
-    report = score(center, cover, health, stocks, js.lower(), page, shots, probes)
+    report = score(center, cover, health, stocks, js.lower(), page, shots, probes, lane=args.lane)
     secrets = scan_incremental_secrets()
     report["incremental_scan"] = {"file_count": len(secrets["files"]), "hits": secrets["hits"]}
     if secrets["hits"]:
@@ -443,6 +531,8 @@ def main() -> int:
         report["gate"] = False
     report["screenshots"] = sorted(path.name for path in OUT.glob("*.png"))
     dumped = json.dumps(report, ensure_ascii=False, indent=2)
+    out_name = args.out_name or ("capability-black-box.json" if args.lane == "capability-black-box" else "live-current.json")
+    (OUT / out_name).write_text(dumped)
     (OUT / "e1-e10.json").write_text(dumped)
     print(dumped)
     if screenshot_error:

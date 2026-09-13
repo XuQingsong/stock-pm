@@ -75,8 +75,12 @@ def events_data_mode(settings: Settings | None = None) -> str:
     """Production default is empty. Fixtures are never implicit live data."""
     config = settings or Settings()
     explicit = (getattr(config, "events_mode", None) or os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
-    if explicit in {"empty", "live", "demo", "fixture", "test"}:
-        return "fixture" if explicit == "test" else explicit
+    if explicit in {"empty", "live", "demo", "fixture", "test", "recorded_replay", "replay"}:
+        if explicit == "test":
+            return "fixture"
+        if explicit == "replay":
+            return "recorded_replay"
+        return explicit
     env = (config.app_env or os.getenv("APP_ENV") or "").strip().lower()
     if env in {"test", "development", "local"}:
         return "fixture"

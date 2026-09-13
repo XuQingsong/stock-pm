@@ -83,12 +83,25 @@ def persist_events(conn, events: list[TrustedEvent], coverage: dict[str, Any] | 
         conn.execute(
             UPSERT_EVENT,
             {
-                **payload,
+                "event_id": payload["event_id"],
+                "canonical_title": payload["canonical_title"],
+                "event_type": payload["event_type"],
                 "entities": Jsonb(payload["entities"]),
                 "countries": Jsonb(payload["countries"]),
+                "event_time": payload.get("event_time"),
+                "published_at": payload.get("published_at"),
+                "first_seen_at": payload.get("first_seen_at"),
+                "updated_at": payload.get("updated_at"),
+                "dedupe_group": payload.get("dedupe_group"),
+                "status": payload.get("status"),
+                "freshness": payload.get("freshness"),
+                "severity": payload.get("severity"),
+                "scope": payload.get("scope"),
+                "duration": payload.get("duration"),
+                "invalidation": payload.get("invalidation"),
                 "coverage": Jsonb(coverage or payload.get("coverage") or {}),
                 "analysis": Jsonb(payload.get("analysis") or {}),
-                "raw": Jsonb({"source_count": len(event.sources)}),
+                "raw": Jsonb({"source_count": len(event.sources), "timeline": payload.get("timeline") or []}),
             },
         )
         for source in event.sources:
