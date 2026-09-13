@@ -30,6 +30,23 @@ def _csv(series_id: str, period: str = "2026-09-10", value: str = "1.25") -> str
     return f"observation_date,{series_id}\n{period},{value}\n"
 
 
+def _series_id_from_url(url: str) -> str:
+    for spec in FRED_MARKET_SERIES.values():
+        if spec["series_id"] in url:
+            return spec["series_id"]
+    if "PAYEMS" in url:
+        return "PAYEMS"
+    raise AssertionError(url)
+
+
+def _csv_for_url(url: str, default_value: str = "2.5") -> str:
+    series_id = _series_id_from_url(url)
+    if series_id == "PAYEMS":
+        return "observation_date,PAYEMS\n2026-08-01,159832\n2026-07-01,159612\n"
+    period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
+    return _csv(series_id, period, default_value)
+
+
 def _text_result(url: str, payload: str) -> FetchResult:
     return FetchResult(
         payload=payload,
@@ -100,11 +117,7 @@ def test_fred_sync_does_not_fetch_discontinued_gold(monkeypatch):
 
     def fake_text(url, **kwargs):
         seen.append(url)
-        series_id = next(
-            spec["series_id"] for spec in FRED_MARKET_SERIES.values() if spec["series_id"] in url
-        )
-        period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
-        return _text_result(url, _csv(series_id, period, "2.5"))
+        return _text_result(url, _csv_for_url(url))
 
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
     report = sync_fred_market_series(Settings(fred_api_key=""))
@@ -125,13 +138,7 @@ def test_collect_live_never_reads_test_fixtures(monkeypatch):
         return original(self, *args, **kwargs)
 
     def fake_text(url, **kwargs):
-        series_id = "DGS2"
-        for spec in FRED_MARKET_SERIES.values():
-            if spec["series_id"] in url:
-                series_id = spec["series_id"]
-                break
-        period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
-        return _text_result(url, _csv(series_id, period, "3.5"))
+        return _text_result(url, _csv_for_url(url, "3.5"))
 
     monkeypatch.setattr(Path, "read_text", spy)
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
@@ -281,11 +288,7 @@ def test_fred_without_api_key_is_missing_not_not_configured():
 
 def test_overlay_reports_gold_unconfigured_without_dropping_other_series(monkeypatch):
     def fake_text(url, **kwargs):
-        series_id = next(
-            spec["series_id"] for spec in FRED_MARKET_SERIES.values() if spec["series_id"] in url
-        )
-        period = "2026-08-01" if series_id == "CPIAUCSL" else "2026-09-10"
-        return _text_result(url, _csv(series_id, period, "2.5"))
+        return _text_result(url, _csv_for_url(url))
 
     monkeypatch.setattr("stock_pm.series.text_get", fake_text)
     events, errors, report = collect_live_macro_overlay(
@@ -334,7 +337,9 @@ def test_data_health_overlays_live_alpaca_bars_without_postgres(monkeypatch):
         "transport": "alpaca",
     }
 
-    monkeypatch.setattr(api, "database", FakeDatabase())
+    offline = FakeDatabase()
+    offline.ping = lambda: False
+    monkeypatch.setattr(api, "database", offline)
     monkeypatch.setattr(api, "_database_reachable", False)
     monkeypatch.setattr(
         "stock_pm.series.collect_live_macro_overlay",
@@ -349,6 +354,8 @@ def test_data_health_overlays_live_alpaca_bars_without_postgres(monkeypatch):
     dumped = str(health).lower()
     assert "apikey=" not in dumped
     assert "apca-api-" not in dumped
+    assert health["database"]["status"] == "error"
+    assert health["persistence"]["status"] == "skipped"
     by_dataset = {row["dataset"]: row for row in health["datasets"]}
     price = by_dataset["daily_price_bars"]
     assert price["status"] == "ok"
@@ -389,7 +396,9 @@ def test_data_health_overlays_live_fmp_earnings_without_postgres(monkeypatch):
         "http_source": earnings_http_source("NVDA"),
         "transport": "fmp",
     }
-    monkeypatch.setattr(api, "database", FakeDatabase())
+    offline = FakeDatabase()
+    offline.ping = lambda: False
+    monkeypatch.setattr(api, "database", offline)
     monkeypatch.setattr(api, "_database_reachable", False)
     monkeypatch.setattr(
         "stock_pm.series.collect_live_macro_overlay",
@@ -406,6 +415,7 @@ def test_data_health_overlays_live_fmp_earnings_without_postgres(monkeypatch):
     health = TestClient(api.app).get("/api/stock/NVDA/data-health").json()
     dumped = str(health).lower()
     assert "apikey=" not in dumped
+    assert health["database"]["status"] == "error"
     by_dataset = {row["dataset"]: row for row in health["datasets"]}
     facts = by_dataset["earnings_reports"]
     assert facts["status"] == "ok"

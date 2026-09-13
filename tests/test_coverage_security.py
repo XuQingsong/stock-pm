@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from stock_pm.gold import GOLD_LIVE
+from stock_pm.nfp import NFP_SERIES
 from stock_pm.series import FRED_MARKET_SERIES
 
 
@@ -11,7 +12,7 @@ SECRET_MARKERS = ("api_key", "apikey", "secret", "password", "authorization", "s
 
 
 def test_recorded_fixtures_have_no_secrets_or_live_claim():
-    specs = list(FRED_MARKET_SERIES.values()) + [GOLD_LIVE]
+    specs = list(FRED_MARKET_SERIES.values()) + [GOLD_LIVE, NFP_SERIES]
     for spec in specs:
         text = Path(spec["fixture"]).read_text()
         lowered = text.lower()

@@ -2,11 +2,41 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit, urlunsplit
 
 from dotenv import load_dotenv
 
 
 load_dotenv()
+
+# Documented local-dev default only. Production must set DATABASE_URL from env
+# or a gitignored file. Never commit real passwords.
+DEFAULT_DATABASE_URL = "postgresql://stock_pm:stock_pm_dev@localhost:5432/stock_pm"
+
+
+def database_url_from_env(*, default: str = DEFAULT_DATABASE_URL) -> str:
+    """Read DATABASE_URL from the process environment only."""
+    raw = os.getenv("DATABASE_URL")
+    if raw is None:
+        return default
+    return raw.strip() or default
+
+
+def redact_database_url(url: str) -> str:
+    """Return a log-safe DSN with the password removed."""
+    parts = urlsplit(url)
+    if not parts.scheme or not parts.hostname:
+        return "<invalid-database-url>"
+    user = parts.username or ""
+    host = parts.hostname
+    port = f":{parts.port}" if parts.port else ""
+    auth = f"{user}:***@" if user else ("***@" if parts.password else "")
+    netloc = f"{auth}{host}{port}"
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+
+def database_url_is_explicit() -> bool:
+    return bool((os.getenv("DATABASE_URL") or "").strip())
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,10 +77,7 @@ DEFAULT_WATCHLIST: dict[str, Instrument] = {
 
 @dataclass(frozen=True, slots=True)
 class Settings:
-    database_url: str = field(default_factory=lambda: os.getenv(
-        "DATABASE_URL",
-        "postgresql://stock_pm:stock_pm_dev@localhost:5432/stock_pm",
-    ))
+    database_url: str = field(default_factory=database_url_from_env)
     database_pool_size: int = field(default_factory=lambda: int(os.getenv("DATABASE_POOL_SIZE", "5")))
     alpaca_api_key_id: str = field(default_factory=lambda: os.getenv("ALPACA_API_KEY_ID", ""))
     alpaca_api_secret_key: str = field(default_factory=lambda: os.getenv("ALPACA_API_SECRET_KEY", ""))

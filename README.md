@@ -37,18 +37,36 @@ Alpaca 延迟行情 -> 云端定时采集 -> PostgreSQL -> FastAPI / 分析程�
 
 ## PostgreSQL
 
-正式安装路径：`D:\Program Files\PostgreSQL\17`
+PostgreSQL is the real persistence store. Live overlays must not hide a down
+database: `/health` reports `status=error` and `database=unavailable` when
+Postgres is unreachable.
 
-如果另一台机器使用 Docker，也可运行：
+Local/cloud start (never commit real passwords):
 
-```powershell
-docker compose up -d postgres
+```bash
+# 1) Copy examples only. Put real credentials in gitignored .env or .env.server.
+cp .env.example .env
+# 2) Start Postgres (Docker if present, otherwise a local cluster).
+bash scripts/start-postgres.sh
+# 3) Apply and verify every migration.
+python -m stock_pm.migrate
+# 4) Optional: persist live NVDA bars, FMP earnings, and FRED NFP.
+python -m stock_pm.persist_live --symbol NVDA
 ```
 
-连接配置位于 `.env`：
+`DATABASE_URL` is read from the process environment (and gitignored `.env` via
+python-dotenv). Logs only print a redacted DSN (`user:***@host/db`). The
+documented local-dev default is:
 
 ```text
 DATABASE_URL=postgresql://stock_pm:stock_pm_dev@localhost:5432/stock_pm
+```
+
+Docker Compose still requires `POSTGRES_PASSWORD` from `.env.server` (also
+gitignored). Windows install path remains `D:\Program Files\PostgreSQL\17`.
+
+```powershell
+docker compose up -d postgres
 ```
 
 ## 安装与启动

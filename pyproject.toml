@@ -32,12 +32,14 @@ stock-pm-cboe = "stock_pm.cboe:main"
 stock-pm-environment = "stock_pm.environment_job:main"
 stock-pm-tape = "stock_pm.tape_job:main"
 stock-pm-prediction = "stock_pm.prediction_job:main"
+stock-pm-migrate = "stock_pm.migrate:main"
+stock-pm-persist-live = "stock_pm.persist_live:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-stock_pm = ["sql/*.sql", "static/*", "data/*.json"]
+stock_pm = ["sql/*.sql", "sql/migrations/*.sql", "static/*", "data/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

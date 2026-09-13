@@ -1,14 +1,14 @@
-# Phase 4A data coverage matrix
+# Phase 4A / 4B data coverage matrix
 
 Recorded fixtures in tests are labeled as such. They are not live market prints.
 
 | Dataset / metric | Source | Series / symbol | Refresh | Freshness | Fallback | Current contract |
 | --- | --- | --- | --- | --- | --- | --- |
-| daily_price_bars / close | Alpaca SIP | NVDA 1d | daily, last completed NY session | 7d | last valid stored OHLC only; never snapshot last onto high/low | split-adjusted; **live** overlay on real health when `ALPACA_API_KEY_ID` + `ALPACA_API_SECRET_KEY` are set (Postgres optional). Invalid OHLC isolated at ingest; no startup batch-delete. Keys never appear in `http_source`. |
-| earnings_reports / eps | FMP (Nasdaq fallback) | NVDA earnings | on fundamentals job or live overlay | 120d | existing `synced_at` row | **live** overlay on real health when `FMP_API_KEY` is set (Postgres optional). maps `eps_estimate` + `synced_at` as latest consensus. Keys never appear in `http_source`. |
+| daily_price_bars / close | Alpaca SIP | NVDA 1d | daily, last completed NY session | 7d | last valid stored OHLC only; never snapshot last onto high/low | split-adjusted; **live** overlay on real health when keys are set. **4B**: persist via ingest when Postgres is up, then read back `source/feed/as_of/value/status`. Overlay must not hide a down database. Keys never appear in `http_source`. |
+| earnings_reports / eps | FMP (Nasdaq fallback) | NVDA earnings | on fundamentals job or live overlay | 120d | existing `synced_at` row | **live** overlay when `FMP_API_KEY` is set. **4B**: persist FMP rows and read back `actual/estimate`. Keys never appear in `http_source`. |
 | earnings_prior_consensus | FMP | n/a | n/a | 120d | none | **gap**: Alpha Vantage not wired; no dated prior snapshot |
 | SEC EDGAR | — | — | — | — | — | **not integrated** (status-only; no collector this phase) |
-| macro_nfp / nfp | FRED | PAYEMS | calendar + FRED | 45d | last successful FRED cache (`stale`) | existing calendar path |
+| macro_nfp / nfp | FRED | PAYEMS | calendar + keyless FRED | 45d | last successful FRED cache (`stale`) | **4B restored**: official PAYEMS monthly **difference** (thousands). Calendar sync no longer requires `FRED_API_KEY`. Persist to `macro_events`, read back `as_of/value/status`. |
 | macro_cpi / cpi | FRED | CPIAUCSL | monthly | 50d | API key JSON, else official `fredgraph.csv`; last successful cache | official CPI-U index; keyless CSV is first-party stlouisfed.org |
 | macro_rates_confirm / us2y | FRED | DGS2 | daily | 14d | API key JSON, else official `fredgraph.csv`; last successful cache | US 2Y Treasury |
 | macro_vix / vix | FRED | VIXCLS | daily | 7d | API key JSON, else official `fredgraph.csv`; last successful cache | CBOE VIX via FRED; not Cboe P/C HTML |
