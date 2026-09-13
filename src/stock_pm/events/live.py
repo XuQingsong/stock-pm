@@ -31,6 +31,7 @@ from .bodies import (
     extract_sec_primary_facts,
     fetch_official_page,
     is_allowed_eia_host,
+    is_sec_item_metadata,
     official_html_excerpt,
     reset_body_cache,
     resolve_redirect_url,
@@ -140,11 +141,20 @@ def _pad_cik(raw: str) -> str:
     return digits.zfill(10) if digits else ""
 
 
+def _is_watchlist_filing(doc: EventDocument) -> bool:
+    wanted = set(WATCHLIST_CIKS.values())
+    return any(item in wanted for item in (doc.entities or []))
+
+
 def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
     """Index Item lines are filing metadata only. Valid facts come from the primary 8-K."""
     if (doc.body or "").strip():
         doc.body_source = doc.body_source or "rss_summary"
+        if is_sec_item_metadata(doc.body):
+            doc.filing_items = extract_sec_index_items(f"<p>{doc.body}</p>") or doc.filing_items
     if "-index.htm" not in (doc.url or "").lower():
+        return doc
+    if not _is_watchlist_filing(doc):
         return doc
     page = fetch_official_page(
         doc.url,
