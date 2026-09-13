@@ -36,6 +36,7 @@ class FetchResult:
     cache_key: str | None = None
     http_source: str | None = None
     transport: str | None = None
+    cause: str | None = None
 
 
 def utc_now() -> str:
@@ -74,11 +75,11 @@ def read_cache(cache_key: str, directory: Path | None = None) -> dict[str, Any] 
     return payload
 
 
-def write_cache(cache_key: str, payload: Any, directory: Path | None = None) -> None:
+def write_cache(cache_key: str, payload: Any, directory: Path | None = None, *, fetched_at: str | None = None) -> None:
     path = _cache_path(directory or cache_dir(), cache_key)
     record = {
         "cache_key": cache_key,
-        "fetched_at": utc_now(),
+        "fetched_at": fetched_at or utc_now(),
         "payload": payload,
     }
     dumped = json.dumps(record, ensure_ascii=False)
@@ -140,6 +141,7 @@ def json_get(
             cache_key=cache_key,
             http_source=url,
             transport="json",
+            cause=reason if "reason" in locals() else "query_error",
         )
     message = _scrub(str(last_error or "query failed"))
     raise FetchError(reason if "reason" in locals() else "query_error", message)
@@ -202,5 +204,6 @@ def text_get(
             cache_key=cache_key,
             http_source=url,
             transport="text",
+            cause=reason,
         )
     raise FetchError(reason, _scrub(str(last_error or "query failed")))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from stock_pm.config import Settings
@@ -23,12 +24,17 @@ from stock_pm.events.earnings_health import (
     attempted_symbols,
     clear_earnings_health_memory,
     current_earnings_health,
+    endpoint_record,
     health_cache_path,
     health_for_symbol,
+    pending_endpoint_tasks,
     persist_health,
     purge_earnings_health_persist,
     set_earnings_inject,
     summarize_health,
+    _is_fresh_success,
+    _parse_stamp,
+    _retry_due,
 )
 from stock_pm.events.service import coverage, reset_cache, stock_events
 from stock_pm.events.watchlist import apply_watchlist_rows
@@ -262,6 +268,9 @@ def test_ui_names_missing_field_and_retry():
     assert "data-earnings-symbol-health" in ui
     assert "上次成功" in ui
     assert "下次重试" in ui
+    assert "缓存年龄" in ui
+    assert "data-cache-age" in ui
+    assert "data-earnings-endpoint-health" in ui
     assert "不使用推测值填空" in ui
     assert "宏观信息不复制到全部个股" in ui
     assert "fresh-live" in ui or "本轮 live" in ui
@@ -879,3 +888,222 @@ def test_wrong_quarter_complements_are_not_success(monkeypatch, tmp_path):
     assert "AAPL" not in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
     assert "NVDA" in summary["endpoints"]["cumulative"]["EARNINGS_ESTIMATES"]["success_symbols"]
     assert good["endpoints"]["EARNINGS_CALL_TRANSCRIPT"]["status"] == "ok"
+
+
+def _one_watch():
+    return [{"symbol": "AAPL", "asset_class": "stocks"}]
+
+
+def _days_ago(days: int) -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=days)).replace(microsecond=0).isoformat()
+
+
+def _same_stamp(left, right) -> bool:
+    return _parse_stamp(str(left or "")) == _parse_stamp(str(right or ""))
+
+
+def test_rate_limit_cache_keeps_thirty_day_success_time(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+    write_cache(av_cache_key("EARNINGS", "AAPL"), aapl["av_earnings"], fetched_at=old)
+    calls = []
+
+    def boom(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol))
+        raise FetchError("rate_limited", "upstream")
+
+    _restart_style_discover(
+        monkeypatch,
+        boom,
+        settings=Settings(events_mode="empty", earnings_av_budget=8),
+        watchlist=_one_watch(),
+    )
+    health = current_earnings_health()
+    row = health["symbols"]["AAPL"]
+    earn = row["endpoints"]["EARNINGS"]
+    assert _same_stamp(earn["last_success_at"], old)
+    assert earn["status"] == "stale"
+    assert earn["source"] == "cache"
+    assert earn["reason_code"] == "rate_limited"
+    assert earn["freshness"] == "stale"
+    assert not _is_fresh_success(earn)
+    assert _same_stamp(row["last_success_at"], old)
+    assert health["as_of"] != earn["last_success_at"]
+    attempt = _parse_stamp(earn["last_attempt_at"])
+    retry = _parse_stamp(earn["next_retry_at"])
+    assert attempt and retry
+    assert retry - attempt == timedelta(minutes=15)
+    assert _same_stamp(row["next_retry_at"], earn["next_retry_at"])
+    assert earn["cache_age_days"] is not None
+    assert 29 <= float(earn["cache_age_days"]) <= 31
+    assert ("EARNINGS", "AAPL") in calls
+
+
+def test_rate_limit_cache_retries_only_after_next_retry(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+    write_cache(av_cache_key("EARNINGS", "AAPL"), aapl["av_earnings"], fetched_at=old)
+    calls = []
+
+    def boom(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol))
+        raise FetchError("rate_limited", "upstream")
+
+    settings = Settings(events_mode="empty", earnings_av_budget=8)
+    watch = _one_watch()
+    _restart_style_discover(monkeypatch, boom, settings=settings, watchlist=watch)
+    after_first = list(calls)
+    row = health_for_symbol("AAPL")
+    earn = row["endpoints"]["EARNINGS"]
+    assert _same_stamp(earn["last_success_at"], old)
+    assert pending_endpoint_tasks("AAPL", row) == []
+    _restart_style_discover(monkeypatch, boom, settings=settings, watchlist=watch)
+    assert calls == after_first
+    assert _same_stamp(health_for_symbol("AAPL")["endpoints"]["EARNINGS"]["last_success_at"], old)
+    health = current_earnings_health()
+    health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]["next_retry_at"] = "2020-01-01T00:00:00+00:00"
+    persist_health(health)
+    live_calls = []
+    fake_live = _aapl_like_fetch(live_calls, aapl)
+    _restart_style_discover(monkeypatch, fake_live, settings=settings, watchlist=watch)
+    earn = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert ("EARNINGS", "AAPL", "") in live_calls or any(item[0] == "EARNINGS" and item[1] == "AAPL" for item in live_calls)
+    assert earn["status"] == "ok"
+    assert earn["source"] == "live"
+    assert _is_fresh_success(earn)
+    assert not _same_stamp(earn["last_success_at"], old)
+    assert _parse_stamp(earn["last_success_at"]) >= _parse_stamp(current_earnings_health()["as_of"]) - timedelta(seconds=5)
+
+
+def test_consecutive_rate_limits_do_not_refresh_cache_age(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+    write_cache(av_cache_key("EARNINGS", "AAPL"), aapl["av_earnings"], fetched_at=old)
+    calls = []
+
+    def boom(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol))
+        raise FetchError("rate_limited", "upstream")
+
+    settings = Settings(events_mode="empty", earnings_av_budget=8)
+    watch = _one_watch()
+    _restart_style_discover(monkeypatch, boom, settings=settings, watchlist=watch)
+    first = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    health = current_earnings_health()
+    health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]["next_retry_at"] = "2020-01-01T00:00:00+00:00"
+    persist_health(health)
+    _restart_style_discover(monkeypatch, boom, settings=settings, watchlist=watch)
+    second = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert _same_stamp(first["last_success_at"], old)
+    assert _same_stamp(second["last_success_at"], old)
+    assert _same_stamp(first["last_success_at"], second["last_success_at"])
+    assert _parse_stamp(second["last_attempt_at"]) >= _parse_stamp(first["last_attempt_at"])
+    assert abs(float(second["cache_age_days"]) - float(first["cache_age_days"])) < 0.01
+    assert calls.count(("EARNINGS", "AAPL")) >= 2
+
+
+def test_expired_120_day_cache_is_not_fresh_but_still_retried(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    expired = _days_ago(121)
+    rec = endpoint_record(
+        status="stale",
+        last_success_at=expired,
+        last_attempt_at=expired,
+        source="cache",
+        reason_code="rate_limited",
+        quarter="2026Q3",
+        next_retry="2020-01-01T00:00:00+00:00",
+    )
+    assert rec["freshness"] == "expired"
+    assert _is_fresh_success(rec) is False
+    assert _retry_due(rec) is True
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    write_cache(av_cache_key("EARNINGS", "AAPL"), aapl["av_earnings"], fetched_at=expired)
+    calls = []
+
+    def boom(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol))
+        raise FetchError("rate_limited", "upstream")
+
+    settings = Settings(events_mode="empty", earnings_av_budget=8)
+    watch = _one_watch()
+    _restart_style_discover(monkeypatch, boom, settings=settings, watchlist=watch)
+    earn = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert ("EARNINGS", "AAPL") in calls
+    assert _same_stamp(earn["last_success_at"], expired)
+    assert earn["freshness"] == "expired"
+    assert earn["status"] == "stale"
+    assert not _is_fresh_success(earn)
+    assert health_for_symbol("AAPL")["fields"]["actual"]["freshness"] == "expired"
+    health = current_earnings_health()
+    health["symbols"]["AAPL"]["endpoints"]["EARNINGS"]["next_retry_at"] = "2020-01-01T00:00:00+00:00"
+    persist_health(health)
+    live_calls = []
+    _restart_style_discover(monkeypatch, _aapl_like_fetch(live_calls, aapl), settings=settings, watchlist=watch)
+    live = health_for_symbol("AAPL")["endpoints"]["EARNINGS"]
+    assert live["status"] == "ok"
+    assert live["source"] == "live"
+    assert live["freshness"] == "fresh"
+    assert not _same_stamp(live["last_success_at"], expired)
+
+
+def test_summary_and_ui_times_stay_consistent_with_cache_age(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    old = _days_ago(30)
+    write_cache(av_cache_key("EARNINGS", "AAPL"), aapl["av_earnings"], fetched_at=old)
+
+    def boom(function, symbol, *, settings=None, extra=None):
+        raise FetchError("rate_limited", "upstream")
+
+    _restart_style_discover(
+        monkeypatch,
+        boom,
+        settings=Settings(events_mode="empty", earnings_av_budget=8),
+        watchlist=_one_watch(),
+    )
+    health = current_earnings_health()
+    summary = summarize_health(health)
+    row = health["symbols"]["AAPL"]
+    earn = row["endpoints"]["EARNINGS"]
+    actual = row["fields"]["actual"]
+    assert summary["as_of"] == health["as_of"]
+    assert summary["as_of"] != earn["last_success_at"]
+    assert _same_stamp(row["last_success_at"], earn["last_success_at"])
+    assert _same_stamp(actual["last_success_at"], earn["last_success_at"])
+    assert _same_stamp(row["next_retry_at"], earn["next_retry_at"])
+    assert _same_stamp(actual["next_retry_at"], earn["next_retry_at"])
+    assert _same_stamp(earn["last_success_at"], old)
+    assert abs(float(row["cache_age_days"]) - float(earn["cache_age_days"])) < 0.01
+    assert abs(float(actual["cache_age_days"]) - float(earn["cache_age_days"])) < 0.01
+    ui = (Path(__file__).resolve().parents[1] / "src" / "stock_pm" / "static" / "events_ui.js").read_text(encoding="utf-8")
+    assert "上次成功" in ui and "缓存年龄" in ui and "下次重试" in ui
+    assert "data-last-success-at" in ui and "data-next-retry-at" in ui and "data-cache-age" in ui
+    page = stock_events("AAPL", Settings(events_mode="empty"))
+    shown = page["earnings_health"]
+    assert _same_stamp(shown["last_success_at"], old)
+    assert _same_stamp(shown["endpoints"]["EARNINGS"]["last_success_at"], old)
+    assert shown["next_retry_at"] == shown["endpoints"]["EARNINGS"]["next_retry_at"]

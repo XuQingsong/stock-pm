@@ -133,6 +133,15 @@ def is_stale(fetched_at: str | None, *, days: int = FRESHNESS_DAYS) -> bool:
     return datetime.now(timezone.utc) - stamp > timedelta(days=days)
 
 
+def cache_age_days(fetched_at: str | None) -> float | None:
+    stamp = _parse_stamp(fetched_at)
+    if stamp is None:
+        return None
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    return round((datetime.now(timezone.utc) - stamp).total_seconds() / 86400, 3)
+
+
 def next_retry_at(reason_code: str | None, *, now: str | None = None) -> str:
     stamp = _parse_stamp(now) or datetime.now(timezone.utc)
     if stamp.tzinfo is None:
@@ -151,11 +160,14 @@ def field_record(
     source: str = "none",
     next_retry: str | None = None,
 ) -> dict[str, Any]:
+    success_at = last_success_at or (fetched_at if status == "ok" else None)
     fresh = "unknown"
-    if fetched_at and status == "ok" and not is_stale(fetched_at):
+    if success_at and is_stale(success_at):
+        fresh = "expired"
+    elif fetched_at and status == "ok" and source == "live" and reason_code not in {"stale", "rate_limited", "query_error"} and not is_stale(fetched_at):
         fresh = "fresh"
-    elif status in {"stale"} or source == "cache" or is_stale(fetched_at) or reason_code in {"stale", "rate_limited"}:
-        if last_success_at or fetched_at:
+    elif status in {"stale"} or source == "cache" or is_stale(fetched_at) or reason_code in {"stale", "rate_limited", "query_error"}:
+        if success_at or fetched_at:
             fresh = "stale"
     return {
         "status": status,
@@ -163,9 +175,10 @@ def field_record(
         "as_of": as_of,
         "fetched_at": fetched_at,
         "freshness": fresh,
-        "last_success_at": last_success_at or (fetched_at if status == "ok" else None),
+        "last_success_at": success_at,
+        "cache_age_days": cache_age_days(success_at),
         "source": source,
-        "next_retry_at": next_retry or next_retry_at(reason_code or ("stale" if fresh == "stale" else status)),
+        "next_retry_at": next_retry or next_retry_at(reason_code or ("stale" if fresh in {"stale", "expired"} else status)),
     }
 
 
@@ -188,15 +201,19 @@ def endpoint_record(
     this_round: bool = False,
     next_retry: str | None = None,
 ) -> dict[str, Any]:
+    success_at = last_success_at if status in {"ok", "stale"} else None
     fresh = "unknown"
-    if last_success_at and status in {"ok", "stale"} and not is_stale(last_success_at):
-        fresh = "fresh" if status == "ok" and source == "live" else "stale"
-    elif last_success_at and status in {"ok", "stale"}:
+    if success_at and is_stale(success_at):
+        fresh = "expired"
+    elif success_at and status == "ok" and source == "live" and reason_code not in {"rate_limited", "query_error", "stale"}:
+        fresh = "fresh"
+    elif success_at and status in {"ok", "stale"}:
         fresh = "stale"
     return {
         "status": status,
         "last_attempt_at": last_attempt_at,
-        "last_success_at": last_success_at if status in {"ok", "stale"} else None,
+        "last_success_at": success_at,
+        "cache_age_days": cache_age_days(success_at),
         "reason_code": reason_code or "",
         "source": source,
         "freshness": fresh,
@@ -243,10 +260,14 @@ def _legacy_endpoint(row: dict[str, Any], endpoint: str) -> dict[str, Any]:
 
 
 def _is_fresh_success(rec: dict[str, Any]) -> bool:
-    """Semantic last-success only. skipped_dependency is not a success and not fresh."""
+    """Live semantic success only. Displayable cache/stale must not block upstream retry."""
     if rec.get("status") == "unsupported":
         return True
-    if rec.get("status") not in {"ok", "stale"}:
+    if rec.get("status") != "ok":
+        return False
+    if rec.get("source") != "live":
+        return False
+    if rec.get("reason_code") in {"rate_limited", "query_error", "stale"}:
         return False
     success = rec.get("last_success_at")
     return bool(success) and not is_stale(str(success))
@@ -259,19 +280,18 @@ def _retry_due(rec: dict[str, Any]) -> bool:
         return False
     if _is_fresh_success(rec):
         return False
-    if not rec.get("last_attempt_at"):
-        return True
     nxt = rec.get("next_retry_at")
     stamp = _parse_stamp(str(nxt) if nxt else None)
-    if stamp is None:
-        return True
-    now = datetime.now(timezone.utc)
-    if stamp.tzinfo is None:
-        stamp = stamp.replace(tzinfo=timezone.utc)
-    return now >= stamp
+    if stamp is not None:
+        now = datetime.now(timezone.utc)
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=timezone.utc)
+        return now >= stamp
+    return True
 
 
 def earnings_usable(rec: dict[str, Any]) -> bool:
+    """Displayable semantic cache or live print. Does not mean upstream retry is done."""
     if rec.get("status") not in {"ok", "stale"}:
         return False
     if not rec.get("last_success_at"):
@@ -310,10 +330,11 @@ def symbol_health(
         "reason_code": primary,
         "fields": rows,
         "last_success_at": stamp,
+        "cache_age_days": cache_age_days(stamp),
         "last_attempt_at": last_attempt_at,
         "this_round_calls": int(this_round_calls or 0),
         "this_round": this_round,
-        "next_retry_at": next_retry or next_retry_at(primary or None, now=stamp or last_attempt_at),
+        "next_retry_at": next_retry or next_retry_at(primary or None, now=last_attempt_at),
         "implication": implication,
         "scenario": scenario,
         "source": source,
@@ -394,7 +415,7 @@ def _fresh_live_complete(row: dict[str, Any]) -> bool:
     elif row.get("source") != "live" or int(row.get("this_round_calls") or 0) <= 0:
         return False
     fields = row.get("fields") or {}
-    if any((fields.get(name) or {}).get("freshness") == "stale" for name in ("actual", "prior", "consensus")):
+    if any((fields.get(name) or {}).get("freshness") in {"stale", "expired"} for name in ("actual", "prior", "consensus")):
         return False
     return True
 
@@ -630,30 +651,37 @@ def fields_from_evidence(
                 fetched_at=outcome.get("fetched_at") or fetched,
                 last_success_at=outcome.get("last_success_at"),
                 source=field_source,
+                next_retry=outcome.get("next_retry_at"),
             )
-        status = "stale" if field_source == "cache" or reason in {"stale", "rate_limited"} else "ok"
-        if reason == "rate_limited" and field_source == "cache":
+        status = "stale" if field_source == "cache" or reason in {"stale", "rate_limited", "query_error"} else "ok"
+        if reason in {"rate_limited", "query_error"} and field_source == "cache":
             status = "stale"
         return field_record(
             status=status,
             reason_code=reason if status != "ok" else "",
             as_of=binding.get("as_of") or getattr(evidence, "as_of", None),
-            fetched_at=binding.get("fetched_at") or outcome.get("fetched_at") or fetched,
-            last_success_at=outcome.get("last_success_at") or binding.get("fetched_at") or fetched,
+            fetched_at=outcome.get("fetched_at") or binding.get("fetched_at") or fetched,
+            last_success_at=outcome.get("last_success_at") or binding.get("fetched_at") or (
+                fetched if field_source == "live" and status == "ok" else None
+            ),
             source=field_source,
+            next_retry=outcome.get("next_retry_at"),
         )
 
     transcript_outcome = outcomes.get("EARNINGS_CALL_TRANSCRIPT") or {}
     excerpts = getattr(evidence, "transcript_excerpts", None) or []
     if excerpts:
-        tr_status = "stale" if transcript_outcome.get("source") == "cache" or transcript_outcome.get("reason_code") in {"stale", "rate_limited"} else "ok"
+        tr_status = "stale" if transcript_outcome.get("source") == "cache" or transcript_outcome.get("reason_code") in {"stale", "rate_limited", "query_error"} else "ok"
         transcript = field_record(
             status=tr_status,
             reason_code=transcript_outcome.get("reason_code") if tr_status != "ok" else "",
             as_of=excerpts[0].get("quarter") if isinstance(excerpts[0], dict) else None,
-            fetched_at=excerpts[0].get("fetched_at") if isinstance(excerpts[0], dict) else fetched,
-            last_success_at=transcript_outcome.get("last_success_at") or fetched,
+            fetched_at=transcript_outcome.get("fetched_at")
+            or (excerpts[0].get("fetched_at") if isinstance(excerpts[0], dict) else fetched),
+            last_success_at=transcript_outcome.get("last_success_at")
+            or (fetched if (transcript_outcome.get("source") or source) == "live" else None),
             source=transcript_outcome.get("source") or source,
+            next_retry=transcript_outcome.get("next_retry_at"),
         )
     else:
         reason = transcript_outcome.get("reason_code") or "upstream_empty"
@@ -667,6 +695,7 @@ def fields_from_evidence(
             fetched_at=transcript_outcome.get("fetched_at") or fetched,
             last_success_at=transcript_outcome.get("last_success_at"),
             source=transcript_outcome.get("source") or source,
+            next_retry=transcript_outcome.get("next_retry_at"),
         )
     return {
         "actual": _from_binding("actual", "actual", "EARNINGS"),

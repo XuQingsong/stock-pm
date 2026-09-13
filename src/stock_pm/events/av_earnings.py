@@ -115,9 +115,14 @@ def fetch_av_function(function: str, symbol: str, *, settings: Settings | None =
     payload = result.payload
     if not isinstance(payload, dict):
         raise FetchError("record_invalid", "Alpha Vantage earnings payload is not an object")
+    if result.from_cache:
+        cause = result.cause or "stale"
+        if cause == "timeout":
+            cause = "query_error"
+        if cause not in {"rate_limited", "query_error", "stale"}:
+            cause = "stale"
+        raise FetchError(cause, "using last-success cache")
     if payload.get("Note") or payload.get("Information"):
-        if result.from_cache:
-            return payload
         raise FetchError("rate_limited", "Alpha Vantage earnings rate limited")
     if payload.get("Error Message"):
         raise FetchError("unsupported", "Alpha Vantage earnings query is not supported for this symbol")
@@ -408,27 +413,27 @@ class AvEarningsProvider:
 
     def _fetch_isolated(
         self, function: str, symbol: str, extra: dict[str, str] | None = None
-    ) -> tuple[dict[str, Any] | None, str | None, str]:
+    ) -> tuple[dict[str, Any] | None, str | None, str, str | None]:
         inject = injected_reason(symbol, function)
         if inject:
             cached = read_av_cache(function, symbol, extra)
-            if inject == "rate_limited" and cached:
-                return cached["payload"], "rate_limited", "cache"
-            return None, inject, "none"
+            if inject in {"rate_limited", "query_error"} and cached:
+                return cached["payload"], inject, "cache", str(cached.get("fetched_at") or "") or None
+            return None, inject, "none", None
         try:
             payload = fetch_av_function(function, symbol, settings=self.settings, extra=extra)
-            return payload, None, "live"
+            return payload, None, "live", None
         except FetchError as exc:
             cached = read_av_cache(function, symbol, extra)
             if cached:
-                reason = "rate_limited" if exc.reason_code == "rate_limited" else "stale"
-                return cached["payload"], reason, "cache"
-            return None, exc.reason_code, "none"
+                reason = exc.reason_code if exc.reason_code in {"rate_limited", "query_error", "stale"} else "stale"
+                return cached["payload"], reason, "cache", str(cached.get("fetched_at") or "") or None
+            return None, exc.reason_code, "none", None
         except Exception:
             cached = read_av_cache(function, symbol, extra)
             if cached:
-                return cached["payload"], "stale", "cache"
-            return None, "query_error", "none"
+                return cached["payload"], "stale", "cache", str(cached.get("fetched_at") or "") or None
+            return None, "query_error", "none", None
 
     def _evidence_from_payload(
         self,
@@ -566,13 +571,25 @@ class AvEarningsProvider:
         ]
         if not evidence.transcript_excerpts:
             missing.append("transcript")
+        earn = (endpoints or {}).get("EARNINGS") or {}
+        last_success = (
+            earn.get("last_success_at")
+            or (outcomes.get("EARNINGS") or {}).get("last_success_at")
+            or (evidence.fetched_at if source == "live" else None)
+        )
+        retries = [
+            str(row.get("next_retry_at"))
+            for row in (endpoints or {}).values()
+            if isinstance(row, dict) and row.get("next_retry_at")
+        ]
         return symbol_health(
             symbol,
             asset_class="stocks",
             supported=True,
             fields=fields_from_evidence(evidence, outcomes=outcomes, source=source),
             reason_code=evidence.gap or (outcomes.get("EARNINGS") or {}).get("reason_code"),
-            last_success_at=evidence.fetched_at,
+            last_success_at=last_success,
+            next_retry=min(retries) if retries else None,
             implication=evidence.implication,
             scenario="complete" if evidence.complete() else "partial",
             source=source,
@@ -636,21 +653,36 @@ class AvEarningsProvider:
         usable: bool = False,
         this_round: bool,
         attempted: bool,
+        observed_at: str | None = None,
     ) -> None:
         prev = ((previous_row or {}).get("endpoints") or {}).get(endpoint) or {}
-        if usable:
-            status = "stale" if reason in {"rate_limited", "stale"} else "ok"
+        live_success = (
+            usable
+            and source == "live"
+            and reason not in {"rate_limited", "stale", "query_error"}
+        )
+        cache_usable = bool(usable) and not live_success
+        if live_success:
+            status = "ok"
             success = fetched_at
+            retry = None
+        elif cache_usable:
+            status = "stale"
+            success = observed_at or prev.get("last_success_at")
+            retry = next_retry_at(reason or "stale", now=fetched_at) if attempted else prev.get("next_retry_at")
         elif reason == "skipped_dependency":
             status = "skipped_dependency"
             success = None
+            retry = next_retry_at(reason, now=fetched_at) if attempted or reason else prev.get("next_retry_at")
         elif attempted:
             status = "failed"
             prior_ok = prev.get("status") in {"ok", "stale"} and prev.get("last_success_at")
             success = prev.get("last_success_at") if prior_ok else None
+            retry = next_retry_at(reason or status, now=fetched_at)
         else:
             status = str(prev.get("status") or "pending")
             success = prev.get("last_success_at") if prev.get("status") in {"ok", "stale"} else None
+            retry = prev.get("next_retry_at")
         updates[endpoint] = endpoint_record(
             status=status,
             last_attempt_at=fetched_at if attempted else prev.get("last_attempt_at"),
@@ -668,7 +700,7 @@ class AvEarningsProvider:
                 else (str(prev.get("period") or "") if success else "")
             ),
             this_round=this_round,
-            next_retry=next_retry_at(reason or status, now=fetched_at) if attempted or reason else prev.get("next_retry_at"),
+            next_retry=retry,
         )
 
     def _deferred_health(self, symbol: str, previous_row: dict[str, Any], fetched_at: str) -> tuple[Any | None, dict[str, Any]]:
@@ -863,27 +895,31 @@ class AvEarningsProvider:
                     }
                     continue
                 extra = {"quarter": quarter}
-            payload, err, src = self._fetch_isolated(endpoint, symbol, extra=extra)
+            payload, err, src, observed_at = self._fetch_isolated(endpoint, symbol, extra=extra)
             bump(symbol, 1)
             attempted_tasks.append({"symbol": symbol, "endpoint": endpoint})
             quarter = str(bundles[symbol].get("quarter") or "")
             judged = evaluate_av_endpoint(
-                endpoint, payload, symbol=symbol, quarter=quarter, fetched_at=fetched_at
+                endpoint, payload, symbol=symbol, quarter=quarter, fetched_at=observed_at or fetched_at
             )
             usable = bool(judged["usable"])
             if not err:
                 err = judged["reason_code"]
-            elif usable and err in {"rate_limited", "stale"}:
+            elif usable and err in {"rate_limited", "stale", "query_error"}:
                 pass
             elif not usable and not judged["reason_code"]:
                 err = err or "upstream_empty"
             if not usable and err in {None, ""}:
                 err = judged["reason_code"] or "upstream_empty"
+            live_ok = usable and src == "live" and err not in {"rate_limited", "stale", "query_error"}
+            success_at = fetched_at if live_ok else (observed_at if usable else None)
+            retry_at = None if live_ok else next_retry_at(err or "stale", now=fetched_at)
             outcomes_by.setdefault(symbol, {})[endpoint] = {
                 "reason_code": err,
                 "source": src if usable or payload else "none",
-                "fetched_at": fetched_at,
-                "last_success_at": fetched_at if usable else None,
+                "fetched_at": observed_at if src == "cache" else fetched_at,
+                "last_success_at": success_at,
+                "next_retry_at": retry_at,
             }
             period = str(judged.get("period") or "")
             if endpoint == "EARNINGS":
@@ -931,6 +967,7 @@ class AvEarningsProvider:
                 usable=usable,
                 this_round=True,
                 attempted=True,
+                observed_at=observed_at,
             )
             if endpoint == "EARNINGS" and usable:
                 if quarter:
@@ -1002,10 +1039,14 @@ class AvEarningsProvider:
                             "fetched_at": str(cached_tr.get("fetched_at") or fetched_at),
                             "last_success_at": str(cached_tr.get("fetched_at") or fetched_at) if judged_tr["usable"] else None,
                         })
+                earn_out = outcomes.get("EARNINGS") or {}
+                evidence_at = str(
+                    earn_out.get("last_success_at") or earn_out.get("fetched_at") or fetched_at
+                )
                 evidence = self._evidence_from_payload(
                     symbol,
                     bundle["payload"],
-                    fetched_at=fetched_at,
+                    fetched_at=evidence_at,
                     estimates=bundle.get("estimates"),
                     transcript=bundle.get("transcript"),
                     quarter=bundle.get("quarter") or "",

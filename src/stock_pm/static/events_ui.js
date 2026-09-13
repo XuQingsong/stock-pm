@@ -245,14 +245,37 @@
     </div>`;
   };
 
+  const cacheAgeLabel = (row) => {
+    if (row && row.cache_age_days != null && row.cache_age_days !== "") return `${row.cache_age_days}天`;
+    const stamp = row && (row.last_success_at || row.fetched_at);
+    if (!stamp) return "";
+    const then = Date.parse(stamp);
+    if (!Number.isFinite(then)) return "";
+    return `${((Date.now() - then) / 86400000).toFixed(1)}天`;
+  };
+
   const fieldHealthHtml = (fields) => {
     const rows = fields || {};
     return ["actual", "prior", "consensus", "transcript"].map((name) => {
       const row = rows[name] || {};
-      return `<div class="earnings-health-field" data-earnings-field-health="${esc(name)}" data-status="${esc(row.status || "")}" data-reason="${esc(row.reason_code || "")}" data-source="${esc(row.source || "")}">
+      const age = cacheAgeLabel(row);
+      return `<div class="earnings-health-field" data-earnings-field-health="${esc(name)}" data-status="${esc(row.status || "")}" data-reason="${esc(row.reason_code || "")}" data-source="${esc(row.source || "")}" data-last-success-at="${esc(row.last_success_at || "")}" data-next-retry-at="${esc(row.next_retry_at || "")}" data-cache-age="${esc(age)}">
         <span>${esc(name)}</span>
         <b>${esc(row.status || "—")}</b>
-        <div class="subline">${esc(row.reason_code || "ok")} · ${esc(row.source || "none")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 新鲜度 ${esc(row.freshness || "—")} · 上次成功 ${esc(row.last_success_at || "—")}</div>
+        <div class="subline">${esc(row.reason_code || "ok")} · ${esc(row.source || "none")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 新鲜度 ${esc(row.freshness || "—")} · 上次成功 ${esc(row.last_success_at || "—")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(row.next_retry_at || "下次调度")}</div>
+      </div>`;
+    }).join("");
+  };
+
+  const endpointHealthHtml = (endpoints) => {
+    const rows = endpoints || {};
+    return ["EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"].map((name) => {
+      const row = rows[name] || {};
+      const age = cacheAgeLabel(row);
+      return `<div class="earnings-health-endpoint" data-earnings-endpoint-health="${esc(name)}" data-status="${esc(row.status || "")}" data-source="${esc(row.source || "")}" data-freshness="${esc(row.freshness || "")}" data-last-success-at="${esc(row.last_success_at || "")}" data-next-retry-at="${esc(row.next_retry_at || "")}" data-cache-age="${esc(age)}">
+        <span>${esc(name)}</span>
+        <b>${esc(row.status || "—")}</b>
+        <div class="subline">上次成功 ${esc(row.last_success_at || "尚无")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(row.next_retry_at || "下次调度")} · ${esc(row.freshness || "—")} · ${esc(row.source || "none")}</div>
       </div>`;
     }).join("");
   };
@@ -291,12 +314,14 @@
   const renderSymbolHealth = (health) => {
     if (!health || !health.symbol) return "";
     const missing = health.missing_fields || [];
-    return `<section class="earnings-symbol-health" data-earnings-symbol-health="1" data-symbol="${esc(health.symbol)}" data-supported="${health.supported === false ? "0" : "1"}" data-reason="${esc(health.reason_code || "")}" data-scenario="${esc(health.scenario || "")}">
+    const age = cacheAgeLabel(health);
+    return `<section class="earnings-symbol-health" data-earnings-symbol-health="1" data-symbol="${esc(health.symbol)}" data-supported="${health.supported === false ? "0" : "1"}" data-reason="${esc(health.reason_code || "")}" data-scenario="${esc(health.scenario || "")}" data-last-success-at="${esc(health.last_success_at || "")}" data-next-retry-at="${esc(health.next_retry_at || "")}" data-cache-age="${esc(age)}">
       <h4>${esc(health.symbol)} 财报状态</h4>
       ${pill(health.supported === false ? "unsupported" : (health.scenario || health.reason_code || "unknown"), health.supported === false ? "not_configured" : "ok")}
-      <div class="subline">资产 ${esc(health.asset_class || "—")} · 来源 ${esc(health.source || "none")} · 上次成功 ${esc(health.last_success_at || "尚无")} · 下次重试 ${esc(health.next_retry_at || "下次调度")}${health.implication ? ` · 盈利含义 ${esc(health.implication)}` : ""}</div>
+      <div class="subline">资产 ${esc(health.asset_class || "—")} · 来源 ${esc(health.source || "none")} · 上次成功 ${esc(health.last_success_at || "尚无")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(health.next_retry_at || "下次调度")}${health.implication ? ` · 盈利含义 ${esc(health.implication)}` : ""}</div>
       ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本标的缺失：${esc(missing.join(" / "))}。不使用推测值填空。</p>` : ""}
       <div class="earnings-health-grid">${fieldHealthHtml(health.fields)}</div>
+      <div class="earnings-health-endpoints">${endpointHealthHtml(health.endpoints)}</div>
     </section>`;
   };
 
