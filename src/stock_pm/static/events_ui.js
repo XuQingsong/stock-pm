@@ -233,11 +233,14 @@
     const why = options.why || event.why_relevant || "";
     const lanes = sourcesByLane(event.sources);
     const withheld = analysis.withheld || {};
+    const gap = analysis.evidence_gap || {};
     const conflicts = analysis.conflict_count || 0;
     const closed = analysis.closed_loop === true;
+    const lastFetch = withheld.last_fetched_at || gap.last_fetched_at || "";
+    const reasonCode = withheld.primary_reason || gap.primary_reason || "";
     const loopNote = closed
       ? ""
-      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}">证据不足，不形成方向。${esc(withheld.reason || "")} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
+      : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${lastFetch ? ` 最后抓取：${esc(lastFetch)}。` : ""} 只影响本事件，不影响价格、盈利或宏观利率。</p>`;
     return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>

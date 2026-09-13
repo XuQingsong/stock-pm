@@ -221,5 +221,8 @@ def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]
         "first_seen_at": seen_at,
         "document_role": document_role,
         "evidence_role": evidence_role,
+        "last_fetched_at": getattr(doc, "last_fetched_at", None),
+        "body_source": getattr(doc, "body_source", None) or None,
+        "fetch_error": getattr(doc, "fetch_error", None),
         **cls,
     }

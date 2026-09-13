@@ -412,10 +412,63 @@ def closed_loop_summary(events: list[Any] | None) -> dict[str, Any]:
     }
 
 
+def classify_evidence_gap(payload: TrustedEvent | dict[str, Any]) -> dict[str, Any]:
+    """Machine reason for withheld/unsupported. Does not change pass/fail gates."""
+    row = inspect_closed_loop(payload)
+    if isinstance(payload, TrustedEvent):
+        sources = list(payload.sources)
+        status = payload.status
+        claims = list(payload.claims)
+    else:
+        sources = list(payload.get("sources") or [])
+        status = str(payload.get("status") or "")
+        claims = list(payload.get("claims") or [])
+    last_fetched = None
+    fetch_error = None
+    body_source = None
+    for source in sources:
+        stamp = _row_field(source, "last_fetched_at") or _row_field(source, "first_seen_at")
+        if stamp and (last_fetched is None or stamp > last_fetched):
+            last_fetched = stamp
+        fetch_error = fetch_error or _row_field(source, "fetch_error") or None
+        body_source = body_source or _row_field(source, "body_source") or None
+    primary = None
+    secondary: list[str] = []
+    if row["valid"]:
+        primary = None
+    elif not row["official_ok"]:
+        primary = "no_official_url"
+    elif fetch_error and not row["excerpt_ok"]:
+        primary = "fetch_failure"
+    elif not row["excerpt_ok"]:
+        excerpts = [_row_field(claim, "excerpt") for claim in claims]
+        primary = "body_missing" if not any(item.strip() for item in excerpts) else "claim_not_supported"
+    elif not row["exposure_ok"]:
+        primary = "no_exposure"
+    elif status in {"revoked", "superseded"}:
+        primary = "superseded_or_no_material_change"
+    else:
+        primary = "chain_incomplete"
+    if primary != "no_exposure" and not row["exposure_ok"]:
+        secondary.append("no_exposure")
+    if primary != "chain_incomplete" and not row["chain_ok"]:
+        secondary.append("chain_incomplete")
+    return {
+        "primary_reason": primary,
+        "secondary_reasons": secondary,
+        "last_fetched_at": last_fetched,
+        "fetch_error": fetch_error,
+        "body_source": body_source,
+    }
+
+
 def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = None, claims: list[Any] | None = None) -> dict[str, Any]:
-    row = inspect_closed_loop({"analysis": analysis, "sources": sources or analysis.get("evidence_refs") or [], "claims": claims or []})
+    payload = {"analysis": analysis, "sources": sources or analysis.get("evidence_refs") or [], "claims": claims or []}
+    row = inspect_closed_loop(payload)
+    gap = classify_evidence_gap(payload)
     analysis["closed_loop"] = row["valid"]
     analysis["unsupported"] = row["unsupported"]
+    analysis["evidence_gap"] = gap
     if analysis.get("withheld", {}).get("status") == "observable" and not row["valid"]:
         if row["unsupported"]:
             reason = "正文摘录不支持当前事实，不形成方向"
@@ -436,6 +489,12 @@ def _seal_closed_loop(analysis: dict[str, Any], *, sources: list[Any] | None = N
                     f"方向 withheld · 期限 {layer.get('horizon') or 'unspecified'} · 置信度 {layer.get('confidence') or 'insufficient'}"
                 )
         chain["complete"] = False
+        gap = classify_evidence_gap({"analysis": analysis, "sources": sources or [], "claims": claims or []})
+        analysis["evidence_gap"] = gap
+    withheld = dict(analysis.get("withheld") or {})
+    withheld["last_fetched_at"] = gap.get("last_fetched_at")
+    withheld["primary_reason"] = gap.get("primary_reason")
+    analysis["withheld"] = withheld
     return analysis
 
 

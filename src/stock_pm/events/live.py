@@ -25,6 +25,13 @@ from urllib.parse import urlencode
 
 from stock_pm.config import Settings
 
+from .bodies import (
+    extract_sec_index_items,
+    fetch_official_page,
+    official_html_excerpt,
+    reset_body_cache,
+    resolve_redirect_url,
+)
 from .feeds import RateLimiter, fetch_feed, parse_feed_items, strip_markup
 from .policy import events_data_mode, is_safe_public_http_url
 from .types import EventDocument
@@ -94,6 +101,7 @@ _DEFAULT_LIMITER = RateLimiter(0.25)
 
 def reset_live_state() -> None:
     _STATE.clear()
+    reset_body_cache()
 
 
 def live_ingest_enabled(settings: Settings | None = None) -> bool:
@@ -119,6 +127,69 @@ def _status_from_title(title: str) -> str:
 def _pad_cik(raw: str) -> str:
     digits = re.sub(r"\D", "", raw)
     return digits.zfill(10) if digits else ""
+
+
+def _enrich_sec_index(doc: EventDocument, *, user_agent: str) -> EventDocument:
+    """Recover official Item lines when the company Atom summary is empty."""
+    if (doc.body or "").strip():
+        doc.body_source = doc.body_source or "rss_summary"
+        return doc
+    if "-index.htm" not in (doc.url or "").lower():
+        return doc
+    page = fetch_official_page(
+        doc.url,
+        user_agent=user_agent,
+        extra_headers={"Host": "www.sec.gov"},
+        limiter=_SEC_LIMITER,
+        fetch=fetch_feed,
+    )
+    doc.last_fetched_at = page.get("fetched_at")
+    if page.get("error"):
+        doc.fetch_error = str(page["error"])
+        return doc
+    items = extract_sec_index_items(str(page.get("html") or ""))
+    if not items:
+        return doc
+    doc.claims = items
+    doc.body = "\n".join(items)
+    doc.body_source = "sec_index_items"
+    return doc
+
+
+def _enrich_eia_html(doc: EventDocument) -> EventDocument:
+    """Replace RSS abstract with a claim-support excerpt from the official press page."""
+    if not doc.url:
+        return doc
+    page = fetch_official_page(
+        doc.url, user_agent="stock-pm official-feed/5c", limiter=_DEFAULT_LIMITER, fetch=fetch_feed
+    )
+    doc.last_fetched_at = page.get("fetched_at")
+    if page.get("error"):
+        doc.fetch_error = str(page["error"])
+        if (doc.body or "").strip():
+            doc.body_source = doc.body_source or "rss_summary"
+        return doc
+    html = str(page.get("html") or "")
+    redirect = resolve_redirect_url(doc.url, html)
+    if redirect and redirect != doc.url and is_safe_public_http_url(redirect) and "eia.gov" in redirect.lower():
+        page = fetch_official_page(
+            redirect, user_agent="stock-pm official-feed/5c", limiter=_DEFAULT_LIMITER, fetch=fetch_feed
+        )
+        doc.last_fetched_at = page.get("fetched_at") or doc.last_fetched_at
+        html = str(page.get("html") or html)
+        if page.get("error"):
+            doc.fetch_error = str(page["error"])
+    claim = (doc.claims[0] if doc.claims else doc.title) or doc.title
+    excerpt = official_html_excerpt(html, claim)
+    if excerpt:
+        doc.body = excerpt
+        doc.body_source = "official_html"
+        if claim not in doc.claims:
+            doc.claims = [claim, *list(doc.claims or [])]
+        return doc
+    if (doc.body or "").strip():
+        doc.body_source = doc.body_source or "rss_summary"
+    return doc
 
 
 def _slug(url: str) -> str:
@@ -393,7 +464,7 @@ class SecEdgarProvider:
                 if doc is None or doc.url in seen:
                     continue
                 seen.add(doc.url)
-                docs.append(doc)
+                docs.append(_enrich_sec_index(doc, user_agent=self.user_agent()))
             # Documented per-company Atom for the four display names, so mapping is explicit.
             for cik in DISPLAY_CIKS:
                 symbol = WATCHLIST_CIKS[cik]
@@ -413,7 +484,7 @@ class SecEdgarProvider:
                     if doc is None or doc.url in seen:
                         continue
                     seen.add(doc.url)
-                    docs.append(doc)
+                    docs.append(_enrich_sec_index(doc, user_agent=self.user_agent()))
             return _record(
                 self.name,
                 status="ok",
@@ -632,18 +703,20 @@ class EiaPressProvider:
                 slug = _slug(link)
                 event_type, entities = self._classify(title, slug)
                 docs.append(
-                    EventDocument(
-                        title=title,
-                        url=link,
-                        publisher="U.S. Energy Information Administration",
-                        published_at=item.get("published_at"),
-                        event_type=event_type,
-                        entities=entities,
-                        countries=["US"],
-                        claims=[title],
-                        body=strip_markup(str(item.get("summary") or "")),
-                        provider="official",
-                        status=_status_from_title(title),
+                    _enrich_eia_html(
+                        EventDocument(
+                            title=title,
+                            url=link,
+                            publisher="U.S. Energy Information Administration",
+                            published_at=item.get("published_at"),
+                            event_type=event_type,
+                            entities=entities,
+                            countries=["US"],
+                            claims=[title],
+                            body=strip_markup(str(item.get("summary") or "")),
+                            provider="official",
+                            status=_status_from_title(title),
+                        )
                     )
                 )
             return _record(
