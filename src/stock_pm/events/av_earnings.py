@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections import deque
 from typing import Any
 from urllib.parse import urlencode
 
@@ -27,14 +28,21 @@ from .earnings import (
 )
 from .earnings_health import (
     CACHE_TTL,
+    attempted_symbols,
     clear_earnings_health_memory,
     current_earnings_health,
+    empty_endpoints,
     empty_fields,
+    endpoint_coverage,
+    endpoint_record,
+    field_record,
     fields_from_evidence,
     injected_reason,
+    merge_endpoints,
     next_retry_at,
     parse_inject_env,
     persist_health,
+    prioritize_endpoint_tasks,
     prioritize_symbols,
     purge_earnings_health_persist,
     reset_earnings_inject,
@@ -270,6 +278,10 @@ def _budget(settings: Settings | None) -> int:
 
 def _prioritize_symbols(stocks: list[str], previous: dict[str, Any]) -> list[str]:
     return prioritize_symbols(stocks, previous)
+
+
+def _prioritize_endpoint_tasks(stocks: list[str], previous: dict[str, Any]) -> list[tuple[str, str]]:
+    return prioritize_endpoint_tasks(stocks, previous)
 
 
 def apply_frozen_health(pack: dict[str, Any], *, stocks: list[str], etfs: list[str]) -> dict[str, Any]:
@@ -523,6 +535,7 @@ class AvEarningsProvider:
         last_attempt_at: str | None,
         this_round_calls: int,
         this_round: str,
+        endpoints: dict[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         missing = [
             name
@@ -546,10 +559,87 @@ class AvEarningsProvider:
             last_attempt_at=last_attempt_at,
             this_round_calls=this_round_calls,
             this_round=this_round,
+            endpoints=endpoints,
+        )
+
+    def _quarter_from_payload(self, symbol: str, payload: dict[str, Any], fetched_at: str) -> str:
+        try:
+            quarters = parse_av_earnings(payload)
+        except FetchError:
+            return ""
+        if not quarters:
+            return ""
+        preview = evidence_from_av_quarters(
+            quarters,
+            symbol=symbol,
+            fetched_at=fetched_at,
+            source_url=AV_EARNINGS_SOURCE.format(symbol=symbol),
+        )
+        return preview.fiscal_quarter or fiscal_quarter_id(symbol, preview.fiscal_date_ending)
+
+    def _seed_bundle(self, symbol: str, previous_row: dict[str, Any], fetched_at: str) -> dict[str, Any]:
+        prev_eps = (previous_row or {}).get("endpoints") or {}
+        quarter = str((prev_eps.get("EARNINGS") or {}).get("quarter") or "")
+        cached_earn = read_av_cache("EARNINGS", symbol)
+        if cached_earn and not quarter:
+            quarter = self._quarter_from_payload(symbol, cached_earn["payload"], fetched_at)
+        return {
+            "payload": cached_earn["payload"] if cached_earn else None,
+            "earnings_source": "cache" if cached_earn else None,
+            "estimates": None,
+            "transcript": None,
+            "quarter": quarter,
+        }
+
+    def _record_endpoint(
+        self,
+        *,
+        previous_row: dict[str, Any],
+        updates: dict[str, dict[str, Any]],
+        endpoint: str,
+        fetched_at: str,
+        reason: str | None,
+        source: str,
+        payload: dict[str, Any] | None,
+        quarter: str = "",
+        this_round: bool,
+        attempted: bool,
+    ) -> None:
+        prev = ((previous_row or {}).get("endpoints") or {}).get(endpoint) or {}
+        success = fetched_at if payload else prev.get("last_success_at")
+        if payload and source == "live":
+            success = fetched_at
+        elif payload and not success:
+            success = fetched_at
+        status = "ok" if payload and not reason else (
+            "skipped_dependency" if reason == "skipped_dependency" else (
+                "failed" if attempted and not payload else (prev.get("status") or "pending")
+            )
+        )
+        if payload and reason in {"rate_limited", "stale"}:
+            status = "stale"
+        updates[endpoint] = endpoint_record(
+            status=status,
+            last_attempt_at=fetched_at if attempted else prev.get("last_attempt_at"),
+            last_success_at=success,
+            reason_code=reason,
+            source=source if payload or reason else str(prev.get("source") or "none"),
+            quarter=quarter or prev.get("quarter") or "",
+            this_round=this_round,
+            next_retry=next_retry_at(reason or status, now=fetched_at) if attempted or reason else prev.get("next_retry_at"),
         )
 
     def _deferred_health(self, symbol: str, previous_row: dict[str, Any], fetched_at: str) -> tuple[Any | None, dict[str, Any]]:
         cached_evidence, cached_outcomes = self._symbol_from_cache(symbol, fetched_at)
+        endpoints = merge_endpoints((previous_row or {}).get("endpoints"))
+        skipped = (endpoints.get("EARNINGS_CALL_TRANSCRIPT") or {})
+        if skipped.get("status") == "skipped_dependency" or skipped.get("reason_code") == "skipped_dependency":
+            cached_outcomes["EARNINGS_CALL_TRANSCRIPT"] = {
+                "reason_code": "skipped_dependency",
+                "source": "none",
+                "fetched_at": fetched_at,
+                "last_success_at": None,
+            }
         if cached_evidence is not None:
             row = self._health_from_evidence(
                 symbol,
@@ -559,6 +649,7 @@ class AvEarningsProvider:
                 last_attempt_at=previous_row.get("last_attempt_at"),
                 this_round_calls=0,
                 this_round="deferred",
+                endpoints=endpoints,
             )
             row["scenario"] = "deferred"
             return cached_evidence, row
@@ -567,6 +658,7 @@ class AvEarningsProvider:
             carried["this_round"] = "deferred"
             carried["this_round_calls"] = 0
             carried["scenario"] = previous_row.get("scenario") or "deferred"
+            carried["endpoints"] = endpoints
             return None, carried
         return None, symbol_health(
             symbol,
@@ -580,6 +672,7 @@ class AvEarningsProvider:
             last_attempt_at=None,
             this_round_calls=0,
             this_round="deferred",
+            endpoints=empty_endpoints(),
         )
 
     def _discover_live(self) -> list[EventDocument]:
@@ -595,9 +688,12 @@ class AvEarningsProvider:
         rows: list[EventDocument] = []
         symbols: dict[str, Any] = {}
         round_calls: dict[str, int] = {}
-        payloads: dict[str, dict[str, Any]] = {}
+        bundles: dict[str, dict[str, Any]] = {
+            symbol: self._seed_bundle(symbol, previous_rows.get(symbol) or {}, fetched_at) for symbol in stocks
+        }
         outcomes_by: dict[str, dict[str, dict[str, Any]]] = {}
-        attempted: list[str] = []
+        endpoint_updates: dict[str, dict[str, dict[str, Any]]] = {symbol: {} for symbol in stocks}
+        attempted_tasks: list[dict[str, str]] = []
 
         def bump(symbol: str, n: int = 1) -> None:
             nonlocal used
@@ -632,7 +728,8 @@ class AvEarningsProvider:
                 "data_class": "live_current",
                 "as_of": fetched_at,
                 "budget": {"max_calls": budget, "used": 0},
-                "schedule": {"next_symbol": stocks[0] if stocks else None, "attempted_this_round": []},
+                "schedule": {"next_symbol": stocks[0] if stocks else None, "next_task": None, "attempted_this_round": []},
+                "endpoints": endpoint_coverage({"symbols": symbols, "schedule": {"attempted_this_round": []}}),
                 "cache_ttl": CACHE_TTL,
                 "symbols": symbols,
                 "note": "ALPHA_VANTAGE_API_KEY is not configured. No fixture was loaded.",
@@ -654,10 +751,39 @@ class AvEarningsProvider:
                 this_round="unsupported",
             )
 
-        ordered = _prioritize_symbols(stocks, previous)
-        for symbol in ordered:
+        for symbol in stocks:
+            prev = previous_rows.get(symbol) or {}
+            earn_prev = ((prev.get("endpoints") or {}).get("EARNINGS") or {})
+            if (
+                (earn_prev.get("last_attempt_at") or earn_prev.get("last_success_at") or prev.get("last_attempt_at"))
+                and not bundles[symbol]["quarter"]
+            ):
+                self._record_endpoint(
+                    previous_row=prev,
+                    updates=endpoint_updates[symbol],
+                    endpoint="EARNINGS_CALL_TRANSCRIPT",
+                    fetched_at=fetched_at,
+                    reason="skipped_dependency",
+                    source="none",
+                    payload=None,
+                    this_round=False,
+                    attempted=False,
+                )
+                outcomes_by.setdefault(symbol, {})["EARNINGS_CALL_TRANSCRIPT"] = {
+                    "reason_code": "skipped_dependency",
+                    "source": "none",
+                    "fetched_at": fetched_at,
+                    "last_success_at": None,
+                }
+
+        queue = deque(_prioritize_endpoint_tasks(stocks, previous))
+        queued = set(queue)
+        while queue:
             if used >= budget:
                 break
+            symbol, endpoint = queue.popleft()
+            if symbol in symbols:
+                continue
             if injected_reason(symbol) == "unsupported":
                 symbols[symbol] = symbol_health(
                     symbol,
@@ -672,127 +798,170 @@ class AvEarningsProvider:
                     this_round="unsupported",
                 )
                 continue
-            try:
-                payload, earn_err, earn_src = self._fetch_isolated("EARNINGS", symbol)
-                bump(symbol, 1)
-                attempted.append(symbol)
-                outcomes_by[symbol] = {
-                    "EARNINGS": {
-                        "reason_code": earn_err,
-                        "source": earn_src,
+            extra = None
+            if endpoint == "EARNINGS_CALL_TRANSCRIPT":
+                quarter = str(bundles[symbol].get("quarter") or "")
+                if not quarter:
+                    self._record_endpoint(
+                        previous_row=previous_rows.get(symbol) or {},
+                        updates=endpoint_updates[symbol],
+                        endpoint=endpoint,
+                        fetched_at=fetched_at,
+                        reason="skipped_dependency",
+                        source="none",
+                        payload=None,
+                        this_round=True,
+                        attempted=False,
+                    )
+                    outcomes_by.setdefault(symbol, {})[endpoint] = {
+                        "reason_code": "skipped_dependency",
+                        "source": "none",
                         "fetched_at": fetched_at,
-                        "last_success_at": fetched_at if payload and earn_src == "live" else (fetched_at if payload else None),
+                        "last_success_at": None,
                     }
-                }
+                    continue
+                extra = {"quarter": quarter}
+            payload, err, src = self._fetch_isolated(endpoint, symbol, extra=extra)
+            bump(symbol, 1)
+            attempted_tasks.append({"symbol": symbol, "endpoint": endpoint})
+            outcomes_by.setdefault(symbol, {})[endpoint] = {
+                "reason_code": err,
+                "source": src,
+                "fetched_at": fetched_at,
+                "last_success_at": fetched_at if payload else None,
+            }
+            quarter = str(bundles[symbol].get("quarter") or "")
+            if endpoint == "EARNINGS":
                 if payload:
-                    payloads[symbol] = {
-                        "payload": payload,
-                        "source": earn_src,
-                        "estimates": None,
-                        "transcript": None,
-                        "quarter": "",
+                    bundles[symbol]["payload"] = payload
+                    bundles[symbol]["earnings_source"] = src
+                    quarter = self._quarter_from_payload(symbol, payload, fetched_at)
+                    bundles[symbol]["quarter"] = quarter
+                if not quarter:
+                    self._record_endpoint(
+                        previous_row=previous_rows.get(symbol) or {},
+                        updates=endpoint_updates[symbol],
+                        endpoint="EARNINGS_CALL_TRANSCRIPT",
+                        fetched_at=fetched_at,
+                        reason="skipped_dependency",
+                        source="none",
+                        payload=None,
+                        this_round=True,
+                        attempted=False,
+                    )
+                    outcomes_by.setdefault(symbol, {})["EARNINGS_CALL_TRANSCRIPT"] = {
+                        "reason_code": "skipped_dependency",
+                        "source": "none",
+                        "fetched_at": fetched_at,
+                        "last_success_at": None,
                     }
-                    try:
-                        quarters = parse_av_earnings(payload)
-                    except FetchError:
-                        quarters = []
-                    if quarters:
-                        preview = evidence_from_av_quarters(
-                            quarters,
-                            symbol=symbol,
-                            fetched_at=fetched_at,
-                            source_url=AV_EARNINGS_SOURCE.format(symbol=symbol),
-                        )
-                        payloads[symbol]["quarter"] = preview.fiscal_quarter or fiscal_quarter_id(
-                            symbol, preview.fiscal_date_ending
-                        )
-            except Exception:
-                if symbol not in attempted:
-                    attempted.append(symbol)
-                symbols[symbol] = symbol_health(
-                    symbol,
-                    asset_class="stocks",
-                    supported=True,
-                    fields=empty_fields(reason_code="query_error", fetched_at=fetched_at),
-                    reason_code="query_error",
-                    source="none",
-                    scenario="isolated_failure",
-                    next_retry=next_retry_at("query_error", now=fetched_at),
-                    last_attempt_at=fetched_at,
-                    this_round_calls=round_calls.get(symbol, 0),
-                    this_round="live",
-                )
-
-        for symbol in list(attempted):
-            if used >= budget:
-                break
-            if symbol in symbols or symbol not in payloads:
-                continue
-            estimates, est_err, est_src = self._fetch_isolated("EARNINGS_ESTIMATES", symbol)
-            bump(symbol, 1)
-            outcomes_by.setdefault(symbol, {})["EARNINGS_ESTIMATES"] = {
-                "reason_code": est_err,
-                "source": est_src,
-                "fetched_at": fetched_at,
-                "last_success_at": fetched_at if estimates else None,
-            }
-            payloads[symbol]["estimates"] = estimates
-
-        for symbol in list(attempted):
-            if used >= budget:
-                break
-            item = payloads.get(symbol) or {}
-            quarter = item.get("quarter") or ""
-            if not quarter:
-                continue
-            transcript, tr_err, tr_src = self._fetch_isolated(
-                "EARNINGS_CALL_TRANSCRIPT", symbol, extra={"quarter": quarter}
+            elif endpoint == "EARNINGS_ESTIMATES":
+                bundles[symbol]["estimates"] = payload
+            else:
+                bundles[symbol]["transcript"] = payload
+            self._record_endpoint(
+                previous_row=previous_rows.get(symbol) or {},
+                updates=endpoint_updates[symbol],
+                endpoint=endpoint,
+                fetched_at=fetched_at,
+                reason=err,
+                source=src,
+                payload=payload,
+                quarter=quarter if endpoint == "EARNINGS" else bundles[symbol].get("quarter") or "",
+                this_round=True,
+                attempted=True,
             )
-            bump(symbol, 1)
-            outcomes_by.setdefault(symbol, {})["EARNINGS_CALL_TRANSCRIPT"] = {
-                "reason_code": tr_err,
-                "source": tr_src,
-                "fetched_at": fetched_at,
-                "last_success_at": fetched_at if transcript else None,
-            }
-            payloads[symbol]["transcript"] = transcript
+            if endpoint == "EARNINGS" and payload:
+                if quarter:
+                    skipped = endpoint_updates[symbol].get("EARNINGS_CALL_TRANSCRIPT") or {}
+                    if skipped.get("status") == "skipped_dependency":
+                        endpoint_updates[symbol]["EARNINGS_CALL_TRANSCRIPT"] = endpoint_record(status="pending")
+                        outcomes_by.get(symbol, {}).pop("EARNINGS_CALL_TRANSCRIPT", None)
+                    nxt = (symbol, "EARNINGS_CALL_TRANSCRIPT")
+                    if nxt not in queued:
+                        queue.append(nxt)
+                        queued.add(nxt)
+                nxt_est = (symbol, "EARNINGS_ESTIMATES")
+                if nxt_est not in queued:
+                    queue.append(nxt_est)
+                    queued.add(nxt_est)
+
+        attempted_set = {(item["symbol"], item["endpoint"]) for item in attempted_tasks}
+        remaining_tasks = [task for task in queue if task not in attempted_set]
+        next_task = {"symbol": remaining_tasks[0][0], "endpoint": remaining_tasks[0][1]} if remaining_tasks else None
 
         for symbol in stocks:
             if symbol in symbols:
                 continue
             prev = previous_rows.get(symbol) or {}
-            if symbol not in attempted:
+            endpoints = merge_endpoints(prev.get("endpoints"), endpoint_updates.get(symbol))
+            if round_calls.get(symbol, 0) <= 0:
                 evidence, row = self._deferred_health(symbol, prev, fetched_at)
+                row["endpoints"] = endpoints
                 if evidence is not None:
                     rows.extend(documents_from_evidence(evidence))
                 symbols[symbol] = row
                 continue
-            item = payloads.get(symbol) or {}
-            outcomes = outcomes_by.get(symbol) or {}
-            live_source = str(item.get("source") or (outcomes.get("EARNINGS") or {}).get("source") or "none")
+            bundle = bundles.get(symbol) or {}
+            outcomes = dict(outcomes_by.get(symbol) or {})
+            live_source = str(bundle.get("earnings_source") or (outcomes.get("EARNINGS") or {}).get("source") or "none")
             evidence = None
-            if item.get("payload"):
+            if bundle.get("payload"):
+                if bundle.get("estimates") is None:
+                    cached_est = read_av_cache("EARNINGS_ESTIMATES", symbol)
+                    if cached_est:
+                        bundle["estimates"] = cached_est["payload"]
+                        outcomes.setdefault("EARNINGS_ESTIMATES", {
+                            "reason_code": "stale",
+                            "source": "cache",
+                            "fetched_at": str(cached_est.get("fetched_at") or fetched_at),
+                            "last_success_at": str(cached_est.get("fetched_at") or fetched_at),
+                        })
+                if bundle.get("transcript") is None and bundle.get("quarter"):
+                    cached_tr = read_av_cache("EARNINGS_CALL_TRANSCRIPT", symbol, {"quarter": bundle["quarter"]})
+                    if cached_tr:
+                        bundle["transcript"] = cached_tr["payload"]
+                        outcomes.setdefault("EARNINGS_CALL_TRANSCRIPT", {
+                            "reason_code": "stale",
+                            "source": "cache",
+                            "fetched_at": str(cached_tr.get("fetched_at") or fetched_at),
+                            "last_success_at": str(cached_tr.get("fetched_at") or fetched_at),
+                        })
                 evidence = self._evidence_from_payload(
                     symbol,
-                    item["payload"],
+                    bundle["payload"],
                     fetched_at=fetched_at,
-                    estimates=item.get("estimates"),
-                    transcript=item.get("transcript"),
-                    quarter=item.get("quarter") or "",
+                    estimates=bundle.get("estimates"),
+                    transcript=bundle.get("transcript"),
+                    quarter=bundle.get("quarter") or "",
                 )
             if evidence is None:
                 cached_evidence, cached_outcomes = self._symbol_from_cache(symbol, fetched_at)
                 evidence = cached_evidence
                 if cached_outcomes:
-                    outcomes.update(cached_outcomes)
+                    for key, value in cached_outcomes.items():
+                        outcomes.setdefault(key, value)
                     live_source = "cache"
+            if (endpoints.get("EARNINGS_CALL_TRANSCRIPT") or {}).get("status") == "skipped_dependency":
+                outcomes.setdefault(
+                    "EARNINGS_CALL_TRANSCRIPT",
+                    {"reason_code": "skipped_dependency", "source": "none", "fetched_at": fetched_at, "last_success_at": None},
+                )
             if evidence is None:
                 reason = (outcomes.get("EARNINGS") or {}).get("reason_code") or "upstream_empty"
+                fields = empty_fields(reason_code=reason, source=live_source, fetched_at=fetched_at)
+                if (outcomes.get("EARNINGS_CALL_TRANSCRIPT") or {}).get("reason_code") == "skipped_dependency":
+                    fields["transcript"] = field_record(
+                        status="missing",
+                        reason_code="skipped_dependency",
+                        fetched_at=fetched_at,
+                        source="none",
+                    )
                 symbols[symbol] = symbol_health(
                     symbol,
                     asset_class="stocks",
                     supported=reason != "unsupported",
-                    fields=empty_fields(reason_code=reason, source=live_source, fetched_at=fetched_at),
+                    fields=fields,
                     reason_code=reason,
                     source=live_source,
                     scenario="partial" if reason != "unsupported" else "unsupported",
@@ -800,9 +969,12 @@ class AvEarningsProvider:
                     last_attempt_at=fetched_at,
                     this_round_calls=round_calls.get(symbol, 0),
                     this_round="live" if round_calls.get(symbol) else "cache",
+                    endpoints=endpoints,
                 )
                 continue
             rows.extend(documents_from_evidence(evidence))
+            if any((outcomes.get(name) or {}).get("source") == "live" for name in ("EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT")):
+                live_source = live_source if live_source in {"live", "cache"} else "live"
             symbols[symbol] = self._health_from_evidence(
                 symbol,
                 evidence,
@@ -810,11 +982,11 @@ class AvEarningsProvider:
                 source=live_source,
                 last_attempt_at=fetched_at,
                 this_round_calls=round_calls.get(symbol, 0),
-                this_round="live" if live_source == "live" else "cache",
+                this_round="live" if round_calls.get(symbol) else "cache",
+                endpoints=endpoints,
             )
 
-        remaining = [symbol for symbol in ordered if symbol not in attempted]
-        next_symbol = remaining[0] if remaining else (ordered[0] if ordered else None)
+        deferred = [symbol for symbol in stocks if not round_calls.get(symbol)]
         report = {
             "live": True,
             "data_class": "live_current",
@@ -823,18 +995,21 @@ class AvEarningsProvider:
                 "max_calls": budget,
                 "used": used,
                 "this_round": dict(round_calls),
-                "deferred": remaining,
+                "deferred": deferred,
                 "next_retry_at": next_retry_at("rate_limited", now=fetched_at),
             },
             "schedule": {
-                "next_symbol": next_symbol,
-                "attempted_this_round": list(attempted),
+                "next_symbol": (next_task or {}).get("symbol") if next_task else (stocks[0] if stocks else None),
+                "next_task": next_task,
+                "attempted_this_round": list(attempted_tasks),
+                "attempted_symbols_this_round": attempted_symbols(attempted_tasks),
                 "round": int((previous.get("schedule") or {}).get("round") or 0) + 1,
             },
             "cache_ttl": CACHE_TTL,
             "symbols": symbols,
-            "note": "Live-current coverage only. Cache/stale complete is not this-round live complete. Health persist survives reset_cache.",
+            "note": "Live-current coverage only. Cache/stale complete is not this-round live complete. Endpoints rotate independently after fresh EARNINGS.",
         }
+        report["endpoints"] = endpoint_coverage(report)
         persist_health(report)
         self._last_report = report
         return rows

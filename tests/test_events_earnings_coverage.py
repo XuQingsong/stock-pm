@@ -14,6 +14,7 @@ from stock_pm.events.earnings import (
     reset_earnings_registry,
 )
 from stock_pm.events.earnings_health import (
+    attempted_symbols,
     clear_earnings_health_memory,
     current_earnings_health,
     health_cache_path,
@@ -258,6 +259,7 @@ def test_ui_names_missing_field_and_retry():
     assert "宏观信息不复制到全部个股" in ui
     assert "fresh-live" in ui or "本轮 live" in ui
     assert "cache/stale" in ui
+    assert "data-earnings-endpoint-coverage" in ui
 
 
 ROTATION_WATCH = [
@@ -274,15 +276,30 @@ def _rotation_settings() -> Settings:
     return Settings(events_mode="empty", earnings_av_budget=3)
 
 
-def _restart_style_discover(monkeypatch, fake_fetch, *, settings=None):
+def _restart_style_discover(monkeypatch, fake_fetch, *, settings=None, watchlist=None):
     """Equivalent to an independent job/process: reset_cache then a new provider."""
     reset_cache()
-    apply_watchlist_rows(ROTATION_WATCH)
+    apply_watchlist_rows(watchlist or ROTATION_WATCH)
     monkeypatch.setattr("stock_pm.events.av_earnings.fetch_av_function", fake_fetch)
     monkeypatch.setattr("stock_pm.events.av_earnings.match_sec_8k_for_print", lambda *args, **kwargs: "")
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     provider = AvEarningsProvider(settings or _rotation_settings())
     return provider.discover()
+
+
+def _round_symbols(health):
+    return attempted_symbols((health.get("schedule") or {}).get("attempted_this_round") or [])
+
+
+def _round_tasks(health):
+    raw = (health.get("schedule") or {}).get("attempted_this_round") or []
+    out = []
+    for item in raw:
+        if isinstance(item, dict):
+            out.append((item.get("symbol"), item.get("endpoint")))
+        else:
+            out.append((item, "EARNINGS"))
+    return out
 
 
 def test_cross_job_rotation_gives_every_symbol_an_earnings_attempt(monkeypatch, tmp_path):
@@ -310,7 +327,7 @@ def test_cross_job_rotation_gives_every_symbol_an_earnings_attempt(monkeypatch, 
     for _ in range(4):
         _restart_style_discover(monkeypatch, fake_fetch)
         health = current_earnings_health()
-        attempted = list((health.get("schedule") or {}).get("attempted_this_round") or [])
+        attempted = _round_symbols(health)
         rounds.append(list(attempted))
         assert attempted
         assert all(symbol in names for symbol in attempted)
@@ -343,7 +360,7 @@ def test_failed_symbol_does_not_starve_the_rest(monkeypatch, tmp_path):
     for _ in range(4):
         before = len(first_of_round)
         _restart_style_discover(monkeypatch, fake_fetch)
-        attempted = list((current_earnings_health().get("schedule") or {}).get("attempted_this_round") or [])
+        attempted = _round_symbols(current_earnings_health())
         first_of_round.append(attempted[0])
         assert before or attempted
 
@@ -426,7 +443,147 @@ def test_budget_deferred_is_not_this_round_live_complete(monkeypatch, tmp_path):
     assert health["symbols"]["FFF"]["this_round_calls"] == 0
     assert health["symbols"]["FFF"]["source"] == "cache"
     assert summary["fresh_live_complete_count"] == summary["live_complete_count"]
-    assert health["symbols"]["FFF"]["symbol"] not in (health.get("schedule") or {}).get("attempted_this_round", [])
+    assert health["symbols"]["FFF"]["symbol"] not in _round_symbols(health)
     if summarize_health(health)["cache_stale_complete_count"]:
         assert summary["live_complete_count"] < summary["complete_count"] or summary["complete_count"] == summary["cache_stale_complete_count"] + summary["fresh_live_complete_count"]
     assert summary["live_complete_count"] == summary["fresh_live_complete_count"]
+
+
+TEN_WATCH = [
+    {"symbol": "MU", "asset_class": "stocks"},
+    {"symbol": "INTC", "asset_class": "stocks"},
+    {"symbol": "AAPL", "asset_class": "stocks"},
+    {"symbol": "GOOGL", "asset_class": "stocks"},
+    {"symbol": "NVDA", "asset_class": "stocks"},
+    {"symbol": "SKHY", "asset_class": "stocks"},
+    {"symbol": "NOK", "asset_class": "stocks"},
+    {"symbol": "XOM", "asset_class": "stocks"},
+    {"symbol": "JPM", "asset_class": "stocks"},
+    {"symbol": "AVGO", "asset_class": "stocks"},
+]
+TEN_NAMES = [row["symbol"] for row in TEN_WATCH]
+QUARTER_NAMES = [name for name in TEN_NAMES if name != "SKHY"]
+
+
+def _ten_settings() -> Settings:
+    return Settings(events_mode="empty", earnings_av_budget=8)
+
+
+def _aapl_like_fetch(calls, aapl, *, fail_earnings=None, empty_earnings=None):
+    fail_earnings = set(fail_earnings or [])
+    empty_earnings = set(empty_earnings or [])
+
+    def fake_fetch(function, symbol, *, settings=None, extra=None):
+        calls.append((function, symbol, (extra or {}).get("quarter") or ""))
+        if symbol in fail_earnings and function == "EARNINGS":
+            raise FetchError("query_error", "upstream request failed")
+        if function == "EARNINGS":
+            payload = {"symbol": symbol, "quarterlyEarnings": []} if symbol in empty_earnings else {
+                **dict(aapl["av_earnings"]),
+                "symbol": symbol,
+            }
+        elif function == "EARNINGS_ESTIMATES":
+            payload = dict(aapl.get("av_estimates") or {"estimates": []})
+        else:
+            quarter = (extra or {}).get("quarter") or "2026Q3"
+            excerpts = []
+            for item in (aapl.get("av_transcript") or {}).get("excerpts") or []:
+                row = dict(item)
+                row["symbol"] = symbol
+                row["quarter"] = quarter
+                excerpts.append(row)
+            payload = {"quarter": quarter, "transcript": excerpts}
+        write_cache(av_cache_key(function, symbol, extra), payload)
+        return payload
+
+    return fake_fetch
+
+
+def test_cross_job_three_endpoints_cover_watchlist(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    calls = []
+    fake_fetch = _aapl_like_fetch(calls, aapl)
+    settings = _ten_settings()
+    for _ in range(6):
+        _restart_style_discover(monkeypatch, fake_fetch, settings=settings, watchlist=TEN_WATCH)
+
+    earnings = {symbol for function, symbol, _ in calls if function == "EARNINGS"}
+    estimates = {symbol for function, symbol, _ in calls if function == "EARNINGS_ESTIMATES"}
+    transcripts = {symbol for function, symbol, _ in calls if function == "EARNINGS_CALL_TRANSCRIPT"}
+    assert earnings == set(TEN_NAMES)
+    assert estimates == set(TEN_NAMES)
+    assert transcripts == set(QUARTER_NAMES)
+    assert len([row for row in calls if row[0] == "EARNINGS"]) == 10
+    health = current_earnings_health()
+    skhy = health["symbols"]["SKHY"]
+    assert (skhy.get("endpoints") or {}).get("EARNINGS_CALL_TRANSCRIPT", {}).get("status") == "skipped_dependency"
+    assert skhy["fields"]["transcript"]["reason_code"] == "skipped_dependency"
+    summary = summarize_health(health)
+    endpoints = summary["endpoints"]["cumulative"]
+    assert set(endpoints["EARNINGS"]["attempted_symbols"]) == set(TEN_NAMES)
+    assert set(endpoints["EARNINGS_ESTIMATES"]["attempted_symbols"]) == set(TEN_NAMES)
+    assert "SKHY" in endpoints["EARNINGS_CALL_TRANSCRIPT"]["skipped_dependency_symbols"]
+    assert set(QUARTER_NAMES) <= set(endpoints["EARNINGS_CALL_TRANSCRIPT"]["attempted_symbols"])
+
+
+def test_failed_earnings_skips_transcript_and_does_not_block_others(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    calls = []
+    fake_fetch = _aapl_like_fetch(calls, aapl, fail_earnings={"AAPL"})
+    settings = _ten_settings()
+    for _ in range(6):
+        _restart_style_discover(monkeypatch, fake_fetch, settings=settings, watchlist=TEN_WATCH)
+
+    assert ("EARNINGS_CALL_TRANSCRIPT", "AAPL") not in {(row[0], row[1]) for row in calls}
+    aapl_health = health_for_symbol("AAPL")
+    assert (aapl_health.get("endpoints") or {}).get("EARNINGS_CALL_TRANSCRIPT", {}).get("reason_code") == "skipped_dependency"
+    assert aapl_health["fields"]["transcript"]["reason_code"] == "skipped_dependency"
+    others = [name for name in TEN_NAMES if name != "AAPL"]
+    estimates = {symbol for function, symbol, _ in calls if function == "EARNINGS_ESTIMATES"}
+    transcripts = {symbol for function, symbol, _ in calls if function == "EARNINGS_CALL_TRANSCRIPT"}
+    assert set(others) <= estimates
+    assert set(others) - {"SKHY"} <= transcripts
+
+
+def test_complete_chain_forms_across_restart_jobs(monkeypatch, tmp_path):
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
+    monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
+    monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "8")
+    purge_earnings_health_persist()
+    aapl = next(row for row in load_frozen_coverage()["symbols"] if row["symbol"] == "AAPL")
+    calls = []
+    fake_fetch = _aapl_like_fetch(calls, aapl)
+    settings = _ten_settings()
+    formed = None
+    for _ in range(6):
+        _restart_style_discover(monkeypatch, fake_fetch, settings=settings, watchlist=TEN_WATCH)
+        row = health_for_symbol("AAPL")
+        fields = row.get("fields") or {}
+        if all((fields.get(name) or {}).get("status") in {"ok", "stale"} for name in ("actual", "prior", "consensus", "transcript")):
+            formed = row
+            break
+    assert formed is not None
+    fields = formed["fields"]
+    assert fields["actual"]["source"] in {"live", "cache"}
+    assert fields["prior"]["source"] in {"live", "cache"}
+    assert fields["consensus"]["source"] in {"live", "cache"}
+    assert fields["transcript"]["source"] in {"live", "cache"}
+    assert fields["transcript"]["freshness"] in {"fresh", "stale"}
+    endpoints = formed.get("endpoints") or {}
+    assert endpoints.get("EARNINGS", {}).get("last_success_at")
+    assert endpoints.get("EARNINGS_ESTIMATES", {}).get("last_attempt_at")
+    assert endpoints.get("EARNINGS_CALL_TRANSCRIPT", {}).get("last_success_at")
+    assert {"EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"} <= {
+        function for function, symbol, _ in calls if symbol == "AAPL"
+    }

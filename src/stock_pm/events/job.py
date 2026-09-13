@@ -84,6 +84,7 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
                         "request_url": row.get("request_url"),
                         "live": row.get("live"),
                         "schedule": (cover.get("earnings_coverage") or {}).get("schedule"),
+                        "endpoints": (cover.get("earnings_coverage") or {}).get("endpoints"),
                         "cache_ttl": (cover.get("earnings_coverage") or {}).get("cache_ttl"),
                     },
                 )

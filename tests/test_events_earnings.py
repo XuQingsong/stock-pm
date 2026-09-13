@@ -567,9 +567,10 @@ def test_estimates_failure_does_not_drop_earnings_print(monkeypatch):
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
     monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "30")
     from stock_pm.config import Settings
 
-    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    docs = AvEarningsProvider(Settings(events_mode="empty", earnings_av_budget=30)).discover()
     assert docs
 
 

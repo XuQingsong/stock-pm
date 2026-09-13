@@ -257,9 +257,23 @@
     }).join("");
   };
 
+  const endpointLine = (cover) => {
+    const block = cover.endpoints || {};
+    const now = block.this_round || {};
+    const all = block.cumulative || {};
+    const names = ["EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"];
+    return names.map((name) => {
+      const round = now[name] || {};
+      const cum = all[name] || {};
+      return `${name} 本轮 ${round.attempted ?? 0} / 累计 ${(cum.attempted_symbols || []).length}`;
+    }).join(" · ");
+  };
+
   const renderEarningsOverview = (cover) => {
     const row = cover || {};
     const live = row.live === true;
+    const nextTask = (row.schedule && row.schedule.next_task) || {};
+    const nextLabel = nextTask.symbol ? `${nextTask.symbol}:${nextTask.endpoint || ""}` : ((row.schedule && row.schedule.next_symbol) || "—");
     return `<section class="earnings-coverage" data-earnings-coverage="1" data-live="${live ? "1" : "0"}" data-class="${esc(row.data_class || "")}">
       <h4>财报覆盖 / 健康</h4>
       ${pill(`完整 ${row.complete_count ?? 0}`, "ok")}
@@ -269,7 +283,8 @@
       ${pill(`延后 ${row.deferred_count ?? 0}`)}
       ${pill(`不支持 ${row.unsupported_count ?? 0}`, "not_configured")}
       ${pill(live ? "live-current" : "frozen/fixture", live ? "ok" : "not_configured")}
-      <div class="subline" data-earnings-coverage-note="1">fixture 完整 ${esc(row.fixture_complete_count ?? 0)} · 本轮 fresh-live 完整 ${esc(row.fresh_live_complete_count ?? 0)} · cache/stale 完整 ${esc(row.cache_stale_complete_count ?? 0)}。${esc(row.note || "Fixture 成功不是上线覆盖。")} 预算 ${esc((row.budget && row.budget.used) ?? "—")}/${esc((row.budget && row.budget.max_calls) ?? "—")}。下次 ${esc((row.schedule && row.schedule.next_symbol) || "—")}。</div>
+      <div class="subline" data-earnings-coverage-note="1">fixture 完整 ${esc(row.fixture_complete_count ?? 0)} · 本轮 fresh-live 完整 ${esc(row.fresh_live_complete_count ?? 0)} · cache/stale 完整 ${esc(row.cache_stale_complete_count ?? 0)}。${esc(row.note || "Fixture 成功不是上线覆盖。")} 预算 ${esc((row.budget && row.budget.used) ?? "—")}/${esc((row.budget && row.budget.max_calls) ?? "—")}。下次 ${esc(nextLabel)}。</div>
+      <div class="subline" data-earnings-endpoint-coverage="1">${esc(endpointLine(row))}</div>
     </section>`;
   };
 

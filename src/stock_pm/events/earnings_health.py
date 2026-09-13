@@ -21,8 +21,13 @@ REASON_CODES = (
     "baseline_missing",
     "query_error",
     "source_not_configured",
+    "skipped_dependency",
 )
 FIELD_NAMES = ("actual", "prior", "consensus", "transcript")
+AV_ENDPOINTS = ("EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT")
+BUCKET_EARNINGS_UNMET = 0
+BUCKET_COMPLEMENT_UNMET = 1
+BUCKET_REFRESH = 2
 # Raw Alpha Vantage payload cache (json_get) is last-success. Older than this is stale, not deleted.
 FRESHNESS_DAYS = 120
 # Scheduling last_attempt_at stays valid for rotation. It is not an inferred number fill.
@@ -44,6 +49,7 @@ RETRY_BY_REASON = {
     "stale": timedelta(hours=6),
     "period_mismatch": timedelta(hours=24),
     "baseline_missing": timedelta(hours=6),
+    "skipped_dependency": timedelta(hours=24),
 }
 
 _STATE: dict[str, Any] = {}
@@ -168,6 +174,100 @@ def empty_fields(*, reason_code: str, source: str = "none", fetched_at: str | No
     }
 
 
+def endpoint_record(
+    *,
+    status: str = "pending",
+    last_attempt_at: str | None = None,
+    last_success_at: str | None = None,
+    reason_code: str | None = None,
+    source: str = "none",
+    quarter: str | None = None,
+    this_round: bool = False,
+    next_retry: str | None = None,
+) -> dict[str, Any]:
+    fresh = "unknown"
+    if last_success_at and not is_stale(last_success_at) and status in {"ok", "stale"}:
+        fresh = "fresh" if status == "ok" and source == "live" else "stale"
+    elif last_success_at:
+        fresh = "stale"
+    return {
+        "status": status,
+        "last_attempt_at": last_attempt_at,
+        "last_success_at": last_success_at,
+        "reason_code": reason_code or "",
+        "source": source,
+        "freshness": fresh,
+        "quarter": quarter or "",
+        "this_round": bool(this_round),
+        "next_retry_at": next_retry or (
+            next_retry_at(reason_code or status, now=last_attempt_at) if last_attempt_at or reason_code else None
+        ),
+    }
+
+
+def empty_endpoints() -> dict[str, dict[str, Any]]:
+    return {name: endpoint_record(status="pending") for name in AV_ENDPOINTS}
+
+
+def merge_endpoints(
+    previous: dict[str, Any] | None,
+    updates: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, dict[str, Any]]:
+    merged = empty_endpoints()
+    for name, row in (previous or {}).items():
+        if name in merged and isinstance(row, dict):
+            merged[name] = {**merged[name], **row, "this_round": False}
+    for name, row in (updates or {}).items():
+        if name in merged and isinstance(row, dict):
+            merged[name] = {**merged[name], **row}
+    return merged
+
+
+def _legacy_endpoint(row: dict[str, Any], endpoint: str) -> dict[str, Any]:
+    stored = ((row or {}).get("endpoints") or {}).get(endpoint)
+    if isinstance(stored, dict) and (stored.get("status") or stored.get("last_attempt_at") or stored.get("last_success_at")):
+        return dict(stored)
+    if endpoint == "EARNINGS" and (row or {}).get("last_attempt_at"):
+        return endpoint_record(
+            status="ok" if row.get("last_success_at") else "failed",
+            last_attempt_at=row.get("last_attempt_at"),
+            last_success_at=row.get("last_success_at"),
+            reason_code=row.get("reason_code"),
+            source=str(row.get("source") or "none"),
+        )
+    return endpoint_record(status="pending")
+
+
+def _is_fresh_success(rec: dict[str, Any]) -> bool:
+    if rec.get("status") in {"skipped_dependency", "unsupported"}:
+        return True
+    success = rec.get("last_success_at")
+    return bool(success) and not is_stale(str(success))
+
+
+def _retry_due(rec: dict[str, Any]) -> bool:
+    if rec.get("status") in {"skipped_dependency", "unsupported"}:
+        return False
+    if _is_fresh_success(rec):
+        return False
+    if not rec.get("last_attempt_at"):
+        return True
+    nxt = rec.get("next_retry_at")
+    stamp = _parse_stamp(str(nxt) if nxt else None)
+    if stamp is None:
+        return True
+    now = datetime.now(timezone.utc)
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    return now >= stamp
+
+
+def earnings_usable(rec: dict[str, Any]) -> bool:
+    if rec.get("quarter"):
+        return True
+    return bool(rec.get("last_success_at")) and rec.get("status") not in {"failed", "skipped_dependency"}
+
+
 def symbol_health(
     symbol: str,
     *,
@@ -185,6 +285,7 @@ def symbol_health(
     last_attempt_at: str | None = None,
     this_round_calls: int = 0,
     this_round: str | None = None,
+    endpoints: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     rows = fields or empty_fields(reason_code=reason_code or ("unsupported" if not supported else "upstream_empty"), source=source)
     successes = [str(row.get("last_success_at") or "") for row in rows.values() if row.get("last_success_at")]
@@ -209,6 +310,7 @@ def symbol_health(
         "missing_fields": list(missing_fields)
         if missing_fields is not None
         else [name for name, row in rows.items() if row.get("status") not in {"ok"}],
+        "endpoints": endpoints or empty_endpoints(),
     }
 
 
@@ -272,11 +374,13 @@ def print_is_complete(row: dict[str, Any]) -> bool:
 def _fresh_live_complete(row: dict[str, Any]) -> bool:
     if not print_is_complete(row):
         return False
-    if row.get("source") != "live":
-        return False
-    if int(row.get("this_round_calls") or 0) <= 0:
-        return False
     if row.get("this_round") == "deferred":
+        return False
+    earn = ((row.get("endpoints") or {}).get("EARNINGS") or {})
+    if earn:
+        if not earn.get("this_round") or earn.get("source") != "live":
+            return False
+    elif row.get("source") != "live" or int(row.get("this_round_calls") or 0) <= 0:
         return False
     fields = row.get("fields") or {}
     if any((fields.get(name) or {}).get("freshness") == "stale" for name in ("actual", "prior", "consensus")):
@@ -308,6 +412,108 @@ def prioritize_symbols(stocks: list[str], previous: dict[str, Any] | None) -> li
         idx = ordered.index(nxt)
         ordered = ordered[idx:] + ordered[:idx]
     return ordered
+
+
+def pending_endpoint_tasks(symbol: str, row: dict[str, Any] | None) -> list[tuple[str, str, str, int]]:
+    """Return (symbol, endpoint, last_attempt_at, bucket) still needing a call."""
+    row = row or {}
+    earn = _legacy_endpoint(row, "EARNINGS")
+    est = _legacy_endpoint(row, "EARNINGS_ESTIMATES")
+    transcript = _legacy_endpoint(row, "EARNINGS_CALL_TRANSCRIPT")
+    tasks: list[tuple[str, str, str, int]] = []
+    if not _is_fresh_success(earn) and _retry_due(earn):
+        bucket = BUCKET_REFRESH if earn.get("last_success_at") else BUCKET_EARNINGS_UNMET
+        tasks.append((symbol, "EARNINGS", str(earn.get("last_attempt_at") or ""), bucket))
+    if earnings_usable(earn):
+        if not _is_fresh_success(est) and _retry_due(est):
+            bucket = BUCKET_REFRESH if est.get("last_success_at") else BUCKET_COMPLEMENT_UNMET
+            tasks.append((symbol, "EARNINGS_ESTIMATES", str(est.get("last_attempt_at") or ""), bucket))
+        if earn.get("quarter"):
+            if not _is_fresh_success(transcript) and _retry_due(transcript):
+                bucket = BUCKET_REFRESH if transcript.get("last_success_at") else BUCKET_COMPLEMENT_UNMET
+                tasks.append(
+                    (symbol, "EARNINGS_CALL_TRANSCRIPT", str(transcript.get("last_attempt_at") or ""), bucket)
+                )
+    return tasks
+
+
+def prioritize_endpoint_tasks(stocks: list[str], previous: dict[str, Any] | None) -> list[tuple[str, str]]:
+    """Fair symbol×endpoint order. Fresh EARNINGS is not re-fetched so complements can run."""
+    rows = (previous or {}).get("symbols") or {}
+    schedule = (previous or {}).get("schedule") or {}
+    collected: list[tuple[str, str, str, int]] = []
+    for symbol in stocks:
+        collected.extend(pending_endpoint_tasks(symbol, rows.get(symbol) or {}))
+    collected.sort(
+        key=lambda item: (
+            item[3],
+            0 if not item[2] else 1,
+            item[2],
+            stocks.index(item[0]) if item[0] in stocks else 0,
+            AV_ENDPOINTS.index(item[1]) if item[1] in AV_ENDPOINTS else 0,
+        )
+    )
+    nxt = schedule.get("next_task") or {}
+    nxt_key = (str(nxt.get("symbol") or ""), str(nxt.get("endpoint") or ""))
+    if nxt_key[0] and nxt_key[1] and any((item[0], item[1]) == nxt_key for item in collected):
+        bucket = next(item[3] for item in collected if (item[0], item[1]) == nxt_key)
+        head = [item for item in collected if item[3] < bucket]
+        mid = [item for item in collected if item[3] == bucket]
+        tail = [item for item in collected if item[3] > bucket]
+        idx = next(i for i, item in enumerate(mid) if (item[0], item[1]) == nxt_key)
+        collected = head + mid[idx:] + mid[:idx] + tail
+    return [(item[0], item[1]) for item in collected]
+
+
+def attempted_symbols(entries: list[Any]) -> list[str]:
+    out: list[str] = []
+    for item in entries or []:
+        symbol = item.get("symbol") if isinstance(item, dict) else item
+        if symbol and symbol not in out:
+            out.append(str(symbol))
+    return out
+
+
+def endpoint_coverage(payload: dict[str, Any] | None) -> dict[str, Any]:
+    report = payload or {}
+    this_round = {name: {"attempted": 0, "success": 0, "symbols": []} for name in AV_ENDPOINTS}
+    cumulative = {
+        name: {
+            "attempted_symbols": [],
+            "success_symbols": [],
+            "pending_symbols": [],
+            "skipped_dependency_symbols": [],
+        }
+        for name in AV_ENDPOINTS
+    }
+    for item in (report.get("schedule") or {}).get("attempted_this_round") or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("endpoint") or "")
+        symbol = str(item.get("symbol") or "")
+        if name not in this_round or not symbol:
+            continue
+        this_round[name]["attempted"] += 1
+        if symbol not in this_round[name]["symbols"]:
+            this_round[name]["symbols"].append(symbol)
+    for symbol, row in (report.get("symbols") or {}).items():
+        if not isinstance(row, dict) or row.get("supported") is False:
+            continue
+        for name in AV_ENDPOINTS:
+            rec = _legacy_endpoint(row, name)
+            if rec.get("this_round") and rec.get("last_success_at") and rec.get("source") == "live":
+                this_round[name]["success"] += 1
+            if rec.get("last_attempt_at") or rec.get("status") == "skipped_dependency":
+                if symbol not in cumulative[name]["attempted_symbols"]:
+                    cumulative[name]["attempted_symbols"].append(symbol)
+            if rec.get("last_success_at") and symbol not in cumulative[name]["success_symbols"]:
+                cumulative[name]["success_symbols"].append(symbol)
+            if rec.get("status") == "skipped_dependency":
+                cumulative[name]["skipped_dependency_symbols"].append(symbol)
+            elif not _is_fresh_success(rec) and rec.get("status") != "unsupported":
+                if symbol not in cumulative[name]["pending_symbols"]:
+                    cumulative[name]["pending_symbols"].append(symbol)
+    return {"this_round": this_round, "cumulative": cumulative}
 
 
 def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -363,6 +569,7 @@ def summarize_health(report: dict[str, Any] | None = None) -> dict[str, Any]:
         "live_complete_count": fresh_live if live else 0,
         "budget": payload.get("budget") or {},
         "schedule": payload.get("schedule") or {},
+        "endpoints": payload.get("endpoints") or endpoint_coverage(payload),
         "cache_ttl": payload.get("cache_ttl") or CACHE_TTL,
         "symbols": symbols,
         "note": payload.get("note")
@@ -403,6 +610,8 @@ def fields_from_evidence(
                     )
                 )
             )
+            if reason == "skipped_dependency":
+                status = "missing"
             return field_record(
                 status=status,
                 reason_code=reason,
