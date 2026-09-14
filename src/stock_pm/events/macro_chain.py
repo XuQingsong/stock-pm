@@ -524,9 +524,8 @@ def _expectation_for(metric: str, change: dict[str, Any]) -> dict[str, Any]:
                 "confidence": "medium",
             }
         if direction == "up":
-            extra = "；价格指数上升不等于通胀加速" if change.get("index_rising") else ""
             return {
-                "text": f"同口径 {rate_label} 高于前值（通胀加速）{extra} → 降息预期可能后移（条件预期；无一致预期，不是 street surprise）",
+                "text": f"同口径 {rate_label} 高于前值（通胀加速）→ 降息预期可能后移（条件预期；无一致预期，不是 street surprise）",
                 "stance": "cut_odds_delayed_conditional",
                 "confidence": "limited",
             }
