@@ -16,7 +16,7 @@ from stock_pm.decision.inject import inject_allowed
 from stock_pm.nfp import NFP_FORMULA
 
 from .exposure import attach_exposures, why_relevant
-from .policy import events_data_mode
+from .policy import events_data_mode, is_safe_public_http_url
 from .types import TrustedEvent
 
 
@@ -73,16 +73,62 @@ INJECT_KEYS = frozenset({
     "reverse_cpi",
 })
 
-_CACHE: dict[str, Any] = {"facts": None, "chains": None}
+_FACTS_BY_MODE: dict[str, list[dict[str, Any]]] = {}
 
 
 def reset_macro_cache() -> None:
-    _CACHE["facts"] = None
-    _CACHE["chains"] = None
+    _FACTS_BY_MODE.clear()
 
 
-def stable_chain_id(family: str, metric: str, period: str) -> str:
+def _mode_key(settings: Any = None) -> str:
+    return events_data_mode(settings)
+
+
+def stable_chain_id(family: str, metric: str, period: str, identity: str | None = None) -> str:
+    if identity:
+        return f"macro:{family}:{metric}:{period}:{identity}"
     return f"macro:{family}:{metric}:{period}"
+
+
+def event_chain_id(event: TrustedEvent) -> str:
+    family = EVENT_FAMILY.get(event.event_type, "other")
+    metric = {
+        "inflation_employment": "inflation_employment",
+        "central_bank_rates": "policy_rate",
+        "vix_risk": "vix",
+        "energy_supply": "energy_supply",
+        "gold_wti": "wti",
+        "war_sanctions": "war_sanctions",
+        "sovereign_or_corporate_debt": "credit",
+        "fx_usd": "broad_usd_proxy",
+    }.get(event.event_type, event.event_type)
+    period = _period_key(event.event_time or event.published_at or event.updated_at or event.event_id)
+    identity = str(event.dedupe_group or event.event_id)
+    return stable_chain_id(family, metric, period, identity)
+
+
+def clickable_source_url(fact: dict[str, Any] | None) -> str:
+    row = fact or {}
+    for key in ("http_source", "source_url", "canonical_url"):
+        url = str(row.get(key) or "").strip()
+        if is_safe_public_http_url(url):
+            return url
+    return ""
+
+
+def coverage_label(chain: dict[str, Any]) -> str:
+    if chain.get("status") != "ok":
+        return str(chain.get("status") or "degraded")
+    if chain.get("live") is True:
+        return "live-current"
+    return str(chain.get("data_class") or "frozen/fixture")
+
+
+def _finalize_chain(row: dict[str, Any]) -> dict[str, Any]:
+    if row.get("status") != "ok":
+        row["live"] = False
+    row["coverage_label"] = coverage_label(row)
+    return row
 
 
 def _num(value: Any) -> float | None:
@@ -103,16 +149,42 @@ def _period_key(value: Any) -> str:
 
 def _ref(fact: dict[str, Any] | None, *, source_id: str | None = None) -> dict[str, Any]:
     row = fact or {}
-    url = str(row.get("http_source") or row.get("source_url") or "")
+    url = clickable_source_url(row)
     return {
         "source_id": source_id or f"macro:{row.get('metric') or 'unknown'}:{_period_key(row.get('period') or row.get('as_of'))}",
         "source_url": url,
         "publisher": str(row.get("source") or row.get("publisher") or ""),
-        "source_tier": 1 if url.startswith("http") else 0,
+        "source_tier": 1 if url else 0,
         "content_type": "official_fact",
         "fact_or_opinion": "fact",
         "as_of": row.get("as_of") or row.get("period"),
         "series": row.get("series") or row.get("series_or_symbol"),
+    }
+
+
+def _normalize_basis(value: Any) -> str:
+    raw = str(value or "").strip().lower()
+    if raw in {"monthly_diff", "same_definition_monthly_diff", "diff"}:
+        return "monthly_diff"
+    if raw in {"level", "employment_stock", "stock"}:
+        return "level"
+    if raw in {"index_level", "index"}:
+        return "index_level"
+    if raw in {"percent", "yield_percent"}:
+        return "percent"
+    return raw
+
+
+def _mismatch(metric: str, reason: str, detail: str, actual: float | None, baseline: float | None) -> dict[str, Any]:
+    return {
+        "status": "degraded",
+        "reason": reason,
+        "detail": detail,
+        "actual": actual,
+        "baseline": baseline,
+        "delta": None,
+        "direction": None,
+        "formula": NFP_FORMULA if metric == "nfp" else None,
     }
 
 
@@ -139,84 +211,61 @@ def compare_same_basis(fact: dict[str, Any]) -> dict[str, Any]:
     period = _period_key(fact.get("period") or fact.get("as_of"))
     prior_as_of = _period_key(fact.get("prior_as_of"))
     consensus_period = _period_key(fact.get("consensus_as_of") or fact.get("consensus_period"))
-    actual_basis = str(fact.get("basis") or fact.get("comparison") or "")
-    prior_basis = str(fact.get("prior_basis") or "")
+    actual_basis = _normalize_basis(fact.get("basis") or (fact.get("comparison") if metric == "nfp" else fact.get("basis")))
+    prior_basis = _normalize_basis(fact.get("prior_basis") or actual_basis)
+    consensus_basis = _normalize_basis(fact.get("consensus_basis") or actual_basis)
     consensus_unit = str(fact.get("consensus_unit") or unit)
     prior_unit = str(fact.get("prior_unit") or unit)
+    consensus_series = str(fact.get("consensus_series") or series)
+    prior_series = str(fact.get("prior_series") or series)
     status = "ok"
     reason = ""
     baseline = None
     baseline_kind = None
     if str(fact.get("status") or "ok") in {"error", "invalid", "missing", "unavailable"}:
-        return {
-            "status": "degraded",
-            "reason": "source_failed",
-            "detail": f"{metric} 来源失败（{fact.get('status')} / {fact.get('reason_code') or 'source_failed'}），只降级本链",
-            "actual": actual,
-            "baseline": None,
-            "delta": None,
-            "direction": None,
-        }
+        return _mismatch(
+            metric,
+            "source_failed",
+            f"{metric} 来源失败（{fact.get('status')} / {fact.get('reason_code') or 'source_failed'}），只降级本链",
+            actual,
+            None,
+        )
     if actual is None:
-        return {
-            "status": "degraded",
-            "reason": "missing_actual",
-            "detail": f"{metric} 缺少可观察实际值，只降级本链",
-            "actual": None,
-            "baseline": None,
-            "delta": None,
-            "direction": None,
-        }
+        return _mismatch(metric, "missing_actual", f"{metric} 缺少可观察实际值，只降级本链", None, None)
     if metric == "nfp" and (
-        prior_basis in {"level", "employment_stock"}
-        or actual_basis in {"level", "employment_stock"}
+        prior_basis == "level"
+        or actual_basis == "level"
+        or consensus_basis == "level"
         or (prior is not None and abs(prior) > abs(actual) * 20)
     ):
-        return {
-            "status": "degraded",
-            "reason": "period_or_basis_mismatch",
-            "detail": "NFP 不得把就业存量与月度差分比较；只降级本劳动链",
-            "actual": actual,
-            "baseline": prior,
-            "delta": None,
-            "direction": None,
-            "formula": NFP_FORMULA,
-        }
+        return _mismatch(metric, "period_or_basis_mismatch", "NFP 不得把就业存量与月度差分比较；只降级本劳动链", actual, prior)
+    if consensus is not None and series and consensus_series and consensus_series != series:
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 共识序列 {consensus_series} 与实际序列 {series} 不一致，只降级本链", actual, consensus)
+    if prior is not None and series and prior_series and prior_series != series:
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 前值序列 {prior_series} 与实际序列 {series} 不一致，只降级本链", actual, prior)
+    if consensus is not None and actual_basis and consensus_basis and actual_basis != consensus_basis:
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 实际口径 {actual_basis} 与共识口径 {consensus_basis} 不一致，只降级本链", actual, consensus)
     if consensus is not None and consensus_unit and unit and consensus_unit != unit:
-        return {
-            "status": "degraded",
-            "reason": "period_or_basis_mismatch",
-            "detail": f"{metric} 共识单位 {consensus_unit} 与实际单位 {unit} 不一致，只降级本链",
-            "actual": actual,
-            "baseline": consensus,
-            "delta": None,
-            "direction": None,
-        }
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 共识单位 {consensus_unit} 与实际单位 {unit} 不一致，只降级本链", actual, consensus)
     if consensus is not None and consensus_period not in {"", "unspecified"} and consensus_period != period:
-        return {
-            "status": "degraded",
-            "reason": "period_or_basis_mismatch",
-            "detail": f"{metric} 共识期次 {consensus_period} 与实际期次 {period} 不一致，只降级本链",
-            "actual": actual,
-            "baseline": consensus,
-            "delta": None,
-            "direction": None,
-        }
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 共识期次 {consensus_period} 与实际期次 {period} 不一致，只降级本链", actual, consensus)
     if prior is not None and prior_unit and unit and prior_unit != unit:
-        return {
-            "status": "degraded",
-            "reason": "period_or_basis_mismatch",
-            "detail": f"{metric} 前值单位 {prior_unit} 与实际单位 {unit} 不一致，只降级本链",
-            "actual": actual,
-            "baseline": prior,
-            "delta": None,
-            "direction": None,
-        }
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 前值单位 {prior_unit} 与实际单位 {unit} 不一致，只降级本链", actual, prior)
+    if prior is not None and actual_basis and prior_basis and actual_basis != prior_basis:
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 实际口径 {actual_basis} 与前值口径 {prior_basis} 不一致，只降级本链", actual, prior)
     if consensus is not None:
         baseline = consensus
         baseline_kind = "consensus"
         formula = fact.get("formula") or f"{series or metric} actual vs consensus ({unit})"
     elif prior is not None:
+        if prior_as_of in {"", "unspecified"}:
+            return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 缺少前值期次 prior_as_of，不能声称与基线可比，只降级本链", actual, prior)
+        if period in {"", "unspecified"}:
+            return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 缺少当前期次，不能与前值排序，只降级本链", actual, prior)
+        if prior_as_of == period:
+            return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 前值期次 {prior_as_of} 与当前期次相同，不是相邻观察，只降级本链", actual, prior)
+        if prior_as_of >= period:
+            return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 前值期次 {prior_as_of} 不早于当前期次 {period}，只降级本链", actual, prior)
         baseline = prior
         baseline_kind = "prior"
         formula = fact.get("formula") or f"{series or metric}[t] vs {series or metric}[t−1] ({unit})"
@@ -417,17 +466,28 @@ def _counter_evidence(metric: str, facts: list[dict[str, Any]], change: dict[str
     return rows
 
 
-def _unavailable(metric: str, family: str, reason: str, detail: str, refs: list[dict[str, Any]]) -> dict[str, Any]:
-    period = "unavailable"
-    chain_id = stable_chain_id(family, metric, period)
-    return {
+def _unavailable(
+    metric: str,
+    family: str,
+    reason: str,
+    detail: str,
+    refs: list[dict[str, Any]],
+    *,
+    period: str | None = None,
+    data_class: str | None = None,
+) -> dict[str, Any]:
+    stamp = period or "unavailable"
+    chain_id = stable_chain_id(family, metric, stamp)
+    status = "unavailable" if reason in {"missing_actual", "source_failed"} and "actual" in detail else "degraded"
+    return _finalize_chain({
         "chain_id": chain_id,
         "family": family,
         "metric": metric,
-        "status": "unavailable" if reason in {"missing_actual", "source_failed"} and "actual" in detail else "degraded",
+        "period": stamp,
+        "status": status,
         "degrade_reason": reason,
         "degrade_detail": detail,
-        "data_class": "unavailable",
+        "data_class": data_class or "unavailable",
         "live": False,
         "can_form_direction": False,
         "percent_forecast": None,
@@ -444,7 +504,7 @@ def _unavailable(metric: str, family: str, reason: str, detail: str, refs: list[
         "counter_evidence": [{"text": detail, "evidence_refs": refs}],
         "what_changes": {"text": detail, "follow_ups": [], "thresholds": [], "invalidation": detail},
         "exposures": [],
-    }
+    })
 
 
 def build_numeric_macro_chain(
@@ -455,20 +515,31 @@ def build_numeric_macro_chain(
 ) -> dict[str, Any]:
     metric = canonical_metric(str(fact.get("metric") or fact.get("event_type") or ""))
     family = METRIC_FAMILY.get(metric, "other")
-    refs = [_ref(fact)]
-    change = compare_same_basis(fact)
     data_class = str(fact.get("data_class") or "live_current")
+    period = _period_key(fact.get("period") or fact.get("as_of"))
+    refs = [_ref(fact)] if clickable_source_url(fact) else []
+    if not clickable_source_url(fact):
+        return _unavailable(
+            metric,
+            family,
+            "missing_source_url",
+            f"{metric} 缺少可点击 http(s) 原文，不能把本链标为健康，只降级本链",
+            [],
+            period=period,
+            data_class=data_class,
+        )
+    change = compare_same_basis(fact)
     live = data_class == "live_current" and str(fact.get("status") or "ok") == "ok"
     if change.get("status") != "ok":
-        row = _unavailable(metric, family, str(change.get("reason") or "missing_baseline"), str(change.get("detail") or ""), refs)
-        row["data_class"] = data_class
-        row["live"] = False
-        row["period"] = _period_key(fact.get("period") or fact.get("as_of"))
-        row["chain_id"] = stable_chain_id(family, metric, row["period"])
-        for layer in row["layers"]:
-            layer["layer_id"] = f"{layer['id']}:{row['chain_id']}"
-            if layer["id"] != "fact":
-                layer["cites"] = [f"{LAYER_ORDER[LAYER_ORDER.index(layer['id']) - 1]}:{row['chain_id']}"]
+        row = _unavailable(
+            metric,
+            family,
+            str(change.get("reason") or "missing_baseline"),
+            str(change.get("detail") or ""),
+            refs,
+            period=period,
+            data_class=data_class,
+        )
         return row
     period = str(change.get("period") or _period_key(fact.get("period") or fact.get("as_of")))
     chain_id = stable_chain_id(family, metric, period)
@@ -532,7 +603,7 @@ def build_numeric_macro_chain(
         _layer(chain_id, "impact", impact_text, refs, exposures=exposures, markets=channels),
         _layer(chain_id, "what_changes", what["text"], refs, follow_ups=what["follow_ups"], thresholds=what["thresholds"], invalidation=what["invalidation"]),
     ]
-    return {
+    return _finalize_chain({
         "chain_id": chain_id,
         "family": family,
         "metric": metric,
@@ -553,7 +624,7 @@ def build_numeric_macro_chain(
         "exposures": exposures,
         "confidence": expectation["confidence"],
         "event_id": chain_id,
-    }
+    })
 
 
 def build_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> dict[str, Any] | None:
@@ -574,7 +645,7 @@ def build_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> di
         "fx_usd": "broad_usd_proxy",
     }.get(event.event_type, event.event_type)
     period = _period_key(event.event_time or event.published_at or event.updated_at or event.event_id)
-    chain_id = stable_chain_id(family, metric, period)
+    chain_id = event_chain_id(event)
     refs = list((analysis.get("evidence_refs") or [])[:3])
     fact_text = str(((analysis.get("confirmed_facts") or [{}])[0] or {}).get("text") or event.canonical_title)
     change_item = analysis.get("change_vs_baseline") or {}
@@ -612,7 +683,7 @@ def build_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> di
     if not str(change_text or "").strip():
         missing.append("missing_baseline")
     status = "degraded" if missing else "ok"
-    return {
+    return _finalize_chain({
         "chain_id": chain_id,
         "family": family,
         "metric": metric,
@@ -638,7 +709,7 @@ def build_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> di
         },
         "exposures": exposures,
         "confidence": str((analysis.get("confidence") or {}).get("text") or ""),
-    }
+    })
 
 
 def attach_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> dict[str, Any]:
@@ -774,23 +845,26 @@ def apply_macro_inject(facts: list[dict[str, Any]], tokens: Any) -> list[dict[st
 def load_macro_facts(settings: Any = None, *, facts: list[dict[str, Any]] | None = None, inject: Any = None) -> list[dict[str, Any]]:
     if facts is not None:
         rows = [dict(row) for row in facts]
-    elif _CACHE["facts"] is not None:
-        rows = [dict(row) for row in _CACHE["facts"]]
     else:
-        mode = events_data_mode(settings)
-        if mode in {"demo", "fixture"}:
-            rows = load_frozen_6a_facts()
-        elif mode in {"empty", "live"}:
-            try:
-                from stock_pm.series import collect_live_macro_overlay
-
-                live_rows, _errors, _report = collect_live_macro_overlay(settings)
-                rows = [fact_from_fred_row(row, data_class="live_current") for row in live_rows]
-            except Exception:
-                rows = []
+        key = _mode_key(settings)
+        cached = _FACTS_BY_MODE.get(key)
+        if cached is not None:
+            rows = [dict(row) for row in cached]
         else:
-            rows = []
-        _CACHE["facts"] = [dict(row) for row in rows]
+            mode = key
+            if mode in {"demo", "fixture"}:
+                rows = load_frozen_6a_facts()
+            elif mode in {"empty", "live"}:
+                try:
+                    from stock_pm.series import collect_live_macro_overlay
+
+                    live_rows, _errors, _report = collect_live_macro_overlay(settings)
+                    rows = [fact_from_fred_row(row, data_class="live_current") for row in live_rows]
+                except Exception:
+                    rows = []
+            else:
+                rows = []
+            _FACTS_BY_MODE[key] = [dict(row) for row in rows]
     if inject and inject_allowed(settings):
         rows = apply_macro_inject(rows, inject)
     elif inject and not inject_allowed(settings):
@@ -827,8 +901,8 @@ def summarize_macro_chains(chains: list[dict[str, Any]]) -> dict[str, Any]:
     ok = [row for row in chains if row.get("status") == "ok"]
     degraded = [row for row in chains if row.get("status") == "degraded"]
     unavailable = [row for row in chains if row.get("status") == "unavailable"]
-    live_current = [row for row in chains if row.get("data_class") == "live_current"]
-    frozen = [row for row in chains if str(row.get("data_class") or "").startswith("frozen")]
+    live_current = [row for row in chains if row.get("status") == "ok" and row.get("live") is True]
+    frozen = [row for row in chains if row.get("status") == "ok" and str(row.get("data_class") or "").startswith("frozen")]
     headlines = []
     for row in ok:
         exp = next((layer for layer in row.get("layers") or [] if layer.get("id") == "expectation"), None)
@@ -839,6 +913,8 @@ def summarize_macro_chains(chains: list[dict[str, Any]]) -> dict[str, Any]:
             "text": (exp or {}).get("text") or "",
             "status": row.get("status"),
             "data_class": row.get("data_class"),
+            "live": row.get("live") is True,
+            "coverage_label": row.get("coverage_label") or coverage_label(row),
         })
     return {
         "count": len(chains),

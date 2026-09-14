@@ -464,11 +464,13 @@
     const why = options.why || chain.why_relevant || "";
     const counters = chain.counter_evidence || [];
     const what = chain.what_changes || {};
-    return `<article class="macro-chain" data-macro-chain="1" data-chain-id="${esc(chain.chain_id || "")}" data-metric="${esc(chain.metric || "")}" data-status="${esc(chain.status || "")}" data-data-class="${esc(chain.data_class || "")}" data-can-form-direction="${chain.can_form_direction === true ? "1" : "0"}" data-vix-role="${esc(chain.vix_role || "")}">
+    const liveHealthy = chain.status === "ok" && chain.live === true;
+    const coverage = chain.coverage_label || (chain.status !== "ok" ? (chain.status || "degraded") : (liveHealthy ? "live-current" : (chain.data_class || "frozen/fixture")));
+    return `<article class="macro-chain" data-macro-chain="1" data-chain-id="${esc(chain.chain_id || "")}" data-metric="${esc(chain.metric || "")}" data-status="${esc(chain.status || "")}" data-data-class="${esc(chain.data_class || "")}" data-live="${liveHealthy ? "1" : "0"}" data-coverage-label="${esc(coverage)}" data-can-form-direction="${chain.can_form_direction === true ? "1" : "0"}" data-vix-role="${esc(chain.vix_role || "")}">
       <div class="event-meta">
         ${pill(chain.metric || chain.family || "macro")}
         ${pill(chain.status || "ok", chain.status === "ok" ? "ok" : "not_configured")}
-        ${pill(chain.data_class === "live_current" ? "live-current" : (chain.data_class || "frozen/fixture"), chain.data_class === "live_current" ? "ok" : "not_configured")}
+        ${pill(coverage, liveHealthy ? "ok" : "not_configured")}
         ${pill(`chain ${chain.chain_id || ""}`)}
       </div>
       ${chain.degrade_detail ? `<p class="subline" data-macro-degraded="1" data-degrade-reason="${esc(chain.degrade_reason || "")}">本链降级：${esc(chain.degrade_detail)}</p>` : ""}
@@ -506,7 +508,7 @@
     if (!chains.length && !summary.count) return "";
     return `<section class="macro-driver-summary" data-macro-driver-summary="1" data-ok="${esc(summary.ok_count ?? 0)}" data-degraded="${esc(summary.degraded_count ?? 0)}">
       <h3>宏观驱动摘要</h3>
-      <div class="subline">${esc(summary.note || "")} live-current ${esc(summary.live_current_count ?? 0)} · frozen ${esc(summary.frozen_count ?? 0)} · 降级 ${esc(summary.degraded_count ?? 0)}</div>
+      <div class="subline">${esc(summary.note || "")} live-current ${esc(summary.live_current_count ?? 0)} · frozen ${esc(summary.frozen_count ?? 0)} · 降级 ${esc(summary.degraded_count ?? 0)}。live-current 只计 status=ok 且 live=true。</div>
       ${(summary.headlines || []).map((row) => `<div class="subline" data-macro-headline="${esc(row.chain_id || "")}">${esc(row.metric || "")} · ${esc(row.text || "")}</div>`).join("")}
       ${chains.map((chain) => `<details class="macro-chain-expand" data-chain-id="${esc(chain.chain_id || "")}" ${chain.status === "degraded" ? "open" : ""}><summary>${esc(chain.metric || chain.family || "macro")} · ${esc(chain.status || "")} · ${esc(chain.chain_id || "")}</summary>${macroChainHtml(chain)}</details>`).join("")}
     </section>`;

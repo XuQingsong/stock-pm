@@ -7,14 +7,17 @@ from stock_pm.events.analyze import analyze_event
 from stock_pm.events.macro_chain import (
     LAYER_KINDS,
     apply_macro_inject,
+    build_event_macro_chain,
     build_market_macro_chains,
     build_numeric_macro_chain,
     compare_same_basis,
+    event_chain_id,
     load_frozen_6a_facts,
     load_macro_facts,
     reset_macro_cache,
     stable_chain_id,
     stock_macro_chains,
+    summarize_macro_chains,
 )
 from stock_pm.events.service import market_center, reset_cache, stock_events
 from stock_pm.events.types import EventClaim, EventSource, TrustedEvent
@@ -69,7 +72,15 @@ def _layer(chain: dict, name: str) -> dict:
     return next(row for row in chain["layers"] if row["id"] == name)
 
 
-def _event(event_type: str, title: str, *, entities: list[str] | None = None) -> TrustedEvent:
+def _event(
+    event_type: str,
+    title: str,
+    *,
+    entities: list[str] | None = None,
+    event_id: str | None = None,
+    dedupe_group: str | None = None,
+    event_time: str = "2026-09-01T15:00:00+00:00",
+) -> TrustedEvent:
     source = EventSource(
         source_id="src_macro_6a",
         source_url="https://home.treasury.gov/news/press-releases/jy2609-refunding",
@@ -93,18 +104,18 @@ def _event(event_type: str, title: str, *, entities: list[str] | None = None) ->
         observed_at="2026-09-01T15:00:00+00:00",
     )
     event = TrustedEvent(
-        event_id=f"evt-{event_type}",
+        event_id=event_id or f"evt-{event_type}",
         canonical_title=title,
         event_type=event_type,
         entities=list(entities or ["Treasury", "debt", "credit"]),
         countries=["US"],
-        event_time="2026-09-01T15:00:00+00:00",
-        published_at="2026-09-01T15:00:00+00:00",
-        first_seen_at="2026-09-01T15:00:00+00:00",
-        updated_at="2026-09-01T15:00:00+00:00",
+        event_time=event_time,
+        published_at=event_time,
+        first_seen_at=event_time,
+        updated_at=event_time,
         sources=[source],
         claims=[claim],
-        dedupe_group=f"evt-{event_type}",
+        dedupe_group=dedupe_group or event_id or f"evt-{event_type}",
         status="active",
         freshness="fresh",
         severity="high",
@@ -273,3 +284,106 @@ def test_fixture_market_center_exposes_summary_and_layers():
     assert "wti" not in nok_metrics
     assert nvda["risk_state"]["role"] == "risk_confirmation_only"
     assert all(row.get("can_form_direction") is not True for row in nvda["macro_chains"])
+
+
+def test_fixture_then_live_does_not_reuse_frozen_cache(monkeypatch):
+    live_row = {
+        "event_type": "cpi",
+        "name": "CPI-U",
+        "actual": 301.2,
+        "prior": 300.1,
+        "prior_as_of": "2026-07-01",
+        "as_of": "2026-08-01",
+        "event_time": "2026-08-01T00:00:00+00:00",
+        "unit": "index",
+        "series": "CPIAUCSL",
+        "http_source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+        "source": "FRED",
+        "status": "ok",
+        "comparison": "same_series_same_unit",
+    }
+    monkeypatch.setattr(
+        "stock_pm.series.collect_live_macro_overlay",
+        lambda settings=None: ([live_row], set(), {}),
+    )
+    reset_macro_cache()
+    fixture = load_macro_facts(Settings(events_mode="fixture"))
+    assert fixture
+    assert any(row.get("data_class") == "frozen_provider_audit" for row in fixture)
+    live = load_macro_facts(Settings(events_mode="empty"))
+    assert live
+    assert all(row.get("data_class") == "live_current" for row in live)
+    assert all(row.get("data_class") != "frozen_provider_audit" for row in live)
+    assert any(abs(float(row.get("actual")) - 301.2) < 0.001 for row in live)
+    live_chains = build_market_macro_chains(facts=live)
+    assert all(row.get("data_class") != "frozen_provider_audit" for row in live_chains)
+
+
+def test_ok_chain_requires_clickable_source_url():
+    for url in ("", "not-a-url", "http://localhost/cpi", "https://example.com/cpi", "https://127.0.0.1/cpi"):
+        chain = build_numeric_macro_chain(_fact(http_source=url, source_url=url))
+        assert chain["status"] == "degraded"
+        assert chain["degrade_reason"] == "missing_source_url"
+        assert chain["live"] is False
+        assert chain["coverage_label"] == "degraded"
+    healthy = build_numeric_macro_chain(_fact())
+    assert healthy["status"] == "ok"
+    assert _layer(healthy, "fact")["evidence_refs"][0]["source_url"].startswith("https://fred.stlouisfed.org")
+
+
+def test_same_basis_rejects_ambiguous_prior_and_series():
+    same_period = _fact(consensus=None, prior_as_of="2026-08-01")
+    assert compare_same_basis(same_period)["reason"] == "period_or_basis_mismatch"
+    missing_prior_stamp = _fact(consensus=None)
+    missing_prior_stamp["prior_as_of"] = None
+    assert compare_same_basis(missing_prior_stamp)["reason"] == "period_or_basis_mismatch"
+    mixed_basis = _nfp()
+    mixed_basis["consensus_basis"] = "level"
+    assert compare_same_basis(mixed_basis)["reason"] == "period_or_basis_mismatch"
+    wrong_series = _fact(consensus_series="UNRATE")
+    assert compare_same_basis(wrong_series)["reason"] == "period_or_basis_mismatch"
+    assert compare_same_basis(_fact())["status"] == "ok"
+    assert compare_same_basis(_nfp())["status"] == "ok"
+
+
+def test_live_current_count_excludes_degraded():
+    healthy = build_numeric_macro_chain(_fact(data_class="live_current"))
+    broken = build_numeric_macro_chain(_fact(data_class="live_current", http_source="", source_url=""))
+    assert healthy["live"] is True
+    assert healthy["coverage_label"] == "live-current"
+    assert broken["live"] is False
+    assert broken["coverage_label"] == "degraded"
+    summary = summarize_macro_chains([healthy, broken])
+    assert summary["live_current_count"] == 1
+    assert summary["degraded_count"] == 1
+    assert all(row["coverage_label"] == "live-current" for row in summary["headlines"])
+
+
+def test_same_day_events_keep_distinct_ids_and_updates_reuse_id():
+    first = _event(
+        "war_sanctions",
+        "Treasury OFAC designates additional energy sanctions",
+        entities=["Iran", "oil", "energy"],
+        event_id="evt-war-a",
+        dedupe_group="grp-war-a",
+    )
+    second = _event(
+        "war_sanctions",
+        "Treasury OFAC designates a separate energy sanctions package",
+        entities=["Iran", "oil", "energy"],
+        event_id="evt-war-b",
+        dedupe_group="grp-war-b",
+    )
+    id_a = event_chain_id(first)
+    id_b = event_chain_id(second)
+    assert id_a != id_b
+    assert first.analysis["macro_chain"]["chain_id"] == id_a
+    assert second.analysis["macro_chain"]["chain_id"] == id_b
+    merged = build_market_macro_chains(events=[first, second], facts=[])
+    war_ids = {row["chain_id"] for row in merged if row.get("event_type") == "war_sanctions"}
+    assert war_ids == {id_a, id_b}
+    first.canonical_title = "Treasury OFAC updates the first energy sanctions package"
+    first.analysis["change_vs_baseline"] = {"text": "官方后续文档刷新同一制裁事件", "evidence_refs": []}
+    updated = build_event_macro_chain(first, first.analysis)
+    assert updated["chain_id"] == id_a
+    assert "刷新同一制裁事件" in _layer(updated, "change")["text"]
