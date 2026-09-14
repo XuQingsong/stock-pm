@@ -12,9 +12,9 @@ from stock_pm.events.dedupe import build_events
 from stock_pm.events.horizon import DIRECTIONAL_SCENARIOS, build_horizon_forecast
 from stock_pm.events.job import run_event_job
 from stock_pm.events.macro_chain import apply_macro_chain_inject, apply_macro_inject
-from stock_pm.events.policy import document_to_source, why_trusted
+from stock_pm.events.policy import document_to_source, tier1_ref_gaps, why_trusted
 from stock_pm.events.providers import GoogleDiscoveryProvider
-from stock_pm.events.resolve import resolve_discovery_candidates
+from stock_pm.events.resolve import official_body_supports_claim_actions, resolve_discovery_candidates
 from stock_pm.events.service import coverage, market_center, reset_cache, stock_events
 from stock_pm.events.synthesis import synthesize_drivers
 from stock_pm.events.types import EventDocument
@@ -482,7 +482,12 @@ def test_cse_snippet_never_evidence_until_official_fetch():
     official = next(row for row in docs if row.body_source == "official_html")
     assert official.provider == "official"
     assert "Snippet only" not in (official.body or "")
+    assert "SEC filing snippet via Google" not in (official.title or "")
+    assert "bankruptcy" not in (official.title or "").lower()
+    assert any("8-K" in (text or "") for text in [official.title, *(official.claims or [])])
+    assert official.published_at
     events = build_events(docs)
+    assert len(events) == 1
     analyze_event(events[0])
     sources = events[0].as_dict()["sources"]
     assert any(row["fact_or_opinion"] == "fact" and row["source_tier"] == 1 and row.get("body_source") == "official_html" for row in sources)
@@ -491,6 +496,63 @@ def test_cse_snippet_never_evidence_until_official_fetch():
     assert all(row.get("body_source") != "cse_snippet" for row in refs)
     assert all(row.get("discovery_role") not in {"discovery_candidate", "discovery_only"} for row in refs)
     assert any(str(row.get("source_url") or "").startswith("https://www.sec.gov") for row in refs)
+
+
+def test_cse_entity_only_or_contradicted_action_stays_unverified():
+    html = (
+        "<html><head><title>NVIDIA Corporation Form 8-K</title></head>"
+        "<body><article><p>NVIDIA Corporation filed a Current Report on Form 8-K "
+        "covering Item 2.02 results of operations. The company is not in bankruptcy "
+        "and did not file a bankruptcy petition.</p></article></body></html>"
+    )
+
+    def fake_fetch(url, **kwargs):
+        return {
+            "url": url,
+            "html": html,
+            "error": None,
+            "status": "ok",
+            "fetched_at": "2026-09-10T00:00:00+00:00",
+            "final_url": url,
+        }
+
+    snippet = _cse_snippet(
+        title="NVDA filed for bankruptcy",
+        claims=["NVDA filed for bankruptcy"],
+        body="Search snippet: NVDA filed for bankruptcy after operations review.",
+    )
+    body = (
+        "NVIDIA Corporation filed a Current Report on Form 8-K covering Item 2.02 "
+        "results of operations. The company is not in bankruptcy and did not file a bankruptcy petition."
+    )
+    ok, why = official_body_supports_claim_actions(body, "NVDA filed for bankruptcy", {"nvda", "nvidia"})
+    assert ok is False
+    assert "bankruptcy" in why
+    docs, report = resolve_discovery_candidates([snippet], fetch_page=fake_fetch)
+    assert report["discovery_promoted"] == 0
+    assert all(row.body_source != "official_html" for row in docs)
+    assert any("official_body_did_not_validate" in (row.fetch_error or "") for row in docs)
+    events = build_events(docs)
+    analyze_event(events[0])
+    assert all(row.fact_or_opinion != "fact" for row in events[0].sources)
+    refs = events[0].analysis.get("evidence_refs") or []
+    assert all(row.get("body_source") != "cse_snippet" for row in refs)
+    assert all(row.get("fact_or_opinion") != "fact" for row in refs)
+    confirmed = " ".join(row.get("text") or "" for row in events[0].analysis.get("confirmed_facts") or []).lower()
+    assert "bankruptcy" not in confirmed
+    forecast = build_horizon_forecast([], scope="stock", target="NVDA", now=FROZEN_NOW)
+    assert forecast["can_form_direction"] is False
+    entity_only = (
+        "NVIDIA Corporation reported results of operations and financial condition "
+        "on its investor relations page."
+    )
+    ok_entity, why_entity = official_body_supports_claim_actions(
+        entity_only,
+        "NVDA filed for bankruptcy",
+        {"nvda", "nvidia"},
+    )
+    assert ok_entity is False
+    assert "missing_action:bankruptcy" in why_entity
 
 
 def test_cse_fetch_failure_stays_discovery_with_retry():
@@ -544,6 +606,59 @@ def test_per_horizon_gate_omits_withheld_from_forecast():
     assert by_name["long"]["directional_scenario"] == "withheld"
     assert by_name["long"].get("what_changes")
     assert any("长期" in (row.get("detail") or "") or row.get("horizon") == "long" for row in nvda.get("missing") or [])
+
+
+def _refs_only(chain: dict, **ref_fields) -> dict:
+    row = dict(chain)
+    layers = []
+    for layer in chain.get("layers") or []:
+        item = dict(layer)
+        item["evidence_refs"] = [dict(ref_fields)]
+        layers.append(item)
+    row["layers"] = layers
+    return row
+
+
+def test_tier1_gate_fail_closed_on_url_only_and_missing_metadata():
+    base = _chains([_us2y(up=True)])[0]
+    complete = next(iter(_raw_complete_ref(base)))
+    assert not tier1_ref_gaps(complete)
+
+    url_only = _refs_only(base, source_url="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2")
+    missing_tier = _retag_chain(base, source_tier=None)
+    missing_content = _retag_chain(base, content_type=None)
+    fake_host = _retag_chain(
+        base,
+        source_url="https://www.example-broker.com/research/us2y-note",
+        source_tier=1,
+        content_type="official_fact",
+        fact_or_opinion="fact",
+        primary_or_secondary="primary",
+        is_current=True,
+        body_source="official_html",
+    )
+    cases = (
+        ("url_only", url_only, "source_tier"),
+        ("missing_tier", missing_tier, "source_tier"),
+        ("missing_content", missing_content, "content_type"),
+        ("fake_host", fake_host, "official_https_host"),
+    )
+    for name, chain, gap in cases:
+        forecast = build_horizon_forecast([chain], scope="market", now=FROZEN_NOW)
+        blob = json.dumps(forecast, ensure_ascii=False)
+        assert forecast["can_form_direction"] is False, name
+        assert forecast.get("forecast") in (None, {}, [])
+        assert all(row["directional_scenario"] == "withheld" for row in forecast["horizons"]), name
+        assert "Tier1 门禁失败" in blob, name
+        assert gap in blob, name
+        assert any(row.get("reason") == "tier1_gate_failed" for row in forecast.get("missing") or []), name
+
+
+def _raw_complete_ref(chain: dict) -> list[dict]:
+    refs = []
+    for layer in chain.get("layers") or []:
+        refs.extend(layer.get("evidence_refs") or [])
+    return refs
 
 
 def test_tier2_and_tier3_cannot_form_direction():

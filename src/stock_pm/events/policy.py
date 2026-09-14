@@ -146,6 +146,12 @@ def host_of(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+APPROVED_TIER1_CONTENT = frozenset({"official_fact", "official_statement", "official_release"})
+DISCOVERY_BODY_SOURCES = frozenset({"cse_snippet", "discovery_candidate", "discovery_only"})
+DISCOVERY_ROLES = frozenset({"discovery_candidate", "discovery_only"})
+STALE_REF_FLAGS = frozenset({"stale", "degraded", "revoked", "superseded"})
+
+
 def is_tier1_https(url: str) -> bool:
     """True only for HTTPS URLs on the official Tier-1 host allowlist."""
     if not is_safe_public_http_url(url):
@@ -155,6 +161,46 @@ def is_tier1_https(url: str) -> bool:
         return False
     host = host_of(url)
     return any(host == item or host.endswith("." + item) for item in TIER1_HOSTS)
+
+
+def _explicit_true(value: object) -> bool:
+    return value is True or value in {1, "1", "true", "True"}
+
+
+def tier1_ref_gaps(ref: dict | None) -> list[str]:
+    """Fail-closed gaps for a current primary official Tier-1 original.
+
+    Missing metadata is a failure. Defaults such as 'fact' or tier=1 are not applied.
+    """
+    if not isinstance(ref, dict) or not ref:
+        return ["ref_missing"]
+    gaps: list[str] = []
+    try:
+        tier = int(ref["source_tier"]) if ref.get("source_tier") not in (None, "") else None
+    except (TypeError, ValueError, KeyError):
+        tier = None
+    if tier != 1:
+        gaps.append("source_tier")
+    if ref.get("fact_or_opinion") != "fact":
+        gaps.append("fact_or_opinion")
+    if ref.get("primary_or_secondary") != "primary":
+        gaps.append("primary_or_secondary")
+    if ref.get("content_type") not in APPROVED_TIER1_CONTENT:
+        gaps.append("content_type")
+    url = str(ref.get("source_url") or ref.get("canonical_url") or "").strip()
+    if not is_tier1_https(url):
+        gaps.append("official_https_host")
+    if not _explicit_true(ref.get("is_current")):
+        gaps.append("is_current")
+    if any(ref.get(flag) for flag in STALE_REF_FLAGS):
+        gaps.append("stale_or_revoked")
+    body = str(ref.get("body_source") or "")
+    if body in DISCOVERY_BODY_SOURCES:
+        gaps.append("discovery_body")
+    role = str(ref.get("discovery_role") or "")
+    if role in DISCOVERY_ROLES:
+        gaps.append("discovery_role")
+    return gaps
 
 
 def is_https_registrable_host(url: str, root: str) -> bool:

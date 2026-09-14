@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timezone
 
 from .evidence import infer_phase, publisher_key, source_metrics
-from .policy import document_to_source, sanitize_untrusted
+from .policy import document_to_source, normalize_url, sanitize_untrusted
 from .types import EventClaim, EventDocument, EventSource, TrustedEvent
 
 
@@ -40,6 +40,10 @@ def _published_day(doc: EventDocument):
 def same_event(left: EventDocument, right: EventDocument) -> bool:
     if left.event_type != right.event_type:
         return False
+    left_url = normalize_url(left.url or "")
+    right_url = normalize_url(right.url or "")
+    if left_url and left_url == right_url:
+        return True
     if left.event_type == "company_earnings":
         skip = {"EPS", "REV", "REVENUE", "EARNINGS", "USD", "US", "USA"}
         left_issuers = {item.upper() for item in left.entities if str(item).isalpha() and item.upper() not in skip}
@@ -100,8 +104,6 @@ def _stable_id(docs: list[EventDocument]) -> str:
 
     Reprints and updates already clustered by same_event() inherit the cluster primary.
     """
-    from .policy import normalize_url
-
     primary = _cluster_primary(docs)
     shared = set(docs[0].entities)
     for row in docs[1:]:

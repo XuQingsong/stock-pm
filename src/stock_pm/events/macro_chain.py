@@ -167,6 +167,9 @@ def _ref(fact: dict[str, Any] | None, *, source_id: str | None = None) -> dict[s
         "source_tier": 1 if url else 0,
         "content_type": "official_fact",
         "fact_or_opinion": "fact",
+        "primary_or_secondary": "primary",
+        "is_current": True,
+        "body_source": "official_series",
         "as_of": row.get("as_of") or row.get("period"),
         "series": row.get("series") or row.get("series_or_symbol"),
     }

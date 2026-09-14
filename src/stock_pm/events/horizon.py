@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+from .policy import DISCOVERY_BODY_SOURCES, DISCOVERY_ROLES, tier1_ref_gaps
 from .synthesis import (
     _is_directional_ok,
     _is_vix,
@@ -50,8 +51,8 @@ CHANNEL_DIRECTION = {
     "risk_premium": {"pressure": "down", "relief": "up"},
     "fx": {"pressure": "down", "relief": "up"},
 }
-BLOCKED_BODY = frozenset({"cse_snippet"})
-BLOCKED_ROLES = frozenset({"discovery_candidate", "discovery_only"})
+BLOCKED_BODY = DISCOVERY_BODY_SOURCES
+BLOCKED_ROLES = DISCOVERY_ROLES
 BLOCKED_CONTENT = frozenset({"media_report", "research_opinion", "aggregator"})
 BLOCKED_FRESHNESS = frozenset({"stale", "future"})
 BLOCKED_STATUS = frozenset({"stale", "degraded", "revoked", "superseded", "unavailable"})
@@ -61,35 +62,47 @@ def _metric(chain: dict[str, Any]) -> str:
     return str(chain.get("metric") or chain.get("event_type") or "")
 
 
-def _as_int_tier(value: Any) -> int | None:
-    if value in (None, ""):
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
+def _raw_layer_refs(chain: dict[str, Any]) -> list[dict[str, Any]]:
+    """Layer evidence refs as stored. Do not invent Tier-1 metadata."""
+    out: list[dict[str, Any]] = []
+    for layer in chain.get("layers") or []:
+        if not isinstance(layer, dict):
+            continue
+        for ref in layer.get("evidence_refs") or []:
+            if isinstance(ref, dict):
+                out.append(ref)
+    return out
 
 
 def _ref_is_current_tier1(ref: dict[str, Any]) -> bool:
-    if not isinstance(ref, dict):
-        return False
-    if str(ref.get("body_source") or "") in BLOCKED_BODY:
-        return False
-    if str(ref.get("discovery_role") or "") in BLOCKED_ROLES:
-        return False
-    if str(ref.get("fact_or_opinion") or "fact") != "fact":
-        return False
-    content = str(ref.get("content_type") or "official_fact")
-    if content in BLOCKED_CONTENT:
-        return False
-    if str(ref.get("primary_or_secondary") or "primary") == "secondary":
-        return False
-    tier = _as_int_tier(ref.get("source_tier"))
-    if tier not in {None, 1}:
-        return False
-    if content and content not in {"official_fact", "official_statement", "official_release"}:
-        return False
-    return True
+    return not tier1_ref_gaps(ref)
+
+
+def _tier1_gaps_for_chain(chain: dict[str, Any]) -> list[str]:
+    refs = _raw_layer_refs(chain)
+    if not refs:
+        return ["refs"]
+    best: list[str] | None = None
+    for ref in refs:
+        gaps = tier1_ref_gaps(ref)
+        if not gaps:
+            return []
+        if best is None or len(gaps) < len(best):
+            best = gaps
+    return best or ["refs"]
+
+
+def _tier1_gap_reason(chains: list[dict[str, Any]]) -> str | None:
+    best: list[str] | None = None
+    for chain in chains or []:
+        gaps = _tier1_gaps_for_chain(chain)
+        if not gaps:
+            return None
+        if best is None or len(gaps) < len(best):
+            best = gaps
+    if not best:
+        return None
+    return "Tier1 门禁失败：缺 " + "、".join(best)
 
 
 def _has_current_tier1(chain: dict[str, Any]) -> bool:
@@ -101,11 +114,7 @@ def _has_current_tier1(chain: dict[str, Any]) -> bool:
         return False
     if str(chain.get("content_type") or "") in BLOCKED_CONTENT:
         return False
-    refs = chain_evidence_refs(chain)
-    if refs:
-        return any(_ref_is_current_tier1(ref) for ref in refs)
-    tier = _as_int_tier(chain.get("source_tier"))
-    return tier in {None, 1} and str(chain.get("fact_or_opinion") or "fact") == "fact"
+    return not _tier1_gaps_for_chain(chain)
 
 
 def _healthy_directional(chains: list[dict[str, Any]], *, now: date | None = None) -> list[dict[str, Any]]:
@@ -415,6 +424,25 @@ def _missing_rows(
             rows.append(row)
     present = {_metric(row) for row in healthy}
     market_ok = {_metric(row) for row in _healthy_directional(chains)}
+    for chain in scoped:
+        if chain.get("status") != "ok" or _is_vix(chain):
+            continue
+        if _has_current_tier1(chain):
+            continue
+        metric = _metric(chain)
+        key = f"tier1:{metric}"
+        if not metric or key in seen:
+            continue
+        seen.add(key)
+        gaps = _tier1_gaps_for_chain(chain)
+        named = "、".join(gaps) or "refs"
+        rows.append({
+            "metric": metric,
+            "chain": chain.get("chain_id"),
+            "reason": "tier1_gate_failed",
+            "detail": f"Tier1 门禁失败：缺 {named}",
+            "what_changes": f"补齐显式 {named} 后才允许该链进入方向证据，禁止用 URL 或默认元数据晋级",
+        })
     if scope == "stock" and target:
         for metric in sorted(market_ok - present):
             key = f"exposure:{metric}"
@@ -542,9 +570,10 @@ def build_horizon_forecast(
         if scenario == "withheld":
             horizons.append(_empty_horizon(name, missing=horizon_missing, reason="暴露规则不能形成明确方向"))
             continue
-        refs = [ref for row in rows for ref in chain_evidence_refs(row) if _ref_is_current_tier1(ref)]
+        refs = [ref for row in rows for ref in _raw_layer_refs(row) if _ref_is_current_tier1(ref)]
         if not refs:
-            horizons.append(_empty_horizon(name, missing=horizon_missing, reason="方向证据缺少当前 Tier1 原文"))
+            reason = _tier1_gap_reason(rows) or "方向证据缺少当前 Tier1 原文"
+            horizons.append(_empty_horizon(name, missing=horizon_missing, reason=reason))
             continue
         counters: list[Any] = []
         if conflicts:
