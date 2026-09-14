@@ -1,15 +1,15 @@
 {
   "live": false,
   "data_class": "frozen_provider_audit",
-  "note": "Frozen/fixture macro facts are not production live coverage.",
+  "note": "Frozen/fixture macro facts are not production live coverage. CPI rows are a controlled synthetic MoM% fixture, not a live street consensus and not an index-level surprise.",
   "facts": [
     {
       "metric": "cpi",
       "name": "CPI-U",
-      "actual": 334.131,
-      "prior": 332.81,
-      "consensus": 333.0,
-      "unit": "index",
+      "actual": 0.40,
+      "prior": 0.22,
+      "consensus": 0.30,
+      "unit": "percent",
       "series": "CPIAUCSL",
       "period": "2026-08-01",
       "prior_as_of": "2026-07-01",
@@ -18,9 +18,16 @@
       "source": "FRED",
       "http_source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
       "status": "ok",
-      "formula": "CPIAUCSL[t] vs consensus ({index})",
-      "comparison": "same_series_same_unit",
-      "basis": "index_level"
+      "formula": "CPIAUCSL MoM%[t] = CPIAUCSL[t] / CPIAUCSL[t−1] − 1；与同口径 MoM% 共识比较",
+      "comparison": "same_definition_mom_pct",
+      "basis": "mom_pct",
+      "prior_basis": "mom_pct",
+      "consensus_basis": "mom_pct",
+      "rate_kind": "mom_pct",
+      "index_level": 334.131,
+      "index_prior": 332.8,
+      "index_prior_prior": 332.069,
+      "consensus_note": "controlled synthetic CPI MoM% consensus for fixture; not a live street print; not index 333.0"
     },
     {
       "metric": "nfp",

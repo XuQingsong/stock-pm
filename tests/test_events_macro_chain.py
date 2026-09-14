@@ -32,10 +32,10 @@ def _fact(**extra) -> dict:
     row = {
         "metric": "cpi",
         "name": "CPI-U",
-        "actual": 334.131,
-        "prior": 332.81,
-        "consensus": 333.0,
-        "unit": "index",
+        "actual": 0.40,
+        "prior": 0.22,
+        "consensus": 0.30,
+        "unit": "percent",
         "series": "CPIAUCSL",
         "period": "2026-08-01",
         "prior_as_of": "2026-07-01",
@@ -45,6 +45,14 @@ def _fact(**extra) -> dict:
         "http_source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
         "status": "ok",
         "data_class": "frozen_provider_audit",
+        "formula": "CPIAUCSL MoM%[t] = CPIAUCSL[t] / CPIAUCSL[t−1] − 1；与同口径 MoM% 共识比较",
+        "comparison": "same_definition_mom_pct",
+        "basis": "mom_pct",
+        "prior_basis": "mom_pct",
+        "consensus_basis": "mom_pct",
+        "rate_kind": "mom_pct",
+        "index_level": 334.131,
+        "index_prior": 332.8,
     }
     row.update(extra)
     return row
@@ -63,6 +71,10 @@ def _nfp(**extra) -> dict:
         comparison="same_definition_monthly_diff",
         basis="monthly_diff",
         prior_basis="monthly_diff",
+        consensus_basis="monthly_diff",
+        rate_kind=None,
+        index_level=None,
+        index_prior=None,
         http_source="https://fred.stlouisfed.org/graph/fredgraph.csv?id=PAYEMS",
         **extra,
     )
@@ -138,6 +150,9 @@ def test_a_cpi_above_consensus_to_duration():
     assert _layer(chain, "expectation")["layer_kind"] == "conditional_expectation"
     assert "高于一致预期" in _layer(chain, "expectation")["text"]
     assert "不是已发生事实" in _layer(chain, "expectation")["text"]
+    assert "通胀环比上升" not in _layer(chain, "expectation")["text"]
+    assert "MoM" in _layer(chain, "fact")["text"]
+    assert "CPIAUCSL[t] / CPIAUCSL[t−1]" in (_layer(chain, "fact")["text"] + _layer(chain, "change")["text"])
     assert "rates" in _layer(chain, "transmission")["channels"]
     assert "discount_rate" in _layer(chain, "transmission")["channels"]
     assert "高估值成长" in _layer(chain, "impact")["text"]
@@ -357,6 +372,74 @@ def test_live_current_count_excludes_degraded():
     assert summary["live_current_count"] == 1
     assert summary["degraded_count"] == 1
     assert all(row["coverage_label"] == "live-current" for row in summary["headlines"])
+
+
+def test_cpi_index_up_rate_down_does_not_delay_cuts():
+    chain = build_numeric_macro_chain(
+        {
+            "metric": "cpi",
+            "name": "CPI-U",
+            "actual": 333.2,
+            "prior": 332.0,
+            "prior_prior": 330.0,
+            "unit": "index",
+            "series": "CPIAUCSL",
+            "period": "2026-08-01",
+            "prior_as_of": "2026-07-01",
+            "prior_prior_as_of": "2026-06-01",
+            "as_of": "2026-08-01T00:00:00+00:00",
+            "source": "FRED",
+            "http_source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+            "status": "ok",
+            "basis": "index_level",
+            "data_class": "frozen_provider_audit",
+        }
+    )
+    exp = _layer(chain, "expectation")["text"]
+    change = _layer(chain, "change")["text"]
+    assert chain["status"] == "ok"
+    assert "后移" not in exp
+    assert "通胀环比上升" not in exp
+    assert "减速" in exp
+    assert "未加速" in change
+    assert "价格指数上升" in change
+    assert "CPIAUCSL[t] / CPIAUCSL[t−1]" in (_layer(chain, "fact")["text"] + change)
+    assert _layer(chain, "expectation")["stance"] == "cut_odds_earlier"
+
+
+def test_cpi_two_index_levels_withhold_acceleration():
+    chain = build_numeric_macro_chain(
+        {
+            "metric": "cpi",
+            "name": "CPI-U",
+            "actual": 334.131,
+            "prior": 332.81,
+            "unit": "index",
+            "series": "CPIAUCSL",
+            "period": "2026-08-01",
+            "prior_as_of": "2026-07-01",
+            "as_of": "2026-08-01T00:00:00+00:00",
+            "source": "FRED",
+            "http_source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+            "status": "ok",
+            "basis": "index_level",
+            "data_class": "live_current",
+        }
+    )
+    exp = _layer(chain, "expectation")["text"]
+    assert "通胀环比上升" not in exp
+    assert "不能把指数上升写成通胀加速" in exp
+    assert _layer(chain, "expectation")["stance"] == "withheld"
+    assert "MoM" in _layer(chain, "fact")["text"] or "MoM" in _layer(chain, "change")["text"]
+    assert "CPIAUCSL[t] / CPIAUCSL[t−1]" in (_layer(chain, "fact")["text"] + _layer(chain, "change")["text"])
+    assert "高估值成长" not in _layer(chain, "impact")["text"]
+
+
+def test_cpi_index_consensus_is_rejected():
+    chain = build_numeric_macro_chain(_fact(actual=334.131, prior=332.81, consensus=333.0, unit="index", basis="index_level", rate_kind=None))
+    assert chain["status"] == "degraded"
+    assert chain["degrade_reason"] == "period_or_basis_mismatch"
+    assert "333" in (chain.get("degrade_detail") or "")
 
 
 def test_same_day_events_keep_distinct_ids_and_updates_reuse_id():

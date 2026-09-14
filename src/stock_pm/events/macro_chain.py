@@ -73,6 +73,12 @@ INJECT_KEYS = frozenset({
     "reverse_cpi",
 })
 
+INFLATION_RATE_METRICS = frozenset({"cpi", "core_cpi"})
+CPI_MOM_FORMULA = "{series} MoM%[t] = {series}[t] / {series}[t−1] − 1"
+CPI_YOY_FORMULA = "{series} YoY%[t] = {series}[t] / {series}[t−12] − 1"
+# CPI-U index is ~100–400. MoM/YoY rates are single-digit percent, never this large.
+_CPI_INDEX_VALUE_FLOOR = 50.0
+
 _FACTS_BY_MODE: dict[str, list[dict[str, Any]]] = {}
 
 
@@ -170,9 +176,203 @@ def _normalize_basis(value: Any) -> str:
         return "level"
     if raw in {"index_level", "index"}:
         return "index_level"
+    if raw in {"mom", "mom_pct", "mom_percent", "same_definition_mom_pct"}:
+        return "mom_pct"
+    if raw in {"yoy", "yoy_pct", "yoy_percent", "same_definition_yoy_pct"}:
+        return "yoy_pct"
     if raw in {"percent", "yield_percent"}:
         return "percent"
     return raw
+
+
+def _cpi_rate_formula(rate_kind: str, series: str) -> str:
+    name = series or "CPIAUCSL"
+    if rate_kind == "yoy_pct":
+        return CPI_YOY_FORMULA.format(series=name)
+    return CPI_MOM_FORMULA.format(series=name)
+
+
+def _looks_like_cpi_index_value(value: float | None, unit: Any = None, basis: Any = None) -> bool:
+    if _normalize_basis(basis) == "index_level":
+        return True
+    unit_text = str(unit or "").strip().lower()
+    if unit_text in {"index", "index_level"}:
+        return True
+    return value is not None and abs(value) >= _CPI_INDEX_VALUE_FLOOR
+
+
+def _mom_pct(later: float | None, earlier: float | None) -> float | None:
+    if later is None or earlier in {None, 0}:
+        return None
+    return (later / earlier - 1.0) * 100.0
+
+
+def _collect_cpi_index_levels(fact: dict[str, Any]) -> list[tuple[str, float]]:
+    rows: list[tuple[str, float]] = []
+    for item in fact.get("index_levels") or []:
+        if not isinstance(item, dict):
+            continue
+        value = _num(item.get("value") if item.get("value") is not None else item.get("actual"))
+        period = _period_key(item.get("period") or item.get("as_of"))
+        if value is not None and period not in {"", "unspecified"}:
+            rows.append((period, value))
+    unit = fact.get("unit")
+    basis = fact.get("basis") or fact.get("rate_kind")
+    explicit_rate = _normalize_basis(basis) in {"mom_pct", "yoy_pct"} and not _looks_like_cpi_index_value(
+        _num(fact.get("actual") if fact.get("actual") is not None else fact.get("value")),
+        unit,
+        basis,
+    )
+    candidates = [
+        (fact.get("period") or fact.get("as_of"), fact.get("index_level")),
+        (fact.get("prior_as_of"), fact.get("index_prior")),
+        (fact.get("prior_prior_as_of"), fact.get("index_prior_prior") if fact.get("index_prior_prior") is not None else fact.get("prior_prior")),
+    ]
+    if not explicit_rate:
+        candidates.extend(
+            [
+                (fact.get("period") or fact.get("as_of"), fact.get("actual") if fact.get("actual") is not None else fact.get("value")),
+                (fact.get("prior_as_of"), fact.get("prior")),
+                (fact.get("prior_prior_as_of"), fact.get("prior_prior")),
+            ]
+        )
+    for period_raw, value_raw in candidates:
+        value = _num(value_raw)
+        period = _period_key(period_raw)
+        if value is None or period in {"", "unspecified"}:
+            continue
+        if not _looks_like_cpi_index_value(value, unit if explicit_rate else (fact.get("unit") or "index"), "index_level" if not explicit_rate else basis):
+            continue
+        rows.append((period, value))
+    unique: dict[str, float] = {}
+    for period, value in rows:
+        unique[period] = value
+    return sorted(unique.items(), key=lambda item: item[0], reverse=True)
+
+
+def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
+    """Compare CPI as a MoM/YoY inflation rate. Never treat an index-level delta as acceleration."""
+    metric = canonical_metric(str(fact.get("metric") or fact.get("event_type") or ""))
+    series = str(fact.get("series") or fact.get("series_or_symbol") or "CPIAUCSL")
+    unit = str(fact.get("unit") or "")
+    basis = _normalize_basis(fact.get("rate_kind") or fact.get("basis"))
+    actual = _num(fact.get("actual") if fact.get("actual") is not None else fact.get("value"))
+    consensus = _num(fact.get("consensus"))
+    if str(fact.get("status") or "ok") in {"error", "invalid", "missing", "unavailable"}:
+        return _mismatch(
+            metric,
+            "source_failed",
+            f"{metric} 来源失败（{fact.get('status')} / {fact.get('reason_code') or 'source_failed'}），只降级本链",
+            actual,
+            None,
+        )
+    if basis in {"mom_pct", "yoy_pct"} and not _looks_like_cpi_index_value(actual, unit, basis):
+        if consensus is not None and _looks_like_cpi_index_value(
+            consensus,
+            fact.get("consensus_unit") or unit,
+            fact.get("consensus_basis"),
+        ):
+            return _mismatch(
+                metric,
+                "period_or_basis_mismatch",
+                f"{metric} 共识必须是同口径 {basis} 通胀率，不能用价格指数充当共识，只降级本链",
+                actual,
+                consensus,
+            )
+        rate_fact = dict(fact)
+        rate_fact["metric"] = metric
+        rate_fact["unit"] = "percent"
+        rate_fact["basis"] = basis
+        rate_fact["prior_basis"] = _normalize_basis(fact.get("prior_basis") or basis)
+        rate_fact["consensus_basis"] = _normalize_basis(fact.get("consensus_basis") or basis)
+        rate_fact["formula"] = fact.get("formula") or _cpi_rate_formula(basis, series)
+        change = compare_same_basis(rate_fact)
+        if change.get("status") == "ok":
+            change["rate_kind"] = basis
+            change["measure"] = "inflation_rate"
+            change["formula"] = rate_fact["formula"]
+            change["index_level"] = _num(fact.get("index_level"))
+            change["index_prior"] = _num(fact.get("index_prior"))
+            if change.get("index_level") is not None and change.get("index_prior") is not None:
+                change["index_rising"] = change["index_level"] > change["index_prior"]
+        return change
+    levels = _collect_cpi_index_levels(fact)
+    if len(levels) < 2:
+        return _mismatch(metric, "missing_actual", f"{metric} 缺少可计算通胀率的价格指数或同口径通胀率，只降级本链", actual, None)
+    mom_current = _mom_pct(levels[0][1], levels[1][1])
+    if mom_current is None:
+        return _mismatch(metric, "missing_actual", f"{metric} 无法由价格指数计算 MoM%，只降级本链", actual, None)
+    formula = _cpi_rate_formula("mom_pct", series)
+    consensus_is_rate = consensus is not None and not _looks_like_cpi_index_value(
+        consensus,
+        fact.get("consensus_unit"),
+        fact.get("consensus_basis") or fact.get("consensus_rate_kind"),
+    )
+    if consensus is not None and not consensus_is_rate:
+        return _mismatch(
+            metric,
+            "period_or_basis_mismatch",
+            f"{metric} 共识 {consensus} 不是同口径 MoM/YoY 通胀率（不能用指数水平如 333.0 充当市场共识），只降级本链",
+            mom_current,
+            consensus,
+        )
+    rate_fact = {
+        "metric": metric,
+        "actual": mom_current,
+        "unit": "percent",
+        "series": series,
+        "period": levels[0][0],
+        "as_of": levels[0][0],
+        "basis": "mom_pct",
+        "prior_basis": "mom_pct",
+        "consensus_basis": "mom_pct",
+        "formula": formula,
+        "comparison": "same_definition_mom_pct",
+        "status": fact.get("status") or "ok",
+        "http_source": fact.get("http_source"),
+        "source": fact.get("source"),
+    }
+    if consensus_is_rate:
+        rate_fact["consensus"] = consensus
+        rate_fact["consensus_as_of"] = fact.get("consensus_as_of") or fact.get("consensus_period") or levels[0][0]
+        rate_fact["consensus_unit"] = "percent"
+    elif len(levels) >= 3:
+        mom_prior = _mom_pct(levels[1][1], levels[2][1])
+        if mom_prior is None:
+            return _mismatch(metric, "missing_baseline", f"{metric} 无法计算上一期 MoM%，不能判断通胀加速，只降级本链", mom_current, None)
+        rate_fact["prior"] = mom_prior
+        rate_fact["prior_as_of"] = levels[1][0]
+        rate_fact["prior_unit"] = "percent"
+    else:
+        return {
+            "status": "ok",
+            "reason": "insufficient_rate_history",
+            "detail": f"{metric} 只有两期价格指数，可计算当期 MoM% {mom_current:.3g}，但不能与上一期通胀率或同口径共识比较，不得写成通胀加速或降息后移",
+            "actual": mom_current,
+            "baseline": None,
+            "delta": None,
+            "direction": None,
+            "unit": "percent",
+            "series": series,
+            "period": levels[0][0],
+            "formula": formula,
+            "comparison": "same_definition_mom_pct",
+            "rate_kind": "mom_pct",
+            "measure": "single_mom_from_two_index_levels",
+            "withheld_acceleration": True,
+            "index_level": levels[0][1],
+            "index_prior": levels[1][1],
+            "index_rising": levels[0][1] > levels[1][1],
+        }
+    change = compare_same_basis(rate_fact)
+    if change.get("status") == "ok":
+        change["rate_kind"] = "mom_pct"
+        change["measure"] = "inflation_rate"
+        change["formula"] = formula
+        change["index_level"] = levels[0][1]
+        change["index_prior"] = levels[1][1]
+        change["index_rising"] = levels[0][1] > levels[1][1]
+    return change
 
 
 def _mismatch(metric: str, reason: str, detail: str, actual: float | None, baseline: float | None) -> dict[str, Any]:
@@ -243,6 +443,8 @@ def compare_same_basis(fact: dict[str, Any]) -> dict[str, Any]:
         return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 共识序列 {consensus_series} 与实际序列 {series} 不一致，只降级本链", actual, consensus)
     if prior is not None and series and prior_series and prior_series != series:
         return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 前值序列 {prior_series} 与实际序列 {series} 不一致，只降级本链", actual, prior)
+    if metric in INFLATION_RATE_METRICS and consensus is not None and _looks_like_cpi_index_value(consensus, consensus_unit, consensus_basis):
+        return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 共识必须是同口径通胀率，不能用价格指数充当共识，只降级本链", actual, consensus)
     if consensus is not None and actual_basis and consensus_basis and actual_basis != consensus_basis:
         return _mismatch(metric, "period_or_basis_mismatch", f"{metric} 实际口径 {actual_basis} 与共识口径 {consensus_basis} 不一致，只降级本链", actual, consensus)
     if consensus is not None and consensus_unit and unit and consensus_unit != unit:
@@ -307,23 +509,38 @@ def compare_same_basis(fact: dict[str, Any]) -> dict[str, Any]:
 def _expectation_for(metric: str, change: dict[str, Any]) -> dict[str, Any]:
     direction = change.get("direction")
     kind = change.get("baseline_kind")
-    if metric == "cpi" and direction == "up" and kind == "consensus":
+    if metric in INFLATION_RATE_METRICS:
+        rate_label = "CPI YoY%" if change.get("rate_kind") == "yoy_pct" else "CPI MoM%"
+        if change.get("withheld_acceleration") or change.get("measure") != "inflation_rate" or direction is None:
+            return {
+                "text": "只有价格指数或单期 MoM，不能把指数上升写成通胀加速或降息后移（条件预期未形成）",
+                "stance": "withheld",
+                "confidence": "insufficient",
+            }
+        if direction == "up" and kind == "consensus":
+            return {
+                "text": f"同口径 {rate_label} 高于一致预期 → 降息预期后移（条件预期，不是已发生事实）",
+                "stance": "cut_odds_delayed",
+                "confidence": "medium",
+            }
+        if direction == "up":
+            extra = "；价格指数上升不等于通胀加速" if change.get("index_rising") else ""
+            return {
+                "text": f"同口径 {rate_label} 高于前值（通胀加速）{extra} → 降息预期可能后移（条件预期；无一致预期，不是 street surprise）",
+                "stance": "cut_odds_delayed_conditional",
+                "confidence": "limited",
+            }
+        if direction == "down":
+            extra = "；价格指数上升不等于通胀加速" if change.get("index_rising") else ""
+            return {
+                "text": f"同口径 {rate_label} 低于比较基准（通胀减速）{extra} → 降息预期可能前移（条件预期，不是已发生事实）",
+                "stance": "cut_odds_earlier",
+                "confidence": "medium" if kind == "consensus" else "limited",
+            }
         return {
-            "text": "通胀高于一致预期 → 降息预期后移（条件预期，不是已发生事实）",
-            "stance": "cut_odds_delayed",
-            "confidence": "medium",
-        }
-    if metric == "cpi" and direction == "up":
-        return {
-            "text": "通胀环比上升；若持续，降息预期可能后移（条件预期；无一致预期，不是 street surprise）",
-            "stance": "cut_odds_delayed_conditional",
+            "text": f"同口径 {rate_label} 与比较基准持平，不把价格指数变动写成通胀加速",
+            "stance": "watch",
             "confidence": "limited",
-        }
-    if metric == "cpi" and direction == "down":
-        return {
-            "text": "通胀低于比较基准 → 降息预期可能前移（条件预期，不是已发生事实）",
-            "stance": "cut_odds_earlier",
-            "confidence": "medium" if kind == "consensus" else "limited",
         }
     if metric == "nfp" and direction == "up":
         return {
@@ -400,11 +617,18 @@ def _market_impact(metric: str, change: dict[str, Any], expectation: dict[str, A
 
 def _what_changes(metric: str, change: dict[str, Any]) -> dict[str, Any]:
     if metric == "cpi":
+        if change.get("withheld_acceleration") or change.get("measure") != "inflation_rate":
+            return {
+                "text": "补齐第三期同序列指数或同口径 MoM/YoY 共识后才能判断通胀加速，不把指数上升写成降息后移",
+                "follow_ups": ["后续 CPIAUCSL 公布", "同口径 MoM/YoY 共识"],
+                "thresholds": ["至少三期同序列指数，或同口径通胀率共识"],
+                "invalidation": "只有两期指数时不得形成通胀加速/降息后移判断",
+            }
         return {
-            "text": "后续通胀回落或 US2Y 反向，则降息后移/成长承压判断失效",
-            "follow_ups": ["后续 CPI 公布", "US2Y 方向反转", "FOMC 沟通"],
-            "thresholds": ["CPI 相对同一口径共识/前值转负", "DGS2 不再走高"],
-            "invalidation": "若后续通胀回落且收益率反向，则本链条件预期失效",
+            "text": "后续同口径通胀回落或 US2Y 反向，则降息后移/成长承压判断失效",
+            "follow_ups": ["后续同口径 CPI MoM/YoY", "US2Y 方向反转", "FOMC 沟通"],
+            "thresholds": ["同口径 CPI 通胀率相对共识/前值转负", "DGS2 不再走高"],
+            "invalidation": "若后续同口径通胀率回落且收益率反向，则本链条件预期失效；价格指数上升不能单独推翻或确认加速",
         }
     if metric == "nfp":
         return {
@@ -447,7 +671,7 @@ def _counter_evidence(metric: str, facts: list[dict[str, Any]], change: dict[str
     by_metric = {canonical_metric(str(row.get("metric") or row.get("event_type") or "")): row for row in facts}
     if metric == "vix":
         us2y = compare_same_basis(by_metric["us2y"]) if "us2y" in by_metric else None
-        cpi = compare_same_basis(by_metric["cpi"]) if "cpi" in by_metric else None
+        cpi = inflation_rate_comparison(by_metric["cpi"]) if "cpi" in by_metric else None
         if us2y and us2y.get("status") == "ok" and us2y.get("direction") == "down" and change.get("direction") == "up":
             rows.append({
                 "text": "VIX 上升但 US2Y 下行，收益率未确认风险-折现同向；VIX 只作风险确认",
@@ -528,7 +752,7 @@ def build_numeric_macro_chain(
             period=period,
             data_class=data_class,
         )
-    change = compare_same_basis(fact)
+    change = inflation_rate_comparison(fact) if metric in INFLATION_RATE_METRICS else compare_same_basis(fact)
     live = data_class == "live_current" and str(fact.get("status") or "ok") == "ok"
     if change.get("status") != "ok":
         row = _unavailable(
@@ -551,11 +775,45 @@ def build_numeric_macro_chain(
         f"· 期间 {period} · 来源 {fact.get('source') or '—'} · as_of {fact.get('as_of') or period} "
         f"· 序列 {change.get('series') or '—'}"
     )
-    change_text = (
-        f"相对{('一致预期' if change.get('baseline_kind') == 'consensus' else '同口径前值')} "
-        f"{change['baseline']} {change.get('unit') or ''}，Δ {change['delta']:+g} "
-        f"（{change.get('formula')}）"
-    )
+    if change.get("baseline") is not None and change.get("delta") is not None:
+        change_text = (
+            f"相对{('一致预期' if change.get('baseline_kind') == 'consensus' else '同口径前值')} "
+            f"{change['baseline']} {change.get('unit') or ''}，Δ {change['delta']:+g} "
+            f"（{change.get('formula')}）"
+        )
+    else:
+        change_text = str(change.get("detail") or change.get("formula") or "")
+    if metric in INFLATION_RATE_METRICS:
+        rate_kind = str(change.get("rate_kind") or "mom_pct")
+        formula = str(change.get("formula") or _cpi_rate_formula(rate_kind, str(change.get("series") or "CPIAUCSL")))
+        index_bit = ""
+        if change.get("index_level") is not None:
+            index_bit = f" · 指数 {change['index_level']}"
+            if change.get("index_prior") is not None:
+                index_bit += f" vs {change['index_prior']}"
+        fact_text = (
+            f"{fact.get('name') or 'CPI'} 通胀率 {rate_kind} {change.get('actual')} percent"
+            f"{index_bit} · 期间 {period} · 来源 {fact.get('source') or '—'} "
+            f"· 序列 {change.get('series') or 'CPIAUCSL'} · 公式 {formula}"
+        )
+        if change.get("withheld_acceleration"):
+            change_text = (
+                f"两期价格指数可计算当期 {rate_kind} {change.get('actual')} percent，"
+                f"但缺少上一期同口径通胀率或同口径共识，不能判断加速或减速。"
+                f"价格指数上升不等于通胀加速。（{formula}）"
+            )
+        elif change.get("index_rising") and change.get("direction") == "down":
+            change_text = (
+                f"价格指数上升{index_bit}，但同口径 {rate_kind} 从 {change['baseline']} "
+                f"回落至 {change['actual']}，通胀未加速（{formula}）"
+            )
+        elif change.get("baseline") is not None and change.get("delta") is not None:
+            label = "同口径 MoM% 一致预期" if change.get("baseline_kind") == "consensus" else "同口径前值 MoM%"
+            if rate_kind == "yoy_pct":
+                label = label.replace("MoM%", "YoY%")
+            change_text = (
+                f"相对{label} {change['baseline']} percent，Δ {change['delta']:+g}pct （{formula}）"
+            )
     event_type = {
         "cpi": "inflation_employment",
         "nfp": "inflation_employment",
@@ -596,8 +854,8 @@ def build_numeric_macro_chain(
     elif metric != "vix":
         impact_text += "。无已验证暴露的股票不展示个股影响"
     layers = [
-        _layer(chain_id, "fact", fact_text, refs, excerpt=str(fact.get("formula") or ""), value=change["actual"], unit=change.get("unit"), as_of=fact.get("as_of") or period, source=fact.get("source")),
-        _layer(chain_id, "change", change_text, refs, **{k: change[k] for k in ("delta", "direction", "baseline", "baseline_kind", "formula") if k in change}),
+        _layer(chain_id, "fact", fact_text, refs, excerpt=str(change.get("formula") or fact.get("formula") or ""), value=change["actual"], unit=change.get("unit"), as_of=fact.get("as_of") or period, source=fact.get("source"), rate_kind=change.get("rate_kind")),
+        _layer(chain_id, "change", change_text, refs, **{k: change[k] for k in ("delta", "direction", "baseline", "baseline_kind", "formula", "rate_kind", "measure", "withheld_acceleration") if k in change}),
         _layer(chain_id, "expectation", expectation["text"], refs, stance=expectation["stance"], confidence=expectation["confidence"], is_fact=False),
         _layer(chain_id, "transmission", " / ".join(channels), refs, channels=channels),
         _layer(chain_id, "impact", impact_text, refs, exposures=exposures, markets=channels),
@@ -723,16 +981,20 @@ def attach_event_macro_chain(event: TrustedEvent, analysis: dict[str, Any]) -> d
 
 def fact_from_fred_row(row: dict[str, Any], *, data_class: str = "live_current") -> dict[str, Any]:
     metric = canonical_metric(str(row.get("event_type") or row.get("metric") or ""))
+    actual = row.get("actual") if row.get("actual") is not None else row.get("value")
+    period = _period_key(row.get("as_of") or row.get("event_time") or row.get("period"))
     return {
         "metric": metric,
         "name": row.get("name") or metric.upper(),
-        "actual": row.get("actual") if row.get("actual") is not None else row.get("value"),
+        "actual": actual,
         "prior": row.get("prior"),
+        "prior_prior": row.get("prior_prior"),
         "consensus": row.get("consensus") if row.get("consensus") not in {None, "", "unknown"} else None,
         "unit": row.get("unit"),
         "series": row.get("series") or row.get("series_or_symbol"),
-        "period": _period_key(row.get("as_of") or row.get("event_time") or row.get("period")),
+        "period": period,
         "prior_as_of": row.get("prior_as_of"),
+        "prior_prior_as_of": row.get("prior_prior_as_of"),
         "as_of": row.get("as_of") or row.get("event_time"),
         "source": row.get("source") or "FRED",
         "http_source": row.get("http_source"),
@@ -741,6 +1003,10 @@ def fact_from_fred_row(row: dict[str, Any], *, data_class: str = "live_current")
         "formula": row.get("formula"),
         "comparison": row.get("comparison") or ("same_definition_monthly_diff" if metric == "nfp" else "same_series_same_unit"),
         "basis": "monthly_diff" if metric == "nfp" else row.get("basis"),
+        "rate_kind": row.get("rate_kind"),
+        "index_level": row.get("index_level"),
+        "index_prior": row.get("index_prior"),
+        "index_prior_prior": row.get("index_prior_prior"),
         "data_class": data_class,
     }
 
@@ -819,6 +1085,11 @@ def apply_macro_inject(facts: list[dict[str, Any]], tokens: Any) -> list[dict[st
                 row["prior"] = None
                 row["consensus"] = None
                 row["prior_as_of"] = None
+                row["prior_prior"] = None
+                row["prior_prior_as_of"] = None
+                row["index_prior"] = None
+                row["index_prior_prior"] = None
+                row["index_levels"] = None
     if "period_mismatch_nfp" in wanted:
         for row in rows:
             if canonical_metric(str(row.get("metric") or "")) == "nfp":
