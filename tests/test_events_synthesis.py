@@ -11,6 +11,8 @@ from stock_pm.events.synthesis import fact_key, synthesize_drivers
 
 from test_events_macro_chain import _event, _fact, _nfp
 
+FROZEN_NOW = date(2026, 9, 10)
+
 
 def setup_function() -> None:
     reset_cache()
@@ -102,7 +104,7 @@ def _chains(facts, events=None):
 
 def test_s1_rates_confirmation_is_conditional():
     chains = _chains([_fact(), _nfp(), _us2y(up=True), _vix()])
-    payload = synthesize_drivers(chains)
+    payload = synthesize_drivers(chains, now=FROZEN_NOW)
     market = payload["market"]
     assert market["synthesis_id"] == "synth:market:macro"
     assert market["scope"] == "market"
@@ -126,8 +128,8 @@ def test_s1_rates_confirmation_is_conditional():
 
 def test_s2_conflict_keeps_both_sides_and_lower_confidence():
     cpi_down = apply_macro_inject([_fact()], "reverse_cpi")[0]
-    confirm = synthesize_drivers(_chains([_fact(), _nfp(), _us2y(up=True)]))
-    conflict = synthesize_drivers(_chains([cpi_down, _us2y(up=True)]))
+    confirm = synthesize_drivers(_chains([_fact(), _nfp(), _us2y(up=True)]), now=FROZEN_NOW)
+    conflict = synthesize_drivers(_chains([cpi_down, _us2y(up=True)]), now=FROZEN_NOW)
     market = conflict["market"]
     assert market["contradictions"]
     assert "冲突" in market["contradictions"][0]["text"]
@@ -245,15 +247,15 @@ def test_s10_lists_specific_missing_not_vague_gap():
 
 
 def test_fixture_center_exposes_synthesis_without_copying_to_aapl():
-    center = market_center(Settings(events_mode="fixture"))
+    center = market_center(Settings(events_mode="fixture"), now=FROZEN_NOW)
     assert center["driver_synthesis"]["synthesis_id"] == "synth:market:macro"
     assert center["synthesis_summary"]["can_form_direction"] is False
     assert center["macro_driver_summary"]["count"] >= 1
-    nvda = stock_events("NVDA", Settings(events_mode="fixture"))
-    aapl = stock_events("AAPL", Settings(events_mode="fixture"))
-    xom = stock_events("XOM", Settings(events_mode="fixture"))
-    nok = stock_events("NOK", Settings(events_mode="fixture"))
-    jpm = stock_events("JPM", Settings(events_mode="fixture"))
+    nvda = stock_events("NVDA", Settings(events_mode="fixture"), now=FROZEN_NOW)
+    aapl = stock_events("AAPL", Settings(events_mode="fixture"), now=FROZEN_NOW)
+    xom = stock_events("XOM", Settings(events_mode="fixture"), now=FROZEN_NOW)
+    nok = stock_events("NOK", Settings(events_mode="fixture"), now=FROZEN_NOW)
+    jpm = stock_events("JPM", Settings(events_mode="fixture"), now=FROZEN_NOW)
     assert nvda["driver_synthesis"]
     assert nvda["driver_synthesis"]["why_relevant"]
     assert xom["driver_synthesis"]
@@ -380,3 +382,58 @@ def test_top_driver_rank_uses_freshness_not_theme_priority():
     assert payload["market"]["driver_themes"][0]["fresh"] is True
     stale_rates = next(row for row in payload["market"]["driver_themes"] if row["theme"] == "rates")
     assert stale_rates["fresh"] is False
+
+
+def _stale_facts():
+    return (
+        _fact(period="2026-06-01", prior_as_of="2026-05-01", consensus_as_of="2026-06-01", as_of="2026-06-01T00:00:00+00:00"),
+        _nfp(period="2026-06-01", prior_as_of="2026-05-01", consensus_as_of="2026-06-01", as_of="2026-06-01T00:00:00+00:00"),
+        _us2y(up=True, period="2026-07-01", prior_as_of="2026-06-30", as_of="2026-07-01T00:00:00+00:00"),
+    )
+
+
+def test_all_feeds_stale_together_are_not_labelled_fresh(monkeypatch):
+    monkeypatch.setattr("stock_pm.events.synthesis.utc_today", lambda: date(2026, 9, 14))
+    monkeypatch.delenv("STOCK_PM_SYNTHESIS_NOW", raising=False)
+    payload = synthesize_drivers(_chains(list(_stale_facts())))
+    market = payload["market"]
+    nvda = payload["stocks"]["NVDA"]
+    assert market["as_of"] == "2026-09-14"
+    assert nvda["as_of"] == "2026-09-14"
+    assert market["as_of"] != "2026-07-01"
+    assert market["confidence"]["fresh"] is False
+    assert nvda["confidence"]["fresh"] is False
+    assert "us2y" in market["confidence"]["stale_metrics"]
+    assert market["confidence"]["label"] == "limited"
+    assert market["confidence"]["rank"] < 2
+
+
+def test_future_dated_row_is_not_fresh():
+    future = _us2y(
+        up=True,
+        period="2026-12-01",
+        prior_as_of="2026-11-30",
+        as_of="2026-12-01T00:00:00+00:00",
+    )
+    payload = synthesize_drivers(_chains([_fact(), _nfp(), future]), now=FROZEN_NOW)
+    us2y = next(row for row in payload["market"]["drivers"] if row["metric"] == "us2y")
+    assert us2y["fresh"] is False
+    assert us2y["freshness_reason"] == "future"
+    assert int(us2y["freshness_age_days"]) < 0
+    assert "us2y" in payload["market"]["confidence"]["future_metrics"]
+    assert payload["market"]["confidence"]["fresh"] is False
+    assert "未来" in payload["market"]["confidence"]["why"]
+    assert payload["market"]["confidence"]["label"] == "limited"
+
+
+def test_market_and_stock_share_evaluation_date(monkeypatch):
+    monkeypatch.setattr("stock_pm.events.synthesis.utc_today", lambda: date(2026, 9, 14))
+    monkeypatch.delenv("STOCK_PM_SYNTHESIS_NOW", raising=False)
+    settings = Settings(events_mode="fixture")
+    center = market_center(settings)
+    nvda = stock_events("NVDA", settings)
+    jpm = stock_events("JPM", settings)
+    assert center["driver_synthesis"]["as_of"] == nvda["driver_synthesis"]["as_of"] == "2026-09-14"
+    assert jpm["driver_synthesis"]["as_of"] == "2026-09-14"
+    assert center["driver_synthesis"]["confidence"]["clock"] == "evaluation_date"
+    assert nvda["driver_synthesis"]["confidence"]["clock"] == "evaluation_date"

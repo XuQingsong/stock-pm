@@ -9,7 +9,8 @@ sets direction. can_form_direction stays false.
 
 from __future__ import annotations
 
-from datetime import date
+import os
+from datetime import date, datetime, timezone
 from typing import Any
 
 from .exposure import why_relevant
@@ -270,23 +271,51 @@ def freshness_window_days(chain: dict[str, Any]) -> int:
     return int(FRESHNESS_WINDOWS.get(metric, 30))
 
 
-def reference_now(chains: list[dict[str, Any]], now: date | None = None) -> date:
+def utc_today() -> date:
+    return datetime.now(timezone.utc).date()
+
+
+def _injected_clock() -> date | None:
+    stamp = _as_date(os.getenv("STOCK_PM_SYNTHESIS_NOW"))
+    if stamp is None:
+        return None
+    env = (os.getenv("APP_ENV") or "").strip().lower()
+    mode = (os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
+    if env in {"test", "development", "local"} or mode in {"fixture", "demo"}:
+        return stamp
+    return None
+
+
+def evaluation_date(now: date | None = None) -> date:
+    """Production clock is UTC today. Tests/fixtures inject now or STOCK_PM_SYNTHESIS_NOW."""
     if now is not None:
         return now
-    daily = [_as_date(_period(row)) for row in chains if str(row.get("metric") or "") in DAILY_METRICS]
-    daily = [item for item in daily if item]
-    if daily:
-        return max(daily)
-    stamps = [_as_date(_period(row)) for row in chains]
-    stamps = [item for item in stamps if item]
-    return max(stamps) if stamps else date.today()
+    injected = _injected_clock()
+    if injected is not None:
+        return injected
+    return utc_today()
+
+
+def reference_now(chains: list[dict[str, Any]] | None = None, now: date | None = None) -> date:
+    del chains
+    return evaluation_date(now)
+
+
+def freshness_state(chain: dict[str, Any], *, now: date) -> dict[str, Any]:
+    stamp = _as_date(_period(chain) or chain.get("as_of"))
+    if stamp is None:
+        return {"fresh": False, "reason": "missing_period", "age_days": None}
+    age = (now - stamp).days
+    window = freshness_window_days(chain)
+    if age < 0:
+        return {"fresh": False, "reason": "future", "age_days": age}
+    if age > window:
+        return {"fresh": False, "reason": "stale", "age_days": age}
+    return {"fresh": True, "reason": "fresh", "age_days": age}
 
 
 def is_fresh(chain: dict[str, Any], *, now: date) -> bool:
-    stamp = _as_date(_period(chain) or chain.get("as_of"))
-    if stamp is None:
-        return False
-    return (now - stamp).days <= freshness_window_days(chain)
+    return bool(freshness_state(chain, now=now)["fresh"])
 
 
 def _complete(chain: dict[str, Any]) -> bool:
@@ -339,8 +368,10 @@ def _confidence(
     vix_only: bool,
     insufficient: bool,
     stale_metrics: list[str] | None = None,
+    future_metrics: list[str] | None = None,
 ) -> dict[str, Any]:
     stale = [item for item in (stale_metrics or []) if item]
+    future = [item for item in (future_metrics or []) if item]
     if insufficient or vix_only or independent_facts <= 0:
         label = "insufficient"
         why = "没有足够的独立方向链形成综合判断；VIX 不计入方向票"
@@ -355,16 +386,26 @@ def _confidence(
         )
     elif confirmed and independent_facts >= 2 and channel_kinds >= 2 and complete and not fresh:
         label = "limited"
+        bits = []
+        if stale:
+            bits.append("、".join(stale) + " 超出指标新鲜窗口")
+        if future:
+            bits.append("、".join(future) + " 为未来日期，不视为新鲜")
         why = (
             f"{independent_facts} 条独立事实已同向确认，但 "
-            + ("、".join(stale) or "部分驱动")
-            + " 超出指标新鲜窗口，置信度低于新鲜同向确认，不作分数平均上修"
+            + ("；".join(bits) or "部分驱动不在有效新鲜窗口")
+            + "，置信度低于新鲜同向确认，不作分数平均上修"
         )
     elif confirmed and independent_facts >= 2 and channel_kinds >= 2:
         label = "limited" if not fresh else "medium"
+        extra = ""
+        if not fresh and future:
+            extra = "。关键证据为未来日期，不视为新鲜，置信度低于新鲜确认"
+        elif not fresh:
+            extra = "。关键证据过期，置信度低于新鲜确认"
         why = (
             f"{independent_facts} 条独立事实、{channel_kinds} 个独立渠道同向确认；禁止把同一事实重复计票（已折叠 {duplicates}）"
-            + ("。关键证据过期，置信度低于新鲜确认" if not fresh else "")
+            + extra
         )
     elif independent_facts == 1:
         label = "limited"
@@ -388,7 +429,9 @@ def _confidence(
         "complete": complete,
         "fresh": fresh,
         "stale_metrics": stale,
+        "future_metrics": future,
         "freshness_policy": "metric_window",
+        "clock": "evaluation_date",
         "vix_counted_as_direction": False,
         "majority_vote": False,
         "score_average": False,
@@ -460,8 +503,11 @@ def _theme_state(
     rows = [row for row in chains if _theme(row) == theme]
     drivers = [_driver_row(row) for row in rows]
     for driver, chain in zip(drivers, rows):
-        driver["fresh"] = is_fresh(chain, now=now)
+        state = freshness_state(chain, now=now)
+        driver["fresh"] = state["fresh"]
         driver["freshness_window_days"] = freshness_window_days(chain)
+        driver["freshness_age_days"] = state["age_days"]
+        driver["freshness_reason"] = state["reason"]
     collapsed = _collapse_by_fact_key(drivers)
     unique_keys = [row["fact_key"] for row in collapsed]
     duplicates = max(0, len(drivers) - len(unique_keys))
@@ -484,7 +530,8 @@ def _theme_state(
         net_polarity = "present"
     complete = all(_complete(row) for row in rows) if rows else False
     fresh = all(bool(row.get("fresh")) for row in drivers) if drivers else False
-    stale_metrics = sorted({str(row["metric"]) for row in drivers if not row.get("fresh")})
+    stale_metrics = sorted({str(row["metric"]) for row in drivers if row.get("freshness_reason") == "stale"})
+    future_metrics = sorted({str(row["metric"]) for row in drivers if row.get("freshness_reason") == "future"})
     confirmations = []
     contradictions = []
     if confirmed and net_polarity in {"pressure", "relief"}:
@@ -532,6 +579,7 @@ def _theme_state(
         "complete": complete,
         "fresh": fresh,
         "stale_metrics": stale_metrics,
+        "future_metrics": future_metrics,
         "chain_ids": [row.get("chain_id") for row in rows],
         "scope_relevance": (scope_relevance := _scope_relevance_score(rows, scope=scope, target=target)),
         "scope_relevant": scope_relevance > 0,
@@ -977,7 +1025,7 @@ def build_scope_synthesis(
     vix_ok = [row for row in ok if _is_vix(row)]
     scoped_missing_src = filter_missing_chains(list(missing_chains or []), scope=scope, target=target)
     missing = [_missing_row(row) for row in scoped_missing_src]
-    clock = reference_now(ok + scoped_missing_src, now)
+    clock = evaluation_date(now)
     theme_names = list(dict.fromkeys(_theme(row) for row in directional))
     states = [
         _theme_state(name, directional, now=clock, scope=scope, target=target)
@@ -990,6 +1038,7 @@ def build_scope_synthesis(
     insufficient = not directional
     net = _net_for_states(top, vix_only=vix_only, missing=missing)
     stale_metrics = sorted({metric for row in top for metric in row.get("stale_metrics") or []})
+    future_metrics = sorted({metric for row in top for metric in row.get("future_metrics") or []})
     if top:
         lead = top[0]
         confidence = _confidence(
@@ -1003,6 +1052,7 @@ def build_scope_synthesis(
             vix_only=False if top else vix_only,
             insufficient=insufficient,
             stale_metrics=lead.get("stale_metrics") if lead["theme"] == "rates" else stale_metrics,
+            future_metrics=lead.get("future_metrics") if lead["theme"] == "rates" else future_metrics,
         )
     else:
         confidence = _confidence(
@@ -1041,6 +1091,7 @@ def build_scope_synthesis(
                 "chain_ids": row["chain_ids"],
                 "fresh": row["fresh"],
                 "stale_metrics": row.get("stale_metrics") or [],
+                "future_metrics": row.get("future_metrics") or [],
                 "scope_relevance": row.get("scope_relevance") or 0,
             }
             for row in top
@@ -1088,7 +1139,7 @@ def synthesize_drivers(
 ) -> dict[str, Any]:
     wanted = [item.upper() for item in (symbols or SYNTHESIS_SYMBOLS)]
     missing_src = [row for row in chains if row.get("status") != "ok"]
-    clock = reference_now(chains, now)
+    clock = evaluation_date(now)
     market = build_scope_synthesis(chains, scope="market", missing_chains=missing_src, now=clock)
     industries: list[dict[str, Any]] = []
     for industry in ("semis", "energy", "banks"):
@@ -1128,8 +1179,8 @@ def synthesize_drivers(
     }
 
 
-def stock_synthesis(chains: list[dict[str, Any]], symbol: str) -> dict[str, Any] | None:
-    payload = synthesize_drivers(chains, symbols=[symbol])
+def stock_synthesis(chains: list[dict[str, Any]], symbol: str, *, now: date | None = None) -> dict[str, Any] | None:
+    payload = synthesize_drivers(chains, symbols=[symbol], now=now)
     return payload["stocks"].get(symbol.upper())
 
 
