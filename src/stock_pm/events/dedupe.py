@@ -217,6 +217,23 @@ def _apply_supersession(claims: list[EventClaim], sources: list[EventSource], do
                 claim.status = "current"
 
 
+def _mark_reprints(sources: list[EventSource]) -> int:
+    """Aggregator copies of a primary original stay listed but are not independent facts."""
+    if len(sources) < 2:
+        return 0
+    ranked = sorted(sources, key=lambda row: (row.source_tier, 0 if row.content_type == "official_fact" else 1))
+    primary = ranked[0]
+    reprints = 0
+    for source in sources:
+        if source.source_id == primary.source_id:
+            continue
+        if source.content_type == "aggregator" or source.source_tier >= 4:
+            source.reprint_of = primary.source_id
+            reprints += 1
+    primary.reprint_count = reprints
+    return reprints
+
+
 def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> list[TrustedEvent]:
     stamp = seen_at or _now()
     events: list[TrustedEvent] = []
@@ -251,6 +268,10 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 body_source=payload.get("body_source"),  # type: ignore[arg-type]
                 fetch_error=payload.get("fetch_error"),  # type: ignore[arg-type]
                 filing_items=list(payload.get("filing_items") or []),
+                author=payload.get("author"),  # type: ignore[arg-type]
+                why_trusted=str(payload.get("why_trusted") or "") or None,
+                discovery_role=payload.get("discovery_role"),  # type: ignore[arg-type]
+                reprint_of=payload.get("reprint_of"),  # type: ignore[arg-type]
             )
             sources.append(source)
             for index, claim in enumerate(doc.claims or [doc.title]):
@@ -270,6 +291,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 )
         docs_by_url = {row.url: row for row in cluster}
         _apply_supersession(claims, sources, docs_by_url)
+        reprint_count = _mark_reprints(sources)
         times = [row.published_at for row in cluster if row.published_at]
         event_status = _status(cluster)
         timeline = []
@@ -327,6 +349,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                     else "若后续官方原文撤回最新预测或海峡通行事实再次反转，则该事件影响链失效"
                 ),
                 coverage=metrics,
+                reprint_count=reprint_count,
             )
         )
     return events

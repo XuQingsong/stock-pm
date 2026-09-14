@@ -12,7 +12,7 @@ from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
 
 
-DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL")
+DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL", "NOK")
 EARNINGS_IMPLICATION_LABELS = {
     "beat_and_grow",
     "beat_but_contract",
@@ -66,6 +66,12 @@ def can_form_direction(
     return True
 
 
+def _is_discovery_source(source: EventSource) -> bool:
+    role = getattr(source, "discovery_role", None) or getattr(source, "evidence_role", "")
+    body = getattr(source, "body_source", None)
+    return role in {"discovery_candidate", "discovery_only"} or body == "cse_snippet"
+
+
 def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool = False) -> list[dict[str, str]]:
     rows = []
     current_urls = {row.source_url for row in current_claims(event)} if current_only else None
@@ -73,6 +79,8 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
         if getattr(source, "evidence_role", "event_fact") == "regime_catalog":
             continue
         if getattr(source, "evidence_role", "event_fact") == "association_metadata":
+            continue
+        if _is_discovery_source(source):
             continue
         if facts_only and source.fact_or_opinion != "fact":
             continue
@@ -92,6 +100,7 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
                 "fact_or_opinion": source.fact_or_opinion,
                 "document_role": getattr(source, "document_role", None),
                 "published_at": source.published_at,
+                "why_trusted": getattr(source, "why_trusted", None),
             }
         )
     return rows
@@ -110,6 +119,9 @@ def _opinion_refs(event: TrustedEvent) -> list[dict[str, str]]:
                 "source_tier": str(source.source_tier),
                 "content_type": source.content_type,
                 "fact_or_opinion": source.fact_or_opinion,
+                "author": getattr(source, "author", None) or "",
+                "published_at": source.published_at or "",
+                "why_trusted": getattr(source, "why_trusted", None) or "",
             }
         )
     return rows

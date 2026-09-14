@@ -228,22 +228,75 @@ def source_id_for(url: str) -> str:
     return "src_" + hashlib.sha256(normalize_url(url).encode("utf-8")).hexdigest()[:16]
 
 
+def is_discovery_snippet(doc: EventDocument | dict[str, object] | None) -> bool:
+    """Google CSE (and other search snippets) are discovery entry only."""
+    if doc is None:
+        return False
+    if isinstance(doc, dict):
+        body_source = str(doc.get("body_source") or "")
+        discovery_role = str(doc.get("discovery_role") or "")
+        provider = str(doc.get("provider") or "")
+        publisher = str(doc.get("publisher") or "")
+    else:
+        body_source = str(getattr(doc, "body_source", "") or "")
+        discovery_role = str(getattr(doc, "discovery_role", "") or "")
+        provider = str(getattr(doc, "provider", "") or "")
+        publisher = str(getattr(doc, "publisher", "") or "")
+    if body_source == "cse_snippet":
+        return True
+    if discovery_role in {"discovery_candidate", "discovery_only"}:
+        return True
+    if provider == "google":
+        return True
+    return "google cse" in publisher.lower()
+
+
+def why_trusted(source: dict[str, object] | None = None, **fields: object) -> str:
+    """Human-readable trust boundary. Discovery snippets never count as facts."""
+    row = dict(source or {})
+    row.update({key: value for key, value in fields.items() if value is not None})
+    if is_discovery_snippet(row):
+        return "Google CSE 只作发现入口，搜索摘要不得作为事实或方向证据"
+    tier = int(row.get("source_tier") or 0)
+    content = str(row.get("content_type") or "")
+    fact = str(row.get("fact_or_opinion") or "")
+    if tier == 1 or content == "official_fact":
+        return "监管/政府/交易所/公司原文，一级事实来源"
+    if tier == 2 or content == "media_report":
+        return "主流媒体报道，可用于确认，不能替代官方原文"
+    if tier == 3 or content == "research_opinion" or fact == "opinion":
+        return "投行/研究机构观点，必须保留作者、日期与原文链接，不得升级为事实"
+    return "聚合转载/无原文，不得进入方向证据"
+
+
 def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]:
     from .evidence import infer_document_role, infer_evidence_role
 
     cls = classify_source(doc.url, doc.publisher)
-    canonical = normalize_url(doc.url)
-    document_role = doc.document_role or infer_document_role(doc.url, doc.title)
-    if document_role == "regime_catalog" or doc.evidence_role == "regime_catalog":
-        evidence_role = "regime_catalog"
-    elif doc.evidence_role in {"association_metadata", "structured_field_bindings"}:
-        evidence_role = doc.evidence_role
+    discovery = is_discovery_snippet(doc)
+    discovery_role = getattr(doc, "discovery_role", None) or ("discovery_candidate" if discovery else None)
+    body_source = getattr(doc, "body_source", None) or ("cse_snippet" if discovery else None)
+    if discovery:
+        cls = {
+            "source_tier": 4,
+            "content_type": "aggregator",
+            "fact_or_opinion": "opinion",
+            "primary_or_secondary": "secondary",
+        }
+        evidence_role = "discovery_candidate"
+        document_role = "discovery_candidate"
     else:
-        evidence_role = infer_evidence_role(doc.url, document_role)
-    return {
+        document_role = doc.document_role or infer_document_role(doc.url, doc.title)
+        if document_role == "regime_catalog" or doc.evidence_role == "regime_catalog":
+            evidence_role = "regime_catalog"
+        elif doc.evidence_role in {"association_metadata", "structured_field_bindings"}:
+            evidence_role = doc.evidence_role
+        else:
+            evidence_role = infer_evidence_role(doc.url, document_role)
+    payload = {
         "source_id": source_id_for(doc.url),
         "source_url": doc.url,
-        "canonical_url": canonical,
+        "canonical_url": normalize_url(doc.url),
         "publisher": doc.publisher,
         "title": doc.title,
         "published_at": doc.published_at,
@@ -251,8 +304,12 @@ def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]
         "document_role": document_role,
         "evidence_role": evidence_role,
         "last_fetched_at": getattr(doc, "last_fetched_at", None),
-        "body_source": getattr(doc, "body_source", None) or None,
+        "body_source": body_source,
         "fetch_error": getattr(doc, "fetch_error", None),
         "filing_items": list(getattr(doc, "filing_items", None) or []),
+        "author": getattr(doc, "author", None),
+        "discovery_role": discovery_role,
         **cls,
     }
+    payload["why_trusted"] = why_trusted(payload)
+    return payload

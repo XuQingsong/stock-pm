@@ -190,13 +190,16 @@
 
   const sourceRow = (source) => {
     const href = safeUrl(source.source_url || source.canonical_url);
-    return `<div class="source-row" data-content-type="${esc(source.content_type)}" data-fact-or-opinion="${esc(source.fact_or_opinion)}" data-source-tier="${esc(source.source_tier)}">
+    const asOf = source.published_at || source.first_seen_at || "";
+    return `<div class="source-row" data-content-type="${esc(source.content_type)}" data-fact-or-opinion="${esc(source.fact_or_opinion)}" data-source-tier="${esc(source.source_tier)}" data-discovery-role="${esc(source.discovery_role || "")}" data-reprint-of="${esc(source.reprint_of || "")}">
       ${pill(source.content_type, tierClass(source))}
       ${pill(`Tier ${source.source_tier}`)}
       ${pill(source.fact_or_opinion, source.fact_or_opinion === "fact" ? "tier-fact" : "tier-opinion")}
       ${source.document_role ? pill(source.document_role) : ""}
+      ${source.author ? pill(`作者 ${source.author}`) : ""}
       ${href ? sourceLink(href, source.publisher || source.title) : `<span class="no-url">${esc(source.publisher || "无原文")}</span>`}
-      <div class="news-meta">${esc(source.title || "")} · ${esc(source.published_at || "")}</div>
+      <div class="news-meta">${esc(source.title || "")} · as-of ${esc(asOf || "未标注")}${source.reprint_of ? " · 转载" : ""}</div>
+      ${source.why_trusted ? `<div class="subline" data-why-trusted="1">为何可信：${esc(source.why_trusted)}</div>` : ""}
     </div>`;
   };
 
@@ -398,7 +401,7 @@
       : factOnly
         ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 当前仅作为事实展示；在基准与传导规则补齐前，不纳入方向判断，也不影响其他事件的正常分析。</p>`
         : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}" data-last-success-at="${esc(lastSuccess)}" data-next-retry-at="${esc(nextRetry)}">${reasonCode ? `本链不能形成完整结论，缺 ${esc(reasonCode)}。` : "本链不能形成完整结论。"}${esc(withheld.reason || "")}${fetchNote} 本事件不形成方向，也不阻断其他事件的正常分析。</p>`;
-    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}" data-can-form-direction="${analysis.can_form_direction === true ? "1" : "0"}">
+    return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}" data-can-form-direction="${analysis.can_form_direction === true ? "1" : "0"}" data-reprint-count="${esc(event.reprint_count ?? 0)}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
         <div class="event-meta">
@@ -411,6 +414,7 @@
           ${pill(`publishers ${analysis.publisher_count ?? (event.coverage && event.coverage.publisher_count) ?? "—"}`)}
           ${pill(`independent ${analysis.independent_publisher_count ?? (event.coverage && event.coverage.independent_publisher_count) ?? "—"}`)}
           ${pill(`superseded ${analysis.superseded_count ?? (event.coverage && event.coverage.superseded_count) ?? 0}`)}
+          ${pill(`转载合并 ${event.reprint_count ?? 0}`)}
         </div>
       </header>
       ${loopNote}
@@ -430,6 +434,10 @@
       <div class="source-lane" data-lane="opinion">
         <h4>${esc(laneLabel.research_opinion)}</h4>
         ${lanes.research_opinion.length ? lanes.research_opinion.map(sourceRow).join("") : "<p class='subline'>无机构观点</p>"}
+      </div>
+      <div class="source-lane" data-lane="aggregator">
+        <h4>${esc(laneLabel.aggregator)}</h4>
+        ${lanes.aggregator.length ? lanes.aggregator.map(sourceRow).join("") : "<p class='subline'>无聚合转载</p>"}
       </div>
       ${timelineHtml(event.timeline)}
       ${claimsHtml(event.claims)}
@@ -556,16 +564,51 @@
     </section>`;
   };
 
+  const renderHorizonForecast = (row, options = {}) => {
+    if (!row) return "";
+    const allowed = row.can_form_direction === true;
+    const missing = (row.missing || []).map((item) =>
+      `<div class="subline" data-forecast-missing="${esc(item.metric || "")}">缺 ${esc(item.metric || item.chain || "")}：${esc(item.detail || "")}。What changes：${esc(item.what_changes || "")}</div>`
+    ).join("");
+    const horizons = (row.horizons || []).map((item) => {
+      const refs = refsHtml(item.supporting_evidence || []);
+      const counters = (item.counter_evidence || []).map((c) => `<div class="subline" data-counter-evidence="1">${typeof c === "string" ? esc(c) : esc(c.text || JSON.stringify(c))}</div>`).join("");
+      return `<article class="horizon-scenario" data-horizon="${esc(item.horizon || "")}" data-directional-scenario="${esc(item.directional_scenario || "withheld")}">
+        <div class="chain-kicker">${esc(item.horizon || "")} · ${esc(item.directional_scenario || "withheld")}</div>
+        <div data-horizon-text="1">${esc(item.text || "")}</div>
+        <div class="subline">驱动 ${esc((item.driver_metrics || []).join(" / ") || "无")} · 置信度 ${esc(item.confidence || "—")}</div>
+        <div class="subline" data-transmission="1">${esc(item.transmission || "")}</div>
+        <div class="evidence-refs">支持证据：${refs}</div>
+        ${counters}
+        <div class="subline" data-what-changes="1">${esc(item.what_changes || "")}</div>
+        <div class="subline">失效：${esc(item.invalidation || "")}</div>
+      </article>`;
+    }).join("");
+    const vix = row.vix || {};
+    const title = options.title || (row.scope === "stock" ? `${row.target || ""} 期限情景` : row.scope === "industry" ? `${row.target || "行业"} 期限情景` : "期限情景 Forecast");
+    return `<section class="horizon-forecast" data-horizon-forecast="1" data-can-form-direction="${allowed ? "1" : "0"}" data-scope="${esc(row.scope || "")}" data-target="${esc(row.target || "")}">
+      <h3>${esc(title)}</h3>
+      <p class="subline">${allowed ? "条件方向情景，不是目标价、胜率或交易建议。" : esc(row.reason || "证据不足，不形成预测。")}</p>
+      ${horizons}
+      <div data-vix-confirmation="1" data-vix-amplifies="${vix.amplifies ? "1" : "0"}">${esc(vix.text || "VIX 只确认风险")}</div>
+      ${(vix.counter_evidence || []).map((item) => `<div class="subline" data-counter-evidence="1">${esc(item)}</div>`).join("")}
+      <div data-what-changes="1">${esc((row.what_changes && row.what_changes.text) || "")}</div>
+      <div data-missing="1">${missing}</div>
+    </section>`;
+  };
+
   const renderCenter = (payload) => {
     const events = payload.events || [];
     const synthesis = renderSynthesis(payload.driver_synthesis);
+    const forecast = renderHorizonForecast(payload.horizon_forecast, { title: "市场期限情景 Forecast" });
     const industries = (payload.industry_syntheses || []).map((row) => renderSynthesis(row, { title: `行业综合 · ${row.target || ""}` })).join("");
-    const industryHtml = industries ? `<section class="industry-syntheses" data-industry-syntheses="1">${industries}</section>` : "";
+    const industryForecasts = (payload.industry_forecasts || []).map((row) => renderHorizonForecast(row, { title: `行业期限 · ${row.target || ""}` })).join("");
+    const industryHtml = (industries || industryForecasts) ? `<section class="industry-syntheses" data-industry-syntheses="1">${industries}${industryForecasts}</section>` : "";
     const summary = renderMacroSummary(payload);
-    if (!events.length && !summary && !synthesis) {
+    if (!events.length && !summary && !synthesis && !forecast) {
       return `<div class="empty-note">新闻/事件为空只影响事件链，不影响价格、盈利或宏观利率链。</div>`;
     }
-    return synthesis + industryHtml + summary + events.map((event) => renderCard(event)).join("");
+    return synthesis + forecast + industryHtml + summary + events.map((event) => renderCard(event)).join("");
   };
 
   const renderStock = (payload) => {
@@ -574,6 +617,7 @@
     const healthHtml = renderSymbolHealth(payload.earnings_health || {});
     const mapped = payload.macro_chains || [];
     const synthesisHtml = renderSynthesis(payload.driver_synthesis, { title: `${payload.symbol || ""} 综合判断`, why: payload.driver_synthesis && payload.driver_synthesis.why_relevant });
+    const forecastHtml = renderHorizonForecast(payload.horizon_forecast, { title: `${payload.symbol || ""} 期限情景` });
     const mappedHtml = mapped.length ? `<section data-stock-macro-chains="1">${mapped.map((chain) => macroChainHtml(chain, { why: chain.why_relevant })).join("")}</section>` : "";
     const riskHtml = risk ? `<aside class="vix-risk" data-vix-role="${esc(risk.role)}" data-chain-id="${esc(risk.chain_id || "")}" data-can-form-direction="0">
       <strong>VIX 风险确认</strong>
@@ -582,9 +626,9 @@
       ${(risk.counter_evidence || []).map((row) => `<div class="subline" data-counter-evidence="1">${boundHtml(row)}</div>`).join("")}
     </aside>` : "";
     if (!events.length && !mapped.length && !payload.driver_synthesis) {
-      return `${healthHtml}${riskHtml}${synthesisHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
+      return `${healthHtml}${riskHtml}${synthesisHtml}${forecastHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
     }
-    return healthHtml + riskHtml + synthesisHtml + mappedHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
+    return healthHtml + riskHtml + synthesisHtml + forecastHtml + mappedHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
   };
 
   window.StockPmEvents = {
@@ -596,6 +640,7 @@
     renderCenter,
     renderStock,
     renderMacroSummary,
-    renderSynthesis
+    renderSynthesis,
+    renderHorizonForecast
   };
 })();

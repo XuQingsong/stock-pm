@@ -10,6 +10,7 @@ from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol
 from .dedupe import build_events
 from .earnings_health import current_earnings_health, health_for_symbol, summarize_health
 from .live import discover_live_documents, reset_live_state
+from .horizon import build_horizon_forecast
 from .macro_chain import (
     build_market_macro_chains,
     env_macro_inject,
@@ -22,10 +23,20 @@ from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
 from .replay import RecordedReplayProvider
 from .types import TrustedEvent
+from stock_pm.decision.inject import inject_allowed
 
 
 _CACHE: dict[str, Any] = {"events": None, "coverage": None}
 REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
+
+
+def _inject_tokens(explicit: Any, settings: Settings | None = None) -> Any:
+    """Production never reads STOCK_PM_MACRO_INJECT or forwards caller inject."""
+    if not inject_allowed(settings):
+        return None
+    if explicit is not None:
+        return explicit
+    return env_macro_inject()
 
 
 def build_event_book(settings: Settings | None = None, *, refresh: bool = False) -> list[TrustedEvent]:
@@ -219,10 +230,14 @@ def market_center(settings: Settings | None = None, *, inject: Any = None, now: 
     events = build_event_book(settings)
     cover = coverage(settings, events)
     ordered = sorted(events, key=_center_sort_key)
-    tokens = env_macro_inject() if inject is None else inject
+    tokens = _inject_tokens(inject, settings)
     chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
     clock = evaluation_date(now)
     synthesis = synthesize_drivers(chains, now=clock)
+    industry_forecasts = [
+        build_horizon_forecast(chains, synthesis=row, scope="industry", target=row.get("target"), now=clock)
+        for row in synthesis["industries"]
+    ]
     return {
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
@@ -236,6 +251,10 @@ def market_center(settings: Settings | None = None, *, inject: Any = None, now: 
         "driver_syntheses": synthesis["syntheses"],
         "industry_syntheses": synthesis["industries"],
         "synthesis_summary": summarize_synthesis(synthesis),
+        "horizon_forecast": build_horizon_forecast(
+            chains, synthesis=synthesis["market"], scope="market", now=clock
+        ),
+        "industry_forecasts": industry_forecasts,
     }
 
 
@@ -259,7 +278,7 @@ def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any =
         if view:
             selected.append(view)
     selected.sort(key=_center_sort_key)
-    tokens = env_macro_inject() if inject is None else inject
+    tokens = _inject_tokens(inject, settings)
     chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
     mapped = stock_macro_chains(chains, symbol)
     clock = evaluation_date(now)
@@ -306,6 +325,9 @@ def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any =
         } if scoped else None,
         "risk_state": risk_state,
         "earnings_health": health_for_symbol(symbol),
+        "horizon_forecast": build_horizon_forecast(
+            chains, synthesis=scoped, scope="stock", target=symbol.upper(), now=clock
+        ),
         "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。宏观事件不会复制到全部股票。",
     }
 

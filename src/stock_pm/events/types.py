@@ -45,6 +45,11 @@ class EventSource:
     body_source: str | None = None
     fetch_error: str | None = None
     filing_items: list[str] = field(default_factory=list)
+    author: str | None = None
+    why_trusted: str | None = None
+    discovery_role: str | None = None
+    reprint_of: str | None = None
+    reprint_count: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -66,6 +71,11 @@ class EventSource:
             "body_source": self.body_source,
             "fetch_error": self.fetch_error,
             "filing_items": list(self.filing_items),
+            "author": self.author,
+            "why_trusted": self.why_trusted,
+            "discovery_role": self.discovery_role,
+            "reprint_of": self.reprint_of,
+            "reprint_count": self.reprint_count,
         }
 
 
@@ -125,6 +135,8 @@ class EventDocument:
     body_source: str = ""
     fetch_error: str | None = None
     filing_items: list[str] = field(default_factory=list)
+    author: str | None = None
+    discovery_role: str | None = None
 
 
 @dataclass(slots=True)
@@ -150,6 +162,7 @@ class TrustedEvent:
     timeline: list[dict[str, Any]] = field(default_factory=list)
     analysis: dict[str, Any] = field(default_factory=dict)
     coverage: dict[str, Any] = field(default_factory=dict)
+    reprint_count: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -174,4 +187,5 @@ class TrustedEvent:
             "invalidation": self.invalidation,
             "analysis": dict(self.analysis),
             "coverage": dict(self.coverage),
+            "reprint_count": self.reprint_count,
         }
