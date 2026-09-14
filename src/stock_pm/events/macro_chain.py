@@ -71,6 +71,10 @@ INJECT_KEYS = frozenset({
     "period_mismatch_nfp",
     "source_fail_us2y",
     "reverse_cpi",
+    "us2y_up",
+    "vix_only",
+    "drop_direction",
+    "duplicate_cpi",
 })
 
 INFLATION_RATE_METRICS = frozenset({"cpi", "core_cpi"})
@@ -1191,6 +1195,30 @@ def apply_macro_inject(facts: list[dict[str, Any]], tokens: Any) -> list[dict[st
                     row["actual"] = consensus - abs(actual - consensus)
                 elif actual is not None:
                     row["actual"] = actual - 1.0
+    if "us2y_up" in wanted:
+        for row in rows:
+            if canonical_metric(str(row.get("metric") or "")) == "us2y":
+                actual = _num(row.get("actual"))
+                prior = _num(row.get("prior"))
+                if actual is not None and prior is not None and actual <= prior:
+                    row["actual"] = prior + abs(prior - actual)
+                elif actual is not None:
+                    row["actual"] = actual + 0.20
+    if "vix_only" in wanted or "drop_direction" in wanted:
+        for row in rows:
+            metric = canonical_metric(str(row.get("metric") or ""))
+            if "vix_only" in wanted and metric == "vix":
+                continue
+            row["status"] = "error"
+            row["reason_code"] = "source_failed"
+    if "duplicate_cpi" in wanted:
+        for row in list(rows):
+            if canonical_metric(str(row.get("metric") or "")) == "cpi":
+                clone = dict(row)
+                clone["metric"] = "core_cpi"
+                clone["name"] = "Core CPI (same CPI print)"
+                rows.append(clone)
+                break
     return rows
 
 
@@ -1246,7 +1274,32 @@ def build_market_macro_chains(
         if previous and previous.get("metric") in METRIC_FAMILY:
             continue
         registry[chain["chain_id"]] = chain
-    return list(registry.values())
+    return apply_macro_chain_inject(list(registry.values()), inject)
+
+
+def apply_macro_chain_inject(chains: list[dict[str, Any]], tokens: Any) -> list[dict[str, Any]]:
+    """Test-only: drop non-VIX event chains from direction when vix_only/drop_direction."""
+    wanted = parse_macro_inject(tokens)
+    if not wanted or not ("vix_only" in wanted or "drop_direction" in wanted):
+        return list(chains)
+    rows = []
+    for chain in chains:
+        row = dict(chain)
+        keep_vix = "vix_only" in wanted and row.get("metric") == "vix"
+        if keep_vix:
+            rows.append(row)
+            continue
+        if row.get("status") == "ok":
+            row["status"] = "degraded"
+            row["live"] = False
+            row["can_form_direction"] = False
+            row["degrade_reason"] = "source_failed" if "drop_direction" in wanted else "inject_vix_only"
+            row["degrade_detail"] = (
+                f"{row.get('metric')} 本场景不作为方向证据，只进入缺失说明，不阻断其他链的展示结构"
+            )
+            row = _finalize_chain(row)
+        rows.append(row)
+    return rows
 
 
 def summarize_macro_chains(chains: list[dict[str, Any]]) -> dict[str, Any]:

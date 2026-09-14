@@ -8,7 +8,10 @@
     const coverNode = $("event-coverage");
     if (!root) return;
     try {
-      const response = await fetch("/api/events", { headers: { Accept: "application/json" } });
+      const params = new URLSearchParams(location.search);
+      const macroInject = params.get("macro_inject");
+      const qs = macroInject ? `?macro_inject=${encodeURIComponent(macroInject)}` : "";
+      const response = await fetch(`/api/events${qs}`, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error(`请求失败（${response.status}）`);
       const payload = await response.json();
       const ui = window.StockPmEvents;
@@ -29,6 +32,8 @@
       root.dataset.live = payload.live ? "1" : "0";
       root.dataset.replay = payload.recorded_replay ? "1" : "0";
       root.dataset.macroChainCount = String((payload.macro_chains || []).length);
+      root.dataset.synthesisId = (payload.driver_synthesis && payload.driver_synthesis.synthesis_id) || "";
+      root.dataset.synthesisStance = (payload.synthesis_summary && payload.synthesis_summary.stance) || "";
     } catch (error) {
       root.className = "state error";
       root.dataset.eventsReady = "error";

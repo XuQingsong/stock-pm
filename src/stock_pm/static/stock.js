@@ -954,6 +954,8 @@
     const inject = params.get("inject");
     if (preview) next.set("preview", preview);
     if (inject) next.set("inject", inject);
+    const macroInject = params.get("macro_inject");
+    if (macroInject) next.set("macro_inject", macroInject);
     const qs = next.toString();
     return qs ? `?${qs}` : "";
   }
@@ -1061,7 +1063,7 @@
     const body = $("event-body");
     if (!body) return;
     try {
-      const payload = await api(`/api/stock/${encodeURIComponent(SYMBOL)}/events`);
+      const payload = await api(`/api/stock/${encodeURIComponent(SYMBOL)}/events${extraQuery()}`);
       const ui = window.StockPmEvents;
       if (!ui) throw new Error("事件渲染未加载");
       const coverNode = $("event-coverage");

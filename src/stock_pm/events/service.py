@@ -17,6 +17,7 @@ from .macro_chain import (
     stock_macro_chains,
     summarize_macro_chains,
 )
+from .synthesis import evaluation_date, stock_synthesis, summarize_synthesis, synthesize_drivers
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
 from .replay import RecordedReplayProvider
@@ -214,11 +215,14 @@ def _center_sort_key(event: TrustedEvent | dict[str, Any]) -> tuple:
     return (type_rank, published or "", title)
 
 
-def market_center(settings: Settings | None = None) -> dict[str, Any]:
+def market_center(settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
     events = build_event_book(settings)
     cover = coverage(settings, events)
     ordered = sorted(events, key=_center_sort_key)
-    chains = build_market_macro_chains(events=events, settings=settings, inject=env_macro_inject())
+    tokens = env_macro_inject() if inject is None else inject
+    chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
+    clock = evaluation_date(now)
+    synthesis = synthesize_drivers(chains, now=clock)
     return {
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
@@ -228,10 +232,14 @@ def market_center(settings: Settings | None = None) -> dict[str, Any]:
         "events": [event.as_dict() for event in ordered],
         "macro_chains": chains,
         "macro_driver_summary": summarize_macro_chains(chains),
+        "driver_synthesis": synthesis["market"],
+        "driver_syntheses": synthesis["syntheses"],
+        "industry_syntheses": synthesis["industries"],
+        "synthesis_summary": summarize_synthesis(synthesis),
     }
 
 
-def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any]:
+def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
     events = build_event_book(settings)
     selected = []
     risk_state = None
@@ -251,8 +259,11 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         if view:
             selected.append(view)
     selected.sort(key=_center_sort_key)
-    chains = build_market_macro_chains(events=events, settings=settings, inject=env_macro_inject())
+    tokens = env_macro_inject() if inject is None else inject
+    chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
     mapped = stock_macro_chains(chains, symbol)
+    clock = evaluation_date(now)
+    scoped = stock_synthesis(chains, symbol, now=clock)
     vix_chain = next((row for row in chains if row.get("metric") == "vix"), None)
     if vix_chain and risk_state is None:
         risk_state = {
@@ -282,6 +293,17 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         "events": selected,
         "macro_chains": mapped,
         "macro_driver_summary": summarize_macro_chains(mapped),
+        "driver_synthesis": scoped,
+        "driver_syntheses": [scoped] if scoped else [],
+        "synthesis_summary": {
+            "synthesis_id": (scoped or {}).get("synthesis_id"),
+            "scope": "stock",
+            "stance": ((scoped or {}).get("net_expectation") or {}).get("stance"),
+            "text": ((scoped or {}).get("net_expectation") or {}).get("text"),
+            "confidence": ((scoped or {}).get("confidence") or {}).get("label"),
+            "why_relevant": (scoped or {}).get("why_relevant"),
+            "can_form_direction": False,
+        } if scoped else None,
         "risk_state": risk_state,
         "earnings_health": health_for_symbol(symbol),
         "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。宏观事件不会复制到全部股票。",

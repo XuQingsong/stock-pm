@@ -121,6 +121,16 @@
 .event-causal-layer[data-layer-kind="observable_fact"]{border-left:4px solid #0f766e}
 .event-causal-layer[data-layer-kind="derived_analysis"]{border-left:4px solid #1d4ed8}
 .event-causal-layer[data-layer-kind="conditional_expectation"]{border-left:4px solid #b45309}
+.driver-synthesis{margin:12px 0;padding:12px;border:1px solid #f59e0b;border-radius:10px;background:#fffbeb}
+.driver-synthesis h3{margin:0 0 8px;font-size:16px}
+.driver-synthesis[data-conflict="1"]{border-color:#dc2626;background:#fef2f2}
+.driver-synthesis[data-stance="risk_confirmation_only"],.driver-synthesis[data-stance="withheld"]{border-color:#64748b;background:#f8fafc}
+.synthesis-block{margin:8px 0;padding:8px 10px;border-radius:8px;background:#fff}
+.synthesis-block[data-synthesis-kind="observable_fact"]{border-left:4px solid #0f766e}
+.synthesis-block[data-synthesis-kind="derived_analysis"]{border-left:4px solid #1d4ed8}
+.synthesis-block[data-synthesis-kind="conditional_expectation"]{border-left:4px solid #b45309}
+.synthesis-conflict{border:1px solid #fecaca;background:#fff1f2;border-radius:8px;padding:8px;margin:6px 0}
+.industry-syntheses{margin:10px 0}
 .event-timeline{margin:12px 0;padding:10px;border:1px solid #d4d4d8;border-radius:8px;background:#fafafa}
 .event-timeline .timeline-item{padding:8px 0;border-bottom:1px dashed #e4e4e7}
 .event-timeline .timeline-item:last-child{border-bottom:0}
