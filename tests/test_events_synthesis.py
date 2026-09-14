@@ -299,6 +299,9 @@ def test_jpm_impact_does_not_name_nvda():
     assert banks["impact"]["stocks"] == ["JPM"]
     assert energy["impact"]["stocks"] == ["XOM"]
     assert semis["impact"]["stocks"] == ["NVDA"]
+    assert jpm["impact"]["industries"] == ["banks"]
+    assert "semis" not in jpm["impact"]["industries"]
+    assert "energy" not in jpm["impact"]["industries"]
 
 
 def test_stock_missing_is_scope_relevant():

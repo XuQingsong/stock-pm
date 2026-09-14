@@ -947,7 +947,18 @@ def _impact_industries(scope: str, target: str | None, chains: list[dict[str, An
     if scope == "industry" and target:
         return [target]
     found: list[str] = []
+    wanted = target.upper() if scope == "stock" and target else None
     for chain in chains:
+        if wanted:
+            channels = {
+                str(row.get("channel") or "")
+                for row in (chain.get("exposures") or [])
+                if str(row.get("symbol") or "").upper() == wanted
+            }
+            for industry, allowed in INDUSTRY_CHANNELS.items():
+                if channels & allowed:
+                    found.append(industry)
+            continue
         for industry in sorted(_industry_of_chain(chain)):
             found.append(industry)
     return list(dict.fromkeys(found))
