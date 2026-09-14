@@ -53,6 +53,10 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
             "persist_error": None,
             "persist_skipped": "recorded_replay",
             "affects_chain": "events",
+            "schedule_entry": "stock-pm-events / run_event_job",
+            "discovery_promoted": int((cover.get("discovery_resolution") or {}).get("discovery_promoted") or 0),
+            "discovery_unverified": int((cover.get("discovery_resolution") or {}).get("discovery_unverified") or 0),
+            "discovery_retry_deferred": int((cover.get("discovery_resolution") or {}).get("discovery_retry_deferred") or 0),
         }
     db = None
     try:
@@ -95,6 +99,7 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
     finally:
         if db is not None:
             db.close()
+    resolution = (cover.get("discovery_resolution") or {}) if isinstance(cover, dict) else {}
     return {
         "status": "ok" if persist_error is None else "degraded",
         "persisted": persisted,
@@ -103,6 +108,10 @@ def run_event_job(settings: Settings | None = None) -> dict[str, Any]:
         "idempotent": True,
         "persist_error": persist_error,
         "affects_chain": "events",
+        "schedule_entry": "stock-pm-events / run_event_job",
+        "discovery_promoted": int(resolution.get("discovery_promoted") or 0),
+        "discovery_unverified": int(resolution.get("discovery_unverified") or 0),
+        "discovery_retry_deferred": int(resolution.get("discovery_retry_deferred") or 0),
     }
 
 

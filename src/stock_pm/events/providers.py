@@ -63,6 +63,9 @@ def load_fixture_documents() -> list[EventDocument]:
                 document_role=item.get("document_role"),
                 evidence_role=str(item.get("evidence_role") or "event_fact"),
                 supersedes_url=item.get("supersedes_url"),
+                body_source=str(item.get("body_source") or ""),
+                author=item.get("author"),
+                discovery_role=item.get("discovery_role"),
             )
         )
     return rows
@@ -237,6 +240,9 @@ class GoogleDiscoveryProvider:
                     event_type="other",
                     body=sanitize_untrusted(str(item.get("snippet") or "")),
                     provider="google",
+                    body_source="cse_snippet",
+                    discovery_role="discovery_candidate",
+                    evidence_role="discovery_candidate",
                 )
             )
         from datetime import datetime, timezone

@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timezone
 
 from .evidence import infer_phase, publisher_key, source_metrics
-from .policy import document_to_source, sanitize_untrusted
+from .policy import document_to_source, normalize_url, sanitize_untrusted
 from .types import EventClaim, EventDocument, EventSource, TrustedEvent
 
 
@@ -40,6 +40,10 @@ def _published_day(doc: EventDocument):
 def same_event(left: EventDocument, right: EventDocument) -> bool:
     if left.event_type != right.event_type:
         return False
+    left_url = normalize_url(left.url or "")
+    right_url = normalize_url(right.url or "")
+    if left_url and left_url == right_url:
+        return True
     if left.event_type == "company_earnings":
         skip = {"EPS", "REV", "REVENUE", "EARNINGS", "USD", "US", "USA"}
         left_issuers = {item.upper() for item in left.entities if str(item).isalpha() and item.upper() not in skip}
@@ -82,11 +86,39 @@ def same_event(left: EventDocument, right: EventDocument) -> bool:
     return False
 
 
+def _cluster_primary(docs: list[EventDocument]) -> EventDocument:
+    """Prefer a fetched official original so reprints/updates share one identity."""
+    from .policy import is_discovery_snippet
+
+    def sort_key(doc: EventDocument) -> tuple:
+        discovery = 1 if is_discovery_snippet(doc) else 0
+        official = 0 if (doc.provider == "official" or doc.body_source in {"official_html", "sec_primary_document"}) else 1
+        published = str(doc.published_at or "9999")
+        return (discovery, official, published, doc.url or "", doc.title or "")
+
+    return sorted(docs, key=sort_key)[0]
+
+
 def _stable_id(docs: list[EventDocument]) -> str:
+    """Identity includes the primary official URL + day so distinct same-entity events do not collide.
+
+    Reprints and updates already clustered by same_event() inherit the cluster primary.
+    """
+    primary = _cluster_primary(docs)
     shared = set(docs[0].entities)
     for row in docs[1:]:
         shared &= set(row.entities)
-    material = f"{docs[0].event_type}|{'/'.join(sorted(shared or docs[0].entities))}|{'/'.join(sorted(docs[0].countries))}"
+    entities = "/".join(sorted(shared or primary.entities or docs[0].entities))
+    countries = "/".join(sorted({item for row in docs for item in row.countries} or primary.countries))
+    url = normalize_url(primary.url or "")
+    day = ""
+    stamp = _published_day(primary)
+    if stamp is not None:
+        day = stamp.isoformat()
+    elif primary.published_at:
+        day = str(primary.published_at)[:10]
+    title_fp = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", " ", (primary.title or "").lower()).strip()[:80]
+    material = f"{primary.event_type}|{entities}|{countries}|{url or title_fp}|{day}"
     return "evt_" + hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
 
 
@@ -217,6 +249,23 @@ def _apply_supersession(claims: list[EventClaim], sources: list[EventSource], do
                 claim.status = "current"
 
 
+def _mark_reprints(sources: list[EventSource]) -> int:
+    """Aggregator copies of a primary original stay listed but are not independent facts."""
+    if len(sources) < 2:
+        return 0
+    ranked = sorted(sources, key=lambda row: (row.source_tier, 0 if row.content_type == "official_fact" else 1))
+    primary = ranked[0]
+    reprints = 0
+    for source in sources:
+        if source.source_id == primary.source_id:
+            continue
+        if source.content_type == "aggregator" or source.source_tier >= 4:
+            source.reprint_of = primary.source_id
+            reprints += 1
+    primary.reprint_count = reprints
+    return reprints
+
+
 def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> list[TrustedEvent]:
     stamp = seen_at or _now()
     events: list[TrustedEvent] = []
@@ -227,7 +276,20 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
         sources = []
         claims = []
         seen_urls: set[str] = set()
-        for doc in cluster:
+        cluster_ordered = sorted(
+            cluster,
+            key=lambda row: (
+                1 if (
+                    getattr(row, "discovery_role", None)
+                    or row.body_source == "cse_snippet"
+                    or row.provider == "google"
+                )
+                else 0,
+                0 if row.provider == "official" or row.body_source in {"official_html", "sec_primary_document"} else 1,
+                str(row.published_at or "9999"),
+            ),
+        )
+        for doc in cluster_ordered:
             payload = document_to_source(doc, seen_at=stamp)
             if payload["canonical_url"] in seen_urls:
                 continue
@@ -251,6 +313,11 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 body_source=payload.get("body_source"),  # type: ignore[arg-type]
                 fetch_error=payload.get("fetch_error"),  # type: ignore[arg-type]
                 filing_items=list(payload.get("filing_items") or []),
+                author=payload.get("author"),  # type: ignore[arg-type]
+                why_trusted=str(payload.get("why_trusted") or "") or None,
+                discovery_role=payload.get("discovery_role"),  # type: ignore[arg-type]
+                reprint_of=payload.get("reprint_of"),  # type: ignore[arg-type]
+                next_retry_at=payload.get("next_retry_at"),  # type: ignore[arg-type]
             )
             sources.append(source)
             for index, claim in enumerate(doc.claims or [doc.title]):
@@ -270,6 +337,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 )
         docs_by_url = {row.url: row for row in cluster}
         _apply_supersession(claims, sources, docs_by_url)
+        reprint_count = _mark_reprints(sources)
         times = [row.published_at for row in cluster if row.published_at]
         event_status = _status(cluster)
         timeline = []
@@ -327,6 +395,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                     else "若后续官方原文撤回最新预测或海峡通行事实再次反转，则该事件影响链失效"
                 ),
                 coverage=metrics,
+                reprint_count=reprint_count,
             )
         )
     return events

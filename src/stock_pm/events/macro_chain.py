@@ -167,6 +167,9 @@ def _ref(fact: dict[str, Any] | None, *, source_id: str | None = None) -> dict[s
         "source_tier": 1 if url else 0,
         "content_type": "official_fact",
         "fact_or_opinion": "fact",
+        "primary_or_secondary": "primary",
+        "is_current": True,
+        "body_source": "official_series",
         "as_of": row.get("as_of") or row.get("period"),
         "series": row.get("series") or row.get("series_or_symbol"),
     }
@@ -1274,13 +1277,15 @@ def build_market_macro_chains(
         if previous and previous.get("metric") in METRIC_FAMILY:
             continue
         registry[chain["chain_id"]] = chain
-    return apply_macro_chain_inject(list(registry.values()), inject)
+    return apply_macro_chain_inject(list(registry.values()), inject, settings)
 
 
-def apply_macro_chain_inject(chains: list[dict[str, Any]], tokens: Any) -> list[dict[str, Any]]:
+def apply_macro_chain_inject(chains: list[dict[str, Any]], tokens: Any, settings: Any = None) -> list[dict[str, Any]]:
     """Test-only: drop non-VIX event chains from direction when vix_only/drop_direction."""
     wanted = parse_macro_inject(tokens)
     if not wanted or not ("vix_only" in wanted or "drop_direction" in wanted):
+        return list(chains)
+    if not inject_allowed(settings):
         return list(chains)
     rows = []
     for chain in chains:

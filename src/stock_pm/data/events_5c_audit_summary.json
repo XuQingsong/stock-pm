@@ -44,10 +44,12 @@
     "fomc_minutes_classified_other": 4
   },
   "gained_event_ids": [
-    "evt_55733c70cd1dd721",
-    "evt_b39a38314637dcde",
-    "evt_30ab371b5e192e82"
+    "evt_68a699316b344816",
+    "evt_c3055ed765c8322c",
+    "evt_d1980818a9bbb085"
   ],
-  "fixable_sources": ["eia_official_html_body_beyond_title"],
+  "fixable_sources": [
+    "eia_official_html_body_beyond_title"
+  ],
   "note_honest_read": "SEC index Item lines are discovery metadata only and cannot close a loop. Valid count is not a target; the three gained events have official body sentences beyond the page title."
 }

@@ -12,7 +12,7 @@ from .exposure import attach_exposures, why_relevant
 from .types import EventClaim, TrustedEvent
 
 
-DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL")
+DISPLAY_SYMBOLS = ("NVDA", "XOM", "JPM", "AAPL", "NOK")
 EARNINGS_IMPLICATION_LABELS = {
     "beat_and_grow",
     "beat_but_contract",
@@ -66,6 +66,12 @@ def can_form_direction(
     return True
 
 
+def _is_discovery_source(source: EventSource) -> bool:
+    role = getattr(source, "discovery_role", None) or getattr(source, "evidence_role", "")
+    body = getattr(source, "body_source", None)
+    return role in {"discovery_candidate", "discovery_only"} or body == "cse_snippet"
+
+
 def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool = False) -> list[dict[str, str]]:
     rows = []
     current_urls = {row.source_url for row in current_claims(event)} if current_only else None
@@ -74,7 +80,15 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
             continue
         if getattr(source, "evidence_role", "event_fact") == "association_metadata":
             continue
+        if _is_discovery_source(source):
+            continue
         if facts_only and source.fact_or_opinion != "fact":
+            continue
+        if facts_only and source.content_type in {"media_report", "research_opinion", "aggregator"}:
+            continue
+        if facts_only and int(source.source_tier or 0) != 1:
+            continue
+        if facts_only and str(getattr(source, "primary_or_secondary", "") or "primary") == "secondary":
             continue
         if source.content_type == "aggregator":
             continue
@@ -87,11 +101,23 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
                 "source_id": source.source_id,
                 "source_url": source.source_url,
                 "publisher": source.publisher,
-                "source_tier": str(source.source_tier),
+                "source_tier": int(source.source_tier),
                 "content_type": source.content_type,
                 "fact_or_opinion": source.fact_or_opinion,
+                "primary_or_secondary": source.primary_or_secondary,
+                "is_current": (
+                    source.fact_or_opinion == "fact"
+                    and int(source.source_tier) == 1
+                    and source.primary_or_secondary == "primary"
+                    and not source.discovery_role
+                    and str(source.body_source or "") not in {"cse_snippet", "discovery_candidate", "discovery_only"}
+                    and not source.fetch_error
+                ),
+                "body_source": source.body_source,
+                "discovery_role": source.discovery_role,
                 "document_role": getattr(source, "document_role", None),
                 "published_at": source.published_at,
+                "why_trusted": getattr(source, "why_trusted", None),
             }
         )
     return rows
@@ -110,6 +136,9 @@ def _opinion_refs(event: TrustedEvent) -> list[dict[str, str]]:
                 "source_tier": str(source.source_tier),
                 "content_type": source.content_type,
                 "fact_or_opinion": source.fact_or_opinion,
+                "author": getattr(source, "author", None) or "",
+                "published_at": source.published_at or "",
+                "why_trusted": getattr(source, "why_trusted", None) or "",
             }
         )
     return rows

@@ -34,6 +34,7 @@
       root.dataset.macroChainCount = String((payload.macro_chains || []).length);
       root.dataset.synthesisId = (payload.driver_synthesis && payload.driver_synthesis.synthesis_id) || "";
       root.dataset.synthesisStance = (payload.synthesis_summary && payload.synthesis_summary.stance) || "";
+      root.dataset.canFormDirection = (payload.horizon_forecast && payload.horizon_forecast.can_form_direction) ? "1" : "0";
     } catch (error) {
       root.className = "state error";
       root.dataset.eventsReady = "error";

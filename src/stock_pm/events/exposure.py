@@ -30,6 +30,11 @@ WATCH_EXPOSURE = {
         "channels": ("risk_premium", "credit_conditions"),
         "rate_sensitivity": "medium",
     },
+    "NOK": {
+        "themes": ("telecom",),
+        "channels": ("demand",),
+        "rate_sensitivity": "low",
+    },
 }
 
 ENERGY_MARKERS = {"oil", "crude", "wti", "energy", "opec", "brent", "gasoline"}
