@@ -84,6 +84,12 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
             continue
         if facts_only and source.fact_or_opinion != "fact":
             continue
+        if facts_only and source.content_type in {"media_report", "research_opinion", "aggregator"}:
+            continue
+        if facts_only and int(source.source_tier or 0) != 1:
+            continue
+        if facts_only and str(getattr(source, "primary_or_secondary", "") or "primary") == "secondary":
+            continue
         if source.content_type == "aggregator":
             continue
         if source.content_type == "research_opinion":

@@ -1,8 +1,9 @@
 """Phase 8 conditional horizon scenarios. No prices, no vote, no VIX-as-direction.
 
-Inputs: healthy, traceable Phase 6/7 chains only. Search snippets, degraded
-rows, and VIX-alone never form direction. can_form_direction is computed;
-false means every horizon is withheld and forecast is empty.
+Inputs: healthy, current Tier-1 originals only. Search snippets, Tier 2/3,
+degraded/stale/revoked rows, and VIX-alone never form direction. Each horizon
+has its own can_form_direction; withheld horizons are omitted from forecast.
+Direction follows explicit target/channel exposure, not a generic polarity map.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from .synthesis import (
     chain_relevant_to_stock,
     evaluation_date,
     filter_missing_chains,
+    freshness_state,
     is_fresh,
     polarity,
     stock_macro_chains,
@@ -33,36 +35,99 @@ LONG_METRICS = frozenset({
     "war_sanctions",
     "energy_supply",
     "sovereign_or_corporate_debt",
-    "us2y",
 })
 HORIZON_FILL_HINTS = {
     "short": ("us2y", "wti"),
     "medium": ("cpi", "nfp"),
-    "long": ("credit", "war_sanctions"),
+    "long": ("credit", "war_sanctions", "energy_supply"),
 }
-PRESSURE_TO_SCENARIO = {
-    "pressure": "down",
-    "relief": "up",
-    "present": "range",
+OPPOSING_CHANNELS = frozenset({"nim_vs_credit", "mixed_energy"})
+CHANNEL_DIRECTION = {
+    "duration": {"pressure": "down", "relief": "up"},
+    "discount": {"pressure": "down", "relief": "up"},
+    "commodity_revenue": {"pressure": "up", "relief": "down"},
+    "credit_conditions": {"pressure": "down", "relief": "up"},
+    "risk_premium": {"pressure": "down", "relief": "up"},
+    "fx": {"pressure": "down", "relief": "up"},
 }
+BLOCKED_BODY = frozenset({"cse_snippet"})
+BLOCKED_ROLES = frozenset({"discovery_candidate", "discovery_only"})
+BLOCKED_CONTENT = frozenset({"media_report", "research_opinion", "aggregator"})
+BLOCKED_FRESHNESS = frozenset({"stale", "future"})
+BLOCKED_STATUS = frozenset({"stale", "degraded", "revoked", "superseded", "unavailable"})
 
 
 def _metric(chain: dict[str, Any]) -> str:
     return str(chain.get("metric") or chain.get("event_type") or "")
 
 
-def _healthy_directional(chains: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _as_int_tier(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _ref_is_current_tier1(ref: dict[str, Any]) -> bool:
+    if not isinstance(ref, dict):
+        return False
+    if str(ref.get("body_source") or "") in BLOCKED_BODY:
+        return False
+    if str(ref.get("discovery_role") or "") in BLOCKED_ROLES:
+        return False
+    if str(ref.get("fact_or_opinion") or "fact") != "fact":
+        return False
+    content = str(ref.get("content_type") or "official_fact")
+    if content in BLOCKED_CONTENT:
+        return False
+    if str(ref.get("primary_or_secondary") or "primary") == "secondary":
+        return False
+    tier = _as_int_tier(ref.get("source_tier"))
+    if tier not in {None, 1}:
+        return False
+    if content and content not in {"official_fact", "official_statement", "official_release"}:
+        return False
+    return True
+
+
+def _has_current_tier1(chain: dict[str, Any]) -> bool:
+    if str(chain.get("body_source") or "") in BLOCKED_BODY:
+        return False
+    if str(chain.get("discovery_role") or "") in BLOCKED_ROLES:
+        return False
+    if str(chain.get("fact_or_opinion") or "") in {"opinion", "reported"}:
+        return False
+    if str(chain.get("content_type") or "") in BLOCKED_CONTENT:
+        return False
+    refs = chain_evidence_refs(chain)
+    if refs:
+        return any(_ref_is_current_tier1(ref) for ref in refs)
+    tier = _as_int_tier(chain.get("source_tier"))
+    return tier in {None, 1} and str(chain.get("fact_or_opinion") or "fact") == "fact"
+
+
+def _healthy_directional(chains: list[dict[str, Any]], *, now: date | None = None) -> list[dict[str, Any]]:
+    clock = evaluation_date(now)
     rows = []
     for chain in chains or []:
         if not _is_directional_ok(chain):
             continue
         if chain.get("status") != "ok":
             continue
+        if str(chain.get("status") or "") in BLOCKED_STATUS:
+            continue
         if _is_vix(chain):
             continue
-        if str(chain.get("body_source") or "") == "cse_snippet":
+        if str(chain.get("body_source") or "") in BLOCKED_BODY:
             continue
-        if str(chain.get("discovery_role") or "") in {"discovery_candidate", "discovery_only"}:
+        if str(chain.get("discovery_role") or "") in BLOCKED_ROLES:
+            continue
+        state = freshness_state(chain, now=clock)
+        if state.get("reason") in BLOCKED_FRESHNESS or not is_fresh(chain, now=clock):
+            continue
+        if not _has_current_tier1(chain):
             continue
         if not chain_evidence_refs(chain):
             continue
@@ -101,54 +166,169 @@ def _layer_text(chain: dict[str, Any], name: str) -> str:
     return ""
 
 
-def _scenario_for(chains: list[dict[str, Any]], *, target: str | None) -> str:
+def _mapped_channel(chain: dict[str, Any], *, target: str | None) -> str | None:
+    if target:
+        mapped = stock_macro_chains([chain], target)
+        if mapped:
+            channel = str(mapped[0].get("channel") or "") or None
+            if channel:
+                return channel
+        if not chain_relevant_to_stock(chain, target):
+            return None
+    theme = _theme(chain)
+    metric = _metric(chain)
+    if target == "NVDA" and (theme == "rates" or metric in SHORT_METRICS | MEDIUM_METRICS):
+        return "duration"
+    if target == "XOM" and (theme == "energy" or metric in {"wti", "oil", "energy_supply"}):
+        return "commodity_revenue"
+    if target == "JPM":
+        if theme == "rates" or metric in {"us2y", "cpi", "core_cpi", "nfp", "inflation_employment", "policy_rate"}:
+            return "nim_vs_credit"
+        if theme == "credit" or metric == "credit":
+            return "credit_conditions"
+        if theme == "geopolitics":
+            return "risk_premium"
+    if target in {"AAPL", "NOK"}:
+        return None
+    if not target:
+        if theme == "rates":
+            return "discount"
+        if theme == "energy":
+            return "mixed_energy"
+        if theme == "credit":
+            return "credit_conditions"
+        if theme == "geopolitics":
+            return "risk_premium"
+        if theme == "fx":
+            return "fx"
+    return None
+
+
+def _effective_channel(chain: dict[str, Any], *, target: str | None) -> str | None:
+    channel = _mapped_channel(chain, target=target)
+    theme = _theme(chain)
+    metric = _metric(chain)
+    if target == "JPM" and (theme == "rates" or metric in {"us2y", "cpi", "core_cpi", "nfp", "inflation_employment", "policy_rate"}):
+        return "nim_vs_credit"
+    if target == "NVDA" and theme == "rates":
+        return "duration"
+    if target == "XOM" and theme == "energy":
+        return "commodity_revenue"
+    if channel == "duration" or (target == "NVDA" and channel in {"duration", "risk_premium"} and theme == "rates"):
+        return channel or "duration"
+    return channel
+
+
+def _scenario_from_channel(channel: str | None, pol: str | None) -> str:
+    if not channel:
+        return "withheld"
+    if channel in OPPOSING_CHANNELS:
+        return "range"
+    mapping = CHANNEL_DIRECTION.get(channel)
+    if not mapping:
+        return "withheld"
+    if pol == "present":
+        return "range"
+    if not pol:
+        return "withheld"
+    return mapping.get(pol, "range")
+
+
+def _conflict_hits_horizon(
+    synthesis: dict[str, Any] | None,
+    *,
+    metrics: set[str],
+    themes: set[str],
+) -> list[dict[str, Any]]:
+    hits: list[dict[str, Any]] = []
+    for item in (synthesis or {}).get("contradictions") or []:
+        if not isinstance(item, dict):
+            continue
+        side_metrics: set[str] = set()
+        for side in item.get("sides") or []:
+            if isinstance(side, dict):
+                side_metrics.update(str(value) for value in (side.get("metrics") or []))
+        theme = str(item.get("theme") or "")
+        if (side_metrics and side_metrics & metrics) or (theme and theme in themes) or (metrics & set(item.get("metrics") or [])):
+            hits.append(item)
+    return hits
+
+
+def _combine_scenarios(rows: list[tuple[str, str]]) -> str:
+    if not rows:
+        return "withheld"
+    scenarios = {item[1] for item in rows}
+    channels = {item[0] for item in rows}
+    if "withheld" in scenarios and len(scenarios) == 1:
+        return "withheld"
+    scenarios.discard("withheld")
+    if not scenarios:
+        return "withheld"
+    if channels & OPPOSING_CHANNELS:
+        return "range"
+    if scenarios == {"up"}:
+        return "up"
+    if scenarios == {"down"}:
+        return "down"
+    return "range"
+
+
+def _scenario_for(chains: list[dict[str, Any]], *, target: str | None, synthesis: dict[str, Any] | None = None) -> str:
     if not chains:
         return "withheld"
-    polarities = [polarity(row) for row in chains]
-    polarities = [item for item in polarities if item]
-    if not polarities:
+    mapped: list[tuple[str, str]] = []
+    for row in chains:
+        channel = _effective_channel(row, target=target)
+        if not channel:
+            continue
+        mapped.append((channel, _scenario_from_channel(channel, polarity(row))))
+    scenario = _combine_scenarios(mapped)
+    if scenario == "withheld":
         return "withheld"
-    energy = [row for row in chains if _metric(row) in {"wti", "oil", "energy_supply"}]
-    if target == "XOM" and energy:
-        energy_pol = {polarity(row) for row in energy if polarity(row)}
-        if energy_pol == {"pressure"}:
-            return "up"
-        if energy_pol == {"relief"}:
-            return "down"
-    unique = set(polarities)
-    if unique == {"pressure"}:
-        return "down"
-    if unique == {"relief"}:
-        return "up"
-    if len(unique) > 1:
-        return "range"
-    return PRESSURE_TO_SCENARIO.get(next(iter(unique)), "range")
+    metrics = {_metric(row) for row in chains}
+    themes = {_theme(row) for row in chains}
+    if _conflict_hits_horizon(synthesis, metrics=metrics, themes=themes):
+        return "range" if scenario != "withheld" else "withheld"
+    return scenario
 
 
-def _horizon_text(horizon: str, chains: list[dict[str, Any]], scenario: str, *, target: str | None) -> str:
+def _horizon_text(horizon: str, chains: list[dict[str, Any]], scenario: str, *, target: str | None, reason: str | None = None) -> str:
     label = {"short": "短期", "medium": "中期", "long": "长期"}[horizon]
     if scenario == "withheld" or not chains:
         hints = " / ".join(HORIZON_FILL_HINTS[horizon])
-        return f"{label}情景 withheld：缺 {hints} 健康方向链。补齐后将改写该期限情景，不把其他期限结论复制过来。"
+        extra = f" {reason}" if reason else ""
+        return f"{label}情景 withheld：缺 {hints} 且与该期限匹配的健康方向链。{extra}补齐后将改写该期限情景，不把其他期限结论复制过来。"
     drivers = "、".join(sorted({_metric(row) for row in chains}))
+    channels = "、".join(sorted({ch for ch in (_effective_channel(row, target=target) or "" for row in chains) if ch}))
     if horizon == "short":
         lead = next((row for row in chains if _metric(row) in {"us2y", "wti"}), chains[0])
         change = _layer_text(lead, "change") or _layer_text(lead, "fact")
-        return f"短期：近端市场序列 {drivers}。{change} → 条件情景 {scenario}，不是把中长期打印复制为日频结论。"
+        if target == "NVDA" or "duration" in channels:
+            return f"短期：久期/贴现暴露（{drivers}），利率路径 → 条件情景 {scenario}。{change} 不是把中长期打印复制为日频结论。"
+        if target == "XOM" or "commodity_revenue" in channels:
+            return f"短期：能源/油价收入路径（{drivers}）→ 条件情景 {scenario}。{change}"
+        if target == "JPM" or "nim_vs_credit" in channels:
+            return f"短期：银行 NIM 与信用相反渠道（{drivers}）→ 条件情景 {scenario}，不作任意涨跌。"
+        return f"短期：近端市场序列 {drivers}，渠道 {channels or '未映射'}。{change} → 条件情景 {scenario}，不是把中长期打印复制为日频结论。"
     if horizon == "medium":
         lead = next((row for row in chains if _metric(row) in {"cpi", "nfp"}), chains[0])
         exp = _layer_text(lead, "expectation")
-        return f"中期：官方打印 {drivers}。{exp} → 条件情景 {scenario}，不是短端日变动的原文。"
-    lead = next((row for row in chains if _metric(row) in {"credit", "war_sanctions", "energy_supply"}), chains[0])
-    if target == "NVDA" or _metric(lead) == "us2y":
+        if target == "JPM" or "nim_vs_credit" in channels:
+            return f"中期：银行就业/通胀打印（{drivers}，含 nfp）走 NIM vs 信用，情景 {scenario}，不是消费者电子路径。"
+        return f"中期：官方打印 {drivers}，渠道 {channels or '未映射'}。{exp} → 条件情景 {scenario}，不是短端日变动的原文。"
+    lead = next((row for row in chains if _metric(row) in LONG_METRICS), chains[0])
+    if target == "NVDA" or "duration" in channels:
         return (
-            f"长期：久期/贴现路径（{drivers}），把利率事实映射为持续贴现暴露，"
-            f"情景 {scenario}。与短期日变动分开陈述，不是同一段结论。"
+            f"长期：结构/制裁/信用持续证据（{drivers}），渠道 {channels}，"
+            f"情景 {scenario}。日频 US2Y 或月频 CPI 不能改写为本期限方向。"
         )
-    if target == "XOM" or _metric(lead) in {"wti", "energy_supply"}:
-        return f"长期：能源供应/价格结构（{drivers}）进入生产商收入路径，情景 {scenario}，不是短端油价日变动原文。"
-    if target == "JPM" or _metric(lead) in {"credit", "nfp"}:
-        return f"长期：信用/融资条件（{drivers}）进入银行资产负债表观察，情景 {scenario}，不是就业打印的原文复制。"
+    if target == "XOM" or "commodity_revenue" in channels:
+        return f"长期：能源供应结构（{drivers}）进入生产商收入路径，情景 {scenario}，不是短端油价日变动原文。"
+    if target == "JPM" or "nim_vs_credit" in channels or "credit_conditions" in channels:
+        return (
+            f"长期：银行 NIM 与信用渠道（{drivers} / {channels}）存在相反暴露时只给 range/withheld，"
+            f"情景 {scenario}，不是就业打印的原文复制。"
+        )
     exp = _layer_text(lead, "expectation")
     return f"长期：结构驱动 {drivers}。{exp} → 条件情景 {scenario}。"
 
@@ -156,8 +336,58 @@ def _horizon_text(horizon: str, chains: list[dict[str, Any]], scenario: str, *, 
 def _what_if_filled(horizon: str, scenario: str) -> str:
     hints = " / ".join(HORIZON_FILL_HINTS[horizon])
     if scenario == "withheld":
-        return f"补齐 {hints} 健康链后，将按该期限驱动重算 { {'short': '短期', 'medium': '中期', 'long': '长期'}[horizon] }情景，而不是沿用其他期限结论"
-    return f"若 {hints} 反转或被官方撤回，该期限情景失效并改写 What changes"
+        return f"补齐 {hints} 且与该期限匹配的健康链后，将按该期限驱动重算 { {'short': '短期', 'medium': '中期', 'long': '长期'}[horizon] }情景，而不是沿用其他期限结论"
+    return f"若 {hints} 反转、被官方撤回或出现相关综合冲突，该期限情景失效并改写 What changes"
+
+
+def _horizon_missing(
+    horizon: str,
+    *,
+    scoped_healthy: list[dict[str, Any]],
+    all_chains: list[dict[str, Any]],
+    scope: str,
+    target: str | None,
+    reason: str | None = None,
+) -> list[dict[str, Any]]:
+    wanted = _horizon_metrics(horizon)
+    present = {_metric(row) for row in scoped_healthy if _metric(row) in wanted}
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    degraded = filter_missing_chains(
+        [row for row in all_chains if row.get("status") != "ok" and _metric(row) in wanted],
+        scope=scope,
+        target=target,
+    )
+    for chain in degraded:
+        metric = _metric(chain)
+        if not metric or metric in seen:
+            continue
+        seen.add(metric)
+        rows.append({
+            "metric": metric,
+            "chain": chain.get("chain_id"),
+            "horizon": horizon,
+            "reason": chain.get("degrade_reason") or chain.get("status") or "missing",
+            "detail": chain.get("degrade_detail") or f"{metric} 链不健康，不进入 {horizon} 方向证据",
+            "what_changes": f"补齐 {metric} 健康原文后将改写 {horizon} 情景，只降级本链",
+        })
+    if not present:
+        for metric in HORIZON_FILL_HINTS[horizon]:
+            if metric in seen:
+                continue
+            seen.add(metric)
+            detail = f"缺 {metric} 且与 {horizon} 匹配的健康方向链"
+            if horizon == "long":
+                detail = f"缺长期持续证据 {metric}；日频 US2Y / 月频 CPI 不能改写成长期预测"
+            rows.append({
+                "metric": metric,
+                "chain": f"missing:{horizon}:{metric}",
+                "horizon": horizon,
+                "reason": reason or "missing_horizon_evidence",
+                "detail": detail,
+                "what_changes": f"补齐 {metric} 后将改写 {horizon} 情景，禁止用笼统无法判断代替",
+            })
+    return rows
 
 
 def _missing_rows(
@@ -168,43 +398,35 @@ def _missing_rows(
     target: str | None,
     healthy: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
-    degraded = filter_missing_chains([row for row in chains if row.get("status") != "ok"], scope=scope, target=target)
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for chain in degraded:
-        metric = _metric(chain)
-        if not metric or metric in seen:
-            continue
-        seen.add(metric)
-        rows.append({
-            "metric": metric,
-            "chain": chain.get("chain_id"),
-            "reason": chain.get("degrade_reason") or chain.get("status") or "missing",
-            "detail": chain.get("degrade_detail") or f"{metric} 链不健康，不进入方向证据",
-            "what_changes": f"补齐 {metric} 健康原文后将改写对应期限情景，只降级本链",
-        })
+    for horizon in HORIZONS:
+        for row in _horizon_missing(
+            horizon,
+            scoped_healthy=_horizon_chains(healthy, horizon),
+            all_chains=chains,
+            scope=scope,
+            target=target,
+        ):
+            key = f"{row.get('horizon')}:{row.get('metric')}"
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(row)
     present = {_metric(row) for row in healthy}
     market_ok = {_metric(row) for row in _healthy_directional(chains)}
     if scope == "stock" and target:
         for metric in sorted(market_ok - present):
-            if metric in seen:
+            key = f"exposure:{metric}"
+            if key in seen:
                 continue
-            seen.add(metric)
+            seen.add(key)
             rows.append({
                 "metric": metric,
                 "chain": f"exposure:{target}:{metric}",
                 "reason": "no_exposure",
                 "detail": f"{target} 没有经行业映射的 {metric} 暴露，不能把市场链复制到该股",
                 "what_changes": f"仅当 {target} 出现可验证 {metric} 暴露后，该链才进入方向情景",
-            })
-    if not healthy and not rows:
-        for metric in ("us2y", "cpi", "nfp"):
-            rows.append({
-                "metric": metric,
-                "chain": f"missing:{metric}",
-                "reason": "missing_directional_chain",
-                "detail": f"缺 {metric} 健康方向链",
-                "what_changes": f"补齐 {metric} 后将改写对应期限情景，禁止用笼统无法判断代替",
             })
     del scoped
     return rows
@@ -249,14 +471,17 @@ def _vix_block(chains: list[dict[str, Any]], directional: list[dict[str, Any]]) 
     }
 
 
-def can_form_horizon_direction(chains: list[dict[str, Any]]) -> bool:
-    """True only with at least one healthy, non-VIX, non-discovery directional chain."""
-    return bool(_healthy_directional(chains))
+def can_form_horizon_direction(chains: list[dict[str, Any]], *, now: date | None = None) -> bool:
+    """True only with at least one healthy, current Tier-1, non-VIX, non-discovery directional chain."""
+    return bool(_healthy_directional(chains, now=now))
 
 
-def _empty_horizon(horizon: str) -> dict[str, Any]:
+def _empty_horizon(horizon: str, *, missing: list[dict[str, Any]] | None = None, reason: str | None = None) -> dict[str, Any]:
+    rows = missing or []
     return {
         "horizon": horizon,
+        "can_form_direction": False,
+        "reason": reason or f"can_form_direction=false：{horizon} 缺匹配期限的健康 Tier1 方向链",
         "directional_scenario": "withheld",
         "direction": None,
         "drivers": [],
@@ -267,7 +492,8 @@ def _empty_horizon(horizon: str) -> dict[str, Any]:
         "confidence": "insufficient",
         "invalidation": _what_if_filled(horizon, "withheld"),
         "what_changes": _what_if_filled(horizon, "withheld"),
-        "text": _horizon_text(horizon, [], "withheld", target=None),
+        "missing": rows,
+        "text": _horizon_text(horizon, [], "withheld", target=None, reason=reason),
         "percent_forecast": None,
         "price_target": None,
     }
@@ -284,76 +510,118 @@ def build_horizon_forecast(
     clock = evaluation_date(now)
     all_chains = list(chains or [])
     scoped = _scope_chains(all_chains, scope=scope, target=target)
-    healthy = _healthy_directional(scoped)
-    fresh_healthy = [row for row in healthy if is_fresh(row, now=clock)]
-    usable = fresh_healthy or healthy
-    allowed = can_form_horizon_direction(usable)
-    vix = _vix_block(all_chains if scope == "market" else all_chains, usable)
-    missing = _missing_rows(all_chains, scoped, scope=scope, target=target, healthy=usable)
-    if _is_vix_only(all_chains, usable):
-        allowed = False
-        usable = []
+    healthy = _healthy_directional(scoped, now=clock)
+    if _is_vix_only(all_chains, healthy):
+        healthy = []
+    vix = _vix_block(all_chains, healthy)
+    missing = _missing_rows(all_chains, scoped, scope=scope, target=target, healthy=healthy)
     horizons = []
     for name in HORIZONS:
-        if not allowed:
-            horizons.append(_empty_horizon(name))
+        rows = _horizon_chains(healthy, name)
+        horizon_missing = [row for row in missing if row.get("horizon") == name] or _horizon_missing(
+            name, scoped_healthy=rows, all_chains=all_chains, scope=scope, target=target
+        )
+        if not rows:
+            reason = None
+            if name == "long" and any(_metric(row) in {"us2y", "cpi", "nfp", "core_cpi"} for row in healthy):
+                reason = "日频/月频打印不能改写成长期预测"
+            horizons.append(_empty_horizon(name, missing=horizon_missing, reason=reason))
             continue
-        rows = _horizon_chains(usable, name)
-        if name == "long" and target == "NVDA":
-            rows = rows or [row for row in usable if _metric(row) in {"us2y", "cpi"}]
-        scenario = _scenario_for(rows, target=target)
-        refs = [ref for row in rows for ref in chain_evidence_refs(row)]
-        counters = []
-        if (synthesis or {}).get("contradictions"):
-            counters.extend(synthesis.get("contradictions") or [])
+        scenario = _scenario_for(rows, target=target, synthesis=synthesis)
+        conflicts = _conflict_hits_horizon(
+            synthesis,
+            metrics={_metric(row) for row in rows},
+            themes={_theme(row) for row in rows},
+        )
+        if conflicts and scenario in {"up", "down"}:
+            scenario = "range"
+        channel_set = {_effective_channel(row, target=target) for row in rows}
+        if None in channel_set and len(channel_set) == 1:
+            horizons.append(_empty_horizon(name, missing=horizon_missing, reason="没有与该标的匹配的传导渠道"))
+            continue
+        if scenario == "withheld":
+            horizons.append(_empty_horizon(name, missing=horizon_missing, reason="暴露规则不能形成明确方向"))
+            continue
+        refs = [ref for row in rows for ref in chain_evidence_refs(row) if _ref_is_current_tier1(ref)]
+        if not refs:
+            horizons.append(_empty_horizon(name, missing=horizon_missing, reason="方向证据缺少当前 Tier1 原文"))
+            continue
+        counters: list[Any] = []
+        if conflicts:
+            counters.extend(conflicts)
+            counters.append("相关综合冲突阻止该期限输出 up/down")
         if vix.get("present"):
             counters.extend(vix.get("counter_evidence") or [])
         if scenario == "range" and rows:
-            counters.append({"text": "该期限驱动方向不一致，两侧证据都保留，不作多数表决"})
+            counters.append({"text": "该期限驱动方向不一致或存在相反渠道，两侧证据都保留，不作多数表决"})
+        formed = True
         horizons.append({
             "horizon": name,
+            "can_form_direction": formed,
+            "reason": None,
             "directional_scenario": scenario,
             "direction": None if scenario == "withheld" else scenario,
-            "drivers": [{"metric": _metric(row), "theme": _theme(row), "polarity": polarity(row), "chain_id": row.get("chain_id")} for row in rows],
+            "drivers": [
+                {
+                    "metric": _metric(row),
+                    "theme": _theme(row),
+                    "channel": _effective_channel(row, target=target),
+                    "polarity": polarity(row),
+                    "chain_id": row.get("chain_id"),
+                }
+                for row in rows
+            ],
             "driver_metrics": list(dict.fromkeys(_metric(row) for row in rows)),
             "transmission": (
                 "先到市场，再按可验证暴露到行业/个股"
                 if scope == "market"
-                else f"{target} 仅纳入已映射渠道，不复制无关宏观标题"
+                else f"{target} 仅纳入已映射渠道，不复制无关宏观标题；银行等相反渠道为 range/withheld"
             ),
             "supporting_evidence": refs,
             "counter_evidence": counters,
-            "confidence": "limited" if scenario == "range" else ("medium" if len(rows) >= 2 else "limited" if rows else "insufficient"),
+            "confidence": (
+                "limited"
+                if scenario == "range" or conflicts
+                else ("medium" if len(rows) >= 2 else "limited")
+            ),
             "invalidation": _what_if_filled(name, scenario),
             "what_changes": _what_if_filled(name, scenario),
+            "missing": horizon_missing,
             "text": _horizon_text(name, rows, scenario, target=target),
             "percent_forecast": None,
             "price_target": None,
         })
+    formed = [row for row in horizons if row.get("can_form_direction") is True]
+    withheld = [row["horizon"] for row in horizons if row.get("can_form_direction") is not True]
+    allowed = bool(formed)
     reason = None
     if not allowed:
         named = "、".join(row["metric"] for row in missing[:4]) or "健康方向链"
-        reason = f"can_form_direction=false：缺 {named}。VIX、搜索摘要或降级链不能形成预测。"
+        reason = f"can_form_direction=false：缺 {named}。VIX、搜索摘要、Tier2/3 或降级链不能形成预测。"
     what_changes = {
         "text": (
             reason
             if not allowed
-            else "任一期限驱动被官方撤回或反转时，只改写该期限情景，不把其他期限结论机械复制。"
+            else (
+                "任一期限驱动被官方撤回、反转或出现相关综合冲突时，只改写该期限情景；"
+                + (f"未形成方向的期限：{', '.join(withheld)}。" if withheld else "")
+            )
         ),
         "missing": missing,
+        "withheld_horizons": withheld,
+        "formed_horizons": [row["horizon"] for row in formed],
     }
+    forecast = {row["horizon"]: row["directional_scenario"] for row in formed} if formed else None
     return {
         "scope": scope,
         "target": target,
         "as_of": clock.isoformat(),
         "can_form_direction": allowed,
         "reason": reason,
+        "formed_horizons": [row["horizon"] for row in formed],
+        "withheld_horizons": withheld,
         "horizons": horizons,
-        "forecast": None if not allowed else {
-            "short": horizons[0]["directional_scenario"],
-            "medium": horizons[1]["directional_scenario"],
-            "long": horizons[2]["directional_scenario"],
-        },
+        "forecast": forecast,
         "missing": missing,
         "what_changes": what_changes,
         "vix": vix,

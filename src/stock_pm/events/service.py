@@ -22,11 +22,12 @@ from .synthesis import evaluation_date, stock_synthesis, summarize_synthesis, sy
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
 from .replay import RecordedReplayProvider
+from .resolve import resolve_discovery_candidates
 from .types import TrustedEvent
 from stock_pm.decision.inject import inject_allowed
 
 
-_CACHE: dict[str, Any] = {"events": None, "coverage": None}
+_CACHE: dict[str, Any] = {"events": None, "coverage": None, "discovery_resolution": None}
 REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
 
 
@@ -61,6 +62,8 @@ def build_event_book(settings: Settings | None = None, *, refresh: bool = False)
                 discovered.extend(google.discover())
             except Exception:
                 pass
+    discovered, resolution = resolve_discovery_candidates(discovered)
+    _CACHE["discovery_resolution"] = resolution
     events = build_events(discovered)
     for event in events:
         analyze_event(event)
@@ -149,6 +152,8 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "google_cse": google.get("status"),
         "product_status": product_status,
         "earnings_coverage": earnings_cover,
+        "schedule_entry": "stock-pm-events / run_event_job",
+        "discovery_resolution": dict(_CACHE.get("discovery_resolution") or {}),
     }
 
 
@@ -342,6 +347,7 @@ def event_detail(event_id: str, settings: Settings | None = None) -> dict[str, A
 def reset_cache() -> None:
     _CACHE["events"] = None
     _CACHE["coverage"] = None
+    _CACHE["discovery_resolution"] = None
     reset_live_state()
     from .earnings_health import clear_earnings_health_memory
     from .watchlist import reset_watchlist_override

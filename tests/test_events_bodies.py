@@ -406,9 +406,9 @@ def test_frozen_pack_integrity_and_exact_counts():
     ]
     assert {event.event_id for event in gained} == set(pack["gained_event_ids"])
     assert {event.event_id for event in gained} == {
-        "evt_55733c70cd1dd721",
-        "evt_b39a38314637dcde",
-        "evt_30ab371b5e192e82",
+        "evt_68a699316b344816",
+        "evt_c3055ed765c8322c",
+        "evt_d1980818a9bbb085",
     }
     assert all(
         any(is_allowed_eia_host(source.source_url) for source in event.sources)

@@ -29,8 +29,18 @@
   const pill = (text, cls = "") =>
     `<span class="status-pill ${esc(cls)}">${esc(text)}</span>`;
 
+  const factClass = (source) => {
+    if (source.fact_or_opinion === "fact" && Number(source.source_tier) === 1 && source.content_type === "official_fact") {
+      return "tier-fact";
+    }
+    if (source.fact_or_opinion === "opinion" || source.content_type === "research_opinion") {
+      return "tier-opinion";
+    }
+    return "tier-media";
+  };
+
   const tierClass = (source) => {
-    if (source.content_type === "official_fact" || source.fact_or_opinion === "fact" && source.source_tier === 1) {
+    if (source.content_type === "official_fact" && source.fact_or_opinion === "fact" && Number(source.source_tier) === 1) {
       return "tier-fact";
     }
     if (source.content_type === "research_opinion" || source.fact_or_opinion === "opinion") {
@@ -194,7 +204,7 @@
     return `<div class="source-row" data-content-type="${esc(source.content_type)}" data-fact-or-opinion="${esc(source.fact_or_opinion)}" data-source-tier="${esc(source.source_tier)}" data-discovery-role="${esc(source.discovery_role || "")}" data-reprint-of="${esc(source.reprint_of || "")}">
       ${pill(source.content_type, tierClass(source))}
       ${pill(`Tier ${source.source_tier}`)}
-      ${pill(source.fact_or_opinion, source.fact_or_opinion === "fact" ? "tier-fact" : "tier-opinion")}
+      ${pill(source.fact_or_opinion, factClass(source))}
       ${source.document_role ? pill(source.document_role) : ""}
       ${source.author ? pill(`作者 ${source.author}`) : ""}
       ${href ? sourceLink(href, source.publisher || source.title) : `<span class="no-url">${esc(source.publisher || "无原文")}</span>`}
@@ -568,17 +578,19 @@
     if (!row) return "";
     const allowed = row.can_form_direction === true;
     const missing = (row.missing || []).map((item) =>
-      `<div class="subline" data-forecast-missing="${esc(item.metric || "")}">缺 ${esc(item.metric || item.chain || "")}：${esc(item.detail || "")}。What changes：${esc(item.what_changes || "")}</div>`
+      `<div class="subline" data-forecast-missing="${esc(item.metric || "")}" data-horizon="${esc(item.horizon || "")}">缺 ${esc(item.metric || item.chain || "")}：${esc(item.detail || "")}。What changes：${esc(item.what_changes || "")}</div>`
     ).join("");
     const horizons = (row.horizons || []).map((item) => {
       const refs = refsHtml(item.supporting_evidence || []);
       const counters = (item.counter_evidence || []).map((c) => `<div class="subline" data-counter-evidence="1">${typeof c === "string" ? esc(c) : esc(c.text || JSON.stringify(c))}</div>`).join("");
-      return `<article class="horizon-scenario" data-horizon="${esc(item.horizon || "")}" data-directional-scenario="${esc(item.directional_scenario || "withheld")}">
-        <div class="chain-kicker">${esc(item.horizon || "")} · ${esc(item.directional_scenario || "withheld")}</div>
+      const formed = item.can_form_direction === true;
+      return `<article class="horizon-scenario" data-horizon="${esc(item.horizon || "")}" data-directional-scenario="${esc(item.directional_scenario || "withheld")}" data-can-form-direction="${formed ? "1" : "0"}">
+        <div class="chain-kicker">${esc(item.horizon || "")} · ${esc(item.directional_scenario || "withheld")} · ${formed ? "可形成方向" : "不形成方向"}</div>
         <div data-horizon-text="1">${esc(item.text || "")}</div>
         <div class="subline">驱动 ${esc((item.driver_metrics || []).join(" / ") || "无")} · 置信度 ${esc(item.confidence || "—")}</div>
         <div class="subline" data-transmission="1">${esc(item.transmission || "")}</div>
-        <div class="evidence-refs">支持证据：${refs}</div>
+        ${item.reason ? `<div class="subline" data-horizon-reason="1">${esc(item.reason)}</div>` : ""}
+        <div class="evidence-refs">支持证据：${formed ? refs : "<span class='no-url'>该期限不形成方向</span>"}</div>
         ${counters}
         <div class="subline" data-what-changes="1">${esc(item.what_changes || "")}</div>
         <div class="subline">失效：${esc(item.invalidation || "")}</div>

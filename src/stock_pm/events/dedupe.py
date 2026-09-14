@@ -82,11 +82,41 @@ def same_event(left: EventDocument, right: EventDocument) -> bool:
     return False
 
 
+def _cluster_primary(docs: list[EventDocument]) -> EventDocument:
+    """Prefer a fetched official original so reprints/updates share one identity."""
+    from .policy import is_discovery_snippet
+
+    def sort_key(doc: EventDocument) -> tuple:
+        discovery = 1 if is_discovery_snippet(doc) else 0
+        official = 0 if (doc.provider == "official" or doc.body_source in {"official_html", "sec_primary_document"}) else 1
+        published = str(doc.published_at or "9999")
+        return (discovery, official, published, doc.url or "", doc.title or "")
+
+    return sorted(docs, key=sort_key)[0]
+
+
 def _stable_id(docs: list[EventDocument]) -> str:
+    """Identity includes the primary official URL + day so distinct same-entity events do not collide.
+
+    Reprints and updates already clustered by same_event() inherit the cluster primary.
+    """
+    from .policy import normalize_url
+
+    primary = _cluster_primary(docs)
     shared = set(docs[0].entities)
     for row in docs[1:]:
         shared &= set(row.entities)
-    material = f"{docs[0].event_type}|{'/'.join(sorted(shared or docs[0].entities))}|{'/'.join(sorted(docs[0].countries))}"
+    entities = "/".join(sorted(shared or primary.entities or docs[0].entities))
+    countries = "/".join(sorted({item for row in docs for item in row.countries} or primary.countries))
+    url = normalize_url(primary.url or "")
+    day = ""
+    stamp = _published_day(primary)
+    if stamp is not None:
+        day = stamp.isoformat()
+    elif primary.published_at:
+        day = str(primary.published_at)[:10]
+    title_fp = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", " ", (primary.title or "").lower()).strip()[:80]
+    material = f"{primary.event_type}|{entities}|{countries}|{url or title_fp}|{day}"
     return "evt_" + hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
 
 
@@ -244,7 +274,20 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
         sources = []
         claims = []
         seen_urls: set[str] = set()
-        for doc in cluster:
+        cluster_ordered = sorted(
+            cluster,
+            key=lambda row: (
+                1 if (
+                    getattr(row, "discovery_role", None)
+                    or row.body_source == "cse_snippet"
+                    or row.provider == "google"
+                )
+                else 0,
+                0 if row.provider == "official" or row.body_source in {"official_html", "sec_primary_document"} else 1,
+                str(row.published_at or "9999"),
+            ),
+        )
+        for doc in cluster_ordered:
             payload = document_to_source(doc, seen_at=stamp)
             if payload["canonical_url"] in seen_urls:
                 continue
@@ -272,6 +315,7 @@ def build_events(docs: list[EventDocument], *, seen_at: str | None = None) -> li
                 why_trusted=str(payload.get("why_trusted") or "") or None,
                 discovery_role=payload.get("discovery_role"),  # type: ignore[arg-type]
                 reprint_of=payload.get("reprint_of"),  # type: ignore[arg-type]
+                next_retry_at=payload.get("next_retry_at"),  # type: ignore[arg-type]
             )
             sources.append(source)
             for index, claim in enumerate(doc.claims or [doc.title]):

@@ -146,6 +146,17 @@ def host_of(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+def is_tier1_https(url: str) -> bool:
+    """True only for HTTPS URLs on the official Tier-1 host allowlist."""
+    if not is_safe_public_http_url(url):
+        return False
+    parts = urlsplit(url)
+    if parts.scheme != "https":
+        return False
+    host = host_of(url)
+    return any(host == item or host.endswith("." + item) for item in TIER1_HOSTS)
+
+
 def is_https_registrable_host(url: str, root: str) -> bool:
     """True only for https and a hostname that is exactly root or a subdomain of root."""
     if not is_safe_public_http_url(url):
@@ -190,7 +201,7 @@ def classify_source(url: str, publisher: str = "") -> dict[str, object]:
         return {
             "source_tier": 2,
             "content_type": "media_report",
-            "fact_or_opinion": "fact",
+            "fact_or_opinion": "reported",
             "primary_or_secondary": "secondary",
         }
     if any(host == item or host.endswith("." + item) for item in TIER3_HOSTS) or any(
@@ -262,8 +273,8 @@ def why_trusted(source: dict[str, object] | None = None, **fields: object) -> st
     fact = str(row.get("fact_or_opinion") or "")
     if tier == 1 or content == "official_fact":
         return "监管/政府/交易所/公司原文，一级事实来源"
-    if tier == 2 or content == "media_report":
-        return "主流媒体报道，可用于确认，不能替代官方原文"
+    if tier == 2 or content == "media_report" or fact == "reported":
+        return "主流媒体报道，可用于确认，不能替代官方原文，不得标成可替代 Tier1 的事实"
     if tier == 3 or content == "research_opinion" or fact == "opinion":
         return "投行/研究机构观点，必须保留作者、日期与原文链接，不得升级为事实"
     return "聚合转载/无原文，不得进入方向证据"
@@ -309,6 +320,7 @@ def document_to_source(doc: EventDocument, *, seen_at: str) -> dict[str, object]
         "filing_items": list(getattr(doc, "filing_items", None) or []),
         "author": getattr(doc, "author", None),
         "discovery_role": discovery_role,
+        "next_retry_at": getattr(doc, "next_retry_at", None),
         **cls,
     }
     payload["why_trusted"] = why_trusted(payload)

@@ -10,9 +10,11 @@ from stock_pm.decision.inject import inject_allowed
 from stock_pm.events.analyze import analyze_event
 from stock_pm.events.dedupe import build_events
 from stock_pm.events.horizon import DIRECTIONAL_SCENARIOS, build_horizon_forecast
-from stock_pm.events.macro_chain import apply_macro_chain_inject
+from stock_pm.events.job import run_event_job
+from stock_pm.events.macro_chain import apply_macro_chain_inject, apply_macro_inject
 from stock_pm.events.policy import document_to_source, why_trusted
 from stock_pm.events.providers import GoogleDiscoveryProvider
+from stock_pm.events.resolve import resolve_discovery_candidates
 from stock_pm.events.service import coverage, market_center, reset_cache, stock_events
 from stock_pm.events.synthesis import synthesize_drivers
 from stock_pm.events.types import EventDocument
@@ -323,15 +325,26 @@ def test_t9_horizons_are_not_copied():
     assert short_metrics != medium_metrics or short["text"] != medium["text"]
     assert "us2y" in short_metrics or "wti" in short_metrics
     assert "cpi" in medium_metrics or "nfp" in medium_metrics
-    assert "credit" in long_metrics or "war_sanctions" in long_metrics or "us2y" in long_metrics
-    if "us2y" in short_metrics and "us2y" in long_metrics:
-        assert short["text"] != long["text"]
-        assert "短期" in short["text"] or "近端" in short["text"] or "日" in short["text"]
-        assert "长期" in long["text"] or "久期" in long["text"] or "贴现" in long["text"]
+    assert "us2y" not in long_metrics
+    assert "cpi" not in long_metrics
+    assert "nfp" not in long_metrics
+    if long.get("can_form_direction"):
+        assert long_metrics <= {"credit", "war_sanctions", "energy_supply", "sovereign_or_corporate_debt"}
+    else:
+        assert long["directional_scenario"] == "withheld"
+        assert "long" not in (forecast.get("forecast") or {})
+    assert short.get("can_form_direction") is True
+    assert medium.get("can_form_direction") is True
+    assert short.get("can_form_direction") != long.get("can_form_direction") or short["text"] != long["text"]
+    if forecast.get("can_form_direction") is True:
+        assert "long" not in (forecast.get("forecast") or {}) or forecast["forecast"]["long"] in DIRECTIONAL_SCENARIOS
+        assert all(key in {row["horizon"] for row in forecast["horizons"] if row.get("can_form_direction")} for key in (forecast.get("forecast") or {}))
     for row in forecast["horizons"]:
         assert row["directional_scenario"] in DIRECTIONAL_SCENARIOS
         assert row.get("percent_forecast") is None
         assert row.get("price_target") is None
+        assert "can_form_direction" in row
+        assert row.get("missing") is not None or row.get("what_changes")
 
 
 def test_t10_insufficient_names_missing_and_what_changes():
@@ -427,3 +440,219 @@ def test_t11_page_payload_false_has_no_prediction(monkeypatch):
     nvda = stock_events("NVDA", settings, inject="vix_only", now=FROZEN_NOW)
     assert (nvda.get("horizon_forecast") or {}).get("can_form_direction") is False
     assert not nvda.get("driver_synthesis")
+
+
+def _retag_chain(chain: dict, **fields) -> dict:
+    row = dict(chain)
+    layers = []
+    for layer in chain.get("layers") or []:
+        item = dict(layer)
+        refs = []
+        for ref in item.get("evidence_refs") or []:
+            payload = dict(ref)
+            payload.update(fields)
+            refs.append(payload)
+        item["evidence_refs"] = refs
+        layers.append(item)
+    row["layers"] = layers
+    row.update(fields)
+    return row
+
+
+def test_cse_snippet_never_evidence_until_official_fetch():
+    html = (
+        "<html><body><article><p>NVIDIA Corporation filed a current report on Form 8-K "
+        "disclosing Item 2.02 results of operations and financial condition.</p></article></body></html>"
+    )
+
+    def fake_fetch(url, **kwargs):
+        return {
+            "url": url,
+            "html": html,
+            "error": None,
+            "status": "ok",
+            "fetched_at": "2026-09-10T00:00:00+00:00",
+            "final_url": url,
+        }
+
+    docs, report = resolve_discovery_candidates([_cse_snippet()], fetch_page=fake_fetch)
+    assert report["discovery_promoted"] == 1
+    assert report["schedule_entry"].startswith("stock-pm-events")
+    assert any(row.body_source == "cse_snippet" for row in docs)
+    official = next(row for row in docs if row.body_source == "official_html")
+    assert official.provider == "official"
+    assert "Snippet only" not in (official.body or "")
+    events = build_events(docs)
+    analyze_event(events[0])
+    sources = events[0].as_dict()["sources"]
+    assert any(row["fact_or_opinion"] == "fact" and row["source_tier"] == 1 and row.get("body_source") == "official_html" for row in sources)
+    refs = events[0].analysis["evidence_refs"]
+    assert refs
+    assert all(row.get("body_source") != "cse_snippet" for row in refs)
+    assert all(row.get("discovery_role") not in {"discovery_candidate", "discovery_only"} for row in refs)
+    assert any(str(row.get("source_url") or "").startswith("https://www.sec.gov") for row in refs)
+
+
+def test_cse_fetch_failure_stays_discovery_with_retry():
+    def fake_fail(url, **kwargs):
+        return {"url": url, "html": "", "error": "timeout", "status": "error"}
+
+    docs, report = resolve_discovery_candidates([_cse_snippet()], fetch_page=fake_fail)
+    assert report["discovery_promoted"] == 0
+    assert report["discovery_unverified"] >= 1
+    snippet = docs[0]
+    assert snippet.body_source == "cse_snippet"
+    assert snippet.fetch_error
+    assert snippet.next_retry_at
+    events = build_events(docs)
+    analyze_event(events[0])
+    assert all(row.fact_or_opinion != "fact" for row in events[0].sources)
+    assert all(row.get("body_source") != "cse_snippet" for row in (events[0].analysis.get("evidence_refs") or []))
+
+
+def test_same_us2y_and_wti_are_exposure_aware():
+    rates = _chains([_us2y(up=True)])
+    nvda = build_horizon_forecast(rates, scope="stock", target="NVDA", now=FROZEN_NOW)
+    jpm = build_horizon_forecast(rates, scope="stock", target="JPM", now=FROZEN_NOW)
+    xom = build_horizon_forecast(rates, scope="stock", target="XOM", now=FROZEN_NOW)
+    aapl = build_horizon_forecast(rates, scope="stock", target="AAPL", now=FROZEN_NOW)
+    assert (nvda.get("forecast") or {}).get("short") == "down"
+    assert (jpm.get("forecast") or {}).get("short") == "range"
+    assert (xom.get("forecast") or {}).get("short") not in {"up", "down"}
+    assert aapl["can_form_direction"] is False
+    assert "long" not in (nvda.get("forecast") or {})
+    energy = _chains([_wti()])
+    xom_wti = build_horizon_forecast(energy, scope="stock", target="XOM", now=FROZEN_NOW)
+    nvda_wti = build_horizon_forecast(energy, scope="stock", target="NVDA", now=FROZEN_NOW)
+    jpm_wti = build_horizon_forecast(energy, scope="stock", target="JPM", now=FROZEN_NOW)
+    assert (xom_wti.get("forecast") or {}).get("short") == "up"
+    assert (nvda_wti.get("forecast") or {}).get("short") not in {"up", "down"}
+    assert (jpm_wti.get("forecast") or {}).get("short") not in {"up", "down"}
+
+
+def test_per_horizon_gate_omits_withheld_from_forecast():
+    chains = _chains([_us2y(up=True)])
+    nvda = build_horizon_forecast(chains, scope="stock", target="NVDA", now=FROZEN_NOW)
+    by_name = {row["horizon"]: row for row in nvda["horizons"]}
+    assert by_name["short"]["can_form_direction"] is True
+    assert by_name["long"]["can_form_direction"] is False
+    assert nvda["can_form_direction"] is True
+    assert nvda["forecast"]
+    assert "short" in nvda["forecast"]
+    assert "long" not in nvda["forecast"]
+    assert "us2y" not in (by_name["long"].get("driver_metrics") or [])
+    assert by_name["long"]["directional_scenario"] == "withheld"
+    assert by_name["long"].get("what_changes")
+    assert any("长期" in (row.get("detail") or "") or row.get("horizon") == "long" for row in nvda.get("missing") or [])
+
+
+def test_tier2_and_tier3_cannot_form_direction():
+    base = _chains([_us2y(up=True)])[0]
+    media = _retag_chain(
+        base,
+        source_tier=2,
+        content_type="media_report",
+        fact_or_opinion="reported",
+        primary_or_secondary="secondary",
+    )
+    opinion = _retag_chain(
+        base,
+        source_tier=3,
+        content_type="research_opinion",
+        fact_or_opinion="opinion",
+        primary_or_secondary="secondary",
+    )
+    media_fc = build_horizon_forecast([media], scope="market", now=FROZEN_NOW)
+    opinion_fc = build_horizon_forecast([opinion], scope="market", now=FROZEN_NOW)
+    assert media_fc["can_form_direction"] is False
+    assert opinion_fc["can_form_direction"] is False
+    assert media_fc.get("forecast") in (None, {}, [])
+    assert all(row["directional_scenario"] == "withheld" for row in media_fc["horizons"])
+    reuters = document_to_source(
+        EventDocument(
+            title="Rates note",
+            url="https://www.reuters.com/markets/us2y-2026",
+            publisher="Reuters",
+            published_at="2026-09-10T00:00:00+00:00",
+            event_type="central_bank_rates",
+        ),
+        seen_at="2026-09-10T00:00:00+00:00",
+    )
+    assert reuters["fact_or_opinion"] == "reported"
+    assert reuters["content_type"] == "media_report"
+    assert "不能替代" in (reuters.get("why_trusted") or "")
+
+
+def test_distinct_same_entity_events_do_not_share_stable_id():
+    first = EventDocument(
+        title="NVIDIA files Form 8-K announcing quarterly results",
+        url="https://www.sec.gov/Archives/edgar/data/1045810/000104581026000001/nvda-8k.htm",
+        publisher="SEC EDGAR",
+        published_at="2026-09-10T14:00:00+00:00",
+        event_type="company_filing",
+        entities=["NVDA"],
+        countries=["US"],
+        claims=["NVIDIA announced quarterly results on Form 8-K"],
+        body="NVIDIA Corporation announced quarterly results of operations.",
+        provider="official",
+        body_source="official_html",
+    )
+    second = EventDocument(
+        title="NVIDIA files Form 8-K disclosing a cybersecurity incident",
+        url="https://www.sec.gov/Archives/edgar/data/1045810/000104581026000099/nvda-8k-cyber.htm",
+        publisher="SEC EDGAR",
+        published_at="2026-09-10T18:00:00+00:00",
+        event_type="company_filing",
+        entities=["NVDA"],
+        countries=["US"],
+        claims=["NVIDIA disclosed a cybersecurity incident"],
+        body="NVIDIA Corporation disclosed a cybersecurity incident on Form 8-K.",
+        provider="official",
+        body_source="official_html",
+    )
+    events = build_events([first, second])
+    assert len(events) == 2
+    assert events[0].event_id != events[1].event_id
+    reprint = EventDocument(
+        title="NVIDIA files Form 8-K announcing quarterly results",
+        url="https://finance.yahoo.com/news/nvidia-8k-results",
+        publisher="Yahoo Finance",
+        published_at="2026-09-10T15:00:00+00:00",
+        event_type="company_filing",
+        entities=["NVDA"],
+        countries=["US"],
+        claims=["NVIDIA announced quarterly results on Form 8-K"],
+        body="Reprinted headline of the NVIDIA results 8-K.",
+        provider="media",
+    )
+    merged = build_events([first, reprint])
+    assert len(merged) == 1
+
+
+def test_synthesis_conflict_blocks_horizon_up_down():
+    facts = apply_macro_inject([_fact(), _nfp(), _us2y(up=True)], "reverse_cpi,us2y_up")
+    chains = _chains(facts)
+    market = synthesize_drivers(chains, now=FROZEN_NOW)["market"]
+    assert market.get("contradictions")
+    forecast = build_horizon_forecast(chains, synthesis=market, scope="market", now=FROZEN_NOW)
+    by_name = {row["horizon"]: row for row in forecast["horizons"]}
+    for name in ("short", "medium"):
+        row = by_name[name]
+        if row.get("can_form_direction"):
+            assert row["directional_scenario"] not in {"up", "down"}
+            assert row["confidence"] in {"limited", "insufficient"}
+            blob = json.dumps(row.get("counter_evidence") or [], ensure_ascii=False)
+            assert "冲突" in blob or "冲突" in json.dumps(forecast, ensure_ascii=False)
+
+
+def test_event_job_exposes_cse_resolve_schedule():
+    settings = Settings(events_mode="fixture")
+    reset_cache()
+    report = run_event_job(settings)
+    assert report["schedule_entry"] == "stock-pm-events / run_event_job"
+    assert "discovery_promoted" in report
+    assert "discovery_unverified" in report
+    cover = report.get("coverage") or coverage(settings)
+    assert cover.get("schedule_entry") == "stock-pm-events / run_event_job"
+    assert "discovery_resolution" in cover
+

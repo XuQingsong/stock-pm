@@ -21,7 +21,7 @@ EVENT_TYPES = (
 )
 
 CONTENT_TYPES = ("official_fact", "media_report", "research_opinion", "aggregator")
-FACT_OR_OPINION = ("fact", "opinion")
+FACT_OR_OPINION = ("fact", "opinion", "reported")
 SOURCE_TIERS = (1, 2, 3, 4)
 
 
@@ -50,6 +50,7 @@ class EventSource:
     discovery_role: str | None = None
     reprint_of: str | None = None
     reprint_count: int = 0
+    next_retry_at: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -76,6 +77,7 @@ class EventSource:
             "discovery_role": self.discovery_role,
             "reprint_of": self.reprint_of,
             "reprint_count": self.reprint_count,
+            "next_retry_at": self.next_retry_at,
         }
 
 
@@ -137,6 +139,7 @@ class EventDocument:
     filing_items: list[str] = field(default_factory=list)
     author: str | None = None
     discovery_role: str | None = None
+    next_retry_at: str | None = None
 
 
 @dataclass(slots=True)
