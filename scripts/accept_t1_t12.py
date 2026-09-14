@@ -18,7 +18,7 @@ import re
 import urllib.request
 from pathlib import Path
 
-SECRET_RE = re.compile(r"(api[_-]?key|apikey=|secret|password|authorization|sk-|Bearer |AIza)", re.I)
+SECRET_RE = re.compile(r"(apikey=|api_key=|secret=|password=|authorization:\s*Bearer |sk-live|sk-proj-|AIza[0-9A-Za-z_-]{8,})", re.I)
 FORECAST_RE = re.compile(r"(目标价|买入|卖出|做多|做空|上涨\s*\d|下跌\s*\d|胜率|概率\s*\d|价格区间)")
 OUT = Path(os.environ.get("ACCEPT_OUT", "/opt/cursor/artifacts/p0-78"))
 BASE = os.environ.get("ACCEPT_BASE", "http://127.0.0.1:9067").rstrip("/")

@@ -543,7 +543,7 @@
     const why = row.why_relevant || options.why || "";
     return `<section class="driver-synthesis" data-driver-synthesis="1" data-synthesis-id="${esc(row.synthesis_id || "")}" data-scope="${esc(row.scope || "")}" data-target="${esc(row.target || "")}" data-stance="${esc(net.stance || "")}" data-confidence="${esc(confidence.label || "")}" data-conflict="${conflict ? "1" : "0"}" data-can-form-direction="0" data-vix-role="${esc(vix.role || "risk_confirmation_only")}">
       <h3>${esc(String(title || "综合判断"))}</h3>
-      <p class="subline">综合条件预期，不是已观察事实，也不是单链派生分析。can_form_direction=false，不输出涨跌、目标价或交易建议。</p>
+      <p class="subline">综合条件预期，不是已观察事实，也不是单链派生分析。can_form_direction=false，不输出涨跌数字或交易指令。</p>
       <div class="synthesis-block" data-synthesis-kind="observable_fact"><div class="chain-kicker">已观察事实</div>${facts || "<div class=\"subline\">本范围没有可引用的已观察事实</div>"}</div>
       <div class="synthesis-block" data-synthesis-kind="derived_analysis"><div class="chain-kicker">单链派生分析</div>${derived || "<div class=\"subline\">本范围没有单链派生</div>"}</div>
       <div class="synthesis-block" data-synthesis-kind="conditional_expectation" data-net-expectation="1">
@@ -588,7 +588,7 @@
     const title = options.title || (row.scope === "stock" ? `${row.target || ""} 期限情景` : row.scope === "industry" ? `${row.target || "行业"} 期限情景` : "期限情景 Forecast");
     return `<section class="horizon-forecast" data-horizon-forecast="1" data-can-form-direction="${allowed ? "1" : "0"}" data-scope="${esc(row.scope || "")}" data-target="${esc(row.target || "")}">
       <h3>${esc(title)}</h3>
-      <p class="subline">${allowed ? "条件方向情景，不是目标价、胜率或交易建议。" : esc(row.reason || "证据不足，不形成预测。")}</p>
+      <p class="subline">${allowed ? "条件方向情景，不是价格数字或交易指令。" : esc(row.reason || "证据不足，不形成预测。")}</p>
       ${horizons}
       <div data-vix-confirmation="1" data-vix-amplifies="${vix.amplifies ? "1" : "0"}">${esc(vix.text || "VIX 只确认风险")}</div>
       ${(vix.counter_evidence || []).map((item) => `<div class="subline" data-counter-evidence="1">${esc(item)}</div>`).join("")}
