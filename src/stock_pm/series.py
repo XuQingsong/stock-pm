@@ -408,6 +408,7 @@ def build_macro_event(
     http_source: str | None = None,
     transport: str | None = None,
     prior_observation: dict[str, Any] | None = None,
+    prior_prior_observation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     period = observation["period"]
     event_time = datetime.fromisoformat(f"{period}T00:00:00+00:00")
@@ -425,12 +426,18 @@ def build_macro_event(
     notes["as_of"] = period
     prior_value = None
     prior_as_of = None
+    prior_prior_value = None
+    prior_prior_as_of = None
     if prior_observation and prior_observation.get("value") is not None and prior_observation.get("period"):
         prior_value = prior_observation["value"]
         prior_as_of = prior_observation["period"]
         notes["prior_as_of"] = prior_as_of
         notes["formula"] = f"{spec['series_id']}[t] vs {spec['series_id']}[t−1] ({spec['unit']})"
         notes["comparison"] = "same_series_same_unit"
+    if prior_prior_observation and prior_prior_observation.get("value") is not None and prior_prior_observation.get("period"):
+        prior_prior_value = prior_prior_observation["value"]
+        prior_prior_as_of = prior_prior_observation["period"]
+        notes["prior_prior_as_of"] = prior_prior_as_of
     validate_unit(metric, spec["unit"])
     if observation.get("unit"):
         validate_unit(metric, str(observation["unit"]))
@@ -443,6 +450,8 @@ def build_macro_event(
         "consensus": None,
         "prior": prior_value,
         "prior_as_of": prior_as_of,
+        "prior_prior": prior_prior_value,
+        "prior_prior_as_of": prior_prior_as_of,
         "unit": spec["unit"],
         "series": spec["series_id"],
         "series_or_symbol": spec["series_id"],
@@ -505,6 +514,7 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
             ordered = sorted(rows, key=lambda row: str(row["period"]), reverse=True)
             latest = ordered[0]
             previous = ordered[1] if len(ordered) > 1 else None
+            prior_previous = ordered[2] if len(ordered) > 2 else None
             if latest.get("unit"):
                 validate_unit(metric, str(latest["unit"]))
             event = build_macro_event(
@@ -516,6 +526,7 @@ def sync_fred_market_series(settings: Settings | None = None, store=None) -> dic
                 http_source=result.http_source,
                 transport=result.transport,
                 prior_observation=previous,
+                prior_prior_observation=prior_previous if metric == "cpi" else None,
             )
             if store is not None:
                 store(event)

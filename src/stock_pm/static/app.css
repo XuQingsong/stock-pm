@@ -113,6 +113,14 @@
 .event-causal-layer:last-child{border-bottom:0}
 .event-causal-layer .chain-kicker{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#4b5563;margin-bottom:4px}
 .event-causal-chain[data-chain-complete="0"] .event-causal-layer{background:#fff8f1}
+.macro-driver-summary{margin:12px 0;padding:12px;border:1px solid #c7d2fe;border-radius:10px;background:#f8faff}
+.macro-driver-summary h3{margin:0 0 8px;font-size:16px}
+.macro-chain-expand{margin:8px 0;padding:8px;border:1px solid #e4e4e7;border-radius:8px;background:#fff}
+.macro-chain-expand summary{cursor:pointer;font-weight:600}
+.macro-chain[data-status="degraded"]{border:1px solid #f1d9a0;background:#fff8f1;border-radius:8px;padding:8px}
+.event-causal-layer[data-layer-kind="observable_fact"]{border-left:4px solid #0f766e}
+.event-causal-layer[data-layer-kind="derived_analysis"]{border-left:4px solid #1d4ed8}
+.event-causal-layer[data-layer-kind="conditional_expectation"]{border-left:4px solid #b45309}
 .event-timeline{margin:12px 0;padding:10px;border:1px solid #d4d4d8;border-radius:8px;background:#fafafa}
 .event-timeline .timeline-item{padding:8px 0;border-bottom:1px dashed #e4e4e7}
 .event-timeline .timeline-item:last-child{border-bottom:0}
