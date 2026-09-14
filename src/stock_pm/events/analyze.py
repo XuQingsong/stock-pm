@@ -101,9 +101,20 @@ def _refs(event: TrustedEvent, *, facts_only: bool = False, current_only: bool =
                 "source_id": source.source_id,
                 "source_url": source.source_url,
                 "publisher": source.publisher,
-                "source_tier": str(source.source_tier),
+                "source_tier": int(source.source_tier),
                 "content_type": source.content_type,
                 "fact_or_opinion": source.fact_or_opinion,
+                "primary_or_secondary": source.primary_or_secondary,
+                "is_current": (
+                    source.fact_or_opinion == "fact"
+                    and int(source.source_tier) == 1
+                    and source.primary_or_secondary == "primary"
+                    and not source.discovery_role
+                    and str(source.body_source or "") not in {"cse_snippet", "discovery_candidate", "discovery_only"}
+                    and not source.fetch_error
+                ),
+                "body_source": source.body_source,
+                "discovery_role": source.discovery_role,
                 "document_role": getattr(source, "document_role", None),
                 "published_at": source.published_at,
                 "why_trusted": getattr(source, "why_trusted", None),
