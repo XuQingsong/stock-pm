@@ -124,6 +124,10 @@ def test_s1_rates_confirmation_is_conditional():
     nvda = payload["stocks"]["NVDA"]
     assert nvda["scope"] == "stock"
     assert "久期" in (nvda.get("why_relevant") or "") or "利率" in (nvda.get("why_relevant") or "")
+    assert nvda["vix"]["present"] is True
+    assert nvda["vix"]["sets_direction"] is False
+    assert nvda["vix"]["copied_to_all_stocks"] is False
+    assert "vix" not in {row["metric"] for row in nvda["drivers"]}
 
 
 def test_s2_conflict_keeps_both_sides_and_lower_confidence():
@@ -437,3 +441,14 @@ def test_market_and_stock_share_evaluation_date(monkeypatch):
     assert jpm["driver_synthesis"]["as_of"] == "2026-09-14"
     assert center["driver_synthesis"]["confidence"]["clock"] == "evaluation_date"
     assert nvda["driver_synthesis"]["confidence"]["clock"] == "evaluation_date"
+
+
+def test_production_market_center_ignores_env_vix_inject(monkeypatch):
+    monkeypatch.delenv("ENABLE_DECISION_INJECT", raising=False)
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("STOCK_PM_MACRO_INJECT", "vix_only")
+    center = market_center(Settings(events_mode="fixture"), now=FROZEN_NOW)
+    metrics = {row["metric"] for row in (center.get("macro_chains") or []) if row.get("status") == "ok"}
+    assert "cpi" in metrics
+    assert "us2y" in metrics
+    assert (center.get("driver_synthesis") or {}).get("net_expectation", {}).get("stance") != "risk_confirmation_only"

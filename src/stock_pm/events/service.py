@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from stock_pm.config import Settings
+from stock_pm.decision.inject import inject_allowed
 
 from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol_event_view
 from .dedupe import build_events
@@ -215,11 +216,17 @@ def _center_sort_key(event: TrustedEvent | dict[str, Any]) -> tuple:
     return (type_rank, published or "", title)
 
 
+def _inject_tokens(inject: Any, settings: Settings | None) -> Any:
+    if not inject_allowed(settings):
+        return None
+    return env_macro_inject() if inject is None else inject
+
+
 def market_center(settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
     events = build_event_book(settings)
     cover = coverage(settings, events)
     ordered = sorted(events, key=_center_sort_key)
-    tokens = env_macro_inject() if inject is None else inject
+    tokens = _inject_tokens(inject, settings)
     chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
     clock = evaluation_date(now)
     synthesis = synthesize_drivers(chains, now=clock)
@@ -259,7 +266,7 @@ def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any =
         if view:
             selected.append(view)
     selected.sort(key=_center_sort_key)
-    tokens = env_macro_inject() if inject is None else inject
+    tokens = _inject_tokens(inject, settings)
     chains = build_market_macro_chains(events=events, settings=settings, inject=tokens)
     mapped = stock_macro_chains(chains, symbol)
     clock = evaluation_date(now)
