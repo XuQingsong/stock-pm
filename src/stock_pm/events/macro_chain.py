@@ -201,6 +201,55 @@ def _looks_like_cpi_index_value(value: float | None, unit: Any = None, basis: An
     return value is not None and abs(value) >= _CPI_INDEX_VALUE_FLOOR
 
 
+def _explicit_cpi_rate_kind(raw: Any) -> str:
+    kind = _normalize_basis(raw)
+    return kind if kind in {"mom_pct", "yoy_pct"} else ""
+
+
+def _explicit_cpi_rate_unit(raw: Any) -> str:
+    text = str(raw or "").strip().lower()
+    if text in {"percent", "pct", "%"}:
+        return "percent"
+    return ""
+
+
+def cpi_consensus_verdict(
+    fact: dict[str, Any],
+    *,
+    actual_kind: str,
+    actual_series: str,
+    actual_period: str,
+) -> tuple[str, str]:
+    """Usable CPI consensus must be explicit. Never infer kind/unit/series/period from the actual."""
+    consensus = _num(fact.get("consensus"))
+    if consensus is None:
+        return ("absent", "")
+    kind = _explicit_cpi_rate_kind(fact.get("consensus_basis") or fact.get("consensus_rate_kind"))
+    unit = _explicit_cpi_rate_unit(fact.get("consensus_unit"))
+    series = str(fact.get("consensus_series") or "").strip()
+    period = _period_key(fact.get("consensus_as_of") or fact.get("consensus_period"))
+    missing = []
+    if not kind:
+        missing.append("consensus_basis")
+    if not unit:
+        missing.append("consensus_unit")
+    if not series:
+        missing.append("consensus_series")
+    if period in {"", "unspecified"}:
+        missing.append("consensus_period")
+    if missing:
+        return ("ignore", "共识缺少 " + "/".join(missing) + "，不能当成同口径一致预期")
+    if kind != actual_kind:
+        return ("mismatch", f"{fact.get('metric') or 'cpi'} 实际口径 {actual_kind} 与共识口径 {kind} 不一致，只降级本链")
+    if series != actual_series:
+        return ("mismatch", f"{fact.get('metric') or 'cpi'} 共识序列 {series} 与实际序列 {actual_series} 不一致，只降级本链")
+    if period != actual_period:
+        return ("mismatch", f"{fact.get('metric') or 'cpi'} 共识期次 {period} 与实际期次 {actual_period} 不一致，只降级本链")
+    if _looks_like_cpi_index_value(consensus, unit, kind):
+        return ("mismatch", f"{fact.get('metric') or 'cpi'} 共识必须是同口径通胀率，不能用价格指数充当共识，只降级本链")
+    return ("ok", "")
+
+
 def _mom_pct(later: float | None, earlier: float | None) -> float | None:
     if later is None or earlier in {None, 0}:
         return None
@@ -266,26 +315,36 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
             actual,
             None,
         )
+    period = _period_key(fact.get("period") or fact.get("as_of"))
     if basis in {"mom_pct", "yoy_pct"} and not _looks_like_cpi_index_value(actual, unit, basis):
-        if consensus is not None and _looks_like_cpi_index_value(
-            consensus,
-            fact.get("consensus_unit") or unit,
-            fact.get("consensus_basis"),
-        ):
-            return _mismatch(
-                metric,
-                "period_or_basis_mismatch",
-                f"{metric} 共识必须是同口径 {basis} 通胀率，不能用价格指数充当共识，只降级本链",
-                actual,
-                consensus,
-            )
-        rate_fact = dict(fact)
-        rate_fact["metric"] = metric
-        rate_fact["unit"] = "percent"
-        rate_fact["basis"] = basis
-        rate_fact["prior_basis"] = _normalize_basis(fact.get("prior_basis") or basis)
-        rate_fact["consensus_basis"] = _normalize_basis(fact.get("consensus_basis") or basis)
-        rate_fact["formula"] = fact.get("formula") or _cpi_rate_formula(basis, series)
+        verdict, detail = cpi_consensus_verdict(fact, actual_kind=basis, actual_series=series, actual_period=period)
+        if verdict == "mismatch":
+            return _mismatch(metric, "period_or_basis_mismatch", detail, actual, consensus)
+        rate_fact = {
+            "metric": metric,
+            "actual": actual,
+            "prior": fact.get("prior"),
+            "prior_as_of": fact.get("prior_as_of"),
+            "prior_unit": fact.get("prior_unit") or "percent",
+            "prior_series": fact.get("prior_series") or series,
+            "prior_basis": _normalize_basis(fact.get("prior_basis") or basis),
+            "unit": "percent",
+            "series": series,
+            "period": period,
+            "as_of": fact.get("as_of") or period,
+            "basis": basis,
+            "formula": fact.get("formula") or _cpi_rate_formula(basis, series),
+            "comparison": fact.get("comparison") or f"same_definition_{basis}",
+            "status": fact.get("status") or "ok",
+            "http_source": fact.get("http_source"),
+            "source": fact.get("source"),
+        }
+        if verdict == "ok":
+            rate_fact["consensus"] = consensus
+            rate_fact["consensus_basis"] = _explicit_cpi_rate_kind(fact.get("consensus_basis") or fact.get("consensus_rate_kind"))
+            rate_fact["consensus_unit"] = _explicit_cpi_rate_unit(fact.get("consensus_unit"))
+            rate_fact["consensus_series"] = str(fact.get("consensus_series") or "").strip()
+            rate_fact["consensus_as_of"] = _period_key(fact.get("consensus_as_of") or fact.get("consensus_period"))
         change = compare_same_basis(rate_fact)
         if change.get("status") == "ok":
             change["rate_kind"] = basis
@@ -295,6 +354,8 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
             change["index_prior"] = _num(fact.get("index_prior"))
             if change.get("index_level") is not None and change.get("index_prior") is not None:
                 change["index_rising"] = change["index_level"] > change["index_prior"]
+            if verdict == "ignore":
+                change["ignored_consensus"] = detail
         return change
     levels = _collect_cpi_index_levels(fact)
     if len(levels) < 2:
@@ -303,19 +364,14 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
     if mom_current is None:
         return _mismatch(metric, "missing_actual", f"{metric} 无法由价格指数计算 MoM%，只降级本链", actual, None)
     formula = _cpi_rate_formula("mom_pct", series)
-    consensus_is_rate = consensus is not None and not _looks_like_cpi_index_value(
-        consensus,
-        fact.get("consensus_unit"),
-        fact.get("consensus_basis") or fact.get("consensus_rate_kind"),
+    verdict, detail = cpi_consensus_verdict(
+        fact,
+        actual_kind="mom_pct",
+        actual_series=series,
+        actual_period=levels[0][0],
     )
-    if consensus is not None and not consensus_is_rate:
-        return _mismatch(
-            metric,
-            "period_or_basis_mismatch",
-            f"{metric} 共识 {consensus} 不是同口径 MoM/YoY 通胀率（不能用指数水平如 333.0 充当市场共识），只降级本链",
-            mom_current,
-            consensus,
-        )
+    if verdict == "mismatch":
+        return _mismatch(metric, "period_or_basis_mismatch", detail, mom_current, consensus)
     rate_fact = {
         "metric": metric,
         "actual": mom_current,
@@ -325,17 +381,18 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
         "as_of": levels[0][0],
         "basis": "mom_pct",
         "prior_basis": "mom_pct",
-        "consensus_basis": "mom_pct",
         "formula": formula,
         "comparison": "same_definition_mom_pct",
         "status": fact.get("status") or "ok",
         "http_source": fact.get("http_source"),
         "source": fact.get("source"),
     }
-    if consensus_is_rate:
+    if verdict == "ok":
         rate_fact["consensus"] = consensus
-        rate_fact["consensus_as_of"] = fact.get("consensus_as_of") or fact.get("consensus_period") or levels[0][0]
-        rate_fact["consensus_unit"] = "percent"
+        rate_fact["consensus_basis"] = _explicit_cpi_rate_kind(fact.get("consensus_basis") or fact.get("consensus_rate_kind"))
+        rate_fact["consensus_unit"] = _explicit_cpi_rate_unit(fact.get("consensus_unit"))
+        rate_fact["consensus_series"] = str(fact.get("consensus_series") or "").strip()
+        rate_fact["consensus_as_of"] = _period_key(fact.get("consensus_as_of") or fact.get("consensus_period"))
     elif len(levels) >= 3:
         mom_prior = _mom_pct(levels[1][1], levels[2][1])
         if mom_prior is None:
@@ -343,6 +400,7 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
         rate_fact["prior"] = mom_prior
         rate_fact["prior_as_of"] = levels[1][0]
         rate_fact["prior_unit"] = "percent"
+        rate_fact["prior_series"] = series
     else:
         return {
             "status": "ok",
@@ -360,6 +418,7 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
             "rate_kind": "mom_pct",
             "measure": "single_mom_from_two_index_levels",
             "withheld_acceleration": True,
+            "ignored_consensus": detail if verdict == "ignore" else None,
             "index_level": levels[0][1],
             "index_prior": levels[1][1],
             "index_rising": levels[0][1] > levels[1][1],
@@ -372,6 +431,8 @@ def inflation_rate_comparison(fact: dict[str, Any]) -> dict[str, Any]:
         change["index_level"] = levels[0][1]
         change["index_prior"] = levels[1][1]
         change["index_rising"] = levels[0][1] > levels[1][1]
+        if verdict == "ignore":
+            change["ignored_consensus"] = detail
     return change
 
 
@@ -418,6 +479,27 @@ def compare_same_basis(fact: dict[str, Any]) -> dict[str, Any]:
     prior_unit = str(fact.get("prior_unit") or unit)
     consensus_series = str(fact.get("consensus_series") or series)
     prior_series = str(fact.get("prior_series") or series)
+    if metric in INFLATION_RATE_METRICS and consensus is not None:
+        actual_kind = _explicit_cpi_rate_kind(actual_basis) or actual_basis
+        verdict, detail = cpi_consensus_verdict(
+            fact,
+            actual_kind=actual_kind,
+            actual_series=series,
+            actual_period=period,
+        )
+        if verdict == "mismatch":
+            return _mismatch(metric, "period_or_basis_mismatch", detail, actual, consensus)
+        if verdict != "ok":
+            consensus = None
+            consensus_basis = ""
+            consensus_unit = ""
+            consensus_series = ""
+            consensus_period = "unspecified"
+        else:
+            consensus_basis = _explicit_cpi_rate_kind(fact.get("consensus_basis") or fact.get("consensus_rate_kind"))
+            consensus_unit = _explicit_cpi_rate_unit(fact.get("consensus_unit"))
+            consensus_series = str(fact.get("consensus_series") or "").strip()
+            consensus_period = _period_key(fact.get("consensus_as_of") or fact.get("consensus_period"))
     status = "ok"
     reason = ""
     baseline = None

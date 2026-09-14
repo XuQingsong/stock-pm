@@ -50,6 +50,9 @@ def _fact(**extra) -> dict:
         "basis": "mom_pct",
         "prior_basis": "mom_pct",
         "consensus_basis": "mom_pct",
+        "consensus_unit": "percent",
+        "consensus_series": "CPIAUCSL",
+        "consensus_rate_kind": "mom_pct",
         "rate_kind": "mom_pct",
         "index_level": 334.131,
         "index_prior": 332.8,
@@ -72,6 +75,9 @@ def _nfp(**extra) -> dict:
         basis="monthly_diff",
         prior_basis="monthly_diff",
         consensus_basis="monthly_diff",
+        consensus_unit="thousands",
+        consensus_series="PAYEMS",
+        consensus_rate_kind=None,
         rate_kind=None,
         index_level=None,
         index_prior=None,
@@ -439,7 +445,56 @@ def test_cpi_index_consensus_is_rejected():
     chain = build_numeric_macro_chain(_fact(actual=334.131, prior=332.81, consensus=333.0, unit="index", basis="index_level", rate_kind=None))
     assert chain["status"] == "degraded"
     assert chain["degrade_reason"] == "period_or_basis_mismatch"
-    assert "333" in (chain.get("degrade_detail") or "")
+    assert "333" in (chain.get("degrade_detail") or "") or "价格指数" in (chain.get("degrade_detail") or "")
+
+
+def test_cpi_ambiguous_consensus_falls_back_to_prior_rate():
+    chain = build_numeric_macro_chain(
+        _fact(
+            consensus=0.30,
+            consensus_basis=None,
+            consensus_unit=None,
+            consensus_series=None,
+            consensus_as_of=None,
+            consensus_period=None,
+            consensus_rate_kind=None,
+        )
+    )
+    exp = _layer(chain, "expectation")["text"]
+    change = _layer(chain, "change")
+    assert chain["status"] == "ok"
+    assert "高于一致预期" not in exp
+    assert "低于一致预期" not in exp
+    assert change.get("baseline_kind") == "prior"
+    assert change.get("baseline") == 0.22
+
+
+def test_cpi_mom_vs_yoy_consensus_mismatches():
+    chain = build_numeric_macro_chain(
+        _fact(
+            consensus=3.2,
+            consensus_basis="yoy_pct",
+            consensus_rate_kind="yoy_pct",
+            consensus_unit="percent",
+            consensus_series="CPIAUCSL",
+            consensus_as_of="2026-08-01",
+        )
+    )
+    assert chain["status"] == "degraded"
+    assert chain["degrade_reason"] == "period_or_basis_mismatch"
+    assert "yoy_pct" in (chain.get("degrade_detail") or "")
+    assert "高于一致预期" not in (_layer(chain, "expectation")["text"] or "")
+
+
+def test_cpi_fully_specified_mom_consensus_forms_expectation():
+    chain = build_numeric_macro_chain(_fact())
+    change = _layer(chain, "change")
+    exp = _layer(chain, "expectation")["text"]
+    assert chain["status"] == "ok"
+    assert change.get("baseline_kind") == "consensus"
+    assert change.get("baseline") == 0.30
+    assert "高于一致预期" in exp
+    assert "CPIAUCSL[t] / CPIAUCSL[t−1]" in (_layer(chain, "fact")["text"] + change["text"])
 
 
 def test_same_day_events_keep_distinct_ids_and_updates_reuse_id():
