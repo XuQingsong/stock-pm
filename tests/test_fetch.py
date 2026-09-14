@@ -64,6 +64,13 @@ def test_json_get_ok_and_cache(tmp_path, monkeypatch):
     assert "api_key" not in tmp_path.joinpath("demo.json").read_text()
 
 
+def test_write_cache_keeps_supplied_fetched_at(tmp_path):
+    write_cache("demo-old", {"n": 9}, tmp_path, fetched_at="2020-01-02T03:04:05+00:00")
+    cached = read_cache("demo-old", tmp_path)
+    assert cached["fetched_at"] == "2020-01-02T03:04:05+00:00"
+    assert cached["payload"] == {"n": 9}
+
+
 def test_timeout_uses_cache(tmp_path, monkeypatch):
     write_cache("demo", {"n": 2}, tmp_path)
 

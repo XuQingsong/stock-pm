@@ -128,6 +128,13 @@
 .earnings-grid div{background:#fff;border-radius:8px;padding:8px}
 .earnings-grid span{display:block;color:var(--muted);font-size:11px}
 .earnings-print[data-earnings-complete="0"]{border-color:#f1d9a0;background:#fff8f1}
+.earnings-coverage,.earnings-symbol-health{width:100%;margin:8px 0;padding:10px;border:1px solid #d4d4d8;border-radius:8px;background:#f8fafc}
+.earnings-coverage h4,.earnings-symbol-health h4{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#334155}
+.earnings-health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px}
+.earnings-health-field{background:#fff;border-radius:8px;padding:8px}
+.earnings-health-field[data-status="ok"]{border:1px solid #86d3b8}
+.earnings-health-field[data-status="missing"],.earnings-health-field[data-status="stale"],.earnings-health-field[data-status="rate_limited"]{border:1px solid #f1d9a0}
+.earnings-health-field[data-status="unsupported"],.earnings-health-field[data-status="not_configured"]{border:1px solid #e4e4e7}
 .event-answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:8px 0}
 .event-answers div{background:#f4f7fa;border-radius:8px;padding:8px}
 .event-answers span{display:block;color:var(--muted);font-size:11px}

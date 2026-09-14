@@ -40,6 +40,12 @@ def _published_day(doc: EventDocument):
 def same_event(left: EventDocument, right: EventDocument) -> bool:
     if left.event_type != right.event_type:
         return False
+    if left.event_type == "company_earnings":
+        skip = {"EPS", "REV", "REVENUE", "EARNINGS", "USD", "US", "USA"}
+        left_issuers = {item.upper() for item in left.entities if str(item).isalpha() and item.upper() not in skip}
+        right_issuers = {item.upper() for item in right.entities if str(item).isalpha() and item.upper() not in skip}
+        if left_issuers and right_issuers and left_issuers != right_issuers:
+            return False
     left_role = getattr(left, "evidence_role", "event_fact") or "event_fact"
     right_role = getattr(right, "evidence_role", "event_fact") or "event_fact"
     if left_role != right_role and "regime_catalog" in {left_role, right_role}:

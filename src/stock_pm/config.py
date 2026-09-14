@@ -114,3 +114,7 @@ class Settings:
     sec_edgar_user_agent: str = field(
         default_factory=lambda: (os.getenv("SEC_EDGAR_USER_AGENT") or "").strip()
     )
+    # Max Alpha Vantage earnings HTTP calls per discover. Do not raise concurrency to beat limits.
+    earnings_av_budget: int = field(
+        default_factory=lambda: max(1, int(os.getenv("STOCK_PM_EARNINGS_BUDGET") or "8"))
+    )

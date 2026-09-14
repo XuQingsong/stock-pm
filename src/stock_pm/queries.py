@@ -297,6 +297,12 @@ class QueryMixin:
     def active_symbols(self) -> list[str]:
         return [row["symbol"] for row in self.watchlist_rows()]
 
+    def active_stock_symbols(self) -> list[str]:
+        return [row["symbol"] for row in self.watchlist_rows() if str(row.get("asset_class") or "") == "stocks"]
+
+    def active_etf_symbols(self) -> list[str]:
+        return [row["symbol"] for row in self.watchlist_rows() if str(row.get("asset_class") or "") == "etf"]
+
     def theme_symbols(self) -> dict[str, list[str]]:
         mapping: dict[str, list[str]] = {}
         for row in self.watchlist_rows():

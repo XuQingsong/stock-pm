@@ -89,6 +89,12 @@
     const implication = row.implication || "";
     const secMeta = row.sec_association || {};
     const secHref = safeUrl(secMeta.url);
+    const lastSuccess = row.last_success_at || row.fetched_at || "";
+    const nextRetry = row.next_retry_at || "";
+    const namedMissing = (row.missing_fields || missing).filter(Boolean);
+    const missingNote = namedMissing.length
+      ? `<p class="subline" data-earnings-missing="${esc(namedMissing.join(","))}" data-last-success-at="${esc(lastSuccess)}" data-next-retry-at="${esc(nextRetry)}">本标的本链缺失字段：${esc(namedMissing.join(" / "))}。上次成功 ${esc(lastSuccess || "尚无")}。下次重试 ${esc(nextRetry || "下次调度")}。只降级本标的本财报链，不重复使用笼统的“数据不足”。</p>`
+      : "";
     return `<section class="earnings-print" data-earnings-print="1" data-earnings-complete="${row.gap ? "0" : "1"}" data-earnings-gap="${esc(row.gap || "")}">
       <h4>结构化财报对照</h4>
       <div class="earnings-grid">
@@ -108,7 +114,7 @@
       ${href ? `<div class="evidence-refs">供应商来源：${sourceLink(href, row.provider || "earnings")}</div>` : "<p class='subline'>缺少可点击来源。</p>"}
       ${secHref ? `<p class="subline" data-sec-association="1">SEC 申报关联（未验证正文）：${sourceLink(secHref, "8-K metadata")}。同一日 8-K 不构成 EPS 证据。</p>` : secMeta.reason_code ? `<p class="subline" data-sec-association="1" data-sec-reason="${esc(secMeta.reason_code)}">SEC 申报未请求：${esc(secMeta.reason_code)}。不升级为官方证据。</p>` : ""}
       <p class="subline" data-earnings-implication="${esc(implication)}" data-price-direction="withheld">盈利含义 ${esc(implication || "未形成")} · 股价方向 withheld</p>
-      ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本链缺失：${esc(missing.join(" / "))}。只降级本事件，不阻断其他事件。</p>` : ""}
+      ${missingNote}
       ${(row.transcript_excerpts || []).map((item) => `<p class="subline" data-transcript-excerpt="1">纪要 ${esc(item.quarter || "")} · ${esc(item.speaker || "")}：${esc(item.content || "")}${item.source_url ? ` <a class="source-link" href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">原文</a>` : ""}</p>`).join("")}
     </section>`;
   };
@@ -239,6 +245,85 @@
     </div>`;
   };
 
+  const cacheAgeLabel = (row) => {
+    if (!row || !row.last_success_at) return "";
+    if (row.cache_age_days != null && row.cache_age_days !== "") return `${row.cache_age_days}天`;
+    const then = Date.parse(row.last_success_at);
+    if (!Number.isFinite(then)) return "";
+    return `${((Date.now() - then) / 86400000).toFixed(1)}天`;
+  };
+
+  const fieldHealthHtml = (fields) => {
+    const rows = fields || {};
+    return ["actual", "prior", "consensus", "transcript"].map((name) => {
+      const row = rows[name] || {};
+      const age = cacheAgeLabel(row);
+      return `<div class="earnings-health-field" data-earnings-field-health="${esc(name)}" data-status="${esc(row.status || "")}" data-reason="${esc(row.reason_code || "")}" data-source="${esc(row.source || "")}" data-last-success-at="${esc(row.last_success_at || "")}" data-next-retry-at="${esc(row.next_retry_at || "")}" data-cache-age="${esc(age)}">
+        <span>${esc(name)}</span>
+        <b>${esc(row.status || "—")}</b>
+        <div class="subline">${esc(row.reason_code || "ok")} · ${esc(row.source || "none")} · as-of ${esc(row.as_of || "—")} · 抓取 ${esc(row.fetched_at || "—")} · 新鲜度 ${esc(row.freshness || "—")} · 上次成功 ${esc(row.last_success_at || "—")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(row.next_retry_at || "下次调度")}</div>
+      </div>`;
+    }).join("");
+  };
+
+  const endpointHealthHtml = (endpoints) => {
+    const rows = endpoints || {};
+    return ["EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"].map((name) => {
+      const row = rows[name] || {};
+      const age = cacheAgeLabel(row);
+      return `<div class="earnings-health-endpoint" data-earnings-endpoint-health="${esc(name)}" data-status="${esc(row.status || "")}" data-source="${esc(row.source || "")}" data-freshness="${esc(row.freshness || "")}" data-last-success-at="${esc(row.last_success_at || "")}" data-next-retry-at="${esc(row.next_retry_at || "")}" data-cache-age="${esc(age)}">
+        <span>${esc(name)}</span>
+        <b>${esc(row.status || "—")}</b>
+        <div class="subline">上次成功 ${esc(row.last_success_at || "尚无")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(row.next_retry_at || "下次调度")} · ${esc(row.freshness || "—")} · ${esc(row.source || "none")}</div>
+      </div>`;
+    }).join("");
+  };
+
+  const endpointLine = (cover) => {
+    const block = cover.endpoints || {};
+    const now = block.this_round || {};
+    const all = block.cumulative || {};
+    const names = ["EARNINGS", "EARNINGS_ESTIMATES", "EARNINGS_CALL_TRANSCRIPT"];
+    return names.map((name) => {
+      const round = now[name] || {};
+      const cum = all[name] || {};
+      return `${name} 本轮 ${round.attempted ?? 0} / 累计 ${(cum.attempted_symbols || []).length}`;
+    }).join(" · ");
+  };
+
+  const renderEarningsOverview = (cover) => {
+    const row = cover || {};
+    const live = row.live === true;
+    const nextTask = (row.schedule && row.schedule.next_task) || {};
+    const nextLabel = nextTask.symbol ? `${nextTask.symbol}:${nextTask.endpoint || ""}` : ((row.schedule && row.schedule.next_symbol) || "—");
+    return `<section class="earnings-coverage" data-earnings-coverage="1" data-live="${live ? "1" : "0"}" data-class="${esc(row.data_class || "")}">
+      <h4>财报覆盖 / 健康</h4>
+      ${pill(`完整 ${row.complete_count ?? 0}`, "ok")}
+      ${pill(`本轮 live ${row.fresh_live_complete_count ?? row.live_complete_count ?? 0}`, live ? "ok" : "")}
+      ${pill(`cache/stale ${row.cache_stale_complete_count ?? 0}`)}
+      ${pill(`部分 ${row.partial_count ?? 0}`)}
+      ${pill(`延后 ${row.deferred_count ?? 0}`)}
+      ${pill(`不支持 ${row.unsupported_count ?? 0}`, "not_configured")}
+      ${pill(live ? "live-current" : "frozen/fixture", live ? "ok" : "not_configured")}
+      <div class="subline" data-earnings-coverage-note="1">fixture 完整 ${esc(row.fixture_complete_count ?? 0)} · 本轮 fresh-live 完整 ${esc(row.fresh_live_complete_count ?? 0)} · cache/stale 完整 ${esc(row.cache_stale_complete_count ?? 0)}。${esc(row.note || "Fixture 成功不是上线覆盖。")} 预算 ${esc((row.budget && row.budget.used) ?? "—")}/${esc((row.budget && row.budget.max_calls) ?? "—")}。下次 ${esc(nextLabel)}。</div>
+      <div class="subline" data-earnings-endpoint-coverage="1">${esc(endpointLine(row))}</div>
+    </section>`;
+  };
+
+  const renderSymbolHealth = (health) => {
+    if (!health || !health.symbol) return "";
+    const missing = health.missing_fields || [];
+    const age = cacheAgeLabel(health);
+    return `<section class="earnings-symbol-health" data-earnings-symbol-health="1" data-symbol="${esc(health.symbol)}" data-supported="${health.supported === false ? "0" : "1"}" data-reason="${esc(health.reason_code || "")}" data-scenario="${esc(health.scenario || "")}" data-last-success-at="${esc(health.last_success_at || "")}" data-next-retry-at="${esc(health.next_retry_at || "")}" data-cache-age="${esc(age)}">
+      <h4>${esc(health.symbol)} 财报状态</h4>
+      ${pill(health.supported === false ? "unsupported" : (health.scenario || health.reason_code || "unknown"), health.supported === false ? "not_configured" : "ok")}
+      <div class="subline">资产 ${esc(health.asset_class || "—")} · 来源 ${esc(health.source || "none")} · 上次成功 ${esc(health.last_success_at || "尚无")} · 缓存年龄 ${esc(age || "—")} · 下次重试 ${esc(health.next_retry_at || "下次调度")}${health.implication ? ` · 盈利含义 ${esc(health.implication)}` : ""}</div>
+      ${missing.length ? `<p class="subline" data-earnings-missing="${esc(missing.join(","))}">本标的缺失：${esc(missing.join(" / "))}。不使用推测值填空。</p>` : ""}
+      <div class="earnings-health-grid">${fieldHealthHtml(health.fields)}</div>
+      <div class="earnings-health-endpoints">${endpointHealthHtml(health.endpoints)}</div>
+    </section>`;
+  };
+
   const renderCoverage = (coverage) => {
     const google = ((coverage || {}).providers || {}).google_cse || {};
     const official = ((coverage || {}).providers || {}).official_feed || {};
@@ -270,7 +355,9 @@
         ${providerPill(coverage, "sec_edgar")}
         ${providerPill(coverage, "federal_reserve")}
         ${providerPill(coverage, "eia_press")}
-        <div class="subline">${esc(conclude.reason || coverage.note || "")} ${esc(evidence.detail || "摘录不支持是不形成方向的原因子集，三项不是互斥总数。")} 只影响事件观察，不影响价格、盈利或宏观利率。</div>
+        ${providerPill(coverage, "alpha_vantage_earnings")}
+        ${renderEarningsOverview(coverage.earnings_coverage || {})}
+        <div class="subline">${esc(conclude.reason || coverage.note || "")} ${esc(evidence.detail || "摘录不支持是不形成方向的原因子集，三项不是互斥总数。")} 只影响事件观察，不影响价格、盈利或宏观利率。宏观信息不复制到全部个股。</div>
       </div>`,
       googleStatus: status,
       dataMode: mode
@@ -286,8 +373,12 @@
     const conflicts = analysis.conflict_count || 0;
     const closed = analysis.closed_loop === true;
     const lastFetch = withheld.last_fetched_at || gap.last_fetched_at || "";
+    const lastSuccess = (analysis.earnings_evidence || {}).last_success_at || gap.last_success_at || lastFetch;
+    const nextRetry = (analysis.earnings_evidence || {}).next_retry_at || gap.next_retry_at || "";
     const reasonCode = withheld.primary_reason || gap.primary_reason || "";
-    const fetchNote = lastFetch ? ` 最后抓取：${esc(lastFetch)}。` : " 暂无成功抓取记录。";
+    const fetchNote = lastSuccess
+      ? ` 上次成功：${esc(lastSuccess)}。${nextRetry ? `下次重试：${esc(nextRetry)}。` : ""}`
+      : " 暂无成功抓取记录。";
     const filingItems = [...new Set((event.sources || []).flatMap((row) => row.filing_items || []))];
     const filingNote = filingItems.length
       ? `<p class="subline" data-filing-items="1">申报栏目（发现/元数据，不是正文事实）：${esc(filingItems.join("；"))}</p>`
@@ -299,7 +390,7 @@
       ? ""
       : factOnly
         ? `<p class="subline" data-closed-loop="0" data-filing-fact-only="1" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode || "baseline_missing")}" data-last-fetch-at="${esc(lastFetch)}">已获得官方正文事实；缺少可比较基准/传导规则，因此不形成方向。${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 当前仅作为事实展示；在基准与传导规则补齐前，不纳入方向判断，也不影响其他事件的正常分析。</p>`
-        : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}">证据不足，不形成方向。${esc(withheld.reason || "")}${reasonCode ? ` 缺失原因：${esc(reasonCode)}。` : ""}${fetchNote} 本事件不形成方向，也不阻断其他事件的正常分析。</p>`;
+        : `<p class="subline" data-closed-loop="0" data-unsupported="${analysis.unsupported ? "1" : "0"}" data-withhold-reason="${esc(reasonCode)}" data-last-fetch-at="${esc(lastFetch)}" data-last-success-at="${esc(lastSuccess)}" data-next-retry-at="${esc(nextRetry)}">${reasonCode ? `本链不能形成完整结论，缺 ${esc(reasonCode)}。` : "本链不能形成完整结论。"}${esc(withheld.reason || "")}${fetchNote} 本事件不形成方向，也不阻断其他事件的正常分析。</p>`;
     return `<article class="event-card" data-event-id="${esc(event.event_id)}" data-event-type="${esc(event.event_type)}" data-event-status="${esc(event.status)}" data-conflict-count="${esc(conflicts)}" data-closed-loop="${closed ? "1" : "0"}" data-filing-fact-only="${factOnly ? "1" : "0"}" data-can-form-direction="${analysis.can_form_direction === true ? "1" : "0"}">
       <header class="event-card-head">
         <h3>${esc(event.canonical_title)}</h3>
@@ -371,15 +462,16 @@
   const renderStock = (payload) => {
     const events = payload.events || [];
     const risk = payload.risk_state;
+    const healthHtml = renderSymbolHealth(payload.earnings_health || {});
     const riskHtml = risk ? `<aside class="vix-risk" data-vix-role="${esc(risk.role)}">
       <strong>VIX 风险确认</strong>
       <span>${esc(risk.canonical_title || "")}</span>
       <div class="subline">${esc(risk.does_not_imply)}。${refsHtml(risk.evidence_refs)}</div>
     </aside>` : "";
     if (!events.length) {
-      return `${riskHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
+      return `${healthHtml}${riskHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
     }
-    return riskHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
+    return healthHtml + riskHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
   };
 
   window.StockPmEvents = {

@@ -12,6 +12,7 @@ from stock_pm.events.av_earnings import (
     parse_av_earnings,
     parse_av_estimates,
     pick_sec_8k_url,
+    reset_earnings_runtime,
     reset_sec_atom_cache,
 )
 from stock_pm.events.dedupe import build_events
@@ -45,8 +46,7 @@ FROZEN = Path(__file__).resolve().parents[1] / "src/stock_pm/data/events_5c_b_fr
 
 
 def setup_function() -> None:
-    reset_earnings_registry()
-    reset_sec_atom_cache()
+    reset_earnings_runtime()
 
 
 def _closed(docs):
@@ -268,13 +268,14 @@ def test_malicious_transcript_is_stripped():
     assert "buy rating" not in text.lower()
 
 
-def test_provider_failure_uses_cache_or_stays_empty(monkeypatch):
+def test_provider_failure_uses_cache_or_stays_empty(monkeypatch, tmp_path):
     calls = {"n": 0}
 
     def boom(*_args, **_kwargs):
         calls["n"] += 1
         raise FetchError("query_error", "upstream request failed")
 
+    monkeypatch.setenv("STOCK_PM_CACHE_DIR", str(tmp_path))
     monkeypatch.setattr("stock_pm.events.av_earnings.fetch_av_function", boom)
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
@@ -362,7 +363,9 @@ def test_ui_shows_actual_prior_consensus_and_degraded_copy():
     assert "data-sec-association" in ui
     assert "data-can-form-direction" in ui
     assert "本链缺失" in ui
-    assert "只降级本事件，不阻断其他事件" in ui
+    assert "只降级本标的本财报链" in ui
+    assert "data-earnings-coverage" in ui
+    assert "data-earnings-symbol-health" in ui
 
 
 def test_sec_8k_match_requires_unique_same_day_current_filing():
@@ -536,9 +539,10 @@ def test_discover_invokes_all_three_av_endpoints(monkeypatch):
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
     monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "30")
     from stock_pm.config import Settings
 
-    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    docs = AvEarningsProvider(Settings(events_mode="empty", earnings_av_budget=30)).discover()
     assert "EARNINGS" in calls
     assert "EARNINGS_ESTIMATES" in calls
     assert "EARNINGS_CALL_TRANSCRIPT" in calls
@@ -563,9 +567,10 @@ def test_estimates_failure_does_not_drop_earnings_print(monkeypatch):
     monkeypatch.setattr("stock_pm.events.av_earnings._key", lambda settings=None: "configured")
     monkeypatch.setenv("STOCK_PM_EARNINGS_LIVE", "1")
     monkeypatch.setenv("STOCK_PM_EVENTS_MODE", "empty")
+    monkeypatch.setenv("STOCK_PM_EARNINGS_BUDGET", "30")
     from stock_pm.config import Settings
 
-    docs = AvEarningsProvider(Settings(events_mode="empty")).discover()
+    docs = AvEarningsProvider(Settings(events_mode="empty", earnings_av_budget=30)).discover()
     assert docs
 
 

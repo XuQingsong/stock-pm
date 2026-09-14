@@ -1,0 +1,330 @@
+{
+  "audit_id": "events_5c_c_frozen_earnings",
+  "data_class": "frozen_provider_audit",
+  "live": false,
+  "not_production_live": true,
+  "phase": "5C-C",
+  "note": "Frozen multi-symbol acceptance matrix. Not live runtime evidence. Not official_fact. Fixture success is not production coverage.",
+  "fetched_at": "2026-09-13T12:00:00+00:00",
+  "health": {
+    "AAPL": {
+      "scenario": "complete",
+      "source": "frozen"
+    },
+    "NVDA": {
+      "scenario": "complete",
+      "source": "frozen"
+    },
+    "XOM": {
+      "scenario": "partial",
+      "source": "frozen",
+      "missing": [
+        "prior"
+      ]
+    },
+    "JPM": {
+      "scenario": "cache_fallback",
+      "source": "cache",
+      "reason_code": "rate_limited"
+    },
+    "NOK": {
+      "scenario": "partial",
+      "source": "frozen",
+      "missing": [
+        "consensus"
+      ]
+    },
+    "QQQ": {
+      "scenario": "unsupported",
+      "asset_class": "etf",
+      "reason_code": "unsupported",
+      "supported": false
+    }
+  },
+  "symbols": [
+    {
+      "symbol": "AAPL",
+      "scenario": "complete",
+      "av_earnings": {
+        "symbol": "AAPL",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=AAPL",
+        "quarterlyEarnings": [
+          {
+            "fiscalDateEnding": "2026-06-30",
+            "reportedDate": "2026-07-30",
+            "reportedEPS": "2.02",
+            "estimatedEPS": "1.88",
+            "surprise": "0.14",
+            "surprisePercentage": "7.4468",
+            "reportTime": "post-market"
+          },
+          {
+            "fiscalDateEnding": "2026-03-31",
+            "reportedDate": "2026-04-30",
+            "reportedEPS": "2.01",
+            "estimatedEPS": "1.94",
+            "surprise": "0.07",
+            "surprisePercentage": "3.6082",
+            "reportTime": "post-market"
+          },
+          {
+            "fiscalDateEnding": "2025-12-31",
+            "reportedDate": "2026-01-29",
+            "reportedEPS": "2.84",
+            "estimatedEPS": "2.67",
+            "surprise": "0.17",
+            "surprisePercentage": "6.367",
+            "reportTime": "post-market"
+          },
+          {
+            "fiscalDateEnding": "2025-09-30",
+            "reportedDate": "2025-10-30",
+            "reportedEPS": "1.85",
+            "estimatedEPS": "1.77",
+            "surprise": "0.08",
+            "surprisePercentage": "4.5198",
+            "reportTime": "post-market"
+          },
+          {
+            "fiscalDateEnding": "2025-06-30",
+            "reportedDate": "2025-07-31",
+            "reportedEPS": "1.57",
+            "estimatedEPS": "1.43",
+            "surprise": "0.14",
+            "surprisePercentage": "9.7902",
+            "reportTime": "post-market"
+          },
+          {
+            "fiscalDateEnding": "2025-03-31",
+            "reportedDate": "2025-05-01",
+            "reportedEPS": "1.65",
+            "estimatedEPS": "1.62",
+            "surprise": "0.03",
+            "surprisePercentage": "1.8519",
+            "reportTime": "post-market"
+          }
+        ]
+      },
+      "av_estimates": {
+        "symbol": "AAPL",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=AAPL",
+        "estimates": [
+          {
+            "date": "2026-09-30",
+            "horizon": "next fiscal quarter",
+            "eps_estimate_average": "1.90"
+          }
+        ]
+      },
+      "av_transcript": {
+        "symbol": "AAPL",
+        "quarter": "2026Q3",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3",
+        "excerpts": [
+          {
+            "speaker": "Tim Cook",
+            "title": "Chief Executive Officer",
+            "content": "Today, Apple is pleased to report a June quarter record. iPhone revenue grew from a year ago.",
+            "quarter": "2026Q3",
+            "symbol": "AAPL",
+            "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=AAPL&quarter=2026Q3"
+          }
+        ]
+      },
+      "sec_filing": {
+        "symbol": "AAPL",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+        "role": "filing_metadata"
+      }
+    },
+    {
+      "symbol": "NVDA",
+      "scenario": "complete",
+      "av_earnings": {
+        "symbol": "NVDA",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=NVDA",
+        "quarterlyEarnings": [
+          {
+            "fiscalDateEnding": "2025-04-27",
+            "reportedDate": "2025-05-28",
+            "reportedEPS": "0.81",
+            "estimatedEPS": "0.86",
+            "reportTime": "after-hours"
+          },
+          {
+            "fiscalDateEnding": "2024-04-28",
+            "reportedDate": "2024-05-22",
+            "reportedEPS": "0.68",
+            "estimatedEPS": "0.55",
+            "reportTime": "after-hours"
+          }
+        ]
+      },
+      "av_estimates": {
+        "symbol": "NVDA",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=NVDA",
+        "estimates": [
+          {
+            "date": "2025-07-27",
+            "horizon": "next fiscal quarter",
+            "eps_estimate_average": "0.95"
+          }
+        ]
+      },
+      "av_transcript": {
+        "symbol": "NVDA",
+        "quarter": "2026Q1",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=NVDA&quarter=2026Q1",
+        "excerpts": [
+          {
+            "speaker": "Jensen Huang",
+            "title": "Chief Executive Officer",
+            "content": "Data center demand remained strong, but the print is below the vendor consensus used at publication.",
+            "quarter": "2026Q1",
+            "symbol": "NVDA",
+            "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=NVDA&quarter=2026Q1"
+          }
+        ]
+      },
+      "sec_filing": {}
+    },
+    {
+      "symbol": "XOM",
+      "scenario": "partial",
+      "av_earnings": {
+        "symbol": "XOM",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=XOM",
+        "quarterlyEarnings": [
+          {
+            "fiscalDateEnding": "2025-06-30",
+            "reportedDate": "2025-08-01",
+            "reportedEPS": "1.64",
+            "estimatedEPS": "1.55",
+            "reportTime": "before-open"
+          }
+        ]
+      },
+      "av_estimates": {
+        "symbol": "XOM",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=XOM",
+        "estimates": [
+          {
+            "date": "2025-09-30",
+            "horizon": "next fiscal quarter",
+            "eps_estimate_average": "1.60"
+          }
+        ]
+      },
+      "av_transcript": {
+        "symbol": "XOM",
+        "quarter": "2025Q2",
+        "excerpts": []
+      },
+      "sec_filing": {}
+    },
+    {
+      "symbol": "JPM",
+      "scenario": "cache_fallback",
+      "av_earnings": {
+        "symbol": "JPM",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=JPM",
+        "quarterlyEarnings": [
+          {
+            "fiscalDateEnding": "2025-06-30",
+            "reportedDate": "2025-07-15",
+            "reportedEPS": "4.24",
+            "estimatedEPS": "4.00",
+            "reportTime": "before-open"
+          },
+          {
+            "fiscalDateEnding": "2024-06-30",
+            "reportedDate": "2024-07-12",
+            "reportedEPS": "4.40",
+            "estimatedEPS": "4.10",
+            "reportTime": "before-open"
+          }
+        ]
+      },
+      "av_estimates": {
+        "symbol": "JPM",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS_ESTIMATES&symbol=JPM",
+        "estimates": [
+          {
+            "date": "2025-09-30",
+            "horizon": "next fiscal quarter",
+            "eps_estimate_average": "4.10"
+          }
+        ]
+      },
+      "av_transcript": {
+        "symbol": "JPM",
+        "quarter": "2025Q2",
+        "excerpts": [
+          {
+            "speaker": "Jamie Dimon",
+            "title": "Chief Executive Officer",
+            "content": "Net interest income remained resilient even as the year-ago comparison is tougher.",
+            "quarter": "2025Q2",
+            "symbol": "JPM",
+            "source_url": "https://www.alphavantage.co/query?function=EARNINGS_CALL_TRANSCRIPT&symbol=JPM&quarter=2025Q2"
+          }
+        ]
+      },
+      "sec_filing": {}
+    },
+    {
+      "symbol": "NOK",
+      "scenario": "partial",
+      "av_earnings": {
+        "symbol": "NOK",
+        "http_source": "https://www.alphavantage.co/query?function=EARNINGS&symbol=NOK",
+        "quarterlyEarnings": [
+          {
+            "fiscalDateEnding": "2025-06-30",
+            "reportedDate": "2025-07-24",
+            "reportedEPS": "0.09",
+            "estimatedEPS": ".",
+            "reportTime": "before-open"
+          },
+          {
+            "fiscalDateEnding": "2024-06-30",
+            "reportedDate": "2024-07-18",
+            "reportedEPS": "0.11",
+            "estimatedEPS": ".",
+            "reportTime": "before-open"
+          }
+        ]
+      },
+      "av_estimates": {
+        "symbol": "NOK",
+        "estimates": []
+      },
+      "av_transcript": {
+        "symbol": "NOK",
+        "quarter": "2025Q2",
+        "excerpts": []
+      },
+      "sec_filing": {}
+    }
+  ],
+  "before": {
+    "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 0,
+    "note": "Coverage expands the 5C-B sample. Direction stays withheld."
+  },
+  "after": {
+    "valid_conclusion_count": 0,
+    "earnings_chain_complete_count": 3,
+    "withheld_count": 5,
+    "gained_valid_event_ids": [],
+    "price_direction": "withheld",
+    "implications": {
+      "AAPL": "beat_and_grow",
+      "NVDA": "miss_but_grow",
+      "XOM": null,
+      "JPM": "beat_but_contract",
+      "NOK": null
+    }
+  },
+  "integrity_sha256": "968717341f7cc78e3dd5e0ce2ef3ed40c92318bdea77febd73bb43ef8c9f9ac4"
+}
