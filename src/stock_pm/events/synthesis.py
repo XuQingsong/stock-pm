@@ -1140,6 +1140,7 @@ def synthesize_drivers(
     wanted = [item.upper() for item in (symbols or SYNTHESIS_SYMBOLS)]
     missing_src = [row for row in chains if row.get("status") != "ok"]
     clock = evaluation_date(now)
+    vix_ok = [row for row in chains if _is_vix(row)]
     market = build_scope_synthesis(chains, scope="market", missing_chains=missing_src, now=clock)
     industries: list[dict[str, Any]] = []
     for industry in ("semis", "energy", "banks"):
@@ -1151,7 +1152,7 @@ def synthesize_drivers(
             continue
         industries.append(
             build_scope_synthesis(
-                mapped,
+                [*mapped, *vix_ok],
                 scope="industry",
                 target=industry,
                 missing_chains=missing_src,
@@ -1164,7 +1165,7 @@ def synthesize_drivers(
         if not mapped:
             continue
         stocks[symbol] = build_scope_synthesis(
-            mapped,
+            [*mapped, *vix_ok],
             scope="stock",
             target=symbol,
             missing_chains=missing_src,

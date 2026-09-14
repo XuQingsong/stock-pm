@@ -6,6 +6,7 @@ from stock_pm.config import Settings
 from stock_pm.events.analyze import analyze_event
 from stock_pm.events.macro_chain import (
     LAYER_KINDS,
+    apply_macro_chain_inject,
     apply_macro_inject,
     build_event_macro_chain,
     build_market_macro_chains,
@@ -525,3 +526,14 @@ def test_same_day_events_keep_distinct_ids_and_updates_reuse_id():
     updated = build_event_macro_chain(first, first.analysis)
     assert updated["chain_id"] == id_a
     assert "刷新同一制裁事件" in _layer(updated, "change")["text"]
+
+
+def test_production_chain_inject_is_gated(monkeypatch):
+    monkeypatch.delenv("ENABLE_DECISION_INJECT", raising=False)
+    monkeypatch.setenv("APP_ENV", "production")
+    chains = build_market_macro_chains(facts=[_fact(), _nfp()], events=[], inject="vix_only")
+    ok = {row["metric"] for row in chains if row.get("status") == "ok"}
+    assert "cpi" in ok
+    assert "nfp" in ok
+    bypassed = apply_macro_chain_inject(chains, "vix_only")
+    assert {row["metric"] for row in bypassed if row.get("status") == "ok"} >= {"cpi", "nfp"}
