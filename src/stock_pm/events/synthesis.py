@@ -9,6 +9,7 @@ sets direction. can_form_direction stays false.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from .exposure import why_relevant
@@ -97,6 +98,38 @@ CONFIDENCE_RANK = {
     "medium": 2,
     "high": 3,
 }
+METRIC_EVENT_TYPE = {
+    "cpi": "inflation_employment",
+    "core_cpi": "inflation_employment",
+    "nfp": "inflation_employment",
+    "us2y": "central_bank_rates",
+    "vix": "vix_risk",
+    "wti": "energy_supply",
+    "oil": "energy_supply",
+    "broad_usd_proxy": "fx_usd",
+    "credit": "sovereign_or_corporate_debt",
+    "war_sanctions": "war_sanctions",
+    "energy_supply": "energy_supply",
+    "inflation_employment": "inflation_employment",
+    "policy_rate": "central_bank_rates",
+}
+# Monthly official prints vs daily market series vs event documents.
+FRESHNESS_WINDOWS = {
+    "cpi": 45,
+    "core_cpi": 45,
+    "nfp": 45,
+    "inflation_employment": 45,
+    "us2y": 7,
+    "vix": 7,
+    "wti": 7,
+    "oil": 7,
+    "broad_usd_proxy": 7,
+    "policy_rate": 14,
+    "credit": 30,
+    "war_sanctions": 30,
+    "energy_supply": 14,
+}
+DAILY_METRICS = frozenset({"us2y", "vix", "wti", "oil", "broad_usd_proxy"})
 
 
 def _layer(chain: dict[str, Any], name: str) -> dict[str, Any]:
@@ -222,9 +255,38 @@ def _period(chain: dict[str, Any]) -> str:
     return str(chain.get("period") or "")[:10]
 
 
-def _fresh(chain: dict[str, Any], latest: str) -> bool:
-    stamp = _period(chain)
-    return bool(stamp and latest and stamp >= latest)
+def _as_date(value: Any) -> date | None:
+    text = str(value or "").strip()[:10]
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def freshness_window_days(chain: dict[str, Any]) -> int:
+    metric = str(chain.get("metric") or "")
+    return int(FRESHNESS_WINDOWS.get(metric, 30))
+
+
+def reference_now(chains: list[dict[str, Any]], now: date | None = None) -> date:
+    if now is not None:
+        return now
+    daily = [_as_date(_period(row)) for row in chains if str(row.get("metric") or "") in DAILY_METRICS]
+    daily = [item for item in daily if item]
+    if daily:
+        return max(daily)
+    stamps = [_as_date(_period(row)) for row in chains]
+    stamps = [item for item in stamps if item]
+    return max(stamps) if stamps else date.today()
+
+
+def is_fresh(chain: dict[str, Any], *, now: date) -> bool:
+    stamp = _as_date(_period(chain) or chain.get("as_of"))
+    if stamp is None:
+        return False
+    return (now - stamp).days <= freshness_window_days(chain)
 
 
 def _complete(chain: dict[str, Any]) -> bool:
@@ -276,32 +338,44 @@ def _confidence(
     duplicates: int,
     vix_only: bool,
     insufficient: bool,
+    stale_metrics: list[str] | None = None,
 ) -> dict[str, Any]:
+    stale = [item for item in (stale_metrics or []) if item]
     if insufficient or vix_only or independent_facts <= 0:
         label = "insufficient"
         why = "没有足够的独立方向链形成综合判断；VIX 不计入方向票"
     elif conflict:
         label = "limited"
         why = "独立渠道出现反证/信号冲突，按反证降低置信度，不作多数表决或分数平均"
-    elif confirmed and independent_facts >= 3 and channel_kinds >= 2 and complete:
-        label = "medium" if not fresh else "medium"
+    elif confirmed and independent_facts >= 2 and channel_kinds >= 2 and complete and fresh:
+        label = "medium"
         why = (
             f"{independent_facts} 条独立事实、{channel_kinds} 个独立渠道同向确认，"
-            f"证据完整{'且新鲜' if fresh else ''}；同一事实衍生链已去重 {duplicates} 条，VIX 未计入方向"
+            f"证据完整且按指标窗口新鲜；同一事实衍生链已去重 {duplicates} 条，VIX 未计入方向"
+        )
+    elif confirmed and independent_facts >= 2 and channel_kinds >= 2 and complete and not fresh:
+        label = "limited"
+        why = (
+            f"{independent_facts} 条独立事实已同向确认，但 "
+            + ("、".join(stale) or "部分驱动")
+            + " 超出指标新鲜窗口，置信度低于新鲜同向确认，不作分数平均上修"
         )
     elif confirmed and independent_facts >= 2 and channel_kinds >= 2:
-        label = "medium"
-        why = f"{independent_facts} 条独立事实、{channel_kinds} 个独立渠道同向确认；禁止把同一事实重复计票（已折叠 {duplicates}）"
+        label = "limited" if not fresh else "medium"
+        why = (
+            f"{independent_facts} 条独立事实、{channel_kinds} 个独立渠道同向确认；禁止把同一事实重复计票（已折叠 {duplicates}）"
+            + ("。关键证据过期，置信度低于新鲜确认" if not fresh else "")
+        )
     elif independent_facts == 1:
         label = "limited"
-        why = "仅一条独立方向事实，没有第二独立渠道确认，置信度有限"
+        why = "仅一条独立方向事实，同一 fact_key 的不同口径不得算作第二渠道确认"
     else:
         label = "limited"
         why = "有多于一条事实但渠道未形成同向确认，也不把票数相加升级"
-    if conflict and confirmed:
-        # conflict always wins over confirmation
+    if conflict:
         label = "limited"
-        why = "同主题内同时存在确认与反证，以冲突为准降低置信度，两侧证据都保留"
+        if "冲突" not in why:
+            why = "同主题内同时存在确认与反证，以冲突为准降低置信度，两侧证据都保留"
     return {
         "label": label,
         "rank": CONFIDENCE_RANK[label],
@@ -313,6 +387,8 @@ def _confidence(
         "conflict": conflict,
         "complete": complete,
         "fresh": fresh,
+        "stale_metrics": stale,
+        "freshness_policy": "metric_window",
         "vix_counted_as_direction": False,
         "majority_vote": False,
         "score_average": False,
@@ -333,37 +409,82 @@ def _missing_row(chain: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _theme_state(theme: str, chains: list[dict[str, Any]], *, latest: str) -> dict[str, Any]:
+def _collapse_by_fact_key(drivers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in drivers:
+        grouped.setdefault(str(row["fact_key"]), []).append(row)
+    collapsed: list[dict[str, Any]] = []
+    for key, rows in grouped.items():
+        polarities = [str(row.get("polarity") or "present") for row in rows]
+        if "pressure" in polarities and "relief" in polarities:
+            polarity = "mixed"
+        else:
+            polarity = polarities[0]
+        collapsed.append({
+            "fact_key": key,
+            "polarity": polarity,
+            "channel_kind": rows[0].get("channel_kind"),
+            "channel_kinds": list(dict.fromkeys(row.get("channel_kind") for row in rows)),
+            "rows": rows,
+        })
+    return collapsed
+
+
+def _scope_relevance_score(
+    rows: list[dict[str, Any]],
+    *,
+    scope: str,
+    target: str | None,
+) -> int:
+    if scope == "stock" and target:
+        return sum(1 for row in rows if chain_relevant_to_stock(row, target))
+    if scope == "industry" and target:
+        return sum(1 for row in rows if chain_relevant_to_industry(row, target))
+    seen: set[str] = set()
+    for row in rows:
+        for exp in row.get("exposures") or []:
+            symbol = str(exp.get("symbol") or "").upper()
+            if symbol:
+                seen.add(symbol)
+    return len(seen)
+
+
+def _theme_state(
+    theme: str,
+    chains: list[dict[str, Any]],
+    *,
+    now: date,
+    scope: str = "market",
+    target: str | None = None,
+) -> dict[str, Any]:
     rows = [row for row in chains if _theme(row) == theme]
     drivers = [_driver_row(row) for row in rows]
-    keys = [row["fact_key"] for row in drivers]
-    unique_keys = list(dict.fromkeys(keys))
-    duplicates = max(0, len(keys) - len(unique_keys))
-    kinds = list(dict.fromkeys(row["channel_kind"] for row in drivers))
+    for driver, chain in zip(drivers, rows):
+        driver["fresh"] = is_fresh(chain, now=now)
+        driver["freshness_window_days"] = freshness_window_days(chain)
+    collapsed = _collapse_by_fact_key(drivers)
+    unique_keys = [row["fact_key"] for row in collapsed]
+    duplicates = max(0, len(drivers) - len(unique_keys))
+    kinds = list(dict.fromkeys(row["channel_kind"] for row in collapsed))
     by_polarity: dict[str, list[dict[str, Any]]] = {}
-    for row in drivers:
-        by_polarity.setdefault(str(row["polarity"] or "present"), []).append(row)
-    pressure_kinds = {row["channel_kind"] for row in by_polarity.get("pressure", [])}
-    relief_kinds = {row["channel_kind"] for row in by_polarity.get("relief", [])}
-    conflict = bool(pressure_kinds and relief_kinds)
-    confirmed = (not conflict) and (
-        len(pressure_kinds) >= 2 or len(relief_kinds) >= 2 or (len(unique_keys) >= 2 and len(kinds) >= 2 and not conflict)
-    )
-    if theme in {"credit", "geopolitics", "fx"} and unique_keys and not conflict:
-        confirmed = len(unique_keys) >= 1 and len(kinds) >= 1 and not (pressure_kinds and relief_kinds)
-        if theme == "fx":
-            confirmed = len(pressure_kinds) >= 1 or len(relief_kinds) >= 1
+    for item in collapsed:
+        by_polarity.setdefault(str(item["polarity"] or "present"), []).append(item)
+    pressure_facts = by_polarity.get("pressure", [])
+    relief_facts = by_polarity.get("relief", [])
+    conflict = bool(pressure_facts and relief_facts)
+    confirmed = (not conflict) and (len(pressure_facts) >= 2 or len(relief_facts) >= 2)
     net_polarity = None
     if conflict:
         net_polarity = "conflict"
-    elif pressure_kinds and not relief_kinds:
+    elif pressure_facts and not relief_facts:
         net_polarity = "pressure"
-    elif relief_kinds and not pressure_kinds:
+    elif relief_facts and not pressure_facts:
         net_polarity = "relief"
     elif by_polarity.get("present"):
         net_polarity = "present"
     complete = all(_complete(row) for row in rows) if rows else False
-    fresh = all(_fresh(row, latest) for row in rows) if rows else False
+    fresh = all(bool(row.get("fresh")) for row in drivers) if drivers else False
+    stale_metrics = sorted({str(row["metric"]) for row in drivers if not row.get("fresh")})
     confirmations = []
     contradictions = []
     if confirmed and net_polarity in {"pressure", "relief"}:
@@ -381,8 +502,8 @@ def _theme_state(theme: str, chains: list[dict[str, Any]], *, latest: str) -> di
             "evidence_refs": _safe_refs([ref for row in drivers for ref in row["evidence_refs"]]),
         })
     if conflict:
-        pressure_metrics = sorted({str(row["metric"]) for row in by_polarity.get("pressure", [])})
-        relief_metrics = sorted({str(row["metric"]) for row in by_polarity.get("relief", [])})
+        pressure_metrics = sorted({str(row["metric"]) for item in pressure_facts for row in item["rows"]})
+        relief_metrics = sorted({str(row["metric"]) for item in relief_facts for row in item["rows"]})
         contradictions.append({
             "theme": theme,
             "text": (
@@ -390,8 +511,8 @@ def _theme_state(theme: str, chains: list[dict[str, Any]], *, latest: str) -> di
                 f"置信度低于同向确认情形；两侧证据均保留，不作多数表决"
             ),
             "sides": [
-                {"polarity": "pressure", "metrics": pressure_metrics, "chain_ids": [row["chain_id"] for row in by_polarity.get("pressure", [])]},
-                {"polarity": "relief", "metrics": relief_metrics, "chain_ids": [row["chain_id"] for row in by_polarity.get("relief", [])]},
+                {"polarity": "pressure", "metrics": pressure_metrics, "chain_ids": [row["chain_id"] for item in pressure_facts for row in item["rows"]]},
+                {"polarity": "relief", "metrics": relief_metrics, "chain_ids": [row["chain_id"] for item in relief_facts for row in item["rows"]]},
             ],
             "chain_ids": [row["chain_id"] for row in drivers],
             "evidence_refs": _safe_refs([ref for row in drivers for ref in row["evidence_refs"]]),
@@ -410,7 +531,10 @@ def _theme_state(theme: str, chains: list[dict[str, Any]], *, latest: str) -> di
         "conflict": conflict,
         "complete": complete,
         "fresh": fresh,
+        "stale_metrics": stale_metrics,
         "chain_ids": [row.get("chain_id") for row in rows],
+        "scope_relevance": (scope_relevance := _scope_relevance_score(rows, scope=scope, target=target)),
+        "scope_relevant": scope_relevance > 0,
     }
 
 
@@ -419,16 +543,33 @@ def _sort_themes(states: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     def key(row: dict[str, Any]) -> tuple:
         if row["theme"] == "risk":
-            return (9, 9, 0)
-        # Rates/energy stay visible even when they conflict; do not hide them
-        # behind a confirmed FX or credit sidecar.
-        return (
-            theme_priority.get(row["theme"], 5),
-            0 if (row["confirmed"] or row["conflict"]) else 1,
-            -int(row["independent_fact_count"]),
-        )
+            return (9, 9, 9, 0, 9)
+        status = 0 if row["conflict"] else 1 if row["confirmed"] else 2
+        complete = 0 if row["complete"] else 1
+        fresh = 0 if row["fresh"] else 1
+        relevance = -int(row.get("scope_relevance") or 0)
+        return (status, complete, fresh, relevance, theme_priority.get(row["theme"], 5))
 
     return sorted(states, key=key)
+
+
+def _select_top_themes(states: list[dict[str, Any]], *, limit: int = 3) -> list[dict[str, Any]]:
+    ranked = _sort_themes(states)
+    top = ranked[:limit]
+    for row in ranked[limit:]:
+        if not row.get("conflict"):
+            continue
+        if any(item.get("theme") == row["theme"] for item in top):
+            continue
+        replace_at = next(
+            (idx for idx in range(len(top) - 1, -1, -1) if not top[idx]["conflict"] and not top[idx]["confirmed"]),
+            None,
+        )
+        if replace_at is not None:
+            top[replace_at] = row
+        else:
+            top.append(row)
+    return top
 
 
 def _rates_net_text(state: dict[str, Any]) -> tuple[str, str]:
@@ -714,50 +855,144 @@ def _why_industry(industry: str, chains: list[dict[str, Any]]) -> str:
     return f"{label} 仅纳入已验证渠道（{metrics}），不把市场综合结论机械复制到无关行业"
 
 
+def _event_type_for(chain: dict[str, Any]) -> str:
+    return str(chain.get("event_type") or METRIC_EVENT_TYPE.get(str(chain.get("metric") or "")) or "")
+
+
+def _stub_event(chain: dict[str, Any]) -> TrustedEvent | None:
+    event_type = _event_type_for(chain)
+    if not event_type or event_type == "vix_risk":
+        return None
+    return TrustedEvent(
+        event_id=str(chain.get("event_id") or chain.get("chain_id") or event_type),
+        canonical_title=str(chain.get("metric") or event_type),
+        event_type=event_type,
+        entities=[],
+        countries=[],
+        event_time=None,
+        published_at=None,
+        first_seen_at="",
+        updated_at="",
+        sources=[],
+        claims=[],
+        dedupe_group=str(chain.get("chain_id") or event_type),
+        status="active",
+        freshness="fresh",
+        severity="medium",
+        scope="market",
+        duration=None,
+        invalidation=None,
+    )
+
+
+def chain_relevant_to_stock(chain: dict[str, Any], symbol: str) -> bool:
+    wanted = symbol.upper()
+    for row in chain.get("exposures") or []:
+        if str(row.get("symbol") or "").upper() == wanted:
+            return True
+    if stock_macro_chains([chain], wanted):
+        return True
+    stub = _stub_event(chain)
+    return bool(stub and why_relevant(stub, wanted))
+
+
+def chain_relevant_to_industry(chain: dict[str, Any], industry: str) -> bool:
+    if industry in _industry_of_chain(chain):
+        return True
+    return any(chain_relevant_to_stock(chain, symbol) for symbol in INDUSTRY_SYMBOLS.get(industry, ()))
+
+
+def filter_missing_chains(
+    missing_chains: list[dict[str, Any]],
+    *,
+    scope: str,
+    target: str | None = None,
+) -> list[dict[str, Any]]:
+    rows = [row for row in missing_chains if row.get("status") != "ok"]
+    if scope == "market" or not target:
+        return rows
+    if scope == "stock":
+        return [row for row in rows if chain_relevant_to_stock(row, target)]
+    if scope == "industry":
+        return [row for row in rows if chain_relevant_to_industry(row, target)]
+    return []
+
+
+def _included_chains(chains: list[dict[str, Any]], top: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    wanted = {chain_id for row in top for chain_id in (row.get("chain_ids") or [])}
+    return [row for row in chains if row.get("chain_id") in wanted]
+
+
+def impact_stocks(scope: str, target: str | None, chains: list[dict[str, Any]]) -> list[str]:
+    if scope == "stock" and target:
+        return [target.upper()]
+    symbols: list[str] = []
+    for chain in chains:
+        for row in chain.get("exposures") or []:
+            symbol = str(row.get("symbol") or "").upper()
+            if not symbol:
+                continue
+            channel = str(row.get("channel") or "")
+            if scope == "industry" and target:
+                allowed = INDUSTRY_CHANNELS.get(target, frozenset())
+                if channel and channel not in allowed:
+                    continue
+                if symbol not in INDUSTRY_SYMBOLS.get(target, ()):
+                    continue
+            symbols.append(symbol)
+    return list(dict.fromkeys(symbols))
+
+
+def _impact_industries(scope: str, target: str | None, chains: list[dict[str, Any]]) -> list[str]:
+    if scope == "industry" and target:
+        return [target]
+    found: list[str] = []
+    for chain in chains:
+        for industry in sorted(_industry_of_chain(chain)):
+            found.append(industry)
+    return list(dict.fromkeys(found))
+
+
 def build_scope_synthesis(
     chains: list[dict[str, Any]],
     *,
     scope: str,
     target: str | None = None,
     missing_chains: list[dict[str, Any]] | None = None,
+    now: date | None = None,
 ) -> dict[str, Any]:
     ok = [row for row in chains if row.get("status") == "ok"]
     directional = [row for row in ok if _is_directional_ok(row)]
     vix_ok = [row for row in ok if _is_vix(row)]
-    missing = [_missing_row(row) for row in (missing_chains or []) if row.get("status") != "ok"]
-    latest = max((_period(row) for row in ok if _period(row)), default="")
+    scoped_missing_src = filter_missing_chains(list(missing_chains or []), scope=scope, target=target)
+    missing = [_missing_row(row) for row in scoped_missing_src]
+    clock = reference_now(ok + scoped_missing_src, now)
     theme_names = list(dict.fromkeys(_theme(row) for row in directional))
-    states = _sort_themes([_theme_state(name, directional, latest=latest) for name in theme_names if name in DIRECTIONAL_THEMES])
-    top = states[:3]
+    states = [
+        _theme_state(name, directional, now=clock, scope=scope, target=target)
+        for name in theme_names
+        if name in DIRECTIONAL_THEMES
+    ]
+    top = _select_top_themes(states)
+    included = _included_chains(directional, top)
     vix_only = bool(vix_ok) and not directional
     insufficient = not directional
     net = _net_for_states(top, vix_only=vix_only, missing=missing)
+    stale_metrics = sorted({metric for row in top for metric in row.get("stale_metrics") or []})
     if top:
         lead = top[0]
         confidence = _confidence(
-            independent_facts=sum(row["independent_fact_count"] for row in top),
-            channel_kinds=len({kind for row in top for kind in {d["channel_kind"] for d in row["drivers"]}}),
-            confirmed=any(row["confirmed"] for row in top) and not any(row["conflict"] for row in top),
-            conflict=any(row["conflict"] for row in top),
-            complete=all(row["complete"] for row in top),
-            fresh=all(row["fresh"] for row in top),
-            duplicates=sum(row["duplicate_facts_collapsed"] for row in top),
-            vix_only=vix_only,
+            independent_facts=lead["independent_fact_count"] if lead["theme"] == "rates" else sum(row["independent_fact_count"] for row in top),
+            channel_kinds=lead["independent_channel_count"] if lead["theme"] == "rates" else len({kind for row in top for kind in {d["channel_kind"] for d in row["drivers"]}}),
+            confirmed=lead["confirmed"] if lead["theme"] == "rates" else any(row["confirmed"] for row in top) and not any(row["conflict"] for row in top),
+            conflict=lead["conflict"] if lead["theme"] == "rates" else any(row["conflict"] for row in top),
+            complete=lead["complete"] if lead["theme"] == "rates" else all(row["complete"] for row in top),
+            fresh=lead["fresh"] if lead["theme"] == "rates" else all(row["fresh"] for row in top),
+            duplicates=lead["duplicate_facts_collapsed"] if lead["theme"] == "rates" else sum(row["duplicate_facts_collapsed"] for row in top),
+            vix_only=False if top else vix_only,
             insufficient=insufficient,
+            stale_metrics=lead.get("stale_metrics") if lead["theme"] == "rates" else stale_metrics,
         )
-        # S1 vs S2: rates confirmation uses the rates state's own fact count.
-        if lead["theme"] == "rates":
-            confidence = _confidence(
-                independent_facts=lead["independent_fact_count"],
-                channel_kinds=lead["independent_channel_count"],
-                confirmed=lead["confirmed"],
-                conflict=lead["conflict"],
-                complete=lead["complete"],
-                fresh=lead["fresh"],
-                duplicates=lead["duplicate_facts_collapsed"],
-                vix_only=False,
-                insufficient=False,
-            )
     else:
         confidence = _confidence(
             independent_facts=0,
@@ -770,13 +1005,14 @@ def build_scope_synthesis(
             vix_only=vix_only,
             insufficient=True,
         )
-    as_of = latest or None
+    as_of = clock.isoformat()
     why = ""
     if scope == "stock" and target:
         why = _why_stock(target, directional)
     elif scope == "industry" and target:
         why = _why_industry(target, directional)
     refs = _safe_refs([ref for row in directional + vix_ok for ref in chain_evidence_refs(row)])
+    stocks = impact_stocks(scope, target, included)
     return {
         "synthesis_id": _synthesis_id(scope, target),
         "scope": scope,
@@ -792,6 +1028,9 @@ def build_scope_synthesis(
                 "conflict": row["conflict"],
                 "independent_fact_count": row["independent_fact_count"],
                 "chain_ids": row["chain_ids"],
+                "fresh": row["fresh"],
+                "stale_metrics": row.get("stale_metrics") or [],
+                "scope_relevance": row.get("scope_relevance") or 0,
             }
             for row in top
         ],
@@ -801,9 +1040,9 @@ def build_scope_synthesis(
         "transmission": _transmission(top),
         "impact": {
             "text": _impact_text(top, scope=scope, target=target),
-            "markets": ["rates", "energy"] if any(row["theme"] in {"rates", "energy"} for row in top) else [],
-            "industries": [row["theme"] for row in top if row["theme"] in INDUSTRY_LABELS or row["theme"] in {"rates", "energy", "credit"}],
-            "stocks": list(INDUSTRY_SYMBOLS.get("semis" if any(r["theme"] == "rates" for r in top) else "", ())) ,
+            "markets": [row["theme"] for row in top if row["theme"] in {"rates", "energy", "fx", "credit"}],
+            "industries": _impact_industries(scope, target, included),
+            "stocks": stocks,
         },
         "confidence": confidence,
         "evidence_refs": refs,
@@ -834,10 +1073,12 @@ def synthesize_drivers(
     chains: list[dict[str, Any]],
     *,
     symbols: list[str] | None = None,
+    now: date | None = None,
 ) -> dict[str, Any]:
     wanted = [item.upper() for item in (symbols or SYNTHESIS_SYMBOLS)]
     missing_src = [row for row in chains if row.get("status") != "ok"]
-    market = build_scope_synthesis(chains, scope="market", missing_chains=missing_src)
+    clock = reference_now(chains, now)
+    market = build_scope_synthesis(chains, scope="market", missing_chains=missing_src, now=clock)
     industries: list[dict[str, Any]] = []
     for industry in ("semis", "energy", "banks"):
         mapped = [
@@ -847,7 +1088,13 @@ def synthesize_drivers(
         if not mapped:
             continue
         industries.append(
-            build_scope_synthesis(mapped, scope="industry", target=industry, missing_chains=missing_src)
+            build_scope_synthesis(
+                mapped,
+                scope="industry",
+                target=industry,
+                missing_chains=missing_src,
+                now=clock,
+            )
         )
     stocks: dict[str, dict[str, Any]] = {}
     for symbol in wanted:
@@ -859,6 +1106,7 @@ def synthesize_drivers(
             scope="stock",
             target=symbol,
             missing_chains=missing_src,
+            now=clock,
         )
     return {
         "market": market,

@@ -110,31 +110,45 @@ def main() -> int:
     aapl_syn = aapl.get("driver_synthesis")
     nok_syn = nok.get("driver_synthesis")
     xom_metrics = {row.get("metric") for row in xom_syn.get("drivers") or []}
+    xom_impact = (xom_syn.get("impact") or {}).get("stocks") or []
     verdict["S4"] = (
         "wti" in xom_metrics
         and not aapl_syn
         and not nok_syn
         and "wti" not in {row.get("metric") for row in (aapl.get("macro_chains") or [])}
+        and xom_impact == ["XOM"]
+        and "NVDA" not in xom_impact
     )
 
     jpm_syn = jpm.get("driver_synthesis") or {}
     jpm_themes = {row.get("theme") for row in jpm_syn.get("driver_themes") or []}
+    jpm_impact = (jpm_syn.get("impact") or {}).get("stocks") or []
     verdict["S5"] = (
         bool(jpm_syn)
         and ("credit" in jpm_themes or "信用" in ((jpm_syn.get("why_relevant") or "") + str(jpm_syn.get("net_expectation") or "")))
         and not aapl_syn
+        and jpm_impact == ["JPM"]
+        and "NVDA" not in jpm_impact
+        and "NVDA" not in str(jpm_syn.get("impact") or {})
     )
 
     try:
         s6 = inject("/api/events", "source_fail_us2y")
         s6_m = s6.get("driver_synthesis") or {}
+        s6_nvda = inject("/api/stock/NVDA/events", "source_fail_us2y")
+        s6_xom = inject("/api/stock/XOM/events", "source_fail_us2y")
         s6_missing = {row.get("metric") for row in s6_m.get("missing") or []}
         s6_drivers = {row.get("metric") for row in s6_m.get("drivers") or []}
+        nvda_missing = {row.get("metric") for row in ((s6_nvda.get("driver_synthesis") or {}).get("missing") or [])}
+        xom_missing = {row.get("metric") for row in ((s6_xom.get("driver_synthesis") or {}).get("missing") or [])}
         verdict["S6"] = (
             "us2y" in s6_missing
             and "cpi" in s6_drivers
             and "nfp" in s6_drivers
             and s6_m.get("net_expectation", {}).get("stance") not in {None, "withheld"}
+            and "us2y" in nvda_missing
+            and "us2y" not in xom_missing
+            and "cpi" not in xom_missing
         )
     except Exception:
         verdict["S6"] = False

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from stock_pm.config import Settings
 from stock_pm.events.macro_chain import apply_macro_inject, build_market_macro_chains, reset_macro_cache
 from stock_pm.events.service import market_center, reset_cache, stock_events
@@ -260,3 +262,118 @@ def test_fixture_center_exposes_synthesis_without_copying_to_aapl():
     assert aapl["driver_synthesis"] is None
     assert nok["driver_synthesis"] is None
     assert aapl["macro_chains"] == [] or "wti" not in {row["metric"] for row in aapl["macro_chains"]}
+    jpm_stocks = (jpm["driver_synthesis"] or {}).get("impact", {}).get("stocks") or []
+    nvda_stocks = (nvda["driver_synthesis"] or {}).get("impact", {}).get("stocks") or []
+    xom_stocks = (xom["driver_synthesis"] or {}).get("impact", {}).get("stocks") or []
+    assert jpm_stocks == ["JPM"]
+    assert "NVDA" not in jpm_stocks
+    assert nvda_stocks == ["NVDA"]
+    assert xom_stocks == ["XOM"]
+    assert "NVDA" not in (center["driver_synthesis"].get("impact", {}).get("stocks") or []) or "JPM" in (
+        center["driver_synthesis"].get("impact", {}).get("stocks") or []
+    )
+
+
+def test_jpm_impact_does_not_name_nvda():
+    payload = synthesize_drivers(_chains([_fact(), _nfp(), _us2y(up=True), _wti()]))
+    jpm = payload["stocks"]["JPM"]
+    nvda = payload["stocks"]["NVDA"]
+    xom = payload["stocks"]["XOM"]
+    assert jpm["impact"]["stocks"] == ["JPM"]
+    assert "NVDA" not in jpm["impact"]["stocks"]
+    assert "NVDA" not in str(jpm["impact"])
+    assert nvda["impact"]["stocks"] == ["NVDA"]
+    assert "JPM" not in nvda["impact"]["stocks"]
+    assert xom["impact"]["stocks"] == ["XOM"]
+    assert "AAPL" not in payload["stocks"]
+    assert "NOK" not in payload["stocks"]
+    market_stocks = payload["market"]["impact"]["stocks"]
+    assert "NVDA" in market_stocks
+    assert "JPM" in market_stocks
+    assert "XOM" in market_stocks
+    assert "AAPL" not in market_stocks
+    assert "NOK" not in market_stocks
+    banks = next(row for row in payload["industries"] if row["target"] == "banks")
+    energy = next(row for row in payload["industries"] if row["target"] == "energy")
+    semis = next(row for row in payload["industries"] if row["target"] == "semis")
+    assert banks["impact"]["stocks"] == ["JPM"]
+    assert energy["impact"]["stocks"] == ["XOM"]
+    assert semis["impact"]["stocks"] == ["NVDA"]
+
+
+def test_stock_missing_is_scope_relevant():
+    facts = apply_macro_inject([_fact(), _nfp(), _us2y(up=True), _wti()], "source_fail_us2y")
+    payload = synthesize_drivers(_chains(facts))
+    market_missing = {row["metric"] for row in payload["market"]["missing"]}
+    assert "us2y" in market_missing
+    nvda_missing = {row["metric"] for row in payload["stocks"]["NVDA"]["missing"]}
+    jpm_missing = {row["metric"] for row in payload["stocks"]["JPM"]["missing"]}
+    xom_missing = {row["metric"] for row in payload["stocks"]["XOM"]["missing"]}
+    assert "us2y" in nvda_missing
+    assert "wti" not in nvda_missing
+    assert "us2y" in jpm_missing
+    assert "wti" not in jpm_missing
+    assert "us2y" not in xom_missing
+    assert "cpi" not in xom_missing
+    energy = next(row for row in payload["industries"] if row["target"] == "energy")
+    assert "us2y" not in {row["metric"] for row in energy["missing"]}
+    assert "cpi" not in {row["metric"] for row in energy["missing"]}
+    wti_fail = apply_macro_inject([_wti()], "vix_only")[0]
+    war = _event("war_sanctions", "Treasury OFAC designates additional energy sanctions", entities=["Iran", "oil", "energy"])
+    payload2 = synthesize_drivers(_chains([_fact(), wti_fail], events=[war]))
+    assert "wti" in {row["metric"] for row in payload2["stocks"]["XOM"]["missing"]}
+    assert "wti" not in {row["metric"] for row in payload2["stocks"]["NVDA"]["missing"]}
+
+
+def test_s7_same_fact_two_channel_kinds_does_not_confirm():
+    shared = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SHAREDFACT"
+    cpi = _fact(http_source=shared)
+    nfp = _nfp()
+    nfp["http_source"] = shared
+    chains = _chains([cpi, nfp])
+    payload = synthesize_drivers(chains)
+    market = payload["market"]
+    assert fact_key(next(row for row in chains if row["metric"] == "cpi")) == fact_key(
+        next(row for row in chains if row["metric"] == "nfp")
+    )
+    rates = next(row for row in market["driver_themes"] if row["theme"] == "rates")
+    assert rates["independent_fact_count"] == 1
+    assert rates["confirmed"] is False
+    assert market["confidence"]["independent_fact_count"] == 1
+    assert market["confidence"]["confirmed"] is False
+    assert market["confidence"]["label"] == "limited"
+    assert market["confidence"]["duplicate_facts_collapsed"] >= 1
+
+
+def test_fresh_vs_stale_confidence_differs():
+    now = date(2026, 9, 10)
+    fresh = synthesize_drivers(_chains([_fact(), _nfp(), _us2y(up=True)]), now=now)
+    stale_cpi = _fact(period="2026-06-01", prior_as_of="2026-05-01", consensus_as_of="2026-06-01", as_of="2026-06-01T00:00:00+00:00")
+    stale_nfp = _nfp(period="2026-06-01", prior_as_of="2026-05-01", consensus_as_of="2026-06-01", as_of="2026-06-01T00:00:00+00:00")
+    stale_us2y = _us2y(up=True, period="2026-07-01", prior_as_of="2026-06-30", as_of="2026-07-01T00:00:00+00:00")
+    stale = synthesize_drivers(_chains([stale_cpi, stale_nfp, stale_us2y]), now=now)
+    assert fresh["market"]["confidence"]["fresh"] is True
+    assert fresh["market"]["confidence"]["label"] == "medium"
+    assert stale["market"]["confidence"]["fresh"] is False
+    assert stale["market"]["confidence"]["label"] == "limited"
+    assert stale["market"]["confidence"]["rank"] < fresh["market"]["confidence"]["rank"]
+    assert "过期" in stale["market"]["confidence"]["why"] or "窗口" in stale["market"]["confidence"]["why"]
+    assert stale["market"]["confidence"]["why"] != fresh["market"]["confidence"]["why"]
+    assert "cpi" in stale["market"]["confidence"]["stale_metrics"]
+
+
+def test_top_driver_rank_uses_freshness_not_theme_priority():
+    now = date(2026, 9, 10)
+    stale_us2y = _us2y(
+        up=True,
+        period="2026-07-01",
+        prior_as_of="2026-06-30",
+        as_of="2026-07-01T00:00:00+00:00",
+    )
+    payload = synthesize_drivers(_chains([stale_us2y, _wti()]), now=now)
+    themes = [row["theme"] for row in payload["market"]["driver_themes"]]
+    assert themes[0] == "energy"
+    assert "rates" in themes
+    assert payload["market"]["driver_themes"][0]["fresh"] is True
+    stale_rates = next(row for row in payload["market"]["driver_themes"] if row["theme"] == "rates")
+    assert stale_rates["fresh"] is False
