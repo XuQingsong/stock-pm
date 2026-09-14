@@ -514,13 +514,58 @@
     </section>`;
   };
 
+  const renderSynthesis = (row, options = {}) => {
+    if (!row) return "";
+    const net = row.net_expectation || {};
+    const confidence = row.confidence || {};
+    const vix = row.vix || {};
+    const conflict = (row.contradictions || []).length > 0 || confidence.conflict === true;
+    const title = options.title || (row.scope === "stock" ? `${row.target || ""} 综合判断` : row.scope === "industry" ? `${esc(row.target || "行业")} 综合判断` : "综合判断");
+    const facts = (row.observed_facts || []).map((item) => `<div class="subline" data-observed-fact="${esc(item.chain_id || "")}">${esc(item.text || "")} ${refsHtml(item.evidence_refs)}</div>`).join("");
+    const derived = (row.derived_analysis || []).map((item) => `<div class="subline" data-derived-analysis="${esc(item.chain_id || "")}">${esc(item.text || "")} ${refsHtml(item.evidence_refs)}</div>`).join("");
+    const drivers = (row.driver_themes || row.drivers || []).slice(0, 3).map((item) => {
+      const theme = item.theme || item.metric || "";
+      const label = item.label || item.metric || theme;
+      const polarity = item.net_polarity || item.polarity || "";
+      return `<div class="subline" data-driver-theme="${esc(theme)}" data-polarity="${esc(polarity)}">${esc(label)} · ${esc(polarity || "—")} · ${esc((item.chain_ids || [item.chain_id]).filter(Boolean).join(" / "))}</div>`;
+    }).join("");
+    const confirmations = (row.confirmations || []).map((item) => `<div class="subline" data-confirmation="1">${esc(item.text || "")} ${refsHtml(item.evidence_refs)}</div>`).join("");
+    const contradictions = (row.contradictions || []).map((item) => `<div class="synthesis-conflict" data-contradiction="1">${esc(item.text || "")} ${refsHtml(item.evidence_refs)}</div>`).join("");
+    const missing = (row.missing || []).map((item) => `<div class="subline" data-synthesis-missing="${esc(item.metric || "")}" data-missing-reason="${esc(item.reason || "")}">缺少 ${esc(item.metric || "")}：${esc(item.detail || "")}。What changes：${esc(item.what_changes || "")}</div>`).join("");
+    const why = row.why_relevant || options.why || "";
+    return `<section class="driver-synthesis" data-driver-synthesis="1" data-synthesis-id="${esc(row.synthesis_id || "")}" data-scope="${esc(row.scope || "")}" data-target="${esc(row.target || "")}" data-stance="${esc(net.stance || "")}" data-confidence="${esc(confidence.label || "")}" data-conflict="${conflict ? "1" : "0"}" data-can-form-direction="0" data-vix-role="${esc(vix.role || "risk_confirmation_only")}">
+      <h3>${esc(String(title || "综合判断"))}</h3>
+      <p class="subline">综合条件预期，不是已观察事实，也不是单链派生分析。can_form_direction=false，不输出涨跌、目标价或交易建议。</p>
+      <div class="synthesis-block" data-synthesis-kind="observable_fact"><div class="chain-kicker">已观察事实</div>${facts || "<div class=\"subline\">本范围没有可引用的已观察事实</div>"}</div>
+      <div class="synthesis-block" data-synthesis-kind="derived_analysis"><div class="chain-kicker">单链派生分析</div>${derived || "<div class=\"subline\">本范围没有单链派生</div>"}</div>
+      <div class="synthesis-block" data-synthesis-kind="conditional_expectation" data-net-expectation="1">
+        <div class="chain-kicker">综合条件预期</div>
+        <div data-net-text="1">${esc(net.text || "")}</div>
+        <div class="subline" data-confidence-why="1">置信度 ${esc(confidence.label || "—")}：${esc(confidence.why || "")}</div>
+        ${refsHtml(row.evidence_refs)}
+      </div>
+      <div data-drivers="1"><div class="chain-kicker">当前主要驱动（至多 3 个）</div>${drivers || "<div class=\"subline\">没有可综合的方向驱动</div>"}</div>
+      <div data-confirmations="1">${confirmations || "<div class=\"subline\">没有跨渠道同向确认</div>"}</div>
+      <div data-contradictions="1">${contradictions || ""}</div>
+      <div class="subline" data-transmission="1">${esc((row.transmission || {}).text || "先到市场，再到行业，再按可验证暴露到个股")}</div>
+      <div class="subline" data-impact="1">${esc((row.impact || {}).text || "")}</div>
+      ${why ? `<p class="why-relevant" data-why-relevant="1">为什么相关：${esc(why)}</p>` : ""}
+      <div data-vix-confirmation="1" data-vix-amplifies="${vix.amplifies ? "1" : "0"}">${esc(vix.text || "VIX 只确认风险，不单独决定方向")}</div>
+      <div data-what-changes="1">${esc((row.what_changes || {}).text || "")}</div>
+      <div data-missing="1">${missing}</div>
+    </section>`;
+  };
+
   const renderCenter = (payload) => {
     const events = payload.events || [];
+    const synthesis = renderSynthesis(payload.driver_synthesis);
+    const industries = (payload.industry_syntheses || []).map((row) => renderSynthesis(row, { title: `行业综合 · ${row.target || ""}` })).join("");
+    const industryHtml = industries ? `<section class="industry-syntheses" data-industry-syntheses="1">${industries}</section>` : "";
     const summary = renderMacroSummary(payload);
-    if (!events.length && !summary) {
+    if (!events.length && !summary && !synthesis) {
       return `<div class="empty-note">新闻/事件为空只影响事件链，不影响价格、盈利或宏观利率链。</div>`;
     }
-    return summary + events.map((event) => renderCard(event)).join("");
+    return synthesis + industryHtml + summary + events.map((event) => renderCard(event)).join("");
   };
 
   const renderStock = (payload) => {
@@ -528,6 +573,7 @@
     const risk = payload.risk_state;
     const healthHtml = renderSymbolHealth(payload.earnings_health || {});
     const mapped = payload.macro_chains || [];
+    const synthesisHtml = renderSynthesis(payload.driver_synthesis, { title: `${payload.symbol || ""} 综合判断`, why: payload.driver_synthesis && payload.driver_synthesis.why_relevant });
     const mappedHtml = mapped.length ? `<section data-stock-macro-chains="1">${mapped.map((chain) => macroChainHtml(chain, { why: chain.why_relevant })).join("")}</section>` : "";
     const riskHtml = risk ? `<aside class="vix-risk" data-vix-role="${esc(risk.role)}" data-chain-id="${esc(risk.chain_id || "")}" data-can-form-direction="0">
       <strong>VIX 风险确认</strong>
@@ -535,10 +581,10 @@
       <div class="subline">${esc(risk.does_not_imply)}。不得把 VIX 写成个股涨跌。${refsHtml(risk.evidence_refs)}</div>
       ${(risk.counter_evidence || []).map((row) => `<div class="subline" data-counter-evidence="1">${boundHtml(row)}</div>`).join("")}
     </aside>` : "";
-    if (!events.length && !mapped.length) {
-      return `${healthHtml}${riskHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
+    if (!events.length && !mapped.length && !payload.driver_synthesis) {
+      return `${healthHtml}${riskHtml}${synthesisHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
     }
-    return healthHtml + riskHtml + mappedHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
+    return healthHtml + riskHtml + synthesisHtml + mappedHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
   };
 
   window.StockPmEvents = {
@@ -549,6 +595,7 @@
     renderCard,
     renderCenter,
     renderStock,
-    renderMacroSummary
+    renderMacroSummary,
+    renderSynthesis
   };
 })();

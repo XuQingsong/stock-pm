@@ -29,6 +29,8 @@
       root.dataset.live = payload.live ? "1" : "0";
       root.dataset.replay = payload.recorded_replay ? "1" : "0";
       root.dataset.macroChainCount = String((payload.macro_chains || []).length);
+      root.dataset.synthesisId = (payload.driver_synthesis && payload.driver_synthesis.synthesis_id) || "";
+      root.dataset.synthesisStance = (payload.synthesis_summary && payload.synthesis_summary.stance) || "";
     } catch (error) {
       root.className = "state error";
       root.dataset.eventsReady = "error";

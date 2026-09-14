@@ -339,9 +339,14 @@ def market_events(
 
 
 @app.get("/api/events")
-def api_market_events() -> dict:
+def api_market_events(request: Request, macro_inject: str | None = Query(None)) -> dict:
+    from .decision.inject import inject_allowed
     from .events.service import market_center
 
+    tokens = None
+    if inject_allowed():
+        tokens = macro_inject or request.headers.get("x-stock-pm-macro-inject")
+        return market_center(inject=tokens)
     return market_center()
 
 
@@ -363,9 +368,13 @@ def api_event_detail(event_id: str) -> dict:
 
 
 @app.get("/api/stock/{symbol}/events")
-def api_stock_events(symbol: str) -> dict:
+def api_stock_events(symbol: str, request: Request, macro_inject: str | None = Query(None)) -> dict:
+    from .decision.inject import inject_allowed
     from .events.service import stock_events
 
+    if inject_allowed():
+        tokens = macro_inject or request.headers.get("x-stock-pm-macro-inject")
+        return stock_events(symbol, inject=tokens)
     return stock_events(symbol)
 
 
