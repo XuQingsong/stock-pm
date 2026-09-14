@@ -65,8 +65,15 @@
     fact: "Fact · 已确认事实",
     change: "Change · 相对基线的变化",
     expectation: "Expectation · 方向 / 期限 / 置信度",
+    transmission: "Transmission · 传导渠道",
     impact: "Impact · 市场与暴露",
     what_changes: "What changes · 什么变了"
+  };
+
+  const LAYER_KIND_LABELS = {
+    observable_fact: "可观察事实",
+    derived_analysis: "派生分析",
+    conditional_expectation: "条件预期"
   };
 
   const earningsPrintHtml = (row) => {
@@ -145,8 +152,8 @@
           if (layer.invalidation) extra.push(`<div class="subline">失效：${esc(layer.invalidation)}</div>`);
           if (layer.follow_up) extra.push(`<div class="subline">后续观察：${esc(layer.follow_up)}</div>`);
         }
-        return `<li class="event-causal-layer" data-causal-layer="1" data-layer="${esc(layer.id)}" data-layer-id="${esc(layer.layer_id || "")}" data-cites="${esc(cites)}">
-          <div class="chain-kicker">${esc(LAYER_LABELS[layer.id] || layer.id)}</div>
+        return `<li class="event-causal-layer" data-causal-layer="1" data-layer="${esc(layer.id)}" data-layer-id="${esc(layer.layer_id || "")}" data-layer-kind="${esc(layer.layer_kind || "")}" data-cites="${esc(cites)}">
+          <div class="chain-kicker">${esc(LAYER_LABELS[layer.id] || layer.id)}${layer.layer_kind ? ` · ${esc(LAYER_KIND_LABELS[layer.layer_kind] || layer.layer_kind)}` : ""}</div>
           <div data-layer-text="1">${esc((layer.text || "").trim() ? layer.text : "—")}</div>
           ${layer.evidence_refs && layer.evidence_refs.length ? `<div class="evidence-refs">证据：${refsHtml(layer.evidence_refs)}</div>` : ""}
           ${extra.join("")}
@@ -451,27 +458,85 @@
     </article>`;
   };
 
+  const macroChainHtml = (chain, options = {}) => {
+    const layers = (chain && chain.layers) || [];
+    if (!layers.length) return "";
+    const why = options.why || chain.why_relevant || "";
+    const counters = chain.counter_evidence || [];
+    const what = chain.what_changes || {};
+    return `<article class="macro-chain" data-macro-chain="1" data-chain-id="${esc(chain.chain_id || "")}" data-metric="${esc(chain.metric || "")}" data-status="${esc(chain.status || "")}" data-data-class="${esc(chain.data_class || "")}" data-can-form-direction="${chain.can_form_direction === true ? "1" : "0"}" data-vix-role="${esc(chain.vix_role || "")}">
+      <div class="event-meta">
+        ${pill(chain.metric || chain.family || "macro")}
+        ${pill(chain.status || "ok", chain.status === "ok" ? "ok" : "not_configured")}
+        ${pill(chain.data_class === "live_current" ? "live-current" : (chain.data_class || "frozen/fixture"), chain.data_class === "live_current" ? "ok" : "not_configured")}
+        ${pill(`chain ${chain.chain_id || ""}`)}
+      </div>
+      ${chain.degrade_detail ? `<p class="subline" data-macro-degraded="1" data-degrade-reason="${esc(chain.degrade_reason || "")}">本链降级：${esc(chain.degrade_detail)}</p>` : ""}
+      <ol class="event-causal-chain" data-macro-layers="1">
+        ${layers.map((layer) => {
+          const extra = [];
+          if (layer.id === "transmission" && (layer.channels || []).length) {
+            extra.push(`<div class="subline" data-transmission="1">${esc((layer.channels || []).join(" / "))}</div>`);
+          }
+          if (layer.id === "impact") extra.push(exposuresHtml(layer.exposures || chain.exposures || []));
+          if (layer.id === "what_changes") {
+            (layer.follow_ups || what.follow_ups || []).forEach((item) => extra.push(`<div class="subline" data-follow-up="1">${esc(item)}</div>`));
+            if (layer.invalidation || what.invalidation) extra.push(`<div class="subline" data-invalidation="1">失效：${esc(layer.invalidation || what.invalidation)}</div>`);
+          }
+          if (layer.id === "expectation") {
+            extra.push(`<div class="subline" data-layer-kind="conditional_expectation">条件预期，不是确定事实 · 置信度 ${esc(layer.confidence || chain.confidence || "—")}</div>`);
+          }
+          return `<li class="event-causal-layer" data-causal-layer="1" data-layer="${esc(layer.id)}" data-layer-id="${esc(layer.layer_id || "")}" data-layer-kind="${esc(layer.layer_kind || "")}" data-cites="${esc((layer.cites || []).join(" "))}">
+            <div class="chain-kicker">${esc(LAYER_LABELS[layer.id] || layer.id)} · ${esc(LAYER_KIND_LABELS[layer.layer_kind] || layer.layer_kind || "")}</div>
+            <div data-layer-text="1">${esc(layer.text || "—")}</div>
+            ${layer.evidence_refs && layer.evidence_refs.length ? `<div class="evidence-refs" data-evidence-refs="1">证据：${refsHtml(layer.evidence_refs)}</div>` : ""}
+            ${extra.join("")}
+          </li>`;
+        }).join("")}
+      </ol>
+      ${why ? `<p class="why-relevant" data-why-relevant="1" data-exposure-reason="1">为什么与本公司相关：${esc(why)}</p>` : ""}
+      ${counters.length ? `<div data-counter-evidence="1">${counters.map((row) => `<p class="subline">${boundHtml(row)}</p>`).join("")}</div>` : ""}
+      <p class="subline" data-what-changes="1">${esc(what.text || "")}</p>
+    </article>`;
+  };
+
+  const renderMacroSummary = (payload) => {
+    const summary = payload.macro_driver_summary || {};
+    const chains = payload.macro_chains || [];
+    if (!chains.length && !summary.count) return "";
+    return `<section class="macro-driver-summary" data-macro-driver-summary="1" data-ok="${esc(summary.ok_count ?? 0)}" data-degraded="${esc(summary.degraded_count ?? 0)}">
+      <h3>宏观驱动摘要</h3>
+      <div class="subline">${esc(summary.note || "")} live-current ${esc(summary.live_current_count ?? 0)} · frozen ${esc(summary.frozen_count ?? 0)} · 降级 ${esc(summary.degraded_count ?? 0)}</div>
+      ${(summary.headlines || []).map((row) => `<div class="subline" data-macro-headline="${esc(row.chain_id || "")}">${esc(row.metric || "")} · ${esc(row.text || "")}</div>`).join("")}
+      ${chains.map((chain) => `<details class="macro-chain-expand" data-chain-id="${esc(chain.chain_id || "")}" ${chain.status === "degraded" ? "open" : ""}><summary>${esc(chain.metric || chain.family || "macro")} · ${esc(chain.status || "")} · ${esc(chain.chain_id || "")}</summary>${macroChainHtml(chain)}</details>`).join("")}
+    </section>`;
+  };
+
   const renderCenter = (payload) => {
     const events = payload.events || [];
-    if (!events.length) {
+    const summary = renderMacroSummary(payload);
+    if (!events.length && !summary) {
       return `<div class="empty-note">新闻/事件为空只影响事件链，不影响价格、盈利或宏观利率链。</div>`;
     }
-    return events.map((event) => renderCard(event)).join("");
+    return summary + events.map((event) => renderCard(event)).join("");
   };
 
   const renderStock = (payload) => {
     const events = payload.events || [];
     const risk = payload.risk_state;
     const healthHtml = renderSymbolHealth(payload.earnings_health || {});
-    const riskHtml = risk ? `<aside class="vix-risk" data-vix-role="${esc(risk.role)}">
+    const mapped = payload.macro_chains || [];
+    const mappedHtml = mapped.length ? `<section data-stock-macro-chains="1">${mapped.map((chain) => macroChainHtml(chain, { why: chain.why_relevant })).join("")}</section>` : "";
+    const riskHtml = risk ? `<aside class="vix-risk" data-vix-role="${esc(risk.role)}" data-chain-id="${esc(risk.chain_id || "")}" data-can-form-direction="0">
       <strong>VIX 风险确认</strong>
       <span>${esc(risk.canonical_title || "")}</span>
-      <div class="subline">${esc(risk.does_not_imply)}。${refsHtml(risk.evidence_refs)}</div>
+      <div class="subline">${esc(risk.does_not_imply)}。不得把 VIX 写成个股涨跌。${refsHtml(risk.evidence_refs)}</div>
+      ${(risk.counter_evidence || []).map((row) => `<div class="subline" data-counter-evidence="1">${boundHtml(row)}</div>`).join("")}
     </aside>` : "";
-    if (!events.length) {
+    if (!events.length && !mapped.length) {
       return `${healthHtml}${riskHtml}<div class="empty-note" data-no-stock-events="1">该标的没有通过行业映射的重大事件。市场级事件只在事件中心完整展示，不会复制到所有股票。</div>`;
     }
-    return healthHtml + riskHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
+    return healthHtml + riskHtml + mappedHtml + events.map((event) => renderCard(event, { why: event.why_relevant })).join("");
   };
 
   window.StockPmEvents = {
@@ -481,6 +546,7 @@
     renderCoverage,
     renderCard,
     renderCenter,
-    renderStock
+    renderStock,
+    renderMacroSummary
   };
 })();

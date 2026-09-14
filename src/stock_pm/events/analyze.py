@@ -682,7 +682,10 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
             "unsupported": True,
         }
         event.analysis = _seal_closed_loop(analysis, sources=[], claims=event.claims)
-        return analysis
+        from .macro_chain import attach_event_macro_chain
+
+        event.analysis = attach_event_macro_chain(event, event.analysis)
+        return event.analysis
 
     mechanism = {
         "war_sanctions": "供应中断/制裁 → 油价或风险溢价 → 行业暴露 → 个股",
@@ -825,7 +828,10 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
     }
     event.coverage = {**(event.coverage or {}), **source_metrics(event.sources, event.claims), "conflict_count": len(conflicts)}
     event.analysis = _seal_closed_loop(analysis, sources=event.sources, claims=event.claims)
-    return analysis
+    from .macro_chain import attach_event_macro_chain
+
+    event.analysis = attach_event_macro_chain(event, event.analysis)
+    return event.analysis
 
 
 def symbol_event_view(event: TrustedEvent, symbol: str) -> dict[str, Any] | None:
@@ -840,5 +846,13 @@ def symbol_event_view(event: TrustedEvent, symbol: str) -> dict[str, Any] | None
     answers = dict(analysis.get("answers") or {})
     answers["why_relevant"] = hit["why_relevant"]
     analysis["answers"] = answers
+    chain = dict(analysis.get("macro_chain") or {})
+    if chain:
+        chain["why_relevant"] = hit["why_relevant"]
+        chain["channel"] = hit["channel"]
+        chain["mechanism"] = hit["mechanism"]
+        chain["cited_chain_id"] = chain.get("chain_id")
+        analysis["macro_chain"] = chain
+        payload["cited_chain_id"] = chain.get("chain_id")
     payload["analysis"] = analysis
     return payload

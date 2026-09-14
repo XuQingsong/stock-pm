@@ -10,6 +10,13 @@ from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol
 from .dedupe import build_events
 from .earnings_health import current_earnings_health, health_for_symbol, summarize_health
 from .live import discover_live_documents, reset_live_state
+from .macro_chain import (
+    build_market_macro_chains,
+    env_macro_inject,
+    reset_macro_cache,
+    stock_macro_chains,
+    summarize_macro_chains,
+)
 from .policy import events_data_mode
 from .providers import GoogleDiscoveryProvider, OfficialFeedProvider, provider_coverage
 from .replay import RecordedReplayProvider
@@ -32,6 +39,10 @@ def build_event_book(settings: Settings | None = None, *, refresh: bool = False)
         live = discover_live_documents(settings)
         discovered.extend(official)
         discovered.extend(live)
+        if mode in {"demo", "fixture"}:
+            from .macro_chain import load_frozen_6a_documents
+
+            discovered.extend(load_frozen_6a_documents())
         google = GoogleDiscoveryProvider(settings)
         if google.configured():
             try:
@@ -207,6 +218,7 @@ def market_center(settings: Settings | None = None) -> dict[str, Any]:
     events = build_event_book(settings)
     cover = coverage(settings, events)
     ordered = sorted(events, key=_center_sort_key)
+    chains = build_market_macro_chains(events=events, settings=settings, inject=env_macro_inject())
     return {
         "title": "市场事件中心",
         "data_mode": cover["data_mode"],
@@ -214,6 +226,8 @@ def market_center(settings: Settings | None = None) -> dict[str, Any]:
         "recorded_replay": cover.get("recorded_replay") is True,
         "coverage": cover,
         "events": [event.as_dict() for event in ordered],
+        "macro_chains": chains,
+        "macro_driver_summary": summarize_macro_chains(chains),
     }
 
 
@@ -237,6 +251,28 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         if view:
             selected.append(view)
     selected.sort(key=_center_sort_key)
+    chains = build_market_macro_chains(events=events, settings=settings, inject=env_macro_inject())
+    mapped = stock_macro_chains(chains, symbol)
+    vix_chain = next((row for row in chains if row.get("metric") == "vix"), None)
+    if vix_chain and risk_state is None:
+        risk_state = {
+            "role": "risk_confirmation_only",
+            "does_not_imply": "个股涨跌方向",
+            "event_id": vix_chain.get("event_id") or vix_chain.get("chain_id"),
+            "chain_id": vix_chain.get("chain_id"),
+            "canonical_title": "VIX 风险确认",
+            "confidence": vix_chain.get("confidence"),
+            "counter_evidence": vix_chain.get("counter_evidence") or [],
+            "what_changes": vix_chain.get("what_changes"),
+            "evidence_refs": ((vix_chain.get("layers") or [{}])[0].get("evidence_refs") if vix_chain.get("layers") else []),
+        }
+    elif vix_chain and risk_state is not None:
+        risk_state = {
+            **risk_state,
+            "chain_id": vix_chain.get("chain_id"),
+            "counter_evidence": vix_chain.get("counter_evidence") or risk_state.get("counter_evidence") or [],
+            "what_changes": vix_chain.get("what_changes"),
+        }
     return {
         "symbol": symbol.upper(),
         "data_mode": cover["data_mode"],
@@ -244,6 +280,8 @@ def stock_events(symbol: str, settings: Settings | None = None) -> dict[str, Any
         "recorded_replay": cover.get("recorded_replay") is True,
         "coverage": cover,
         "events": selected,
+        "macro_chains": mapped,
+        "macro_driver_summary": summarize_macro_chains(mapped),
         "risk_state": risk_state,
         "earnings_health": health_for_symbol(symbol),
         "note": "个股页只显示经行业映射和公司暴露判定相关的事件，并说明为什么相关。VIX 只确认风险，不复制成个股涨跌。宏观事件不会复制到全部股票。",
@@ -266,6 +304,7 @@ def reset_cache() -> None:
 
     clear_earnings_health_memory()
     reset_watchlist_override()
+    reset_macro_cache()
 
 
 def display_symbols() -> tuple[str, ...]:
