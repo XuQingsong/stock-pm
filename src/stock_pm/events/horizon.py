@@ -385,7 +385,7 @@ def _horizon_missing(
                 "horizon": horizon,
                 "reason": reason or "missing_horizon_evidence",
                 "detail": detail,
-                "what_changes": f"补齐 {metric} 后将改写 {horizon} 情景，禁止用笼统无法判断代替",
+                "what_changes": f"补齐 {metric} 后将改写 {horizon} 情景，禁止用空泛缺口说明代替",
             })
     return rows
 
