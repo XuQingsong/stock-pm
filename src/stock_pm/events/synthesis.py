@@ -415,11 +415,18 @@ def _theme_state(theme: str, chains: list[dict[str, Any]], *, latest: str) -> di
 
 
 def _sort_themes(states: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    theme_priority = {"rates": 0, "energy": 1, "credit": 2, "geopolitics": 3, "fx": 4}
+
     def key(row: dict[str, Any]) -> tuple:
         if row["theme"] == "risk":
-            return (9, 0, 0)
-        bucket = 0 if row["confirmed"] else 1 if row["conflict"] else 2
-        return (bucket, -int(row["independent_fact_count"]), -int(row["independent_channel_count"]))
+            return (9, 9, 0)
+        # Rates/energy stay visible even when they conflict; do not hide them
+        # behind a confirmed FX or credit sidecar.
+        return (
+            theme_priority.get(row["theme"], 5),
+            0 if (row["confirmed"] or row["conflict"]) else 1,
+            -int(row["independent_fact_count"]),
+        )
 
     return sorted(states, key=key)
 
@@ -469,12 +476,16 @@ def _net_for_states(states: list[dict[str, Any]], *, vix_only: bool, missing: li
         missing_bits = "、".join(
             f"{row.get('metric')}（{row.get('reason')}：{row.get('detail')}）" for row in missing[:6]
         ) or "没有 status=ok 的方向链"
+        withheld = (
+            f"不足以综合利率/折现或能源方向。缺少：{missing_bits}。"
+            "补齐上述具体链后更新同一综合判断，不把笼统“数据不足”写成结论。"
+        )
         return {
             "stance": "risk_confirmation_only" if vix_only else "withheld",
             "text": (
-                "VIX 单独上升只确认风险状态，不形成方向，也不复制到个股"
+                "VIX 单独上升只确认风险状态，不形成方向，也不复制到个股。" + withheld
                 if vix_only
-                else f"不足以综合利率/折现或能源方向。缺少：{missing_bits}。补齐上述具体链后更新同一综合判断，不把笼统“数据不足”写成结论。"
+                else withheld
             ),
             "is_fact": False,
             "kind": "conditional_expectation",

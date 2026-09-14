@@ -101,7 +101,7 @@ def main() -> int:
             and s3_m.get("can_form_direction") is not True
             and (s3_m.get("vix") or {}).get("sets_direction") is False
             and "不形成方向" in ((s3_m.get("net_expectation") or {}).get("text") or "")
-            and s3_nvda.get("driver_synthesis") in {None, {}}
+            and not s3_nvda.get("driver_synthesis")
         )
     except Exception:
         verdict["S3"] = False
@@ -112,8 +112,8 @@ def main() -> int:
     xom_metrics = {row.get("metric") for row in xom_syn.get("drivers") or []}
     verdict["S4"] = (
         "wti" in xom_metrics
-        and aapl_syn in {None, {}}
-        and nok_syn in {None, {}}
+        and not aapl_syn
+        and not nok_syn
         and "wti" not in {row.get("metric") for row in (aapl.get("macro_chains") or [])}
     )
 
@@ -121,8 +121,8 @@ def main() -> int:
     jpm_themes = {row.get("theme") for row in jpm_syn.get("driver_themes") or []}
     verdict["S5"] = (
         bool(jpm_syn)
-        and ("credit" in jpm_themes or any("信用" in ((jpm_syn.get("why_relevant") or "") + str(jpm_syn.get("net_expectation") or ""))))
-        and aapl_syn in {None, {}}
+        and ("credit" in jpm_themes or "信用" in ((jpm_syn.get("why_relevant") or "") + str(jpm_syn.get("net_expectation") or "")))
+        and not aapl_syn
     )
 
     try:
@@ -187,8 +187,8 @@ def main() -> int:
         verdict["S10"] = (
             {"cpi", "nfp", "us2y"} <= missing
             and "缺少" in text
-            and not (text.strip() == "数据不足")
-            and "笼统" in text or "缺少" in text
+            and text.strip() != "数据不足"
+            and ("笼统" in text or "缺少" in text)
         )
     except Exception:
         verdict["S10"] = False

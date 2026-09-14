@@ -8,7 +8,10 @@
     const coverNode = $("event-coverage");
     if (!root) return;
     try {
-      const response = await fetch("/api/events", { headers: { Accept: "application/json" } });
+      const params = new URLSearchParams(location.search);
+      const macroInject = params.get("macro_inject");
+      const qs = macroInject ? `?macro_inject=${encodeURIComponent(macroInject)}` : "";
+      const response = await fetch(`/api/events${qs}`, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error(`请求失败（${response.status}）`);
       const payload = await response.json();
       const ui = window.StockPmEvents;
