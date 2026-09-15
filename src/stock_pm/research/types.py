@@ -9,7 +9,15 @@ ACTOR_API = "human_api"
 ACTOR_WORKFLOW = "workflow"
 
 ASSUMPTION_STATUSES = ("unverified", "strengthened", "unchanged", "weakened", "broken")
-THESIS_ROLES = ("core", "supporting", "watch", "risk", "none")
+THESIS_ROLES = ("core", "supporting", "watch", "risk", "none", "monitoring")
+THESIS_ROLE_ALIASES = {
+    "core": "core",
+    "supporting": "supporting",
+    "watch": "monitoring",
+    "monitoring": "monitoring",
+    "risk": "risk",
+    "none": "none",
+}
 IMPORTANCE_LEVELS = ("low", "medium", "high", "critical")
 LINK_DIRECTIONS = ("support", "oppose", "contextual")
 LINK_STRENGTHS = ("strong", "moderate", "weak")
@@ -23,7 +31,24 @@ SOURCE_QUALITIES = (
 EVIDENCE_DIRECTIONS = ("support", "oppose", "neutral")
 TASK_STATUSES = ("pending", "running", "completed", "blocked", "cancelled")
 
-CASE_KEYS = ("revenue", "earnings", "eps", "multiple", "valuation_method", "target_value", "key_assumption_ids", "notes")
+CASE_KEYS = (
+    "horizon",
+    "revenue",
+    "earnings",
+    "eps",
+    "fcf",
+    "growth_assumptions",
+    "margin_assumptions",
+    "multiple",
+    "multiple_reason",
+    "valuation_method",
+    "target_value",
+    "target_display",
+    "upside_downside",
+    "key_assumption_ids",
+    "notes",
+    "sensitivity",
+)
 
 
 def to_plain(row: Any) -> dict[str, Any]:
@@ -38,14 +63,22 @@ def to_plain(row: Any) -> dict[str, Any]:
 
 def empty_valuation_case() -> dict[str, Any]:
     return {
+        "horizon": None,
         "revenue": None,
         "earnings": None,
         "eps": None,
+        "fcf": None,
+        "growth_assumptions": None,
+        "margin_assumptions": None,
         "multiple": None,
+        "multiple_reason": None,
         "valuation_method": None,
         "target_value": None,
+        "target_display": None,
+        "upside_downside": None,
         "key_assumption_ids": [],
         "notes": "",
+        "sensitivity": [],
     }
 
 
@@ -99,6 +132,15 @@ AGENT_INDUSTRY = "industry"
 AGENT_QUANT = "quant"
 AGENT_RISK = "risk"
 AGENT_ASSUMPTION_ENGINE = "assumption_engine"
+AGENT_PM = "pm_judge"
+
+QUALITY_LEVELS = ("sufficient", "partial", "insufficient")
+QUALITY_AXES = (
+    "quality_for_discovery",
+    "quality_for_fundamental_analysis",
+    "quality_for_valuation",
+    "quality_for_final_thesis",
+)
 
 PROPOSED_ASSUMPTION_STATUSES = ("strengthen", "weaken", "unchanged", "broken")
 PROPOSED_STATUS_ALIASES = {

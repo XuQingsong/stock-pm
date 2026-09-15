@@ -156,6 +156,7 @@ def run_new_ticker_research(
     runtime: AgentRuntime | None = None,
     execute: bool = True,
     backfill: ResearchDataBackfill | bool | None = None,
+    adjudicate: bool = True,
 ) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
     service.ensure_issuer(symbol)
@@ -242,13 +243,21 @@ def run_new_ticker_research(
     from .assumptions import record_engine_proposals
 
     engine_rows = record_engine_proposals(service, symbol, workflow_run_id=workflow_run_id)
+    pm_result = None
+    if adjudicate:
+        from .pm_judge import record_pm_judgment
+
+        pm_result = record_pm_judgment(service, symbol, workflow_run_id=workflow_run_id)
     result["pack"] = service.get_pack(symbol)
     result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
     result["backfill"] = backfill_row
     result["assumption_engine"] = engine_rows
+    result["pm_judge"] = pm_result
     quality = assess_research_quality(result["pack"], evidence=result["snapshot"].get("evidence"))
+    quality_axes = (result["snapshot"] or {}).get("research_quality_axes") or {}
     counts = dict(result.get("item_counts") or {})
     counts["research_quality"] = quality
+    counts["research_quality_axes"] = quality_axes
     counts["assumption_proposals"] = len(result["snapshot"].get("assumption_proposals") or [])
     if backfill_row:
         counts["backfill_id"] = backfill_row.get("id")
@@ -262,4 +271,5 @@ def run_new_ticker_research(
     )
     result["item_counts"] = counts
     result["research_quality"] = quality
+    result["research_quality_axes"] = quality_axes
     return result

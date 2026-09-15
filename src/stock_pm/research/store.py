@@ -490,6 +490,7 @@ class ResearchStore:
             "confidence",
             "next_verification",
             "status_updated_by",
+            "invalidation_condition",
         }
         updates = {key: value for key, value in fields.items() if key in allowed}
         updates["updated_at"] = _now()
@@ -589,10 +590,16 @@ class ResearchStore:
             "long_term_view": row.get("long_term_view") or "",
             "core_thesis": row["core_thesis"],
             "key_assumption_ids": list(row.get("key_assumption_ids") or []),
+            "core_assumption_ids": list(row.get("core_assumption_ids") or row.get("key_assumption_ids") or []),
+            "supporting_assumption_ids": list(row.get("supporting_assumption_ids") or []),
             "key_risks": _jsonb(row.get("key_risks") or []),
+            "key_catalysts": _jsonb(row.get("key_catalysts") or []),
             "invalidation_conditions": _jsonb(row.get("invalidation_conditions") or []),
             "monitoring_items": _jsonb(row.get("monitoring_items") or []),
             "confidence": row.get("confidence"),
+            "research_quality": _jsonb(row.get("research_quality") or {}),
+            "market_reaction": row.get("market_reaction") or "",
+            "thesis_diff": _jsonb(row.get("thesis_diff") or {}),
             "valuation_id": row.get("valuation_id"),
             "change_summary": row.get("change_summary"),
             "actor": row["actor"],
@@ -605,16 +612,19 @@ class ResearchStore:
             """
             INSERT INTO investment_theses (
                 id, ticker, version, short_term_view, mid_term_view, long_term_view,
-                core_thesis, key_assumption_ids, key_risks, invalidation_conditions,
-                monitoring_items, confidence, valuation_id, change_summary, actor,
+                core_thesis, key_assumption_ids, core_assumption_ids, supporting_assumption_ids,
+                key_risks, key_catalysts, invalidation_conditions, monitoring_items, confidence,
+                research_quality, market_reaction, thesis_diff, valuation_id, change_summary, actor,
                 workflow_run_id, agent_run_id, model, prompt_version
             )
             VALUES (
                 %(id)s, %(ticker)s, %(version)s, %(short_term_view)s, %(mid_term_view)s,
-                %(long_term_view)s, %(core_thesis)s, %(key_assumption_ids)s, %(key_risks)s,
+                %(long_term_view)s, %(core_thesis)s, %(key_assumption_ids)s, %(core_assumption_ids)s,
+                %(supporting_assumption_ids)s, %(key_risks)s, %(key_catalysts)s,
                 %(invalidation_conditions)s, %(monitoring_items)s, %(confidence)s,
-                %(valuation_id)s, %(change_summary)s, %(actor)s, %(workflow_run_id)s,
-                %(agent_run_id)s, %(model)s, %(prompt_version)s
+                %(research_quality)s, %(market_reaction)s, %(thesis_diff)s, %(valuation_id)s,
+                %(change_summary)s, %(actor)s, %(workflow_run_id)s, %(agent_run_id)s,
+                %(model)s, %(prompt_version)s
             )
             RETURNING *
             """,
@@ -715,6 +725,95 @@ class ResearchStore:
             LIMIT 1
             """,
             {"thesis_id": thesis_id},
+        )
+
+    def list_valuations(self, ticker: str) -> list[dict[str, Any]]:
+        return self._execute(
+            """
+            SELECT * FROM research_valuations
+            WHERE ticker = %(ticker)s
+            ORDER BY created_at
+            """,
+            {"ticker": ticker.upper()},
+        )
+
+    def update_thesis_meta(self, thesis_id: str, **fields: Any) -> dict[str, Any]:
+        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id"}
+        updates = {key: value for key, value in fields.items() if key in allowed}
+        if "thesis_diff" in updates:
+            updates["thesis_diff"] = _jsonb(updates.get("thesis_diff") or {})
+        if "research_quality" in updates:
+            updates["research_quality"] = _jsonb(updates.get("research_quality") or {})
+        if not updates:
+            stored = self.get_thesis(thesis_id)
+            if stored is None:
+                raise DatabaseError(f"thesis not found: {thesis_id}")
+            return stored
+        assignments = ", ".join(f"{key} = %({key})s" for key in updates)
+        stored = self._one(
+            f"UPDATE investment_theses SET {assignments} WHERE id = %(id)s RETURNING *",
+            {"id": thesis_id, **updates},
+        )
+        if stored is None:
+            raise DatabaseError(f"thesis not found: {thesis_id}")
+        return stored
+
+    def insert_pm_ruling(self, row: dict[str, Any]) -> dict[str, Any]:
+        payload = {
+            "id": row.get("id") or new_id("rpm"),
+            "ticker": str(row["ticker"]).upper(),
+            "thesis_id": row.get("thesis_id"),
+            "workflow_run_id": row.get("workflow_run_id"),
+            "assumption_id": row["assumption_id"],
+            "final_status": row["final_status"],
+            "final_confidence": row.get("final_confidence"),
+            "thesis_role": row.get("thesis_role") or "supporting",
+            "reasoning": row["reasoning"],
+            "key_supporting_evidence_ids": list(row.get("key_supporting_evidence_ids") or []),
+            "key_opposing_evidence_ids": list(row.get("key_opposing_evidence_ids") or []),
+            "unresolved_gaps": _jsonb(row.get("unresolved_gaps") or []),
+            "invalidation_condition": row.get("invalidation_condition"),
+            "next_verification": row.get("next_verification"),
+            "engine_proposed_status": row.get("engine_proposed_status"),
+        }
+        stored = self._one(
+            """
+            INSERT INTO research_pm_rulings (
+                id, ticker, thesis_id, workflow_run_id, assumption_id, final_status,
+                final_confidence, thesis_role, reasoning, key_supporting_evidence_ids,
+                key_opposing_evidence_ids, unresolved_gaps, invalidation_condition,
+                next_verification, engine_proposed_status
+            )
+            VALUES (
+                %(id)s, %(ticker)s, %(thesis_id)s, %(workflow_run_id)s, %(assumption_id)s,
+                %(final_status)s, %(final_confidence)s, %(thesis_role)s, %(reasoning)s,
+                %(key_supporting_evidence_ids)s, %(key_opposing_evidence_ids)s, %(unresolved_gaps)s,
+                %(invalidation_condition)s, %(next_verification)s, %(engine_proposed_status)s
+            )
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return stored
+
+    def list_pm_rulings(self, ticker: str, thesis_id: str | None = None) -> list[dict[str, Any]]:
+        if thesis_id:
+            return self._execute(
+                """
+                SELECT * FROM research_pm_rulings
+                WHERE ticker = %(ticker)s AND thesis_id = %(thesis_id)s
+                ORDER BY created_at
+                """,
+                {"ticker": ticker.upper(), "thesis_id": thesis_id},
+            )
+        return self._execute(
+            """
+            SELECT * FROM research_pm_rulings
+            WHERE ticker = %(ticker)s
+            ORDER BY created_at
+            """,
+            {"ticker": ticker.upper()},
         )
 
     def upsert_pack(self, row: dict[str, Any]) -> dict[str, Any]:

@@ -373,7 +373,7 @@ def test_sprint35_same_path_avgo_cohr_xom_differentiates() -> None:
     engine_status_sets = []
     for ticker, fixture in (("AVGO", "avgo.json"), ("COHR", "cohr.json"), ("XOM", "xom.json")):
         svc = service_with_fixture(ticker, fixture)
-        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=24)
+        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=24, adjudicate=False)
         snapshot = result["snapshot"]
         engine = snapshot["assumption_engine"]
         agents = {row.get("agent_name") for row in snapshot["agent_runs"]}

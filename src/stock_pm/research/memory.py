@@ -34,6 +34,7 @@ class InMemoryResearchStore:
         self.source_documents: dict[str, dict[str, Any]] = {}
         self.backfills: dict[str, dict[str, Any]] = {}
         self.assumption_proposals: dict[str, dict[str, Any]] = {}
+        self.pm_rulings: dict[str, dict[str, Any]] = {}
         self.raw_earnings: dict[str, list[dict[str, Any]]] = {}
         self.raw_fundamentals: dict[str, Any] = {}
         self.raw_news: dict[str, list[dict[str, Any]]] = {}
@@ -244,6 +245,7 @@ class InMemoryResearchStore:
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
             "source_type": row.get("source_type") or "template_seed",
+            "invalidation_condition": row.get("invalidation_condition"),
             "created_at": _now(),
             "updated_at": _now(),
         }
@@ -318,10 +320,16 @@ class InMemoryResearchStore:
             "long_term_view": row.get("long_term_view") or "",
             "core_thesis": row["core_thesis"],
             "key_assumption_ids": list(row.get("key_assumption_ids") or []),
+            "core_assumption_ids": list(row.get("core_assumption_ids") or row.get("key_assumption_ids") or []),
+            "supporting_assumption_ids": list(row.get("supporting_assumption_ids") or []),
             "key_risks": list(row.get("key_risks") or []),
+            "key_catalysts": list(row.get("key_catalysts") or []),
             "invalidation_conditions": list(row.get("invalidation_conditions") or []),
             "monitoring_items": list(row.get("monitoring_items") or []),
             "confidence": row.get("confidence"),
+            "research_quality": dict(row.get("research_quality") or {}),
+            "market_reaction": row.get("market_reaction") or "",
+            "thesis_diff": dict(row.get("thesis_diff") or {}),
             "valuation_id": row.get("valuation_id"),
             "change_summary": row.get("change_summary"),
             "actor": row["actor"],
@@ -389,6 +397,50 @@ class InMemoryResearchStore:
     def get_valuation_for_thesis(self, thesis_id: str) -> dict[str, Any] | None:
         rows = [row for row in self.valuations.values() if row.get("thesis_id") == thesis_id]
         return _copy(rows[-1]) if rows else None
+
+    def list_valuations(self, ticker: str) -> list[dict[str, Any]]:
+        rows = [row for row in self.valuations.values() if row["ticker"] == ticker.upper()]
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return [_copy(row) for row in rows]
+
+    def update_thesis_meta(self, thesis_id: str, **fields: Any) -> dict[str, Any]:
+        row = self.theses.get(thesis_id)
+        if row is None:
+            raise DatabaseError(f"thesis not found: {thesis_id}")
+        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id"}
+        for key, value in fields.items():
+            if key in allowed:
+                row[key] = value
+        return _copy(row)
+
+    def insert_pm_ruling(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "id": row.get("id") or new_id("rpm"),
+            "ticker": str(row["ticker"]).upper(),
+            "thesis_id": row.get("thesis_id"),
+            "workflow_run_id": row.get("workflow_run_id"),
+            "assumption_id": row["assumption_id"],
+            "final_status": row["final_status"],
+            "final_confidence": row.get("final_confidence"),
+            "thesis_role": row.get("thesis_role") or "supporting",
+            "reasoning": row["reasoning"],
+            "key_supporting_evidence_ids": list(row.get("key_supporting_evidence_ids") or []),
+            "key_opposing_evidence_ids": list(row.get("key_opposing_evidence_ids") or []),
+            "unresolved_gaps": list(row.get("unresolved_gaps") or []),
+            "invalidation_condition": row.get("invalidation_condition"),
+            "next_verification": row.get("next_verification"),
+            "engine_proposed_status": row.get("engine_proposed_status"),
+            "created_at": _now(),
+        }
+        self.pm_rulings[stored["id"]] = stored
+        return _copy(stored)
+
+    def list_pm_rulings(self, ticker: str, thesis_id: str | None = None) -> list[dict[str, Any]]:
+        rows = [row for row in self.pm_rulings.values() if row["ticker"] == ticker.upper()]
+        if thesis_id:
+            rows = [row for row in rows if row.get("thesis_id") == thesis_id]
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return [_copy(row) for row in rows]
 
     def upsert_pack(self, row: dict[str, Any]) -> dict[str, Any]:
         ticker = row["ticker"].upper()

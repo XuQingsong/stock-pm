@@ -173,7 +173,7 @@ def test_persist_proposals_leave_assumption_status_unverified() -> None:
 def test_sprint3_same_workflow_for_avgo_cohr_xom() -> None:
     for ticker, fixture in (("AVGO", "avgo.json"), ("COHR", "cohr.json"), ("XOM", "xom.json")):
         svc = service_with_fixture(ticker, fixture)
-        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=24)
+        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=24, adjudicate=False)
         snapshot = result["snapshot"]
         assumptions = snapshot["assumptions"]
         engine = snapshot["assumption_engine"]

@@ -24,6 +24,7 @@ from .types import (
     LINK_STRENGTHS,
     PROPOSED_ASSUMPTION_STATUSES,
     PROPOSED_STATUS_ALIASES,
+    THESIS_ROLE_ALIASES,
     THESIS_ROLES,
     AgentOutput,
     FollowUpSpec,
@@ -178,8 +179,25 @@ class ResearchService:
             for item in payload.get("findings") or []:
                 findings.append({"agent": run.get("agent_name"), "text": item, "agent_run_id": run.get("id")})
         from .assumptions import snapshot_engine
+        from .quality import assess_research_quality_axes
 
         engine = snapshot_engine(self, symbol)
+        thesis = self.store.get_latest_thesis(symbol)
+        valuation = None
+        if thesis and thesis.get("valuation_id") and hasattr(self.store, "get_valuation"):
+            valuation = self.store.get_valuation(thesis["valuation_id"])
+        elif thesis and hasattr(self.store, "get_valuation_for_thesis"):
+            valuation = self.store.get_valuation_for_thesis(thesis["id"])
+        pm_rulings = []
+        lister = getattr(self.store, "list_pm_rulings", None)
+        if callable(lister):
+            pm_rulings = lister(symbol, thesis["id"] if thesis else None) if thesis else lister(symbol)
+        quality_axes = assess_research_quality_axes(
+            pack,
+            evidence=self.store.list_evidence(symbol),
+            assumptions=assumptions,
+            valuation=valuation,
+        )
         return {
             "ticker": symbol,
             "pack": pack,
@@ -188,6 +206,10 @@ class ResearchService:
             "assumptions": assumptions,
             "assumption_engine": engine.get("assumptions") or [],
             "assumption_proposals": engine.get("proposals") or [],
+            "thesis": thesis,
+            "valuation": valuation,
+            "pm_rulings": pm_rulings,
+            "research_quality_axes": quality_axes,
             "tasks": self.store.list_tasks(symbol, workflow_run_id),
             "workflow_runs": self.store.list_workflow_runs(symbol),
             "agent_runs": agent_runs,
@@ -356,6 +378,7 @@ class ResearchService:
         if importance not in IMPORTANCE_LEVELS:
             raise ProvenanceError("invalid importance")
         role = body.get("thesis_role") or "supporting"
+        role = THESIS_ROLE_ALIASES.get(str(role), role)
         if role not in THESIS_ROLES:
             raise ProvenanceError("invalid thesis_role")
         if role == "core" and actor != ACTOR_PM:
@@ -459,6 +482,7 @@ class ResearchService:
         thesis_role: str | None = None,
         confidence: float | None = None,
         next_verification: str | None = None,
+        invalidation_condition: str | None = None,
     ) -> dict[str, Any]:
         symbol = _ticker(ticker)
         if actor != ACTOR_PM:
@@ -478,13 +502,16 @@ class ResearchService:
                 raise ProvenanceError("invalid importance")
             fields["importance"] = importance
         if thesis_role:
-            if thesis_role not in THESIS_ROLES:
+            resolved_role = THESIS_ROLE_ALIASES.get(str(thesis_role), thesis_role)
+            if resolved_role not in THESIS_ROLES:
                 raise ProvenanceError("invalid thesis_role")
-            fields["thesis_role"] = thesis_role
+            fields["thesis_role"] = resolved_role
         if confidence is not None:
             fields["confidence"] = confidence
         if next_verification is not None:
             fields["next_verification"] = next_verification
+        if invalidation_condition is not None:
+            fields["invalidation_condition"] = invalidation_condition
         updated = self.store.update_assumption(assumption_id, **fields)
         self._audit(
             ticker=symbol,
@@ -557,7 +584,9 @@ class ResearchService:
         symbol = _ticker(ticker)
         if actor != ACTOR_PM:
             raise ResearchPermissionError("only pm_judge can write an investment thesis")
-        key_ids = [str(item) for item in (body.get("key_assumption_ids") or [])]
+        key_ids = [str(item) for item in (body.get("key_assumption_ids") or body.get("core_assumption_ids") or [])]
+        core_ids = [str(item) for item in (body.get("core_assumption_ids") or key_ids)]
+        supporting_ids = [str(item) for item in (body.get("supporting_assumption_ids") or [])]
         for assumption_id in key_ids:
             assumption = self.store.get_assumption(assumption_id)
             if assumption is None or assumption["ticker"] != symbol:
@@ -586,10 +615,16 @@ class ResearchService:
                 "long_term_view": body.get("long_term_view") or "",
                 "core_thesis": _require_text(body, "core_thesis"),
                 "key_assumption_ids": key_ids,
+                "core_assumption_ids": core_ids,
+                "supporting_assumption_ids": supporting_ids,
                 "key_risks": body.get("key_risks") or [],
+                "key_catalysts": body.get("key_catalysts") or [],
                 "invalidation_conditions": body.get("invalidation_conditions") or [],
                 "monitoring_items": body.get("monitoring_items") or [],
                 "confidence": body.get("confidence"),
+                "research_quality": body.get("research_quality") or {},
+                "market_reaction": body.get("market_reaction") or "",
+                "thesis_diff": body.get("thesis_diff") or {},
                 "change_summary": change,
                 "actor": actor,
                 "workflow_run_id": body.get("workflow_run_id"),

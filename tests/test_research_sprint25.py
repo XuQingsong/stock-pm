@@ -243,7 +243,7 @@ def test_same_backfill_path_for_three_tickers() -> None:
         assert row["steps"]["earnings"]["records_found"] >= 4
         assert row["steps"]["transcripts"]["records_found"] >= 1
         pack = svc.get_pack(ticker)
-        result = run_new_ticker_research(svc, ticker, execute=True, backfill=False, max_depth=2, max_tasks=12)
+        result = run_new_ticker_research(svc, ticker, execute=True, backfill=False, max_depth=2, max_tasks=12, adjudicate=False)
         facts = " ".join(item["fact"].lower() for item in result["snapshot"]["evidence"])
         assert "long-term" in facts or "production" in facts or "capacity" in facts
         assert result["snapshot"]["assumptions"]
