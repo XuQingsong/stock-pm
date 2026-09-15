@@ -26,7 +26,13 @@ from stock_pm.pack.copy import (
 from stock_pm.pack.overview import build_overview_payload
 from stock_pm.pack.review_page import build_review_payload
 from stock_pm.pack.stock_page import build_stock_payload
-from stock_pm.ux_copy import display_title, is_english_headline
+from stock_pm.ux_copy import (
+    carousel_label_ok,
+    display_title,
+    is_english_headline,
+    is_price_like,
+    is_readable_chinese,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -248,6 +254,7 @@ def test_packed_thesis_fields_have_no_english_headline_walls() -> None:
         for field in ("title", "conclusion", "horizon"):
             text = card.get(field) or ""
             assert not is_english_headline(text), field
+            assert not is_price_like(text), field
             for token in HORIZON_ENUM_TOKENS:
                 assert token not in text, f"{field}: {token}"
 
@@ -255,6 +262,8 @@ def test_packed_thesis_fields_have_no_english_headline_walls() -> None:
 def test_display_title_keeps_chinese_remainder_of_mixed_headlines() -> None:
     assert display_title("订单超预期：Profits surge to record high") == "订单超预期"
     assert display_title("Profits surge to record high after export curbs ease") == "相关新闻"
+    assert display_title("$332.48, +1.81% .") == "相关新闻"
+    assert display_title("$332.48, +1.81% .", fallback="$332.48") == "相关新闻"
     mixed = news_card(
         {
             "headline": "订单超预期：Profits surge to record high after export curbs ease",
@@ -267,6 +276,66 @@ def test_display_title_keeps_chinese_remainder_of_mixed_headlines() -> None:
     assert mixed["title"] == "订单超预期"
     assert "Profits surge" not in mixed["title"]
     assert "Profits surge" in ((mixed.get("basis") or {}).get("source_title") or "")
+
+
+def test_price_like_only_titles_cannot_be_carousel_primary() -> None:
+    assert is_price_like("$332.48, +1.81% .") is True
+    assert is_price_like("订单超预期，近端偏多") is False
+    assert is_readable_chinese("$332.48, +1.81% .") is False
+    assert is_readable_chinese("订单超预期，近端偏多") is True
+    watch = [{"symbol": "NVDA", "name": "NVIDIA", "active": True, "themes": ["semis"]}]
+    overview = build_overview_payload(
+        watch=watch,
+        events=[],
+        briefing={"rows": []},
+        news=[
+            {
+                "symbol": "NVDA",
+                "headline": "$332.48, +1.81% .",
+                "summary": "$332.48, +1.81%",
+                "themes": ["semis"],
+            },
+            {
+                "symbol": "NVDA",
+                "headline": "NVDA 332.48 +1.81%",
+                "summary": "+1.81% .",
+                "themes": ["semis"],
+            },
+            {
+                "symbol": "NVDA",
+                "headline": "$332.48, +1.81% .",
+                "summary": "订单超预期，近端偏多",
+                "themes": ["semis"],
+            },
+        ],
+    )
+    assert overview["featured"] is None
+    assert overview["carousel"]
+    for card in overview["carousel"]:
+        assert carousel_label_ok(card)
+        for field in ("title", "conclusion"):
+            text = card.get(field) or ""
+            assert is_readable_chinese(text), field
+            assert not is_price_like(text), field
+            assert "$332.48" not in text
+            assert "+1.81%" not in text
+            assert not is_english_headline(text)
+        original = (card.get("basis") or {}).get("source_title") or ""
+        assert "$332.48" in original or "332.48" in original
+    spoken = " ".join(
+        f"{card.get('title') or ''} {card.get('conclusion') or ''}" for card in overview["carousel"]
+    )
+    assert "订单" in spoken
+    price_only = news_card(
+        {"headline": "$332.48, +1.81% .", "summary": "+1.81%", "themes": ["semis"], "symbol": "NVDA"},
+        watch,
+    )
+    assert not carousel_label_ok(price_only)
+    assert "$332.48" not in (price_only.get("title") or "")
+    assert "$332.48" in ((price_only.get("basis") or {}).get("source_title") or "")
+    desk = (ROOT / "src/stock_pm/static/desk.js").read_text(encoding="utf-8")
+    assert "isPriceLike" in desk
+    assert "isReadableChinese" in desk
 
 
 def test_carousel_and_featured_titles_are_chinese_not_english_walls() -> None:

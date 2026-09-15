@@ -7,6 +7,8 @@ from typing import Any
 
 from stock_pm.calendar import NY_TZ, is_trading_day, session_status
 
+from stock_pm.ux_copy import carousel_label_ok
+
 from .cards import build_event_cards, focus_rows
 from .copy import scrub_visible
 
@@ -43,7 +45,7 @@ def build_overview_payload(
     watch_rows = [row for row in (watch or []) if row.get("active", True)]
     split = build_event_cards(events, watch_rows, news=news)
     featured = split["featured"]
-    carousel = split["carousel"]
+    carousel = [card for card in split["carousel"] if carousel_label_ok(card)]
     unmapped = split["unmapped"]
     all_cards = ([featured] if featured else []) + carousel + unmapped
     focus = focus_rows(watch_rows, list((briefing or {}).get("rows") or []), all_cards)
