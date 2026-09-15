@@ -17,7 +17,7 @@ from ..extract import (
     yoy_from_quarters,
 )
 from ..templates import load_prompt, load_template
-from ..types import AGENT_FUNDAMENTAL, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
+from ..types import AGENT_FUNDAMENTAL, AGENT_INDUSTRY, AGENT_QUANT, AGENT_RISK, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
@@ -338,6 +338,31 @@ class FundamentalAgent(BaseAgent):
             unique_assumptions.append(item)
         assumptions = unique_assumptions[:8]
 
+        def _assigned_for(required: tuple[str, ...]) -> tuple[str, ...]:
+            hay = " ".join(required).lower()
+            if any(
+                token in hay
+                for token in (
+                    "customer",
+                    "capex",
+                    "supply",
+                    "capacity",
+                    "competition",
+                    "end_demand",
+                    "end_market",
+                    "power",
+                    "foundry",
+                    "design_win",
+                    "contract",
+                )
+            ):
+                return (AGENT_INDUSTRY,)
+            if any(token in hay for token in ("price", "valuation", "reaction")):
+                return (AGENT_QUANT,)
+            if any(token in hay for token in ("risk", "miss", "margin", "concentration")):
+                return (AGENT_RISK,)
+            return (AGENT_SEARCH,)
+
         def follow(
             title: str,
             *,
@@ -358,7 +383,7 @@ class FundamentalAgent(BaseAgent):
                     title=title,
                     description=text,
                     task_type="verify_assumption",
-                    assigned_agents=(AGENT_SEARCH,),
+                    assigned_agents=_assigned_for(tuple(required_data)),
                     required_data=tuple(required_data),
                     source_reason=reason,
                     source_type=source_type,

@@ -48,7 +48,7 @@ def test_pack_builder_rebuilds_snapshot_from_source_refs() -> None:
 def test_sprint2_workflow_discovers_commitments_without_ticker_branches() -> None:
     for ticker, fixture in (("AVGO", "avgo.json"), ("NVDA", "nvda.json"), ("COHR", "cohr.json")):
         svc = service_with_fixture(ticker, fixture)
-        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=16)
+        result = run_new_ticker_research(svc, ticker, max_depth=3, max_tasks=24)
         snapshot = result["snapshot"]
         pack = snapshot["pack"]
         evidence = snapshot["evidence"]

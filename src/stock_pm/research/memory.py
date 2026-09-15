@@ -33,6 +33,7 @@ class InMemoryResearchStore:
         self.packs: dict[str, dict[str, Any]] = {}
         self.source_documents: dict[str, dict[str, Any]] = {}
         self.backfills: dict[str, dict[str, Any]] = {}
+        self.assumption_proposals: dict[str, dict[str, Any]] = {}
         self.raw_earnings: dict[str, list[dict[str, Any]]] = {}
         self.raw_fundamentals: dict[str, Any] = {}
         self.raw_news: dict[str, list[dict[str, Any]]] = {}
@@ -498,3 +499,31 @@ class InMemoryResearchStore:
         rows = [row for row in self.backfills.values() if row["ticker"] == ticker.upper()]
         rows.sort(key=lambda item: str(item.get("started_at") or ""), reverse=True)
         return [_copy(row) for row in rows[:20]]
+
+    def insert_assumption_proposal(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "id": row.get("id") or new_id("rap"),
+            "ticker": str(row["ticker"]).upper(),
+            "assumption_id": row["assumption_id"],
+            "current_status": row.get("current_status") or "unverified",
+            "proposed_status": row["proposed_status"],
+            "reason": row["reason"],
+            "confidence": row.get("confidence"),
+            "supporting_count": int(row.get("supporting_count") or 0),
+            "opposing_count": int(row.get("opposing_count") or 0),
+            "contextual_count": int(row.get("contextual_count") or 0),
+            "unresolved_gaps": list(row.get("unresolved_gaps") or []),
+            "produced_by": row.get("produced_by") or "assumption_engine",
+            "workflow_run_id": row.get("workflow_run_id"),
+            "agent_run_id": row.get("agent_run_id"),
+            "created_at": _now(),
+        }
+        self.assumption_proposals[stored["id"]] = stored
+        return _copy(stored)
+
+    def list_assumption_proposals(self, ticker: str, workflow_run_id: str | None = None) -> list[dict[str, Any]]:
+        rows = [row for row in self.assumption_proposals.values() if row["ticker"] == ticker.upper()]
+        if workflow_run_id:
+            rows = [row for row in rows if row.get("workflow_run_id") == workflow_run_id]
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return [_copy(row) for row in rows]

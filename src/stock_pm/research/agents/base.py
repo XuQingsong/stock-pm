@@ -76,6 +76,8 @@ class BaseAgent:
                 dict.fromkeys(list(grounded.challenged_assumption_ids) + list(enriched.challenged_assumption_ids))
             ),
             assumption_links=list(grounded.assumption_links) + list(enriched.assumption_links),
+            proposed_assumption_changes=list(grounded.proposed_assumption_changes)
+            + list(enriched.proposed_assumption_changes),
             follow_up_tasks=follow_ups,
             missing_data=list(dict.fromkeys(list(grounded.missing_data) + list(enriched.missing_data))),
             confidence=enriched.confidence if enriched.confidence is not None else grounded.confidence,

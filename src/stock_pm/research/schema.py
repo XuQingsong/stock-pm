@@ -6,10 +6,15 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .errors import SchemaError
-from .extract import NEWS_SOURCE_TYPES, has_conclusion_language
+from .extract import NEWS_SOURCE_TYPES, has_conclusion_language, has_priced_in_language
 from .types import (
     AGENT_FUNDAMENTAL,
+    AGENT_INDUSTRY,
+    AGENT_QUANT,
+    AGENT_RISK,
     AGENT_SEARCH,
+    PROPOSED_ASSUMPTION_STATUSES,
+    PROPOSED_STATUS_ALIASES,
     AgentOutput,
     follow_up_from_payload,
 )
@@ -89,6 +94,34 @@ def _clean_assumption(item: Any) -> dict[str, Any] | None:
     return payload
 
 
+def _clean_proposal(item: Any) -> dict[str, Any] | None:
+    if not isinstance(item, dict):
+        return None
+    raw_status = str(item.get("proposed_status") or item.get("status") or "").strip().lower()
+    proposed = PROPOSED_STATUS_ALIASES.get(raw_status)
+    if proposed not in PROPOSED_ASSUMPTION_STATUSES:
+        return None
+    reason = str(item.get("reason") or "").strip()
+    if not reason or has_conclusion_language(reason) or has_priced_in_language(reason):
+        return None
+    assumption_id = str(item.get("assumption_id") or "").strip()
+    statement = str(item.get("statement") or "").strip()
+    if not assumption_id and not statement:
+        return None
+    gaps = item.get("unresolved_gaps") or []
+    if not isinstance(gaps, list):
+        gaps = [gaps]
+    payload = {
+        "assumption_id": assumption_id,
+        "statement": statement,
+        "proposed_status": proposed,
+        "reason": reason,
+        "confidence": _clamp_confidence(item.get("confidence")),
+        "unresolved_gaps": [str(gap).strip() for gap in gaps if str(gap).strip()],
+    }
+    return payload
+
+
 def output_from_payload(payload: dict[str, Any], *, agent_name: str = "") -> AgentOutput:
     if not isinstance(payload, dict):
         raise SchemaError("agent output must be a JSON object")
@@ -101,17 +134,28 @@ def output_from_payload(payload: dict[str, Any], *, agent_name: str = "") -> Age
         if spec.title:
             follow_ups.append(spec)
     findings = []
+    drop_conclusions = agent_name in {
+        AGENT_SEARCH,
+        AGENT_FUNDAMENTAL,
+        AGENT_INDUSTRY,
+        AGENT_QUANT,
+        AGENT_RISK,
+        "",
+    }
     for item in _as_list(payload.get("findings")):
         text = str(item).strip()
         if not text:
             continue
-        if agent_name == AGENT_SEARCH and has_conclusion_language(text):
+        if has_priced_in_language(text):
+            continue
+        if drop_conclusions and has_conclusion_language(text):
             continue
         findings.append(text)
     evidence = [row for row in (_clean_evidence(item) for item in _as_list(payload.get("new_evidence"))) if row]
     assumptions = [row for row in (_clean_assumption(item) for item in _as_list(payload.get("new_assumptions"))) if row]
     if agent_name == AGENT_SEARCH:
         assumptions = []
+    proposals = [row for row in (_clean_proposal(item) for item in _as_list(payload.get("proposed_assumption_changes"))) if row]
     return AgentOutput(
         findings=findings,
         new_evidence=evidence,
@@ -119,6 +163,7 @@ def output_from_payload(payload: dict[str, Any], *, agent_name: str = "") -> Age
         supported_assumption_ids=[str(item) for item in _as_list(payload.get("supported_assumption_ids")) if item],
         challenged_assumption_ids=[str(item) for item in _as_list(payload.get("challenged_assumption_ids")) if item],
         assumption_links=[dict(item) for item in _as_list(payload.get("assumption_links")) if isinstance(item, dict)],
+        proposed_assumption_changes=proposals,
         follow_up_tasks=follow_ups,
         missing_data=[str(item).strip() for item in _as_list(payload.get("missing_data")) if str(item).strip()],
         confidence=_clamp_confidence(payload.get("confidence")),
@@ -137,6 +182,7 @@ def validate_agent_output(output: AgentOutput | dict[str, Any], *, agent_name: s
             "supported_assumption_ids": output.supported_assumption_ids,
             "challenged_assumption_ids": output.challenged_assumption_ids,
             "assumption_links": output.assumption_links,
+            "proposed_assumption_changes": output.proposed_assumption_changes,
             "follow_up_tasks": output.follow_up_tasks,
             "missing_data": output.missing_data,
             "confidence": output.confidence,
@@ -149,6 +195,12 @@ def validate_agent_output(output: AgentOutput | dict[str, Any], *, agent_name: s
         payload = dict(output)
         name = str(payload.get("agent_name") or agent_name)
     cleaned = output_from_payload(payload, agent_name=name)
-    if name == AGENT_FUNDAMENTAL and has_conclusion_language(" ".join(cleaned.findings)):
-        cleaned.findings = [item for item in cleaned.findings if not has_conclusion_language(item)]
+    if name in {AGENT_FUNDAMENTAL, AGENT_QUANT, AGENT_INDUSTRY, AGENT_RISK} and (
+        has_conclusion_language(" ".join(cleaned.findings)) or has_priced_in_language(" ".join(cleaned.findings))
+    ):
+        cleaned.findings = [
+            item
+            for item in cleaned.findings
+            if not has_conclusion_language(item) and not has_priced_in_language(item)
+        ]
     return cleaned

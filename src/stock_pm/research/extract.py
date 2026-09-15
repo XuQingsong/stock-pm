@@ -104,13 +104,67 @@ BOILERPLATE_SKIP = re.compile(
     r"incorporated by reference|furnished pursuant|"
     r"long[- ]term debt|other long[- ]term liabilities|total liabilities|"
     r"accelerated filer|emerging growth|stockholders.? equity|"
-    r"check the appropriate box|not indicative of revenue)",
+    r"check the appropriate box|not indicative of revenue|"
+    r"account for a contract with a customer|"
+    r"revenue from contracts with customers|"
+    r"both parties have approved the contract)",
     re.I,
 )
 
 CONCLUSION_MARKERS = re.compile(
-    r"\b(buy|sell|overweight|underweight|price target|fair value|undervalued|overvalued|accumulate)\b",
+    r"\b(buy|sell|overweight|underweight|price target|fair value|undervalued|overvalued|accumulate|priced[_\s-]*in)\b",
     re.I,
+)
+
+PRICED_IN_MARKERS = re.compile(r"priced[_\s-]*in", re.I)
+
+INDUSTRY_PATTERNS = (
+    re.compile(
+        r"(customer|client|hyperscal\w*).{0,120}(capex|capital expend|capital spend|deploy|demand|forecast|commit)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(capex|capital expend|capital spend).{0,140}(data[- ]center|customer|ai|demand|increase|raise|plan)",
+        re.I | re.S,
+    ),
+    re.compile(r"(market share|share of (?:the )?market).{0,100}(\d|percent|%|leader|compet)", re.I | re.S),
+    re.compile(
+        r"(competitor|competition|competitive).{0,140}(share|price|product|customer|response|displace)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(supply|foundry|packag\w*|capacity|wafer|production).{0,140}"
+        r"(support|constrain|ramp|online|agreement|lock|enough|insufficient)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(data[- ]center|power|electricit\w*|grid).{0,120}(capacity|constrain|deploy|build|available)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(long[- ]term|multi-year|supply).{0,80}(agreement|contract|commit|purchase)",
+        re.I | re.S,
+    ),
+)
+
+RISK_PATTERNS = (
+    re.compile(
+        r"(largest|single|one|top)\s+customer.{0,100}(\d[\d\.]*)\s*(%|percent)",
+        re.I | re.S,
+    ),
+    re.compile(r"(customer concentration|concentrated (?:customer|revenue)).{0,120}", re.I | re.S),
+    re.compile(
+        r"(pull[- ]in|inventory build|channel fill|one[- ]off|temporary).{0,100}(demand|revenue|growth)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"\b(delay(?:ed|s)?|miss(?:ed|es)?|shortfall|push[- ]out|slip(?:ped|page)?)\b.{0,90}"
+        r"(deploy|ramp|revenue|guidanc|production|project)",
+        re.I | re.S,
+    ),
+    re.compile(r"(margin|gross margin).{0,80}(compress|decline|pressure|mix|erosion)", re.I | re.S),
+    re.compile(r"(execution).{0,80}(risk|depend|delay|ramp|uncertain)", re.I | re.S),
+    re.compile(r"(commodity|price) (?:cycle|volatility|decline).{0,80}(demand|cash|margin|volume)", re.I | re.S),
 )
 
 
@@ -349,3 +403,15 @@ def source_type_for_document(row: dict[str, Any] | None) -> str:
 
 def has_conclusion_language(text: str) -> bool:
     return bool(CONCLUSION_MARKERS.search(text or ""))
+
+
+def has_priced_in_language(text: str) -> bool:
+    return bool(PRICED_IN_MARKERS.search(text or ""))
+
+
+def extract_industry_mentions(text: str) -> list[dict[str, str]]:
+    return _scan(INDUSTRY_PATTERNS, text, kind="industry")
+
+
+def extract_risk_mentions(text: str) -> list[dict[str, str]]:
+    return _scan(RISK_PATTERNS, text, kind="risk")

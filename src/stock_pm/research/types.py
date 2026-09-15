@@ -88,6 +88,21 @@ class AgentInput:
 
 AGENT_SEARCH = "search_data"
 AGENT_FUNDAMENTAL = "fundamental"
+AGENT_INDUSTRY = "industry"
+AGENT_QUANT = "quant"
+AGENT_RISK = "risk"
+AGENT_ASSUMPTION_ENGINE = "assumption_engine"
+
+PROPOSED_ASSUMPTION_STATUSES = ("strengthen", "weaken", "unchanged", "broken")
+PROPOSED_STATUS_ALIASES = {
+    "strengthen": "strengthen",
+    "strengthened": "strengthen",
+    "weaken": "weaken",
+    "weakened": "weaken",
+    "unchanged": "unchanged",
+    "broken": "broken",
+}
+TENSION_STATES = ("fundamentals_ahead", "price_ahead", "aligned", "unclear")
 
 AGENT_OUTPUT_SCHEMA = {
     "type": "object",
@@ -99,6 +114,7 @@ AGENT_OUTPUT_SCHEMA = {
         "supported_assumption_ids": {"type": "array", "items": {"type": "string"}},
         "challenged_assumption_ids": {"type": "array", "items": {"type": "string"}},
         "assumption_links": {"type": "array", "items": {"type": "object"}},
+        "proposed_assumption_changes": {"type": "array", "items": {"type": "object"}},
         "follow_up_tasks": {"type": "array"},
         "missing_data": {"type": "array", "items": {"type": "string"}},
         "confidence": {"type": "number"},
@@ -115,6 +131,7 @@ class AgentOutput:
     challenged_assumption_ids: list[str] = field(default_factory=list)
     assumption_links: list[dict[str, Any]] = field(default_factory=list)
     follow_up_tasks: list[FollowUpSpec | dict[str, Any]] = field(default_factory=list)
+    proposed_assumption_changes: list[dict[str, Any]] = field(default_factory=list)
     missing_data: list[str] = field(default_factory=list)
     confidence: float | None = None
     agent_name: str = ""

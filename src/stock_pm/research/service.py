@@ -20,6 +20,8 @@ from .types import (
     IMPORTANCE_LEVELS,
     LINK_DIRECTIONS,
     LINK_STRENGTHS,
+    PROPOSED_ASSUMPTION_STATUSES,
+    PROPOSED_STATUS_ALIASES,
     THESIS_ROLES,
     AgentOutput,
     FollowUpSpec,
@@ -173,12 +175,17 @@ class ResearchService:
             payload = run.get("output_json") or {}
             for item in payload.get("findings") or []:
                 findings.append({"agent": run.get("agent_name"), "text": item, "agent_run_id": run.get("id")})
+        from .assumptions import snapshot_engine
+
+        engine = snapshot_engine(self, symbol)
         return {
             "ticker": symbol,
             "pack": pack,
             "findings": findings,
             "evidence": self.store.list_evidence(symbol),
             "assumptions": assumptions,
+            "assumption_engine": engine.get("assumptions") or [],
+            "assumption_proposals": engine.get("proposals") or [],
             "tasks": self.store.list_tasks(symbol, workflow_run_id),
             "workflow_runs": self.store.list_workflow_runs(symbol),
             "agent_runs": agent_runs,
@@ -474,6 +481,61 @@ class ResearchService:
         )
         return updated
 
+    def record_assumption_proposal(self, ticker: str, body: dict[str, Any], *, actor: str | None = None) -> dict[str, Any]:
+        """Agents and the engine may suggest a status. They cannot write assumption.status."""
+        symbol = _ticker(ticker)
+        raw = str(body.get("proposed_status") or "").strip().lower()
+        proposed = PROPOSED_STATUS_ALIASES.get(raw)
+        if proposed not in PROPOSED_ASSUMPTION_STATUSES:
+            raise ProvenanceError("invalid proposed assumption status")
+        assumption_id = str(body.get("assumption_id") or "").strip()
+        assumption = self.store.get_assumption(assumption_id) if assumption_id else None
+        if assumption is None:
+            statement = str(body.get("statement") or "").strip()
+            if statement:
+                assumption = next(
+                    (row for row in self.store.list_assumptions(symbol) if row.get("statement") == statement),
+                    None,
+                )
+        if assumption is None or assumption["ticker"] != symbol:
+            raise ProvenanceError("proposal requires an existing assumption on this ticker")
+        reason = str(body.get("reason") or "").strip()
+        if not reason:
+            raise ProvenanceError("proposal reason is required")
+        inserter = getattr(self.store, "insert_assumption_proposal", None)
+        if not callable(inserter):
+            raise ProvenanceError("store cannot persist assumption proposals")
+        row = inserter(
+            {
+                "ticker": symbol,
+                "assumption_id": assumption["id"],
+                "current_status": assumption.get("status") or "unverified",
+                "proposed_status": proposed,
+                "reason": reason,
+                "confidence": body.get("confidence"),
+                "supporting_count": body.get("supporting_count") or 0,
+                "opposing_count": body.get("opposing_count") or 0,
+                "contextual_count": body.get("contextual_count") or 0,
+                "unresolved_gaps": body.get("unresolved_gaps") or [],
+                "produced_by": actor or body.get("produced_by") or "assumption_engine",
+                "workflow_run_id": body.get("workflow_run_id"),
+                "agent_run_id": body.get("agent_run_id"),
+            }
+        )
+        self._audit(
+            ticker=symbol,
+            agent_name=str(row.get("produced_by") or "assumption_engine"),
+            workflow_run_id=row.get("workflow_run_id"),
+            payload={
+                "op": "assumption_proposal",
+                "assumption_id": assumption["id"],
+                "proposed_status": proposed,
+                "current_status": assumption.get("status"),
+            },
+            output={"proposal_id": row["id"], "status_unchanged": assumption.get("status")},
+        )
+        return row
+
     def create_thesis(self, ticker: str, body: dict[str, Any], *, actor: str) -> dict[str, Any]:
         symbol = _ticker(ticker)
         if actor != ACTOR_PM:
@@ -695,12 +757,23 @@ class ResearchService:
             actor=actor,
             agent_run_id=agent_run_id,
         )
+        proposals = []
+        for item in output.proposed_assumption_changes:
+            payload = dict(item)
+            payload.setdefault("workflow_run_id", task.get("workflow_run_id"))
+            payload.setdefault("agent_run_id", agent_run_id)
+            payload.setdefault("produced_by", actor)
+            try:
+                proposals.append(self.record_assumption_proposal(ticker, payload, actor=actor))
+            except ProvenanceError:
+                continue
         return {
             "evidence": evidence_rows,
             "assumptions": assumption_rows,
             "follow_ups": follow_ups,
             "dropped_follow_ups": dropped,
             "missing_data": list(output.missing_data),
+            "assumption_proposals": proposals,
         }
 
     def empty_thesis(self, ticker: str) -> dict[str, Any]:

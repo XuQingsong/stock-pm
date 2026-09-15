@@ -29,3 +29,8 @@ def load_prompt(name: str) -> str:
     if not path.is_file():
         return ""
     return path.read_text(encoding="utf-8").strip()
+
+
+def verification_seeds(template_id: str | None) -> list[dict[str, Any]]:
+    template = load_template(template_id)
+    return [dict(item) for item in (template.get("verification_seeds") or []) if isinstance(item, dict)]

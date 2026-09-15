@@ -69,7 +69,18 @@ class DictPackSource:
         return [dict(item) for item in (self._row(ticker).get("official_documents") or [])]
 
     def closes(self, ticker: str) -> list[dict[str, Any]]:
-        return [dict(item) for item in (self._row(ticker).get("closes") or [])]
+        key = str(ticker or "").upper()
+        own = self._row(key)
+        if own.get("closes"):
+            return [dict(item) for item in own["closes"]]
+        for row in self.payload.values():
+            benches = row.get("benchmarks") or {}
+            if not isinstance(benches, dict):
+                continue
+            for name, bars in benches.items():
+                if str(name).upper() == key:
+                    return [dict(item) for item in (bars or [])]
+        return []
 
 
 def documents_to_transcripts(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -291,7 +302,8 @@ class DatabasePackSource:
             """
             SELECT DISTINCT ON (bar_time::date)
                    bar_time::date AS session_date,
-                   close_price
+                   close_price,
+                   volume
             FROM daily_price_bars
             WHERE symbol = %s
             ORDER BY bar_time::date, bar_time DESC

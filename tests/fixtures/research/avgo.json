@@ -116,6 +116,17 @@
       ]
     }
   ],
+  "official_documents": [
+    {
+      "title": "Q1 earnings release",
+      "doc_type": "earnings_release",
+      "source_type": "earnings_release",
+      "source": "sec",
+      "url": "https://example.test/ex99-1",
+      "published_at": "2026-03-05T21:00:00+00:00",
+      "text": "Customers increased capital expenditure plans for data-center deployments. Supply agreements with foundry partners cover the next two years. The largest customer accounted for 21 percent of revenue. Competitive responses remain focused on custom silicon. Data-center power capacity is a stated constraint on the deployment timeline."
+    }
+  ],
   "news": [
     {
       "headline": "Customer disclosed a larger data-center build for next year",

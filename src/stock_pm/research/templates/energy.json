@@ -1,10 +1,37 @@
 {
   "id": "energy",
+  "benchmark_etf": "XLE",
   "question_axes": [
     {"id": "revenue_growth", "question": "Is cash generation durable through the commodity cycle?"},
     {"id": "guidance_delivery", "question": "Can management deliver production and capex guidance?"},
     {"id": "end_demand", "question": "Is downstream demand consistent with the volume plan?"},
     {"id": "supply_capacity", "question": "Can upstream capacity and projects come online as stated?"},
     {"id": "management_delivery", "question": "Has management historically delivered against production and return targets?"}
+  ],
+  "verification_seeds": [
+    {
+      "task_type": "industry_check",
+      "title": "Verify industry demand, customer capex, competition, and supply",
+      "description": "Check downstream demand, project capacity, and whether production plans are supported outside issuer commentary.",
+      "assigned_agents": ["industry"],
+      "required_data": ["end_demand", "supply_capacity", "customer_capex"],
+      "priority": 20
+    },
+    {
+      "task_type": "quant_price_in",
+      "title": "Measure earnings-window price reaction versus indexes and the sector ETF",
+      "description": "Compute event-window returns versus SPY, QQQ, and the sector ETF. Describe fundamentals-versus-price tension. Do not conclude that news is priced in.",
+      "assigned_agents": ["quant"],
+      "required_data": ["price_reaction", "valuation"],
+      "priority": 30
+    },
+    {
+      "task_type": "skeptic_attack",
+      "title": "Seek counter-evidence and alternative explanations",
+      "description": "Attack demand, execution, customer concentration, margin, and valuation assumptions. Record opposing evidence and unresolved gaps.",
+      "assigned_agents": ["risk"],
+      "required_data": ["demand_risk", "execution_risk", "concentration", "margin_risk", "valuation_risk"],
+      "priority": 40
+    }
   ]
 }

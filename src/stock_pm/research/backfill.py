@@ -440,6 +440,28 @@ class ResearchDataBackfill:
                     sources.append(f"{ticker}:{result['source']}")
             elif result.get("error"):
                 errors.append(f"{ticker}:{result['error']}")
+        try:
+            from .classify import classify_from_issuer
+            from .templates import load_template
+
+            issuer = None
+            getter = getattr(self.service.store, "get_issuer", None)
+            if callable(getter):
+                issuer = getter(symbol)
+            etf = str(load_template(classify_from_issuer(issuer or {})).get("benchmark_etf") or "").upper()
+            if etf and etf not in {symbol, "SPY", "QQQ"} and self._remaining() > 1:
+                result = self.fetchers.daily_bars(etf, days=430)
+                bars = list(result.get("bars") or [])
+                self._remember(etf, "bars", bars)
+                if bars:
+                    self._persist_bars(etf, bars, source=str(result.get("source") or "alpaca"))
+                    written += len(bars)
+                    if result.get("source"):
+                        sources.append(f"{etf}:{result['source']}")
+                elif result.get("error"):
+                    errors.append(f"{etf}:{result['error']}")
+        except Exception as exc:
+            errors.append(f"sector_etf:{exc}")
         if written and symbol in (self._overlay_map("bars") or {}) and self._overlay(symbol, "bars"):
             status = "success" if not errors else "partial"
         elif written:

@@ -35,6 +35,57 @@ def index_closes(rows: list[dict[str, Any]] | None) -> list[tuple[date, float]]:
     return sorted(by_day.items(), key=lambda item: item[0])
 
 
+def index_volumes(rows: list[dict[str, Any]] | None) -> list[tuple[date, float]]:
+    by_day: dict[date, float] = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        session = _as_date(row.get("session_date") or row.get("bar_time") or row.get("date"))
+        volume = to_number(row.get("volume"))
+        if session is None or volume is None:
+            continue
+        by_day[session] = volume
+    return sorted(by_day.items(), key=lambda item: item[0])
+
+
+def realized_vol(sessions: list[tuple[date, float]], end_idx: int, lookback: int = 20) -> float | None:
+    if end_idx is None or end_idx < 2:
+        return None
+    start = max(1, end_idx - lookback + 1)
+    rets: list[float] = []
+    for idx in range(start, end_idx + 1):
+        ret = _ret(sessions[idx][1], sessions[idx - 1][1])
+        if ret is not None:
+            rets.append(ret)
+    if len(rets) < 5:
+        return None
+    mean = sum(rets) / len(rets)
+    var = sum((item - mean) ** 2 for item in rets) / (len(rets) - 1)
+    return round(var ** 0.5, 2)
+
+
+def volume_ratio_for_print(
+    volumes: list[tuple[date, float]],
+    report_date: Any,
+    report_timing: str | None,
+    lookback: int = 20,
+) -> float | None:
+    target = reaction_date_for(report_date, report_timing)
+    if target is None or not volumes:
+        return None
+    idx = _find_on_or_after(volumes, target)
+    if idx is None:
+        return None
+    day = volumes[idx][1]
+    prior = [row[1] for row in volumes[max(0, idx - lookback) : idx] if row[1]]
+    if not prior or day is None:
+        return None
+    avg = sum(prior) / len(prior)
+    if avg in (None, 0):
+        return None
+    return round(day / avg, 2)
+
+
 def _find_on_or_after(sessions: list[tuple[date, float]], target: date) -> int | None:
     for idx, (session, _price) in enumerate(sessions):
         if session >= target:
@@ -102,12 +153,21 @@ def price_reaction_for_print(
     stock: list[tuple[date, float]],
     spy: list[tuple[date, float]] | None = None,
     qqq: list[tuple[date, float]] | None = None,
+    sector: list[tuple[date, float]] | None = None,
+    volumes: list[tuple[date, float]] | None = None,
 ) -> dict[str, float | None]:
     own = window_returns(stock, report_date, report_timing)
     spy_win = window_returns(spy or [], report_date, report_timing) if spy else {}
     qqq_win = window_returns(qqq or [], report_date, report_timing) if qqq else {}
+    sector_win = window_returns(sector or [], report_date, report_timing) if sector else {}
     own["vs_spy_1d_pct"] = relative_return(own.get("post_1d_return_pct"), spy_win.get("post_1d_return_pct"))
     own["vs_spy_5d_pct"] = relative_return(own.get("post_5d_return_pct"), spy_win.get("post_5d_return_pct"))
     own["vs_qqq_1d_pct"] = relative_return(own.get("post_1d_return_pct"), qqq_win.get("post_1d_return_pct"))
     own["vs_qqq_5d_pct"] = relative_return(own.get("post_5d_return_pct"), qqq_win.get("post_5d_return_pct"))
+    own["vs_sector_1d_pct"] = relative_return(own.get("post_1d_return_pct"), sector_win.get("post_1d_return_pct"))
+    own["vs_sector_5d_pct"] = relative_return(own.get("post_5d_return_pct"), sector_win.get("post_5d_return_pct"))
+    own["volume_vs_20d_avg"] = volume_ratio_for_print(volumes or [], report_date, report_timing) if volumes else None
+    target = reaction_date_for(report_date, report_timing)
+    idx = _find_on_or_after(stock, target) if target is not None else None
+    own["pre_20d_realized_vol"] = realized_vol(stock, (idx - 1) if idx else -1)
     return own

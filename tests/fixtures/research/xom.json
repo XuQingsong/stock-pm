@@ -1,0 +1,93 @@
+{
+  "issuer": {
+    "legal_name": "Example Energy Co",
+    "cik": "0000034088",
+    "fiscal_year_end_month": 12,
+    "sector": "能源",
+    "asset_class": "stocks"
+  },
+  "fundamentals": {
+    "captured_at": "2026-02-02T00:00:00+00:00",
+    "revenue_ttm": 340000000000,
+    "eps_ttm": 7.8,
+    "gross_margin_pct": 28.0,
+    "operating_margin_pct": 12.0,
+    "net_margin_pct": 10.0,
+    "revenue_growth_yoy_pct": -4.0,
+    "eps_growth_yoy_pct": -6.0,
+    "source": "fixture",
+    "raw_data": {"metrics": {"freeCashFlowTTM": 30000000000}}
+  },
+  "earnings": [
+    {
+      "fiscal_period": "2025Q4",
+      "fiscal_year": 2025,
+      "report_date": "2026-01-31",
+      "source": "earnings_reports",
+      "revenue_actual": 81000000000,
+      "revenue_estimate": 80000000000,
+      "eps_actual": 1.90,
+      "eps_estimate": 1.85,
+      "net_income_actual": 7600000000,
+      "post_1d_return_pct": -1.2,
+      "post_5d_return_pct": -2.4
+    },
+    {
+      "fiscal_period": "2025Q3",
+      "fiscal_year": 2025,
+      "report_date": "2025-10-31",
+      "source": "earnings_reports",
+      "revenue_actual": 83000000000,
+      "eps_actual": 2.00,
+      "net_income_actual": 8000000000
+    },
+    {
+      "fiscal_period": "2025Q2",
+      "fiscal_year": 2025,
+      "report_date": "2025-08-01",
+      "source": "earnings_reports",
+      "revenue_actual": 89000000000,
+      "eps_actual": 2.20,
+      "net_income_actual": 9000000000
+    },
+    {
+      "fiscal_period": "2025Q1",
+      "fiscal_year": 2025,
+      "report_date": "2025-05-02",
+      "source": "earnings_reports",
+      "revenue_actual": 80000000000,
+      "eps_actual": 1.80,
+      "net_income_actual": 7000000000
+    }
+  ],
+  "guidance": [
+    {
+      "text": "Next year oil volume guidance is unchanged while capex stays within the stated range.",
+      "move": "maintained",
+      "source": "earnings call",
+      "source_time": "2026-01-31T21:00:00+00:00"
+    }
+  ],
+  "transcripts": [
+    {
+      "quarter": "2025Q4",
+      "source": "earnings call",
+      "source_time": "2026-01-31T21:00:00+00:00",
+      "text": "We remain committed to production and return targets over the next five years. Downstream demand is consistent with the volume plan. Execution depends on project ramps remaining on schedule. Commodity price volatility can pressure cash generation.",
+      "excerpts": [
+        {"text": "We remain committed to production and return targets over the next five years."}
+      ]
+    }
+  ],
+  "official_documents": [
+    {
+      "title": "Q4 earnings release",
+      "doc_type": "earnings_release",
+      "source_type": "earnings_release",
+      "source": "sec",
+      "url": "https://example.test/xom-ex99",
+      "published_at": "2026-01-31T21:00:00+00:00",
+      "text": "Customers in refining increased capital expenditure on downstream projects. Supply capacity additions are scheduled to come online next year. The largest customer accounted for 9 percent of revenue. Commodity price cycle demand remains the main volume risk."
+    }
+  ]
+}

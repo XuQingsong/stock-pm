@@ -1,5 +1,6 @@
 {
   "id": "semiconductor",
+  "benchmark_etf": "SOXX",
   "question_axes": [
     {"id": "revenue_growth", "question": "Is revenue growth durable or a single product cycle?"},
     {"id": "end_demand", "question": "Is end demand real and customer-confirmed?"},
@@ -9,5 +10,31 @@
     {"id": "gross_margin", "question": "Are margins sustainable as mix shifts?"},
     {"id": "competition", "question": "What competitive responses could invalidate the plan?"},
     {"id": "management_delivery", "question": "Has management historically delivered against guidance and long-term targets?"}
+  ],
+  "verification_seeds": [
+    {
+      "task_type": "industry_check",
+      "title": "Verify industry demand, customer capex, competition, and supply",
+      "description": "Check customer capital spending, competitive responses, and whether supply can support the plan.",
+      "assigned_agents": ["industry"],
+      "required_data": ["customer_capex", "end_demand", "competition", "supply_capacity"],
+      "priority": 20
+    },
+    {
+      "task_type": "quant_price_in",
+      "title": "Measure earnings-window price reaction versus indexes and the sector ETF",
+      "description": "Compute event-window returns versus SPY, QQQ, and the sector ETF. Describe fundamentals-versus-price tension. Do not conclude that news is priced in.",
+      "assigned_agents": ["quant"],
+      "required_data": ["price_reaction", "valuation"],
+      "priority": 30
+    },
+    {
+      "task_type": "skeptic_attack",
+      "title": "Seek counter-evidence and alternative explanations",
+      "description": "Attack demand, execution, customer concentration, margin, and valuation assumptions. Record opposing evidence and unresolved gaps.",
+      "assigned_agents": ["risk"],
+      "required_data": ["demand_risk", "execution_risk", "concentration", "margin_risk", "valuation_risk"],
+      "priority": 40
+    }
   ]
 }

@@ -899,6 +899,62 @@ class ResearchStore:
         assert stored is not None
         return stored
 
+    def insert_assumption_proposal(self, row: dict[str, Any]) -> dict[str, Any]:
+        payload = {
+            "id": row.get("id") or new_id("rap"),
+            "ticker": row["ticker"].upper(),
+            "assumption_id": row["assumption_id"],
+            "current_status": row.get("current_status") or "unverified",
+            "proposed_status": row["proposed_status"],
+            "reason": row["reason"],
+            "confidence": row.get("confidence"),
+            "supporting_count": int(row.get("supporting_count") or 0),
+            "opposing_count": int(row.get("opposing_count") or 0),
+            "contextual_count": int(row.get("contextual_count") or 0),
+            "unresolved_gaps": _jsonb(row.get("unresolved_gaps") or []),
+            "produced_by": row.get("produced_by") or "assumption_engine",
+            "workflow_run_id": row.get("workflow_run_id"),
+            "agent_run_id": row.get("agent_run_id"),
+        }
+        stored = self._one(
+            """
+            INSERT INTO research_assumption_proposals (
+                id, ticker, assumption_id, current_status, proposed_status, reason,
+                confidence, supporting_count, opposing_count, contextual_count,
+                unresolved_gaps, produced_by, workflow_run_id, agent_run_id
+            )
+            VALUES (
+                %(id)s, %(ticker)s, %(assumption_id)s, %(current_status)s, %(proposed_status)s,
+                %(reason)s, %(confidence)s, %(supporting_count)s, %(opposing_count)s,
+                %(contextual_count)s, %(unresolved_gaps)s, %(produced_by)s,
+                %(workflow_run_id)s, %(agent_run_id)s
+            )
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return stored
+
+    def list_assumption_proposals(self, ticker: str, workflow_run_id: str | None = None) -> list[dict[str, Any]]:
+        if workflow_run_id:
+            return self._execute(
+                """
+                SELECT * FROM research_assumption_proposals
+                WHERE ticker = %(ticker)s AND workflow_run_id = %(workflow_run_id)s
+                ORDER BY created_at
+                """,
+                {"ticker": ticker.upper(), "workflow_run_id": workflow_run_id},
+            )
+        return self._execute(
+            """
+            SELECT * FROM research_assumption_proposals
+            WHERE ticker = %(ticker)s
+            ORDER BY created_at
+            """,
+            {"ticker": ticker.upper()},
+        )
+
     def latest_backfill(self, ticker: str) -> dict[str, Any] | None:
         return self._one(
             """

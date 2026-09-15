@@ -7,8 +7,9 @@ from typing import Any
 
 from .backfill import ResearchDataBackfill, can_live_backfill, should_backfill
 from .quality import apply_quality_to_status, assess_research_quality
-from .runtime import AgentRuntime, agent_name_for_task
+from .runtime import AgentRuntime, agent_name_for_task, built_in_agents
 from .service import ResearchService
+from .templates import verification_seeds
 from .types import AGENT_FUNDAMENTAL, AgentInput, AgentOutput, to_plain
 
 
@@ -87,6 +88,7 @@ def run_follow_up_loop(
                     "missing_data": list(output.missing_data),
                     "model": output.model,
                     "prompt_version": output.prompt_version,
+                    "proposed_assumption_changes": list(output.proposed_assumption_changes),
                 },
                 confidence=output.confidence,
                 model=output.model,
@@ -193,6 +195,25 @@ def run_new_ticker_research(
             },
             actor="workflow",
         )
+        for seed in verification_seeds(pack.get("template_id")):
+            title = str(seed.get("title") or "").strip()
+            if not title:
+                continue
+            service.create_task(
+                symbol,
+                {
+                    "workflow_run_id": workflow_run_id,
+                    "task_type": str(seed.get("task_type") or "verify_assumption"),
+                    "title": title,
+                    "description": str(seed.get("description") or title),
+                    "source_reason": "template seed",
+                    "source_type": "template_seed",
+                    "assigned_agents": list(seed.get("assigned_agents") or []),
+                    "required_data": list(seed.get("required_data") or []),
+                    "priority": int(seed.get("priority") or 50),
+                },
+                actor="workflow",
+            )
     if not execute:
         return {
             "workflow_run": service.store.get_workflow_run(workflow_run_id),
@@ -202,8 +223,6 @@ def run_new_ticker_research(
         }
     resolved_runtime = runtime
     if resolved_runtime is None:
-        from .agents.fundamental import FundamentalAgent
-        from .agents.search_data import SearchDataAgent
         from .live_fetch import LiveResearchFetchers
 
         tools = None
@@ -211,10 +230,7 @@ def run_new_ticker_research(
             tools = getattr(service, "fetchers", None) or LiveResearchFetchers()
         resolved_runtime = AgentRuntime(
             completer=service.completer,
-            agents={
-                "search_data": SearchDataAgent(completer=service.completer, tools=tools),
-                "fundamental": FundamentalAgent(completer=service.completer),
-            },
+            agents=built_in_agents(completer=service.completer, tools=tools),
         )
     result = run_follow_up_loop(
         service,
@@ -223,12 +239,17 @@ def run_new_ticker_research(
         runner=runtime_runner(resolved_runtime),
         actor="workflow",
     )
+    from .assumptions import record_engine_proposals
+
+    engine_rows = record_engine_proposals(service, symbol, workflow_run_id=workflow_run_id)
     result["pack"] = service.get_pack(symbol)
     result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
     result["backfill"] = backfill_row
+    result["assumption_engine"] = engine_rows
     quality = assess_research_quality(result["pack"], evidence=result["snapshot"].get("evidence"))
     counts = dict(result.get("item_counts") or {})
     counts["research_quality"] = quality
+    counts["assumption_proposals"] = len(result["snapshot"].get("assumption_proposals") or [])
     if backfill_row:
         counts["backfill_id"] = backfill_row.get("id")
         counts["backfill_status"] = backfill_row.get("status")

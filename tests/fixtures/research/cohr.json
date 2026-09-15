@@ -71,5 +71,16 @@
         {"text": "the long-term goal is to supply opticals into AI clusters as customers add capacity"}
       ]
     }
+  ],
+  "official_documents": [
+    {
+      "title": "Q2 earnings release",
+      "doc_type": "earnings_release",
+      "source_type": "earnings_release",
+      "source": "sec",
+      "url": "https://example.test/cohr-ex99",
+      "published_at": "2026-02-05T21:30:00+00:00",
+      "text": "Customers increased capital spending on optical transceivers. Supply capacity at the factory is ramping. The largest customer accounted for 18 percent of revenue. Execution depends on factory ramps remaining on schedule."
+    }
   ]
 }

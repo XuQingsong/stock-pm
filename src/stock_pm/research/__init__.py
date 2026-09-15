@@ -12,13 +12,16 @@ from .errors import (
 )
 from .issuer import cik_for, fiscal_year_end_month_for, merge_identity
 from .service import ResearchService
-from .types import ACTOR_API, ACTOR_PM, AGENT_FUNDAMENTAL, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
+from .types import ACTOR_API, ACTOR_PM, AGENT_FUNDAMENTAL, AGENT_INDUSTRY, AGENT_QUANT, AGENT_RISK, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .workflow import run_new_ticker_research
 
 __all__ = [
     "ACTOR_API",
     "ACTOR_PM",
     "AGENT_FUNDAMENTAL",
+    "AGENT_INDUSTRY",
+    "AGENT_QUANT",
+    "AGENT_RISK",
     "AGENT_SEARCH",
     "AgentInput",
     "AgentOutput",

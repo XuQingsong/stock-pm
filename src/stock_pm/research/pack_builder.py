@@ -8,8 +8,9 @@ from typing import Any
 from .classify import classify_from_issuer, classify_template
 from .extract import extract_guidance_mentions, first_present, nested_get, net_margin, to_number, yoy_from_quarters
 from .issuer import merge_identity
-from .prices import index_closes, price_reaction_for_print
+from .prices import index_closes, index_volumes, price_reaction_for_print
 from .sources import DatabasePackSource, PackSource, StorePackSource
+from .templates import load_template
 
 
 PACK_CONTENT_FIELDS = (
@@ -138,9 +139,21 @@ class PackBuilder:
         filings = list(source.filings(symbol) if source and hasattr(source, "filings") else [])
         press = list(source.press_releases(symbol) if source and hasattr(source, "press_releases") else [])
         official_documents = list(source.official_documents(symbol) if source and hasattr(source, "official_documents") else [])
-        stock_px = index_closes(list(source.closes(symbol) if source and hasattr(source, "closes") else []))
+        stock_rows = list(source.closes(symbol) if source and hasattr(source, "closes") else [])
+        stock_px = index_closes(stock_rows)
         spy_px = index_closes(list(source.closes("SPY") if source and hasattr(source, "closes") else []))
         qqq_px = index_closes(list(source.closes("QQQ") if source and hasattr(source, "closes") else []))
+        template_id = classify_from_issuer(listed) if listed else classify_template()
+        template = load_template(template_id)
+        benchmark_etf = str(template.get("benchmark_etf") or "SPY").upper()
+        sector_px = []
+        if benchmark_etf == "SPY":
+            sector_px = spy_px
+        elif benchmark_etf == "QQQ":
+            sector_px = qqq_px
+        elif source and hasattr(source, "closes"):
+            sector_px = index_closes(list(source.closes(benchmark_etf)))
+        volumes = index_volumes(stock_rows)
 
         earnings_history = [_earnings_item(row, fundamentals=fundamentals) for row in earnings_rows]
         if transcripts and earnings_history:
@@ -208,6 +221,8 @@ class PackBuilder:
                 stock_px,
                 spy_px,
                 qqq_px,
+                sector_px,
+                volumes,
             ) if stock_px else {}
             for key, value in computed.items():
                 if value is not None:
@@ -222,6 +237,13 @@ class PackBuilder:
                 "post_5d_return_pct": row.get("post_5d_return_pct"),
                 "vs_spy_1d_pct": row.get("vs_spy_1d_pct"),
                 "vs_qqq_1d_pct": row.get("vs_qqq_1d_pct"),
+                "vs_spy_5d_pct": row.get("vs_spy_5d_pct"),
+                "vs_qqq_5d_pct": row.get("vs_qqq_5d_pct"),
+                "vs_sector_1d_pct": row.get("vs_sector_1d_pct"),
+                "vs_sector_5d_pct": row.get("vs_sector_5d_pct"),
+                "volume_vs_20d_avg": row.get("volume_vs_20d_avg"),
+                "pre_20d_realized_vol": row.get("pre_20d_realized_vol"),
+                "benchmark_etf": benchmark_etf,
                 "ref": row.get("ref"),
             }
             if any(item.get(key) is not None for key in ("post_1d_return_pct", "post_5d_return_pct", "day_return_pct", "pre_5d_return_pct")):
@@ -293,7 +315,12 @@ class PackBuilder:
             "transcripts": transcripts,
             "official_documents": official_documents,
         }
-        template_id = classify_from_issuer(listed) if listed else classify_template()
+        last_close = stock_px[-1][1] if stock_px else None
+        profile["last_close"] = last_close
+        eps_ttm = to_number(profile.get("eps_ttm"))
+        if last_close not in (None, 0) and eps_ttm not in (None, 0):
+            profile["pe_ttm"] = round(float(last_close) / float(eps_ttm), 2)
+        profile["recent_closes"] = [{"session_date": day.isoformat(), "close": price} for day, price in stock_px[-40:]]
         missing: list[str] = []
         if not listed.get("cik"):
             missing.append("issuer.cik")
@@ -337,6 +364,7 @@ class PackBuilder:
         return {
             "ticker": symbol,
             "template_id": template_id,
+            "benchmark_etf": benchmark_etf,
             "company_profile": profile,
             "earnings_history": earnings_history,
             "guidance_history": guidance_rows,
