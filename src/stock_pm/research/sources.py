@@ -16,6 +16,7 @@ class PackSource(Protocol):
     def guidance(self, ticker: str) -> list[dict[str, Any]]: ...
     def filings(self, ticker: str) -> list[dict[str, Any]]: ...
     def press_releases(self, ticker: str) -> list[dict[str, Any]]: ...
+    def official_documents(self, ticker: str) -> list[dict[str, Any]]: ...
     def closes(self, ticker: str) -> list[dict[str, Any]]: ...
 
 
@@ -64,6 +65,9 @@ class DictPackSource:
     def press_releases(self, ticker: str) -> list[dict[str, Any]]:
         return [dict(item) for item in (self._row(ticker).get("press_releases") or [])]
 
+    def official_documents(self, ticker: str) -> list[dict[str, Any]]:
+        return [dict(item) for item in (self._row(ticker).get("official_documents") or [])]
+
     def closes(self, ticker: str) -> list[dict[str, Any]]:
         return [dict(item) for item in (self._row(ticker).get("closes") or [])]
 
@@ -107,7 +111,44 @@ def documents_to_guidance(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "published_at": row.get("published_at"),
                 "fiscal_period": row.get("fiscal_period"),
                 "url": row.get("url"),
+                "source_url": row.get("url"),
+                "source_type": metadata.get("source_type") or "earnings_release",
                 "move": metadata.get("move"),
+                "excerpt": row.get("excerpt") or text,
+            }
+        )
+    return out
+
+
+OFFICIAL_DOC_TYPES = (
+    "filing",
+    "press_release",
+    "earnings_release",
+    "exhibit",
+    "investor_presentation",
+    "prepared_remarks",
+)
+
+
+def documents_to_official(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        text = str(row.get("body") or row.get("text") or row.get("excerpt") or "").strip()
+        if len(text) < 80:
+            continue
+        metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        out.append(
+            {
+                "title": row.get("title") or row.get("form") or row.get("doc_type"),
+                "url": row.get("url"),
+                "published_at": row.get("published_at"),
+                "source": row.get("source_provider") or "official",
+                "source_provider": row.get("source_provider"),
+                "doc_type": row.get("doc_type") or metadata.get("kind") or "filing",
+                "source_type": metadata.get("source_type") or row.get("doc_type") or "official_document",
+                "text": text,
+                "excerpt": str(row.get("excerpt") or text[:1200]),
+                "form": metadata.get("form"),
             }
         )
     return out
@@ -239,6 +280,12 @@ class DatabasePackSource:
     def press_releases(self, ticker: str) -> list[dict[str, Any]]:
         return self._documents(ticker, "press_release")
 
+    def official_documents(self, ticker: str) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for doc_type in OFFICIAL_DOC_TYPES:
+            rows.extend(self._documents(ticker, doc_type))
+        return documents_to_official(rows)
+
     def closes(self, ticker: str) -> list[dict[str, Any]]:
         return self._fetch(
             """
@@ -309,6 +356,15 @@ class StorePackSource:
     def press_releases(self, ticker: str) -> list[dict[str, Any]]:
         lister = getattr(self.store, "list_source_documents", None)
         return list(lister(ticker, "press_release") if callable(lister) else [])
+
+    def official_documents(self, ticker: str) -> list[dict[str, Any]]:
+        lister = getattr(self.store, "list_source_documents", None)
+        if not callable(lister):
+            return []
+        rows: list[dict[str, Any]] = []
+        for doc_type in OFFICIAL_DOC_TYPES:
+            rows.extend(lister(ticker, doc_type) or [])
+        return documents_to_official(rows)
 
     def closes(self, ticker: str) -> list[dict[str, Any]]:
         return [dict(item) for item in (getattr(self.store, "raw_bars", {}).get(ticker.upper()) or [])]

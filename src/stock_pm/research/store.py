@@ -196,6 +196,7 @@ class ResearchStore:
             "title": row["title"],
             "description": row.get("description") or "",
             "source_reason": row.get("source_reason") or "",
+            "source_type": row.get("source_type") or "agent_followup",
             "required_data": _jsonb(list(row.get("required_data") or [])),
             "assigned_agents": list(row.get("assigned_agents") or []),
             "priority": int(row.get("priority") or 50),
@@ -208,13 +209,13 @@ class ResearchStore:
             """
             INSERT INTO research_tasks (
                 id, ticker, workflow_run_id, parent_task_id, root_task_id, depth,
-                task_type, title, description, source_reason, required_data,
+                task_type, title, description, source_reason, source_type, required_data,
                 assigned_agents, priority, status, created_by, created_at, completed_at
             )
             VALUES (
                 %(id)s, %(ticker)s, %(workflow_run_id)s, %(parent_task_id)s, %(root_task_id)s,
                 %(depth)s, %(task_type)s, %(title)s, %(description)s, %(source_reason)s,
-                %(required_data)s, %(assigned_agents)s, %(priority)s, %(status)s,
+                %(source_type)s, %(required_data)s, %(assigned_agents)s, %(priority)s, %(status)s,
                 %(created_by)s, %(created_at)s, %(completed_at)s
             )
             RETURNING *
@@ -380,6 +381,8 @@ class ResearchStore:
             "importance": row.get("importance") or "medium",
             "direction": row.get("direction") or "neutral",
             "raw_reference": _jsonb(row.get("raw_reference") or {}),
+            "excerpt": str(row.get("excerpt") or row.get("fact") or ""),
+            "source_type": str(row.get("source_type") or ""),
             "produced_by": row.get("produced_by") or "human_api",
             "task_id": row.get("task_id"),
             "workflow_run_id": row.get("workflow_run_id"),
@@ -392,13 +395,15 @@ class ResearchStore:
             INSERT INTO research_evidence (
                 id, ticker, evidence_type, fact, source, source_url, source_time,
                 retrieved_at, confidence, importance, direction, raw_reference,
-                produced_by, task_id, workflow_run_id, agent_run_id, model, prompt_version
+                excerpt, source_type, produced_by, task_id, workflow_run_id, agent_run_id,
+                model, prompt_version
             )
             VALUES (
                 %(id)s, %(ticker)s, %(evidence_type)s, %(fact)s, %(source)s, %(source_url)s,
                 %(source_time)s, %(retrieved_at)s, %(confidence)s, %(importance)s,
-                %(direction)s, %(raw_reference)s, %(produced_by)s, %(task_id)s,
-                %(workflow_run_id)s, %(agent_run_id)s, %(model)s, %(prompt_version)s
+                %(direction)s, %(raw_reference)s, %(excerpt)s, %(source_type)s,
+                %(produced_by)s, %(task_id)s, %(workflow_run_id)s, %(agent_run_id)s,
+                %(model)s, %(prompt_version)s
             )
             RETURNING *
             """,
@@ -437,6 +442,7 @@ class ResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "source_type": row.get("source_type") or "template_seed",
             "updated_at": _now(),
         }
         stored = self._one(
@@ -444,13 +450,13 @@ class ResearchStore:
             INSERT INTO research_assumptions (
                 id, ticker, category, statement, status, importance, thesis_role,
                 confidence, next_verification, proposed_by, status_updated_by,
-                workflow_run_id, agent_run_id, model, prompt_version, updated_at
+                workflow_run_id, agent_run_id, model, prompt_version, source_type, updated_at
             )
             VALUES (
                 %(id)s, %(ticker)s, %(category)s, %(statement)s, %(status)s,
                 %(importance)s, %(thesis_role)s, %(confidence)s, %(next_verification)s,
                 %(proposed_by)s, %(status_updated_by)s, %(workflow_run_id)s,
-                %(agent_run_id)s, %(model)s, %(prompt_version)s, %(updated_at)s
+                %(agent_run_id)s, %(model)s, %(prompt_version)s, %(source_type)s, %(updated_at)s
             )
             RETURNING *
             """,
@@ -708,10 +714,14 @@ class ResearchStore:
         )
 
     def upsert_pack(self, row: dict[str, Any]) -> dict[str, Any]:
+        profile = dict(row.get("company_profile") or {})
+        official = list(row.get("official_documents") or profile.get("official_documents") or [])
+        if official:
+            profile["official_documents"] = official
         payload = {
             "ticker": row["ticker"].upper(),
             "template_id": row.get("template_id") or "generic_company",
-            "company_profile": _jsonb(row.get("company_profile") or {}),
+            "company_profile": _jsonb(profile),
             "earnings_history": _jsonb(row.get("earnings_history") or []),
             "guidance_history": _jsonb(row.get("guidance_history") or []),
             "price_reaction_history": _jsonb(row.get("price_reaction_history") or []),
@@ -754,10 +764,16 @@ class ResearchStore:
             payload,
         )
         assert stored is not None
+        profile = stored.get("company_profile") or {}
+        stored["official_documents"] = list(profile.get("official_documents") or [])
         return stored
 
     def get_pack(self, ticker: str) -> dict[str, Any] | None:
-        return self._one("SELECT * FROM research_packs WHERE ticker = %(ticker)s", {"ticker": ticker.upper()})
+        stored = self._one("SELECT * FROM research_packs WHERE ticker = %(ticker)s", {"ticker": ticker.upper()})
+        if stored:
+            profile = stored.get("company_profile") or {}
+            stored["official_documents"] = list(stored.get("official_documents") or profile.get("official_documents") or [])
+        return stored
 
     def upsert_source_document(self, row: dict[str, Any]) -> dict[str, Any]:
         payload = {

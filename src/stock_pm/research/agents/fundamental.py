@@ -6,8 +6,12 @@ from ..extract import (
     beat_label,
     extract_commitments,
     extract_guidance_mentions,
+    followups_from_claim,
     guidance_move_from_history,
+    has_official_source,
     has_transcript_source,
+    official_documents,
+    source_type_for_document,
     to_number,
     transcript_materials,
     yoy_from_quarters,
@@ -17,7 +21,7 @@ from ..types import AGENT_FUNDAMENTAL, AGENT_SEARCH, AgentInput, AgentOutput, Fo
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint2-fundamental-v1"
+PROMPT_VERSION = "sprint25-fundamental-v2"
 
 
 def _stamp(row: dict[str, Any], fallback: str | None = None) -> str | None:
@@ -41,20 +45,6 @@ class FundamentalAgent(BaseAgent):
     def __init__(self, completer: JsonCompleter | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("fundamental.txt"))
 
-    def run(self, payload: AgentInput) -> AgentOutput:
-        output = super().run(payload)
-        if has_transcript_source(payload.research_pack or {}):
-            return output
-        cleaned = []
-        for item in output.new_evidence:
-            ref = item.get("raw_reference") or {}
-            kind = ref.get("kind") if isinstance(ref, dict) else None
-            if str(item.get("evidence_type") or "") == "transcript" or kind == "management_commitment":
-                continue
-            cleaned.append(item)
-        output.new_evidence = cleaned
-        return output
-
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}
         profile = pack.get("company_profile") or {}
@@ -72,6 +62,9 @@ class FundamentalAgent(BaseAgent):
             item["_key"] = key
             item.setdefault("evidence_type", "fundamental")
             item.setdefault("direction", "neutral")
+            item.setdefault("excerpt", item.get("fact"))
+            item.setdefault("source_type", "structured_provider")
+            item.setdefault("confidence", 0.55 if item["source_type"] == "structured_provider" else 0.75)
             evidence.append(item)
             return str(key)
 
@@ -91,8 +84,10 @@ class FundamentalAgent(BaseAgent):
                     fact=f"Latest print {latest.get('fiscal_period') or ''}: " + ", ".join(fact_bits),
                     source=_source_for(latest),
                     source_time=_stamp(latest),
+                    source_url=(latest.get("ref") or {}).get("url") if isinstance(latest.get("ref"), dict) else None,
                     raw_reference=latest.get("ref") or {},
                     importance="high",
+                    excerpt=", ".join(fact_bits),
                 )
             rev_beat = beat_label(to_number(latest.get("revenue")), to_number(latest.get("revenue_estimate")))
             eps_beat = beat_label(to_number(latest.get("eps")), to_number(latest.get("eps_estimate")))
@@ -167,55 +162,108 @@ class FundamentalAgent(BaseAgent):
                 raw_reference={"sample": len(prints_with_estimate)},
             )
 
-        text = transcript_materials(pack) if has_transcript_source(pack) else ""
-        commitments = extract_commitments(text) if text else []
-        guidance_hits = extract_guidance_mentions(text) if text else []
-        transcript_meta = (profile.get("transcripts") or [{}])[0]
-        transcript_source = str(transcript_meta.get("source") or "earnings call")
-        transcript_time = transcript_meta.get("source_time") or transcript_meta.get("published_at") or _stamp(latest)
-        if not has_transcript_source(pack):
-            if "transcripts" not in missing:
-                missing.append("transcripts")
-            findings.append("transcripts missing; management commitment evidence not minted")
-        for hit in commitments:
-            if not transcript_time:
+        material_rows: list[dict[str, Any]] = []
+        for doc in official_documents(pack):
+            text = str(doc.get("text") or doc.get("body") or "")
+            if not text.strip():
                 continue
-            add_evidence(
-                fact=hit["quote"],
-                source=transcript_source,
-                source_time=transcript_time,
-                evidence_type="transcript",
-                importance="high",
-                raw_reference={"kind": "management_commitment"},
+            source_type = source_type_for_document(doc)
+            material_rows.append(
+                {
+                    "text": text,
+                    "source": str(doc.get("source") or doc.get("source_provider") or "official"),
+                    "source_url": doc.get("url") or doc.get("source_url"),
+                    "source_time": doc.get("published_at") or doc.get("source_time") or _stamp(latest),
+                    "source_type": source_type,
+                    "evidence_type": "filing" if source_type == "sec_filing" else "guidance",
+                    "allow_commitments": True,
+                }
             )
-            findings.append("management commitment located in source text")
-        for hit in guidance_hits:
-            if not transcript_time:
+        transcript_text = transcript_materials(pack) if has_transcript_source(pack) else ""
+        if transcript_text:
+            transcript_meta = (profile.get("transcripts") or [{}])[0]
+            material_rows.append(
+                {
+                    "text": transcript_text,
+                    "source": str(transcript_meta.get("source") or "earnings call"),
+                    "source_url": transcript_meta.get("source_url"),
+                    "source_time": transcript_meta.get("source_time") or transcript_meta.get("published_at") or _stamp(latest),
+                    "source_type": "transcript",
+                    "evidence_type": "transcript",
+                }
+            )
+        if not has_transcript_source(pack) and "transcripts" not in missing:
+            missing.append("transcripts")
+        if not has_official_source(pack) and not has_transcript_source(pack):
+            findings.append("no official document or transcript text; management claims not invented")
+
+        commitments: list[dict[str, Any]] = []
+        guidance_hits: list[dict[str, Any]] = []
+        seen_quotes: set[str] = set()
+        for material in material_rows:
+            stamp = material.get("source_time")
+            if not stamp:
                 continue
-            add_evidence(
-                fact=hit["quote"],
-                source=transcript_source,
-                source_time=transcript_time,
-                evidence_type="transcript",
-                raw_reference={"kind": "guidance", "move": hit.get("move")},
-            )
+            if material.get("allow_commitments", True):
+                for hit in extract_commitments(material["text"])[:8]:
+                    key = hit["quote"].lower()
+                    if key in seen_quotes:
+                        continue
+                    seen_quotes.add(key)
+                    commitments.append({**hit, **material})
+                    add_evidence(
+                        fact=hit["quote"],
+                        excerpt=hit["quote"],
+                        source=material["source"],
+                        source_url=material.get("source_url"),
+                        source_time=stamp,
+                        source_type=material["source_type"],
+                        evidence_type=material["evidence_type"],
+                        importance="high",
+                        confidence=0.8,
+                        raw_reference={"kind": "management_commitment", "source_type": material["source_type"]},
+                    )
+                    findings.append("management commitment located in source text")
+            for hit in extract_guidance_mentions(material["text"])[:8]:
+                key = "g:" + hit["quote"].lower()
+                if key in seen_quotes:
+                    continue
+                seen_quotes.add(key)
+                guidance_hits.append({**hit, **material})
+                add_evidence(
+                    fact=hit["quote"],
+                    excerpt=hit["quote"],
+                    source=material["source"],
+                    source_url=material.get("source_url"),
+                    source_time=stamp,
+                    source_type=material["source_type"],
+                    evidence_type="guidance",
+                    confidence=0.8,
+                    raw_reference={"kind": "guidance", "move": hit.get("move"), "source_type": material["source_type"]},
+                )
         for row in guidance:
             stamp = _stamp(row, _stamp(latest))
             text_row = str(row.get("text") or row.get("quote") or row.get("summary") or "").strip()
             if not text_row or not stamp:
                 continue
+            if text_row.lower() in seen_quotes:
+                continue
             add_evidence(
                 fact=text_row,
+                excerpt=str(row.get("excerpt") or text_row),
                 source=str(row.get("source") or "guidance"),
+                source_url=row.get("url") or row.get("source_url"),
                 source_time=stamp,
+                source_type=str(row.get("source_type") or "earnings_release"),
                 evidence_type="guidance",
+                confidence=0.75,
                 raw_reference={"move": row.get("move")},
             )
         move = guidance_move_from_history(guidance) or (guidance_hits[0].get("move") if guidance_hits else None)
         if move:
             findings.append(f"guidance language indicates {move}")
 
-        def propose(statement: str, *, category: str, importance: str, keys: list[str], reason: str) -> None:
+        def propose(statement: str, *, category: str, importance: str, keys: list[str], reason: str, source_type: str) -> None:
             links = [
                 {"evidence_key": key, "direction": "support", "strength": "moderate", "reason": reason}
                 for key in keys[:3]
@@ -228,6 +276,7 @@ class FundamentalAgent(BaseAgent):
                     "thesis_role": "supporting",
                     "links": links,
                     "next_verification": reason,
+                    "source_type": source_type,
                 }
             )
 
@@ -239,6 +288,7 @@ class FundamentalAgent(BaseAgent):
                 importance="high",
                 keys=growth_keys,
                 reason="growth print needs demand and supply confirmation",
+                source_type="template_seed",
             )
         elif latest.get("revenue") is not None:
             propose(
@@ -247,6 +297,7 @@ class FundamentalAgent(BaseAgent):
                 importance="medium",
                 keys=growth_keys or [item["_key"] for item in evidence[:1]],
                 reason="need more prints and demand checks",
+                source_type="template_seed",
             )
         if move:
             propose(
@@ -255,6 +306,7 @@ class FundamentalAgent(BaseAgent):
                 importance="high",
                 keys=[item["_key"] for item in evidence if item.get("evidence_type") in {"guidance", "transcript"}],
                 reason="guidance delivery must be checked against later prints",
+                source_type="evidence_discovered" if guidance_hits or guidance else "template_seed",
             )
         elif prints_with_estimate:
             propose(
@@ -263,22 +315,17 @@ class FundamentalAgent(BaseAgent):
                 importance="medium",
                 keys=[item["_key"] for item in evidence if "beat consensus" in str(item.get("fact") or "")],
                 reason="historical beat rate is not proof of the next print",
+                source_type="template_seed",
             )
-        if commitments:
+        for hit in commitments[:4]:
+            quote = str(hit.get("quote") or "")
             propose(
-                "Management's stated long-term operating target can be delivered",
+                f"Management can deliver the stated commitment: {quote[:180]}",
                 category="execution",
                 importance="critical",
-                keys=[item["_key"] for item in evidence if item.get("evidence_type") == "transcript"],
-                reason="long-term target is a claim until demand, supply, and capex are checked",
-            )
-        if latest:
-            propose(
-                "End-customer demand is real enough to support the current growth plan",
-                category="demand",
-                importance="high",
-                keys=growth_keys,
-                reason="customer capex and orders are not yet independently confirmed",
+                keys=[item["_key"] for item in evidence if item.get("fact") == quote],
+                reason="stated commitment is a claim until demand, supply, and timing are checked",
+                source_type="evidence_discovered",
             )
 
         seen = set()
@@ -289,31 +336,65 @@ class FundamentalAgent(BaseAgent):
                 continue
             seen.add(key)
             unique_assumptions.append(item)
-        assumptions = unique_assumptions[:6]
+        assumptions = unique_assumptions[:8]
 
-        def follow(title: str, *, required: tuple[str, ...], assumption: dict[str, Any] | None = None, reason: str) -> None:
+        def follow(
+            title: str,
+            *,
+            required: tuple[str, ...],
+            assumption: dict[str, Any] | None = None,
+            reason: str,
+            source_type: str,
+            description: str | None = None,
+            priority: int = 40,
+        ) -> None:
             required_data = list(required)
-            description = title
+            text = description or title
             if assumption:
                 required_data.append("assumption:" + str(assumption.get("statement") or title)[:80])
-                description = f"{title}. Related assumption: {assumption['statement']}"
+                text = f"{text}. Related assumption: {assumption['statement']}"
             follow_ups.append(
                 FollowUpSpec(
                     title=title,
-                    description=description,
+                    description=text,
                     task_type="verify_assumption",
                     assigned_agents=(AGENT_SEARCH,),
                     required_data=tuple(required_data),
                     source_reason=reason,
-                    priority=40,
+                    source_type=source_type,
+                    priority=priority,
                 )
             )
 
-        if commitments:
-            follow("Verify whether stated demand is confirmed by customers", required=("customer_capex", "orders"), assumption=assumptions[0] if assumptions else None, reason="commitment_follow_up")
-            follow("Verify whether supply and capacity can support the stated plan", required=("supply_capacity", "foundry"), reason="commitment_follow_up")
-            follow("Verify whether capex can support the stated plan", required=("capex",), reason="commitment_follow_up")
-        follow("Check historical management delivery against prior guidance", required=("guidance_history",), reason="delivery_follow_up")
+        seen_follow: set[str] = set()
+        for hit in commitments + guidance_hits:
+            quote = str(hit.get("quote") or "")
+            for spec in followups_from_claim(quote):
+                title = spec["title"]
+                if title.lower() in seen_follow:
+                    continue
+                seen_follow.add(title.lower())
+                related = next((row for row in assumptions if row.get("source_type") == "evidence_discovered"), None)
+                follow(
+                    title,
+                    required=(spec["required_data"],),
+                    assumption=related,
+                    reason="evidence_discovered",
+                    source_type="evidence_discovered",
+                    description=f"Generated from management claim: {quote[:240]}",
+                    priority=25,
+                )
+                if sum(1 for item in follow_ups if item.source_type == "evidence_discovered") >= 8:
+                    break
+            if sum(1 for item in follow_ups if item.source_type == "evidence_discovered") >= 8:
+                break
+
+        follow(
+            "Check historical management delivery against prior guidance",
+            required=("guidance_history",),
+            reason="delivery_follow_up",
+            source_type="assumption_gap",
+        )
         for axis in template.get("question_axes") or []:
             axis_id = str(axis.get("id") or "")
             question = str(axis.get("question") or "").strip()
@@ -321,8 +402,8 @@ class FundamentalAgent(BaseAgent):
                 continue
             if any(axis_id in " ".join(spec.required_data) for spec in follow_ups):
                 continue
-            follow(question, required=(axis_id,), reason="template_axis")
-            if sum(1 for spec in follow_ups if spec.source_reason == "template_axis") >= 6:
+            follow(question, required=(axis_id,), reason="template_axis", source_type="template_seed")
+            if sum(1 for spec in follow_ups if spec.source_type == "template_seed") >= 6:
                 break
 
         if not earnings:
@@ -334,9 +415,11 @@ class FundamentalAgent(BaseAgent):
         if earnings:
             confidence = 0.45
         if commitments:
-            confidence = min(0.75, confidence + 0.2)
+            confidence = min(0.8, confidence + 0.25)
         if move:
-            confidence = min(0.8, confidence + 0.1)
+            confidence = min(0.85, confidence + 0.1)
+        if has_official_source(pack):
+            confidence = min(0.85, confidence + 0.1)
 
         return AgentOutput(
             findings=findings,

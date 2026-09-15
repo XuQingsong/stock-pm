@@ -119,6 +119,42 @@ class FakeFetchers:
             "error": None,
         }
 
+    def official_documents(self, symbol: str, filings: list[dict] | None = None) -> list[dict]:
+        self.calls.append(f"official:{symbol}")
+        del filings
+        text = (
+            "The company expects next quarter revenue of $12.0 billion to $12.2 billion. "
+            "We expect AI semiconductor revenue of approximately $4.0 billion in the next quarter. "
+            "Adjusted EBITDA margin is expected to be approximately 64 percent. "
+            "Over the next two years customer deployments are expected to increase substantially. "
+            "We remain committed to this revenue and capacity plan."
+        )
+        if symbol.upper() == "XOM":
+            text = (
+                "The company expects next quarter production of 3.8 million oil-equivalent barrels per day. "
+                "Adjusted operating margin is expected to remain in the guided range. "
+                "Over the next two years we remain committed to the long-term production and capex plan."
+            )
+        return [
+            {
+                "form": "EX-99.1",
+                "title": "Exhibit 99.1",
+                "url": f"https://www.sec.gov/{symbol.lower()}-ex991",
+                "published_at": _stamp(3),
+                "text": text,
+                "doc_type": "earnings_release",
+                "source_provider": "sec.exhibit",
+            }
+        ]
+
+    def web_search(self, query: str) -> list[dict]:
+        self.calls.append(f"search:{query}")
+        return []
+
+    def fetch_url(self, url: str) -> dict:
+        self.calls.append(f"fetch:{url}")
+        return {"url": url, "html": "", "text": "", "error": "not_used_in_unit_test"}
+
     def transcripts(self, symbol: str, quarters: list[str]) -> dict:
         self.calls.append(f"transcripts:{symbol}")
         if self.fail_transcripts:
@@ -240,7 +276,130 @@ def test_fundamental_agent_skips_commitments_without_transcript() -> None:
         )
     )
     assert all(item.get("evidence_type") != "transcript" for item in output.new_evidence)
+    assert all("secret target" not in str(item.get("fact") or "").lower() for item in output.new_evidence)
     assert "transcripts" in output.missing_data
+
+
+def test_guidance_and_commitments_from_official_document_without_transcript() -> None:
+    svc = ResearchService(InMemoryResearchStore())
+    fetchers = FakeFetchers(fail_transcripts=True)
+    result = ResearchDataBackfill(svc, fetchers=fetchers, timeout_seconds=30, max_retries=0).run("ZZYX")
+    pack = svc.get_pack("ZZYX")
+    assert result["steps"]["transcripts"]["status"] == "failed"
+    assert pack["guidance_history"]
+    assert pack["official_documents"]
+    agent = FundamentalAgent(completer=None)
+    output = agent.run(AgentInput(ticker="ZZYX", task={"task_type": "discover_fundamentals"}, research_pack=pack))
+    facts = " ".join(item["fact"].lower() for item in output.new_evidence)
+    assert "expect" in facts or "guidance" in facts
+    assert any((item.get("raw_reference") or {}).get("kind") == "management_commitment" for item in output.new_evidence)
+    assert any(item.source_type == "evidence_discovered" for item in output.follow_up_tasks)
+    assert any(item.source_type == "template_seed" for item in output.follow_up_tasks)
+    assert all(item.get("excerpt") for item in output.new_evidence if (item.get("raw_reference") or {}).get("kind"))
+    assert any(row.get("source_type") == "evidence_discovered" for row in output.new_assumptions)
+
+
+def test_search_agent_does_not_mint_headline_evidence() -> None:
+    from stock_pm.research.agents.search_data import SearchDataAgent
+
+    output = SearchDataAgent(completer=None).run(
+        AgentInput(
+            ticker="TEST",
+            task={"task_type": "fetch_missing", "depth": 1},
+            research_pack={
+                "missing_fields": [],
+                "company_profile": {},
+                "major_events": [
+                    {
+                        "title": "Company sees strong AI demand",
+                        "event_time": "2026-01-01T00:00:00+00:00",
+                        "source": "nasdaq",
+                        "url": "https://example.com/headline",
+                    }
+                ],
+            },
+        )
+    )
+    assert output.new_evidence == []
+
+
+def test_search_agent_uses_tools_instead_of_stopping() -> None:
+    from stock_pm.research.agents.search_data import SearchDataAgent
+
+    class Tools:
+        def __init__(self) -> None:
+            self.calls: list[str] = []
+
+        def official_documents(self, symbol: str, filings=None):
+            self.calls.append(f"official:{symbol}")
+            return [
+                {
+                    "text": "The company expects next quarter revenue of $1.0 billion to $1.1 billion.",
+                    "url": "https://www.sec.gov/ex991",
+                    "published_at": "2026-01-01T00:00:00+00:00",
+                    "doc_type": "earnings_release",
+                    "source_provider": "sec.exhibit",
+                }
+            ]
+
+        def web_search(self, query: str):
+            self.calls.append(f"search:{query}")
+            return [{"title": "Earnings call", "url": "https://example.com/transcript", "snippet": "transcript"}]
+
+        def fetch_url(self, url: str):
+            self.calls.append(f"fetch:{url}")
+            return {
+                "url": url,
+                "text": "Operator: Welcome. Over the next two years customer deployments are expected to increase substantially.",
+                "error": None,
+            }
+
+    tools = Tools()
+    output = SearchDataAgent(completer=None, tools=tools).run(
+        AgentInput(
+            ticker="TEST",
+            task={"task_type": "fetch_missing", "required_data": ["guidance_history", "transcripts"], "depth": 0},
+            research_pack={
+                "missing_fields": ["guidance_history", "transcripts"],
+                "company_profile": {},
+                "earnings_history": [{"report_date": "2026-01-01T00:00:00+00:00"}],
+                "major_events": [],
+            },
+        )
+    )
+    assert any(item.startswith("official:") for item in tools.calls)
+    assert any(item.startswith("search:") for item in tools.calls)
+    assert output.new_evidence
+    assert all(item.get("excerpt") and item.get("source_type") for item in output.new_evidence)
+    assert all(item.get("evidence_type") != "news" for item in output.new_evidence)
+
+
+def test_yahoo_and_stooq_parsers() -> None:
+    from stock_pm.research.official import parse_stooq_csv, parse_yahoo_chart
+
+    bars = parse_yahoo_chart(
+        {
+            "chart": {
+                "result": [
+                    {
+                        "timestamp": [1704067200, 1704153600],
+                        "indicators": {"quote": [{"close": [10.0, 11.0], "open": [9.5, 10.5], "high": [10.2, 11.2], "low": [9.4, 10.4], "volume": [1, 2]}]},
+                    }
+                ]
+            }
+        }
+    )
+    assert len(bars) == 2
+    assert bars[0]["close_price"] == 11.0
+    csv_bars = parse_stooq_csv("Date,Open,High,Low,Close,Volume\n2024-01-02,10,11,9,10.5,100\n2024-01-03,10.5,12,10,11,110\n")
+    assert csv_bars[0]["close_price"] == 11.0
+
+
+def test_empty_pack_workflow_quality_is_not_success() -> None:
+    svc = ResearchService(InMemoryResearchStore())
+    result = run_new_ticker_research(svc, "ZZZZ", execute=True, max_depth=1, max_tasks=4)
+    assert result["research_quality"] == "insufficient"
+    assert result["workflow_run"]["status"] in {"partial", "failed"}
 
 
 def test_execute_true_does_not_hit_live_http_without_database() -> None:

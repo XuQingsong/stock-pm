@@ -322,13 +322,6 @@ class LiveResearchFetchers:
         sources: list[str] = []
         fmp = self._fmp()
         av_key = (self.settings.alpha_vantage_api_key or "").strip()
-        if fmp is None and not av_key:
-            return {
-                "transcripts": [],
-                "source": None,
-                "error": "transcript_provider_not_configured",
-                "records_attempted": len(quarters),
-            }
         for quarter in quarters[:6]:
             item = self._fmp_transcript(symbol, quarter)
             if item:
@@ -350,7 +343,15 @@ class LiveResearchFetchers:
             source = "alpha_vantage"
         error = None
         if not found:
-            error = "upstream_empty" if (fmp or av_key) else "transcript_provider_not_configured"
+            web = self.search_transcripts(symbol, quarters)
+            found.extend(list(web.get("transcripts") or []))
+            if found:
+                source = "web_search"
+                errors = []
+            else:
+                error = web.get("error") or (
+                    "upstream_empty" if (fmp or av_key) else "transcript_provider_not_configured"
+                )
         return {
             "transcripts": found,
             "source": source,
@@ -413,20 +414,89 @@ class LiveResearchFetchers:
 
     def daily_bars(self, symbol: str, *, days: int = 430) -> dict[str, Any]:
         from stock_pm.alpaca import collect_live_daily_bars
+        from stock_pm.research.official import stooq_daily_bars, yahoo_daily_bars
 
         try:
             bars, _errors, rec = collect_live_daily_bars(symbol, self.settings, days=days)
         except Exception as exc:
-            return {"bars": [], "source": None, "error": str(exc)[:240], "record": {}}
-        status = (rec.get("daily_price_bars") or {}).get("status")
-        error = None
-        if not bars:
-            error = (rec.get("daily_price_bars") or {}).get("reason_code") or status or "upstream_empty"
+            bars, rec = [], {"daily_price_bars": {"error": str(exc)[:240]}}
+        if bars:
+            return {
+                "bars": bars,
+                "source": (rec.get("daily_price_bars") or {}).get("source") or "alpaca",
+                "error": None,
+                "record": rec.get("daily_price_bars") or {},
+            }
+        yahoo = yahoo_daily_bars(symbol)
+        if yahoo.get("bars"):
+            return {**yahoo, "record": {"status": "ok", "source": "yahoo"}}
+        stooq = stooq_daily_bars(symbol)
+        if stooq.get("bars"):
+            return {**stooq, "record": {"status": "ok", "source": "stooq"}}
+        error = (
+            (rec.get("daily_price_bars") or {}).get("reason_code")
+            or yahoo.get("error")
+            or stooq.get("error")
+            or "upstream_empty"
+        )
+        return {"bars": [], "source": None, "error": error, "record": rec.get("daily_price_bars") or {}}
+
+    def official_documents(self, symbol: str, filings: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+        from stock_pm.research.official import ingest_official_filings, search_official_materials, fetch_search_candidates
+
+        ua = self.sec_user_agent() or None
+        docs = ingest_official_filings(list(filings or []), user_agent=ua, max_filings=4)
+        if any(len(str(item.get("text") or "")) > 400 for item in docs):
+            return docs
+        issuer: dict[str, Any] = {}
+        try:
+            issuer = self.sec_identity(symbol) if symbol else {}
+        except Exception:
+            issuer = {}
+        hits = search_official_materials(symbol, legal_name=issuer.get("legal_name"), user_agent=ua)
+        docs.extend(fetch_search_candidates(hits, user_agent=ua, limit=3))
+        return docs
+
+    def web_search(self, query: str) -> list[dict[str, str]]:
+        from stock_pm.research.official import web_search
+
+        return web_search(query, user_agent=self.sec_user_agent() or None)
+
+    def fetch_url(self, url: str) -> dict[str, Any]:
+        from stock_pm.research.official import fetch_html
+
+        return fetch_html(url, user_agent=self.sec_user_agent() or None)
+
+    def search_transcripts(self, symbol: str, quarters: list[str] | None = None) -> dict[str, Any]:
+        from stock_pm.research.official import fetch_search_candidates, looks_like_transcript, search_official_materials
+
+        del quarters
+        issuer = {}
+        try:
+            issuer = self.sec_identity(symbol)
+        except Exception:
+            issuer = {}
+        hits = search_official_materials(symbol, legal_name=issuer.get("legal_name"), user_agent=self.sec_user_agent() or None)
+        docs = [item for item in fetch_search_candidates(hits, user_agent=self.sec_user_agent() or None, limit=4) if looks_like_transcript(str(item.get("text") or ""))]
+        out = []
+        for item in docs:
+            out.append(
+                {
+                    "quarter": None,
+                    "fiscal_period": None,
+                    "published_at": item.get("published_at") or _now(),
+                    "source": "web_search",
+                    "source_url": item.get("url"),
+                    "text": item.get("text"),
+                    "excerpts": [],
+                    "title": item.get("title") or "Earnings call transcript",
+                }
+            )
         return {
-            "bars": bars,
-            "source": (rec.get("daily_price_bars") or {}).get("source") or "alpaca",
-            "error": error,
-            "record": rec.get("daily_price_bars") or {},
+            "transcripts": out,
+            "source": "web_search" if out else None,
+            "error": None if out else "upstream_empty",
+            "records_attempted": len(hits),
         }
 
 

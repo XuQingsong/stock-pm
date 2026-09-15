@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .errors import SchemaError
-from .extract import has_conclusion_language
+from .extract import NEWS_SOURCE_TYPES, has_conclusion_language
 from .types import (
     AGENT_FUNDAMENTAL,
     AGENT_SEARCH,
@@ -46,16 +46,29 @@ def _clean_evidence(item: Any) -> dict[str, Any] | None:
     fact = str(item.get("fact") or "").strip()
     source = str(item.get("source") or "").strip()
     source_time = item.get("source_time")
+    evidence_type = str(item.get("evidence_type") or "fundamental").strip() or "fundamental"
+    source_type = str(item.get("source_type") or "").strip()
+    excerpt = str(item.get("excerpt") or "").strip()
     if not fact or not source or not source_time:
         return None
     if has_conclusion_language(fact):
         return None
+    if evidence_type in NEWS_SOURCE_TYPES or source_type in NEWS_SOURCE_TYPES:
+        return None
+    if not excerpt:
+        excerpt = fact
     payload = dict(item)
     payload["fact"] = fact
     payload["source"] = source
-    payload["evidence_type"] = str(item.get("evidence_type") or "fundamental").strip() or "fundamental"
+    payload["excerpt"] = excerpt
+    payload["source_type"] = source_type or (
+        "structured_provider" if evidence_type in {"fundamental", "price"} else evidence_type
+    )
+    payload["evidence_type"] = evidence_type
     payload.setdefault("retrieved_at", _now())
     payload.setdefault("direction", "neutral")
+    if payload.get("confidence") is None:
+        payload["confidence"] = 0.7 if payload["source_type"] != "structured_provider" else 0.55
     return payload
 
 
@@ -72,6 +85,7 @@ def _clean_assumption(item: Any) -> dict[str, Any] | None:
         payload["thesis_role"] = "supporting"
     payload.setdefault("category", "other")
     payload.setdefault("importance", "medium")
+    payload.setdefault("source_type", "template_seed")
     return payload
 
 

@@ -33,6 +33,7 @@ def test_schema_drops_evidence_without_source_and_conclusions() -> None:
     assert output.findings == ["revenue grew"]
     assert len(output.new_evidence) == 1
     assert output.new_evidence[0]["fact"] == "Revenue was 10"
+    assert output.new_evidence[0]["excerpt"]
     assert output.new_assumptions == []
     assert output.confidence == 1.0
 

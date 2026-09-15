@@ -1,12 +1,20 @@
 from __future__ import annotations
 
-from ..extract import extract_commitments, extract_guidance_mentions
+from typing import Any, Protocol
+
+from ..extract import extract_commitments, extract_guidance_mentions, official_documents, source_type_for_document
 from ..templates import load_prompt
 from ..types import AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint2-search-v1"
+PROMPT_VERSION = "sprint25-search-v2"
+
+
+class SearchTools(Protocol):
+    def fetch_url(self, url: str) -> dict[str, Any]: ...
+    def web_search(self, query: str) -> list[dict[str, str]]: ...
+    def official_documents(self, symbol: str, filings: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]: ...
 
 
 def _assumption_ids_from_task(task: dict) -> list[str]:
@@ -22,80 +30,178 @@ def _assumption_ids_from_task(task: dict) -> list[str]:
     return [item for item in found if item]
 
 
+def _pack_filing_urls(pack: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in pack.get("official_documents") or []:
+        if item.get("url"):
+            rows.append({"url": item.get("url"), "form": item.get("form") or item.get("title"), "title": item.get("title")})
+    for item in pack.get("major_events") or []:
+        url = str(item.get("url") or "")
+        if url.startswith("https://www.sec.gov/"):
+            rows.append({"url": url, "form": item.get("title") or "8-K", "title": item.get("title")})
+    seen: set[str] = set()
+    unique = []
+    for row in rows:
+        url = str(row.get("url") or "")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        unique.append(row)
+    return unique
+
+
 class SearchDataAgent(BaseAgent):
     name = AGENT_SEARCH
     prompt_version = PROMPT_VERSION
 
-    def __init__(self, completer: JsonCompleter | None = None) -> None:
+    def __init__(self, completer: JsonCompleter | None = None, tools: SearchTools | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("search_data.txt"))
+        self.tools = tools
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}
         missing = list(pack.get("missing_fields") or [])
         needed = [str(item) for item in (payload.task.get("required_data") or []) if not str(item).startswith("assumption:")]
-        evidence = []
-        findings = []
-        source_time = None
+        evidence: list[dict[str, Any]] = []
+        findings: list[str] = []
+        fetched_docs: list[dict[str, Any]] = []
+
+        def add_from_text(text: str, *, source: str, source_url: Any, source_time: Any, source_type: str, evidence_type: str) -> None:
+            if not str(text).strip() or not source_time:
+                return
+            seen = {str(item.get("fact") or "").lower() for item in evidence}
+            for hit in extract_commitments(text) + extract_guidance_mentions(text):
+                quote = hit["quote"]
+                if quote.lower() in seen:
+                    continue
+                seen.add(quote.lower())
+                evidence.append(
+                    {
+                        "_key": f"search-{len(evidence)+1}",
+                        "evidence_type": evidence_type,
+                        "fact": quote,
+                        "excerpt": quote,
+                        "source": source,
+                        "source_url": source_url,
+                        "source_time": source_time,
+                        "source_type": source_type,
+                        "confidence": 0.75,
+                        "raw_reference": {"kind": hit.get("kind"), "source_type": source_type},
+                        "importance": "high" if hit.get("kind") == "management_commitment" else "medium",
+                    }
+                )
+
         profile = pack.get("company_profile") or {}
         for item in profile.get("transcripts") or []:
-            source = str(item.get("source") or "earnings call")
-            source_time = item.get("source_time") or item.get("published_at")
             text = str(item.get("text") or "")
             for excerpt in item.get("excerpts") or []:
                 quote = excerpt.get("text") if isinstance(excerpt, dict) else str(excerpt)
                 if quote:
                     text = f"{text}\n{quote}"
-            if not text.strip() or not source_time:
-                continue
-            for hit in extract_commitments(text) + extract_guidance_mentions(text):
-                evidence.append(
-                    {
-                        "_key": f"search-{len(evidence)+1}",
-                        "evidence_type": "transcript",
-                        "fact": hit["quote"],
-                        "source": source,
-                        "source_url": item.get("source_url"),
-                        "source_time": source_time,
-                        "raw_reference": {"kind": hit.get("kind"), "ref_table": "research_packs", "field": "company_profile.transcripts"},
-                        "importance": "high" if hit.get("kind") == "management_commitment" else "medium",
-                    }
-                )
-        for row in pack.get("major_events") or []:
-            title = str(row.get("title") or "").strip()
-            when = row.get("event_time")
-            if not title or not when:
-                continue
-            evidence.append(
-                {
-                    "_key": f"search-event-{len(evidence)+1}",
-                    "evidence_type": "news",
-                    "fact": title,
-                    "source": str(row.get("source") or "company_event"),
-                    "source_url": row.get("url"),
-                    "source_time": when,
-                    "raw_reference": row.get("ref") or {},
-                }
+            add_from_text(
+                text,
+                source=str(item.get("source") or "earnings call"),
+                source_url=item.get("source_url"),
+                source_time=item.get("source_time") or item.get("published_at"),
+                source_type="transcript",
+                evidence_type="transcript",
             )
+        for item in official_documents(pack):
+            add_from_text(
+                str(item.get("text") or item.get("body") or ""),
+                source=str(item.get("source") or item.get("source_provider") or "official"),
+                source_url=item.get("url"),
+                source_time=item.get("published_at") or item.get("source_time"),
+                source_type=source_type_for_document(item),
+                evidence_type="filing" if source_type_for_document(item) == "sec_filing" else "guidance",
+            )
+        for row in pack.get("guidance_history") or []:
+            add_from_text(
+                str(row.get("text") or row.get("quote") or ""),
+                source=str(row.get("source") or "guidance"),
+                source_url=row.get("url") or row.get("source_url"),
+                source_time=row.get("source_time") or row.get("published_at"),
+                source_type=str(row.get("source_type") or "earnings_release"),
+                evidence_type="guidance",
+            )
+
+        still_missing = [item for item in (needed or missing) if item in {"transcripts", "guidance_history"}]
+        if self.tools is not None and still_missing:
+            filings = _pack_filing_urls(pack)
+            try:
+                fetched_docs.extend(self.tools.official_documents(payload.ticker, filings) or [])
+                findings.append("search tools fetched official documents after structured providers were incomplete")
+            except Exception as exc:
+                findings.append(f"official document fetch incomplete: {exc}")
+            queries = []
+            if "transcripts" in still_missing:
+                queries.append(f"{payload.ticker} earnings call transcript")
+            if "guidance_history" in still_missing:
+                queries.append(f"{payload.ticker} earnings release guidance")
+            for query in queries[:2]:
+                try:
+                    hits = self.tools.web_search(query) or []
+                except Exception:
+                    hits = []
+                findings.append(f"web search for {query!r} returned {len(hits)} candidates")
+                for hit in hits[:3]:
+                    url = str(hit.get("url") or "")
+                    if not url:
+                        continue
+                    try:
+                        fetched = self.tools.fetch_url(url)
+                    except Exception:
+                        continue
+                    text = str(fetched.get("text") or "")
+                    if len(text) < 400:
+                        continue
+                    fetched_docs.append(
+                        {
+                            "text": text,
+                            "url": url,
+                            "title": hit.get("title"),
+                            "source": "web_search",
+                            "source_provider": "web_search",
+                            "published_at": None,
+                            "doc_type": "transcript" if "transcript" in query else "earnings_release",
+                        }
+                    )
+            for item in fetched_docs:
+                stamp = item.get("published_at") or item.get("source_time")
+                if not stamp:
+                    stamp = (pack.get("earnings_history") or [{}])[0].get("report_date")
+                add_from_text(
+                    str(item.get("text") or ""),
+                    source=str(item.get("source") or item.get("source_provider") or "web_search"),
+                    source_url=item.get("url"),
+                    source_time=stamp,
+                    source_type=source_type_for_document(item),
+                    evidence_type="transcript" if str(item.get("doc_type")) == "transcript" else "guidance",
+                )
+
         unresolved = []
         for field in needed or missing:
             label = str(field)
-            if label in {"transcripts", "guidance_history", "fcf", "segment_growth"} and label in missing:
+            if label in {"transcripts", "guidance_history", "fcf", "segment_growth"} and label in missing and not evidence:
                 unresolved.append(label)
-            elif label and label not in {"assumption"} and not any(label in str(item.get("fact") or "") for item in evidence):
-                if label in missing or label in needed:
-                    unresolved.append(label)
-        unresolved = list(dict.fromkeys(unresolved or [item for item in missing if item in {"transcripts", "guidance_history", "fcf"}]))
+            elif label in missing and label in {"transcripts"} and not any(item.get("source_type") == "transcript" for item in evidence):
+                unresolved.append(label)
+            elif label in missing and label in {"guidance_history"} and not any(item.get("evidence_type") == "guidance" for item in evidence):
+                unresolved.append(label)
+        if "guidance_history" in missing and any(item.get("evidence_type") == "guidance" for item in evidence):
+            missing = [item for item in missing if item != "guidance_history"]
+        unresolved = list(dict.fromkeys(unresolved))
         if evidence:
             findings.append(f"located {len(evidence)} source-backed facts for {payload.ticker}")
         else:
-            findings.append("no additional source documents were available beyond the research pack snapshot")
+            findings.append("no additional official documents were available beyond the research pack snapshot")
         if unresolved:
             findings.append("unresolved data: " + ", ".join(unresolved))
 
         assumption_ids = _assumption_ids_from_task(payload.task)
         links = []
         supported = []
-        challenged = []
+        challenged: list[str] = []
         for assumption_id in assumption_ids:
             if evidence:
                 supported.append(assumption_id)
@@ -108,22 +214,21 @@ class SearchDataAgent(BaseAgent):
                         "reason": "search located related source material; confirmation still open",
                     }
                 )
-            else:
-                challenged = []
         follow_ups = []
         if unresolved and int((payload.task.get("depth") or 0)) == 0:
             follow_ups.append(
                 FollowUpSpec(
-                    title="Obtain missing filings or transcripts for unresolved fields",
+                    title="Continue searching official filings, IR, and transcripts for unresolved fields",
                     description="; ".join(unresolved),
                     task_type="fetch_missing",
                     assigned_agents=(AGENT_SEARCH,),
                     required_data=tuple(unresolved),
                     source_reason="search_gap",
+                    source_type="agent_followup",
                     priority=70,
                 )
             )
-        confidence = 0.55 if evidence else 0.2
+        confidence = 0.6 if evidence else 0.2
         return AgentOutput(
             findings=findings,
             new_evidence=evidence,

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .classify import classify_from_issuer, classify_template
-from .extract import first_present, nested_get, net_margin, to_number, yoy_from_quarters
+from .extract import extract_guidance_mentions, first_present, nested_get, net_margin, to_number, yoy_from_quarters
 from .issuer import merge_identity
 from .prices import index_closes, price_reaction_for_print
 from .sources import DatabasePackSource, PackSource, StorePackSource
@@ -19,6 +20,7 @@ PACK_CONTENT_FIELDS = (
     "industry_context",
     "competitive_context",
     "major_events",
+    "official_documents",
 )
 
 
@@ -135,6 +137,7 @@ class PackBuilder:
         events = source.events(symbol) if source else []
         filings = list(source.filings(symbol) if source and hasattr(source, "filings") else [])
         press = list(source.press_releases(symbol) if source and hasattr(source, "press_releases") else [])
+        official_documents = list(source.official_documents(symbol) if source and hasattr(source, "official_documents") else [])
         stock_px = index_closes(list(source.closes(symbol) if source and hasattr(source, "closes") else []))
         spy_px = index_closes(list(source.closes("SPY") if source and hasattr(source, "closes") else []))
         qqq_px = index_closes(list(source.closes("QQQ") if source and hasattr(source, "closes") else []))
@@ -159,8 +162,43 @@ class PackBuilder:
                             "source": item.get("source") or "transcript",
                             "source_time": item.get("source_time") or item.get("published_at"),
                             "fiscal_period": item.get("quarter") or item.get("fiscal_period"),
+                            "source_type": "transcript",
+                            "excerpt": text,
                         }
                     )
+
+        if official_documents:
+            for item in official_documents:
+                text = str(item.get("text") or item.get("body") or "")
+                if not text:
+                    continue
+                source_type = str(item.get("source_type") or item.get("doc_type") or "official_document")
+                stamp = item.get("published_at") or item.get("source_time")
+                for hit in extract_guidance_mentions(text)[:8]:
+                    guidance_rows.append(
+                        {
+                            "text": hit["quote"],
+                            "quote": hit["quote"],
+                            "excerpt": hit["quote"],
+                            "source": item.get("source") or item.get("source_provider") or "official",
+                            "source_time": stamp,
+                            "published_at": stamp,
+                            "url": item.get("url"),
+                            "source_url": item.get("url"),
+                            "source_type": source_type,
+                            "move": hit.get("move"),
+                        }
+                    )
+
+        unique_guidance: list[dict[str, Any]] = []
+        seen_guidance: set[str] = set()
+        for row in guidance_rows:
+            key = re.sub(r"\s+", " ", str(row.get("text") or row.get("quote") or "")).strip().lower()[:200]
+            if not key or key in seen_guidance:
+                continue
+            seen_guidance.add(key)
+            unique_guidance.append(row)
+        guidance_rows = unique_guidance
 
         price_reaction = []
         for row in earnings_history:
@@ -253,6 +291,7 @@ class PackBuilder:
             or yoy_from_quarters(earnings_history, "eps"),
             "fcf": _fcf({}, fundamentals),
             "transcripts": transcripts,
+            "official_documents": official_documents,
         }
         template_id = classify_from_issuer(listed) if listed else classify_template()
         missing: list[str] = []
@@ -292,6 +331,7 @@ class PackBuilder:
                 "filings": len(filings),
                 "press_releases": len(press),
                 "guidance": len(guidance_rows),
+                "official_documents": len(official_documents),
             },
         }
         return {
@@ -304,6 +344,7 @@ class PackBuilder:
             "industry_context": {},
             "competitive_context": {},
             "major_events": major_events[:20],
+            "official_documents": official_documents[:12],
             "missing_fields": missing,
             "source_refs": refs,
             "workflow_run_id": workflow_run_id,

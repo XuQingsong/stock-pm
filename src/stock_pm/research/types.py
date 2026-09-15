@@ -54,6 +54,15 @@ def normalize_valuation_case(payload: Mapping[str, Any] | None) -> dict[str, Any
     return out
 
 
+TASK_SOURCE_TYPES = (
+    "template_seed",
+    "evidence_discovered",
+    "assumption_gap",
+    "agent_followup",
+    "pm_request",
+)
+
+
 @dataclass(slots=True)
 class FollowUpSpec:
     title: str
@@ -63,6 +72,7 @@ class FollowUpSpec:
     required_data: tuple[str, ...] = ()
     priority: int = 50
     source_reason: str = "agent_follow_up"
+    source_type: str = "agent_followup"
 
 
 @dataclass(slots=True)
@@ -125,4 +135,5 @@ def follow_up_from_payload(item: FollowUpSpec | Mapping[str, Any]) -> FollowUpSp
         required_data=tuple(required) if not isinstance(required, dict) else tuple(required),
         priority=int(item.get("priority") or 50),
         source_reason=str(item.get("source_reason") or "agent_follow_up"),
+        source_type=str(item.get("source_type") or "agent_followup"),
     )

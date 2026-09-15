@@ -235,6 +235,7 @@ class ResearchService:
                 "title": _require_text(body, "title"),
                 "description": body.get("description") or "",
                 "source_reason": body.get("source_reason") or "",
+                "source_type": body.get("source_type") or "agent_followup",
                 "required_data": body.get("required_data") or [],
                 "assigned_agents": body.get("assigned_agents") or [],
                 "priority": body.get("priority") or 50,
@@ -280,6 +281,7 @@ class ResearchService:
                         "title": spec.title,
                         "description": spec.description,
                         "source_reason": spec.source_reason,
+                        "source_type": spec.source_type,
                         "required_data": list(spec.required_data),
                         "assigned_agents": list(spec.assigned_agents),
                         "priority": spec.priority,
@@ -322,6 +324,8 @@ class ResearchService:
                 "importance": body.get("importance") or "medium",
                 "direction": body.get("direction") or "neutral",
                 "raw_reference": body.get("raw_reference") or {},
+                "excerpt": body.get("excerpt") or body.get("fact") or "",
+                "source_type": body.get("source_type") or "",
                 "produced_by": actor,
                 "task_id": body.get("task_id"),
                 "workflow_run_id": body.get("workflow_run_id"),
@@ -367,6 +371,7 @@ class ResearchService:
                 "agent_run_id": audit["id"],
                 "model": body.get("model"),
                 "prompt_version": body.get("prompt_version"),
+                "source_type": body.get("source_type") or "template_seed",
             }
         )
 
@@ -680,6 +685,7 @@ class ResearchService:
                     required_data=tuple(required),
                     priority=spec.priority,
                     source_reason=spec.source_reason,
+                    source_type=spec.source_type,
                 )
             )
         follow_ups, dropped = self.enqueue_follow_ups(

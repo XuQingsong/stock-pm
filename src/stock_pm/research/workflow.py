@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from .backfill import ResearchDataBackfill, should_backfill
+from .backfill import ResearchDataBackfill, can_live_backfill, should_backfill
+from .quality import apply_quality_to_status, assess_research_quality
 from .runtime import AgentRuntime, agent_name_for_task
 from .service import ResearchService
 from .types import AGENT_FUNDAMENTAL, AgentInput, AgentOutput, to_plain
@@ -185,6 +186,7 @@ def run_new_ticker_research(
                 "title": "Discover fundamentals, guidance, and management commitments",
                 "description": "Analyze the research pack. Extract evidence, propose unverified assumptions, and open follow-up tasks.",
                 "source_reason": "template seed",
+                "source_type": "template_seed",
                 "assigned_agents": [AGENT_FUNDAMENTAL],
                 "required_data": ["earnings", "guidance", "transcript"],
                 "priority": 10,
@@ -200,7 +202,20 @@ def run_new_ticker_research(
         }
     resolved_runtime = runtime
     if resolved_runtime is None:
-        resolved_runtime = AgentRuntime(completer=service.completer)
+        from .agents.fundamental import FundamentalAgent
+        from .agents.search_data import SearchDataAgent
+        from .live_fetch import LiveResearchFetchers
+
+        tools = None
+        if can_live_backfill(service):
+            tools = getattr(service, "fetchers", None) or LiveResearchFetchers()
+        resolved_runtime = AgentRuntime(
+            completer=service.completer,
+            agents={
+                "search_data": SearchDataAgent(completer=service.completer, tools=tools),
+                "fundamental": FundamentalAgent(completer=service.completer),
+            },
+        )
     result = run_follow_up_loop(
         service,
         ticker=symbol,
@@ -211,14 +226,19 @@ def run_new_ticker_research(
     result["pack"] = service.get_pack(symbol)
     result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
     result["backfill"] = backfill_row
+    quality = assess_research_quality(result["pack"], evidence=result["snapshot"].get("evidence"))
+    counts = dict(result.get("item_counts") or {})
+    counts["research_quality"] = quality
     if backfill_row:
-        counts = dict((result.get("item_counts") or {}))
         counts["backfill_id"] = backfill_row.get("id")
         counts["backfill_status"] = backfill_row.get("status")
-        result["item_counts"] = counts
-        run = result.get("workflow_run")
-        if isinstance(run, dict):
-            merged = dict(run.get("item_counts") or {})
-            merged.update({"backfill_id": backfill_row.get("id"), "backfill_status": backfill_row.get("status")})
-            run["item_counts"] = merged
+    status = apply_quality_to_status(str((result.get("workflow_run") or {}).get("status") or "success"), quality)
+    result["workflow_run"] = service.store.complete_workflow_run(
+        workflow_run_id,
+        status=status,
+        item_counts=counts,
+        error=(result.get("workflow_run") or {}).get("error"),
+    )
+    result["item_counts"] = counts
+    result["research_quality"] = quality
     return result

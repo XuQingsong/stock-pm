@@ -293,6 +293,49 @@ class ResearchDataBackfill:
             if doc:
                 written += 1
         count = written
+        fetcher = getattr(self.fetchers, "official_documents", None)
+        if callable(fetcher) and result.get("filings"):
+            try:
+                official = fetcher(symbol, result.get("filings") or [])
+            except Exception:
+                official = []
+            for item in official:
+                text = str(item.get("text") or "")
+                doc_type = str(item.get("doc_type") or "filing")
+                url = str(item.get("url") or "")
+                if not text or not url:
+                    continue
+                stored = self.service.store.upsert_source_document(
+                    {
+                        "ticker": symbol,
+                        "doc_type": doc_type if doc_type in {
+                            "filing",
+                            "press_release",
+                            "guidance",
+                            "transcript",
+                            "earnings_release",
+                            "exhibit",
+                            "investor_presentation",
+                            "prepared_remarks",
+                        } else "filing",
+                        "source_key": url,
+                        "published_at": item.get("published_at"),
+                        "title": item.get("title") or item.get("form") or doc_type,
+                        "url": url,
+                        "excerpt": text[:1200],
+                        "body": text[:80000],
+                        "source_provider": item.get("source_provider") or "sec",
+                        "metadata": {
+                            "form": item.get("form"),
+                            "parent_url": item.get("parent_url"),
+                            "kind": doc_type,
+                        },
+                    }
+                )
+                if stored:
+                    written += 1
+                self._store_extracted_claims(symbol, text, url=url, published_at=item.get("published_at"), source=str(item.get("source_provider") or "sec"))
+        count = written
         if count:
             status = "success"
         else:
@@ -332,22 +375,14 @@ class ResearchDataBackfill:
                 }
             )
             written += 1
-            for hit in extract_guidance_mentions(text)[:8]:
-                self.service.store.upsert_source_document(
-                    {
-                        "ticker": symbol,
-                        "doc_type": "guidance",
-                        "source_key": f"{period}:{hit['quote'][:80]}",
-                        "fiscal_period": period or None,
-                        "published_at": published,
-                        "title": "Management guidance",
-                        "url": item.get("source_url"),
-                        "excerpt": hit["quote"],
-                        "body": hit["quote"],
-                        "source_provider": source,
-                        "metadata": {"kind": "guidance", "move": hit.get("move")},
-                    }
-                )
+            self._store_extracted_claims(
+                symbol,
+                text,
+                url=item.get("source_url"),
+                published_at=published,
+                source=source,
+                period=period,
+            )
         count = written
         if count >= 4:
             status = "success"
@@ -559,6 +594,34 @@ class ResearchDataBackfill:
         if len(payload) == 2:
             return
         database.ingest(payload)
+
+
+    def _store_extracted_claims(
+        self,
+        symbol: str,
+        text: str,
+        *,
+        url: str | None,
+        published_at: Any,
+        source: str,
+        period: str | None = None,
+    ) -> None:
+        for hit in extract_guidance_mentions(text)[:8]:
+            self.service.store.upsert_source_document(
+                {
+                    "ticker": symbol,
+                    "doc_type": "guidance",
+                    "source_key": f"guidance:{hit['quote'][:80]}",
+                    "fiscal_period": period,
+                    "published_at": published_at,
+                    "title": "Management guidance",
+                    "url": url,
+                    "excerpt": hit["quote"],
+                    "body": hit["quote"],
+                    "source_provider": source,
+                    "metadata": {"kind": "guidance", "move": hit.get("move")},
+                }
+            )
 
 
 def _pending_step() -> dict[str, Any]:

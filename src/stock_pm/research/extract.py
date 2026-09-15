@@ -12,7 +12,7 @@ from typing import Any
 COMMITMENT_PATTERNS = (
     re.compile(
         r"(long[- ]term|multi-year|by\s+FY?\s*20\d{2}|over the next \d+ years).{0,160}"
-        r"(target|goal|commit|capacity|revenue|customer|pipeline|design[- ]win)",
+        r"(target|goal|committed|capacity|revenue|customer|pipeline|design[- ]win)",
         re.I | re.S,
     ),
     re.compile(
@@ -21,7 +21,7 @@ COMMITMENT_PATTERNS = (
         re.I | re.S,
     ),
     re.compile(
-        r"(ai|asic|custom silicon|accelerat\w*|data[- ]center|optical|hyperscaler).{0,100}"
+        r"(\bai\b|asic|custom silicon|accelerat\w*|data[- ]center|optical|hyperscaler).{0,100}"
         r"(growth|demand|revenue|capacity|ramp)",
         re.I | re.S,
     ),
@@ -45,6 +45,67 @@ GUIDANCE_PATTERNS = (
         r"(full[- ]year|next quarter|outlook|expect(?:s|ed)?).{0,80}(revenue|eps|margin).{0,40}(\$|\d)",
         re.I | re.S,
     ),
+    re.compile(
+        r"(?:the company|we|management)\s+expects?\s+[^\n.]{10,240}",
+        re.I,
+    ),
+    re.compile(
+        r"(?:revenue|net revenue|sales)\s+(?:is|are)\s+expected\s+to\s+(?:be|range)[^\n.]{5,180}",
+        re.I,
+    ),
+    re.compile(
+        r"(?:expects?|guides?|guided|outlook)\s+[^\n.]{0,80}(?:revenue|margin|eps)[^\n.]{0,140}",
+        re.I,
+    ),
+    re.compile(
+        r"adjusted\s+(?:ebitda|gross|operating)?\s*margin[^\n.]{0,140}",
+        re.I,
+    ),
+)
+
+COMMITMENT_PATTERNS = COMMITMENT_PATTERNS + (
+    re.compile(
+        r"(?:over the next|in the next|during the next)\s+\d+\s+years?[^\n.]{0,220}",
+        re.I,
+    ),
+    re.compile(
+        r"(?:customer|hyperscal\w*|client)\s+[^\n.]{0,80}(?:deploy|ramp|capacity|demand|scale)[^\n.]{0,120}",
+        re.I,
+    ),
+    re.compile(
+        r"(?:on track|remain committed|targeting)\s+[^\n.]{0,160}(?:revenue|capacity|customer|growth|deploy|margin|production)",
+        re.I,
+    ),
+)
+
+TASK_SOURCE_TYPES = (
+    "template_seed",
+    "evidence_discovered",
+    "assumption_gap",
+    "agent_followup",
+    "pm_request",
+)
+
+OFFICIAL_SOURCE_TYPES = (
+    "earnings_release",
+    "sec_filing",
+    "transcript",
+    "investor_presentation",
+    "conference_remarks",
+    "press_release",
+    "official_document",
+)
+
+NEWS_SOURCE_TYPES = ("news", "headline", "news_discovery")
+
+BOILERPLATE_SKIP = re.compile(
+    r"(forward[- ]looking|could cause actual|no assurance|"
+    r"slow or unsuccessful return|expansion of our business strategy|"
+    r"incorporated by reference|furnished pursuant|"
+    r"long[- ]term debt|other long[- ]term liabilities|total liabilities|"
+    r"accelerated filer|emerging growth|stockholders.? equity|"
+    r"check the appropriate box|not indicative of revenue)",
+    re.I,
 )
 
 CONCLUSION_MARKERS = re.compile(
@@ -103,7 +164,9 @@ def _scan(patterns: tuple[re.Pattern[str], ...], text: str, *, kind: str) -> lis
         for match in pattern.finditer(text or ""):
             quote = _clean_span(match.group(0))
             key = quote.lower()
-            if len(quote) < 12 or key in seen:
+            if len(quote) < 28 or key in seen:
+                continue
+            if BOILERPLATE_SKIP.search(quote):
                 continue
             seen.add(key)
             found.append({"kind": kind, "quote": quote})
@@ -127,6 +190,50 @@ def extract_guidance_mentions(text: str) -> list[dict[str, str]]:
         else:
             item["move"] = "stated"
     return items
+
+
+def extract_guidance_from_official_text(text: str) -> list[dict[str, str]]:
+    """Guidance language from earnings releases and filings, not only transcripts."""
+    return extract_guidance_mentions(text)
+
+
+def extract_commitments_from_official_text(text: str) -> list[dict[str, str]]:
+    return extract_commitments(text)
+
+
+def followups_from_claim(quote: str) -> list[dict[str, str]]:
+    """Dynamic follow-ups from a specific claim. Generic questions, claim-triggered."""
+    hay = str(quote or "").lower()
+    items: list[dict[str, str]] = []
+
+    def add(title: str, required: str) -> None:
+        key = title.lower()
+        if any(item["title"].lower() == key for item in items):
+            return
+        items.append({"title": title, "required_data": required, "quote": _clean_span(quote, 240)})
+
+    if any(token in hay for token in ("customer", "hyperscal", "client", "deploy")):
+        add("Which customers are included in the stated deployment or demand claim?", "customers")
+        add("Is the stated customer activity contracted, or still a plan?", "contract_vs_plan")
+        add("What is the stated timing, and is related infrastructure already under construction?", "deployment_timing")
+        if any(token in hay for token in ("data center", "deploy", "capacity", "power", "electric")):
+            add("Is power or site capacity a constraint on the stated deployment?", "power_capacity")
+    if any(token in hay for token in ("capacity", "wafer", "foundry", "packag", "supply", "production")):
+        add("Is the supply needed for the stated plan already locked in with producers?", "supply_lock_in")
+        add("What capacity additions are required, and when do they come online?", "capacity_timing")
+    if any(token in hay for token in ("guid", "expect", "outlook")) and any(
+        token in hay for token in ("revenue", "margin", "eps", "sales")
+    ):
+        add("What demand and mix assumptions sit underneath the stated outlook?", "guidance_assumptions")
+        add("What would cause the stated outlook to be missed?", "guidance_miss_risk")
+    if any(token in hay for token in ("ai", "accelerat", "data center", "semiconductor")) and any(
+        token in hay for token in ("growth", "demand", "revenue", "ramp")
+    ):
+        add("Which end markets and customers drive the stated growth claim?", "end_markets")
+        add("Is the stated demand confirmed by customer public commentary?", "customer_confirmation")
+    if any(token in hay for token in ("margin", "ebitda")):
+        add("What mix and cost items have to hold for the stated margin to be delivered?", "margin_drivers")
+    return items[:8]
 
 
 def guidance_move_from_history(rows: list[dict[str, Any]]) -> str | None:
@@ -182,13 +289,62 @@ def has_transcript_source(pack: dict[str, Any]) -> bool:
     return bool(transcript_materials(pack).strip())
 
 
+def official_documents(pack: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in pack.get("official_documents") or []:
+        if isinstance(item, dict):
+            rows.append(item)
+    profile = pack.get("company_profile") or {}
+    for item in profile.get("official_documents") or []:
+        if isinstance(item, dict):
+            rows.append(item)
+    return rows
+
+
+def official_materials(pack: dict[str, Any]) -> str:
+    chunks: list[str] = []
+    for item in official_documents(pack):
+        chunks.append(str(item.get("text") or item.get("body") or item.get("excerpt") or ""))
+    return "\n".join(chunk for chunk in chunks if chunk.strip())
+
+
+def has_official_source(pack: dict[str, Any]) -> bool:
+    return bool(official_materials(pack).strip())
+
+
 def materials_text(pack: dict[str, Any]) -> str:
-    chunks: list[str] = [transcript_materials(pack)]
+    """Transcripts + official documents + stored guidance quotes. News titles are excluded."""
+    chunks: list[str] = [transcript_materials(pack), official_materials(pack)]
     for row in pack.get("guidance_history") or []:
         chunks.append(" ".join(str(row.get(key) or "") for key in ("text", "quote", "summary")))
-    for row in pack.get("major_events") or []:
-        chunks.append(" ".join(str(row.get(key) or "") for key in ("title", "summary", "text")))
     return "\n".join(chunk for chunk in chunks if chunk.strip())
+
+
+def source_type_for_document(row: dict[str, Any] | None) -> str:
+    payload = row or {}
+    explicit = str(payload.get("source_type") or payload.get("doc_type") or "").strip()
+    mapping = {
+        "earnings_release": "earnings_release",
+        "exhibit": "earnings_release",
+        "filing": "sec_filing",
+        "sec_filing": "sec_filing",
+        "transcript": "transcript",
+        "investor_presentation": "investor_presentation",
+        "prepared_remarks": "conference_remarks",
+        "conference_remarks": "conference_remarks",
+        "press_release": "press_release",
+        "guidance": "earnings_release",
+    }
+    if explicit in mapping:
+        return mapping[explicit]
+    source = str(payload.get("source") or payload.get("source_provider") or "").lower()
+    if "transcript" in source:
+        return "transcript"
+    if "sec" in source or "8-k" in source or "10-q" in source or "10-k" in source:
+        return "sec_filing"
+    if "press" in source:
+        return "press_release"
+    return "official_document"
 
 
 def has_conclusion_language(text: str) -> bool:

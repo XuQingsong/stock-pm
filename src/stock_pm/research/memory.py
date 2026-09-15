@@ -107,6 +107,7 @@ class InMemoryResearchStore:
             "title": row["title"],
             "description": row.get("description") or "",
             "source_reason": row.get("source_reason") or "",
+            "source_type": row.get("source_type") or "agent_followup",
             "required_data": list(row.get("required_data") or []),
             "assigned_agents": list(row.get("assigned_agents") or []),
             "priority": int(row.get("priority") or 50),
@@ -202,6 +203,8 @@ class InMemoryResearchStore:
             "importance": row.get("importance") or "medium",
             "direction": row.get("direction") or "neutral",
             "raw_reference": dict(row.get("raw_reference") or {}),
+            "excerpt": str(row.get("excerpt") or row.get("fact") or ""),
+            "source_type": str(row.get("source_type") or ""),
             "produced_by": row.get("produced_by") or "human_api",
             "task_id": row.get("task_id"),
             "workflow_run_id": row.get("workflow_run_id"),
@@ -237,6 +240,7 @@ class InMemoryResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "source_type": row.get("source_type") or "template_seed",
             "created_at": _now(),
             "updated_at": _now(),
         }
@@ -384,16 +388,21 @@ class InMemoryResearchStore:
 
     def upsert_pack(self, row: dict[str, Any]) -> dict[str, Any]:
         ticker = row["ticker"].upper()
+        profile = dict(row.get("company_profile") or {})
+        official = list(row.get("official_documents") or profile.get("official_documents") or [])
+        if official:
+            profile["official_documents"] = official
         stored = {
             "ticker": ticker,
             "template_id": row.get("template_id") or "generic_company",
-            "company_profile": dict(row.get("company_profile") or {}),
+            "company_profile": profile,
             "earnings_history": list(row.get("earnings_history") or []),
             "guidance_history": list(row.get("guidance_history") or []),
             "price_reaction_history": list(row.get("price_reaction_history") or []),
             "industry_context": dict(row.get("industry_context") or {}),
             "competitive_context": dict(row.get("competitive_context") or {}),
             "major_events": list(row.get("major_events") or []),
+            "official_documents": official,
             "missing_fields": list(row.get("missing_fields") or []),
             "source_refs": dict(row.get("source_refs") or {}),
             "workflow_run_id": row.get("workflow_run_id"),
