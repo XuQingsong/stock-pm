@@ -57,6 +57,29 @@ def ticker_for_cik(cik: str) -> str:
     return ""
 
 
+IDENTITY_FIELD_KEYS = (
+    "legal_name",
+    "cik",
+    "fiscal_year_end_month",
+    "sector",
+    "gics",
+    "primary_exchange",
+    "asset_class",
+    "aliases",
+    "source",
+)
+
+
+def is_blank_identity_value(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str) and not value.strip():
+        return True
+    if isinstance(value, (list, tuple)) and len(value) == 0:
+        return True
+    return False
+
+
 def missing_identity_fields(row: dict[str, Any]) -> list[str]:
     missing: list[str] = []
     if not str(row.get("cik") or "").strip():
@@ -107,3 +130,39 @@ def merge_identity(
     }
     row["missing_fields"] = missing_identity_fields(row)
     return row
+
+
+def fill_issuer_identity(existing: dict[str, Any], ticker: str, **explicit: Any) -> dict[str, Any]:
+    """Fill blanks from the directory / explicit fields; never clobber stored metadata with empty/null."""
+    listed = directory_entry(ticker)
+    out = dict(existing)
+    out["ticker"] = str(ticker).upper()
+    directory_fill = {
+        "legal_name": listed.get("legal_name"),
+        "cik": listed.get("cik"),
+        "fiscal_year_end_month": listed.get("fiscal_year_end_month"),
+        "sector": listed.get("sector"),
+        "gics": listed.get("gics"),
+        "primary_exchange": listed.get("primary_exchange"),
+        "asset_class": listed.get("asset_class"),
+    }
+    for key, value in directory_fill.items():
+        if is_blank_identity_value(out.get(key)) and not is_blank_identity_value(value):
+            out[key] = value
+    aliases = [item for item in (out.get("aliases") or []) if item]
+    for item in listed.get("aliases") or []:
+        if item not in aliases:
+            aliases.append(item)
+    for key, value in explicit.items():
+        if key not in IDENTITY_FIELD_KEYS:
+            continue
+        if key == "aliases":
+            for item in value or []:
+                if item not in aliases:
+                    aliases.append(item)
+            continue
+        if not is_blank_identity_value(value):
+            out[key] = value
+    out["aliases"] = aliases
+    out["missing_fields"] = missing_identity_fields(out)
+    return out

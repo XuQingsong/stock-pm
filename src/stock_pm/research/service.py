@@ -8,13 +8,14 @@ from typing import Any
 
 from .classify import classify_from_issuer, classify_template
 from .errors import CrossTickerError, DepthLimitError, ProvenanceError, ResearchPermissionError
-from .issuer import merge_identity
+from .issuer import IDENTITY_FIELD_KEYS, fill_issuer_identity, merge_identity
 from .types import (
     ACTOR_API,
     ACTOR_PM,
     ASSUMPTION_STATUSES,
     IMPORTANCE_LEVELS,
     LINK_DIRECTIONS,
+    LINK_STRENGTHS,
     THESIS_ROLES,
     AgentOutput,
     FollowUpSpec,
@@ -93,10 +94,12 @@ class ResearchService:
 
     def ensure_issuer(self, ticker: str, **fields: Any) -> dict[str, Any]:
         symbol = _ticker(ticker)
-        merged = merge_identity(symbol, **{key: value for key, value in fields.items() if key in {
-            "legal_name", "cik", "fiscal_year_end_month", "sector", "gics",
-            "primary_exchange", "asset_class", "aliases", "source",
-        }})
+        explicit = {key: value for key, value in fields.items() if key in IDENTITY_FIELD_KEYS}
+        existing = self.store.get_issuer(symbol)
+        if existing:
+            merged = fill_issuer_identity(existing, symbol, **explicit)
+        else:
+            merged = merge_identity(symbol, **explicit)
         stored = self.store.upsert_issuer(merged)
         pack = self.store.get_pack(symbol)
         if pack is None:
@@ -334,12 +337,17 @@ class ResearchService:
         assumption_id: str,
         evidence_id: str,
         direction: str,
+        strength: str | None = None,
+        reason: str | None = None,
         actor: str = ACTOR_API,
         workflow_run_id: str | None = None,
     ) -> dict[str, Any]:
         symbol = _ticker(ticker)
         if direction not in LINK_DIRECTIONS:
-            raise ProvenanceError("link direction must be support or oppose")
+            raise ProvenanceError("link direction must be support, oppose, or contextual")
+        resolved_strength = (strength or "moderate").strip() or "moderate"
+        if resolved_strength not in LINK_STRENGTHS:
+            raise ProvenanceError("link strength must be strong, moderate, or weak")
         assumption = self.store.get_assumption(assumption_id)
         evidence = self.store.get_evidence(evidence_id)
         if assumption is None or evidence is None:
@@ -352,7 +360,13 @@ class ResearchService:
             ticker=symbol,
             agent_name=actor,
             workflow_run_id=workflow_run_id or assumption.get("workflow_run_id"),
-            payload={"op": "link", "assumption_id": assumption_id, "evidence_id": evidence_id, "direction": direction},
+            payload={
+                "op": "link",
+                "assumption_id": assumption_id,
+                "evidence_id": evidence_id,
+                "direction": direction,
+                "strength": resolved_strength,
+            },
             output={"linked": True},
         )
         return self.store.insert_link(
@@ -360,6 +374,8 @@ class ResearchService:
                 "assumption_id": assumption_id,
                 "evidence_id": evidence_id,
                 "direction": direction,
+                "strength": resolved_strength,
+                "reason": reason,
                 "linked_by": actor,
                 "workflow_run_id": workflow_run_id or assumption.get("workflow_run_id"),
                 "agent_run_id": audit["id"],

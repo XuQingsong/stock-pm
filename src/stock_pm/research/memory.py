@@ -35,7 +35,15 @@ class InMemoryResearchStore:
     def upsert_issuer(self, row: dict[str, Any]) -> dict[str, Any]:
         ticker = row["ticker"].upper()
         current = dict(self.issuers.get(ticker) or {})
-        current.update(row)
+        for key, value in row.items():
+            if key == "ticker":
+                continue
+            if value is None or (isinstance(value, str) and not value.strip()):
+                if current.get(key) not in (None, ""):
+                    continue
+            if key == "aliases" and not value and current.get("aliases"):
+                continue
+            current[key] = value
         current["ticker"] = ticker
         current["updated_at"] = _now()
         self.issuers[ticker] = current
@@ -244,6 +252,8 @@ class InMemoryResearchStore:
             "assumption_id": row["assumption_id"],
             "evidence_id": row["evidence_id"],
             "direction": row["direction"],
+            "strength": row.get("strength") or "moderate",
+            "reason": row.get("reason"),
             "linked_by": row.get("linked_by") or "system",
             "workflow_run_id": row.get("workflow_run_id"),
             "agent_run_id": row.get("agent_run_id"),

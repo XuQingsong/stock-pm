@@ -11,7 +11,8 @@ ACTOR_WORKFLOW = "workflow"
 ASSUMPTION_STATUSES = ("unverified", "strengthened", "unchanged", "weakened", "broken")
 THESIS_ROLES = ("core", "supporting", "watch", "risk", "none")
 IMPORTANCE_LEVELS = ("low", "medium", "high", "critical")
-LINK_DIRECTIONS = ("support", "oppose")
+LINK_DIRECTIONS = ("support", "oppose", "contextual")
+LINK_STRENGTHS = ("strong", "moderate", "weak")
 EVIDENCE_DIRECTIONS = ("support", "oppose", "neutral")
 TASK_STATUSES = ("pending", "running", "completed", "blocked", "cancelled")
 

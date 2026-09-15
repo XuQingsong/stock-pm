@@ -49,9 +49,18 @@ def test_research_api_happy_path_and_pm_gate(monkeypatch) -> None:
     assert forbidden.status_code == 403
     link = client.post(
         f"/api/research/ZZZZ/assumptions/{assumption.json()['id']}/links",
-        json={"evidence_id": evidence.json()["id"], "direction": "support"},
+        json={
+            "evidence_id": evidence.json()["id"],
+            "direction": "contextual",
+            "strength": "weak",
+            "reason": "capacity plan is background, not proof",
+        },
     )
     assert link.status_code == 201
+    assert link.json()["direction"] == "contextual"
+    assert link.json()["strength"] == "weak"
+    listed = client.get("/api/research/ZZZZ/assumptions")
+    assert listed.json()[0]["contextual_evidence_ids"] == [evidence.json()["id"]]
     status = client.post(
         f"/api/research/ZZZZ/assumptions/{assumption.json()['id']}/status",
         json={"actor": "pm_judge", "status": "strengthened", "thesis_role": "core"},

@@ -80,16 +80,31 @@ class ResearchStore:
                 %(aliases)s, %(missing_fields)s, %(source)s, %(updated_at)s
             )
             ON CONFLICT (ticker) DO UPDATE SET
-                legal_name = EXCLUDED.legal_name,
-                cik = COALESCE(EXCLUDED.cik, issuer_profiles.cik),
+                legal_name = CASE
+                    WHEN EXCLUDED.legal_name IS NULL OR btrim(EXCLUDED.legal_name) = '' THEN issuer_profiles.legal_name
+                    ELSE EXCLUDED.legal_name
+                END,
+                cik = COALESCE(NULLIF(btrim(EXCLUDED.cik), ''), issuer_profiles.cik),
                 fiscal_year_end_month = COALESCE(EXCLUDED.fiscal_year_end_month, issuer_profiles.fiscal_year_end_month),
-                sector = COALESCE(EXCLUDED.sector, issuer_profiles.sector),
-                gics = COALESCE(EXCLUDED.gics, issuer_profiles.gics),
-                primary_exchange = CASE WHEN EXCLUDED.primary_exchange = '' THEN issuer_profiles.primary_exchange ELSE EXCLUDED.primary_exchange END,
-                asset_class = EXCLUDED.asset_class,
-                aliases = EXCLUDED.aliases,
+                sector = COALESCE(NULLIF(btrim(EXCLUDED.sector), ''), issuer_profiles.sector),
+                gics = COALESCE(NULLIF(btrim(EXCLUDED.gics), ''), issuer_profiles.gics),
+                primary_exchange = CASE
+                    WHEN EXCLUDED.primary_exchange IS NULL OR btrim(EXCLUDED.primary_exchange) = '' THEN issuer_profiles.primary_exchange
+                    ELSE EXCLUDED.primary_exchange
+                END,
+                asset_class = CASE
+                    WHEN EXCLUDED.asset_class IS NULL OR btrim(EXCLUDED.asset_class) = '' THEN issuer_profiles.asset_class
+                    ELSE EXCLUDED.asset_class
+                END,
+                aliases = CASE
+                    WHEN EXCLUDED.aliases = '{}'::text[] THEN issuer_profiles.aliases
+                    ELSE EXCLUDED.aliases
+                END,
                 missing_fields = EXCLUDED.missing_fields,
-                source = EXCLUDED.source,
+                source = CASE
+                    WHEN EXCLUDED.source IS NULL OR btrim(EXCLUDED.source) = '' THEN issuer_profiles.source
+                    ELSE EXCLUDED.source
+                END,
                 updated_at = EXCLUDED.updated_at
             RETURNING *
             """,
@@ -480,6 +495,8 @@ class ResearchStore:
             "assumption_id": row["assumption_id"],
             "evidence_id": row["evidence_id"],
             "direction": row["direction"],
+            "strength": row.get("strength") or "moderate",
+            "reason": row.get("reason"),
             "linked_by": row.get("linked_by") or "system",
             "workflow_run_id": row.get("workflow_run_id"),
             "agent_run_id": row.get("agent_run_id"),
@@ -487,13 +504,16 @@ class ResearchStore:
         stored = self._one(
             """
             INSERT INTO assumption_evidence_links (
-                assumption_id, evidence_id, direction, linked_by, workflow_run_id, agent_run_id
+                assumption_id, evidence_id, direction, strength, reason,
+                linked_by, workflow_run_id, agent_run_id
             )
             VALUES (
-                %(assumption_id)s, %(evidence_id)s, %(direction)s, %(linked_by)s,
-                %(workflow_run_id)s, %(agent_run_id)s
+                %(assumption_id)s, %(evidence_id)s, %(direction)s, %(strength)s, %(reason)s,
+                %(linked_by)s, %(workflow_run_id)s, %(agent_run_id)s
             )
             ON CONFLICT (assumption_id, evidence_id, direction) DO UPDATE SET
+                strength = EXCLUDED.strength,
+                reason = EXCLUDED.reason,
                 linked_by = EXCLUDED.linked_by
             RETURNING *
             """,
@@ -653,7 +673,7 @@ class ResearchStore:
         }
         stored = self._one(
             """
-            INSERT INTO valuations (
+            INSERT INTO research_valuations (
                 id, ticker, thesis_id, thesis_version, horizon, bear_case, base_case,
                 bull_case, spot_price, actor, workflow_run_id, agent_run_id, model, prompt_version
             )
@@ -670,12 +690,12 @@ class ResearchStore:
         return stored
 
     def get_valuation(self, valuation_id: str) -> dict[str, Any] | None:
-        return self._one("SELECT * FROM valuations WHERE id = %(id)s", {"id": valuation_id})
+        return self._one("SELECT * FROM research_valuations WHERE id = %(id)s", {"id": valuation_id})
 
     def get_valuation_for_thesis(self, thesis_id: str) -> dict[str, Any] | None:
         return self._one(
             """
-            SELECT * FROM valuations
+            SELECT * FROM research_valuations
             WHERE thesis_id = %(thesis_id)s
             ORDER BY created_at DESC
             LIMIT 1

@@ -143,7 +143,7 @@ Brain 主流程 **禁止再增加** 这类词典。Sprint 6 把 CIK / FYE / 别�
 
 ## 3. 需要新增哪些表 / 模型
 
-迁移文件：`src/stock_pm/sql/migrations/0004_research_brain.sql`。**不改** `schema.sql` 快照（0001 已冻结）。
+迁移文件：`src/stock_pm/sql/migrations/0004_research_brain.sql`，Sprint 1 close-out 补丁 `0005_research_sprint1_closeout.sql`。**不改** `schema.sql` 快照（0001 已冻结）。
 
 ### 3.1 表
 
@@ -208,15 +208,17 @@ CHECK：`source` 与 `source_time` 非空。无来源不得 INSERT。
 
 statement 创建后不改写。若语义变了，新增 Assumption，旧的 `broken` 或保留并链接替代 id（Sprint 4 再加 `superseded_by`）。
 
-#### `research_assumption_links`
+#### `assumption_evidence_links`
 
-Assumption ↔ Evidence 多对多。
+Evidence ↔ Assumption 多对多。一条 Evidence 可支持、反对、或作为 contextual 关联多条 Assumption。
 
 | 列 | 类型 |
 | --- | --- |
 | `assumption_id` | TEXT FK |
 | `evidence_id` | TEXT FK |
-| `direction` | `support` / `oppose` |
+| `direction` | `support` / `oppose` / `contextual` |
+| `strength` | `strong` / `moderate` / `weak`，默认 `moderate` |
+| `reason` | TEXT，可空；说明为何这样链接 |
 | `linked_at` | TIMESTAMPTZ |
 | `linked_by` | TEXT |
 
@@ -243,7 +245,9 @@ Append-only 版本表。禁止 UPDATE `core_thesis` 等正文列。
 | `actor` | TEXT NOT NULL | 必须 `pm_judge` |
 | `created_at` | TIMESTAMPTZ |
 
-#### `valuations`
+#### `research_valuations`
+
+表名与 SQL / store 一致，禁止再用 `valuations`。
 
 | 列 | 类型 |
 | --- | --- |
@@ -305,10 +309,10 @@ Sprint 1 就要真正写入，不是空表。
 ### 3.1b 评审修订后必须进入 Sprint 1 的对象
 
 1. **`issuer_profiles`**（不再等到 Sprint 6）  
-   新 ticker 的基础身份：CIK、fiscal year end、legal name、aliases、sector、exchange。身份是数据，不是流程 if/else。未知字段 Honest 留空，禁止发明。
+   新 ticker 的基础身份：CIK、fiscal year end、legal name、aliases、sector、exchange。身份是数据，不是流程 if/else。未知字段 Honest 留空，禁止发明。`ensure_issuer` 不得用空值/null 覆盖已有 metadata；后续无参调用只补空白，不擦掉已写入的 CIK/sector/legal_name。
 
 2. **`assumption_evidence_links`**  
-   Evidence ↔ Assumption 多对多；一条 Evidence 可支持/反对多条 Assumption。
+   Evidence ↔ Assumption 多对多；一条 Evidence 可 `support` / `oppose` / `contextual` 多条 Assumption。链接带 `strength` 与 `reason`。
 
 3. **Assumption `importance` / `thesis_role`**  
    区分核心假设与普通假设。`thesis_role=core` 只能由 `pm_judge` 设定。
@@ -534,6 +538,7 @@ New ticker (watchlist)
 | --- | --- |
 | `docs/BRAIN_V1_DESIGN.md` | 本设计（已落地） |
 | `src/stock_pm/sql/migrations/0004_research_brain.sql` | 第 3 节全部表 + index + check |
+| `src/stock_pm/sql/migrations/0005_research_sprint1_closeout.sql` | 链接 polarity/strength/reason；`valuations` → `research_valuations` |
 | `src/stock_pm/research/__init__.py` | 导出类型与 service 入口 |
 | `src/stock_pm/research/types.py` | Task/Evidence/Assumption/Thesis/Valuation/Pack/Agent I/O |
 | `src/stock_pm/research/errors.py` | `ProvenanceError` `PermissionError` `VersionConflict` `CrossTickerError` |

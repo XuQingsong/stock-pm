@@ -150,7 +150,10 @@ CREATE INDEX IF NOT EXISTS idx_research_assumptions_ticker
 CREATE TABLE IF NOT EXISTS assumption_evidence_links (
     assumption_id TEXT NOT NULL REFERENCES research_assumptions(id) ON DELETE CASCADE,
     evidence_id TEXT NOT NULL REFERENCES research_evidence(id) ON DELETE CASCADE,
-    direction TEXT NOT NULL CHECK (direction IN ('support', 'oppose')),
+    direction TEXT NOT NULL CHECK (direction IN ('support', 'oppose', 'contextual')),
+    strength TEXT NOT NULL DEFAULT 'moderate'
+        CHECK (strength IN ('strong', 'moderate', 'weak')),
+    reason TEXT,
     linked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     linked_by TEXT NOT NULL DEFAULT 'system',
     workflow_run_id TEXT REFERENCES research_workflow_runs(id) ON DELETE SET NULL,
@@ -190,7 +193,7 @@ CREATE TABLE IF NOT EXISTS investment_theses (
 CREATE INDEX IF NOT EXISTS idx_investment_theses_ticker
     ON investment_theses (ticker, version DESC);
 
-CREATE TABLE IF NOT EXISTS valuations (
+CREATE TABLE IF NOT EXISTS research_valuations (
     id TEXT PRIMARY KEY,
     ticker TEXT NOT NULL,
     thesis_id TEXT REFERENCES investment_theses(id) ON DELETE SET NULL,
@@ -206,15 +209,15 @@ CREATE TABLE IF NOT EXISTS valuations (
     model TEXT,
     prompt_version TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT valuations_cases_present CHECK (
+    CONSTRAINT research_valuations_cases_present CHECK (
         jsonb_typeof(bear_case) = 'object'
         AND jsonb_typeof(base_case) = 'object'
         AND jsonb_typeof(bull_case) = 'object'
     )
 );
 
-CREATE INDEX IF NOT EXISTS idx_valuations_ticker
-    ON valuations (ticker, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_research_valuations_ticker
+    ON research_valuations (ticker, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS research_packs (
     ticker TEXT PRIMARY KEY,

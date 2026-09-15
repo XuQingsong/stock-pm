@@ -139,6 +139,7 @@ def list_assumptions(symbol: str) -> list[dict[str, Any]]:
             item = dict(row)
             item["supporting_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "support"]
             item["counter_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "oppose"]
+            item["contextual_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "contextual"]
             out.append(item)
         return out
     except Exception as exc:
@@ -161,6 +162,8 @@ def link_evidence(symbol: str, assumption_id: str, body: Annotated[dict, Body()]
             assumption_id=assumption_id,
             evidence_id=str(body.get("evidence_id") or ""),
             direction=str(body.get("direction") or ""),
+            strength=body.get("strength"),
+            reason=body.get("reason"),
             actor=_actor(body),
             workflow_run_id=body.get("workflow_run_id"),
         )

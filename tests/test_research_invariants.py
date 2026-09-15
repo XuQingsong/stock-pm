@@ -26,6 +26,23 @@ def test_new_ticker_gets_issuer_profile_without_invented_cik() -> None:
     assert pack["missing_fields"]
 
 
+def test_ensure_issuer_does_not_overwrite_existing_metadata_with_empty() -> None:
+    svc = service()
+    svc.ensure_issuer("COHR", legal_name="Coherent Corp", sector="半导体", cik="0001234567", source="test")
+    blank = svc.ensure_issuer("COHR", legal_name="", sector=None, cik=None, source="")
+    assert blank["legal_name"] == "Coherent Corp"
+    assert blank["sector"] == "半导体"
+    assert blank["cik"] == "0001234567"
+    assert blank["source"] == "test"
+    workflow = svc.start_workflow_run("COHR")
+    assert workflow["template_id"] == "semiconductor"
+    again = svc.get_issuer("COHR")
+    assert again["legal_name"] == "Coherent Corp"
+    assert again["sector"] == "半导体"
+    assert again["cik"] == "0001234567"
+    assert again["source"] == "test"
+
+
 def test_evidence_requires_source_and_time() -> None:
     svc = service()
     with pytest.raises(ProvenanceError):
@@ -74,6 +91,25 @@ def test_assumption_evidence_links_are_many_to_many_same_ticker() -> None:
         svc.link_assumption_evidence("ZZZZ", assumption_id=first["id"], evidence_id=other["id"], direction="support")
     links = svc.store.list_links(evidence_id=evidence["id"])
     assert len(links) == 2
+    assert links[0]["strength"] == "moderate"
+    contextual = svc.link_assumption_evidence(
+        "ZZZZ",
+        assumption_id=first["id"],
+        evidence_id=evidence["id"],
+        direction="contextual",
+        strength="weak",
+        reason="same print, different question",
+    )
+    assert contextual["direction"] == "contextual"
+    assert contextual["strength"] == "weak"
+    assert contextual["reason"] == "same print, different question"
+    with pytest.raises(ProvenanceError):
+        svc.link_assumption_evidence(
+            "ZZZZ",
+            assumption_id=first["id"],
+            evidence_id=evidence["id"],
+            direction="neutral",
+        )
 
 
 def test_only_pm_can_change_status_and_write_thesis_versions() -> None:
