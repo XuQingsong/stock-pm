@@ -30,7 +30,7 @@ def withhold_unsourced_prediction(pred: dict[str, Any] | None, *, can_form_direc
         return payload
     payload["direction_withheld"] = True
     payload["prediction_ready"] = False
-    payload["therefore"] = "决策未形成方向：不展示无来源涨跌或百分比预测。下面若有数字，只可能是已发生事实。"
+    payload["therefore"] = "当前条件不足，暂不形成可验证预测。下面若有数字，只可能是已发生事实。"
     payload["upside_bound_pct"] = None
     payload["downside_bound_pct"] = None
     payload["upside_price"] = None
@@ -43,7 +43,7 @@ def withhold_unsourced_prediction(pred: dict[str, Any] | None, *, can_form_direc
     payload["target"] = None
     payload["thesis"] = None
     payload["state"] = "withheld"
-    payload["missing_label"] = "决策未形成方向，不展示百分比预测"
+    payload["missing_label"] = "当前条件不足，暂不形成可验证预测"
     payload["prediction_half"] = payload["missing_label"]
     payload["missingFlags"] = list(payload.get("missingFlags") or []) + ["decision_direction"]
     struct = dict(payload.get("struct") or {})
@@ -99,7 +99,7 @@ FLAG_LABELS = {
     "price": "对照价格",
 }
 
-MISSING_LINE = "到期未产出，未编造时间窗口或涨跌边界。"
+MISSING_LINE = "当前缺少时间窗或涨跌边界，暂不形成可验证预测。"
 MISSING_DATA_LINE = named_missing_line(PRED_FIELD_FLAGS)
 QUALIFIED_EXAMPLE = "两周内补涨约10%，期间跌幅不超过5%"
 
@@ -464,7 +464,7 @@ def synthesize_prediction(
             missing.append("tape")
 
     if session and session.get("is_trading_day") is False:
-        line = f"{as_of_date or ''} {session.get('label') or '美股休市'}，不编当日预测边界。".strip()
+        line = f"{as_of_date or ''} {session.get('label') or '美股休市'}，今日休市，暂不形成当日预测。".strip()
         pred = failed_prediction(symbol_u, as_of_date, "session_closed", missing_label=line)
         pred["publishState"] = "stale"
         pred["one_liner"] = line
@@ -496,7 +496,7 @@ def synthesize_prediction(
     tape_disp = _as_clause(tape.get("one_liner"), "结论不足")
     explain = review_note.get("explanation") or ""
     if unexplained or "解释不了" in explain:
-        explain_disp = "解释不了，仍按昨盘与支撑压力给可验证边界，不硬编因果"
+        explain_disp = "消息与盘面尚未对上，仍按昨盘与支撑压力给出可验证边界"
     else:
         explain_disp = _as_clause(explain, "依据不足")
     target = (

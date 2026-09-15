@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 from stock_pm.events.types import TrustedEvent
-from stock_pm.ux_copy import is_http_url
+from stock_pm.ux_copy import display_title, is_english_headline, is_http_url
 
 from .copy import (
     action_verbs,
     horizon_label,
-    mmdd,
+    judgment_reason,
+    main_path_copy,
     near_state,
     research_lean,
     strip_holdings,
@@ -48,7 +49,8 @@ def _news_link(event: dict[str, Any]) -> dict[str, Any] | None:
         url = source.get("source_url") or source.get("canonical_url")
         if is_http_url(url):
             title = source.get("title") or event.get("canonical_title") or "原文"
-            return {"url": url, "label": f"可点新闻 · {title[:40]}"}
+            label = "可点新闻" if is_english_headline(title) else f"可点新闻 · {title[:40]}"
+            return {"url": url, "label": label}
     return None
 
 
@@ -59,7 +61,7 @@ def _ticker_chip(row: dict[str, Any]) -> dict[str, Any]:
         "kind": row.get("kind") or row.get("impact_class") or "gray",
         "label": row.get("label") or "",
         "bars": row.get("bars") or 1,
-        "why": row.get("why"),
+        "why": main_path_copy(row.get("why")) if row.get("why") else row.get("why"),
         "side": row.get("side"),
         "directness": row.get("directness"),
         "rank": row.get("rank", 9),
@@ -94,23 +96,26 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
     )
     why_strength = "；".join(
         f"{row['symbol']}：{row.get('why') or row.get('label')}" for row in mapped[:4]
-    ) or "没有可反查的自选暴露，不把标题抄到全部标的"
+    ) or "暂未形成对自选股的明确影响"
     transmit = str((analysis.get("mechanism") or {}).get("text") or "") or _layer_text(analysis, "impact")
-    conclusion = strip_holdings(
-        (analysis.get("answers") or {}).get("what_happened")
-        or expectation
-        or payload.get("canonical_title")
-        or ""
-    )
-    if withheld or not closed:
-        reason = (analysis.get("withheld") or {}).get("reason") or "证据不足，不形成方向"
-        conclusion = strip_holdings(reason) if not mapped else strip_holdings(conclusion or reason)
+    # Diagnostic withheld reasons stay in analysis for events/expand — never
+    # as the main-path conclusion.
+    what = strip_holdings((analysis.get("answers") or {}).get("what_happened") or "")
+    conclusion = main_path_copy(what) or main_path_copy(expectation)
+    if not conclusion:
+        conclusion = (
+            "当前条件不足，暂不形成明确方向"
+            if (withheld or not closed)
+            else "结论暂缺"
+        )
+    conclusion = main_path_copy(conclusion) or "结论暂缺"
     horizon = horizon_label(
         _layer_field(analysis, "expectation", "horizon")
         or payload.get("duration")
         or (analysis.get("horizon") or {}).get("text")
     )
-    title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
+    raw_title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
+    title = display_title(raw_title, fallback=conclusion[:40] if conclusion else "市场事件")
     return {
         "event_id": payload.get("event_id"),
         "title": title,
@@ -123,7 +128,7 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         "tickers": [_ticker_chip(row) for row in mapped],
         "mapping": mapped,
         "mapped": bool(mapped),
-        "transmit": strip_holdings(transmit)[:180] if transmit else "",
+        "transmit": main_path_copy(transmit)[:180] if transmit else "",
         "basis": {
             "fact": fact or "事实暂缺",
             "change": change or "相对基线变化暂缺",
@@ -174,10 +179,13 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
         )
     url = item.get("url") if is_http_url(item.get("url")) else None
     headline = strip_holdings(item.get("headline") or "") or "未命名新闻"
+    summary = main_path_copy(item.get("summary") or "")
+    title = display_title(headline, fallback=summary[:40] if summary else "相关新闻")
+    news_label = "可点新闻" if is_english_headline(headline) else f"可点新闻 · {headline[:40]}"
     return {
         "event_id": None,
-        "title": headline[:120],
-        "conclusion": strip_holdings(item.get("summary") or headline)[:160],
+        "title": title[:120],
+        "conclusion": (summary or title)[:160],
         "scope_label": (
             "公司级"
             if any(row.get("mechanism") == "watchlist_ingested_article" for row in mapped)
@@ -190,16 +198,16 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
         "tickers": [_ticker_chip(row) for row in mapped],
         "mapping": mapped,
         "mapped": bool(mapped),
-        "transmit": strip_holdings((mapped[0].get("why") if mapped else "") or ""),
+        "transmit": main_path_copy((mapped[0].get("why") if mapped else "") or ""),
         "basis": {
             "fact": headline,
-            "change": "新闻入库，不是官方事实闭环",
+            "change": "来自新闻，尚未被官方事实确认",
             "expectation": "预期暂缺",
             "why_strength": "；".join(f"{row['symbol']}：{row.get('why')}" for row in mapped[:4])
-            or "没有可反查的自选暴露",
+            or "暂未形成对自选股的明确影响",
             "invalidation": "后续官方否认或财报证伪则作废",
         },
-        "news": {"url": url, "label": f"可点新闻 · {headline[:40]}"} if url else None,
+        "news": {"url": url, "label": news_label} if url else None,
         "closed_loop": False,
         "featured_ok": False,
         "source_kind": "news",
@@ -258,7 +266,7 @@ def focus_rows(
             symbol = str(ticker.get("symbol") or "").upper()
             prev = strongest.get(symbol)
             if prev is None or int(ticker.get("rank", 9)) < int(prev.get("rank", 9)):
-                strongest[symbol] = {**ticker, "event_title": card.get("title"), "hint": (card.get("basis") or {}).get("invalidation"), "card": card}
+                strongest[symbol] = {**ticker, "event_title": card.get("title"), "card": card}
 
     priority: list[dict[str, Any]] = []
     watch_group: list[dict[str, Any]] = []
@@ -295,17 +303,16 @@ def focus_rows(
             group = "skip"
             urgency = "mute"
             side = "none" if side == "none" else side
-        why = strip_holdings(
+        why = judgment_reason(
             (mapped.get("why") if mapped else None)
             or brief.get("row_thesis")
             or brief.get("env_half")
             or (brief.get("environment") or {}).get("one_liner")
-            or ("无公司级映射" if group == "skip" else "依据暂缺")
+            or ("暂未形成对公司级影响" if group == "skip" else "依据暂缺，维持观察")
         )
-        hint = strip_holdings(
-            (mapped.get("hint") if mapped else None)
-            or (brief.get("prediction") or {}).get("missing_label")
-            or "留意：是否出现新映射"
+        hint = main_path_copy(
+            (brief.get("prediction") or {}).get("missing_label")
+            or "留意：是否出现可改变判断的新信息"
         )
         if hint and not str(hint).startswith("留意"):
             hint = f"留意：{hint}"
@@ -348,11 +355,12 @@ def stock_judge(row: dict[str, Any], mapped: list[dict[str, Any]] | None) -> dic
         confidence=(hit or {}).get("label"),
         horizon=None,
     )
-    quote = strip_holdings(
-        (row.get("environment") or {}).get("one_liner")
+    quote = judgment_reason(
+        (hit or {}).get("why")
+        or (row.get("environment") or {}).get("one_liner")
         or row.get("env_half")
         or row.get("row_thesis")
-        or "判断暂缺，不编方向"
+        or "依据暂缺，维持观察"
     )
     return {
         "stance": lean,

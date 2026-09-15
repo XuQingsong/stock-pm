@@ -110,7 +110,8 @@ def test_quality_gate_failure_is_visible_missing() -> None:
     assert pred["downside_bound_pct"] is None
     assert "缺" in pred["missing_label"]
     assert "缺数，" not in pred["missing_label"]
-    assert "未编造" in pred["one_liner"]
+    assert "不计入预测准确率" in pred["one_liner"]
+    assert "未编造" not in pred["one_liner"]
     assert prediction_badge(pred) == pred["missing_label"]
     assert prediction_badge(None) == "到期未产出"
 

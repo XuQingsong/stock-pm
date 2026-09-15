@@ -200,7 +200,7 @@ def score(nvda, aapl, nok, h_nvda, pub, gold, nfp, prior, news, options, pred, j
         and pred.get("upside_price") is None
         and "当天补涨约" not in pred_blob
         and "期间跌幅不超过1%" not in pred_blob
-        and "决策未形成方向" in (pred.get("therefore") or ""),
+        and "暂不形成可验证预测" in (pred.get("therefore") or ""),
         "U8": dxy.get("status") in {"not_configured", "unavailable"}
         and "google news" not in js.lower()
         and "short_mid_long" not in js,

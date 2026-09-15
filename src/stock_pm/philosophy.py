@@ -200,7 +200,7 @@ def stock_row_thesis(row: dict | None) -> str:
         elif stance_n == "mixed":
             news_text = "分歧 · 可点新闻"
         else:
-            news_text = "未映射方向，不编影响"
+            news_text = "暂未形成对该股的明确影响"
             stance_n = None
     return causal_one_liner(tape_text, news_text, tape_stance(health, breakout), stance_n)
 
@@ -267,7 +267,7 @@ def synthesize_environment(
 
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
-        one_liner = f"{as_of_date or ''} {label}，隔夜环境沿用最近交易日，不编造当日盘面。".strip()
+        one_liner = f"{as_of_date or ''} {label}，今日休市，沿用最近交易日环境作为背景。".strip()
         publish_state = "stale"
     elif tape_missing and macro_missing:
         one_liner = causal_one_liner(None, None, None, None)
@@ -384,7 +384,7 @@ def derive_explicit_state(
     if stale_sync or reviews_missing or due_missing:
         candidates.append("overdue")
         if due_missing:
-            details.append("到期未产出或依据不足，未编造预测边界。")
+            details.append("到期未产出或依据不足，暂不形成可验证预测。")
         if reviews_missing:
             details.append("交易日复盘尚未生成。")
         if stale_sync:

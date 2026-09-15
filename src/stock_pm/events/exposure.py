@@ -105,9 +105,9 @@ def why_relevant(
                 "channel": "company",
                 "mechanism": "company_earnings" if event.event_type == "company_earnings" else "company_filing",
                 "why_relevant": (
-                    "结构化财报实际值只对应本发行人，不复制到无关股票"
+                    "财报实际值对应本公司"
                     if event.event_type == "company_earnings"
-                    else "公司原文公告直接对应本标的"
+                    else "公司公告直接对应本标的"
                 ),
             }
         return None
@@ -117,7 +117,7 @@ def why_relevant(
                 "relevant": True,
                 "channel": "commodity_revenue",
                 "mechanism": "commodity_price_to_producer_revenue",
-                "why_relevant": "原油生产收入直接暴露于供应中断/制裁带来的油价变化，不是把战争标题抄到所有股票",
+                "why_relevant": "原油生产收入直接受供应中断或制裁带来的油价变化影响",
             }
         if "semis" in channels:
             return None
@@ -128,14 +128,14 @@ def why_relevant(
                 "relevant": True,
                 "channel": "risk_premium",
                 "mechanism": "geopolitical_risk_premium_to_duration",
-                "why_relevant": "高估值成长/半导体通过风险溢价和供应链间接暴露，不是油企收入路径",
+                "why_relevant": "高估值成长或半导体通过风险溢价和供应链间接受到影响",
             }
         if event.event_type == "war_sanctions" and ("banks" in seed["themes"] or "credit" in seed["themes"]):
             return {
                 "relevant": True,
                 "channel": "risk_premium",
                 "mechanism": "risk_premium_to_credit_conditions",
-                "why_relevant": "银行通过风险溢价和信用条件暴露，不是油价收入",
+                "why_relevant": "银行通过风险溢价和信用条件受到影响",
             }
         return None
     if "semis" in channels:
@@ -144,7 +144,7 @@ def why_relevant(
                 "relevant": True,
                 "channel": "supply_chain",
                 "mechanism": "export_control_to_semis_supply",
-                "why_relevant": "半导体出口限制映射到该股供应链，不复制到原油生产商",
+                "why_relevant": "半导体出口限制影响该股供应链",
             }
         return None
     if "credit" in channels:
@@ -153,7 +153,7 @@ def why_relevant(
                 "relevant": True,
                 "channel": "credit_conditions",
                 "mechanism": "credit_event_to_bank_balance_sheet",
-                "why_relevant": "银行信用/债务事件进入 JPM 观察，不默认进入消费电子或能源股",
+                "why_relevant": "银行信用或债务事件影响该股资产负债表",
             }
         return None
     if "rates" in channels:
@@ -162,14 +162,14 @@ def why_relevant(
                 "relevant": True,
                 "channel": "duration",
                 "mechanism": "inflation_to_rates_to_discount",
-                "why_relevant": "高利率敏感/久期暴露，利率贴现链进入该股观察，不是把宏观标题抄到所有股票",
+                "why_relevant": "该股对利率敏感，贴现率变化可能影响估值",
             }
         if "banks" in seed["themes"] or "credit" in seed["themes"]:
             return {
                 "relevant": True,
                 "channel": "credit_conditions",
                 "mechanism": "inflation_to_rates_to_credit",
-                "why_relevant": "银行通过利率和信用条件暴露于通胀/就业事实，不是消费者电子路径",
+                "why_relevant": "银行通过利率和信用条件受到通胀或就业数据影响",
             }
         return None
     return None

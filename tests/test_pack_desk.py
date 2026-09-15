@@ -181,7 +181,10 @@ def test_news_never_becomes_featured_main_event():
     assert payload["featured"] is None
     assert payload["featured_missing"]
     titles = [card["title"] for card in payload["carousel"]]
-    assert any("NVDA reports" in title or "订单" in title for title in titles) or payload["carousel"]
+    assert any("订单" in title or "相关新闻" in title for title in titles) or payload["carousel"]
+    blob = " ".join(titles)
+    assert "AVGO and MSFT" not in blob
+    assert "reports orders" not in blob
     mapped_symbols = {row["symbol"] for card in payload["carousel"] for row in card.get("tickers") or []}
     assert "NVDA" in mapped_symbols
     assert "MSFT" not in mapped_symbols

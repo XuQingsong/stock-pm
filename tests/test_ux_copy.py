@@ -30,6 +30,8 @@ def test_named_missing_never_bare_queshu() -> None:
     assert "缺对照行情" in line
     assert "缺数，" not in line
     assert line != "缺数"
+    assert "未编造" not in line
+    assert "不计入预测准确率" in line
 
 
 def test_news_clickable_or_marks_missing_url() -> None:

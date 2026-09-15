@@ -112,7 +112,8 @@ def test_environment_missing_flags_are_honest() -> None:
     assert "macro" in env["missingFlags"]
     assert "reviews" in env["missingFlags"]
     assert env["prediction_ready"] is False
-    assert "暂缺" in env["one_liner"]
+    assert "不足" in env["one_liner"]
+    assert "置信度有限" in env["one_liner"]
 
 
 def test_environment_one_liner_joins_facts() -> None:
@@ -162,7 +163,8 @@ def test_conflict_row_is_one_sentence() -> None:
         }
     )
     assert is_causal_chain(thesis)
-    assert "不当成两套并列结论" in thesis
+    assert "方向相反" in thesis
+    assert "先以收盘盘面为准" in thesis
     assert "可点新闻" in thesis or "偏多" in thesis
     assert "可能相关" not in thesis
     assert thesis.find("。") > thesis.find("因此")

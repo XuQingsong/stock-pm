@@ -181,8 +181,8 @@
           <div class="carousel-dots" id="car-dots" aria-hidden="true"></div>
         </div>` : `<p class="empty-note">没有其余可展示事件。</p>`}
         <details class="fold-c">
-          <summary>无法映射标的的其他头条（折叠）</summary>
-          <div class="fold-body">${unmapped.length ? unmapped.map((row) => `<div>${esc(row.title || "")} · ${esc(row.note || "")}</div>`).join("") : "没有未映射头条。"}</div>
+          <summary>未能对应到自选股的其他头条（折叠）</summary>
+          <div class="fold-body">${unmapped.length ? unmapped.map((row) => `<div>${esc(row.title || "")} · ${esc(row.note || "")}</div>`).join("") : "没有未能对应到自选股的头条。"}</div>
         </details>
       </section>`
     };
@@ -270,14 +270,13 @@
         </div>
         <div class="pred-fields">
           <span>数据时间：<strong>${esc(card.data_time)}</strong></span>
-          <span>证据版本：<strong>${esc(card.evidence_version)}</strong></span>
         </div>
       </div>
       <div class="pred-section"><h4>实际发生了什么</h4><p>${esc(card.actual)}</p></div>
       <div class="pred-section"><h4>哪条证据有效 / 被高估</h4><ul>${(card.evidence_lines || []).map((line) => `<li>${esc(line)}</li>`).join("")}</ul></div>
       <div class="pred-section"><h4>预测后新信息</h4><p>${esc(card.new_info)}</p></div>
       <div class="pred-section"><h4>当前判断如何修正</h4><p>${esc(card.revision)}</p></div>
-    </article>`).join("") || `<p class="empty-note">${esc(data.empty_formal || "本周没有字段齐全、可进校验的正式预测。")}</p>`;
+    </article>`).join("") || `<p class="empty-note">${esc(data.empty_formal || "本周没有可验证的正式预测。")}</p>`;
     const learning = (data.learning || []).map((card) => `<article class="card learn-card">
       <h3>${esc(card.symbol)} · 学到什么</h3>
       <ul class="learn-list">
@@ -296,19 +295,19 @@
       <section class="section" aria-labelledby="sec-formal">
         <div class="group-head" id="sec-formal">
           <span class="badge-formal" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:0.72rem;font-weight:800;letter-spacing:0.04em;background:#059669;color:#fff">正式预测</span>
-          <h2>计入命中校验</h2>
+          <h2>计入预测准确率</h2>
         </div>
         ${formal}
       </section>
       <section class="section" aria-labelledby="sec-learn">
-        <h2 class="section-label" id="sec-learn">错误归因 · 学习</h2>
+        <h2 class="section-label" id="sec-learn">学到什么</h2>
         <div class="learn-grid">${learning || '<p class="empty-note">学习段只服务正式预测复盘；暂无足够对照。</p>'}</div>
-        <p class="muted" style="font-size:0.75rem;margin-top:8px">学习段只服务正式预测复盘；观察项不计命中、不进本段主列。</p>
+        <p class="muted" style="font-size:0.75rem;margin-top:8px">学习段只服务正式预测复盘；观察项不计入准确率。</p>
       </section>
       <section class="section" aria-labelledby="sec-observe">
         <div class="group-head" id="sec-observe">
           <span class="badge-observe" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;background:#64748b;color:#fff">观察</span>
-          <h2 style="color:#64748b;font-weight:600">规则倾向 · 不进命中率</h2>
+          <h2 style="color:#64748b;font-weight:600">观察 · 不计入准确率</h2>
         </div>
         ${observations}
         <details class="fold-c">

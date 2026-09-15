@@ -119,7 +119,8 @@ def test_publish_failure_writes_visible_missing_not_silence() -> None:
     assert result["status"] == "partial"
     intc = next(row for row in store.snapshots if row.get("symbol") == "INTC")
     assert intc["publishState"] == "missing"
-    assert "未编造数字" in intc["one_liner"]
+    assert "当前判断置信度有限" in intc["one_liner"]
+    assert "未编造" not in intc["one_liner"]
     assert intc["struct"]["fundamentals"] is None
     assert store.jobs[-1]["status"] == "partial"
     assert store.jobs[-1]["error"]
