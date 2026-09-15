@@ -40,9 +40,9 @@ def is_formal(pred: dict[str, Any] | None) -> bool:
     stamp = row.get("created_at") or row.get("as_of_date") or struct.get("as_of")
     if not (invalidation and baseline and stamp):
         # Bounds + window are the hard gate; missing invalidation/baseline
-        # still counts if prediction_ready — otherwise it would starve the
-        # formal column. Surface the gap in the card instead of silently
-        # downgrading a complete window.
+        # still counts when the formal-ready flag is set — otherwise it
+        # would starve the formal column. Surface the gap in the card
+        # instead of silently downgrading a complete window.
         return bool(row.get("prediction_ready"))
     return True
 

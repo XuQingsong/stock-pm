@@ -33,10 +33,23 @@ JARGON_BANNED_PRIMARY = (
     "v0",
 )
 
-# User-visible main-path copy. Internal JSON keys (alert_id, prediction_ready)
-# may still travel on the wire; they must not be spoken as labels.
-# Permanent ban — do not soften a new variant into the main path; delete or
-# move it to diagnostic / expand-only.
+# Permanent CI gate (templates + helper output). Wire keys may still exist
+# in Python logic; they must not appear as main-path UI copy.
+MAIN_PATH_GATE_TOKENS = (
+    "不编",
+    "不补",
+    "禁止",
+    "closed loop",
+    "closed_loop",
+    "prediction_ready",
+    "evidence version",
+    "evidence_version",
+    "can_form",
+    "API未配置",
+    "API 未配置",
+    "抓取失败",
+    "L0",
+)
 MAIN_PATH_BANNED = (
     "不补假数",
     "不编方向",
@@ -49,6 +62,7 @@ MAIN_PATH_BANNED = (
     "标题扫代码",
     "数据源健康",
     "API 未配置",
+    "API未配置",
     "抓取失败",
     "抓取",
     "evidence version",
