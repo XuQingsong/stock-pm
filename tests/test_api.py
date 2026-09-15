@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from stock_pm import api
+from stock_pm.decision import freeze_prediction
 
 
 WATCH = [
@@ -930,3 +931,49 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     assert "保存确认" not in c.get("/").text
     assert c.get("/api/stock/bad symbol/tape").status_code == 400
     assert c.get("/api/stock/NVDA/tape?date=bad").status_code == 400
+
+
+def test_decision_mvp_endpoints(monkeypatch):
+    c = client(monkeypatch)
+    changed = c.post(
+        "/api/decision/what-changed",
+        json={"previous": {"price": 100}, "current": {"price": 110}, "materiality": {"price": 5}},
+    ).json()
+    assert changed["material_count"] == 1
+    gap = c.post(
+        "/api/decision/expectation-gap",
+        json={"actual": {"eps": 1.1}, "latest_consensus": {"eps": 1.0}},
+    ).json()
+    assert gap["rows"][0]["result"] == "above"
+    thesis = c.post(
+        "/api/decision/thesis",
+        json={
+            "direction": "bullish",
+            "bull_drivers": ["revision up"],
+            "bear_drivers": ["valuation high"],
+            "key_disagreement": "priced-in growth",
+            "invalidation": {"fundamental": "EPS revisions below -8%"},
+            "evidence_quality": "medium",
+        },
+    )
+    assert thesis.status_code == 200
+    assert thesis.json()["bear_drivers"] == ["valuation high"]
+    assert c.post("/api/decision/thesis", json={"direction": "bullish"}).status_code == 400
+
+    frozen = freeze_prediction(
+        {"symbol": "NVDA", "direction": "bullish"},
+        generated_at="2026-09-10T00:00:00+00:00",
+        model_version="test-v1",
+        data_snapshot_id=1,
+    )
+    review = c.post(
+        "/api/decision/prediction-review",
+        json={
+            "frozen": frozen,
+            "actual_return_pct": 3,
+            "benchmark_return_pct": 4,
+            "attribution": "timing_error",
+        },
+    )
+    assert review.status_code == 200
+    assert review.json()["excess_return_pct"] == -1
