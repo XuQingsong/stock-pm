@@ -203,3 +203,44 @@ def test_copy_and_ui_forbid_holdings_and_jargon():
         assert phrase not in Path("src/stock_pm/static/overview.html").read_text(encoding="utf-8")
         assert phrase not in Path("src/stock_pm/static/review.html").read_text(encoding="utf-8")
         assert phrase not in Path("src/stock_pm/static/desk.js").read_text(encoding="utf-8")
+
+
+def test_overview_assemble_does_not_block_on_cold_event_book(monkeypatch):
+    import time
+
+    from stock_pm.events import service
+    from stock_pm.pack.assemble import build_overview
+
+    called = {"build": 0}
+
+    def hang():
+        called["build"] += 1
+        time.sleep(30)
+        return []
+
+    monkeypatch.setattr(service, "build_event_book", hang)
+    monkeypatch.setattr(service, "peek_event_book", lambda: None)
+    monkeypatch.setattr(service, "kick_event_book_warm", lambda: None)
+
+    class DB:
+        def watchlist_rows(self):
+            return WATCH
+
+        def briefing(self, date=None, *, live_synthesize=True):
+            assert live_synthesize is False
+            return {"rows": [{"symbol": "XOM", "env_half": "观察"}]}
+
+        def news(self, limit=40):
+            return []
+
+        def latest_snapshots(self):
+            return [{"symbol": "XOM"}]
+
+    start = time.monotonic()
+    payload = build_overview(DB())
+    elapsed = time.monotonic() - start
+    assert elapsed < 2
+    assert called["build"] == 0
+    assert payload["featured"] is None
+    assert payload["gaps"]["events"] is True
+    assert payload["diagnostics"]["warming"] is True
