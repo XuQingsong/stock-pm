@@ -14,11 +14,14 @@ Alpaca 延迟行情 -> 云端定时采集 -> PostgreSQL -> FastAPI / 分析程�
 
 | 页面 | 范围 | 内容 |
 | --- | --- | --- |
-| `/` 市场总览 | 全部自选 | 宏观事件与板块影响、最新复盘摘要、快照+技术信号、异动、财报、新闻→板块影响 |
-| `/stock/{symbol}` 个股分析 | 单标的 | 顶部报价 + 六个标签：图表、复盘、财报、估值、筹码与资金、资讯与期权 |
-| `/replay` 盘面回放 | 单标的（最多两个对比） | 美股常规时段 1 分钟 K 线 + 量价分析 + 复盘与日内分段 |
-| `/review` 每日复盘 | 全部自选 | 按交易日查看日终复盘卡片、分段摘要和宏观事件 |
+| `/` 总览 | 全部自选 | 市场主事件（依据默认折叠）、「今日重点关注」三档白话、其余事件轮播、未映射头条折叠 |
+| `/stock/{symbol}` 个股 | 单标的 | 五段：当前判断 · 昨→今/中期 · 三个驱动 · 风险反证 · 观察/失效；材料与诊断默认折叠 |
+| `/review` 复盘 | 全部自选 | 正式预测（计入命中）与观察分家；错误归因/学习；不倾倒全市场 |
+| `/events` 事件中心 | 诊断 | 可信事件原文与覆盖（主路径不抢） |
+| `/replay` 盘面回放 | 单标的（最多两个对比） | 美股常规时段 1 分钟 K 线 + 量价分析 |
 | `/settings` 设置 | 配置 | 自选新增（Alpaca 校验+自动回填）与停用 |
+
+现网部署见 [`docs/DEPLOY_43.md`](docs/DEPLOY_43.md)（`http://43.166.2.31/`）。
 
 ## 功能
 
@@ -82,6 +85,7 @@ stock-pm
 
 接口按范围分组：
 
+- 决策系统主路径：`GET /api/desk/overview`、`GET /api/desk/stock/{symbol}`、`GET /api/desk/review`（冻结 IA，真数据，缺则诚实降级）
 - 管理：`GET/POST /api/watchlist`、`DELETE /api/watchlist/{symbol}`、`GET /api/sync/status`、`GET /health`
 - 全列表：`/api/market/snapshot | signals | technicals | events | news | earnings/recent | impact`
 - 单标的：`/api/stock/{symbol}/chart?interval=`、`earnings/summary`、`valuation/history`、`volume-profile`、`capital-flow`，以及既有的 `intraday | segments | large-trades | overview | fundamentals | earnings | sentiment | options | news | reviews | history`
@@ -119,7 +123,7 @@ FMP 可提供：公司资料、PE/PB/PS、毛利率等 TTM 比率、季度利润
 
 ETF（例如 QQQ）或供应商未覆盖的字段同样显示为空。
 
-云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → 复盘 → 环境快照 → 昨盘/复盘笔记 → 预测与打脸检查。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
+云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → `stock-pm-events`（可信事件增量入库） → 复盘 → 环境快照 → 昨盘/复盘笔记 → 预测与打脸检查。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
 
 ## 个股页指标定义
 

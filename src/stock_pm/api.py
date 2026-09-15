@@ -171,6 +171,16 @@ def stock_page(symbol: str) -> str:
     return _page("stock.html")
 
 
+@app.get("/stock", include_in_schema=False)
+def stock_index() -> RedirectResponse:
+    try:
+        rows = database.watchlist_rows()
+    except DatabaseError:
+        rows = []
+    symbol = (rows[0].get("symbol") if rows else None) or "NVDA"
+    return RedirectResponse(f"/stock/{symbol}", status_code=307)
+
+
 @app.get("/replay", response_class=HTMLResponse, include_in_schema=False)
 def replay_page() -> str:
     return _page("replay.html")
@@ -905,6 +915,38 @@ def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
         raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD") from exc
     except DatabaseError:
         return _degraded_payload("daily_reviews", rows=[], hit_rate=None)
+
+
+@app.get("/api/desk/overview")
+def desk_overview() -> dict:
+    from .pack.assemble import build_overview
+
+    try:
+        return build_overview(database)
+    except DatabaseError:
+        return _degraded_payload("desk_overview", featured=None, carousel=[], focus={"priority": [], "watch": [], "skip": []})
+
+
+@app.get("/api/desk/stock/{symbol}")
+def desk_stock(symbol: str) -> dict:
+    from .pack.assemble import build_stock
+
+    if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
+        raise HTTPException(status_code=400, detail="invalid symbol")
+    try:
+        return build_stock(database, symbol.upper())
+    except DatabaseError:
+        return _degraded_payload("desk_stock", symbol=symbol.upper())
+
+
+@app.get("/api/desk/review")
+def desk_review() -> dict:
+    from .pack.assemble import build_review
+
+    try:
+        return build_review(database)
+    except DatabaseError:
+        return _degraded_payload("desk_review", formal=[], observations=[], learning=[])
 
 
 @app.get("/api/shell")

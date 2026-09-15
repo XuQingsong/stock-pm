@@ -78,6 +78,19 @@
     return null;
   };
 
+  async function loadDesk() {
+    const root = $("desk-root");
+    if (!root || !window.StockPmDesk) return;
+    try {
+      const payload = await api(`/api/desk/stock/${encodeURIComponent(SYMBOL)}`);
+      root.innerHTML = window.StockPmDesk.renderStock(payload);
+      const chip = $("watch-chip");
+      if (chip) chip.textContent = payload.on_watchlist ? "自选 ✓" : "未在自选";
+    } catch (error) {
+      root.innerHTML = `<p class="empty-note">个股判断暂不可用：${esc(error.message || "")}</p>`;
+    }
+  }
+
   async function loadHeader() {
     if (!SYMBOL) { location.replace("/"); return; }
     $("symbol").textContent = SYMBOL;
@@ -532,6 +545,7 @@
   window.addEventListener("hashchange", () => activate(location.hash.slice(1)));
   window.addEventListener("beforeunload", disposeCharts);
   Promise.all([
+    loadDesk(),
     loadHeader(),
     loadDecision(),
     loadDataHealth(),

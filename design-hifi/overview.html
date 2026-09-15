@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>决策系统 · 总览</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">决策系统</div>
+        <div class="brand-meta">09-15 美东盘前 · 减法闭环</div>
+      </div>
+      <nav class="nav-primary" aria-label="主路径">
+        <a href="overview.html" class="active">总览</a>
+        <a href="stock.html">个股</a>
+        <a href="review.html">复盘</a>
+      </nav>
+      <div class="nav-secondary">
+        <a href="states.html">五态演示</a>
+        ·
+        <a href="#" tabindex="-1" aria-disabled="true">诊断/设置 ▾</a>
+      </div>
+    </header>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">今天什么改变了</h1>
+        <p class="page-sub">主事件置顶 · 其下「今日重点关注」三行紧凑 · 整行点进个股（无持仓）</p>
+      </div>
+    </div>
+
+    <!-- 市场主事件：FEATURED；依据默认收起 -->
+    <section class="section" aria-labelledby="sec-events">
+      <h2 class="section-label" id="sec-events">市场主事件</h2>
+
+      <!-- FEATURED 仅：结论 / 影响谁 / 方向×强度 / 期限 / 一句传导 -->
+      <article class="card event-card event-featured deep-green">
+        <div class="event-head">
+          <span class="featured-badge">首条</span>
+          <span class="impact-pill deep-green">深绿 · 强烈利多</span>
+          <span class="chip">行业级</span>
+        </div>
+        <h3 class="event-title">半导体设备订单超预期</h3>
+        <p class="event-conclusion">结论：AI 资本开支预期上修，龙头弹性最大</p>
+        <div class="event-meta">
+          <span>期限：<strong>1–4 周</strong></span>
+        </div>
+        <div class="impact-row">
+          <span class="label">影响谁</span>
+          <span class="ticker-impact deep-green">
+            NVDA
+            <span class="bars" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            深绿
+          </span>
+          <span class="ticker-impact light-green">
+            AVGO
+            <span class="bars" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
+            浅绿
+          </span>
+          <span class="ticker-impact gray">
+            MU
+            <span class="bars" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
+            灰偏多
+          </span>
+        </div>
+        <p class="transmit">传导：订单 → 出货预期 → 近季指引上修空间</p>
+        <details class="expand-b">
+          <summary>展开依据 · 事实→变化→预期→为何此强度→消失条件</summary>
+          <div class="expand-chain">
+            <div class="expand-step"><span class="step-label">事实</span>主要设备商订单/backlog 超一致预期；AI 资本开支叙事被上修。</div>
+            <div class="expand-step"><span class="step-label">变化</span>相对原「等指引确认」：近窗出货/指引上修空间打开；股价已反映部分乐观但未完全透支。</div>
+            <div class="expand-step"><span class="step-label">预期</span>1–4 周内龙头弹性优先；期待本周/近季指引跟涨验证。</div>
+            <div class="expand-step"><span class="step-label">为何此强度</span>NVDA：收入暴露高、叙事直达龙头 → 深绿；AVGO：同链但传导偏间接 → 浅绿；MU：仅主题沾边 → 灰偏多。</div>
+            <div class="expand-step"><span class="step-label">影响消失条件</span>订单证伪、渠道砍单，或公司下调指引 → 强度降灰并作废近窗上修。</div>
+          </div>
+        </details>
+        <a class="news-link" href="#">可点新闻 · 订单原文</a>
+      </article>
+    </section>
+
+    <!-- 今日重点关注 · 三行紧凑 · 整行进个股 -->
+    <section class="section focus-today" aria-labelledby="sec-focus">
+      <h2 class="section-label" id="sec-focus">
+        今日重点关注
+        <span class="muted" style="font-weight:500;font-size:0.75rem">因新闻需留意的自选 · 整行进个股</span>
+      </h2>
+      <p class="focus-lead">每行：标的｜近端判断 · 一句原因 · 一个观察条件。</p>
+
+      <!-- 今天建议优先看 -->
+      <div class="focus-group">
+        <h3 class="focus-group-title">今天建议优先看</h3>
+        <div class="focus-list" role="list">
+          <!-- ORCL · 红 -->
+          <a class="focus-row urgency-bear" href="stock.html" role="listitem">
+            <span class="focus-urgency" aria-hidden="true"></span>
+            <div class="focus-main">
+              <div class="focus-line1">
+                <span class="focus-ticker">ORCL</span><span class="focus-sep">｜</span><span class="focus-state">近端转谨慎</span>
+              </div>
+              <p class="focus-why">内部人减持带来短期情绪压力，中期逻辑暂未改变。</p>
+              <p class="focus-hint">留意：是否出现连续抛压</p>
+            </div>
+            <span class="focus-chevron" aria-hidden="true">›</span>
+          </a>
+          <!-- NVDA · 绿 -->
+          <a class="focus-row urgency-bull" href="stock.html" role="listitem">
+            <span class="focus-urgency" aria-hidden="true"></span>
+            <div class="focus-main">
+              <div class="focus-line1">
+                <span class="focus-ticker">NVDA</span><span class="focus-sep">｜</span><span class="focus-state">近端弹性上修</span>
+              </div>
+              <p class="focus-why">半导订单超预期，近窗指引上修空间打开。</p>
+              <p class="focus-hint">留意：指引是否跟涨</p>
+            </div>
+            <span class="focus-chevron" aria-hidden="true">›</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 留意条件 -->
+      <div class="focus-group">
+        <h3 class="focus-group-title">留意条件</h3>
+        <div class="focus-list" role="list">
+          <a class="focus-row urgency-watch" href="stock.html" role="listitem">
+            <span class="focus-urgency" aria-hidden="true"></span>
+            <div class="focus-main">
+              <div class="focus-line1">
+                <span class="focus-ticker">AVGO</span><span class="focus-sep">｜</span><span class="focus-state">中性偏多</span>
+              </div>
+              <p class="focus-why">同向浅绿，确认节奏仍慢。</p>
+              <p class="focus-hint">留意：订单确认节奏</p>
+            </div>
+            <span class="focus-chevron" aria-hidden="true">›</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 今天可先不点开 · 默认收起 -->
+      <details class="focus-muted-fold">
+        <summary>今天可先不点开：2只</summary>
+        <div class="focus-list" role="list">
+          <a class="focus-row urgency-mute" href="stock.html" role="listitem">
+            <span class="focus-urgency" aria-hidden="true"></span>
+            <div class="focus-main">
+              <div class="focus-line1">
+                <span class="focus-ticker">MU</span><span class="focus-sep">｜</span><span class="focus-state">观望</span>
+              </div>
+              <p class="focus-why">弱映射，维持观望。</p>
+              <p class="focus-hint">留意：主题是否强化</p>
+            </div>
+            <span class="focus-chevron" aria-hidden="true">›</span>
+          </a>
+          <a class="focus-row urgency-mute" href="stock.html" role="listitem">
+            <span class="focus-urgency" aria-hidden="true"></span>
+            <div class="focus-main">
+              <div class="focus-line1">
+                <span class="focus-ticker">MSFT</span><span class="focus-sep">｜</span><span class="focus-state">无新变化</span>
+              </div>
+              <p class="focus-why">无公司级映射；ORCL 减持不外溢。</p>
+              <p class="focus-hint">留意：是否出现新映射</p>
+            </div>
+            <span class="focus-chevron" aria-hidden="true">›</span>
+          </a>
+        </div>
+      </details>
+    </section>
+
+    <!-- 其余事件轮播（主事件区续） -->
+    <section class="section" aria-labelledby="sec-carousel">
+      <h2 class="section-label" id="sec-carousel">
+        其余市场事件
+        <span class="muted" style="font-weight:500;font-size:0.75rem">横滑 / 可暂停 · 不挡「今日重点关注」</span>
+      </h2>
+      <div class="carousel-wrap" id="event-carousel">
+        <div class="carousel-toolbar">
+          <span class="hint">其余事件 · 横向切换 / 自动轮播</span>
+          <div class="carousel-controls">
+            <button type="button" id="btn-prev" aria-label="上一条">‹</button>
+            <button type="button" id="btn-pause" class="active-pause" aria-pressed="false">暂停</button>
+            <button type="button" id="btn-next" aria-label="下一条">›</button>
+            <span class="counter"><span id="car-idx">1</span>/9</span>
+          </div>
+        </div>
+        <div class="carousel-track" id="car-track">
+          <!-- 2 ORCL -->
+          <article class="card event-card compact light-red">
+            <div class="event-head">
+              <span class="impact-pill light-red">浅红 · 偏空</span>
+              <span class="chip">公司级</span>
+            </div>
+            <h3 class="event-title">ORCL 内部人减持披露</h3>
+            <p class="event-conclusion">仅冲击 ORCL 近端情绪，不外溢同业</p>
+            <div class="impact-row">
+              <span class="ticker-impact light-red">ORCL 浅红</span>
+              <span class="ticker-impact gray">MSFT/CRM/SAP 灰·不受影响</span>
+            </div>
+            <details class="expand-b">
+              <summary>展开依据</summary>
+              <div class="expand-chain">
+                <div class="expand-step"><span class="step-label">事实</span>内部人减持披露。</div>
+                <div class="expand-step"><span class="step-label">变化</span>近端股权供给/情绪预期上修；无行业基本面改写。</div>
+                <div class="expand-step"><span class="step-label">预期</span>3–10 交易日情绪窗。</div>
+                <div class="expand-step"><span class="step-label">为何此强度</span>ORCL：直接冲击情绪/供给、基本面未翻 → 浅红；同业无公司级硬证据 → 灰·不受影响。</div>
+                <div class="expand-step"><span class="step-label">影响消失条件</span>5 日内无连续大抛且无进一步减持 → 降灰；若连续大宗→可升深红。</div>
+              </div>
+            </details>
+          </article>
+          <!-- 3 Fed -->
+          <article class="card event-card compact yellow">
+            <div class="event-head">
+              <span class="impact-pill yellow">黄 · 分歧</span>
+              <span class="chip">市场级</span>
+            </div>
+            <h3 class="event-title">美联储官员口径分歧</h3>
+            <p class="event-conclusion">利率路径分歧加大，风险资产短线钝化</p>
+            <div class="impact-row">
+              <span class="ticker-impact yellow">宽基 ETF · 黄</span>
+              <span class="muted" style="font-size:0.75rem">单票映射弱 · 不进重点关注</span>
+            </div>
+            <details class="expand-b">
+              <summary>展开依据</summary>
+              <div class="expand-chain">
+                <div class="expand-step"><span class="step-label">事实</span>多名官员对降息节奏表态不一致。</div>
+                <div class="expand-step"><span class="step-label">变化</span>相对「路径清晰」预期：分歧加大。</div>
+                <div class="expand-step"><span class="step-label">预期</span>本周风险资产 Beta 钝化。</div>
+                <div class="expand-step"><span class="step-label">为何此强度</span>多空证据对冲、落到单票传导弱 → 黄。</div>
+                <div class="expand-step"><span class="step-label">影响消失条件</span>口径收敛或重要数据落地明确路径。</div>
+              </div>
+            </details>
+          </article>
+          <!-- 4 TSM -->
+          <article class="card event-card compact light-green">
+            <div class="event-head"><span class="impact-pill light-green">浅绿</span><span class="chip">行业级</span></div>
+            <h3 class="event-title">TSM 先进制程产能更新</h3>
+            <p class="event-conclusion">先进制程供给边际改善，利好 GPU 链但不直达单票</p>
+            <div class="impact-row"><span class="ticker-impact light-green">NVDA 弱相关浅绿</span></div>
+          </article>
+          <!-- 5 oil -->
+          <article class="card event-card compact gray">
+            <div class="event-head"><span class="impact-pill gray">灰</span><span class="chip">宏观</span></div>
+            <h3 class="event-title">原油库存意外累积</h3>
+            <p class="event-conclusion">能源短线波动；自选无直接映射</p>
+          </article>
+          <!-- 6 AAPL -->
+          <article class="card event-card compact yellow">
+            <div class="event-head"><span class="impact-pill yellow">黄</span><span class="chip">公司级</span></div>
+            <h3 class="event-title">AAPL 供应链停线传闻</h3>
+            <p class="event-conclusion">未证实；方向不明，自选映射弱</p>
+          </article>
+          <!-- 7 AMD -->
+          <article class="card event-card compact light-green">
+            <div class="event-head"><span class="impact-pill light-green">浅绿</span><span class="chip">行业级</span></div>
+            <h3 class="event-title">AMD 数据中心指引纪要</h3>
+            <p class="event-conclusion">主题共振偏多；对自选为次级映射</p>
+          </article>
+          <!-- 8 10Y -->
+          <article class="card event-card compact yellow">
+            <div class="event-head"><span class="impact-pill yellow">黄</span><span class="chip">宏观</span></div>
+            <h3 class="event-title">10Y 美债收益率冲高回落</h3>
+            <p class="event-conclusion">利率敏感板块短线分歧</p>
+          </article>
+          <!-- 9 CRM -->
+          <article class="card event-card compact gray">
+            <div class="event-head"><span class="impact-pill gray">灰</span><span class="chip">公司级</span></div>
+            <h3 class="event-title">CRM 产品发布会前瞻</h3>
+            <p class="event-conclusion">无实质基本面改写；不进重点关注主列</p>
+          </article>
+          <!-- 10 ECB -->
+          <article class="card event-card compact gray">
+            <div class="event-head"><span class="impact-pill gray">灰</span><span class="chip">宏观</span></div>
+            <h3 class="event-title">欧央行维持利率不变</h3>
+            <p class="event-conclusion">符合预期；美股自选映射可忽略</p>
+          </article>
+        </div>
+        <div class="carousel-dots" id="car-dots" aria-hidden="true"></div>
+      </div>
+
+      <details class="fold-c">
+        <summary>无法映射标的的其他头条（折叠）</summary>
+        <div class="fold-body">
+          原油库存、欧央行、CRM 前瞻等未映射自选的头条在此；不进入 featured / 「今日重点关注」主路径。
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <script>
+  (function () {
+    var track = document.getElementById('car-track');
+    var cards = track ? track.querySelectorAll('.event-card') : [];
+    var idx = 0;
+    var paused = true;
+    var timer = null;
+    var btnPause = document.getElementById('btn-pause');
+    var counter = document.getElementById('car-idx');
+    var dots = document.getElementById('car-dots');
+
+    function scrollTo(i) {
+      if (!cards.length) return;
+      idx = (i + cards.length) % cards.length;
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      if (counter) counter.textContent = String(idx + 1);
+      if (dots) {
+        var ds = dots.querySelectorAll('button');
+        for (var d = 0; d < ds.length; d++) ds[d].classList.toggle('on', d === idx);
+      }
+    }
+
+    if (dots && cards.length) {
+      for (var i = 0; i < cards.length; i++) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', '第' + (i + 1) + '条');
+        if (i === 0) b.className = 'on';
+        (function (n) { b.addEventListener('click', function () { scrollTo(n); }); })(i);
+        dots.appendChild(b);
+      }
+    }
+
+    function play() {
+      paused = false;
+      if (btnPause) { btnPause.textContent = '暂停'; btnPause.classList.add('active-pause'); btnPause.setAttribute('aria-pressed', 'false'); }
+      clearInterval(timer);
+      timer = setInterval(function () { scrollTo(idx + 1); }, 6000);
+    }
+    function pause() {
+      paused = true;
+      if (btnPause) { btnPause.textContent = '播放'; btnPause.classList.remove('active-pause'); btnPause.setAttribute('aria-pressed', 'true'); }
+      clearInterval(timer);
+    }
+
+    var bp = document.getElementById('btn-prev');
+    var bn = document.getElementById('btn-next');
+    if (bp) bp.addEventListener('click', function () { scrollTo(idx - 1); });
+    if (bn) bn.addEventListener('click', function () { scrollTo(idx + 1); });
+    if (btnPause) btnPause.addEventListener('click', function () { if (paused) play(); else pause(); });
+    // 默认暂停，避免审稿时自动跳；点击「播放」才轮播
+    pause();
+  })();
+  </script>
+</body>
+</html>

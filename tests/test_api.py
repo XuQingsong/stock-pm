@@ -513,26 +513,27 @@ def test_pages_render(monkeypatch):
     events_page = c.get("/events").text
     assert "市场事件中心" in events_page
     assert "/static/events.js" in events_page
+    overview = c.get("/").text
+    assert "今天什么改变了" in overview
+    assert "今日重点关注" in overview
+    assert "其余市场事件" in overview
+    assert "stock-pm-cboe" not in overview
+    assert "stock-pm-review" not in overview
     review_page = c.get("/review").text
-    assert "每日复盘" in review_page
-    assert "模型额度已用尽" in review_page
-    assert "当日休市，暂无复盘" in review_page
+    assert "为什么对、为什么错" in review_page
+    assert "正式预测" in review_page
+    assert "错误归因" in review_page
     assert "toISOString" not in review_page
-    assert "期权市场概览" in c.get("/").text
-    assert "stock-pm-cboe" not in c.get("/").text
-    assert "stock-pm-review" not in c.get("/").text
-    assert "stock-pm-flow" not in c.get("/review").text
-    assert "保存确认" not in c.get("/review").text
-    assert "尚未确认" not in c.get("/review").text
-    assert "保存备注" in c.get("/review").text
-    assert "自动循环" in c.get("/review").text
-    assert "规则对照" in c.get("/review").text
-    assert "规则对照" in c.get("/static/stock.js").text
-    assert "旧口径" not in c.get("/review").text
+    assert "stock-pm-flow" not in review_page
+    assert "保存确认" not in review_page
+    assert "尚未确认" not in review_page
+    assert "旧口径" not in review_page
     assert "旧口径" not in c.get("/static/stock.js").text
     assert "动态判断" in c.get("/stock/NVDA").text
     assert "decision-module" in c.get("/stock/NVDA").text
+    assert "当前判断" in c.get("/static/desk.js").text
     assert c.get("/live", follow_redirects=False).status_code == 307
+    assert c.get("/stock", follow_redirects=False).status_code == 307
 
 
 def test_watchlist_from_database(monkeypatch):
@@ -753,6 +754,8 @@ def test_static_assets(monkeypatch):
     c = client(monkeypatch)
     assert c.get("/static/app.css").status_code == 200
     assert c.get("/static/stock.js").status_code == 200
+    assert c.get("/static/desk.css").status_code == 200
+    assert c.get("/static/desk.js").status_code == 200
     html = c.get("/stock/AAPL").text
     assert 'data-tab="chart"' in html
     assert "/static/stock.js" in html
@@ -827,29 +830,20 @@ def test_static_shell_assets(monkeypatch):
     assert "折叠材料" in js.text
     assert c.get("/static/shell.css").status_code == 200
     home = c.get("/").text
-    assert 'id="stock-pm-shell"' in home
-    assert "/static/shell.js" in home
-    assert home.index('id="stock-pm-shell"') < home.index('id="rows"')
-    assert home.index('id="rows"') < home.index('id="options-panel"')
-    assert home.index('id="rows"') < home.index('id="news-mapped"')
-    assert home.index('id="rows"') < home.index('id="impact-panel"')
-    assert '折叠材料' in home
-    options_at = home.index('id="options-panel"')
-    fold_at = home.index('data-zone="C"')
-    assert fold_at < options_at
-    tag_end = home.index(">", home.index('<details class="fold zone-c materials"'))
-    assert "open" not in home[home.index("<details class=\"fold zone-c materials\"") : tag_end]
+    assert "/static/desk.js" in home
+    assert "今天什么改变了" in home
+    assert "今日重点关注" in home
+    assert "其余市场事件" in home
+    assert 'id="stock-pm-shell"' not in home
+    assert 'id="options-panel"' not in home
+    assert 'id="impact-panel"' not in home
     assert "<details" in js.text and 'data-zone="C"' in js.text
     assert "<details open" not in js.text
     assert "→ 支撑结论" in js.text
     assert 'data-zone="A"' in js.text
-    assert "不编假边界" in home
     assert "watch_low" not in home
     assert "face_slap" not in home
-    assert "昨盘半句" in home
-    assert "昨盘结论未就绪" in home
     assert "（M2）" not in home
-    assert "折叠材料" in home
     js = c.get("/static/shell.js").text
     assert 'data-zone="tape"' in js
     assert "弱于环境" in js
@@ -930,3 +924,22 @@ def test_tape_and_review_note_endpoints(monkeypatch):
     assert "保存确认" not in c.get("/").text
     assert c.get("/api/stock/bad symbol/tape").status_code == 400
     assert c.get("/api/stock/NVDA/tape?date=bad").status_code == 400
+
+
+def test_desk_endpoints_return_frozen_shape(monkeypatch):
+    c = client(monkeypatch)
+    overview = c.get("/api/desk/overview").json()
+    assert overview["page"]["title"] == "今天什么改变了"
+    assert "featured" in overview
+    assert "focus" in overview
+    assert set(overview["focus"]) >= {"priority", "watch", "skip", "skip_count"}
+    stock = c.get("/api/desk/stock/NVDA").json()
+    assert stock["symbol"] == "NVDA"
+    assert "judge" in stock
+    assert "thesis_change" in stock
+    assert "drivers" in stock
+    review = c.get("/api/desk/review").json()
+    assert "formal" in review
+    assert "learning" in review
+    assert "observations" in review
+    assert c.get("/api/desk/stock/bad symbol").status_code == 400

@@ -16,7 +16,10 @@
 | [DESIGN_CHECK_刀3.md](DESIGN_CHECK_刀3.md) | 刀 3 ACCEPTANCE_M2：昨盘四问、复盘总结/解释、自动发布、材料折叠 C |
 | [DESIGN_CHECK_刀4.md](DESIGN_CHECK_刀4.md) | 刀 4 ACCEPTANCE_M3：预测边界、状态机、自动打脸、改口留痕、旧口径 |
 | [postgres.md](postgres.md) | 阶段 4B：可复现 Postgres 启动、迁移、安全 DATABASE_URL、真实写入/读回 |
-| [INVESTMENT_DECISION_KERNEL_V1.md](INVESTMENT_DECISION_KERNEL_V1.md) | 阶段 1 内核 A–AM（无 UI/API）；阶段 2 现有个股页 + 只读 decision endpoint（无 schema/新源/预测） |
+| [DEPLOY_43.md](DEPLOY_43.md) | 现网 `http://43.166.2.31/` tip-tar 部署；缺密钥时诚实降级 |
+| [DEV_BRIEF_决策系统整包_2026-09-15.md](DEV_BRIEF_决策系统整包_2026-09-15.md) | 总览+个股+复盘整包真数据一次上线 |
+| [DESIGN_BRIEF_减法闭环_主结构冻结_2026-09-15.md](DESIGN_BRIEF_减法闭环_主结构冻结_2026-09-15.md) | IA 冻结：去系统词、五段个股、复盘分家 |
+| [DESIGN_NOTE_减法闭环_2026-09-15.md](DESIGN_NOTE_减法闭环_2026-09-15.md) | 减法闭环落地差异；hi-fi 对照 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |

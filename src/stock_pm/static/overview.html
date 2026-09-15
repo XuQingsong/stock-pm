@@ -1,266 +1,59 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stock PM · 市场总览</title>
-<link rel="stylesheet" href="/static/shell.css">
-<style>
-:root{--bg:#f3f5f7;--card:#fff;--ink:#14213d;--muted:#6b7280;--blue:#2563eb;--green:#0f9d72;--red:#d14343;--line:#e5e7eb}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-.shell{max-width:1500px;margin:auto;padding:16px}
-.top{background:#12283f;color:#fff;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.top h1{margin:0;font-size:20px}.top .sub{opacity:.7;font-size:12px}
-.nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:8px;border:1px solid #ffffff30;margin-left:6px}
-.nav a.active{background:#2d6cdf;border-color:#2d6cdf}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
-.panel h2{margin:0 0 8px;font-size:15px}
-.hint{color:var(--muted);font-size:12px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child,td.row-thesis{text-align:left}
-td.row-thesis{white-space:normal;max-width:420px}
-tbody tr{cursor:pointer}tbody tr:hover{background:#eef3fb}
-.up{color:var(--green)}.down{color:var(--red)}
-.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
-@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
-.impact-item{border-left:3px solid var(--blue);padding:6px 10px;margin:8px 0;background:#f8fafc;border-radius:0 8px 8px 0}
-.impact-item .narr{font-weight:600}
-.chip{display:inline-block;background:#eef2f7;border-radius:10px;padding:1px 8px;font-size:12px;margin:1px 3px 1px 0}
-.chip.bull{background:#e3f6ee;color:var(--green)}.chip.bear{background:#fbeaea;color:var(--red)}
-.news-item{padding:7px 0;border-bottom:1px solid var(--line)}
-.news-item a{color:var(--ink);text-decoration:none;font-weight:600}
-.badge{display:inline-block;background:#eef2f7;border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px}
-.table-wrap{overflow-x:auto}
-.quota{border-left:3px solid var(--red);background:#fef2f2;padding:10px 12px;border-radius:0 8px 8px 0;color:#991b1b}
-.opt-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
-.opt-metrics div{background:#f8fafc;border-radius:8px;padding:8px 10px}
-.opt-metrics span{display:block;color:var(--muted);font-size:11px}
-.opt-metrics b{font-size:18px}
-.mix{display:flex;height:14px;border-radius:8px;overflow:hidden;background:#eef2f7;margin:8px 0}
-.mix i{display:block;height:100%}
-.mix-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.mix-legend b{color:var(--ink)}
-details.materials{margin-top:14px;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px 16px}
-details.materials>summary{cursor:pointer;font-weight:650;color:var(--ink)}
-details.materials .zone-label{margin-top:4px}
-details.materials .panel{border:0;padding:12px 0;margin-top:8px;box-shadow:none}
-details.materials .grid2{margin-top:8px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>决策系统 · 总览</title>
+  <link rel="stylesheet" href="/static/desk.css" />
+  <link rel="stylesheet" href="/static/shell.css" />
 </head>
-<body><main class="shell">
-<header class="top">
-  <div><h1>市场总览</h1><div class="sub" id="sync">同步状态加载中…</div></div>
-  <nav class="nav">
-    <a class="active" href="/">总览</a><a href="/events">事件中心</a><a href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a>
-    <select id="jump" style="margin-left:8px;padding:7px;border-radius:8px;border:none"></select>
-  </nav>
-</header>
-<div id="stock-pm-shell"></div>
-
-<section class="panel" id="quota-panel" style="display:none"><div class="quota" id="quota-msg"></div></section>
-
-<section class="panel" id="briefing-panel">
-  <div class="zone-label">结论</div>
-  <h2>隔日盘面简报</h2>
-  <div class="hint">先看半句结论。结论价用复盘收盘或昨收。环境半句是一年涨跌 / 三层消息 / 氛围；昨盘半句是量价判断。预测只写时间窗口与涨跌边界，缺则点名缺哪一项，不编假边界。环境与昨盘冲突时只留一句因果。期权、新闻、K 线材料在下方折叠。规则对照不冒充窗口边界。</div>
-  <div class="table-wrap"><table>
-    <thead><tr>
-      <th>标的</th><th>结论价</th><th>日涨跌</th><th>环境半句</th><th>昨盘半句</th><th>预测</th><th>关注</th><th>量比</th><th>5日</th>
-      <th>均线位置</th><th>支撑/压力</th>
-    </tr></thead>
-    <tbody id="rows"></tbody>
-  </table></div>
-</section>
-
-<details class="fold zone-c materials" data-zone="C">
-  <summary>折叠材料（期权 / 宏观 / 新闻 / 异动 / 复盘摘要）</summary>
-  <div class="zone-label">折叠</div>
-  <p class="hint">这些是支撑材料，不是晨间结论。缺哪一项就点名哪一项，或藏卡，不编影响。</p>
-  <section class="panel">
-    <h2>最新复盘</h2>
-    <div class="hint">日终规则摘要 · 完整列表见 <a href="/review">复盘</a></div>
-    <div id="reviews"></div>
-  </section>
-
-  <section class="panel" id="options-panel" style="display:none">
-    <h2>期权市场概览</h2>
-    <div class="hint">Cboe 一家交易所日终统计，不是 OCC 全市场。C/P = 认购÷认沽，P/C = 认沽÷认购。</div>
-    <div id="options-overview" class="hint">加载中…</div>
-  </section>
-
-  <section class="panel" id="impact-panel" style="display:none">
-    <h2>宏观事件与板块影响</h2>
-    <div class="hint">近14天事件 · 规则映射，仅覆盖预设事件类型；方向为推断非建议</div>
-    <div id="impact-macro"></div>
-    <div id="impact-upcoming"></div>
-    <div id="impact-news"></div>
-  </section>
-
-  <div class="grid2">
-    <section class="panel">
-      <h2>今日异动（大额成交 / 期权异动）</h2>
-      <div id="events" class="hint">加载中…</div>
-    </section>
-    <section class="panel">
-      <h2>近期财报</h2>
-      <div id="earnings" class="hint">加载中…</div>
-    </section>
-  </div>
-
-  <section class="panel">
-    <h2>新闻与板块影响</h2>
-    <div class="hint">只展示规则能映射到自选主题的条目；未命中主题的新闻单独列出，不编造影响</div>
-    <div id="news-mapped"></div>
-    <div id="news-unmapped"></div>
-  </section>
-</details>
-</main>
-<script src="/static/shell.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-const j=(u,opt)=>fetch(u,opt).then(async r=>{const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.detail||u+" "+r.status);return body});
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const num=v=>v==null?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
-const pct=v=>v==null?'—':(v>0?'+':'')+Number(v).toFixed(2)+'%';
-const cls=v=>v==null?'':v>0?'up':v<0?'down':'';
-const money=v=>v==null?'—':'$'+Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
-const wanZhang=v=>v==null?'—':(Number(v)/10000).toLocaleString('zh-CN',{maximumFractionDigits:2})+'万张';
-function renderOptionsOverview(opt){
-  if(!opt||opt.status==='missing') return null;
-  const buckets=opt.buckets||[];
-  const colors={index:'#2563eb',equity:'#0f9d72',etp:'#b45309'};
-  const mix=buckets.map(b=>`<i style="width:${Number(b.volume_pct||0)}%;background:${colors[b.key]||'#94a3b8'}"></i>`).join('');
-  const legend=buckets.map(b=>`<span>${esc(b.label)} <b>${b.volume_pct==null?'—':Number(b.volume_pct)+'%'}</b> · C/P ${b.call_put==null?'—':Number(b.call_put).toFixed(2)} · P/C ${b.put_call==null?'—':Number(b.put_call).toFixed(2)}</span>`).join('');
-  return `<div class="hint">${esc(String(opt.trade_date||'').slice(0,10))} · ${esc(opt.disclaimer||'Cboe 一家交易所日终统计')}</div>
-    <div class="opt-metrics">
-      <div><span>总成交量</span><b>${wanZhang(opt.total_volume)}</b></div>
-      <div><span>总 C/P（认购÷认沽）</span><b>${opt.total_call_put==null?'—':Number(opt.total_call_put).toFixed(3)}</b></div>
-      <div><span>总 P/C（认沽÷认购）</span><b>${opt.total_put_call==null?'—':Number(opt.total_put_call).toFixed(3)}</b></div>
-      <div><span>VIX P/C</span><b>${opt.vix_put_call==null?'—':Number(opt.vix_put_call).toFixed(2)}</b></div>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">决策系统</div>
+        <div class="brand-meta" id="brand-meta">加载中…</div>
+      </div>
+      <nav class="nav-primary" aria-label="主路径">
+        <a href="/" class="active">总览</a>
+        <a href="/stock" id="nav-stock">个股</a>
+        <a href="/review">复盘</a>
+      </nav>
+      <div class="nav-secondary">
+        <details class="nav-drop">
+          <summary>诊断/设置 ▾</summary>
+          <div class="nav-menu">
+            <a href="/events">事件中心</a>
+            <a href="/replay">盘面回放</a>
+            <a href="/settings">设置</a>
+          </div>
+        </details>
+      </div>
+    </header>
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">今天什么改变了</h1>
+        <p class="page-sub">主事件置顶 · 其下「今日重点关注」三行紧凑 · 其余市场事件轮播 · 整行点进个股（无持仓）</p>
+      </div>
     </div>
-    <div class="mix">${mix}</div>
-    <div class="mix-legend">${legend}</div>`;
-}
-
-async function main(){
-  const [watch,snaps,signals,events,news,earnings,sync,reviews,briefingRaw,options]=await Promise.all([
-    j('/api/watchlist').catch(()=>[]),j('/api/market/snapshot').catch(()=>[]),j('/api/market/signals').catch(()=>[]),
-    j('/api/market/events?limit=30').catch(()=>[]),
-    j('/api/market/news?limit=40').catch(()=>[]),j('/api/market/earnings/recent?limit=8').catch(()=>[]),
-    j('/api/sync/status').catch(()=>null),j('/api/reviews').catch(()=>[]),
-    j('/api/briefing').catch(()=>({rows:[],hit_rate:null})),
-    j('/api/market/options-overview').catch(()=>({status:'missing'}))]);
-  let briefing=briefingRaw;
-  let reviewRows=reviews;
-  $('sync').textContent=sync&&sync.completed_at?`最近同步 ${new Date(sync.completed_at).toLocaleString()} · ${esc(sync.source||'')}`:'尚未同步';
-  if((briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted')){
-    $('quota-panel').style.display='';
-    $('quota-msg').innerHTML='<b>模型额度已用尽。</b>正在重新请求生成解释与明日看法…';
-    try{
-      const retry=await j('/api/reviews/retry-llm'+(briefing.date?`?date=${encodeURIComponent(briefing.date)}`:''),{method:'POST'});
-      briefing=retry.briefing||briefing;
-    }catch(_){}
-    if((briefing.rows||[]).some(row=>row.llm_status==='quota_exhausted')){
-      $('quota-msg').innerHTML='<b>模型额度已用尽。</b>请充值后刷新本页，系统会自动重新生成复盘解释。';
-    }else{
-      $('quota-msg').innerHTML='额度恢复后已重新生成模型解释。';
-      $('quota-msg').style.background='#ecfdf5';
-      $('quota-msg').style.color='#065f46';
-      $('quota-msg').style.borderLeftColor='#0f9d72';
-      reviewRows=await j('/api/reviews').catch(()=>reviewRows);
-    }
-  }
-  $('jump').innerHTML='<option value="">跳转个股…</option>'+watch.map(x=>`<option>${esc(x.symbol)}</option>`).join('');
-  $('jump').onchange=e=>{if(e.target.value)location.href='/stock/'+e.target.value};
-  try{
-    if(window.mountStockPmShell) await window.mountStockPmShell({date:briefing.date});
-  }catch(_){}
-  const optionsHtml=renderOptionsOverview(options);
-  if(optionsHtml){
-    $('options-panel').style.display='';
-    $('options-overview').innerHTML=optionsHtml;
-  }
-  const sn=Object.fromEntries(snaps.map(x=>[x.symbol,x])),sg=Object.fromEntries(signals.map(x=>[x.symbol,x]));
-  const br=Object.fromEntries((briefing.rows||[]).map(x=>[x.symbol,x]));
-  const copy=window.stockPmCopy||{};
-  const rankOf=b=>{
-    const attn=b.attention||{};
-    if(attn.rank!=null) return attn;
-    const pred=b.prediction||{};
-    const tape=b.tape_analysis||{};
-    if(pred.judgment_alert&&pred.judgment_alert.severity==='severe') return {rank:0,key:'severe_alert',label:'严重告警',tone:'severe',featured:true};
-    if(pred.state==='invalidated') return {rank:1,key:'slap',label:'已打脸',tone:'slap',featured:true};
-    if(pred.state==='missing'&&!(pred.missingFlags||[]).length) return {rank:2,key:'overdue',label:'到期未产出',tone:'overdue',featured:true};
-    if((pred.missingFlags||[]).length||((b.environment||{}).missingFlags||[]).length) return {rank:3,key:'named_missing',label:'缺数点名',tone:'missing',featured:true};
-    if(b.env_tape_conflict||(tape.conflict)) return {rank:4,key:'env_tape_conflict',label:'环境与昨盘冲突',tone:'conflict',featured:true};
-    if(tape.weak_vs_env&&tape.weak_vs_env.status==='weak') return {rank:5,key:'weak_vs_env',label:'弱于环境',tone:'weak',featured:true};
-    return {rank:6,key:'rest',label:'其余',tone:'rest',featured:false};
-  };
-  const ordered=watch.slice().sort((a,b)=>{
-    const ra=rankOf(br[a.symbol]||{}), rb=rankOf(br[b.symbol]||{});
-    return (ra.rank-rb.rank)||String(a.symbol).localeCompare(String(b.symbol));
-  });
-  const featured=ordered.filter(w=>rankOf(br[w.symbol]||{}).featured);
-  const rest=ordered.filter(w=>!rankOf(br[w.symbol]||{}).featured);
-  const renderRow=w=>{const q=sn[w.symbol]||{},b=br[w.symbol]||{};
-    const attn=rankOf(b);
-    const pred=b.prediction||{};
-    const quality=b.quote_quality||q.quote_quality||{};
-    const price=b.conclusion_price!=null?b.conclusion_price:(quality.hide_last_price?null:(q.prior_close||q.last_price||b.last_price));
-    const delayed=quality.status==='delayed'||quality.delayed;
-    const chg=b.day_change_pct!=null?b.day_change_pct:null;
-    const envFlags=((b.environment||{}).missingFlags)||[];
-    const envHalf=b.env_half||(b.environment&& (b.environment.one_liner||b.environment.synthesis))||(envFlags.length?(copy.missingFlagText?copy.missingFlagText(envFlags):envFlags.join('、')):'数据暂缺');
-    const tapeHalf=b.tape_half||(b.tape_analysis&&b.tape_analysis.one_liner)||'昨盘结论未就绪';
-    const conflict=b.env_tape_conflict||(b.tape_analysis&&b.tape_analysis.conflict);
-    const thesis=conflict?(b.row_thesis||envHalf):null;
-    const news=b.env_news;
-    const newsBit=news?`<div class="hint">${copy.newsHeadline?copy.newsHeadline(news):esc(news.headline||'')}<div class="news-stance">${esc(news.stance_line||'')}</div></div>`:'';
-    const predText=(pred.direction_withheld||pred.can_form_direction===false||pred.state==='withheld')
-      ? (pred.therefore||pred.missing_label||'决策未形成方向，不展示百分比预测')
-      : ((copy.predictionDisplay?copy.predictionDisplay(pred):null)||b.prediction_half||pred.badge||'到期未产出');
-    const predTone=copy.predictionTone?copy.predictionTone(pred):(attn.tone||'');
-    const halfCells=conflict
-      ? `<td class="row-thesis tone-conflict" colspan="2">${esc(thesis)}${newsBit}</td>`
-      : `<td class="row-thesis">${esc(envHalf)}${newsBit}</td><td class="row-thesis">${esc(tapeHalf)}</td>`;
-    return `<tr class="attn-${esc(attn.tone)}" onclick="location.href='/stock/${esc(w.symbol)}'"><td><b>${esc(w.symbol)}</b> <span class="hint">${esc(w.sector||'')}</span></td>
-      <td>${money(price)}${delayed?'<span class="quote-delayed">延迟</span>':''}${quality.status==='bad'||quality.status==='missing'?'<div class="hint">现价'+esc(quality.label||(envFlags.length?envFlags.join('、'):'数据暂缺'))+'</div>':''}</td>
-      <td class="${cls(chg)} tone-a">${pct(chg)}</td>
-      ${halfCells}
-      <td class="row-thesis tone-a ${predTone?('tone-'+predTone):''}">${esc(predText)}</td>
-      <td class="tone-a ${attn.tone?('tone-'+attn.tone):''}">${esc(attn.label)}</td>
-      <td>${b.volume_ratio_20d==null?'—':num(b.volume_ratio_20d)+'x'}</td>
-      <td class="${cls(b.return_5d_pct)}">${pct(b.return_5d_pct)}</td>
-      <td class="hint">${esc(b.ma_position||'—')}</td>
-      <td>${esc(b.breakout_status||'—')}<div class="hint">${b.support_price!=null?('S '+money(b.support_price)+' / R '+money(b.resistance_price)):'—'}</div></td></tr>`};
-  $('rows').innerHTML=featured.map(renderRow).join('')
-    +(rest.length?`<tr class="rest-fold"><td colspan="11"><details class="fold"><summary>其余 ${rest.length} 只</summary><table><tbody>${rest.map(renderRow).join('')}</tbody></table></details></td></tr>`:'');
-  $('events').innerHTML=events.length?events.map(e=>`<div class="news-item"><b>${esc(e.symbol)}</b> ${esc(e.title)}<div class="hint">${new Date(e.event_time).toLocaleString()} · ${esc(e.source)}</div></div>`).join(''):'近期无异动记录';
-  $('earnings').innerHTML=earnings.length?earnings.map(x=>`<span class="badge"><b>${esc(x.symbol)}</b> ${esc(x.report_date)} · EPS ${num(x.eps_actual)}/预期${num(x.eps_estimate)} · 后1日 <span class="${cls(x.post_1d_return_pct)}">${pct(x.post_1d_return_pct)}</span></span>`).join(' '):'暂无财报记录';
-  $('reviews').innerHTML=reviewRows.length?reviewRows.map(row=>`<div class="news-item"><a href="/stock/${esc(row.symbol)}#review"><b>${esc(row.symbol)}</b></a> ${esc(row.breakout_status||'')}
-    <div class="hint">${esc(String(row.review_date||'').slice(0,10))} · ${esc(row.summary||'')}</div></div>`).join('')+'<div class="hint" style="margin-top:8px"><a href="/review">打开每日复盘</a></div>':'<div class="hint">当日复盘尚未生成。</div>';
-  const mapped=news.filter(n=>(n.impacts||[]).length);
-  const unmapped=news.filter(n=>(n.impacts||[]).length===0);
-  const newsHead=n=>copy.newsHeadline?copy.newsHeadline(n):(`${esc(n.headline||'无标题')}${n.url?'':' <span class="no-url">无原文链接</span>'}`);
-  const newsLine=n=>copy.newsStanceLine?copy.newsStanceLine(n):(n.stance_line||'');
-  $('news-mapped').innerHTML=mapped.length?mapped.map(n=>`<div class="impact-item"><div class="narr">${newsHead(n)}</div>
-    <div class="news-stance">${esc(newsLine(n))}</div>
-    <div class="hint">${n.published_at?new Date(n.published_at).toLocaleString():''} · ${esc(n.symbol)} · ${esc(n.source||'')}</div>
-    </div>`).join(''):'<div class="hint">近期没有可映射到板块的新闻。</div>';
-  $('news-unmapped').innerHTML=unmapped.length?`<div class="hint" style="margin-top:10px">未覆盖 ${unmapped.length} 条（规则未命中主题，不强制归类）</div>`+unmapped.slice(0,8).map(n=>`<div class="news-item">${newsHead(n)} <span class="chip">${esc(n.symbol)}</span><div class="news-stance">${esc(newsLine(n))}</div><div class="hint">${n.published_at?new Date(n.published_at).toLocaleDateString():''}</div></div>`).join(''):'';
-  try{
-    const impact=await j('/api/market/impact');
-    const hasMacro=impact.macro.length||impact.macro_unanalyzed.length||impact.upcoming.length||impact.news_themes.length;
-    if(hasMacro){$('impact-panel').style.display='';
-      $('impact-macro').innerHTML=impact.macro.map(m=>`<div class="impact-item"><div class="narr">${esc(m.row_thesis||m.narrative||m.name)}</div>
-        <div class="hint">${new Date(m.event_time).toLocaleString()} · 实际 ${num(m.actual)}${esc(m.unit||'')} / 预期 ${num(m.consensus)}${esc(m.unit||'')}</div>
-        </div>`).join('')
-        +impact.macro_unanalyzed.map(e=>`<div class="impact-item" style="border-color:#9ca3af"><div class="narr">${esc(e.name)}</div><div class="hint">${new Date(e.event_time).toLocaleString()} · 无匹配规则，仅展示原始事件（surprise=${esc(e.surprise)}）</div></div>`).join('');
-      $('impact-upcoming').innerHTML=impact.upcoming.length?'<div class="hint" style="margin-top:8px">即将公布：'+impact.upcoming.map(u=>`<span class="badge">${new Date(u.event_time).toLocaleDateString()} ${esc(u.name)}${u.confirmed?'':'（日期待确认）'}</span>`).join(' ')+'</div>':'';
-      $('impact-news').innerHTML=impact.news_themes.length?'<div style="margin-top:8px">近3日新闻主题：'+impact.news_themes.map(t=>`<span class="badge"><b>${esc(t.theme_name)}</b> ${t.positive}正/${t.neutral}中/${t.negative}负${t.symbols.length?'（'+t.symbols.map(esc).join('、')+'）':''}</span>`).join(' ')+'</div>':'';
-    }
-  }catch(e){/* impact 数据缺失时整个面板不显示 */}
-}
-main().catch(e=>{document.body.insertAdjacentHTML('beforeend','<p style="color:#d14343;padding:16px">'+esc(e.message)+'</p>')});
-</script>
-</body></html>
+    <div id="desk-root"><p class="empty-note">正在加载总览…</p></div>
+    <p class="sr-only">无原文链接</p>
+  </div>
+  <script src="/static/desk.js"></script>
+  <script>
+  (function () {
+    var desk = window.StockPmDesk;
+    desk.api("/api/desk/overview").then(function (data) {
+      document.getElementById("brand-meta").textContent = data.brand_meta || "";
+      var rendered = desk.renderOverview(data);
+      document.getElementById("desk-root").innerHTML = rendered.html;
+      var nav = document.getElementById("nav-stock");
+      if (nav && rendered.stockHref) nav.href = rendered.stockHref;
+      desk.bindCarousel(document.getElementById("desk-root"));
+    }).catch(function (err) {
+      document.getElementById("desk-root").innerHTML = '<p class="empty-note">总览暂不可用。' + desk.esc(err.message || "") + '</p>';
+    });
+  })();
+  </script>
+</body>
+</html>

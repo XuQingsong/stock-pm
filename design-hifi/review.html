@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>决策系统 · 复盘</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">决策系统</div>
+        <div class="brand-meta">09-15 · 复盘</div>
+      </div>
+      <nav class="nav-primary" aria-label="主路径">
+        <a href="overview.html">总览</a>
+        <a href="stock.html">个股</a>
+        <a href="review.html" class="active">复盘</a>
+      </nav>
+      <div class="nav-secondary">
+        <a href="#" tabindex="-1" aria-disabled="true">诊断/设置 ▾</a>
+      </div>
+    </header>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">为什么对、为什么错</h1>
+        <p class="page-sub">正式预测对在哪 · 错在哪 · 证据有效或被高估 · 当前如何修正 · 学到什么</p>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <strong>筛选</strong>
+      <span>需复盘的正式预测（本周到期 / 已触发）</span>
+      <span class="muted">· 非全市场倾倒</span>
+    </div>
+
+    <!-- ██ 正式预测 -->
+    <section class="section" aria-labelledby="sec-formal">
+      <div class="group-head" id="sec-formal">
+        <span class="badge-formal" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:0.72rem;font-weight:800;letter-spacing:0.04em;background:#059669;color:#fff">正式预测</span>
+        <h2>计入命中校验</h2>
+      </div>
+
+      <!-- NVDA formal -->
+      <article class="pred-formal">
+        <div>
+          <span class="badge-formal">正式预测</span>
+          <span class="pred-id">正式预测 · 09-08</span>
+        </div>
+        <div class="pred-ticker">NVDA</div>
+
+        <div class="pred-section">
+          <h4>当时正式预测了什么</h4>
+          <div class="pred-fields">
+            <span>方向：<strong>偏多</strong></span>
+            <span>窗：<strong>09-08 → 09-19</strong></span>
+            <span>上界 <strong>+8%</strong> / 下界 <strong>-4%</strong></span>
+          </div>
+          <div class="pred-fields">
+            <span>基准：<strong>09-08 收盘</strong></span>
+            <span>失效：<strong>订单证伪或指引大幅下修</strong></span>
+          </div>
+          <div class="pred-fields">
+            <span>数据时间：<strong>09-08 16:00 ET</strong></span>
+            <span>证据版本：<strong>ev-4421</strong></span>
+          </div>
+          <p class="muted" style="font-size:0.75rem;margin-top:6px">字段齐全 → 可进校验</p>
+        </div>
+
+        <div class="pred-section">
+          <h4>实际发生了什么</h4>
+          <p>至 09-15：<strong>+5.2%</strong>，落在窗内上半区 · 状态：<strong>进行中</strong></p>
+        </div>
+
+        <div class="pred-section">
+          <h4>哪条证据有效 / 被高估</h4>
+          <ul>
+            <li>✓ 有效：设备订单超预期（与预测叙事同向加强）</li>
+            <li>✗ 高估：短期期权偏度「必破上界」叙事（未兑现）</li>
+          </ul>
+        </div>
+
+        <div class="pred-section">
+          <h4>预测后新信息</h4>
+          <p>09-15 行业级订单事件 → 强度上修，窗不下修</p>
+        </div>
+
+        <div class="pred-section">
+          <h4>当前判断如何修正</h4>
+          <p>维持偏多；接下来看「指引是否跟涨」；作废条件仍是：订单证伪或指引大幅下修</p>
+        </div>
+      </article>
+
+      <!-- ORCL formal -->
+      <article class="pred-formal">
+        <div>
+          <span class="badge-formal">正式预测</span>
+          <span class="pred-id">正式预测 · 09-10</span>
+        </div>
+        <div class="pred-ticker">ORCL</div>
+
+        <div class="pred-section">
+          <h4>当时正式预测了什么</h4>
+          <div class="pred-fields">
+            <span>方向：<strong>中性</strong></span>
+            <span>窗：<strong>09-10 → 09-24</strong></span>
+            <span>边界：<strong>±3%</strong></span>
+          </div>
+          <div class="pred-fields">
+            <span>失效：<strong>重大减持</strong></span>
+            <span>基准 / 数据时间 / 证据版本：齐全</span>
+          </div>
+        </div>
+
+        <div class="pred-section">
+          <h4>实际发生了什么</h4>
+          <p>减持披露后 <strong>-2.1%</strong> · 触发「情绪冲击」观察升级</p>
+        </div>
+
+        <div class="pred-section">
+          <h4>哪条证据有效 / 被高估</h4>
+          <p>减持为新信息（预测后）→ 正式预测标记「环境变」</p>
+        </div>
+
+        <div class="pred-section">
+          <h4>当前判断如何修正</h4>
+          <p>近端转谨慎；同业不联动（公司级，不泛化）</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- 错误归因 / 学习（正式预测侧） -->
+    <section class="section" aria-labelledby="sec-learn">
+      <h2 class="section-label" id="sec-learn">错误归因 · 学习</h2>
+      <div class="learn-grid">
+        <article class="card learn-card">
+          <h3>NVDA · 学到什么</h3>
+          <ul class="learn-list">
+            <li><span class="k">对在哪</span>订单→开支叙事同向，窗内走势未打脸</li>
+            <li><span class="k">错在哪</span>把期权偏度当成「必破上界」的硬证据</li>
+            <li><span class="k">下次</span>偏度只作确认度旁证，不单独抬上界预期</li>
+          </ul>
+        </article>
+        <article class="card learn-card">
+          <h3>ORCL · 学到什么</h3>
+          <ul class="learn-list">
+            <li><span class="k">对在哪</span>窗与边界齐全，减持触发后可对照</li>
+            <li><span class="k">错在哪</span>预测时未把「重大减持」写成近端主风险权重</li>
+            <li><span class="k">下次</span>内部人减持进失效条件时，同步抬近端谨慎权重</li>
+          </ul>
+        </article>
+      </div>
+      <p class="muted" style="font-size:0.75rem;margin-top:8px">学习段只服务正式预测复盘；观察项不计命中、不进本段主列。</p>
+    </section>
+
+    <!-- ░░ 观察 / 规则倾向 -->
+    <section class="section" aria-labelledby="sec-observe">
+      <div class="group-head" id="sec-observe">
+        <span class="badge-observe" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;background:#64748b;color:#fff">观察</span>
+        <h2 style="color:#64748b;font-weight:600">规则倾向 · 不进命中率</h2>
+      </div>
+
+      <article class="pred-observe">
+        <div>
+          <span class="badge-observe">观察</span>
+        </div>
+        <div class="pred-ticker">MU · 规则倾向（不完整）</div>
+        <p>仅有方向「弱偏多」· 缺：窗、上下边界、失效、基准、数据时间、证据版本 → 标签【观察】· 禁止进校验主口径</p>
+        <div class="warn-incomplete">
+          用途：辅助理解总览「判断不变」，不计命中率
+        </div>
+      </article>
+
+      <details class="fold-c">
+        <summary>历史证据原文 · 当时全量快照（折叠）</summary>
+        <div class="fold-body">证据原文与快照在此折叠；主界面不倾倒分数墙或全市场报告。</div>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

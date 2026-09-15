@@ -2,67 +2,123 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Stock PM · 个股详情</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>决策系统 · 个股</title>
   <link rel="stylesheet" href="/static/app.css">
   <link rel="stylesheet" href="/static/shell.css">
+  <link rel="stylesheet" href="/static/desk.css">
   <script defer src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+  <script defer src="/static/desk.js"></script>
   <script defer src="/static/shell.js"></script>
   <script defer src="/static/events_ui.js"></script>
   <script defer src="/static/stock.js"></script>
 </head>
 <body>
-  <header class="stock-header">
-    <div class="header-inner">
-      <nav class="global-nav" aria-label="主导航">
-        <a class="brand" href="/">Stock PM</a>
-        <a href="/">总览</a><a href="/events">事件中心</a><a href="/replay">盘面回放</a><a href="/review">复盘</a><a href="/settings">设置</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">决策系统</div>
+        <div class="brand-meta">个股</div>
+      </div>
+      <nav class="nav-primary" aria-label="主路径">
+        <a href="/">总览</a>
+        <a href="/stock" class="active">个股</a>
+        <a href="/review">复盘</a>
       </nav>
-      <div class="symbol-tools">
-        <label for="symbol-switcher">切换标的</label>
-        <select id="symbol-switcher" aria-label="切换标的"><option>加载中…</option></select>
+      <div class="nav-secondary">
+        <details class="nav-drop">
+          <summary>诊断/设置 ▾</summary>
+          <div class="nav-menu">
+            <a href="/events">事件中心</a>
+            <a href="/replay">盘面回放</a>
+            <a href="/settings">设置</a>
+          </div>
+        </details>
       </div>
-      <div class="instrument">
-        <div>
-          <div class="symbol-line"><strong id="symbol">—</strong><span id="name">加载中…</span></div>
-          <div id="metadata" class="muted">—</div>
-          <div id="themes" class="chips"></div>
-        </div>
-        <div class="last-quote">
-          <strong id="last-price">—</strong>
-          <span id="price-change">—</span>
-        </div>
+    </header>
+
+    <div class="stock-hero">
+      <div>
+        <h1><span id="symbol">—</span> <span class="name" id="name">加载中…</span>
+          <select id="symbol-switcher" class="ticker-switcher" aria-label="切换标的"><option>加载中…</option></select>
+        </h1>
+        <div id="metadata" class="muted">—</div>
+        <div id="themes" class="chips"></div>
       </div>
-      <div id="quote-grid" class="quote-grid" aria-live="polite"></div>
+      <div class="page-actions">
+        <span class="chip chip-ok" id="watch-chip">自选</span>
+        <div class="last-quote"><strong id="last-price">—</strong> <span id="price-change">—</span></div>
+        <a href="/review">跳转复盘 →</a>
+      </div>
     </div>
-  </header>
-  <main class="page-shell">
-    <section id="decision-module" class="decision-module" aria-labelledby="decision-heading">
-      <h2 id="decision-heading">动态判断</h2>
-      <div id="decision-body" class="state loading"><span class="spinner"></span>正在加载动态判断…</div>
-      <div id="data-health-slot"></div>
-      <dialog id="fact-drawer" class="fact-drawer">
-        <article id="fact-drawer-body"></article>
-        <form method="dialog"><button type="submit">关闭</button></form>
-      </dialog>
+
+    <div id="desk-root"><p class="empty-note">正在加载个股判断…</p></div>
+
+    <section class="section">
+      <h2 class="section-label">材料（默认收起）</h2>
+      <div class="materials-grid">
+        <details>
+          <summary>▸ 报价摘要</summary>
+          <div class="inner"><div id="quote-grid" class="quote-grid" aria-live="polite"></div></div>
+        </details>
+        <details>
+          <summary>▸ 财报摘要</summary>
+          <div class="inner">见下方折叠图表区的财报标签；本页主路径不展开诊断。</div>
+        </details>
+        <details>
+          <summary>▸ 估值带</summary>
+          <div class="inner">估值区间与历史分位在折叠图表区。</div>
+        </details>
+        <details>
+          <summary>▸ K线 / 量价</summary>
+          <div class="inner">量价图与关键位在折叠图表区。</div>
+        </details>
+        <details>
+          <summary>▸ 期权偏度</summary>
+          <div class="inner">近月偏度摘要在资讯与期权标签。</div>
+        </details>
+        <details>
+          <summary>▸ 新闻原文</summary>
+          <div class="inner">可点新闻原文进此；无原文链接的条目不会假装可点。主路径不放英文标题墙。</div>
+        </details>
+        <details>
+          <summary>▸ 证据链 / 数据时间戳</summary>
+          <div class="inner">证据版本与时间戳；强度勾选细表见诊断，不抢主路径。</div>
+        </details>
+      </div>
     </section>
-    <section id="event-module" class="decision-module event-module" aria-labelledby="event-heading">
-      <h2 id="event-heading">相关重大事件</h2>
-      <div id="event-coverage" class="event-coverage" data-google-status="pending">加载覆盖状态…</div>
-      <div id="event-body" class="state loading"><span class="spinner"></span>正在加载相关事件…</div>
-    </section>
-    <div id="stock-pm-shell"></div>
-    <div class="tabs" role="tablist" aria-label="个股详情">
-      <button role="tab" data-tab="chart">图表</button>
-      <button role="tab" data-tab="review">复盘</button>
-      <button role="tab" data-tab="earnings">财报</button>
-      <button role="tab" data-tab="valuation">估值</button>
-      <button role="tab" data-tab="flow">筹码与资金</button>
-      <button role="tab" data-tab="news-options">资讯与期权</button>
-    </div>
-    <section id="tab-content" class="tab-content" aria-live="polite">
-      <div class="state loading"><span class="spinner"></span>正在加载…</div>
-    </section>
-  </main>
+
+    <details class="fold-c diag-fold">
+      <summary>诊断折叠（证据链 / 昨盘 / 图表原接口，不抢主路径）</summary>
+      <div class="fold-body">
+        <section id="decision-module" class="decision-module" aria-labelledby="decision-heading">
+          <h2 id="decision-heading">动态判断</h2>
+          <div id="decision-body" class="state loading"><span class="spinner"></span>正在加载动态判断…</div>
+          <div id="data-health-slot"></div>
+          <dialog id="fact-drawer" class="fact-drawer">
+            <article id="fact-drawer-body"></article>
+            <form method="dialog"><button type="submit">关闭</button></form>
+          </dialog>
+        </section>
+        <section id="event-module" class="decision-module event-module" aria-labelledby="event-heading">
+          <h2 id="event-heading">相关重大事件</h2>
+          <div id="event-coverage" class="event-coverage" data-google-status="pending">加载覆盖状态…</div>
+          <div id="event-body" class="state loading"><span class="spinner"></span>正在加载相关事件…</div>
+        </section>
+        <div id="stock-pm-shell"></div>
+        <div class="tabs" role="tablist" aria-label="个股详情">
+          <button role="tab" data-tab="chart">图表</button>
+          <button role="tab" data-tab="review">复盘</button>
+          <button role="tab" data-tab="earnings">财报</button>
+          <button role="tab" data-tab="valuation">估值</button>
+          <button role="tab" data-tab="flow">筹码与资金</button>
+          <button role="tab" data-tab="news-options">资讯与期权</button>
+        </div>
+        <section id="tab-content" class="tab-content" aria-live="polite">
+          <div class="state loading"><span class="spinner"></span>正在加载…</div>
+        </section>
+      </div>
+    </details>
+  </div>
 </body>
 </html>

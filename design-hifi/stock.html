@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>决策系统 · 个股 · NVDA</title>
+  <link rel="stylesheet" href="shared.css" />
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">决策系统</div>
+        <div class="brand-meta">09-15 · 个股</div>
+      </div>
+      <nav class="nav-primary" aria-label="主路径">
+        <a href="overview.html">总览</a>
+        <a href="stock.html" class="active">个股</a>
+        <a href="review.html">复盘</a>
+      </nav>
+      <div class="nav-secondary">
+        <a href="states.html">五态演示</a>
+        ·
+        <a href="#" tabindex="-1" aria-disabled="true">诊断/设置 ▾</a>
+      </div>
+    </header>
+
+    <div class="stock-hero">
+      <div>
+        <h1>NVDA <span class="name">NVIDIA Corp</span></h1>
+      </div>
+      <div class="page-actions">
+        <span class="chip chip-ok">自选 ✓</span>
+        <a href="review.html">跳转复盘 →</a>
+      </div>
+    </div>
+
+    <!-- 1. 当前判断 -->
+    <section class="section">
+      <div class="card judge-block">
+        <h2 class="block-title"><span class="block-num">1</span>当前判断</h2>
+        <p class="judge-stance">研究倾向偏多 · 近 1–4 周弹性上修 · 置信度中高</p>
+        <p class="judge-quote">「设备订单超预期强化 AI 开支叙事，暂不改中期逻辑」</p>
+        <p class="action-line" style="margin:10px 0 0">
+          <span class="action-verb">研究倾向偏多</span>
+          <span class="action-verb">不追高（观察）</span>
+        </p>
+        <p class="muted" style="font-size:0.72rem;margin-top:6px">同一意思只留这一句动作；不堆流程态 pill。</p>
+      </div>
+    </section>
+
+    <!-- 2. 与昨天相比 · 强化昨→今 / 中期 / thesis 变化 -->
+    <section class="section">
+      <div class="card thesis-change">
+        <h2 class="block-title"><span class="block-num">2</span>与昨天相比发生了什么</h2>
+        <div class="thesis-fromto" aria-label="判断变化">
+          <div class="thesis-side">
+            <span class="thesis-label">昨</span>
+            <strong>中性偏多 / 等指引确认</strong>
+          </div>
+          <span class="thesis-arrow" aria-hidden="true">→</span>
+          <div class="thesis-side now">
+            <span class="thesis-label">今</span>
+            <strong>研究倾向偏多</strong>
+          </div>
+        </div>
+        <p class="thesis-delta-tag"><span class="chip chip-ok">判断变了</span> 近端从「等确认」升到「偏多」；中期未动</p>
+        <div class="delta-sentence">
+          <span class="part"><span class="k">原因</span>半导设备订单超预期；收入暴露高、叙事直达龙头 → 深绿</span>
+          <span class="part"><span class="k">中期逻辑</span><strong class="mid-unchanged">不变</strong>（AI 开支主线未改；仅近 1–4 周弹性上修）</span>
+          <span class="part"><span class="k">今日动作</span>
+            <span class="action-verb">研究倾向偏多</span>
+            <span class="action-verb">不追高（观察）</span>
+            <span class="muted" style="font-size:0.75rem">留意：指引是否跟涨</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 影响最大的三个驱动因素 -->
+    <section class="section">
+      <div class="card">
+        <h2 class="block-title"><span class="block-num">3</span>影响最大的三个驱动因素</h2>
+        <ol class="driver-list">
+          <li>
+            <span class="driver-rank">1</span>
+            <div class="driver-body">
+              <span class="impact-pill deep-green">深绿</span>
+              <strong style="margin-left:6px">半导设备订单超预期</strong>
+              <span class="why">因：出货 / 指引上修空间 · 收入暴露高、传导直接</span>
+            </div>
+          </li>
+          <li>
+            <span class="driver-rank">2</span>
+            <div class="driver-body">
+              <span class="impact-pill light-green">浅绿</span>
+              <strong style="margin-left:6px">云资本开支预期联动</strong>
+              <span class="why">因：需求侧共振</span>
+            </div>
+          </li>
+          <li>
+            <span class="driver-rank">3</span>
+            <div class="driver-body">
+              <span class="impact-pill yellow">黄分歧</span>
+              <strong style="margin-left:6px">估值已反映部分乐观</strong>
+              <span class="why">因：涨幅透支风险 → 故「不追高（观察）」</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. 风险和反证 -->
+    <section class="section">
+      <div class="card">
+        <h2 class="block-title"><span class="block-num">4</span>风险和反证</h2>
+        <ul class="risk-list">
+          <li>订单 → 收入确认时滞，若本季指引平淡则回吐</li>
+          <li>大盘利率分歧（黄）可能压制 Beta</li>
+          <li>反证：同行 MU 映射弱，说明并非全链条同涨</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. 观察条件与失效条件 -->
+    <section class="section">
+      <div class="card">
+        <h2 class="block-title"><span class="block-num">5</span>观察条件与失效条件</h2>
+        <div class="cond-grid">
+          <div class="cond-box observe">
+            <h4>观察</h4>
+            本周内官方 / 渠道确认订单质量；IV 不失控飙升
+          </div>
+          <div class="cond-box invalidate">
+            <h4>失效（到这条就作废原判断）</h4>
+            公司下调指引，或出现明确砍单证据
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 材料全部折叠 -->
+    <section class="section">
+      <h2 class="section-label">材料（默认收起）</h2>
+      <div class="materials-grid">
+        <details>
+          <summary>▸ 财报摘要</summary>
+          <div class="inner">最近季摘要折叠于此；本页不展开诊断/抓取状态。</div>
+        </details>
+        <details>
+          <summary>▸ 估值带</summary>
+          <div class="inner">估值区间与历史分位（折叠）。</div>
+        </details>
+        <details>
+          <summary>▸ K线 / 量价</summary>
+          <div class="inner">量价图与关键位（折叠）。</div>
+        </details>
+        <details>
+          <summary>▸ 期权偏度</summary>
+          <div class="inner">近月偏度摘要（折叠）。</div>
+        </details>
+        <details>
+          <summary>▸ 新闻原文</summary>
+          <div class="inner">可点新闻原文进此；主路径不放英文标题墙。</div>
+        </details>
+        <details>
+          <summary>▸ 证据链 / 数据时间戳</summary>
+          <div class="inner">证据版本与时间戳；强度勾选细表见诊断，不抢主路径。</div>
+        </details>
+      </div>
+      <p class="muted" style="font-size:0.75rem;margin-top:8px">本页不出现：数据源健康 · API · 抓取重试 · 系统编号</p>
+    </section>
+  </div>
+</body>
+</html>

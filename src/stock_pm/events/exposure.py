@@ -42,17 +42,23 @@ SEMIS_MARKERS = {"semis", "semiconductor", "export", "bis", "gpu", "chip", "nvda
 CREDIT_MARKERS = {"credit", "bank", "debt", "default", "cds", "loan"}
 
 
-def _seed(symbol: str) -> dict[str, Any]:
+def _seed(symbol: str, watch_row: dict[str, Any] | None = None) -> dict[str, Any]:
     extra = WATCH_EXPOSURE.get(symbol.upper(), {})
     row = DEFAULT_WATCHLIST.get(symbol.upper())
     themes = list(extra.get("themes") or ())
-    if row:
+    if watch_row:
+        themes = list(watch_row.get("themes") or []) + themes
+        rate = str(watch_row.get("rate_sensitivity") or "") or (row.rate_sensitivity if row else "medium")
+    elif row:
         themes = list(row.themes) + themes
+        rate = extra.get("rate_sensitivity") or row.rate_sensitivity
+    else:
+        rate = extra.get("rate_sensitivity") or "medium"
     return {
         "symbol": symbol.upper(),
-        "themes": tuple(dict.fromkeys(themes)),
+        "themes": tuple(dict.fromkeys(str(item) for item in themes if item)),
         "channels": extra.get("channels") or (),
-        "rate_sensitivity": extra.get("rate_sensitivity") or (row.rate_sensitivity if row else "medium"),
+        "rate_sensitivity": rate,
     }
 
 
@@ -81,8 +87,12 @@ def event_channels(event: TrustedEvent) -> set[str]:
     return channels
 
 
-def why_relevant(event: TrustedEvent, symbol: str) -> dict[str, Any] | None:
-    seed = _seed(symbol)
+def why_relevant(
+    event: TrustedEvent,
+    symbol: str,
+    watch_row: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    seed = _seed(symbol, watch_row)
     channels = event_channels(event)
     if not channels:
         return None
@@ -165,10 +175,17 @@ def why_relevant(event: TrustedEvent, symbol: str) -> dict[str, Any] | None:
     return None
 
 
-def attach_exposures(event: TrustedEvent, symbols: list[str]) -> list[dict[str, Any]]:
+def attach_exposures(
+    event: TrustedEvent,
+    symbols: list[str],
+    watch_rows: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    by_symbol = {
+        str(row.get("symbol") or "").upper(): row for row in (watch_rows or []) if row.get("symbol")
+    }
     rows = []
     for symbol in symbols:
-        hit = why_relevant(event, symbol)
+        hit = why_relevant(event, symbol, watch_row=by_symbol.get(symbol.upper()))
         if not hit:
             continue
         rows.append({"symbol": symbol.upper(), **hit})
