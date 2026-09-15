@@ -20,6 +20,7 @@
 | [DEV_BRIEF_决策系统整包_2026-09-15.md](DEV_BRIEF_决策系统整包_2026-09-15.md) | 总览+个股+复盘整包真数据一次上线 |
 | [DESIGN_BRIEF_减法闭环_主结构冻结_2026-09-15.md](DESIGN_BRIEF_减法闭环_主结构冻结_2026-09-15.md) | IA 冻结：去系统词、五段个股、复盘分家 |
 | [DESIGN_NOTE_减法闭环_2026-09-15.md](DESIGN_NOTE_减法闭环_2026-09-15.md) | 减法闭环落地差异；hi-fi 对照 |
+| [BRAIN_V1_DESIGN.md](BRAIN_V1_DESIGN.md) | Brain V1：从新闻聚合升级为 Evidence→Assumption→Thesis 研究系统；现网复用评估与 Sprint 1 文件级计划 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |
