@@ -38,10 +38,31 @@ def assess_research_quality_axes(
     eps = to_number(profile.get("eps_ttm"))
     fcf = to_number(profile.get("fcf"))
     last_close = to_number(profile.get("last_close"))
+    net_margin = to_number(profile.get("net_margin_pct") or profile.get("operating_margin_pct") or profile.get("gross_margin_pct"))
+    if net_margin is None:
+        for row in earnings:
+            value = to_number(row.get("margin_pct"))
+            if value is not None:
+                net_margin = value
+                break
+    missing = {str(item) for item in (payload.get("missing_fields") or [])}
+    template_id = str(payload.get("template_id") or "")
+    has_segments = any(isinstance(row, dict) and row.get("segments") for row in earnings)
+    has_series = len(earnings) >= 4
+    has_driver_claims = any(
+        str(row.get("status") or "") == "strengthened"
+        or str(row.get("final_status") or "") == "strengthened"
+        for row in assumptions
+    )
     target = None
+    valuation_status = None
+    used_fallback = False
     if valuation:
         base = valuation.get("base_case") or {}
         target = to_number(base.get("target_value"))
+        calibration = valuation.get("calibration_json") or valuation
+        valuation_status = calibration.get("valuation_status") or valuation.get("valuation_status")
+        used_fallback = bool(calibration.get("used_template_fallback") or valuation.get("used_template_fallback"))
     discovery = _level(
         sufficient=has_print or official or bool(evidence_rows),
         partial=transcripts or bool(guidance) or bool(prices),
@@ -50,10 +71,36 @@ def assess_research_quality_axes(
         sufficient=has_print and has_text,
         partial=has_print or has_text,
     )
-    valuation_quality = _level(
-        sufficient=bool(last_close) and (eps not in (None, 0) or fcf not in (None, 0)) and has_print,
-        partial=has_print or last_close is not None,
-    )
+    has_baseline = bool(last_close) and (eps not in (None, 0) or fcf not in (None, 0))
+    has_margin = net_margin is not None
+    has_growth_drivers = has_segments or has_series or has_driver_claims
+    has_multiple_anchor = to_number(profile.get("pe_ttm")) is not None or has_margin
+    material_gap = bool(missing & {"segment_growth", "fcf", "forward_margin", "commodity_price"})
+    if template_id == "energy":
+        energy_ready = (fcf not in (None, 0) or has_series) and bool(guidance) and has_baseline
+        valuation_sufficient = energy_ready and has_margin and not used_fallback and "commodity_price" not in missing
+        valuation_partial = has_baseline or has_print or last_close is not None
+    else:
+        valuation_sufficient = (
+            has_baseline
+            and bool(guidance)
+            and has_margin
+            and has_growth_drivers
+            and has_multiple_anchor
+            and not used_fallback
+            and (has_segments or "segment_growth" not in missing)
+        )
+        valuation_partial = has_print or last_close is not None or has_baseline
+    if valuation_status == "insufficient":
+        valuation_sufficient = False
+        valuation_partial = False
+    elif valuation_status == "provisional":
+        valuation_sufficient = False
+        valuation_partial = True
+    if material_gap and valuation_sufficient:
+        valuation_sufficient = False
+        valuation_partial = True
+    valuation_quality = _level(sufficient=valuation_sufficient, partial=valuation_partial)
     if not transcripts and fundamental == "sufficient" and valuation_quality == "sufficient":
         thesis_partial_ok = True
     else:

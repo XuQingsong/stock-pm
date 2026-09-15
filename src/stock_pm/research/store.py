@@ -694,17 +694,20 @@ class ResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "calibration_json": _jsonb(row.get("calibration_json") or {}),
         }
         stored = self._one(
             """
             INSERT INTO research_valuations (
                 id, ticker, thesis_id, thesis_version, horizon, bear_case, base_case,
-                bull_case, spot_price, actor, workflow_run_id, agent_run_id, model, prompt_version
+                bull_case, spot_price, actor, workflow_run_id, agent_run_id, model, prompt_version,
+                calibration_json
             )
             VALUES (
                 %(id)s, %(ticker)s, %(thesis_id)s, %(thesis_version)s, %(horizon)s,
                 %(bear_case)s, %(base_case)s, %(bull_case)s, %(spot_price)s, %(actor)s,
-                %(workflow_run_id)s, %(agent_run_id)s, %(model)s, %(prompt_version)s
+                %(workflow_run_id)s, %(agent_run_id)s, %(model)s, %(prompt_version)s,
+                %(calibration_json)s
             )
             RETURNING *
             """,

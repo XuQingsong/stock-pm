@@ -37,18 +37,20 @@
       "priority": 40
     }
   ],
-  "valuation_framework": {
+    "valuation_framework": {
     "primary_methods": ["eps_pe", "fcf"],
     "horizon_years": 2,
     "horizon_label": "1-3 years",
     "multiple_kind": "pe",
-    "multiple_bear": 18,
-    "multiple_base": 28,
-    "multiple_bull": 40,
-    "max_base_growth": 0.25,
-    "max_bull_growth": 0.40,
-    "bear_growth_factor": 0.30,
-    "bear_eps_haircut": 0.15,
-    "multiple_reason": "semiconductor earnings power is valued on forward EPS times a cycle PE band; current TTM PE is a reference, not automatically the 2-year base multiple"
+    "cycle_multiple_low": 18,
+    "cycle_multiple_mid": 26,
+    "cycle_multiple_high": 40,
+    "sanity_max_growth": 0.50,
+    "warning_growth": 0.25,
+    "fallback_growth": 0.08,
+    "bear_margin_delta_pp": -3.0,
+    "bull_margin_delta_pp": 1.0,
+    "driver_families": ["growth_end_market", "core_product", "software_recurring", "contract_conversion", "margin_mix", "concentration"],
+    "multiple_reason": "semiconductor earnings power is valued on forward EPS times a cycle PE; current TTM PE is one anchor, not automatically the 2-year base multiple"
   }
 }

@@ -16,10 +16,10 @@ from .types import (
     NEGATIVE_MARKET_REACTION_TASK,
     THESIS_ROLE_ALIASES,
 )
-from .valuation import build_valuation_cases, display_target
+from .valuation import attribute_target_change, build_valuation_cases, display_target
 
 
-PROMPT_VERSION = "sprint4-pm-v1"
+PROMPT_VERSION = "sprint45-pm-v1"
 ENGINE_TO_STATUS = {
     "strengthen": "strengthened",
     "weaken": "weakened",
@@ -388,9 +388,11 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
     curr_target = to_number(((current_valuation or {}).get("base_case") or {}).get("target_value"))
     valuation_change = None
     if prev_target is not None or curr_target is not None:
+        attribution = attribute_target_change(previous_valuation, current_valuation)
         valuation_change = {
             "base_target": {"from": display_target(prev_target), "to": display_target(curr_target)},
-            "reason": "recomputed from current pack inputs and PM rulings",
+            "attribution": attribution.get("parts") or [],
+            "reason": "recomputed from current pack inputs, PM rulings, and the earnings bridge",
         }
     prev_conf = to_number(previous.get("confidence"))
     curr_conf = to_number(current.get("confidence"))
@@ -422,6 +424,7 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         assumptions=brief.get("assumptions") or [],
         evidence=brief.get("evidence") or [],
         key_assumption_ids=core_ids,
+        rulings=rulings,
     )
     axes = assess_research_quality_axes(
         brief.get("pack"),
@@ -435,6 +438,10 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         thesis_confidence = min(thesis_confidence, 0.35)
     elif axes.get("quality_for_final_thesis") == "partial":
         thesis_confidence = min(thesis_confidence, 0.62)
+    if cases.get("valuation_status") == "insufficient":
+        thesis_confidence = min(thesis_confidence, 0.28)
+    elif cases.get("valuation_status") == "provisional":
+        thesis_confidence = min(thesis_confidence, 0.48)
     catalysts = []
     for row in rulings:
         if row["final_status"] == "strengthened":
@@ -523,6 +530,7 @@ def record_pm_judgment(
         "base_case": judgment["valuation"]["base_case"],
         "bull_case": judgment["valuation"]["bull_case"],
         "spot_price": judgment["valuation"].get("spot_price"),
+        "calibration_json": judgment["valuation"].get("calibration_json") or {},
         "workflow_run_id": workflow_run_id,
         "prompt_version": PROMPT_VERSION,
     }

@@ -385,6 +385,7 @@ class InMemoryResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "calibration_json": dict(row.get("calibration_json") or {}),
             "created_at": _now(),
         }
         self.valuations[stored["id"]] = stored

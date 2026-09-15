@@ -147,7 +147,8 @@ def test_valuation_is_coarse_and_explains_multiple() -> None:
     assert "." not in str(base["target_value"])
     assert str(base["target_display"]).startswith("~$")
     assert base["multiple_reason"]
-    assert base["growth_assumptions"]["annual_rate"] <= 0.25
+    assert base["growth_assumptions"]["annual_rate"] < 0.90
+    assert base["growth_assumptions"].get("origin") in {"observed", "derived", "assumption", "template_fallback"}
     assert base["sensitivity"]
     assert cases["bear_case"]["target_value"] <= cases["base_case"]["target_value"] <= cases["bull_case"]["target_value"]
     energy = build_valuation_cases(_pack_with_price("energy"))

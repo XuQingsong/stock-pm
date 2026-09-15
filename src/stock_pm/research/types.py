@@ -41,14 +41,24 @@ CASE_KEYS = (
     "margin_assumptions",
     "multiple",
     "multiple_reason",
+    "multiple_decomposition",
     "valuation_method",
     "target_value",
     "target_display",
     "upside_downside",
     "key_assumption_ids",
+    "key_assumptions",
+    "invalidation",
+    "eps_derivation",
+    "revenue_growth_reason",
+    "margin_reason",
+    "driver_origins",
+    "case_narrative",
     "notes",
     "sensitivity",
 )
+VALUATION_STATUSES = ("usable", "provisional", "insufficient")
+METRIC_ORIGINS = ("observed", "derived", "assumption", "template_fallback")
 
 
 def to_plain(row: Any) -> dict[str, Any]:
@@ -72,11 +82,19 @@ def empty_valuation_case() -> dict[str, Any]:
         "margin_assumptions": None,
         "multiple": None,
         "multiple_reason": None,
+        "multiple_decomposition": None,
         "valuation_method": None,
         "target_value": None,
         "target_display": None,
         "upside_downside": None,
         "key_assumption_ids": [],
+        "key_assumptions": [],
+        "invalidation": None,
+        "eps_derivation": None,
+        "revenue_growth_reason": None,
+        "margin_reason": None,
+        "driver_origins": [],
+        "case_narrative": "",
         "notes": "",
         "sensitivity": [],
     }

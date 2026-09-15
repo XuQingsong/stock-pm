@@ -188,6 +188,9 @@ class ResearchService:
             valuation = self.store.get_valuation(thesis["valuation_id"])
         elif thesis and hasattr(self.store, "get_valuation_for_thesis"):
             valuation = self.store.get_valuation_for_thesis(thesis["id"])
+        if valuation and isinstance(valuation.get("calibration_json"), dict):
+            for key, value in valuation["calibration_json"].items():
+                valuation.setdefault(key, value)
         pm_rulings = []
         lister = getattr(self.store, "list_pm_rulings", None)
         if callable(lister):
@@ -663,6 +666,7 @@ class ResearchService:
                 "base_case": normalize_valuation_case(body.get("base_case")),
                 "bull_case": normalize_valuation_case(body.get("bull_case")),
                 "spot_price": body.get("spot_price"),
+                "calibration_json": body.get("calibration_json") or {},
                 "actor": actor,
                 "workflow_run_id": body.get("workflow_run_id"),
                 "agent_run_id": audit["id"],
@@ -670,6 +674,21 @@ class ResearchService:
                 "prompt_version": body.get("prompt_version"),
             }
         )
+        calibration = dict(valuation.get("calibration_json") or body.get("calibration_json") or {})
+        for key in (
+            "earnings_bridge",
+            "driver_map",
+            "valuation_status",
+            "valuation_confidence",
+            "range_width_reason",
+            "market_vs_model",
+            "used_template_fallback",
+            "missing",
+            "multiple_decomposition",
+            "method",
+        ):
+            if key in calibration and key not in valuation:
+                valuation[key] = calibration[key]
         self.store.bind_thesis_valuation(thesis["id"], valuation["id"])
         return valuation
 
