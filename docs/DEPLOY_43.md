@@ -3,6 +3,18 @@
 The live app is the same FastAPI process in this repo (`stock_pm.api:app`).
 Do not stand up a second product. After merging, ship **this branch tip**.
 
+## Worker count (hang mitigation)
+
+Dockerfile / `stock_pm.api:run` start **uvicorn `--workers 2`**.
+
+Desk assemble (`/api/desk/overview`, stock, review) also:
+
+- runs in a threadpool so the event loop can still serve `/health`
+- budgets live event discovery at ~4s/provider and ~7s overall (desk hard cap 8s)
+- degrades to an empty event book (`data_mode=degraded`, `gaps.events=true`) on timeout
+
+Do not drop back to a single worker: one stuck official-feed fetch previously blocked the only worker and produced site-wide 502s.
+
 ## Tip (what “done” means)
 
 - Pages: `/` 总览 · `/stock/{symbol}` 个股五段 · `/review` 正式预测/观察分家

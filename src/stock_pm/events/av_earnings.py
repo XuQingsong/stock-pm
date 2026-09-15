@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from stock_pm.config import Settings
 from stock_pm.fetch import FetchError, FetchResult, json_get, read_cache, utc_now
 
+from .budget import budget_exhausted, capped_timeout, remaining_seconds
 from .bodies import is_allowed_sec_host
 from .earnings import (
     AV_EARNINGS_SOURCE,
@@ -115,11 +116,14 @@ def fetch_av_function(function: str, symbol: str, *, settings: Settings | None =
     params = {"function": function, "symbol": symbol.upper(), "apikey": key}
     if extra:
         params.update(extra)
+    if budget_exhausted():
+        raise FetchError("timeout", "discovery budget exhausted")
+    retries = 0 if remaining_seconds() is not None else 2
     _LIMITER.wait()
     result = json_get(
         f"{AV_API}?{urlencode(params)}",
-        timeout=25,
-        retries=2,
+        timeout=capped_timeout(25),
+        retries=retries,
         cache_key=av_cache_key(function, symbol, extra),
     )
     payload = result.payload

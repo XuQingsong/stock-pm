@@ -16,6 +16,7 @@ from urllib.parse import urljoin
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 from xml.etree import ElementTree as ET
 
+from .budget import budget_exhausted, capped_timeout, remaining_seconds
 from .policy import http_redirect_allowed, sanitize_untrusted
 
 
@@ -134,9 +135,32 @@ def fetch_feed(
     if last_modified:
         headers["If-Modified-Since"] = last_modified
     last_error: str | None = None
+    if remaining_seconds() is not None:
+        retries = 0
+        timeout = capped_timeout(timeout)
     for attempt in range(retries + 1):
+        if budget_exhausted():
+            return FeedResponse(
+                url=url,
+                status_code=0,
+                body=b"",
+                etag=etag,
+                last_modified=last_modified,
+                content_type="",
+                error="timeout",
+            )
         if limiter is not None:
             limiter.wait()
+            if budget_exhausted():
+                return FeedResponse(
+                    url=url,
+                    status_code=0,
+                    body=b"",
+                    etag=etag,
+                    last_modified=last_modified,
+                    content_type="",
+                    error="timeout",
+                )
         req = Request(url, headers=headers, method="GET")
         try:
             with _OPENER.open(req, timeout=timeout) as resp:

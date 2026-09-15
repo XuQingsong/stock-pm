@@ -27,14 +27,35 @@ def _briefing(database) -> dict[str, Any]:
         return {"rows": [], "status": "error"}
 
 
+def _degraded_cover(reason: str = "timeout") -> dict[str, Any]:
+    from stock_pm.events.service import _degraded_cover as service_cover
+
+    return service_cover(reason)
+
+
 def _events_book():
     try:
+        from stock_pm.events import budget as events_budget
         from stock_pm.events.service import build_event_book, coverage
 
-        events = build_event_book()
-        return events, coverage(events=events)
+        def load():
+            with events_budget.discovery_budget(
+                overall=events_budget.OVERALL_TIMEOUT_SECONDS,
+                provider=events_budget.PROVIDER_TIMEOUT_SECONDS,
+            ):
+                events = build_event_book()
+                cover = coverage(events=events)
+                if events_budget.budget_exhausted() or (
+                    not events and (cover.get("reason_code") == "timeout" or cover.get("data_mode") == "degraded")
+                ):
+                    cover = {**cover, "data_mode": "degraded", "live": False}
+                    if not cover.get("reason_code"):
+                        cover["reason_code"] = "timeout"
+                return events, cover
+
+        return events_budget.call_with_timeout(load, events_budget.DESK_ASSEMBLE_TIMEOUT_SECONDS)
     except Exception:
-        return [], {"data_mode": "empty", "live": False}
+        return [], _degraded_cover("timeout")
 
 
 def _env(database, symbol: str) -> dict[str, Any]:
@@ -80,10 +101,18 @@ def _decision(database, symbol: str) -> dict[str, Any] | None:
 
 def _stock_events(symbol: str) -> list[Any]:
     try:
+        from stock_pm.events import budget as events_budget
         from stock_pm.events.service import stock_events
 
-        payload = stock_events(symbol)
-        return list(payload.get("events") or [])
+        def load():
+            with events_budget.discovery_budget(
+                overall=events_budget.OVERALL_TIMEOUT_SECONDS,
+                provider=events_budget.PROVIDER_TIMEOUT_SECONDS,
+            ):
+                payload = stock_events(symbol)
+                return list(payload.get("events") or [])
+
+        return events_budget.call_with_timeout(load, events_budget.DESK_ASSEMBLE_TIMEOUT_SECONDS)
     except Exception:
         return []
 

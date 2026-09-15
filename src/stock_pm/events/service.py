@@ -2,11 +2,22 @@
 
 from __future__ import annotations
 
+import threading
+import time
 from typing import Any
 
 from stock_pm.config import Settings
 
 from .analyze import DISPLAY_SYMBOLS, analyze_event, closed_loop_summary, symbol_event_view
+from .budget import (
+    DEGRADED_COOLDOWN_SECONDS,
+    BudgetTimeout,
+    budget_exhausted,
+    call_with_timeout,
+    discovery_budget,
+    provider_timeout_seconds,
+    request_budget_active,
+)
 from .dedupe import build_events
 from .earnings_health import current_earnings_health, health_for_symbol, summarize_health
 from .live import discover_live_documents, reset_live_state
@@ -27,8 +38,50 @@ from .types import TrustedEvent
 from stock_pm.decision.inject import inject_allowed
 
 
-_CACHE: dict[str, Any] = {"events": None, "coverage": None, "discovery_resolution": None}
+_CACHE: dict[str, Any] = {
+    "events": None,
+    "coverage": None,
+    "discovery_resolution": None,
+    "degraded_until": 0.0,
+    "degraded_reason": None,
+}
+_DISCOVER_LOCK = threading.Lock()
 REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
+
+
+def _degraded_cover(reason: str = "timeout") -> dict[str, Any]:
+    return {
+        "status": "degraded",
+        "verdict": "degraded",
+        "data_mode": "degraded",
+        "live": False,
+        "event_count": 0,
+        "live_event_count": 0,
+        "reason_code": reason,
+        "note": "Live event discovery timed out or failed. Desk shows empty events.",
+        "affects_chain": "events",
+        "does_not_affect": ["price", "earnings", "macro_rates"],
+    }
+
+
+def _bounded_discover(fn):
+    timeout = provider_timeout_seconds()
+    if timeout is None:
+        return fn()
+    try:
+        return call_with_timeout(fn, timeout)
+    except BudgetTimeout:
+        _mark_timeout()
+        return []
+
+
+def _mark_timeout() -> None:
+    _CACHE["degraded_reason"] = "timeout"
+    _CACHE["degraded_until"] = time.monotonic() + DEGRADED_COOLDOWN_SECONDS
+
+
+def _in_cooldown() -> bool:
+    return float(_CACHE.get("degraded_until") or 0) > time.monotonic()
 
 
 def _inject_tokens(explicit: Any, settings: Settings | None = None) -> Any:
@@ -43,40 +96,87 @@ def _inject_tokens(explicit: Any, settings: Settings | None = None) -> Any:
 def build_event_book(settings: Settings | None = None, *, refresh: bool = False) -> list[TrustedEvent]:
     if _CACHE["events"] is not None and not refresh:
         return list(_CACHE["events"])
-    mode = events_data_mode(settings)
-    discovered: list = []
-    if mode == "recorded_replay":
-        discovered.extend(RecordedReplayProvider().discover())
-    else:
-        official = OfficialFeedProvider(settings).discover()
-        live = discover_live_documents(settings)
-        discovered.extend(official)
-        discovered.extend(live)
-        if mode in {"demo", "fixture"}:
-            from .macro_chain import load_frozen_6a_documents
+    if not refresh and _in_cooldown():
+        return list(_CACHE["events"] or [])
+    acquired = _DISCOVER_LOCK.acquire(blocking=refresh)
+    if not acquired:
+        _CACHE["degraded_reason"] = _CACHE.get("degraded_reason") or "in_flight"
+        return list(_CACHE["events"] or [])
+    timed_out = False
+    try:
+        if _CACHE["events"] is not None and not refresh:
+            return list(_CACHE["events"])
+        if not refresh and _in_cooldown():
+            return list(_CACHE["events"] or [])
+        mode = events_data_mode(settings)
+        discovered: list = []
+        if mode == "recorded_replay":
+            discovered.extend(RecordedReplayProvider().discover())
+        else:
+            official = _bounded_discover(OfficialFeedProvider(settings).discover)
+            timed_out = timed_out or _CACHE.get("degraded_reason") == "timeout" or budget_exhausted()
+            live = [] if timed_out else _bounded_discover(lambda: discover_live_documents(settings))
+            timed_out = timed_out or _CACHE.get("degraded_reason") == "timeout" or budget_exhausted()
+            discovered.extend(official or [])
+            discovered.extend(live or [])
+            if mode in {"demo", "fixture"} and not timed_out:
+                from .macro_chain import load_frozen_6a_documents
 
-            discovered.extend(load_frozen_6a_documents())
-        google = GoogleDiscoveryProvider(settings)
-        if google.configured():
-            try:
-                discovered.extend(google.discover())
-            except Exception:
-                pass
-    discovered, resolution = resolve_discovery_candidates(discovered)
-    _CACHE["discovery_resolution"] = resolution
-    events = build_events(discovered)
-    for event in events:
-        analyze_event(event)
-    _CACHE["events"] = events
-    _CACHE["coverage"] = None
-    return list(events)
+                discovered.extend(load_frozen_6a_documents())
+            google = GoogleDiscoveryProvider(settings)
+            if google.configured() and not timed_out and not budget_exhausted():
+                try:
+                    discovered.extend(_bounded_discover(google.discover) or [])
+                except Exception:
+                    pass
+            timed_out = timed_out or _CACHE.get("degraded_reason") == "timeout" or budget_exhausted()
+        discovered, resolution = resolve_discovery_candidates(discovered)
+        _CACHE["discovery_resolution"] = resolution
+        events = build_events(discovered)
+        for event in events:
+            analyze_event(event)
+        if timed_out and not events:
+            _mark_timeout()
+            _CACHE["coverage"] = None
+            return []
+        _CACHE["events"] = events
+        _CACHE["coverage"] = None
+        if not timed_out:
+            _CACHE["degraded_reason"] = None
+            _CACHE["degraded_until"] = 0.0
+        else:
+            _CACHE["degraded_reason"] = "timeout"
+        return list(events)
+    except BudgetTimeout:
+        _mark_timeout()
+        return list(_CACHE["events"] or [])
+    except Exception:
+        if request_budget_active() or timed_out:
+            _mark_timeout()
+            return list(_CACHE["events"] or [])
+        raise
+    finally:
+        _DISCOVER_LOCK.release()
 
 
 def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None = None) -> dict[str, Any]:
-    rows = events if events is not None else build_event_book(settings)
+    if events is not None:
+        rows = events
+    elif _CACHE["events"] is not None:
+        rows = list(_CACHE["events"])
+    elif _in_cooldown():
+        rows = []
+    else:
+        if not request_budget_active():
+            with discovery_budget():
+                rows = build_event_book(settings)
+        else:
+            rows = build_event_book(settings)
     providers = provider_coverage(settings)
     google = providers["google_cse"]
     mode = events_data_mode(settings)
+    if _CACHE.get("degraded_reason") and not rows:
+        mode = "degraded"
     fixture_count = len(rows) if mode in {"demo", "fixture"} else 0
     replay_count = len(rows) if mode == "recorded_replay" else 0
     live_rows = [providers[name] for name in REQUIRED_LIVE if name in providers]
@@ -85,8 +185,11 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
     ]
     live_event_count = 0 if mode in {"demo", "fixture", "recorded_replay"} else len(rows)
     ratio = (len(live_ok) / len(REQUIRED_LIVE)) if mode not in {"demo", "fixture", "recorded_replay"} else 0.0
-    is_live = mode not in {"demo", "fixture", "recorded_replay"} and bool(live_ok)
-    if mode == "recorded_replay":
+    is_live = mode not in {"demo", "fixture", "recorded_replay", "degraded"} and bool(live_ok)
+    if mode == "degraded":
+        verdict = "degraded"
+        note = "Live event discovery timed out or failed. Desk shows empty events."
+    elif mode == "recorded_replay":
         verdict = "recorded_replay"
         note = "RECORDED REPLAY of reachable official originals. Not production live latest events."
     elif mode in {"demo", "fixture"}:
@@ -107,7 +210,10 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         if stamp and (last_success is None or str(stamp) > str(last_success)):
             last_success = stamp
     failed = [f"{row.get('provider')}:{row.get('reason_code')}" for row in live_rows if row.get("status") != "ok"]
-    provider_health_gate = mode not in {"demo", "fixture", "recorded_replay"} and len(live_ok) == len(REQUIRED_LIVE)
+    reason = None if not failed else ",".join(failed)
+    if mode == "degraded" and not reason:
+        reason = str(_CACHE.get("degraded_reason") or "timeout")
+    provider_health_gate = mode not in {"demo", "fixture", "recorded_replay", "degraded"} and len(live_ok) == len(REQUIRED_LIVE)
     product_status = _product_status(rows, provider_health_gate=provider_health_gate, note=note)
     earnings_report = current_earnings_health()
     earnings_cover = summarize_health(earnings_report)
@@ -129,7 +235,7 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "provider_health_gate": provider_health_gate,
         "live_e1_e10_gate": None,
         "capability_e1_e10_gate": None,
-        "data_mode": mode if mode != "test" else "fixture",
+        "data_mode": "degraded" if mode == "degraded" else (mode if mode != "test" else "fixture"),
         "live": is_live,
         "live_event_count": live_event_count,
         "live_coverage_ratio": ratio,
@@ -141,7 +247,7 @@ def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None
         "source_count": sum(len(event.sources) for event in rows),
         "event_count": len(rows),
         "conflict_count": sum(int((event.analysis or {}).get("conflict_count") or 0) for event in rows),
-        "reason_code": None if not failed else ",".join(failed),
+        "reason_code": reason,
         "providers": providers,
         "implemented_live_providers": list(REQUIRED_LIVE),
         "live_ok_providers": [row.get("provider") for row in live_ok],
@@ -232,6 +338,13 @@ def _center_sort_key(event: TrustedEvent | dict[str, Any]) -> tuple:
 
 
 def market_center(settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
+    if not request_budget_active():
+        with discovery_budget():
+            return _market_center(settings, inject=inject, now=now)
+    return _market_center(settings, inject=inject, now=now)
+
+
+def _market_center(settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
     events = build_event_book(settings)
     cover = coverage(settings, events)
     ordered = sorted(events, key=_center_sort_key)
@@ -264,6 +377,13 @@ def market_center(settings: Settings | None = None, *, inject: Any = None, now: 
 
 
 def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
+    if not request_budget_active():
+        with discovery_budget():
+            return _stock_events_payload(symbol, settings, inject=inject, now=now)
+    return _stock_events_payload(symbol, settings, inject=inject, now=now)
+
+
+def _stock_events_payload(symbol: str, settings: Settings | None = None, *, inject: Any = None, now: Any = None) -> dict[str, Any]:
     events = build_event_book(settings)
     selected = []
     risk_state = None
@@ -338,6 +458,13 @@ def stock_events(symbol: str, settings: Settings | None = None, *, inject: Any =
 
 
 def event_detail(event_id: str, settings: Settings | None = None) -> dict[str, Any] | None:
+    if not request_budget_active():
+        with discovery_budget():
+            return _event_detail(event_id, settings)
+    return _event_detail(event_id, settings)
+
+
+def _event_detail(event_id: str, settings: Settings | None = None) -> dict[str, Any] | None:
     for event in build_event_book(settings):
         if event.event_id == event_id:
             return event.as_dict()
@@ -348,6 +475,8 @@ def reset_cache() -> None:
     _CACHE["events"] = None
     _CACHE["coverage"] = None
     _CACHE["discovery_resolution"] = None
+    _CACHE["degraded_until"] = 0.0
+    _CACHE["degraded_reason"] = None
     reset_live_state()
     from .earnings_health import clear_earnings_health_memory
     from .watchlist import reset_watchlist_override
