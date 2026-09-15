@@ -35,7 +35,7 @@ def built_in_agents(*, completer: JsonCompleter | None = None, tools: Any | None
         AGENT_SEARCH: SearchDataAgent(completer=completer, tools=tools),
         AGENT_FUNDAMENTAL: FundamentalAgent(completer=completer),
         AGENT_INDUSTRY: IndustryAgent(completer=completer, tools=tools),
-        AGENT_QUANT: QuantAgent(),
+        AGENT_QUANT: QuantAgent(completer=completer),
         AGENT_RISK: RiskAgent(completer=completer, tools=tools),
     }
 

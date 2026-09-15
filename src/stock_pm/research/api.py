@@ -20,8 +20,9 @@ def get_service() -> ResearchService:
     if _service_override is not None:
         return _service_override
     from stock_pm.api import database
+    from .agents.base import SettingsCompleter
 
-    return ResearchService(ResearchStore(database))
+    return ResearchService(ResearchStore(database), completer=SettingsCompleter())
 
 
 def _http(exc: Exception) -> HTTPException:

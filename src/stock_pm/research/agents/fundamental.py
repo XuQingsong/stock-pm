@@ -17,12 +17,22 @@ from ..extract import (
     transcript_materials,
     yoy_from_quarters,
 )
+from ..llm_reason import (
+    attach_audit,
+    clean_economic_drivers,
+    compact_assumptions,
+    compact_evidence,
+    compact_pack,
+    complete_structured,
+    dump_user,
+    known_ids,
+)
 from ..templates import load_prompt, load_template
 from ..types import AGENT_FUNDAMENTAL, AGENT_INDUSTRY, AGENT_QUANT, AGENT_RISK, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint5-fundamental-v1"
+PROMPT_VERSION = "sprint55-fundamental-v1"
 
 
 def _stamp(row: dict[str, Any], fallback: str | None = None) -> str | None:
@@ -45,6 +55,40 @@ class FundamentalAgent(BaseAgent):
 
     def __init__(self, completer: JsonCompleter | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("fundamental.txt"))
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        grounded = self.observe(payload)
+        allowed = known_ids(grounded.new_evidence, payload.evidence, payload.assumptions, grounded.new_assumptions)
+        user = dump_user(
+            {
+                "ticker": payload.ticker,
+                "research_pack": compact_pack(payload.research_pack),
+                "assumptions": compact_assumptions(list(payload.assumptions) + list(grounded.new_assumptions), limit=10),
+                "extracted_evidence": compact_evidence(grounded.new_evidence, limit=20),
+                "findings": grounded.findings[:12],
+                "rules": ["Do not mint evidence or numbers.", "Cite only extracted_evidence ids or keys.", "At most 6 key_economic_drivers."],
+            }
+        )
+        raw, audit = complete_structured(
+            self.completer,
+            system=self.system_prompt,
+            user=user,
+            allowed_ids=allowed or None,
+        )
+        extra = {"llm_role": "economic_meaning"}
+        if raw:
+            extra["key_economic_drivers"] = clean_economic_drivers(
+                raw.get("key_economic_drivers"),
+                evidence_ids=known_ids(grounded.new_evidence, payload.evidence),
+            )
+            if raw.get("findings"):
+                grounded.findings = list(dict.fromkeys(list(grounded.findings) + [str(item) for item in raw.get("findings") if item]))
+        grounded = attach_audit(grounded, audit, extra)
+        grounded.agent_name = self.name
+        grounded.prompt_version = self.prompt_version
+        from ..schema import validate_agent_output
+
+        return validate_agent_output(grounded, agent_name=self.name)
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}

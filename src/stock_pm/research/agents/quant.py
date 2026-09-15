@@ -4,6 +4,7 @@ from statistics import pstdev
 from typing import Any
 
 from ..extract import to_number
+from ..llm_reason import attach_audit, compact_evidence, compact_pack, complete_structured, dump_user, known_ids
 from ..relevance import annotate_evidence, judged_links
 from ..templates import load_prompt
 from ..types import (
@@ -20,7 +21,7 @@ from ..types import (
 from .base import BaseAgent
 
 
-PROMPT_VERSION = "sprint35-quant-v1"
+PROMPT_VERSION = "sprint55-quant-v1"
 
 
 def _latest_reaction(pack: dict[str, Any]) -> dict[str, Any]:
@@ -109,7 +110,52 @@ class QuantAgent(BaseAgent):
     prompt_version = PROMPT_VERSION
 
     def __init__(self, completer=None) -> None:
-        super().__init__(completer=None, system_prompt=load_prompt("quant.txt"))
+        super().__init__(completer=completer, system_prompt=load_prompt("quant.txt"))
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        grounded = self.observe(payload)
+        user = dump_user(
+            {
+                "ticker": payload.ticker,
+                "research_pack": compact_pack(payload.research_pack),
+                "quant_findings": grounded.findings,
+                "quant_evidence": compact_evidence(grounded.new_evidence, limit=12),
+                "rules": [
+                    "Do not replace Python return/volatility/PE/volume math.",
+                    "Classify each interpretation as confirmed, supported_inference, speculation, or unresolved.",
+                ],
+            }
+        )
+        raw, audit = complete_structured(
+            self.completer,
+            system=self.system_prompt,
+            user=user,
+            allowed_ids=known_ids(grounded.new_evidence, payload.evidence) or None,
+        )
+        extra = {"llm_role": "market_interpretation"}
+        if raw:
+            interpretations = []
+            for item in raw.get("competing_interpretations") or []:
+                if not isinstance(item, dict):
+                    continue
+                classification = str(item.get("classification") or "unresolved").strip().lower()
+                if classification not in {"confirmed", "supported_inference", "speculation", "unresolved"}:
+                    classification = "unresolved"
+                interpretations.append(
+                    {
+                        "statement": str(item.get("statement") or "").strip()[:280],
+                        "classification": classification,
+                        "evidence_ids": [str(eid) for eid in (item.get("evidence_ids") or []) if str(eid).strip()][:6],
+                        "why": str(item.get("why") or "").strip()[:280],
+                    }
+                )
+            extra["competing_interpretations"] = interpretations[:6]
+        grounded = attach_audit(grounded, audit, extra)
+        grounded.agent_name = self.name
+        grounded.prompt_version = self.prompt_version
+        from ..schema import validate_agent_output
+
+        return validate_agent_output(grounded, agent_name=self.name)
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}

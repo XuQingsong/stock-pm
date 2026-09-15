@@ -8,13 +8,25 @@ from ..extract import (
     source_type_for_document,
     transcript_materials,
 )
+from ..llm_reason import (
+    attach_audit,
+    clean_hypotheses,
+    clean_link,
+    clean_proposal,
+    compact_assumptions,
+    compact_evidence,
+    compact_pack,
+    complete_structured,
+    dump_user,
+    known_ids,
+)
 from ..relevance import annotate_evidence, hard_opposing_links, judged_links
 from ..templates import load_prompt
 from ..types import AGENT_RISK, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent
 
 
-PROMPT_VERSION = "sprint35-risk-v1"
+PROMPT_VERSION = "sprint55-risk-v1"
 
 RISK_LABELS = (
     "demand risk",
@@ -55,6 +67,58 @@ class RiskAgent(BaseAgent):
     def __init__(self, completer=None, tools: SearchTools | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("risk.txt"))
         self.tools = tools
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        grounded = self.observe(payload)
+        allowed = known_ids(grounded.new_evidence, payload.evidence, payload.assumptions)
+        user = dump_user(
+            {
+                "ticker": payload.ticker,
+                "research_pack": compact_pack(payload.research_pack),
+                "assumptions": compact_assumptions(payload.assumptions, limit=8),
+                "candidate_evidence": compact_evidence(list(payload.evidence) + list(grounded.new_evidence), limit=20),
+                "deterministic_findings": grounded.findings,
+                "rules": [
+                    "Generate competing hypotheses. Cite only existing evidence ids.",
+                    "Do not mint evidence. Probability bands only, never 37%.",
+                ],
+            }
+        )
+        raw, audit = complete_structured(
+            self.completer,
+            system=self.system_prompt,
+            user=user,
+            allowed_ids=allowed or None,
+        )
+        extra = {"llm_role": "competing_hypotheses", "linking": "deterministic_fallback"}
+        if raw:
+            assumption_ids = {str(row.get("id") or "") for row in payload.assumptions if row.get("id")}
+            evidence_ids = known_ids(grounded.new_evidence, payload.evidence)
+            hypotheses = clean_hypotheses(raw.get("competing_hypotheses"), evidence_ids=evidence_ids)
+            extra["competing_hypotheses"] = hypotheses
+            links = [
+                item
+                for item in (clean_link(row, assumption_ids=assumption_ids, evidence_ids=evidence_ids) for row in (raw.get("assumption_links") or []))
+                if item
+            ]
+            proposals = [
+                item
+                for item in (clean_proposal(row, assumption_ids=assumption_ids) for row in (raw.get("proposed_assumption_changes") or []))
+                if item
+            ]
+            if links:
+                grounded.assumption_links = links
+                extra["linking"] = "llm"
+            if proposals:
+                grounded.proposed_assumption_changes = proposals
+            if hypotheses:
+                extra["hypothesis_engine"] = "llm"
+        grounded = attach_audit(grounded, audit, extra)
+        grounded.agent_name = self.name
+        grounded.prompt_version = self.prompt_version
+        from ..schema import validate_agent_output
+
+        return validate_agent_output(grounded, agent_name=self.name)
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}

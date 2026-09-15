@@ -10,12 +10,22 @@ from ..deep_case import (
     stamp_evidence_side,
 )
 from ..extract import extract_commitments, extract_guidance_mentions, extract_industry_mentions, official_documents, source_type_for_document
+from ..llm_reason import (
+    attach_audit,
+    clean_search_plan,
+    compact_assumptions,
+    compact_evidence,
+    compact_text,
+    complete_structured,
+    dump_user,
+)
 from ..templates import load_prompt
 from ..types import AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint5-search-v2"
+PROMPT_VERSION = "sprint55-search-v1"
+PLAN_PROMPT_VERSION = "sprint55-search-plan-v1"
 
 
 class SearchTools(Protocol):
@@ -64,6 +74,64 @@ class SearchDataAgent(BaseAgent):
     def __init__(self, completer: JsonCompleter | None = None, tools: SearchTools | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("search_data.txt"))
         self.tools = tools
+        self._planned_queries: list[str] = []
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        plan, audit = self._plan(payload)
+        self._planned_queries = list(plan.get("search_queries") or [])
+        grounded = self.observe(payload)
+        grounded = attach_audit(
+            grounded,
+            audit,
+            {
+                "search_plan": plan,
+                "linking": "deterministic_extract",
+                "llm_role": "research_plan",
+            },
+        )
+        grounded.agent_name = self.name
+        grounded.prompt_version = self.prompt_version
+        from ..schema import validate_agent_output
+
+        return validate_agent_output(grounded, agent_name=self.name)
+
+    def _plan(self, payload: AgentInput) -> tuple[dict[str, Any], dict[str, Any]]:
+        user = dump_user(
+            {
+                "ticker": payload.ticker,
+                "task": {
+                    "task_type": (payload.task or {}).get("task_type"),
+                    "title": (payload.task or {}).get("title"),
+                    "description": (payload.task or {}).get("description"),
+                    "required_data": (payload.task or {}).get("required_data"),
+                },
+                "current_thesis": {
+                    "core_thesis": compact_text((payload.current_thesis or {}).get("core_thesis"), 400)
+                    if isinstance(payload.current_thesis, dict)
+                    else None
+                },
+                "assumptions": compact_assumptions(payload.assumptions),
+                "known_evidence": compact_evidence(payload.evidence, limit=24),
+                "missing_evidence": list((payload.research_pack or {}).get("missing_fields") or [])[:12],
+            }
+        )
+        raw, audit = complete_structured(
+            self.completer,
+            system=load_prompt("search_plan.txt"),
+            user=user,
+            schema={
+                "type": "object",
+                "properties": {
+                    "search_questions": {"type": "array", "items": {"type": "string"}},
+                    "search_queries": {"type": "array", "items": {"type": "string"}},
+                    "preferred_source_types": {"type": "array", "items": {"type": "string"}},
+                    "what_would_change_my_mind": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+        )
+        plan = clean_search_plan(raw)
+        audit["prompt_version"] = PLAN_PROMPT_VERSION
+        return plan, audit
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}
@@ -177,21 +245,22 @@ class SearchDataAgent(BaseAgent):
             if "guidance_history" in still_missing:
                 queries.append(f"{payload.ticker} earnings release guidance")
             extra = search_queries_for(payload.ticker, pack, needed or customer_needed)
+            planned = [item for item in self._planned_queries if str(item).strip()]
             program = customer_search_program(payload.ticker, pack)
+            for query in planned + extra:
+                if query not in queries:
+                    queries.append(query)
             findings.append(
                 "customer search program candidate types: "
                 + ", ".join(str(item.get("id") or item) for item in (program.get("candidate_types") or []))
                 + "; demand-side filers: "
                 + ", ".join(program.get("demand_side_filers") or [])
             )
-            for query in extra:
-                if query not in queries:
-                    queries.append(query)
             try:
                 fetched_docs.extend(fetch_demand_side_documents(self.tools, payload.ticker, pack, findings))
             except Exception as exc:
                 findings.append(f"demand-side official fetch incomplete: {exc}")
-            for query in queries[:6]:
+            for query in queries[:10]:
                 try:
                     hits = self.tools.web_search(query) or []
                 except Exception:

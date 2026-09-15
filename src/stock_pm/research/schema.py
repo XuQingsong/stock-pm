@@ -191,6 +191,8 @@ def output_from_payload(payload: dict[str, Any], *, agent_name: str = "") -> Age
         agent_name=str(payload.get("agent_name") or agent_name),
         model=payload.get("model"),
         prompt_version=payload.get("prompt_version"),
+        reasoning=dict(payload.get("reasoning") or {}) if isinstance(payload.get("reasoning"), dict) else {},
+        llm_audit=dict(payload.get("llm_audit") or {}) if isinstance(payload.get("llm_audit"), dict) else None,
     )
 
 
@@ -210,6 +212,8 @@ def validate_agent_output(output: AgentOutput | dict[str, Any], *, agent_name: s
             "agent_name": output.agent_name or agent_name,
             "model": output.model,
             "prompt_version": output.prompt_version,
+            "reasoning": output.reasoning,
+            "llm_audit": output.llm_audit,
         }
         name = output.agent_name or agent_name
     else:

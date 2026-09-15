@@ -8,8 +8,22 @@ from typing import Any
 from .assumptions import engine_views_for_ticker
 from .deep_case import build_delivery_history, reaction_window, synthesize_deep_case
 from .extract import to_number
+from .llm_reason import (
+    clip,
+    compact_assumptions,
+    compact_evidence,
+    compact_pack,
+    compact_text,
+    complete_structured,
+    dump_user,
+    known_ids,
+    normalize_ruling,
+    skipped_audit,
+    validate_pm_payload,
+)
 from .quality import assess_research_quality_axes
 from .relevance import CONTRACT_RE, HARD_COUNTER_RE, assumption_kind
+from .templates import load_prompt
 from .types import (
     ACTOR_PM,
     AGENT_PM,
@@ -20,7 +34,7 @@ from .types import (
 from .valuation import attribute_target_change, build_valuation_cases, display_target
 
 
-PROMPT_VERSION = "sprint5-pm-v2"
+PROMPT_VERSION = "sprint55-pm-v1"
 ENGINE_TO_STATUS = {
     "strengthen": "strengthened",
     "weaken": "weakened",
@@ -93,6 +107,9 @@ def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = N
         "quant_findings": _agent_findings(snapshot, "quant"),
         "risk_findings": _agent_findings(snapshot, "risk"),
         "search_findings": _agent_findings(snapshot, "search_data"),
+        "competing_hypotheses": snapshot.get("competing_hypotheses") or [],
+        "economic_drivers": snapshot.get("economic_drivers") or [],
+        "agent_reasoning": snapshot.get("agent_reasoning") or [],
         "tasks": snapshot.get("tasks") or [],
         "previous_thesis": previous_thesis,
         "previous_valuation": previous_valuation,
@@ -446,7 +463,7 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
     }
 
 
-def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
+def _rule_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
     views = list(brief.get("engine_views") or [])
     rulings = [adjudicate_assumption(view) for view in views]
     delivery = build_delivery_history(brief.get("pack"))
@@ -568,6 +585,322 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         "deep_case": deep,
         "prompt_version": PROMPT_VERSION,
         "agent_name": AGENT_PM,
+        "llm_audit": skipped_audit(error="rule engine path"),
+        "pm_reasoning": {"source": "deterministic_fallback"},
+    }
+
+
+def _python_counterfactual(cases: dict[str, Any], item: dict[str, Any]) -> dict[str, Any]:
+    text = str(item.get("if") or item.get("statement") or "").lower()
+    base = cases.get("base_case") or {}
+    target = to_number(base.get("target_value"))
+    eps = to_number(base.get("eps"))
+    computed = {"computed": False, "method": None, "stressed_target": None, "stressed_eps": None}
+    if any(token in text for token in ("70%", "0.7", "seventy percent", "70 percent")) and target is not None:
+        computed = {
+            "computed": True,
+            "method": "scale_base_target_by_0.7",
+            "stressed_target": round(target * 0.7, 2),
+            "stressed_eps": eps,
+        }
+    elif any(token in text for token in ("300bps", "300 bps", "3 percentage", "300 basis", "margin", "dilut")) and target is not None:
+        computed = {
+            "computed": True,
+            "method": "haircut_base_target_for_300bps_margin",
+            "stressed_target": round(target * 0.9, 2),
+            "stressed_eps": round(eps * 0.9, 4) if eps is not None else None,
+        }
+    elif any(token in text for token in ("delay", "one year", "1 year", "slip", "defer")) and target is not None:
+        computed = {
+            "computed": True,
+            "method": "delay_duration_haircut",
+            "stressed_target": round(target * 0.85, 2),
+            "stressed_eps": eps,
+        }
+    return computed
+
+
+def _guardrail_warnings(llm_rulings: list[dict[str, Any]], views: list[dict[str, Any]]) -> list[str]:
+    warnings = []
+    by_id = {str(view.get("assumption_id") or view.get("id") or ""): view for view in views}
+    for ruling in llm_rulings:
+        view = by_id.get(str(ruling.get("assumption_id") or "")) or {}
+        oppose = _direct_oppose(view)
+        if ruling.get("final_status") == "strengthened" and oppose and _has_hard_counter(oppose):
+            warnings.append(
+                f"assumption {ruling.get('assumption_id')} was strengthened while direct hard-counter evidence exists"
+            )
+    return warnings
+
+
+def _pm_user_payload(brief: dict[str, Any], base: dict[str, Any]) -> dict[str, Any]:
+    cases = base.get("valuation") or {}
+    previous = brief.get("previous_thesis") or {}
+    return {
+        "ticker": brief.get("ticker"),
+        "research_pack": compact_pack(brief.get("pack")),
+        "assumptions": compact_assumptions(brief.get("assumptions"), limit=10),
+        "evidence": compact_evidence(brief.get("evidence"), limit=24),
+        "industry_findings": clip(brief.get("industry_findings"), 12),
+        "risk_findings": clip(brief.get("risk_findings"), 12),
+        "quant_findings": clip(brief.get("quant_findings"), 12),
+        "fundamental_findings": clip(brief.get("search_findings"), 8),
+        "competing_hypotheses": clip(brief.get("competing_hypotheses"), 8),
+        "economic_drivers": clip(brief.get("economic_drivers"), 8),
+        "python_guardrail_rulings": [
+            {
+                "assumption_id": row.get("assumption_id"),
+                "final_status": row.get("final_status"),
+                "thesis_role": row.get("thesis_role"),
+                "reasoning": compact_text(row.get("reasoning"), 240),
+            }
+            for row in (base.get("rulings") or [])[:8]
+        ],
+        "valuation_math": {
+            "status": cases.get("valuation_status"),
+            "spot_price": cases.get("spot_price"),
+            "bear_target": (cases.get("bear_case") or {}).get("target_value"),
+            "base_target": (cases.get("base_case") or {}).get("target_value"),
+            "bull_target": (cases.get("bull_case") or {}).get("target_value"),
+            "method": (cases.get("calibration_json") or {}).get("method") or cases.get("method"),
+        },
+        "previous_thesis": {
+            "core_thesis": compact_text(previous.get("core_thesis"), 400),
+            "version": previous.get("version"),
+        },
+        "rules": [
+            "Cite only evidence_id values from evidence[].",
+            "Do not invent evidence.",
+            "Do not replace valuation_math numbers.",
+            "decisive_variables: 1-3 items. market_disagreement: at most 2. thesis-changing evidence: at most 5.",
+            "Keep each assumption ruling to one sentence.",
+        ],
+    }
+
+
+def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence_ids: set[str]) -> dict[str, Any]:
+    variables = []
+    for item in raw.get("decisive_variables") or []:
+        if not isinstance(item, dict):
+            continue
+        name = compact_text(item.get("name") or item.get("variable") or "", 80)
+        if not name:
+            continue
+        ids = [str(eid) for eid in (item.get("evidence_ids") or item.get("evidence") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)]
+        variables.append(
+            {
+                "name": name,
+                "why_decisive": compact_text(item.get("why_decisive") or "", 240),
+                "current_view": compact_text(item.get("current_view") or "", 240),
+                "evidence_ids": ids[:6],
+                "sensitivity": compact_text(item.get("sensitivity") or "", 200),
+                "next_check": compact_text(item.get("next_check") or "", 160),
+            }
+        )
+        if len(variables) >= 3:
+            break
+    disagreement = []
+    for item in raw.get("market_disagreement") or []:
+        if not isinstance(item, dict):
+            continue
+        disagreement.append(
+            {
+                "pm_believes": compact_text(item.get("pm_believes") or "", 240),
+                "market_appears_to_price": compact_text(item.get("market_appears_to_price") or "", 240),
+                "why_pm_differs": compact_text(item.get("why_pm_differs") or "", 240),
+                "evidence_that_would_prove_market_right": compact_text(
+                    item.get("evidence_that_would_prove_market_right") or "", 240
+                ),
+            }
+        )
+        if len(disagreement) >= 2:
+            break
+    changing = []
+    for item in raw.get("top_thesis_changing_evidence") or raw.get("top_5_thesis_changing_evidence") or []:
+        if isinstance(item, dict):
+            eid = str(item.get("evidence_id") or "").strip()
+            if eid and (not evidence_ids or eid in evidence_ids):
+                changing.append({"evidence_id": eid, "why_it_changes_thesis": compact_text(item.get("why_it_changes_thesis") or item.get("why") or "", 200)})
+        else:
+            eid = str(item).strip()
+            if eid and (not evidence_ids or eid in evidence_ids):
+                changing.append({"evidence_id": eid, "why_it_changes_thesis": ""})
+        if len(changing) >= 5:
+            break
+    not_changing = []
+    for item in raw.get("looks_important_but_does_not_change_thesis") or []:
+        if not isinstance(item, dict):
+            continue
+        eid = str(item.get("evidence_id") or "").strip()
+        if eid and (not evidence_ids or eid in evidence_ids):
+            not_changing.append({"evidence_id": eid, "why_not": compact_text(item.get("why_not") or item.get("why") or "", 200)})
+        if len(not_changing) >= 3:
+            break
+    counterfactuals = []
+    for item in raw.get("counterfactuals") or []:
+        if not isinstance(item, dict):
+            continue
+        counterfactuals.append(
+            {
+                "if": compact_text(item.get("if") or item.get("statement") or "", 240),
+                "thesis_impact": compact_text(item.get("thesis_impact") or "", 240),
+                "eps_or_valuation_direction": compact_text(item.get("eps_or_valuation_direction") or "", 160),
+                "what_to_recompute": compact_text(item.get("what_to_recompute") or "", 160),
+            }
+        )
+        if len(counterfactuals) >= 6:
+            break
+    rulings = [
+        item
+        for item in (
+            normalize_ruling(row, assumption_ids=assumption_ids, evidence_ids=evidence_ids)
+            for row in (raw.get("assumption_rulings") or [])
+        )
+        if item
+    ]
+    golden = raw.get("golden_answers") if isinstance(raw.get("golden_answers"), dict) else {}
+    return {
+        "core_contradiction": compact_text(raw.get("core_contradiction") or golden.get("core_contradiction") or "", 400),
+        "decisive_variables": variables,
+        "assumption_rulings": rulings,
+        "conviction_hierarchy": [compact_text(item, 200) for item in (raw.get("conviction_hierarchy") or []) if str(item).strip()][:8],
+        "core_thesis": compact_text(raw.get("core_thesis") or "", 1200),
+        "short_term_view": compact_text(raw.get("short_term_view") or "", 500),
+        "mid_term_view": compact_text(raw.get("mid_term_view") or "", 500),
+        "long_term_view": compact_text(raw.get("long_term_view") or "", 500),
+        "market_disagreement": disagreement,
+        "top_thesis_changing_evidence": changing,
+        "looks_important_but_does_not_change_thesis": not_changing,
+        "strongest_evidence": raw.get("strongest_evidence") if isinstance(raw.get("strongest_evidence"), dict) else {"evidence_id": None, "why": compact_text(raw.get("strongest_evidence"), 200)},
+        "weakest_link": compact_text(raw.get("weakest_link") or "", 280),
+        "what_could_make_me_wrong": compact_text(raw.get("what_could_make_me_wrong") or "", 320),
+        "next_information_to_seek": compact_text(raw.get("next_information_to_seek") or "", 240),
+        "thesis_invalidation": compact_text(raw.get("thesis_invalidation") or "", 280),
+        "valuation_driver_judgment": compact_text(raw.get("valuation_driver_judgment") or "", 400),
+        "counterfactuals": counterfactuals,
+        "golden_answers": {
+            "core_contradiction": compact_text(golden.get("core_contradiction") or raw.get("core_contradiction") or "", 400),
+            "three_variables": [row.get("name") for row in variables],
+            "market_disagreement": disagreement,
+            "most_likely_error": compact_text(golden.get("most_likely_error") or raw.get("what_could_make_me_wrong") or "", 280),
+            "evidence_that_would_change_the_call": compact_text(golden.get("evidence_that_would_change_the_call") or raw.get("next_information_to_seek") or "", 280),
+        },
+    }
+
+
+def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> dict[str, Any]:
+    base = _rule_pm_judgment(brief)
+    assumption_ids = {str(row.get("assumption_id") or row.get("id") or "") for row in (brief.get("assumptions") or []) if row.get("id") or row.get("assumption_id")}
+    assumption_ids |= {str(row.get("assumption_id") or "") for row in (base.get("rulings") or []) if row.get("assumption_id")}
+    evidence_ids = known_ids(brief.get("evidence") or [])
+    allowed = assumption_ids | evidence_ids
+    raw, audit = complete_structured(
+        completer,
+        system=load_prompt("pm_judge.txt"),
+        user=dump_user(_pm_user_payload(brief, base)),
+        allowed_ids=allowed or None,
+        validator=validate_pm_payload,
+    )
+    if not raw:
+        base["llm_audit"] = audit
+        base["thesis"]["research_quality"] = dict(base["thesis"].get("research_quality") or {})
+        base["thesis"]["research_quality"]["pm_reasoning"] = {"source": "deterministic_fallback", "llm_audit": audit}
+        base["pm_reasoning"] = {"source": "deterministic_fallback"}
+        return base
+    cleaned = _clean_pm_payload(raw, assumption_ids=assumption_ids, evidence_ids=evidence_ids)
+    warnings = _guardrail_warnings(cleaned["assumption_rulings"], brief.get("engine_views") or [])
+    if warnings:
+        retry_user = dump_user(_pm_user_payload(brief, base)) + "\n\nGuardrail warnings:\n" + "\n".join(f"- {item}" for item in warnings)
+        raw2, audit2 = complete_structured(
+            completer,
+            system=load_prompt("pm_judge.txt"),
+            user=retry_user,
+            allowed_ids=allowed or None,
+            validator=validate_pm_payload,
+        )
+        if raw2:
+            cleaned = _clean_pm_payload(raw2, assumption_ids=assumption_ids, evidence_ids=evidence_ids)
+            audit = audit2
+            warnings = _guardrail_warnings(cleaned["assumption_rulings"], brief.get("engine_views") or [])
+        else:
+            audit = audit2
+    python_by_id = {str(row.get("assumption_id") or ""): row for row in base.get("rulings") or []}
+    llm_by_id = {str(row.get("assumption_id") or ""): row for row in cleaned["assumption_rulings"]}
+    rulings = []
+    for assumption_id, python_row in python_by_id.items():
+        if assumption_id in llm_by_id:
+            row = dict(llm_by_id[assumption_id])
+            row["engine_proposed_status"] = python_row.get("engine_proposed_status")
+            row["statement"] = row.get("statement") or python_row.get("statement")
+            row["kind"] = python_row.get("kind")
+            rulings.append(row)
+        else:
+            fallback_row = dict(python_row)
+            fallback_row["llm_omitted"] = True
+            rulings.append(fallback_row)
+    for item in cleaned["counterfactuals"]:
+        item["python_recompute"] = _python_counterfactual(base.get("valuation") or {}, item)
+    thesis = dict(base["thesis"])
+    if cleaned.get("core_thesis"):
+        thesis["core_thesis"] = cleaned["core_thesis"]
+    if cleaned.get("short_term_view"):
+        thesis["short_term_view"] = cleaned["short_term_view"]
+    if cleaned.get("mid_term_view"):
+        thesis["mid_term_view"] = cleaned["mid_term_view"]
+    if cleaned.get("long_term_view"):
+        thesis["long_term_view"] = cleaned["long_term_view"]
+    core_ids = [row["assumption_id"] for row in rulings if row.get("thesis_role") == "core"]
+    supporting_ids = [row["assumption_id"] for row in rulings if row.get("thesis_role") == "supporting"]
+    monitoring_ids = [row["assumption_id"] for row in rulings if row.get("thesis_role") == "monitoring"]
+    if core_ids:
+        thesis["key_assumption_ids"] = core_ids
+        thesis["core_assumption_ids"] = core_ids
+        thesis["supporting_assumption_ids"] = supporting_ids
+    if cleaned.get("thesis_invalidation"):
+        thesis["invalidation_conditions"] = [cleaned["thesis_invalidation"]]
+    if cleaned.get("next_information_to_seek"):
+        thesis["monitoring_items"] = [cleaned["next_information_to_seek"]] + list(thesis.get("monitoring_items") or [])
+        thesis["monitoring_items"] = list(dict.fromkeys(thesis["monitoring_items"]))[:10]
+    reasoning = {
+        "source": "llm",
+        "core_contradiction": cleaned["core_contradiction"],
+        "decisive_variables": cleaned["decisive_variables"],
+        "conviction_hierarchy": cleaned["conviction_hierarchy"],
+        "market_disagreement": cleaned["market_disagreement"],
+        "top_thesis_changing_evidence": cleaned["top_thesis_changing_evidence"],
+        "looks_important_but_does_not_change_thesis": cleaned["looks_important_but_does_not_change_thesis"],
+        "strongest_evidence": cleaned["strongest_evidence"],
+        "weakest_link": cleaned["weakest_link"],
+        "what_could_make_me_wrong": cleaned["what_could_make_me_wrong"],
+        "next_information_to_seek": cleaned["next_information_to_seek"],
+        "thesis_invalidation": cleaned["thesis_invalidation"],
+        "valuation_driver_judgment": cleaned["valuation_driver_judgment"],
+        "counterfactuals": cleaned["counterfactuals"],
+        "golden_answers": cleaned["golden_answers"],
+        "validation_warnings": warnings,
+        "llm_audit": audit,
+        "competing_hypotheses": clip(brief.get("competing_hypotheses"), 8),
+    }
+    thesis["research_quality"] = dict(thesis.get("research_quality") or {})
+    thesis["research_quality"]["pm_reasoning"] = reasoning
+    thesis["research_quality"]["golden_answers"] = cleaned["golden_answers"]
+    if audit.get("llm_status") == "ok":
+        thesis["model"] = audit.get("model")
+    cases = dict(base["valuation"])
+    cal = dict(cases.get("calibration_json") or {})
+    cal["pm_reasoning"] = reasoning
+    cal["valuation_driver_judgment"] = cleaned["valuation_driver_judgment"]
+    cases["calibration_json"] = cal
+    return {
+        **base,
+        "rulings": rulings,
+        "thesis": thesis,
+        "valuation": cases,
+        "monitoring_assumption_ids": monitoring_ids,
+        "llm_audit": audit,
+        "pm_reasoning": reasoning,
+        "prompt_version": PROMPT_VERSION,
+        "agent_name": AGENT_PM,
     }
 
 
@@ -581,7 +914,7 @@ def record_pm_judgment(
     brief = build_pm_brief(service, ticker, workflow_run_id=workflow_run_id)
     if not brief.get("engine_views") and not brief.get("assumptions"):
         return {"ticker": str(ticker).upper(), "skipped": True, "reason": "no assumptions to adjudicate"}
-    judgment = build_pm_judgment(brief)
+    judgment = build_pm_judgment(brief, completer=getattr(service, "completer", None))
     previous_thesis = brief.get("previous_thesis")
     previous_valuation = brief.get("previous_valuation")
     previous_rulings = []
@@ -611,6 +944,9 @@ def record_pm_judgment(
     thesis_body = dict(judgment["thesis"])
     thesis_body["workflow_run_id"] = workflow_run_id
     thesis_body["prompt_version"] = PROMPT_VERSION
+    thesis_body["llm_audit"] = judgment.get("llm_audit")
+    if (judgment.get("llm_audit") or {}).get("llm_status") == "ok":
+        thesis_body["model"] = (judgment.get("llm_audit") or {}).get("model")
     thesis = service.create_thesis(ticker, thesis_body, actor=ACTOR_PM)
     valuation_body = {
         "thesis_id": thesis["id"],
@@ -622,6 +958,8 @@ def record_pm_judgment(
         "calibration_json": judgment["valuation"].get("calibration_json") or {},
         "workflow_run_id": workflow_run_id,
         "prompt_version": PROMPT_VERSION,
+        "llm_audit": judgment.get("llm_audit"),
+        "model": thesis_body.get("model"),
     }
     valuation = service.create_valuation(ticker, valuation_body, actor=ACTOR_PM)
     diff = thesis_diff(
@@ -634,7 +972,8 @@ def record_pm_judgment(
     )
     updater = getattr(service.store, "update_thesis_meta", None)
     if callable(updater):
-        thesis = updater(thesis["id"], thesis_diff=diff, research_quality=judgment["research_quality"], market_reaction=judgment["market_reaction"]["summary"])
+        quality = dict(judgment.get("thesis", {}).get("research_quality") or judgment.get("research_quality") or {})
+        thesis = updater(thesis["id"], thesis_diff=diff, research_quality=quality, market_reaction=judgment["market_reaction"]["summary"])
     inserter = getattr(service.store, "insert_pm_ruling", None)
     stored_rulings = []
     if callable(inserter):
@@ -657,8 +996,10 @@ def record_pm_judgment(
         "valuation": valuation,
         "thesis_diff": diff,
         "market_reaction": judgment["market_reaction"],
-        "research_quality": judgment["research_quality"],
+        "research_quality": judgment.get("thesis", {}).get("research_quality") or judgment["research_quality"],
         "deep_case": judgment.get("deep_case"),
+        "pm_reasoning": judgment.get("pm_reasoning"),
+        "llm_audit": judgment.get("llm_audit"),
         "prompt_version": PROMPT_VERSION,
         "produced_by": ACTOR_PM,
     }

@@ -299,17 +299,30 @@ class ResearchStore:
             "error": row.get("error"),
             "started_at": row.get("started_at") or _now(),
             "completed_at": row.get("completed_at"),
+            "llm_called": bool(row.get("llm_called")),
+            "llm_status": row.get("llm_status"),
+            "llm_provider": row.get("llm_provider") or row.get("provider"),
+            "prompt_hash": row.get("prompt_hash"),
+            "latency_ms": row.get("latency_ms"),
+            "input_tokens": row.get("input_tokens"),
+            "output_tokens": row.get("output_tokens"),
+            "total_tokens": row.get("total_tokens"),
+            "fallback_used": bool(row.get("fallback_used")),
         }
         stored = self._one(
             """
             INSERT INTO research_agent_runs (
                 id, workflow_run_id, task_id, ticker, agent_name, model, prompt_version,
-                input_hash, output_json, confidence, status, error, started_at, completed_at
+                input_hash, output_json, confidence, status, error, started_at, completed_at,
+                llm_called, llm_status, llm_provider, prompt_hash, latency_ms,
+                input_tokens, output_tokens, total_tokens, fallback_used
             )
             VALUES (
                 %(id)s, %(workflow_run_id)s, %(task_id)s, %(ticker)s, %(agent_name)s,
                 %(model)s, %(prompt_version)s, %(input_hash)s, %(output_json)s,
-                %(confidence)s, %(status)s, %(error)s, %(started_at)s, %(completed_at)s
+                %(confidence)s, %(status)s, %(error)s, %(started_at)s, %(completed_at)s,
+                %(llm_called)s, %(llm_status)s, %(llm_provider)s, %(prompt_hash)s, %(latency_ms)s,
+                %(input_tokens)s, %(output_tokens)s, %(total_tokens)s, %(fallback_used)s
             )
             RETURNING *
             """,
@@ -328,6 +341,15 @@ class ResearchStore:
             "completed_at": fields.get("completed_at") or _now(),
             "model": fields.get("model"),
             "prompt_version": fields.get("prompt_version"),
+            "llm_called": fields.get("llm_called"),
+            "llm_status": fields.get("llm_status"),
+            "llm_provider": fields.get("llm_provider") or fields.get("provider"),
+            "prompt_hash": fields.get("prompt_hash"),
+            "latency_ms": fields.get("latency_ms"),
+            "input_tokens": fields.get("input_tokens"),
+            "output_tokens": fields.get("output_tokens"),
+            "total_tokens": fields.get("total_tokens"),
+            "fallback_used": fields.get("fallback_used"),
         }
         stored = self._one(
             """
@@ -338,7 +360,16 @@ class ResearchStore:
                 error = %(error)s,
                 completed_at = %(completed_at)s,
                 model = COALESCE(%(model)s, model),
-                prompt_version = COALESCE(%(prompt_version)s, prompt_version)
+                prompt_version = COALESCE(%(prompt_version)s, prompt_version),
+                llm_called = COALESCE(%(llm_called)s, llm_called),
+                llm_status = COALESCE(%(llm_status)s, llm_status),
+                llm_provider = COALESCE(%(llm_provider)s, llm_provider),
+                prompt_hash = COALESCE(%(prompt_hash)s, prompt_hash),
+                latency_ms = COALESCE(%(latency_ms)s, latency_ms),
+                input_tokens = COALESCE(%(input_tokens)s, input_tokens),
+                output_tokens = COALESCE(%(output_tokens)s, output_tokens),
+                total_tokens = COALESCE(%(total_tokens)s, total_tokens),
+                fallback_used = COALESCE(%(fallback_used)s, fallback_used)
             WHERE id = %(id)s
             RETURNING *
             """,

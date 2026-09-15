@@ -73,24 +73,50 @@ class ResearchService:
         output: Any = None,
         confidence: float | None = None,
         status: str = "success",
+        llm_audit: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        audit = dict(llm_audit or {})
         started = self.store.insert_agent_run(
             {
                 "ticker": ticker,
                 "agent_name": agent_name,
                 "workflow_run_id": workflow_run_id,
                 "task_id": task_id,
-                "model": model,
+                "model": model or audit.get("model"),
                 "prompt_version": prompt_version,
                 "input_hash": _hash_payload(payload),
                 "status": "running",
+                "llm_called": bool(audit.get("llm_called")),
+                "llm_status": audit.get("llm_status"),
+                "llm_provider": audit.get("provider") or audit.get("llm_provider"),
+                "prompt_hash": audit.get("prompt_hash"),
+                "latency_ms": audit.get("latency_ms"),
+                "input_tokens": audit.get("input_tokens"),
+                "output_tokens": audit.get("output_tokens"),
+                "total_tokens": audit.get("total_tokens"),
+                "fallback_used": bool(audit.get("fallback_used")),
             }
         )
+        output_json = to_plain(output) if output is not None else {}
+        if audit:
+            output_json = dict(output_json)
+            output_json["llm_audit"] = audit
         return self.store.complete_agent_run(
             started["id"],
             status=status,
-            output_json=to_plain(output) if output is not None else {},
+            output_json=output_json,
             confidence=confidence,
+            model=model or audit.get("model"),
+            prompt_version=prompt_version,
+            llm_called=bool(audit.get("llm_called")) if audit else None,
+            llm_status=audit.get("llm_status"),
+            llm_provider=audit.get("provider") or audit.get("llm_provider"),
+            prompt_hash=audit.get("prompt_hash"),
+            latency_ms=audit.get("latency_ms"),
+            input_tokens=audit.get("input_tokens"),
+            output_tokens=audit.get("output_tokens"),
+            total_tokens=audit.get("total_tokens"),
+            fallback_used=bool(audit.get("fallback_used")) if audit else None,
         )
 
     def ensure_issuer(self, ticker: str, **fields: Any) -> dict[str, Any]:
@@ -183,6 +209,18 @@ class ResearchService:
         from .quality import assess_research_quality_axes
 
         engine = snapshot_engine(self, symbol)
+        agent_reasoning = []
+        competing_hypotheses = []
+        economic_drivers = []
+        for run in agent_runs:
+            payload = run.get("output_json") or {}
+            reasoning = payload.get("reasoning") if isinstance(payload.get("reasoning"), dict) else {}
+            if reasoning:
+                agent_reasoning.append({"agent": run.get("agent_name"), "reasoning": reasoning, "llm_audit": payload.get("llm_audit") or run.get("llm_status")})
+            for item in reasoning.get("competing_hypotheses") or []:
+                competing_hypotheses.append(item)
+            for item in reasoning.get("key_economic_drivers") or []:
+                economic_drivers.append(item)
         thesis = self.store.get_latest_thesis(symbol)
         valuation = None
         if thesis and thesis.get("valuation_id") and hasattr(self.store, "get_valuation"):
@@ -217,6 +255,9 @@ class ResearchService:
             "tasks": self.store.list_tasks(symbol, workflow_run_id),
             "workflow_runs": self.store.list_workflow_runs(symbol),
             "agent_runs": agent_runs,
+            "agent_reasoning": agent_reasoning,
+            "competing_hypotheses": competing_hypotheses,
+            "economic_drivers": economic_drivers,
             "backfill": self.store.latest_backfill(symbol) if hasattr(self.store, "latest_backfill") else None,
         }
 
@@ -631,6 +672,7 @@ class ResearchService:
             model=body.get("model"),
             prompt_version=body.get("prompt_version"),
             payload={"op": "create_thesis", "version": version},
+            llm_audit=body.get("llm_audit") if isinstance(body.get("llm_audit"), dict) else None,
         )
         return self.store.insert_thesis(
             {
@@ -678,6 +720,7 @@ class ResearchService:
             model=body.get("model"),
             prompt_version=body.get("prompt_version"),
             payload={"op": "create_valuation", "thesis_id": thesis["id"]},
+            llm_audit=body.get("llm_audit") if isinstance(body.get("llm_audit"), dict) else None,
         )
         valuation = self.store.insert_valuation(
             {

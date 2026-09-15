@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from decimal import Decimal
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -146,11 +147,11 @@ def parse_llm_json(text: str) -> dict[str, Any]:
     }
 
 
-def _post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
+def _post_json(url: str, headers: dict[str, str], payload: dict, *, timeout: int = 60) -> dict:
     body = json.dumps(payload).encode("utf-8")
     request = Request(url, data=body, headers=headers, method="POST")
     try:
-        with urlopen(request, timeout=60) as response:
+        with urlopen(request, timeout=timeout) as response:
             return json.load(response)
     except HTTPError as exc:
         error_body = ""
@@ -161,30 +162,73 @@ def _post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
         raise LLMRequestError(exc.code, error_body) from exc
 
 
-def _chat_openai_compatible(settings: Settings, system: str, user: str) -> tuple[str, str]:
+def _openai_usage(payload: dict) -> dict[str, int | None]:
+    usage = payload.get("usage") or {}
+    return {
+        "input_tokens": usage.get("prompt_tokens"),
+        "output_tokens": usage.get("completion_tokens"),
+        "total_tokens": usage.get("total_tokens"),
+    }
+
+
+def _anthropic_usage(payload: dict) -> dict[str, int | None]:
+    usage = payload.get("usage") or {}
+    inn = usage.get("input_tokens")
+    out = usage.get("output_tokens")
+    total = inn + out if inn is not None and out is not None else None
+    return {"input_tokens": inn, "output_tokens": out, "total_tokens": total}
+
+
+def _chat_openai_compatible(
+    settings: Settings,
+    system: str,
+    user: str,
+    *,
+    timeout: int = 60,
+    max_tokens: int | None = None,
+    json_object: bool = False,
+) -> tuple[str, str, dict[str, Any]]:
     base = (settings.llm_base_url or "https://api.openai.com/v1").rstrip("/")
     model = settings.llm_model or "gpt-4o-mini"
+    body: dict[str, Any] = {
+        "model": model,
+        "temperature": 0.2,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    }
+    if max_tokens:
+        body["max_tokens"] = max_tokens
+    if json_object:
+        body["response_format"] = {"type": "json_object"}
+    started = time.perf_counter()
     payload = _post_json(
         f"{base}/chat/completions",
         {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {settings.llm_api_key}",
         },
-        {
-            "model": model,
-            "temperature": 0.2,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-        },
+        body,
+        timeout=timeout,
     )
+    latency_ms = int(round((time.perf_counter() - started) * 1000))
     text = (((payload.get("choices") or [{}])[0].get("message") or {}).get("content")) or ""
-    return text, model
+    used_model = payload.get("model") or model
+    meta = {"latency_ms": latency_ms, **_openai_usage(payload)}
+    return text, used_model, meta
 
 
-def _chat_anthropic(settings: Settings, system: str, user: str) -> tuple[str, str]:
+def _chat_anthropic(
+    settings: Settings,
+    system: str,
+    user: str,
+    *,
+    timeout: int = 60,
+    max_tokens: int | None = None,
+) -> tuple[str, str, dict[str, Any]]:
     model = settings.llm_model or "claude-3-5-haiku-latest"
+    started = time.perf_counter()
     payload = _post_json(
         "https://api.anthropic.com/v1/messages",
         {
@@ -194,30 +238,35 @@ def _chat_anthropic(settings: Settings, system: str, user: str) -> tuple[str, st
         },
         {
             "model": model,
-            "max_tokens": 2400,
+            "max_tokens": max_tokens or 2400,
             "system": system,
             "messages": [{"role": "user", "content": user}],
         },
+        timeout=timeout,
     )
+    latency_ms = int(round((time.perf_counter() - started) * 1000))
     blocks = payload.get("content") or []
     text = "".join(block.get("text") or "" for block in blocks if isinstance(block, dict))
-    return text, model
+    meta = {"latency_ms": latency_ms, **_anthropic_usage(payload)}
+    return text, model, meta
 
 
 def _openai_complete(settings: Settings, context: dict) -> tuple[str, str]:
-    return _chat_openai_compatible(
+    text, model, _meta = _chat_openai_compatible(
         settings,
         SYSTEM_PROMPT,
         json.dumps(context, ensure_ascii=False, default=str),
     )
+    return text, model
 
 
 def _anthropic_complete(settings: Settings, context: dict) -> tuple[str, str]:
-    return _chat_anthropic(
+    text, model, _meta = _chat_anthropic(
         settings,
         SYSTEM_PROMPT,
         json.dumps(context, ensure_ascii=False, default=str),
     )
+    return text, model
 
 
 def parse_json_object(text: str) -> dict[str, Any]:
@@ -225,13 +274,24 @@ def parse_json_object(text: str) -> dict[str, Any]:
     if raw.startswith("```"):
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
-    match = re.search(r"\{.*\}", raw, re.DOTALL)
-    if not match:
+    start = raw.find("{")
+    if start < 0:
         raise ValueError("model response is not JSON")
-    payload = json.loads(match.group(0))
+    try:
+        payload, _end = json.JSONDecoder().raw_decode(raw[start:])
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if not match:
+            raise ValueError("model response is not JSON")
+        payload = json.loads(match.group(0))
     if not isinstance(payload, dict):
         raise ValueError("model JSON must be an object")
     return payload
+
+
+def _prompt_hash(system: str, user: str) -> str:
+    encoded = (system or "") + "\n---\n" + (user or "")
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def complete_json(
@@ -245,6 +305,10 @@ def complete_json(
     config = settings or Settings()
     provider = (config.llm_provider or "openai").strip().lower()
     model = config.llm_model or None
+    prompt = user
+    if schema:
+        prompt = user + "\n\nReturn a single JSON object matching this schema:\n" + json.dumps(schema, ensure_ascii=False)
+    digest = _prompt_hash(system, prompt)
     empty = {
         "status": "missing_key",
         "payload": None,
@@ -252,17 +316,70 @@ def complete_json(
         "provider": provider,
         "error": llm_status_message("missing_key"),
         "raw_text": None,
+        "llm_called": False,
+        "llm_status": "skipped",
+        "prompt_hash": digest,
+        "latency_ms": None,
+        "input_tokens": None,
+        "output_tokens": None,
+        "total_tokens": None,
+        "fallback_used": True,
     }
     if not config.llm_api_key:
         return empty
-    prompt = user
-    if schema:
-        prompt = user + "\n\nReturn a single JSON object matching this schema:\n" + json.dumps(schema, ensure_ascii=False)
+
+    def _fail(status: str, error: str, *, used_model: str | None = None, meta: dict[str, Any] | None = None, raw_text: str | None = None) -> dict[str, Any]:
+        hint = llm_status_message(status)
+        detail = (error or "").strip()
+        merged = hint if not detail else (detail if detail.startswith(hint) else f"{hint} {detail[:400]}")
+        row = {
+            **empty,
+            "status": status,
+            "llm_called": True,
+            "llm_status": "failed",
+            "error": merged,
+            "model": used_model or model,
+            "fallback_used": True,
+            "raw_text": raw_text,
+        }
+        if meta:
+            row["latency_ms"] = meta.get("latency_ms")
+            row["input_tokens"] = meta.get("input_tokens")
+            row["output_tokens"] = meta.get("output_tokens")
+            row["total_tokens"] = meta.get("total_tokens")
+        return row
+
     try:
         if provider == "anthropic":
-            text, used_model = _chat_anthropic(config, system, prompt)
+            text, used_model, meta = _chat_anthropic(config, system, prompt, timeout=180, max_tokens=8192)
         else:
-            text, used_model = _chat_openai_compatible(config, system, prompt)
+            try:
+                text, used_model, meta = _chat_openai_compatible(
+                    config,
+                    system,
+                    prompt,
+                    timeout=180,
+                    max_tokens=8192,
+                    json_object=True,
+                )
+            except LLMRequestError as exc:
+                if exc.status != 400:
+                    raise
+                text, used_model, meta = _chat_openai_compatible(
+                    config,
+                    system,
+                    prompt,
+                    timeout=180,
+                    max_tokens=8192,
+                    json_object=False,
+                )
+    except LLMRequestError as exc:
+        status = classify_llm_error(exc.status, exc.body)
+        return _fail(status, f"HTTP {exc.status}: {exc.body[:400]}")
+    except (HTTPError, URLError, TimeoutError, KeyError) as exc:
+        status = classify_llm_error(getattr(exc, "code", None), str(exc))
+        return _fail(status, str(exc))
+    try:
         return {
             "status": "ok",
             "payload": parse_json_object(text),
@@ -270,23 +387,17 @@ def complete_json(
             "provider": provider,
             "error": None,
             "raw_text": text,
+            "llm_called": True,
+            "llm_status": "ok",
+            "prompt_hash": digest,
+            "latency_ms": meta.get("latency_ms"),
+            "input_tokens": meta.get("input_tokens"),
+            "output_tokens": meta.get("output_tokens"),
+            "total_tokens": meta.get("total_tokens"),
+            "fallback_used": False,
         }
-    except LLMRequestError as exc:
-        status = classify_llm_error(exc.status, exc.body)
-        return {
-            **empty,
-            "status": status,
-            "error": llm_status_message(status),
-            "model": model,
-        }
-    except (HTTPError, URLError, TimeoutError, ValueError, json.JSONDecodeError, KeyError) as exc:
-        status = classify_llm_error(getattr(exc, "code", None), str(exc))
-        return {
-            **empty,
-            "status": status,
-            "error": llm_status_message(status),
-            "model": model,
-        }
+    except (ValueError, json.JSONDecodeError, KeyError) as exc:
+        return _fail("failed", str(exc), used_model=used_model, meta=meta, raw_text=(text or "")[:800])
 
 
 def complete_review(context: dict, settings: Settings | None = None) -> dict[str, Any]:

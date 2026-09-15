@@ -16,6 +16,21 @@ from .types import AGENT_FUNDAMENTAL, AgentInput, AgentOutput, to_plain
 Runner = Callable[[dict[str, Any], AgentInput], AgentOutput]
 
 
+def _audit_kwargs(audit: dict[str, Any] | None) -> dict[str, Any]:
+    row = dict(audit or {})
+    return {
+        "llm_called": bool(row.get("llm_called")),
+        "llm_status": row.get("llm_status") or "skipped",
+        "llm_provider": row.get("provider") or row.get("llm_provider"),
+        "prompt_hash": row.get("prompt_hash"),
+        "latency_ms": row.get("latency_ms"),
+        "input_tokens": row.get("input_tokens"),
+        "output_tokens": row.get("output_tokens"),
+        "total_tokens": row.get("total_tokens"),
+        "fallback_used": bool(row.get("fallback_used", True)),
+    }
+
+
 def _config(run: dict[str, Any]) -> tuple[int, int]:
     config = run.get("config_json") or {}
     if isinstance(config, str):
@@ -89,10 +104,13 @@ def run_follow_up_loop(
                     "model": output.model,
                     "prompt_version": output.prompt_version,
                     "proposed_assumption_changes": list(output.proposed_assumption_changes),
+                    "reasoning": dict(output.reasoning or {}),
+                    "llm_audit": dict(output.llm_audit or {}),
                 },
                 confidence=output.confidence,
-                model=output.model,
+                model=output.model or (output.llm_audit or {}).get("model"),
                 prompt_version=output.prompt_version,
+                **_audit_kwargs(output.llm_audit),
             )
             service.store.update_task(task["id"], status="completed")
             processed += 1

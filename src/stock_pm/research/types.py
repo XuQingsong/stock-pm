@@ -218,6 +218,8 @@ class AgentOutput:
     agent_name: str = ""
     model: str | None = None
     prompt_version: str | None = None
+    reasoning: dict[str, Any] = field(default_factory=dict)
+    llm_audit: dict[str, Any] | None = None
 
 
 def follow_up_from_payload(item: FollowUpSpec | Mapping[str, Any]) -> FollowUpSpec:

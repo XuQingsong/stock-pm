@@ -166,6 +166,15 @@ class InMemoryResearchStore:
             "error": row.get("error"),
             "started_at": row.get("started_at") or _now(),
             "completed_at": row.get("completed_at"),
+            "llm_called": bool(row.get("llm_called")),
+            "llm_status": row.get("llm_status"),
+            "llm_provider": row.get("llm_provider") or row.get("provider"),
+            "prompt_hash": row.get("prompt_hash"),
+            "latency_ms": row.get("latency_ms"),
+            "input_tokens": row.get("input_tokens"),
+            "output_tokens": row.get("output_tokens"),
+            "total_tokens": row.get("total_tokens"),
+            "fallback_used": bool(row.get("fallback_used")),
         }
         self.agent_runs[stored["id"]] = stored
         return _copy(stored)
@@ -183,6 +192,19 @@ class InMemoryResearchStore:
             row["model"] = fields.get("model")
         if fields.get("prompt_version"):
             row["prompt_version"] = fields.get("prompt_version")
+        for key in (
+            "llm_called",
+            "llm_status",
+            "llm_provider",
+            "prompt_hash",
+            "latency_ms",
+            "input_tokens",
+            "output_tokens",
+            "total_tokens",
+            "fallback_used",
+        ):
+            if key in fields and fields.get(key) is not None:
+                row[key] = fields.get(key)
         return _copy(row)
 
     def list_agent_runs(self, ticker: str, workflow_run_id: str | None = None) -> list[dict[str, Any]]:

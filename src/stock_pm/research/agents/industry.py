@@ -15,13 +15,24 @@ from ..extract import (
     source_type_for_document,
     transcript_materials,
 )
+from ..llm_reason import (
+    attach_audit,
+    clean_link,
+    clean_proposal,
+    compact_assumptions,
+    compact_evidence,
+    compact_pack,
+    complete_structured,
+    dump_user,
+    known_ids,
+)
 from ..relevance import annotate_evidence, assumption_kind, judged_links
 from ..templates import load_prompt, load_template
 from ..types import AGENT_INDUSTRY, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint5-industry-v2"
+PROMPT_VERSION = "sprint55-industry-v1"
 
 
 class SearchTools(Protocol):
@@ -76,6 +87,69 @@ class IndustryAgent(BaseAgent):
     def __init__(self, completer: JsonCompleter | None = None, tools: SearchTools | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("industry.txt"))
         self.tools = tools
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        grounded = self.observe(payload)
+        allowed = known_ids(grounded.new_evidence, payload.evidence, payload.assumptions)
+        user = dump_user(
+            {
+                "ticker": payload.ticker,
+                "research_pack": compact_pack(payload.research_pack),
+                "assumptions": compact_assumptions(payload.assumptions, limit=8),
+                "candidate_evidence": compact_evidence(list(payload.evidence) + list(grounded.new_evidence), limit=20),
+                "deterministic_links": [
+                    {
+                        "assumption_id": row.get("assumption_id"),
+                        "evidence_id": row.get("evidence_id") or row.get("evidence_key"),
+                        "direction": row.get("direction"),
+                        "relevance": row.get("relevance"),
+                        "strength": row.get("strength"),
+                    }
+                    for row in (grounded.assumption_links or [])[:16]
+                    if isinstance(row, dict)
+                ],
+                "rules": [
+                    "Judge each candidate against each assumption.",
+                    "Cite only evidence_id or evidence_key from candidate_evidence.",
+                    "Do not output new_evidence.",
+                    "Keep reasons to one sentence. Output at most 16 assumption_links.",
+                ],
+            }
+        )
+        raw, audit = complete_structured(
+            self.completer,
+            system=self.system_prompt,
+            user=user,
+            allowed_ids=allowed or None,
+        )
+        extra = {"llm_role": "assumption_linking", "linking": "deterministic_fallback"}
+        if raw:
+            assumption_ids = {str(row.get("id") or "") for row in payload.assumptions if row.get("id")}
+            evidence_ids = known_ids(grounded.new_evidence, payload.evidence)
+            links = [
+                item
+                for item in (clean_link(row, assumption_ids=assumption_ids, evidence_ids=evidence_ids) for row in (raw.get("assumption_links") or []))
+                if item
+            ]
+            proposals = [
+                item
+                for item in (clean_proposal(row, assumption_ids=assumption_ids) for row in (raw.get("proposed_assumption_changes") or []))
+                if item
+            ]
+            if links:
+                grounded.assumption_links = links
+                extra["linking"] = "llm"
+            if proposals:
+                grounded.proposed_assumption_changes = proposals
+            if raw.get("findings"):
+                grounded.findings = list(dict.fromkeys(list(grounded.findings) + [str(item) for item in raw.get("findings") if item]))
+            extra["llm_payload_keys"] = sorted(raw.keys())
+        grounded = attach_audit(grounded, audit, extra)
+        grounded.agent_name = self.name
+        grounded.prompt_version = self.prompt_version
+        from ..schema import validate_agent_output
+
+        return validate_agent_output(grounded, agent_name=self.name)
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}
