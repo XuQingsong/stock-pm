@@ -260,6 +260,8 @@ def test_sentiment_uses_path_not_title_emotion() -> None:
     assert env["struct"]["sentiment"]["method"] == "path"
     assert "偏多" not in (env["struct"]["sentiment"]["clause"] or "")
     assert env["struct"]["news"]["company"]["bias"] == "利多"
+    assert "Profits surge" not in (env["one_liner"] or "")
+    assert "Profits surge" not in (env["struct"]["news"]["company"]["clause"] or "")
 
 
 def test_unmapped_news_does_not_invent_bias() -> None:
@@ -279,6 +281,7 @@ def test_unmapped_news_does_not_invent_bias() -> None:
     assert "news.company" in env["missingFlags"]
     assert env["struct"]["news"]["company"]["bias"] is None
     assert "暂未形成对该股的明确影响" in env["struct"]["news"]["company"]["clause"]
+    assert "Random blog" not in env["struct"]["news"]["company"]["clause"]
     assert "不编方向" not in env["struct"]["news"]["company"]["clause"]
 
 

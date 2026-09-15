@@ -82,6 +82,11 @@ ATTENTION_LABELS = {
 
 _ASCII_RUN = re.compile(r"[A-Za-z]{4,}")
 _ASCII_PAREN = re.compile(r"（[^）]*[A-Za-z]{3,}[^）]*）|\([^)]*[A-Za-z]{3,}[^)]*\)")
+_ENGLISH_PHRASE = re.compile(
+    r"[A-Za-z][A-Za-z'’\-]*(?:\s+(?:[A-Za-z][A-Za-z'’\-]*|[&/]))+"
+)
+_LONG_ENGLISH = re.compile(r"\b[A-Za-z]{6,}\b")
+_LATIN_WORD = re.compile(r"[A-Za-z]+")
 
 
 def publish_label(state: str | None) -> str:
@@ -148,15 +153,15 @@ def _because_from_item(item: dict) -> str:
     impacts = item.get("impacts") or []
     for impact in impacts:
         rationale = (impact.get("rationale") or "").strip()
-        if rationale:
-            return rationale
+        if rationale and not is_english_headline(rationale):
+            return drop_english_headlines(rationale)
         theme = (impact.get("theme_name") or impact.get("theme") or "").strip()
         direction = (impact.get("direction") or "").strip()
-        if theme and direction:
+        if theme and direction and not is_english_headline(f"{direction}{theme}"):
             return f"{direction}{theme}"
     summary = (item.get("summary") or "").strip()
-    if summary:
-        return summary[:80]
+    if summary and not is_english_headline(summary):
+        return drop_english_headlines(summary)[:80]
     if item.get("sentiment") in {"positive", "negative"}:
         return "标题有情绪标注，但暂未形成可核对依据"
     return "暂未形成可核对依据"
@@ -186,10 +191,45 @@ def decorate_news_item(item: dict | None) -> dict:
     return row
 
 
-def strip_embedded_headlines(text: str | None) -> str:
-    """Drop long English / Latin parentheticals from scan halves."""
+def is_english_headline(text: str | None) -> bool:
+    """True when the string is an English title wall, not a ticker or acronym."""
+    raw = str(text or "").strip()
+    if not raw:
+        return False
+    words = _LATIN_WORD.findall(raw)
+    content = [word for word in words if not (word.isupper() and len(word) <= 5)]
+    if len(content) >= 3:
+        return True
+    letters = sum(1 for char in raw if char.isalpha())
+    latin = sum(1 for char in raw if char.isascii() and char.isalpha())
+    return bool(letters and latin / letters >= 0.6 and len(content) >= 2)
+
+
+def drop_english_headlines(text: str | None) -> str:
+    """IMP-9: do not stuff English news titles into thesis / explanation chains."""
     cleaned = _ASCII_PAREN.sub("", text or "")
-    return " ".join(cleaned.split())
+    cleaned = _ENGLISH_PHRASE.sub(" ", cleaned)
+    cleaned = _LONG_ENGLISH.sub(
+        lambda match: match.group(0) if match.group(0).isupper() and len(match.group(0)) <= 5 else " ",
+        cleaned,
+    )
+    return " ".join(cleaned.split()).strip(" ：:;,·/-")
+
+
+def strip_embedded_headlines(text: str | None) -> str:
+    """Drop English headline walls and Latin parentheticals from scan halves."""
+    return drop_english_headlines(text)
+
+
+def display_title(raw: str | None, *, fallback: str = "相关新闻") -> str:
+    """Main-path title: Chinese conclusion, never an English headline wall."""
+    text = str(raw or "").strip()
+    if not text:
+        return fallback
+    if is_english_headline(text):
+        cleaned = drop_english_headlines(text)
+        return cleaned or fallback
+    return drop_english_headlines(text) or fallback
 
 
 def env_half_display(env: dict | None, fallback: str | None = None) -> str:

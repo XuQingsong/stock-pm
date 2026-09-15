@@ -212,6 +212,8 @@ def _break_block(
 
 
 def _env_news_stance(environment: dict | None) -> tuple[str | None, str | None]:
+    from stock_pm.ux_copy import drop_english_headlines, is_english_headline
+
     env = environment or {}
     struct = env.get("struct") or {}
     news = struct.get("news") or {}
@@ -226,8 +228,10 @@ def _env_news_stance(environment: dict | None) -> tuple[str | None, str | None]:
         if bias:
             dirs.append(bias)
             piece = f"{label}{bias}"
-            if headline:
-                piece += f"（{_as_clause(str(headline), '')}）"
+            if headline and not is_english_headline(str(headline)):
+                zh = drop_english_headlines(str(headline))
+                if zh:
+                    piece += f"（{_as_clause(zh, '')}）"
             bits.append(piece)
         elif layer.get("clause"):
             bits.append(f"{label}信息暂未形成对该股的明确影响")

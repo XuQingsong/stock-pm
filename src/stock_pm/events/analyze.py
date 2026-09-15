@@ -721,7 +721,7 @@ def analyze_event(event: TrustedEvent, *, symbols: list[str] | None = None) -> d
         "energy_supply": "能源供应变化 → 油价 → 生产商收入或下游成本",
         "central_bank_rates": "利率事实 → 贴现率预期 → 久期暴露",
         "inflation_employment": "通胀/就业事实 → 利率预期 → 久期或周期暴露",
-        "vix_risk": "VIX 只确认风险状态，经风险溢价放大，不直接推个股涨跌",
+        "vix_risk": "VIX 上升只放大已有市场波动风险，不单独形成对该股的方向",
         "gold_wti": "商品价格事实 → 对应商品链，不跨链复制",
         "company_filing": "公司公告对应本标的",
         "company_earnings": "结构化实际值相对上年同期与共识的变化只传导到该发行人，不复制宏观事件",

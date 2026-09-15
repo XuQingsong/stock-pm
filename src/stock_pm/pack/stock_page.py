@@ -82,7 +82,7 @@ def build_stock_payload(
                     "rank": index,
                     "impact_class": "gray",
                     "impact_label": "灰",
-                    "title": strip_holdings(text)[:80],
+                    "title": main_path_copy(text)[:80],
                     "why": "基于已有判断链",
                 }
             )

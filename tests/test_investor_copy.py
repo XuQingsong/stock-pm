@@ -12,7 +12,7 @@ from stock_pm.pack.copy import MAIN_PATH_BANNED, investorize, judgment_reason, m
 from stock_pm.pack.overview import build_overview_payload
 from stock_pm.pack.review_page import build_review_payload, observe_card
 from stock_pm.pack.stock_page import build_stock_payload
-from stock_pm.ux_copy import named_missing_line
+from stock_pm.ux_copy import display_title, drop_english_headlines, named_missing_line
 
 
 MAIN_PATH_STATIC = [
@@ -79,6 +79,10 @@ def test_brief_rewrites_system_rule_into_investment_meaning() -> None:
     assert "暂不形成可验证预测" in investorize("无法形成正式预测")
     assert "不计入预测准确率" in investorize("缺少窗口/边界，禁止进校验主口径")
     assert "can_form_direction" not in investorize("can_form_direction=false：缺匹配期限")
+    assert "L0" not in investorize("当前可用等级 L0")
+    assert "证据不足" in investorize("当前可用等级 L0")
+    assert "risk_state" not in investorize("affects risk_state")
+    assert "市场波动风险" in investorize("VIX 只确认风险状态")
 
 
 def test_environment_conclusions_are_investment_meaning() -> None:
@@ -165,11 +169,65 @@ def test_packed_pages_speak_investor_language() -> None:
     assert main_path_violations(why) == []
 
 
+def test_main_path_drops_english_headline_walls() -> None:
+    assert drop_english_headlines("宏观偏利多：Profits surge to record high") == "宏观偏利多"
+    assert "Profits" not in drop_english_headlines(
+        "盘面：走坏；消息：行业利多（Profits surge to record high）；因此：当前先按盘面读。"
+    )
+    assert display_title("AVGO and MSFT mentioned while NVDA reports orders") == "相关新闻"
+    env = synthesize_symbol_environment(
+        as_of_date="2026-09-15",
+        symbol="MU",
+        watch={"themes": ["semis"]},
+        news=[
+            {
+                "symbol": "MU",
+                "headline": "Profits surge to record high",
+                "themes": ["semis"],
+                "impacts": [{"theme": "semis", "direction": "利多", "symbols": ["MU"]}],
+            }
+        ],
+    )
+    spoken = "\n".join([env["one_liner"], env["row_thesis"], env["struct"]["news"]["company"]["clause"]])
+    assert "Profits surge" not in spoken
+    overview = build_overview_payload(
+        watch=[{"symbol": "NVDA", "name": "NVIDIA", "active": True}],
+        events=[],
+        briefing={"rows": []},
+        news=[
+            {
+                "symbol": "NVDA",
+                "headline": "AVGO and MSFT mentioned while NVDA reports orders",
+                "themes": ["semis"],
+                "summary": "订单超预期",
+            }
+        ],
+    )
+    titles = " ".join(card["title"] for card in overview["carousel"])
+    assert "reports orders" not in titles
+    assert "订单" in titles or "相关新闻" in titles
+    stock = build_stock_payload(
+        symbol="NVDA",
+        watch=[{"symbol": "NVDA", "active": True}],
+        briefing_row={"symbol": "NVDA"},
+        events=[],
+        environment={"one_liner": "消息：行业利多（Profits surge to record high）；因此：当前仅作为背景信息，不改变现有判断。"},
+        env_history=[],
+        tape={},
+        prediction={},
+        decision={"thesis": {"direction": "bullish", "invalidation": "L0 缺口", "bull_drivers": [{"text": "system-risk 上升"}]}},
+    )
+    spoken_stock = _spoken(stock)
+    assert "Profits surge" not in spoken_stock
+    assert "L0" not in spoken_stock
+    assert "system-risk" not in spoken_stock
+
+
 def test_main_path_static_and_pack_ban_forbidden_phrases() -> None:
     for path in MAIN_PATH_STATIC + MAIN_PATH_PACK:
         text = path.read_text(encoding="utf-8")
         for phrase in SPOKEN_BANNED:
-            if phrase in {"不编", "不补"}:
+            if phrase in {"不编", "不补", "L0", "L1", "L2", "L3"}:
                 continue
             assert phrase not in text, f"{path}: {phrase}"
         assert "本页不出现" not in text

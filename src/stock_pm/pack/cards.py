@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from stock_pm.events.types import TrustedEvent
-from stock_pm.ux_copy import is_http_url
+from stock_pm.ux_copy import display_title, is_english_headline, is_http_url
 
 from .copy import (
     action_verbs,
@@ -49,7 +49,8 @@ def _news_link(event: dict[str, Any]) -> dict[str, Any] | None:
         url = source.get("source_url") or source.get("canonical_url")
         if is_http_url(url):
             title = source.get("title") or event.get("canonical_title") or "原文"
-            return {"url": url, "label": f"可点新闻 · {title[:40]}"}
+            label = "可点新闻" if is_english_headline(title) else f"可点新闻 · {title[:40]}"
+            return {"url": url, "label": label}
     return None
 
 
@@ -60,7 +61,7 @@ def _ticker_chip(row: dict[str, Any]) -> dict[str, Any]:
         "kind": row.get("kind") or row.get("impact_class") or "gray",
         "label": row.get("label") or "",
         "bars": row.get("bars") or 1,
-        "why": row.get("why"),
+        "why": main_path_copy(row.get("why")) if row.get("why") else row.get("why"),
         "side": row.get("side"),
         "directness": row.get("directness"),
         "rank": row.get("rank", 9),
@@ -112,7 +113,8 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         or payload.get("duration")
         or (analysis.get("horizon") or {}).get("text")
     )
-    title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
+    raw_title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
+    title = display_title(raw_title, fallback=conclusion[:40] if conclusion else "市场事件")
     return {
         "event_id": payload.get("event_id"),
         "title": title,
@@ -176,10 +178,13 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
         )
     url = item.get("url") if is_http_url(item.get("url")) else None
     headline = strip_holdings(item.get("headline") or "") or "未命名新闻"
+    summary = main_path_copy(item.get("summary") or "")
+    title = display_title(headline, fallback=summary[:40] if summary else "相关新闻")
+    news_label = "可点新闻" if is_english_headline(headline) else f"可点新闻 · {headline[:40]}"
     return {
         "event_id": None,
-        "title": headline[:120],
-        "conclusion": main_path_copy(item.get("summary") or headline)[:160],
+        "title": title[:120],
+        "conclusion": (summary or title)[:160],
         "scope_label": (
             "公司级"
             if any(row.get("mechanism") == "watchlist_ingested_article" for row in mapped)
@@ -201,7 +206,7 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
             or "暂未形成对自选股的明确影响",
             "invalidation": "后续官方否认或财报证伪则作废",
         },
-        "news": {"url": url, "label": f"可点新闻 · {headline[:40]}"} if url else None,
+        "news": {"url": url, "label": news_label} if url else None,
         "closed_loop": False,
         "featured_ok": False,
         "source_kind": "news",

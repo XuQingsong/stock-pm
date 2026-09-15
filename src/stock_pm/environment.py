@@ -329,6 +329,16 @@ def _bias_from_impacts(
     return "中性"
 
 
+def _clause_headline(headline: str | None) -> str | None:
+    """Chinese headline only. English titles stay off the thesis/clause chain."""
+    from stock_pm.ux_copy import drop_english_headlines, is_english_headline
+
+    text = str(headline or "").strip()
+    if not text or is_english_headline(text):
+        return None
+    return drop_english_headlines(text) or None
+
+
 def _news_layer(
     *,
     key: str,
@@ -340,16 +350,18 @@ def _news_layer(
         return None, True
     if not bias:
         headline = items[0].get("headline") or items[0].get("name") or items[0].get("narrative")
+        zh = _clause_headline(headline)
         return {
             "bias": None,
             "headline": headline,
             "clause": f"{empty_reason}暂未形成对该股的明确影响"
-            + (f"（{headline}）" if headline else ""),
+            + (f"（{zh}）" if zh else ""),
         }, True
     headline = items[0].get("headline") or items[0].get("name") or items[0].get("narrative")
     clause = f"{key}偏{bias}"
-    if headline:
-        clause += f"：{headline}"
+    zh = _clause_headline(headline)
+    if zh:
+        clause += f"：{zh}"
     return {
         "bias": bias,
         "headline": headline,

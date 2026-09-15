@@ -59,6 +59,13 @@ MAIN_PATH_BANNED = (
     "不编",
     "不补",
     "不硬编",
+    "L0",
+    "L1",
+    "L2",
+    "L3",
+    "system-risk",
+    "system_risk",
+    "risk_state",
 )
 
 _SKIP_SCRUB_KEYS = {
@@ -183,9 +190,12 @@ def strip_holdings(text: str | None) -> str:
 
 
 _TOKEN_RE = re.compile(
-    r"\b(?:can_form_direction|prediction_ready|closed_loop|source[_\s-]?tier|rule\s*v0|evidence[_\s-]?version)\b(?:\s*=\s*\S+)?",
+    r"\b(?:can_form_direction|prediction_ready|closed_loop|source[_\s-]?tier|rule\s*v0|evidence[_\s-]?version|system[-_]risk|risk_state)\b(?:\s*=\s*\S+)?",
     re.I,
 )
+_LEVEL_RE = re.compile(r"\bL0\b")
+_LEVEL_PARTIAL_RE = re.compile(r"\bL[12]\b")
+_LEVEL_L3_RE = re.compile(r"未达\s*L3|\bL3\b")
 
 
 def investorize(text: str | None) -> str:
@@ -193,7 +203,14 @@ def investorize(text: str | None) -> str:
     raw = str(text or "")
     for old, new in _PHRASE_REWRITES:
         raw = raw.replace(old, new)
+    raw = raw.replace("风险状态", "市场波动风险")
     raw = _TOKEN_RE.sub("", raw)
+    raw = _LEVEL_RE.sub("证据不足", raw)
+    raw = _LEVEL_PARTIAL_RE.sub("证据不完整", raw)
+    raw = _LEVEL_L3_RE.sub("当前证据", raw)
+    from stock_pm.ux_copy import drop_english_headlines
+
+    raw = drop_english_headlines(raw)
     return " ".join(raw.split())
 
 
