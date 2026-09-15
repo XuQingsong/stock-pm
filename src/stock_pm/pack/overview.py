@@ -8,6 +8,7 @@ from typing import Any
 from stock_pm.calendar import NY_TZ, is_trading_day, session_status
 
 from .cards import build_event_cards, focus_rows
+from .copy import scrub_visible
 
 
 def brand_meta(now: datetime | None = None) -> str:
@@ -47,7 +48,7 @@ def build_overview_payload(
     all_cards = ([featured] if featured else []) + carousel + unmapped
     focus = focus_rows(watch_rows, list((briefing or {}).get("rows") or []), all_cards)
     empty_focus = not (focus["priority"] or focus["watch"] or focus["skip"])
-    return {
+    payload = {
         "as_of": (now or datetime.now(tz=NY_TZ)).isoformat(),
         "brand_meta": brand_meta(now),
         "page": {
@@ -68,7 +69,7 @@ def build_overview_payload(
         "unmapped": [
             {
                 "title": card.get("title"),
-                "note": card.get("conclusion") or "未映射自选",
+                "note": card.get("conclusion") or "未能对应到自选股",
             }
             for card in unmapped
         ],
@@ -85,3 +86,4 @@ def build_overview_payload(
             "warming": bool((coverage or {}).get("warming")),
         },
     }
+    return scrub_visible(payload)

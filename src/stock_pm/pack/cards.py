@@ -98,16 +98,17 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         f"{row['symbol']}：{row.get('why') or row.get('label')}" for row in mapped[:4]
     ) or "暂未形成对自选股的明确影响"
     transmit = str((analysis.get("mechanism") or {}).get("text") or "") or _layer_text(analysis, "impact")
-    conclusion = strip_holdings(
-        (analysis.get("answers") or {}).get("what_happened")
-        or expectation
-        or payload.get("canonical_title")
-        or ""
-    )
-    if withheld or not closed:
-        reason = (analysis.get("withheld") or {}).get("reason") or "当前条件不足，暂不形成明确方向"
-        conclusion = strip_holdings(reason) if not mapped else strip_holdings(conclusion or reason)
-    conclusion = main_path_copy(conclusion)
+    # Diagnostic withheld reasons stay in analysis for events/expand — never
+    # as the main-path conclusion.
+    what = strip_holdings((analysis.get("answers") or {}).get("what_happened") or "")
+    conclusion = main_path_copy(what) or main_path_copy(expectation)
+    if not conclusion:
+        conclusion = (
+            "当前条件不足，暂不形成明确方向"
+            if (withheld or not closed)
+            else "结论暂缺"
+        )
+    conclusion = main_path_copy(conclusion) or "结论暂缺"
     horizon = horizon_label(
         _layer_field(analysis, "expectation", "horizon")
         or payload.get("duration")
@@ -265,7 +266,7 @@ def focus_rows(
             symbol = str(ticker.get("symbol") or "").upper()
             prev = strongest.get(symbol)
             if prev is None or int(ticker.get("rank", 9)) < int(prev.get("rank", 9)):
-                strongest[symbol] = {**ticker, "event_title": card.get("title"), "hint": (card.get("basis") or {}).get("invalidation"), "card": card}
+                strongest[symbol] = {**ticker, "event_title": card.get("title"), "card": card}
 
     priority: list[dict[str, Any]] = []
     watch_group: list[dict[str, Any]] = []
@@ -310,8 +311,7 @@ def focus_rows(
             or ("暂未形成对公司级影响" if group == "skip" else "依据暂缺，维持观察")
         )
         hint = main_path_copy(
-            (mapped.get("hint") if mapped else None)
-            or (brief.get("prediction") or {}).get("missing_label")
+            (brief.get("prediction") or {}).get("missing_label")
             or "留意：是否出现可改变判断的新信息"
         )
         if hint and not str(hint).startswith("留意"):

@@ -241,13 +241,13 @@ def _earnings(thesis: dict | None) -> tuple[dict | None, bool]:
         bits.append(f"近{quarters}季 EPS 超预期 {int(card.get('eps_beats') or 0)}/{eps_scored}")
         missing_est = int(card.get("eps_missing_estimate") or 0)
         if missing_est:
-            bits.append(f"{missing_est}季缺预期，未假装达标")
+            bits.append(f"{missing_est}季缺预期，暂不计入超预期")
     else:
         bits.append("EPS 对照缺预期，不能说持续超预期")
     if rev_scored:
         bits.append(f"营收超预期 {int(card.get('revenue_beats') or 0)}/{rev_scored}")
     else:
-        bits.append("营收对照缺预期，未编达标")
+        bits.append("营收对照缺预期，暂不能判断是否达标")
     yoy = _number(growth.get("revenue_yoy_pct"))
     phase = growth.get("phase")
     if yoy is not None and phase in {"放缓", "转负"}:
@@ -297,7 +297,7 @@ def _valuation(thesis: dict | None) -> tuple[dict | None, bool]:
     percentile = _number(val.get("pe_percentile"))
     if percentile is not None:
         clause += f"（约 {percentile:.0f} 分位，PE {pe:.1f}）"
-    clause += f"。依据：{val.get('basis') or '未说明'}，不是编出来的贵贱"
+    clause += f"。依据：{val.get('basis') or '未说明'}"
     return {**val, "clause": clause}, False
 
 
@@ -470,9 +470,9 @@ def _atmosphere(technical: dict | None, news_fuse: str | None) -> tuple[dict | N
     path = "，".join(path_bits) if path_bits else "近期路径样本有限"
     clause = f"{path}，氛围偏{label}"
     if news_fuse:
-        clause += f"；{news_fuse}是导火索，不把标题情绪当氛围"
+        clause += f"；{news_fuse}是消息导火索；氛围看盘面，而非标题情绪"
     else:
-        clause += "。情绪看最近怎么走，不数标题正面词"
+        clause += "。情绪看最近怎么走"
     return {
         "atmosphere": label,
         "path": path,

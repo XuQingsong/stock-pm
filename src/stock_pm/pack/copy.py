@@ -35,6 +35,8 @@ JARGON_BANNED_PRIMARY = (
 
 # User-visible main-path copy. Internal JSON keys (alert_id, prediction_ready)
 # may still travel on the wire; they must not be spoken as labels.
+# Permanent ban — do not soften a new variant into the main path; delete or
+# move it to diagnostic / expand-only.
 MAIN_PATH_BANNED = (
     "不补假数",
     "不编方向",
@@ -42,23 +44,31 @@ MAIN_PATH_BANNED = (
     "不写成预测",
     "不静默判对",
     "禁止进校验",
+    "禁止",
     "字段齐全",
     "标题扫代码",
     "数据源健康",
     "API 未配置",
     "抓取失败",
+    "抓取",
     "evidence version",
     "closed loop",
     "can_form_direction",
     "prediction_ready",
     "source tier",
     "rule v0",
+    "rule_id",
     "本页不出现",
+    "本页不展开",
     "未编造",
+    "未编",
     "不编造",
     "不编",
     "不补",
     "不硬编",
+    "编出来",
+    "不形成方向",
+    "withheld",
     "L0",
     "L1",
     "L2",
@@ -66,6 +76,8 @@ MAIN_PATH_BANNED = (
     "system-risk",
     "system_risk",
     "risk_state",
+    "chain_id",
+    "synthesis_id",
 )
 
 _SKIP_SCRUB_KEYS = {
@@ -76,6 +88,7 @@ _SKIP_SCRUB_KEYS = {
     "href",
     "url",
     "diagnostics",
+    "basis",
     "closed_loop",
     "can_form_direction",
     "prediction_ready",
@@ -190,27 +203,57 @@ def strip_holdings(text: str | None) -> str:
 
 
 _TOKEN_RE = re.compile(
-    r"\b(?:can_form_direction|prediction_ready|closed_loop|source[_\s-]?tier|rule\s*v0|evidence[_\s-]?version|system[-_]risk|risk_state)\b(?:\s*=\s*\S+)?",
+    r"\b(?:can_form_direction|prediction_ready|closed_loop|source[_\s-]?tier|rule\s*v0|rule_id|chain_id|synthesis_id|evidence[_\s-]?version|system[-_]risk|risk_state|withheld)\b(?:\s*=\s*\S+)?",
     re.I,
 )
-_LEVEL_RE = re.compile(r"\bL0\b")
-_LEVEL_PARTIAL_RE = re.compile(r"\bL[12]\b")
-_LEVEL_L3_RE = re.compile(r"未达\s*L3|\bL3\b")
+_LEVEL_RE = re.compile(r"未达\s*L3|\bL[0-3]\b")
+_CLAUSE_SPLIT_RE = re.compile(r"(?<=[。！？；;])")
+_RESIDUE_RE = re.compile(
+    r"不编|不补|未编|禁止|抓取|字段齐全|本页不出现|本页不展开|标题扫代码|数据源健康|"
+    r"API\s*未配置|closed[\s_-]*loop|prediction_ready|can_form_direction|"
+    r"evidence[\s_-]*version|rule\s*v0|rule_id|chain_id|synthesis_id|"
+    r"system[-_]risk|risk_state|\bL[0-3]\b|withheld|不形成方向|不静默|"
+    r"不写成预测|编出来|不硬编",
+    re.I,
+)
+
+
+def main_path_violations(text: str | None) -> list[str]:
+    raw = text or ""
+    hits = [phrase for phrase in MAIN_PATH_BANNED if phrase in raw]
+    for match in _RESIDUE_RE.findall(raw):
+        token = match if isinstance(match, str) else match[0]
+        if token and token not in hits:
+            hits.append(token)
+    return hits
+
+
+def _drop_banned_clauses(text: str) -> str:
+    """Delete leftover system/acceptance clauses instead of softening them."""
+    if not text:
+        return ""
+    kept: list[str] = []
+    for chunk in _CLAUSE_SPLIT_RE.split(text):
+        if not chunk.strip():
+            continue
+        if main_path_violations(chunk) or _TOKEN_RE.search(chunk) or _LEVEL_RE.search(chunk):
+            continue
+        kept.append(chunk)
+    return "".join(kept)
 
 
 def investorize(text: str | None) -> str:
-    """Rewrite leftover system-rule phrasing into investment meaning."""
+    """Last-line defense: rewrite known leftovers, then drop banned residue."""
     raw = str(text or "")
     for old, new in _PHRASE_REWRITES:
         raw = raw.replace(old, new)
     raw = raw.replace("风险状态", "市场波动风险")
-    raw = _TOKEN_RE.sub("", raw)
-    raw = _LEVEL_RE.sub("证据不足", raw)
-    raw = _LEVEL_PARTIAL_RE.sub("证据不完整", raw)
-    raw = _LEVEL_L3_RE.sub("当前证据", raw)
     from stock_pm.ux_copy import drop_english_headlines
 
     raw = drop_english_headlines(raw)
+    raw = _drop_banned_clauses(raw)
+    raw = _TOKEN_RE.sub("", raw)
+    raw = _LEVEL_RE.sub("", raw)
     return " ".join(raw.split())
 
 
@@ -267,11 +310,6 @@ def missing_consequence(flags: list[str] | None, *, fallback: str = "当前判�
     if any(key in joined for key in ("时间窗", "上沿", "下沿", "对照")):
         return f"{joined}不足，当前仅作为观察，不计入预测准确率"
     return f"{joined}不足，当前判断置信度有限"
-
-
-def main_path_violations(text: str | None) -> list[str]:
-    raw = text or ""
-    return [phrase for phrase in MAIN_PATH_BANNED if phrase in raw]
 
 
 def scrub_visible(value: Any, *, key: str | None = None) -> Any:

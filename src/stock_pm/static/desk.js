@@ -181,8 +181,8 @@
           <div class="carousel-dots" id="car-dots" aria-hidden="true"></div>
         </div>` : `<p class="empty-note">没有其余可展示事件。</p>`}
         <details class="fold-c">
-          <summary>无法映射标的的其他头条（折叠）</summary>
-          <div class="fold-body">${unmapped.length ? unmapped.map((row) => `<div>${esc(row.title || "")} · ${esc(row.note || "")}</div>`).join("") : "没有未映射头条。"}</div>
+          <summary>未能对应到自选股的其他头条（折叠）</summary>
+          <div class="fold-body">${unmapped.length ? unmapped.map((row) => `<div>${esc(row.title || "")} · ${esc(row.note || "")}</div>`).join("") : "没有未能对应到自选股的头条。"}</div>
         </details>
       </section>`
     };

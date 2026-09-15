@@ -1,4 +1,8 @@
-"""Main-path copy must speak investment meaning, not system self-justification."""
+"""Main-path copy must speak investment meaning, not system self-justification.
+
+Permanent ban: overview / stock / review must never again show DEV_BRIEF
+system/acceptance/diagnostic self-talk. Diagnostic and expand-evidence may.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +11,7 @@ from datetime import date
 from pathlib import Path
 
 from stock_pm.environment import causal_one_liner, conclusion_from_stances, synthesize_symbol_environment
-from stock_pm.pack.cards import focus_rows, stock_judge
+from stock_pm.pack.cards import event_card, focus_rows, stock_judge
 from stock_pm.pack.copy import MAIN_PATH_BANNED, investorize, judgment_reason, main_path_violations
 from stock_pm.pack.overview import build_overview_payload
 from stock_pm.pack.review_page import build_review_payload, observe_card
@@ -20,6 +24,9 @@ MAIN_PATH_STATIC = [
     Path("src/stock_pm/static/review.html"),
     Path("src/stock_pm/static/stock.html"),
     Path("src/stock_pm/static/desk.js"),
+    Path("design-hifi/overview.html"),
+    Path("design-hifi/review.html"),
+    Path("design-hifi/stock.html"),
 ]
 
 MAIN_PATH_PACK = [
@@ -30,6 +37,35 @@ MAIN_PATH_PACK = [
     Path("src/stock_pm/pack/mapping.py"),
 ]
 
+MAIN_PATH_ORIGIN = [
+    Path("src/stock_pm/environment.py"),
+    Path("src/stock_pm/tape.py"),
+    Path("src/stock_pm/philosophy.py"),
+    Path("src/stock_pm/prediction.py"),
+    Path("src/stock_pm/events/exposure.py"),
+]
+
+# Phrases that must never appear as main-path UI copy, including short stems.
+# Wire keys may exist in Python comments/JSON; they are not file-scanned here.
+FILE_BANNED = (
+    "不编",
+    "不补",
+    "禁止",
+    "未编造",
+    "未编达标",
+    "编出来",
+    "字段齐全",
+    "本页不出现",
+    "本页不展开",
+    "抓取失败",
+    "抓取状态",
+    "API 未配置",
+    "L0",
+    "L1",
+    "L2",
+    "L3",
+)
+
 # Spoken on the page. Internal JSON keys may still exist on the wire.
 SPOKEN_BANNED = tuple(
     phrase
@@ -39,6 +75,7 @@ SPOKEN_BANNED = tuple(
         "can_form_direction",
         "prediction_ready",
         "closed loop",
+        "closed_loop",
         "source tier",
         "rule v0",
         "evidence version",
@@ -51,6 +88,7 @@ _SKIP_KEYS = {
     "event_id",
     "id",
     "diagnostics",
+    "basis",
     "closed_loop",
     "can_form_direction",
     "prediction_ready",
@@ -80,9 +118,11 @@ def test_brief_rewrites_system_rule_into_investment_meaning() -> None:
     assert "不计入预测准确率" in investorize("缺少窗口/边界，禁止进校验主口径")
     assert "can_form_direction" not in investorize("can_form_direction=false：缺匹配期限")
     assert "L0" not in investorize("当前可用等级 L0")
-    assert "证据不足" in investorize("当前可用等级 L0")
+    assert "禁止" not in investorize("证据不足，禁止生成无来源数字或价格预测")
+    assert "不形成方向" not in investorize("正文摘录不支持当前事实，不形成方向")
     assert "risk_state" not in investorize("affects risk_state")
     assert "市场波动风险" in investorize("VIX 只确认风险状态")
+    assert main_path_violations(investorize("证据不足，禁止生成无来源数字或价格预测")) == []
 
 
 def test_environment_conclusions_are_investment_meaning() -> None:
@@ -223,13 +263,57 @@ def test_main_path_drops_english_headline_walls() -> None:
     assert "system-risk" not in spoken_stock
 
 
+def test_event_card_drops_withheld_diagnostics_from_conclusion() -> None:
+    card = event_card(
+        {
+            "canonical_title": "Some English Headline About Inventories",
+            "analysis": {
+                "withheld": {"status": "withheld", "reason": "证据不足，禁止生成无来源数字或价格预测"},
+                "closed_loop": False,
+                "answers": {"what_happened": "规则 rule_id。方向 withheld"},
+                "mechanism": {"text": "禁止用 VIX 单独推翻或成立价格方向。"},
+            },
+        },
+        [{"symbol": "NVDA", "name": "NVIDIA", "active": True}],
+    )
+    spoken = " ".join([card.get("title") or "", card.get("conclusion") or "", card.get("transmit") or ""])
+    assert "禁止" not in spoken
+    assert "withheld" not in spoken
+    assert "rule_id" not in spoken
+    assert "Some English Headline" not in (card.get("title") or "")
+    assert main_path_violations(spoken) == []
+
+
 def test_main_path_static_and_pack_ban_forbidden_phrases() -> None:
-    for path in MAIN_PATH_STATIC + MAIN_PATH_PACK:
+    for path in MAIN_PATH_STATIC + MAIN_PATH_PACK + MAIN_PATH_ORIGIN:
         text = path.read_text(encoding="utf-8")
-        for phrase in SPOKEN_BANNED:
-            if phrase in {"不编", "不补", "L0", "L1", "L2", "L3"}:
-                continue
+        for phrase in FILE_BANNED:
             assert phrase not in text, f"{path}: {phrase}"
         assert "本页不出现" not in text
         assert "禁止进校验" not in text
         assert "字段齐全" not in text
+
+
+def test_packed_pages_never_speak_banned_stems() -> None:
+    overview = build_overview_payload(watch=[{"symbol": "NVDA", "name": "NVIDIA", "active": True}], events=[], briefing={"rows": []})
+    stock = build_stock_payload(
+        symbol="NVDA",
+        watch=[{"symbol": "NVDA", "name": "NVIDIA", "active": True}],
+        briefing_row={"symbol": "NVDA", "env_half": "研究倾向偏多"},
+        events=[],
+        environment={"one_liner": "盘面：趋势健康；消息：行业利多；因此：盘面与消息同向，当前仅作为背景信息，不改变现有判断。"},
+        env_history=[],
+        tape={},
+        prediction={"state": "missing", "prediction_ready": False},
+        decision={"thesis": {"direction": "bullish", "invalidation": "L0 缺口", "bull_drivers": [{"text": "system-risk 上升"}]}},
+    )
+    review = build_review_payload(
+        watch=[{"symbol": "MU"}],
+        predictions={"MU": [{"symbol": "MU", "state": "missing", "prediction_ready": False, "thesis": "弱偏多"}]},
+        checks={},
+        today=date(2026, 9, 15),
+    )
+    spoken = "\n".join(_spoken(payload) for payload in (overview, stock, review))
+    for stem in ("不编", "不补", "禁止", "抓取", "L0", "withheld", "prediction_ready", "API"):
+        assert stem not in spoken, stem
+    assert "Profits surge" not in spoken

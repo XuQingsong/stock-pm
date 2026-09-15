@@ -7,7 +7,7 @@ from typing import Any
 
 from stock_pm.prediction import has_real_bounds
 
-from .copy import mmdd, main_path_copy
+from .copy import mmdd, main_path_copy, scrub_visible
 
 
 FORMAL_FIELDS = (
@@ -268,7 +268,7 @@ def build_review_payload(
                 learning.append(learned)
         else:
             observations.append(observe_card(chosen, symbol))
-    return {
+    payload = {
         "page": {
             "title": "为什么对、为什么错",
             "sub": "正式预测对在哪 · 错在哪 · 新信息 · 以后怎么改",
@@ -279,3 +279,4 @@ def build_review_payload(
         "observations": observations,
         "empty_formal": None if formal else "本周没有可验证的正式预测。",
     }
+    return scrub_visible(payload)

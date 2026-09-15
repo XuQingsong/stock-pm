@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .cards import event_card, stock_judge
-from .copy import action_verbs, judgment_headline, judgment_reason, main_path_copy, strip_holdings
+from .copy import action_verbs, judgment_headline, judgment_reason, main_path_copy, scrub_visible, strip_holdings
 
 
 def _yesterday_line(history: list[dict[str, Any]] | None, today: dict[str, Any] | None) -> tuple[str, str, bool]:
@@ -88,9 +88,9 @@ def build_stock_payload(
             )
     risks = []
     for card in cards[:3]:
-        inv = (card.get("basis") or {}).get("invalidation")
+        inv = main_path_copy((card.get("basis") or {}).get("invalidation") or "")
         if inv:
-            risks.append(main_path_copy(inv))
+            risks.append(inv)
     disagreement = ((decision or {}).get("thesis") or {}).get("key_disagreement")
     if disagreement:
         risks.append(main_path_copy(disagreement))
@@ -110,7 +110,8 @@ def build_stock_payload(
     delta = "近端判断有变化；中期未动" if changed else "判断未形成可对照变化"
     if mapped and changed:
         delta = f"近端因「{(mapped[0].get('why') or cards[0].get('title') if cards else '')}」调整；中期未动"
-    return {
+    pred = (briefing_row or {}).get("prediction") if isinstance((briefing_row or {}).get("prediction"), dict) else {}
+    payload = {
         "symbol": symbol_u,
         "name": (live or {}).get("name") or name or symbol_u,
         "on_watchlist": live is not None,
@@ -124,9 +125,8 @@ def build_stock_payload(
             "midterm": {"unchanged": mid_unchanged, "text": mid_text},
             "today_action": {
                 "verbs": list(action_verbs(judge["side"])),
-                "hint": main_path_copy(
-                    (cards[0].get("basis") or {}).get("invalidation") if cards else "留意：是否出现可改变判断的新信息"
-                ),
+                "hint": main_path_copy(pred.get("missing_label") if pred else "")
+                or "留意：是否出现可改变判断的新信息",
             },
         },
         "drivers": drivers,
@@ -135,3 +135,4 @@ def build_stock_payload(
         "invalidate": invalidate[:200],
         "events": cards,
     }
+    return scrub_visible(payload)
