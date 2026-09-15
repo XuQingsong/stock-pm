@@ -94,7 +94,7 @@
   async function loadHeader() {
     if (!SYMBOL) { location.replace("/"); return; }
     $("symbol").textContent = SYMBOL;
-    document.title = `Stock PM · ${SYMBOL}`;
+    document.title = `决策系统 · ${SYMBOL}`;
     const [watch, snapshots, overview] = await Promise.all([
       softApi("/api/watchlist", []),
       softApi(`/api/market/snapshot?symbols=${encodeURIComponent(SYMBOL)}`, []),
