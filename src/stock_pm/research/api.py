@@ -63,6 +63,35 @@ def get_pack(symbol: str) -> dict[str, Any]:
         raise _http(exc) from exc
 
 
+@router.get("/{symbol}/backfill")
+def get_backfill(symbol: str) -> dict[str, Any]:
+    try:
+        store = get_service().store
+        row = store.latest_backfill(symbol.upper()) if hasattr(store, "latest_backfill") else None
+    except Exception as exc:
+        raise _http(exc) from exc
+    if row:
+        return row
+    return {"ticker": symbol.upper(), "status": "missing", "steps": {}}
+
+
+@router.post("/{symbol}/backfill", status_code=201)
+def run_backfill(symbol: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
+    payload = body or {}
+    try:
+        from .backfill import ResearchDataBackfill
+
+        service = get_service()
+        result = ResearchDataBackfill(service).run(
+            symbol,
+            workflow_run_id=payload.get("workflow_run_id"),
+            force=bool(payload.get("force")),
+        )
+        return result
+    except Exception as exc:
+        raise _http(exc) from exc
+
+
 @router.post("/{symbol}/pack/rebuild")
 def rebuild_pack(symbol: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
     payload = body or {}
@@ -267,7 +296,14 @@ def create_workflow_run(symbol: str, body: Annotated[dict, Body()] | None = None
                 max_tasks=int(payload.get("max_tasks") or 32),
                 execute=True,
             )
-            return result["workflow_run"]
+            run = dict(result["workflow_run"])
+            if result.get("backfill"):
+                counts = dict(run.get("item_counts") or {})
+                counts["backfill_id"] = result["backfill"].get("id")
+                counts["backfill_status"] = result["backfill"].get("status")
+                run["item_counts"] = counts
+                run["backfill"] = result["backfill"]
+            return run
         run = get_service().start_workflow_run(
             symbol,
             workflow_name=str(payload.get("workflow_name") or "new_ticker_research"),

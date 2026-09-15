@@ -22,6 +22,8 @@ def classify_template(
     sector_text = str(sector or "").lower()
     if "semis" in theme_set or "半导体" in sector_text or "semiconductor" in sector_text:
         return TEMPLATE_SEMICONDUCTOR
+    if "光通信" in sector_text or "optical" in sector_text or "photonic" in sector_text:
+        return TEMPLATE_SEMICONDUCTOR
     if (
         "energy" in theme_set
         or "oil_producer" in theme_set

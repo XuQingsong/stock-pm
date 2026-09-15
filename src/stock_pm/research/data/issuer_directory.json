@@ -79,5 +79,14 @@
     "primary_exchange": "NYSE",
     "asset_class": "stocks",
     "aliases": ["nokia"]
+  },
+  "COHR": {
+    "legal_name": "Coherent Corp",
+    "cik": "0000856298",
+    "fiscal_year_end_month": 6,
+    "sector": "半导体",
+    "primary_exchange": "NYSE",
+    "asset_class": "stocks",
+    "aliases": ["coherent", "光通信"]
   }
 }

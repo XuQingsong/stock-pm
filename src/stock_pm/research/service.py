@@ -182,6 +182,7 @@ class ResearchService:
             "tasks": self.store.list_tasks(symbol, workflow_run_id),
             "workflow_runs": self.store.list_workflow_runs(symbol),
             "agent_runs": agent_runs,
+            "backfill": self.store.latest_backfill(symbol) if hasattr(self.store, "latest_backfill") else None,
         }
 
     def start_workflow_run(

@@ -11,6 +11,10 @@ You must not:
 - Produce a target price or bear/base/bull valuation
 - Invent numbers, customers, or commitments that are not in the materials
 - Use issuer-specific hardcoded answers
+- Mint management-commitment evidence if transcripts are missing
+- Guess executive quotes from headlines or news summaries
+
+If transcripts are absent, list transcripts in missing_data and skip management-commitment evidence.
 
 If a metric is absent, put it in missing_data.
 

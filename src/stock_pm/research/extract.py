@@ -21,7 +21,18 @@ COMMITMENT_PATTERNS = (
         re.I | re.S,
     ),
     re.compile(
-        r"(ai|asic|custom silicon|accelerat\w*).{0,100}(growth|demand|revenue|capacity|ramp)",
+        r"(ai|asic|custom silicon|accelerat\w*|data[- ]center|optical|hyperscaler).{0,100}"
+        r"(growth|demand|revenue|capacity|ramp)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(we (?:are|remain) (?:on track|committed)|our (?:target|goal|commitment)).{0,180}"
+        r"(revenue|capacity|customer|production|capex|growth)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(production|capex|oil|gas|barrel|volume).{0,100}"
+        r"(guidance|target|outlook|plan|commit)",
         re.I | re.S,
     ),
 )
@@ -147,23 +158,32 @@ def first_present(payload: dict[str, Any], names: tuple[str, ...]) -> Any:
     return None
 
 
-def materials_text(pack: dict[str, Any]) -> str:
+def transcript_materials(pack: dict[str, Any]) -> str:
     chunks: list[str] = []
     profile = pack.get("company_profile") or {}
     for item in profile.get("transcripts") or []:
         chunks.append(str(item.get("text") or ""))
         for excerpt in item.get("excerpts") or []:
             if isinstance(excerpt, dict):
-                chunks.append(str(excerpt.get("text") or excerpt.get("excerpt") or ""))
+                chunks.append(str(excerpt.get("text") or excerpt.get("excerpt") or excerpt.get("content") or ""))
             else:
                 chunks.append(str(excerpt))
     for row in pack.get("earnings_history") or []:
         chunks.append(str(row.get("transcript_text") or ""))
         for excerpt in row.get("transcript_excerpts") or []:
             if isinstance(excerpt, dict):
-                chunks.append(str(excerpt.get("text") or excerpt.get("excerpt") or ""))
+                chunks.append(str(excerpt.get("text") or excerpt.get("excerpt") or excerpt.get("content") or ""))
             else:
                 chunks.append(str(excerpt))
+    return "\n".join(chunk for chunk in chunks if chunk.strip())
+
+
+def has_transcript_source(pack: dict[str, Any]) -> bool:
+    return bool(transcript_materials(pack).strip())
+
+
+def materials_text(pack: dict[str, Any]) -> str:
+    chunks: list[str] = [transcript_materials(pack)]
     for row in pack.get("guidance_history") or []:
         chunks.append(" ".join(str(row.get(key) or "") for key in ("text", "quote", "summary")))
     for row in pack.get("major_events") or []:

@@ -16,10 +16,12 @@ def test_issuer_directory_is_data_lookup() -> None:
     assert cik_for("aapl") == "0000320193"
     assert fiscal_year_end_month_for("AVGO") == 10
     assert ticker_for_cik("0001045810") == "NVDA"
-    unknown = merge_identity("COHR", legal_name="Coherent Corp", source="test")
-    assert unknown["ticker"] == "COHR"
+    unknown = merge_identity("ZZZY", legal_name="Unknown Co", source="test")
+    assert unknown["ticker"] == "ZZZY"
     assert unknown["cik"] is None
     assert "cik" in unknown["missing_fields"]
+    listed = merge_identity("COHR")
+    assert listed["cik"] == "0000856298"
     assert Path("src/stock_pm/research/data/issuer_directory.json").is_file()
 
 

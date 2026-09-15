@@ -14,6 +14,9 @@ class PackSource(Protocol):
     def news(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]: ...
     def events(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]: ...
     def guidance(self, ticker: str) -> list[dict[str, Any]]: ...
+    def filings(self, ticker: str) -> list[dict[str, Any]]: ...
+    def press_releases(self, ticker: str) -> list[dict[str, Any]]: ...
+    def closes(self, ticker: str) -> list[dict[str, Any]]: ...
 
 
 class DictPackSource:
@@ -54,6 +57,60 @@ class DictPackSource:
 
     def guidance(self, ticker: str) -> list[dict[str, Any]]:
         return [dict(item) for item in (self._row(ticker).get("guidance") or [])]
+
+    def filings(self, ticker: str) -> list[dict[str, Any]]:
+        return [dict(item) for item in (self._row(ticker).get("filings") or [])]
+
+    def press_releases(self, ticker: str) -> list[dict[str, Any]]:
+        return [dict(item) for item in (self._row(ticker).get("press_releases") or [])]
+
+    def closes(self, ticker: str) -> list[dict[str, Any]]:
+        return [dict(item) for item in (self._row(ticker).get("closes") or [])]
+
+
+def documents_to_transcripts(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        excerpts = metadata.get("excerpts") or []
+        if not excerpts and row.get("excerpt"):
+            excerpts = [{"text": row.get("excerpt")}]
+        out.append(
+            {
+                "quarter": row.get("fiscal_period") or metadata.get("quarter"),
+                "fiscal_period": row.get("fiscal_period") or metadata.get("quarter"),
+                "published_at": row.get("published_at"),
+                "source_time": row.get("published_at"),
+                "source": row.get("source_provider") or "transcript",
+                "source_url": row.get("url"),
+                "title": row.get("title"),
+                "text": row.get("body") or row.get("excerpt") or "",
+                "excerpts": excerpts,
+            }
+        )
+    return out
+
+
+def documents_to_guidance(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        metadata = row.get("metadata") if isinstance(row.get("metadata"), dict) else {}
+        text = str(row.get("body") or row.get("excerpt") or row.get("title") or "").strip()
+        if not text:
+            continue
+        out.append(
+            {
+                "text": text,
+                "quote": text,
+                "source": row.get("source_provider") or "guidance",
+                "source_time": row.get("published_at"),
+                "published_at": row.get("published_at"),
+                "fiscal_period": row.get("fiscal_period"),
+                "url": row.get("url"),
+                "move": metadata.get("move"),
+            }
+        )
+    return out
 
 
 class DatabasePackSource:
@@ -141,8 +198,7 @@ class DatabasePackSource:
         return rows[0] if rows else None
 
     def transcripts(self, ticker: str) -> list[dict[str, Any]]:
-        del ticker
-        return []
+        return documents_to_transcripts(self._documents(ticker, "transcript"))
 
     def news(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]:
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -175,5 +231,84 @@ class DatabasePackSource:
         )
 
     def guidance(self, ticker: str) -> list[dict[str, Any]]:
-        del ticker
-        return []
+        return documents_to_guidance(self._documents(ticker, "guidance"))
+
+    def filings(self, ticker: str) -> list[dict[str, Any]]:
+        return self._documents(ticker, "filing")
+
+    def press_releases(self, ticker: str) -> list[dict[str, Any]]:
+        return self._documents(ticker, "press_release")
+
+    def closes(self, ticker: str) -> list[dict[str, Any]]:
+        return self._fetch(
+            """
+            SELECT DISTINCT ON (bar_time::date)
+                   bar_time::date AS session_date,
+                   close_price
+            FROM daily_price_bars
+            WHERE symbol = %s
+            ORDER BY bar_time::date, bar_time DESC
+            """,
+            (ticker.upper(),),
+        )
+
+    def _documents(self, ticker: str, doc_type: str) -> list[dict[str, Any]]:
+        return self._fetch(
+            """
+            SELECT ticker, doc_type, fiscal_period, published_at, title, url,
+                   excerpt, body, source_provider, metadata
+            FROM research_source_documents
+            WHERE ticker = %s AND doc_type = %s
+            ORDER BY published_at DESC NULLS LAST, captured_at DESC
+            LIMIT 24
+            """,
+            (ticker.upper(), doc_type),
+        )
+
+
+class StorePackSource:
+    """Read backfill overlays and source documents from an in-memory research store."""
+
+    def __init__(self, store: Any) -> None:
+        self.store = store
+
+    def issuer(self, ticker: str) -> dict[str, Any] | None:
+        getter = getattr(self.store, "get_issuer", None)
+        return getter(ticker) if callable(getter) else None
+
+    def earnings(self, ticker: str, *, limit: int = 6) -> list[dict[str, Any]]:
+        rows = list(getattr(self.store, "raw_earnings", {}).get(ticker.upper()) or [])
+        return [dict(item) for item in rows[:limit]]
+
+    def fundamentals(self, ticker: str) -> dict[str, Any] | None:
+        row = getattr(self.store, "raw_fundamentals", {}).get(ticker.upper())
+        return dict(row) if isinstance(row, dict) else None
+
+    def transcripts(self, ticker: str) -> list[dict[str, Any]]:
+        lister = getattr(self.store, "list_source_documents", None)
+        rows = lister(ticker, "transcript") if callable(lister) else []
+        return documents_to_transcripts(rows)
+
+    def news(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]:
+        del days
+        return [dict(item) for item in (getattr(self.store, "raw_news", {}).get(ticker.upper()) or [])]
+
+    def events(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]:
+        del days
+        return [dict(item) for item in (getattr(self.store, "raw_events", {}).get(ticker.upper()) or [])]
+
+    def guidance(self, ticker: str) -> list[dict[str, Any]]:
+        lister = getattr(self.store, "list_source_documents", None)
+        rows = lister(ticker, "guidance") if callable(lister) else []
+        return documents_to_guidance(rows)
+
+    def filings(self, ticker: str) -> list[dict[str, Any]]:
+        lister = getattr(self.store, "list_source_documents", None)
+        return list(lister(ticker, "filing") if callable(lister) else [])
+
+    def press_releases(self, ticker: str) -> list[dict[str, Any]]:
+        lister = getattr(self.store, "list_source_documents", None)
+        return list(lister(ticker, "press_release") if callable(lister) else [])
+
+    def closes(self, ticker: str) -> list[dict[str, Any]]:
+        return [dict(item) for item in (getattr(self.store, "raw_bars", {}).get(ticker.upper()) or [])]

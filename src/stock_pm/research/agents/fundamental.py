@@ -7,8 +7,9 @@ from ..extract import (
     extract_commitments,
     extract_guidance_mentions,
     guidance_move_from_history,
-    materials_text,
+    has_transcript_source,
     to_number,
+    transcript_materials,
     yoy_from_quarters,
 )
 from ..templates import load_prompt, load_template
@@ -39,6 +40,20 @@ class FundamentalAgent(BaseAgent):
 
     def __init__(self, completer: JsonCompleter | None = None) -> None:
         super().__init__(completer=completer, system_prompt=load_prompt("fundamental.txt"))
+
+    def run(self, payload: AgentInput) -> AgentOutput:
+        output = super().run(payload)
+        if has_transcript_source(payload.research_pack or {}):
+            return output
+        cleaned = []
+        for item in output.new_evidence:
+            ref = item.get("raw_reference") or {}
+            kind = ref.get("kind") if isinstance(ref, dict) else None
+            if str(item.get("evidence_type") or "") == "transcript" or kind == "management_commitment":
+                continue
+            cleaned.append(item)
+        output.new_evidence = cleaned
+        return output
 
     def observe(self, payload: AgentInput) -> AgentOutput:
         pack = payload.research_pack or {}
@@ -152,12 +167,16 @@ class FundamentalAgent(BaseAgent):
                 raw_reference={"sample": len(prints_with_estimate)},
             )
 
-        text = materials_text(pack)
-        commitments = extract_commitments(text)
-        guidance_hits = extract_guidance_mentions(text)
+        text = transcript_materials(pack) if has_transcript_source(pack) else ""
+        commitments = extract_commitments(text) if text else []
+        guidance_hits = extract_guidance_mentions(text) if text else []
         transcript_meta = (profile.get("transcripts") or [{}])[0]
         transcript_source = str(transcript_meta.get("source") or "earnings call")
         transcript_time = transcript_meta.get("source_time") or transcript_meta.get("published_at") or _stamp(latest)
+        if not has_transcript_source(pack):
+            if "transcripts" not in missing:
+                missing.append("transcripts")
+            findings.append("transcripts missing; management commitment evidence not minted")
         for hit in commitments:
             if not transcript_time:
                 continue
@@ -297,9 +316,14 @@ class FundamentalAgent(BaseAgent):
         follow("Check historical management delivery against prior guidance", required=("guidance_history",), reason="delivery_follow_up")
         for axis in template.get("question_axes") or []:
             axis_id = str(axis.get("id") or "")
-            if axis_id in {"end_demand", "customer_capex", "supply_capacity"} and axis.get("question"):
-                if not any(axis_id in " ".join(spec.required_data) for spec in follow_ups):
-                    follow(str(axis["question"]), required=(axis_id,), reason="template_axis")
+            question = str(axis.get("question") or "").strip()
+            if not axis_id or not question:
+                continue
+            if any(axis_id in " ".join(spec.required_data) for spec in follow_ups):
+                continue
+            follow(question, required=(axis_id,), reason="template_axis")
+            if sum(1 for spec in follow_ups if spec.source_reason == "template_axis") >= 6:
+                break
 
         if not earnings:
             findings.append("no earnings history in the research pack; facts not invented")

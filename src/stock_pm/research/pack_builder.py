@@ -7,7 +7,8 @@ from typing import Any
 from .classify import classify_from_issuer, classify_template
 from .extract import first_present, nested_get, net_margin, to_number, yoy_from_quarters
 from .issuer import merge_identity
-from .sources import DatabasePackSource, PackSource
+from .prices import index_closes, price_reaction_for_print
+from .sources import DatabasePackSource, PackSource, StorePackSource
 
 
 PACK_CONTENT_FIELDS = (
@@ -99,7 +100,12 @@ def _earnings_item(row: dict[str, Any], *, fundamentals: dict[str, Any] | None) 
         "segments": _segments(row),
         "source": row.get("source"),
         "post_1d_return_pct": to_number(row.get("post_1d_return_pct")),
+        "post_3d_return_pct": to_number(row.get("post_3d_return_pct")),
         "post_5d_return_pct": to_number(row.get("post_5d_return_pct")),
+        "pre_5d_return_pct": to_number(row.get("pre_5d_return_pct")),
+        "day_return_pct": to_number(row.get("day_return_pct")),
+        "vs_spy_1d_pct": to_number(row.get("vs_spy_1d_pct")),
+        "vs_qqq_1d_pct": to_number(row.get("vs_qqq_1d_pct")),
         "transcript_excerpts": list(row.get("transcript_excerpts") or []),
         "transcript_text": row.get("transcript_text") or "",
         "ref": _source_key(row),
@@ -127,6 +133,11 @@ class PackBuilder:
         guidance_rows = list(source.guidance(symbol) if source else [])
         news = source.news(symbol) if source else []
         events = source.events(symbol) if source else []
+        filings = list(source.filings(symbol) if source and hasattr(source, "filings") else [])
+        press = list(source.press_releases(symbol) if source and hasattr(source, "press_releases") else [])
+        stock_px = index_closes(list(source.closes(symbol) if source and hasattr(source, "closes") else []))
+        spy_px = index_closes(list(source.closes("SPY") if source and hasattr(source, "closes") else []))
+        qqq_px = index_closes(list(source.closes("QQQ") if source and hasattr(source, "closes") else []))
 
         earnings_history = [_earnings_item(row, fundamentals=fundamentals) for row in earnings_rows]
         if transcripts and earnings_history:
@@ -151,17 +162,32 @@ class PackBuilder:
                         }
                     )
 
-        price_reaction = [
-            {
+        price_reaction = []
+        for row in earnings_history:
+            computed = price_reaction_for_print(
+                row.get("report_date"),
+                row.get("report_timing"),
+                stock_px,
+                spy_px,
+                qqq_px,
+            ) if stock_px else {}
+            for key, value in computed.items():
+                if value is not None:
+                    row[key] = value
+            item = {
                 "report_date": row["report_date"],
                 "fiscal_period": row["fiscal_period"],
+                "pre_5d_return_pct": row.get("pre_5d_return_pct"),
+                "day_return_pct": row.get("day_return_pct"),
                 "post_1d_return_pct": row.get("post_1d_return_pct"),
+                "post_3d_return_pct": row.get("post_3d_return_pct"),
                 "post_5d_return_pct": row.get("post_5d_return_pct"),
+                "vs_spy_1d_pct": row.get("vs_spy_1d_pct"),
+                "vs_qqq_1d_pct": row.get("vs_qqq_1d_pct"),
                 "ref": row.get("ref"),
             }
-            for row in earnings_history
-            if row.get("post_1d_return_pct") is not None or row.get("post_5d_return_pct") is not None
-        ]
+            if any(item.get(key) is not None for key in ("post_1d_return_pct", "post_5d_return_pct", "day_return_pct", "pre_5d_return_pct")):
+                price_reaction.append(item)
         major_events = []
         for row in events:
             major_events.append(
@@ -172,6 +198,29 @@ class PackBuilder:
                     "severity": row.get("severity"),
                     "source": "trusted_events",
                     "ref": {"event_id": row.get("event_id")},
+                }
+            )
+        for row in press:
+            major_events.append(
+                {
+                    "title": row.get("title") or "Press release",
+                    "summary": row.get("excerpt") or row.get("body"),
+                    "event_time": _iso(row.get("published_at")),
+                    "source": row.get("source_provider") or "press_release",
+                    "url": row.get("url"),
+                    "ref": {"url": row.get("url"), "doc_type": "press_release"},
+                }
+            )
+        for row in filings:
+            form = str((row.get("metadata") or {}).get("form") or row.get("title") or "filing")
+            major_events.append(
+                {
+                    "title": form,
+                    "event_type": "sec_filing",
+                    "event_time": _iso(row.get("published_at") or (row.get("metadata") or {}).get("filing_date")),
+                    "source": row.get("source_provider") or "sec",
+                    "url": row.get("url"),
+                    "ref": {"url": row.get("url"), "form": form},
                 }
             )
         for row in news:
@@ -238,6 +287,12 @@ class PackBuilder:
             "news_articles": [row.get("url") for row in news if row.get("url")],
             "trusted_events": [row.get("event_id") for row in events if row.get("event_id")],
             "transcripts": [item.get("source") or item.get("source_url") for item in transcripts],
+            "research_source_documents": {
+                "transcripts": len(transcripts),
+                "filings": len(filings),
+                "press_releases": len(press),
+                "guidance": len(guidance_rows),
+            },
         }
         return {
             "ticker": symbol,
@@ -262,4 +317,6 @@ def default_pack_source(store: Any) -> PackSource | None:
     database = getattr(store, "database", None)
     if database is not None:
         return DatabasePackSource(database)
+    if hasattr(store, "list_source_documents") or hasattr(store, "raw_earnings"):
+        return StorePackSource(store)
     return None

@@ -17,11 +17,11 @@ def service() -> ResearchService:
 
 def test_new_ticker_gets_issuer_profile_without_invented_cik() -> None:
     svc = service()
-    row = svc.ensure_issuer("COHR", legal_name="Coherent Corp", sector="半导体", source="test")
-    assert row["ticker"] == "COHR"
+    row = svc.ensure_issuer("ZZZY", legal_name="Unknown Co", sector="半导体", source="test")
+    assert row["ticker"] == "ZZZY"
     assert row["cik"] is None
     assert "cik" in row["missing_fields"]
-    pack = svc.get_pack("COHR")
+    pack = svc.get_pack("ZZZY")
     assert pack["template_id"] == "semiconductor"
     assert pack["missing_fields"]
 

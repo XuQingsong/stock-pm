@@ -31,6 +31,13 @@ class InMemoryResearchStore:
         self.theses: dict[str, dict[str, Any]] = {}
         self.valuations: dict[str, dict[str, Any]] = {}
         self.packs: dict[str, dict[str, Any]] = {}
+        self.source_documents: dict[str, dict[str, Any]] = {}
+        self.backfills: dict[str, dict[str, Any]] = {}
+        self.raw_earnings: dict[str, list[dict[str, Any]]] = {}
+        self.raw_fundamentals: dict[str, Any] = {}
+        self.raw_news: dict[str, list[dict[str, Any]]] = {}
+        self.raw_bars: dict[str, list[dict[str, Any]]] = {}
+        self.raw_events: dict[str, list[dict[str, Any]]] = {}
 
     def upsert_issuer(self, row: dict[str, Any]) -> dict[str, Any]:
         ticker = row["ticker"].upper()
@@ -398,3 +405,87 @@ class InMemoryResearchStore:
     def get_pack(self, ticker: str) -> dict[str, Any] | None:
         row = self.packs.get(ticker.upper())
         return _copy(row) if row else None
+
+    def upsert_source_document(self, row: dict[str, Any]) -> dict[str, Any]:
+        ticker = str(row["ticker"]).upper()
+        source_key = str(row.get("source_key") or row.get("url") or row.get("title") or row["doc_type"])[:500]
+        found = None
+        for item in self.source_documents.values():
+            if item["ticker"] == ticker and item["doc_type"] == row["doc_type"] and item["source_key"] == source_key:
+                found = item
+                break
+        stored = found or {}
+        stored.update(
+            {
+                "id": stored.get("id") or row.get("id") or new_id("rsrc"),
+                "ticker": ticker,
+                "doc_type": row["doc_type"],
+                "source_key": source_key,
+                "fiscal_period": row.get("fiscal_period"),
+                "published_at": row.get("published_at"),
+                "title": str(row.get("title") or ""),
+                "url": row.get("url"),
+                "excerpt": str(row.get("excerpt") or ""),
+                "body": str(row.get("body") or ""),
+                "source_provider": str(row.get("source_provider") or "unknown"),
+                "metadata": dict(row.get("metadata") or {}),
+                "captured_at": row.get("captured_at") or _now(),
+            }
+        )
+        self.source_documents[stored["id"]] = stored
+        return _copy(stored)
+
+    def list_source_documents(self, ticker: str, doc_type: str | None = None) -> list[dict[str, Any]]:
+        rows = [row for row in self.source_documents.values() if row["ticker"] == ticker.upper()]
+        if doc_type:
+            rows = [row for row in rows if row["doc_type"] == doc_type]
+        rows.sort(key=lambda item: str(item.get("published_at") or ""), reverse=True)
+        return [_copy(row) for row in rows]
+
+    def insert_backfill(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "id": row.get("id") or new_id("rbfl"),
+            "ticker": str(row["ticker"]).upper(),
+            "status": row.get("status") or "pending",
+            "steps": dict(row.get("steps") or {}),
+            "started_at": row.get("started_at") or _now(),
+            "finished_at": row.get("finished_at"),
+            "error": row.get("error"),
+            "workflow_run_id": row.get("workflow_run_id"),
+        }
+        self.backfills[stored["id"]] = stored
+        return _copy(stored)
+
+    def update_backfill(
+        self,
+        backfill_id: str,
+        *,
+        status: str | None = None,
+        steps: dict[str, Any] | None = None,
+        error: str | None = None,
+        finished_at: Any = None,
+    ) -> dict[str, Any]:
+        row = self.backfills.get(backfill_id)
+        if row is None:
+            raise DatabaseError(f"backfill not found: {backfill_id}")
+        if status is not None:
+            row["status"] = status
+        if steps is not None:
+            row["steps"] = dict(steps)
+        if error is not None:
+            row["error"] = error
+        if finished_at is not None:
+            row["finished_at"] = finished_at
+        return _copy(row)
+
+    def latest_backfill(self, ticker: str) -> dict[str, Any] | None:
+        rows = [row for row in self.backfills.values() if row["ticker"] == ticker.upper()]
+        if not rows:
+            return None
+        rows.sort(key=lambda item: str(item.get("started_at") or ""), reverse=True)
+        return _copy(rows[0])
+
+    def list_backfills(self, ticker: str) -> list[dict[str, Any]]:
+        rows = [row for row in self.backfills.values() if row["ticker"] == ticker.upper()]
+        rows.sort(key=lambda item: str(item.get("started_at") or ""), reverse=True)
+        return [_copy(row) for row in rows[:20]]

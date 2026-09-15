@@ -758,3 +758,149 @@ class ResearchStore:
 
     def get_pack(self, ticker: str) -> dict[str, Any] | None:
         return self._one("SELECT * FROM research_packs WHERE ticker = %(ticker)s", {"ticker": ticker.upper()})
+
+    def upsert_source_document(self, row: dict[str, Any]) -> dict[str, Any]:
+        payload = {
+            "id": row.get("id") or new_id("rsrc"),
+            "ticker": str(row["ticker"]).upper(),
+            "doc_type": row["doc_type"],
+            "source_key": str(row.get("source_key") or row.get("url") or row.get("title") or row["doc_type"])[:500],
+            "fiscal_period": row.get("fiscal_period"),
+            "published_at": row.get("published_at"),
+            "title": str(row.get("title") or "")[:500],
+            "url": row.get("url"),
+            "excerpt": str(row.get("excerpt") or "")[:8000],
+            "body": str(row.get("body") or ""),
+            "source_provider": str(row.get("source_provider") or "unknown"),
+            "metadata": _jsonb(row.get("metadata") or {}),
+            "captured_at": row.get("captured_at") or _now(),
+        }
+        stored = self._one(
+            """
+            INSERT INTO research_source_documents (
+                id, ticker, doc_type, source_key, fiscal_period, published_at,
+                title, url, excerpt, body, source_provider, metadata, captured_at
+            )
+            VALUES (
+                %(id)s, %(ticker)s, %(doc_type)s, %(source_key)s, %(fiscal_period)s,
+                %(published_at)s, %(title)s, %(url)s, %(excerpt)s, %(body)s,
+                %(source_provider)s, %(metadata)s, %(captured_at)s
+            )
+            ON CONFLICT (ticker, doc_type, source_key) DO UPDATE SET
+                fiscal_period = EXCLUDED.fiscal_period,
+                published_at = COALESCE(EXCLUDED.published_at, research_source_documents.published_at),
+                title = EXCLUDED.title,
+                url = COALESCE(EXCLUDED.url, research_source_documents.url),
+                excerpt = EXCLUDED.excerpt,
+                body = EXCLUDED.body,
+                source_provider = EXCLUDED.source_provider,
+                metadata = EXCLUDED.metadata,
+                captured_at = EXCLUDED.captured_at
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return stored
+
+    def list_source_documents(self, ticker: str, doc_type: str | None = None) -> list[dict[str, Any]]:
+        if doc_type:
+            return self._execute(
+                """
+                SELECT * FROM research_source_documents
+                WHERE ticker = %(ticker)s AND doc_type = %(doc_type)s
+                ORDER BY published_at DESC NULLS LAST, captured_at DESC
+                """,
+                {"ticker": ticker.upper(), "doc_type": doc_type},
+            )
+        return self._execute(
+            """
+            SELECT * FROM research_source_documents
+            WHERE ticker = %(ticker)s
+            ORDER BY published_at DESC NULLS LAST, captured_at DESC
+            """,
+            {"ticker": ticker.upper()},
+        )
+
+    def insert_backfill(self, row: dict[str, Any]) -> dict[str, Any]:
+        payload = {
+            "id": row.get("id") or new_id("rbfl"),
+            "ticker": str(row["ticker"]).upper(),
+            "status": row.get("status") or "pending",
+            "steps": _jsonb(row.get("steps") or {}),
+            "started_at": row.get("started_at") or _now(),
+            "finished_at": row.get("finished_at"),
+            "error": row.get("error"),
+            "workflow_run_id": row.get("workflow_run_id"),
+        }
+        stored = self._one(
+            """
+            INSERT INTO research_data_backfills (
+                id, ticker, status, steps, started_at, finished_at, error, workflow_run_id
+            )
+            VALUES (
+                %(id)s, %(ticker)s, %(status)s, %(steps)s, %(started_at)s,
+                %(finished_at)s, %(error)s, %(workflow_run_id)s
+            )
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return stored
+
+    def update_backfill(
+        self,
+        backfill_id: str,
+        *,
+        status: str | None = None,
+        steps: dict[str, Any] | None = None,
+        error: str | None = None,
+        finished_at: Any = None,
+    ) -> dict[str, Any]:
+        current = self._one("SELECT * FROM research_data_backfills WHERE id = %(id)s", {"id": backfill_id})
+        if current is None:
+            raise DatabaseError(f"backfill not found: {backfill_id}")
+        payload = {
+            "id": backfill_id,
+            "status": status or current.get("status") or "running",
+            "steps": _jsonb(steps if steps is not None else current.get("steps") or {}),
+            "error": error if error is not None else current.get("error"),
+            "finished_at": finished_at if finished_at is not None else current.get("finished_at"),
+        }
+        stored = self._one(
+            """
+            UPDATE research_data_backfills
+            SET status = %(status)s,
+                steps = %(steps)s,
+                error = %(error)s,
+                finished_at = %(finished_at)s
+            WHERE id = %(id)s
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return stored
+
+    def latest_backfill(self, ticker: str) -> dict[str, Any] | None:
+        return self._one(
+            """
+            SELECT * FROM research_data_backfills
+            WHERE ticker = %(ticker)s
+            ORDER BY started_at DESC
+            LIMIT 1
+            """,
+            {"ticker": ticker.upper()},
+        )
+
+    def list_backfills(self, ticker: str) -> list[dict[str, Any]]:
+        return self._execute(
+            """
+            SELECT * FROM research_data_backfills
+            WHERE ticker = %(ticker)s
+            ORDER BY started_at DESC
+            LIMIT 20
+            """,
+            {"ticker": ticker.upper()},
+        )

@@ -1,5 +1,6 @@
 """Brain research chain: Evidence → Assumption → Thesis. Independent of the daily desk."""
 
+from .backfill import ResearchDataBackfill
 from .classify import classify_template
 from .errors import (
     CrossTickerError,
@@ -25,6 +26,7 @@ __all__ = [
     "DepthLimitError",
     "FollowUpSpec",
     "ProvenanceError",
+    "ResearchDataBackfill",
     "ResearchError",
     "ResearchPermissionError",
     "ResearchService",

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from .backfill import ResearchDataBackfill, should_backfill
 from .runtime import AgentRuntime, agent_name_for_task
 from .service import ResearchService
 from .types import AGENT_FUNDAMENTAL, AgentInput, AgentOutput, to_plain
@@ -151,6 +152,7 @@ def run_new_ticker_research(
     max_tasks: int = 32,
     runtime: AgentRuntime | None = None,
     execute: bool = True,
+    backfill: ResearchDataBackfill | bool | None = None,
 ) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
     service.ensure_issuer(symbol)
@@ -168,6 +170,11 @@ def run_new_ticker_research(
         )
         workflow_run_id = run["id"]
     pack = service.build_pack(symbol, workflow_run_id=workflow_run_id)
+    backfill_row = None
+    if should_backfill(service, pack, execute=execute, backfill=backfill):
+        runner = backfill if isinstance(backfill, ResearchDataBackfill) else ResearchDataBackfill(service)
+        backfill_row = runner.run(symbol, workflow_run_id=workflow_run_id)
+        pack = service.build_pack(symbol, workflow_run_id=workflow_run_id)
     existing = service.store.list_tasks(symbol, workflow_run_id)
     if not existing:
         service.create_task(
@@ -189,6 +196,7 @@ def run_new_ticker_research(
             "workflow_run": service.store.get_workflow_run(workflow_run_id),
             "pack": pack,
             "snapshot": service.research_snapshot(symbol, workflow_run_id),
+            "backfill": backfill_row,
         }
     resolved_runtime = runtime
     if resolved_runtime is None:
@@ -202,4 +210,15 @@ def run_new_ticker_research(
     )
     result["pack"] = service.get_pack(symbol)
     result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
+    result["backfill"] = backfill_row
+    if backfill_row:
+        counts = dict((result.get("item_counts") or {}))
+        counts["backfill_id"] = backfill_row.get("id")
+        counts["backfill_status"] = backfill_row.get("status")
+        result["item_counts"] = counts
+        run = result.get("workflow_run")
+        if isinstance(run, dict):
+            merged = dict(run.get("item_counts") or {})
+            merged.update({"backfill_id": backfill_row.get("id"), "backfill_status": backfill_row.get("status")})
+            run["item_counts"] = merged
     return result
