@@ -241,7 +241,7 @@ class FakeDatabase:
             "disclaimer": "来源 Cboe",
         }
 
-    def briefing(self, date=None):
+    def briefing(self, date=None, *, live_synthesize=True):
         session = self.market_session(date)
         if not session["is_trading_day"]:
             return {
@@ -302,7 +302,7 @@ class FakeDatabase:
             payload["prediction"] = self.prediction_payload(date, symbol)
         return payload
 
-    def environment_payload(self, date=None, symbol=None):
+    def environment_payload(self, date=None, symbol=None, *, live_fallback=True):
         from stock_pm.environment import synthesize_symbol_environment
         from stock_pm.philosophy import synthesize_environment
 
@@ -367,7 +367,7 @@ class FakeDatabase:
         )
         return tape
 
-    def tape_payload(self, date=None, symbol=None):
+    def tape_payload(self, date=None, symbol=None, *, live_fallback=True):
         return self._sample_tape(symbol or "NVDA", date)
 
     def tape_history(self, symbol, limit=30):
@@ -406,7 +406,7 @@ class FakeDatabase:
             source="test",
         )
 
-    def prediction_payload(self, date=None, symbol=None):
+    def prediction_payload(self, date=None, symbol=None, *, live_fallback=True):
         return self._sample_prediction(symbol or "NVDA", date)
 
     def prediction_history(self, symbol, limit=30):
@@ -943,3 +943,25 @@ def test_desk_endpoints_return_frozen_shape(monkeypatch):
     assert "learning" in review
     assert "observations" in review
     assert c.get("/api/desk/stock/bad symbol").status_code == 400
+
+
+def test_desk_overview_api_times_out_instead_of_hanging(monkeypatch):
+    import time
+
+    from stock_pm.pack import assemble as pack_assemble
+
+    monkeypatch.setattr(pack_assemble, "DESK_ASSEMBLE_TIMEOUT_S", 0.3)
+
+    def hang(_database):
+        time.sleep(5)
+        return {}
+
+    monkeypatch.setattr(pack_assemble, "build_overview", hang)
+    start = time.monotonic()
+    response = client(monkeypatch).get("/api/desk/overview")
+    elapsed = time.monotonic() - start
+    assert response.status_code == 200
+    assert elapsed < 2
+    body = response.json()
+    assert body["page"]["title"] == "今天什么改变了"
+    assert body["gaps"].get("timeout") is True

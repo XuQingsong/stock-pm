@@ -12,6 +12,18 @@ from .overview import build_overview_payload
 from .review_page import build_review_payload
 from .stock_page import build_stock_payload
 
+DESK_ASSEMBLE_TIMEOUT_S = 8.0
+
+
+def _warming_coverage() -> dict[str, Any]:
+    return {
+        "data_mode": "empty",
+        "live": False,
+        "warming": True,
+        "event_count": 0,
+        "status": "warming",
+    }
+
 
 def _watch(database) -> list[dict[str, Any]]:
     try:
@@ -22,16 +34,22 @@ def _watch(database) -> list[dict[str, Any]]:
 
 def _briefing(database) -> dict[str, Any]:
     try:
-        return database.briefing() or {"rows": []}
+        try:
+            return database.briefing(live_synthesize=False) or {"rows": []}
+        except TypeError:
+            return database.briefing() or {"rows": []}
     except (DatabaseError, Exception):
         return {"rows": [], "status": "error"}
 
 
 def _events_book():
     try:
-        from stock_pm.events.service import build_event_book, coverage
+        from stock_pm.events.service import coverage, kick_event_book_warm, peek_event_book
 
-        events = build_event_book()
+        events = peek_event_book()
+        if events is None:
+            kick_event_book_warm()
+            return [], _warming_coverage()
         return events, coverage(events=events)
     except Exception:
         return [], {"data_mode": "empty", "live": False}
@@ -39,7 +57,11 @@ def _events_book():
 
 def _env(database, symbol: str) -> dict[str, Any]:
     try:
-        return database.environment_payload(None, symbol) or {}
+        try:
+            payload = database.environment_payload(None, symbol, live_fallback=False)
+        except TypeError:
+            payload = database.environment_payload(None, symbol)
+        return payload or {"publishState": "missing"}
     except (DatabaseError, Exception):
         return {"publishState": "missing"}
 
@@ -53,20 +75,41 @@ def _env_history(database, symbol: str) -> list[dict[str, Any]]:
 
 def _tape(database, symbol: str) -> dict[str, Any]:
     try:
-        return database.tape_payload(None, symbol) or {}
-    except (DatabaseError, Exception):
         try:
-            rows = database.tape_history(symbol, 1)
-            return rows[0] if rows else {}
-        except Exception:
-            return {}
+            payload = database.tape_payload(None, symbol, live_fallback=False)
+        except TypeError:
+            payload = database.tape_payload(None, symbol)
+        if payload:
+            return payload
+    except (DatabaseError, Exception):
+        payload = None
+    try:
+        rows = database.tape_history(symbol, 1)
+        return rows[0] if rows else {}
+    except Exception:
+        return payload or {}
 
 
 def _prediction(database, symbol: str) -> dict[str, Any]:
     try:
-        return database.prediction_payload(None, symbol) or {}
+        try:
+            payload = database.prediction_payload(None, symbol, live_fallback=False)
+        except TypeError:
+            payload = database.prediction_payload(None, symbol)
+        return payload or {"state": "missing", "prediction_ready": False}
     except (DatabaseError, Exception):
         return {"state": "missing", "prediction_ready": False}
+
+
+def _has_review_snapshot(pred: dict[str, Any] | None) -> bool:
+    """True when a prediction row is stored or incomplete-but-real, not a missing placeholder."""
+    if not pred:
+        return False
+    if pred.get("id") or pred.get("as_of_date") or pred.get("created_at") or pred.get("window_start"):
+        return True
+    if pred.get("prediction_ready") or pred.get("thesis"):
+        return True
+    return False
 
 
 def _decision(database, symbol: str) -> dict[str, Any] | None:
@@ -80,10 +123,19 @@ def _decision(database, symbol: str) -> dict[str, Any] | None:
 
 def _stock_events(symbol: str) -> list[Any]:
     try:
-        from stock_pm.events.service import stock_events
+        from stock_pm.events.analyze import symbol_event_view
+        from stock_pm.events.service import kick_event_book_warm, peek_event_book
 
-        payload = stock_events(symbol)
-        return list(payload.get("events") or [])
+        book = peek_event_book()
+        if book is None:
+            kick_event_book_warm()
+            return []
+        selected = []
+        for event in book:
+            view = symbol_event_view(event, symbol)
+            if view:
+                selected.append(view)
+        return selected
     except Exception:
         return []
 
@@ -112,7 +164,35 @@ def build_overview(database, *, now: datetime | None = None) -> dict[str, Any]:
         payload["gaps"]["quotes"] = not bool(snaps)
     except Exception:
         payload["gaps"]["quotes"] = True
+    if cover.get("warming"):
+        payload["gaps"]["events"] = True
+        payload.setdefault("diagnostics", {})["warming"] = True
     return payload
+
+
+def overview_timeout_payload(*, now: datetime | None = None) -> dict[str, Any]:
+    payload = build_overview_payload(watch=[], events=[], briefing={"rows": []}, now=now)
+    payload["gaps"]["timeout"] = True
+    payload["gaps"]["events"] = True
+    return payload
+
+
+def stock_timeout_payload(symbol: str) -> dict[str, Any]:
+    return build_stock_payload(
+        symbol=symbol,
+        watch=[],
+        briefing_row=None,
+        events=[],
+        environment={"publishState": "missing"},
+        env_history=[],
+        tape={},
+        prediction={"state": "missing", "prediction_ready": False},
+        decision=None,
+    )
+
+
+def review_timeout_payload() -> dict[str, Any]:
+    return build_review_payload(watch=[], predictions={}, checks={}, today=None)
 
 
 def build_stock(database, symbol: str) -> dict[str, Any]:
@@ -153,7 +233,7 @@ def build_review(database, *, today=None) -> dict[str, Any]:
             history = []
         if not history:
             live = _prediction(database, symbol)
-            history = [live] if live else []
+            history = [live] if _has_review_snapshot(live) else []
         predictions[symbol] = history
         for pred in history[:2]:
             pid = pred.get("id")

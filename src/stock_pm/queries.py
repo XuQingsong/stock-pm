@@ -1330,7 +1330,7 @@ class QueryMixin:
             rows = []
         return prediction_hit_rate(rows)
 
-    def briefing(self, date: str | None = None) -> dict:
+    def briefing(self, date: str | None = None, *, live_synthesize: bool = True) -> dict:
         session = self.market_session(date)
         if not date:
             date = session["default_review_date"]
@@ -1364,7 +1364,9 @@ class QueryMixin:
                         snapshots.get(symbol),
                     )
                 )
-            self._attach_row_environments(rows, date, session=session, watch=watch)
+            self._attach_row_environments(
+                rows, date, session=session, watch=watch, live_synthesize=live_synthesize
+            )
             payload = {
                 "date": date,
                 "session": session,
@@ -1474,7 +1476,9 @@ class QueryMixin:
                     snap,
                 )
             )
-        self._attach_row_environments(rows, date, session=session, watch=watch)
+        self._attach_row_environments(
+            rows, date, session=session, watch=watch, live_synthesize=live_synthesize
+        )
         payload = {
             "date": date,
             "session": session,
@@ -1629,6 +1633,7 @@ class QueryMixin:
         *,
         session: dict | None = None,
         watch: list[dict] | None = None,
+        live_synthesize: bool = True,
     ) -> None:
         stored: dict[str, dict] = {}
         try:
@@ -1648,7 +1653,7 @@ class QueryMixin:
             if not symbol:
                 continue
             env = stored.get(symbol)
-            if not env:
+            if not env and live_synthesize:
                 env = self.build_live_environment(
                     symbol,
                     as_of_date,
@@ -1667,6 +1672,8 @@ class QueryMixin:
                     watch=watch_map.get(symbol),
                     briefing_row=row,
                 )
+            elif not env:
+                env = {}
             row["environment"] = env
             row["env_half"] = env_half_display(env, env.get("one_liner"))
             row["env_news"] = first_env_news(env)
@@ -1674,7 +1681,7 @@ class QueryMixin:
                 row["row_thesis"] = env.get("row_thesis") or row.get("row_thesis")
             else:
                 row["row_thesis"] = env.get("one_liner") or row.get("row_thesis")
-        self._attach_row_tapes(rows, as_of_date, session=session)
+        self._attach_row_tapes(rows, as_of_date, session=session, live_synthesize=live_synthesize)
 
     def _with_shell(
         self,
@@ -1779,12 +1786,22 @@ class QueryMixin:
             "quote_quality": briefing.get("quote_quality") or {},
         }
 
-    def environment_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+    def environment_payload(
+        self,
+        date: str | None = None,
+        symbol: str | None = None,
+        *,
+        live_fallback: bool = True,
+    ) -> dict:
         if symbol:
             session = self.market_session(date)
             as_of = date or session.get("default_review_date")
             stored = self.latest_environment_snapshot(as_of, "symbol", symbol.upper())
-            return stored or self.build_live_environment(symbol, as_of)
+            if stored:
+                return stored
+            if live_fallback:
+                return self.build_live_environment(symbol, as_of)
+            return failed_snapshot(symbol, as_of, "environment snapshot missing")
         payload = self.shell_state(date)
         return payload.get("environment") or failed_snapshot(None, date, "environment missing")
 
@@ -2001,13 +2018,23 @@ class QueryMixin:
         except Exception as exc:
             return failed_review_note(normalized, date, str(exc))
 
-    def tape_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+    def tape_payload(
+        self,
+        date: str | None = None,
+        symbol: str | None = None,
+        *,
+        live_fallback: bool = True,
+    ) -> dict:
         if not symbol:
             raise ValueError("symbol is required")
         session = self.market_session(date)
         as_of = date or session.get("default_review_date")
         stored = self.latest_tape_analysis(as_of, symbol.upper())
-        return stored or self.build_live_tape(symbol, as_of)
+        if stored:
+            return stored
+        if live_fallback:
+            return self.build_live_tape(symbol, as_of)
+        return {}
 
     def review_note_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
         if not symbol:
@@ -2023,6 +2050,7 @@ class QueryMixin:
         as_of_date: str | None,
         *,
         session: dict | None = None,
+        live_synthesize: bool = True,
     ) -> None:
         stored: dict[str, dict] = {}
         try:
@@ -2036,7 +2064,7 @@ class QueryMixin:
             if not symbol:
                 continue
             tape = stored.get(symbol)
-            if not tape:
+            if not tape and live_synthesize:
                 tape = self.build_live_tape(
                     symbol,
                     as_of_date,
@@ -2044,12 +2072,14 @@ class QueryMixin:
                     session=session,
                     source="live",
                 )
+            elif not tape:
+                tape = {}
             note = None
             try:
                 note = self.latest_review_note(as_of_date, symbol)
             except Exception:
                 note = None
-            if not note:
+            if not note and live_synthesize:
                 note = synthesize_review_note(
                     as_of_date=as_of_date,
                     symbol=symbol,
@@ -2068,7 +2098,7 @@ class QueryMixin:
                 row["row_thesis"] = env_tape_conflict_sentence(env, tape)
             else:
                 row["env_tape_conflict"] = False
-        self._attach_row_predictions(rows, as_of_date, session=session)
+        self._attach_row_predictions(rows, as_of_date, session=session, live_synthesize=live_synthesize)
 
     def latest_predictions(self, as_of_date: str | None) -> list[dict]:
         if not as_of_date:
@@ -2257,7 +2287,13 @@ class QueryMixin:
         except Exception as exc:
             return failed_prediction(normalized, date, str(exc))
 
-    def prediction_payload(self, date: str | None = None, symbol: str | None = None) -> dict:
+    def prediction_payload(
+        self,
+        date: str | None = None,
+        symbol: str | None = None,
+        *,
+        live_fallback: bool = True,
+    ) -> dict:
         if not symbol:
             raise ValueError("symbol is required")
         session = self.market_session(date)
@@ -2267,7 +2303,12 @@ class QueryMixin:
             stored = self.latest_prediction(as_of, symbol.upper())
         except DatabaseError:
             stored = None
-        pred = stored or self.build_live_prediction(symbol, as_of)
+        if stored:
+            pred = stored
+        elif live_fallback:
+            pred = self.build_live_prediction(symbol, as_of)
+        else:
+            pred = {"state": "missing", "prediction_ready": False, "symbol": symbol.upper()}
         attached = self._attach_judgment_alert(pred) or pred
         return self._apply_direction_gate(attached, symbol)
 
@@ -2288,6 +2329,7 @@ class QueryMixin:
         as_of_date: str | None,
         *,
         session: dict | None = None,
+        live_synthesize: bool = True,
     ) -> None:
         stored: dict[str, dict] = {}
         try:
@@ -2308,7 +2350,7 @@ class QueryMixin:
             if not symbol:
                 continue
             pred = stored.get(symbol)
-            if not pred:
+            if not pred and live_synthesize:
                 pred = self.build_live_prediction(
                     symbol,
                     as_of_date,
@@ -2319,6 +2361,8 @@ class QueryMixin:
                     session=session,
                     source="live",
                 )
+            elif not pred:
+                pred = {"state": "missing", "prediction_ready": False, "symbol": symbol}
             gated = self._apply_direction_gate(self._attach_judgment_alert(pred) or pred, symbol)
             row["prediction"] = gated
             row["prediction_half"] = prediction_badge(gated)

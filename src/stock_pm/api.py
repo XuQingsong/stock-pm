@@ -9,6 +9,7 @@ from importlib.resources import files
 from pathlib import Path
 from typing import Annotated
 
+import anyio
 import uvicorn
 from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -26,9 +27,9 @@ _database_reachable = False
 
 def _warm_event_book() -> None:
     try:
-        from .events.service import build_event_book
+        from .events.service import kick_event_book_warm
 
-        build_event_book()
+        kick_event_book_warm()
     except Exception as exc:
         print(json.dumps({"events_warm_error": type(exc).__name__, "affects_chain": "events"}, ensure_ascii=False))
 
@@ -917,34 +918,53 @@ def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
         return _degraded_payload("daily_reviews", rows=[], hit_rate=None)
 
 
-@app.get("/api/desk/overview")
-def desk_overview() -> dict:
-    from .pack.assemble import build_overview
+async def _desk_assemble(fn, *args):
+    from .pack import assemble as pack_assemble
 
     try:
-        return build_overview(database)
+        with anyio.fail_after(pack_assemble.DESK_ASSEMBLE_TIMEOUT_S):
+            return await anyio.to_thread.run_sync(fn, *args, abandon_on_cancel=True)
+    except TimeoutError:
+        return None
+
+
+@app.get("/api/desk/overview")
+async def desk_overview() -> dict:
+    from .pack import assemble as pack_assemble
+
+    try:
+        payload = await _desk_assemble(pack_assemble.build_overview, database)
+        if payload is None:
+            return pack_assemble.overview_timeout_payload()
+        return payload
     except DatabaseError:
         return _degraded_payload("desk_overview", featured=None, carousel=[], focus={"priority": [], "watch": [], "skip": []})
 
 
 @app.get("/api/desk/stock/{symbol}")
-def desk_stock(symbol: str) -> dict:
-    from .pack.assemble import build_stock
+async def desk_stock(symbol: str) -> dict:
+    from .pack import assemble as pack_assemble
 
     if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
         raise HTTPException(status_code=400, detail="invalid symbol")
     try:
-        return build_stock(database, symbol.upper())
+        payload = await _desk_assemble(pack_assemble.build_stock, database, symbol.upper())
+        if payload is None:
+            return pack_assemble.stock_timeout_payload(symbol.upper())
+        return payload
     except DatabaseError:
         return _degraded_payload("desk_stock", symbol=symbol.upper())
 
 
 @app.get("/api/desk/review")
-def desk_review() -> dict:
-    from .pack.assemble import build_review
+async def desk_review() -> dict:
+    from .pack import assemble as pack_assemble
 
     try:
-        return build_review(database)
+        payload = await _desk_assemble(pack_assemble.build_review, database)
+        if payload is None:
+            return pack_assemble.review_timeout_payload()
+        return payload
     except DatabaseError:
         return _degraded_payload("desk_review", formal=[], observations=[], learning=[])
 

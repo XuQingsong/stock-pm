@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import threading
 from typing import Any
 
 from stock_pm.config import Settings
@@ -27,8 +29,46 @@ from .types import TrustedEvent
 from stock_pm.decision.inject import inject_allowed
 
 
+logger = logging.getLogger(__name__)
+
 _CACHE: dict[str, Any] = {"events": None, "coverage": None, "discovery_resolution": None}
+_CACHE_LOCK = threading.Lock()
+_BUILD_LOCK = threading.Lock()
+_WARMING = False
 REQUIRED_LIVE = ("sec_edgar", "federal_reserve", "eia_press")
+
+
+def peek_event_book() -> list[TrustedEvent] | None:
+    """Return the cached book without live ingest. None means never built."""
+    with _CACHE_LOCK:
+        events = _CACHE["events"]
+        return None if events is None else list(events)
+
+
+def event_book_warming() -> bool:
+    return _WARMING
+
+
+def kick_event_book_warm() -> None:
+    """Start one background ingest if the cache is cold. Never blocks the caller."""
+    global _WARMING
+    with _CACHE_LOCK:
+        if _CACHE["events"] is not None or _WARMING:
+            return
+        _WARMING = True
+    thread = threading.Thread(target=_warm_event_book_worker, name="events-warm", daemon=True)
+    thread.start()
+
+
+def _warm_event_book_worker() -> None:
+    global _WARMING
+    try:
+        build_event_book()
+    except Exception:
+        logger.exception("event book warm failed")
+    finally:
+        with _CACHE_LOCK:
+            _WARMING = False
 
 
 def _inject_tokens(explicit: Any, settings: Settings | None = None) -> Any:
@@ -41,35 +81,45 @@ def _inject_tokens(explicit: Any, settings: Settings | None = None) -> Any:
 
 
 def build_event_book(settings: Settings | None = None, *, refresh: bool = False) -> list[TrustedEvent]:
-    if _CACHE["events"] is not None and not refresh:
-        return list(_CACHE["events"])
-    mode = events_data_mode(settings)
-    discovered: list = []
-    if mode == "recorded_replay":
-        discovered.extend(RecordedReplayProvider().discover())
-    else:
-        official = OfficialFeedProvider(settings).discover()
-        live = discover_live_documents(settings)
-        discovered.extend(official)
-        discovered.extend(live)
-        if mode in {"demo", "fixture"}:
-            from .macro_chain import load_frozen_6a_documents
+    if not refresh:
+        with _CACHE_LOCK:
+            cached = _CACHE["events"]
+        if cached is not None:
+            return list(cached)
+    with _BUILD_LOCK:
+        if not refresh:
+            with _CACHE_LOCK:
+                cached = _CACHE["events"]
+            if cached is not None:
+                return list(cached)
+        mode = events_data_mode(settings)
+        discovered: list = []
+        if mode == "recorded_replay":
+            discovered.extend(RecordedReplayProvider().discover())
+        else:
+            official = OfficialFeedProvider(settings).discover()
+            live = discover_live_documents(settings)
+            discovered.extend(official)
+            discovered.extend(live)
+            if mode in {"demo", "fixture"}:
+                from .macro_chain import load_frozen_6a_documents
 
-            discovered.extend(load_frozen_6a_documents())
-        google = GoogleDiscoveryProvider(settings)
-        if google.configured():
-            try:
-                discovered.extend(google.discover())
-            except Exception:
-                pass
-    discovered, resolution = resolve_discovery_candidates(discovered)
-    _CACHE["discovery_resolution"] = resolution
-    events = build_events(discovered)
-    for event in events:
-        analyze_event(event)
-    _CACHE["events"] = events
-    _CACHE["coverage"] = None
-    return list(events)
+                discovered.extend(load_frozen_6a_documents())
+            google = GoogleDiscoveryProvider(settings)
+            if google.configured():
+                try:
+                    discovered.extend(google.discover())
+                except Exception:
+                    pass
+        discovered, resolution = resolve_discovery_candidates(discovered)
+        events = build_events(discovered)
+        for event in events:
+            analyze_event(event)
+        with _CACHE_LOCK:
+            _CACHE["discovery_resolution"] = resolution
+            _CACHE["events"] = events
+            _CACHE["coverage"] = None
+        return list(events)
 
 
 def coverage(settings: Settings | None = None, events: list[TrustedEvent] | None = None) -> dict[str, Any]:
@@ -345,9 +395,12 @@ def event_detail(event_id: str, settings: Settings | None = None) -> dict[str, A
 
 
 def reset_cache() -> None:
-    _CACHE["events"] = None
-    _CACHE["coverage"] = None
-    _CACHE["discovery_resolution"] = None
+    global _WARMING
+    with _CACHE_LOCK:
+        _CACHE["events"] = None
+        _CACHE["coverage"] = None
+        _CACHE["discovery_resolution"] = None
+        _WARMING = False
     reset_live_state()
     from .earnings_health import clear_earnings_health_memory
     from .watchlist import reset_watchlist_override

@@ -82,5 +82,6 @@ def build_overview_payload(
             "data_mode": (coverage or {}).get("data_mode"),
             "live": (coverage or {}).get("live"),
             "event_count": len(events or []),
+            "warming": bool((coverage or {}).get("warming")),
         },
     }
