@@ -1,8 +1,9 @@
 """Permanent main-path copy gate.
 
 Fails CI if overview / stock / review templates or copy-helper output still
-contain DEV_BRIEF system/acceptance tokens. Diagnostic-only files (stock.js,
+contain DEV_BRIEF system/acceptance tokens. Diagnostic-only files (stock_diag.js,
 shell.js, events_ui.js, settings) may mention tech terms; they are not gated.
+stock.js is on the investor main path and IS gated.
 """
 
 from __future__ import annotations
@@ -11,9 +12,12 @@ import ast
 from pathlib import Path
 
 from stock_pm.environment import synthesize_symbol_environment
+from stock_pm.pack.cards import event_card, news_card
 from stock_pm.pack.copy import (
+    HORIZON_ENUM_TOKENS,
     MAIN_PATH_BANNED,
     MAIN_PATH_GATE_TOKENS,
+    horizon_label,
     investorize,
     judgment_reason,
     main_path_copy,
@@ -32,6 +36,7 @@ MAIN_PATH_TEMPLATES = (
     ROOT / "src/stock_pm/static/stock.html",
     ROOT / "src/stock_pm/static/review.html",
     ROOT / "src/stock_pm/static/desk.js",
+    ROOT / "src/stock_pm/static/stock.js",
     ROOT / "design-hifi/overview.html",
     ROOT / "design-hifi/stock.html",
     ROOT / "design-hifi/review.html",
@@ -55,7 +60,7 @@ MAIN_PATH_HELPERS = (
 
 # Not gated: diagnostic fold / events center / settings.
 DIAGNOSTIC_ONLY = (
-    ROOT / "src/stock_pm/static/stock.js",
+    ROOT / "src/stock_pm/static/stock_diag.js",
     ROOT / "src/stock_pm/static/shell.js",
     ROOT / "src/stock_pm/static/events_ui.js",
     ROOT / "src/stock_pm/static/events.js",
@@ -98,6 +103,7 @@ _SKIP_SPOKEN = {
     "href",
     "url",
     "symbol",
+    "source_title",
 }
 
 _BANNED_FEED = (
@@ -113,6 +119,9 @@ _BANNED_FEED = (
     "evidence version v3",
     "当前可用等级 L0",
     "L0 缺口",
+    "days_to_weeks",
+    "期限 days_to_weeks",
+    "数据源暂未提供",
 )
 
 
@@ -150,8 +159,14 @@ def test_main_path_templates_contain_no_gate_tokens() -> None:
         text = path.read_text(encoding="utf-8")
         for token in MAIN_PATH_GATE_TOKENS:
             assert token not in text, f"{path.relative_to(ROOT)}: {token!r}"
-        for extra in ("L1", "L2", "L3", "本页不出现", "字段齐全", "不形成方向"):
+        for extra in ("L1", "L2", "L3", "本页不出现", "字段齐全", "不形成方向", "当前可用等级"):
             assert extra not in text, f"{path.relative_to(ROOT)}: {extra!r}"
+    stock_js = (ROOT / "src/stock_pm/static/stock.js").read_text(encoding="utf-8")
+    assert "数据源" not in stock_js
+    assert "can_form" not in stock_js
+    assert "L0" not in stock_js
+    html = (ROOT / "src/stock_pm/static/stock.html").read_text(encoding="utf-8")
+    assert "/static/stock_diag.js" in html
 
 
 def test_copy_helpers_never_emit_gate_tokens() -> None:
@@ -227,11 +242,107 @@ def test_packed_thesis_fields_have_no_english_headline_walls() -> None:
     assert not is_english_headline(quote)
     for row in (overview.get("focus") or {}).get("skip") or []:
         assert "Profits surge" not in (row.get("why") or "")
+    for card in [overview.get("featured"), *(overview.get("carousel") or [])]:
+        if not card:
+            continue
+        for field in ("title", "conclusion", "horizon"):
+            text = card.get(field) or ""
+            assert not is_english_headline(text), field
+            for token in HORIZON_ENUM_TOKENS:
+                assert token not in text, f"{field}: {token}"
+
+
+def test_carousel_and_featured_titles_are_chinese_not_english_walls() -> None:
+    overview = build_overview_payload(
+        watch=[{"symbol": "NVDA", "name": "NVIDIA", "active": True, "themes": ["semis"]}],
+        events=[],
+        briefing={"rows": []},
+        news=[
+            {
+                "symbol": "NVDA",
+                "headline": "Profits surge to record high after export curbs ease",
+                "themes": ["semis"],
+                "summary": "订单超预期，近端偏多",
+            }
+        ],
+    )
+    assert overview["featured"] is None
+    for card in overview["carousel"]:
+        assert not is_english_headline(card.get("title") or "")
+        assert not is_english_headline(card.get("conclusion") or "")
+        assert "Profits surge" not in (card.get("title") or "")
+        assert "Profits surge" not in (card.get("conclusion") or "")
+        assert "record high" not in (card.get("title") or "")
+        original = ((card.get("basis") or {}).get("source_title") or (card.get("basis") or {}).get("fact") or "")
+        assert "Profits surge" in original
+    news = news_card(
+        {
+            "headline": "AVGO and MSFT mentioned while NVDA reports orders",
+            "summary": "设备订单超预期",
+            "themes": ["semis"],
+            "symbol": "NVDA",
+        },
+        [{"symbol": "NVDA", "name": "NVIDIA", "themes": ["semis"], "active": True}],
+    )
+    assert "reports orders" not in (news.get("title") or "")
+    assert not is_english_headline(news.get("title") or "")
+    assert "设备订单" in (news.get("title") or "") or "设备订单" in (news.get("conclusion") or "")
+    assert "reports orders" in ((news.get("basis") or {}).get("source_title") or (news.get("basis") or {}).get("fact") or "")
+
+
+def test_featured_horizon_never_speaks_snake_case_enums() -> None:
+    assert horizon_label("days_to_weeks") == "数天到数周"
+    assert horizon_label("weeks_to_months") == "数周到数月"
+    assert horizon_label("until_next_earnings") == "至下份财报"
+    assert horizon_label("session_to_days") == "当日到数日"
+    assert horizon_label("方向 withheld · 期限 days_to_weeks") == "数天到数周"
+    assert "_" not in horizon_label("intra_session_spike")
+    card = event_card(
+        {
+            "canonical_title": "EIA reports crude inventory build after export curbs ease",
+            "duration": "days_to_weeks",
+            "analysis": {
+                "withheld": {"status": "observable"},
+                "closed_loop": True,
+                "answers": {
+                    "what_happened": "EIA reports crude inventory build after export curbs ease",
+                    "how_long": "days_to_weeks",
+                },
+                "horizon": {"text": "days_to_weeks"},
+                "causal_chain": {
+                    "layers": [
+                        {
+                            "id": "expectation",
+                            "text": "方向 pressure · 期限 days_to_weeks",
+                            "horizon": "days_to_weeks",
+                        }
+                    ]
+                },
+            },
+        },
+        [{"symbol": "XOM", "name": "Exxon", "themes": ["energy", "oil_producer"], "active": True}],
+    )
+    assert card["horizon"] == "数天到数周"
+    for token in HORIZON_ENUM_TOKENS:
+        assert token not in (card.get("horizon") or "")
+        assert token not in (card.get("title") or "")
+        assert token not in (card.get("conclusion") or "")
+    assert not is_english_headline(card.get("title") or "")
+    assert not is_english_headline(card.get("conclusion") or "")
+    assert "reports crude" not in (card.get("title") or "")
+    assert "inventory build" not in (card.get("conclusion") or "")
+    original = (card.get("basis") or {}).get("source_title") or ""
+    assert "EIA reports" in original
 
 
 def test_diagnostic_only_paths_are_explicitly_ungated() -> None:
     missing = [path for path in DIAGNOSTIC_ONLY if not path.exists()]
     assert missing == []
-    # Diagnostic fold is allowed to mention tech terms; the gate must not scan it.
-    diag = (ROOT / "src/stock_pm/static/stock.js").read_text(encoding="utf-8")
+    diag = (ROOT / "src/stock_pm/static/stock_diag.js").read_text(encoding="utf-8")
     assert "L0" in diag or "can_form_direction" in diag
+    main = (ROOT / "src/stock_pm/static/stock.js").read_text(encoding="utf-8")
+    assert "L0" not in main
+    assert "can_form" not in main
+    assert "当前可用等级" not in main
+    assert "数据源" not in main
+    assert (ROOT / "src/stock_pm/static/stock.js") not in DIAGNOSTIC_ONLY

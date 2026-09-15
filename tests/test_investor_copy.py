@@ -23,6 +23,7 @@ MAIN_PATH_STATIC = [
     Path("src/stock_pm/static/overview.html"),
     Path("src/stock_pm/static/review.html"),
     Path("src/stock_pm/static/stock.html"),
+    Path("src/stock_pm/static/stock.js"),
     Path("src/stock_pm/static/desk.js"),
     Path("design-hifi/overview.html"),
     Path("design-hifi/review.html"),

@@ -224,12 +224,13 @@ def strip_embedded_headlines(text: str | None) -> str:
 def display_title(raw: str | None, *, fallback: str = "相关新闻") -> str:
     """Main-path title: Chinese conclusion, never an English headline wall."""
     text = str(raw or "").strip()
-    if not text:
-        return fallback
-    if is_english_headline(text):
-        cleaned = drop_english_headlines(text)
-        return cleaned or fallback
-    return drop_english_headlines(text) or fallback
+    safe_fallback = fallback if fallback and not is_english_headline(fallback) else "相关新闻"
+    if not text or is_english_headline(text):
+        return safe_fallback
+    cleaned = drop_english_headlines(text)
+    if not cleaned or is_english_headline(cleaned):
+        return safe_fallback
+    return cleaned
 
 
 def env_half_display(env: dict | None, fallback: str | None = None) -> str:

@@ -754,11 +754,13 @@ def test_static_assets(monkeypatch):
     c = client(monkeypatch)
     assert c.get("/static/app.css").status_code == 200
     assert c.get("/static/stock.js").status_code == 200
+    assert c.get("/static/stock_diag.js").status_code == 200
     assert c.get("/static/desk.css").status_code == 200
     assert c.get("/static/desk.js").status_code == 200
     html = c.get("/stock/AAPL").text
     assert 'data-tab="chart"' in html
     assert "/static/stock.js" in html
+    assert "/static/stock_diag.js" in html
 
 
 def test_replay_endpoints(monkeypatch):

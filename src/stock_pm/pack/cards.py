@@ -100,22 +100,38 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
     transmit = str((analysis.get("mechanism") or {}).get("text") or "") or _layer_text(analysis, "impact")
     # Diagnostic withheld reasons stay in analysis for events/expand — never
     # as the main-path conclusion.
+    raw_title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
     what = strip_holdings((analysis.get("answers") or {}).get("what_happened") or "")
-    conclusion = main_path_copy(what) or main_path_copy(expectation)
+    english_original = ""
+    if is_english_headline(raw_title):
+        english_original = raw_title
+    elif is_english_headline(what):
+        english_original = what
+
+    def _usable_conclusion(text: str | None) -> str:
+        cleaned = main_path_copy(text)
+        if not cleaned or is_english_headline(cleaned):
+            return ""
+        if cleaned.startswith("方向"):
+            return ""
+        return cleaned
+
+    conclusion = _usable_conclusion(what) or _usable_conclusion(expectation)
     if not conclusion:
         conclusion = (
             "当前条件不足，暂不形成明确方向"
             if (withheld or not closed)
             else "结论暂缺"
         )
-    conclusion = main_path_copy(conclusion) or "结论暂缺"
     horizon = horizon_label(
         _layer_field(analysis, "expectation", "horizon")
         or payload.get("duration")
         or (analysis.get("horizon") or {}).get("text")
     )
-    raw_title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
-    title = display_title(raw_title, fallback=conclusion[:40] if conclusion else "市场事件")
+    zh_fallback = conclusion[:40] if conclusion and not is_english_headline(conclusion) else "市场事件"
+    title = display_title(raw_title, fallback=zh_fallback)
+    if is_english_headline(title):
+        title = zh_fallback
     return {
         "event_id": payload.get("event_id"),
         "title": title,
@@ -135,6 +151,7 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
             "expectation": expectation or "预期暂缺",
             "why_strength": why_strength,
             "invalidation": invalidation or "失效条件暂缺",
+            "source_title": english_original,
         },
         "news": _news_link(payload),
         "closed_loop": closed,
@@ -180,12 +197,20 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
     url = item.get("url") if is_http_url(item.get("url")) else None
     headline = strip_holdings(item.get("headline") or "") or "未命名新闻"
     summary = main_path_copy(item.get("summary") or "")
-    title = display_title(headline, fallback=summary[:40] if summary else "相关新闻")
+    if summary and is_english_headline(summary):
+        summary = ""
+    zh_fallback = summary[:40] if summary else "相关新闻"
+    title = display_title(headline, fallback=zh_fallback)
+    if is_english_headline(title):
+        title = zh_fallback
+    conclusion = summary or title
+    if is_english_headline(conclusion):
+        conclusion = "相关新闻"
     news_label = "可点新闻" if is_english_headline(headline) else f"可点新闻 · {headline[:40]}"
     return {
         "event_id": None,
         "title": title[:120],
-        "conclusion": (summary or title)[:160],
+        "conclusion": conclusion[:160],
         "scope_label": (
             "公司级"
             if any(row.get("mechanism") == "watchlist_ingested_article" for row in mapped)
@@ -206,6 +231,7 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
             "why_strength": "；".join(f"{row['symbol']}：{row.get('why')}" for row in mapped[:4])
             or "暂未形成对自选股的明确影响",
             "invalidation": "后续官方否认或财报证伪则作废",
+            "source_title": headline if is_english_headline(headline) else "",
         },
         "news": {"url": url, "label": news_label} if url else None,
         "closed_loop": False,

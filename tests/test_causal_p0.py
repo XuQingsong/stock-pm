@@ -271,7 +271,7 @@ def test_withhold_strips_percent_forecast():
 
 
 def test_ui_renders_causal_layers_and_fact_drawer():
-    stock = Path("src/stock_pm/static/stock.js").read_text()
+    stock = Path("src/stock_pm/static/stock_diag.js").read_text()
     assert "Fact → Change → Expectation → Impact → What changes" in stock
     assert "renderRatesPath" in stock
     assert "renderRiskState" in stock
@@ -290,6 +290,7 @@ def test_ui_renders_causal_layers_and_fact_drawer():
     assert "item.metric || item.id" in stock
     html = Path("src/stock_pm/static/stock.html").read_text()
     assert 'id="fact-drawer"' in html
+    assert "/static/stock_diag.js" in html
     shell = Path("src/stock_pm/static/shell.js").read_text()
     assert "direction_withheld" in shell
 
