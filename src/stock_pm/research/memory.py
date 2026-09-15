@@ -212,6 +212,8 @@ class InMemoryResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "source_quality": row.get("source_quality") or "secondary",
+            "independence_key": str(row.get("independence_key") or ""),
             "created_at": _now(),
         }
         self.evidence[stored["id"]] = stored
@@ -269,6 +271,7 @@ class InMemoryResearchStore:
             "evidence_id": row["evidence_id"],
             "direction": row["direction"],
             "strength": row.get("strength") or "moderate",
+            "relevance": row.get("relevance") or "indirect",
             "reason": row.get("reason"),
             "linked_by": row.get("linked_by") or "system",
             "workflow_run_id": row.get("workflow_run_id"),
@@ -509,6 +512,9 @@ class InMemoryResearchStore:
             "proposed_status": row["proposed_status"],
             "reason": row["reason"],
             "confidence": row.get("confidence"),
+            "current_confidence": row.get("current_confidence"),
+            "confidence_delta": row.get("confidence_delta"),
+            "reasoning": dict(row.get("reasoning") or {}),
             "supporting_count": int(row.get("supporting_count") or 0),
             "opposing_count": int(row.get("opposing_count") or 0),
             "contextual_count": int(row.get("contextual_count") or 0),

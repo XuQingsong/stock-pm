@@ -4,12 +4,23 @@ from statistics import pstdev
 from typing import Any
 
 from ..extract import to_number
+from ..relevance import annotate_evidence, judged_links
 from ..templates import load_prompt
-from ..types import AGENT_QUANT, TENSION_STATES, AgentInput, AgentOutput
+from ..types import (
+    AGENT_INDUSTRY,
+    AGENT_QUANT,
+    AGENT_RISK,
+    AGENT_SEARCH,
+    NEGATIVE_MARKET_REACTION_TASK,
+    TENSION_STATES,
+    AgentInput,
+    AgentOutput,
+    FollowUpSpec,
+)
 from .base import BaseAgent
 
 
-PROMPT_VERSION = "sprint3-quant-v1"
+PROMPT_VERSION = "sprint35-quant-v1"
 
 
 def _latest_reaction(pack: dict[str, Any]) -> dict[str, Any]:
@@ -138,17 +149,19 @@ class QuantAgent(BaseAgent):
             findings.append(fact)
             if stamp:
                 evidence.append(
-                    {
-                        "_key": "q-reaction",
-                        "evidence_type": "quant",
-                        "fact": fact,
-                        "excerpt": fact,
-                        "source": source,
-                        "source_time": stamp,
-                        "source_type": "structured_provider",
-                        "confidence": 0.7,
-                        "raw_reference": dict(reaction),
-                    }
+                    annotate_evidence(
+                        {
+                            "_key": "q-reaction",
+                            "evidence_type": "quant",
+                            "fact": fact,
+                            "excerpt": fact,
+                            "source": source,
+                            "source_time": stamp,
+                            "source_type": "structured_provider",
+                            "confidence": 0.7,
+                            "raw_reference": dict(reaction),
+                        }
+                    )
                 )
         else:
             findings.append("no earnings-window price reaction series in the research pack")
@@ -173,17 +186,19 @@ class QuantAgent(BaseAgent):
             findings.append(fact)
             if stamp:
                 evidence.append(
-                    {
-                        "_key": "q-valuation",
-                        "evidence_type": "quant",
-                        "fact": fact,
-                        "excerpt": fact,
-                        "source": source,
-                        "source_time": stamp,
-                        "source_type": "structured_provider",
-                        "confidence": 0.55,
-                        "raw_reference": valuation,
-                    }
+                    annotate_evidence(
+                        {
+                            "_key": "q-valuation",
+                            "evidence_type": "quant",
+                            "fact": fact,
+                            "excerpt": fact,
+                            "source": source,
+                            "source_time": stamp,
+                            "source_type": "structured_provider",
+                            "confidence": 0.55,
+                            "raw_reference": valuation,
+                        }
+                    )
                 )
         else:
             missing.append("valuation_inputs")
@@ -198,40 +213,90 @@ class QuantAgent(BaseAgent):
         if tension == "unclear":
             findings.append("price and fundamental series are incomplete or mixed, so tension stays unclear")
 
+        volume = to_number(reaction.get("volume_vs_20d_avg"))
+        day_ret = to_number(reaction.get("day_return_pct"))
+        negative_print = (price_1d is not None and price_1d < 0) or (day_ret is not None and day_ret < 0)
+        high_volume = volume is not None and volume >= 1.5
+        follow_ups: list[FollowUpSpec] = []
+        if tension == "fundamentals_ahead" and negative_print:
+            findings.append("positive fundamental print with a negative earnings-window price response")
+            if high_volume:
+                findings.append(f"earnings-window volume vs 20d average is {volume}")
+            if high_volume or volume is None:
+                follow_ups.append(
+                    FollowUpSpec(
+                        title=NEGATIVE_MARKET_REACTION_TASK,
+                        description=(
+                            "Positive fundamental evidence with a negative post-earnings price response"
+                            + (f" and volume vs 20d of {volume}" if volume is not None else "")
+                            + ". Look for valuation concerns, guidance below whisper expectations, margin, mix, "
+                            "customer concentration, capex concerns, positioning, and analyst commentary."
+                        ),
+                        task_type="verify_assumption",
+                        assigned_agents=(AGENT_SEARCH, AGENT_INDUSTRY, AGENT_RISK),
+                        required_data=(
+                            "valuation_concerns",
+                            "guidance_whisper",
+                            "margin_mix",
+                            "customer_concentration",
+                            "capex_concerns",
+                            "positioning",
+                            "analyst_commentary",
+                        ),
+                        source_reason="fundamentals_ahead_negative_print",
+                        source_type="evidence_discovered",
+                        priority=32,
+                    )
+                )
+
         assumption_links = []
         proposals = []
         for assumption in payload.assumptions:
             assumption_id = str(assumption.get("id") or "")
             if not assumption_id or not evidence:
                 continue
-            category = str(assumption.get("category") or "")
-            direction = "contextual"
-            if category == "valuation" and tension == "price_ahead":
-                direction = "oppose"
-            elif category in {"demand", "guidance_delivery"} and tension == "fundamentals_ahead":
-                direction = "contextual"
-            assumption_links.append(
-                {
-                    "assumption_id": assumption_id,
-                    "evidence_key": evidence[0].get("_key"),
-                    "direction": direction,
-                    "strength": "moderate" if direction == "oppose" else "weak",
-                    "reason": f"market tension={tension}; this is not an investment conclusion",
-                }
+            links = judged_links(evidence, assumption, allow_support=False, allow_oppose=False, limit=2)
+            if not links:
+                for item in evidence[:1]:
+                    links.append(
+                        {
+                            "evidence_key": item.get("_key"),
+                            "evidence_id": item.get("id"),
+                            "assumption_id": assumption_id,
+                            "statement": assumption.get("statement"),
+                            "direction": "contextual",
+                            "strength": "weak",
+                            "relevance": "background",
+                            "reason": "earnings-window price action is market context and is not a test of this fundamental assumption",
+                        }
+                    )
+            assumption_links.extend(links)
+            current = assumption.get("confidence")
+            try:
+                current_conf = float(current) if current is not None else 0.5
+            except (TypeError, ValueError):
+                current_conf = 0.5
+            reason = (
+                f"quant pass records tension={tension} as market context; "
+                "price reaction is not used as oppose evidence on this fundamental assumption"
             )
-            proposed = "unchanged"
-            reason = f"quant pass records tension={tension} without changing assumption status"
-            if category == "valuation" and tension == "price_ahead":
-                proposed = "weaken"
-                reason = "price moved ahead of the fundamental change used for this window; valuation risk rose"
             proposals.append(
                 {
                     "assumption_id": assumption_id,
                     "statement": assumption.get("statement"),
-                    "proposed_status": proposed,
+                    "proposed_status": "unchanged",
                     "reason": reason,
-                    "confidence": 0.5,
-                    "unresolved_gaps": [item for item in missing if item in {"price_reaction_history", "valuation_inputs", "vs_sector"}],
+                    "confidence": current_conf,
+                    "current_confidence": current_conf,
+                    "confidence_delta": 0.0,
+                    "reasoning": {
+                        "positives": [],
+                        "limits": [f"tension={tension}", "quant evidence remains contextual"],
+                        "why": reason,
+                    },
+                    "unresolved_gaps": [
+                        item for item in missing if item in {"price_reaction_history", "valuation_inputs", "vs_sector"}
+                    ],
                 }
             )
 
@@ -250,6 +315,7 @@ class QuantAgent(BaseAgent):
             new_evidence=evidence,
             assumption_links=assumption_links,
             proposed_assumption_changes=proposals,
+            follow_up_tasks=follow_ups,
             missing_data=missing_data,
             confidence=confidence,
             agent_name=self.name,

@@ -200,17 +200,15 @@ class SearchDataAgent(BaseAgent):
 
         assumption_ids = _assumption_ids_from_task(payload.task)
         links = []
-        supported = []
-        challenged: list[str] = []
         for assumption_id in assumption_ids:
             if evidence:
-                supported.append(assumption_id)
                 links.append(
                     {
                         "assumption_id": assumption_id,
                         "evidence_key": evidence[0].get("_key"),
                         "direction": "contextual",
                         "strength": "weak",
+                        "relevance": "background",
                         "reason": "search located related source material; confirmation still open",
                     }
                 )
@@ -234,8 +232,6 @@ class SearchDataAgent(BaseAgent):
             new_evidence=evidence,
             follow_up_tasks=follow_ups,
             missing_data=unresolved,
-            supported_assumption_ids=supported,
-            challenged_assumption_ids=challenged,
             assumption_links=links,
             confidence=confidence,
             agent_name=self.name,

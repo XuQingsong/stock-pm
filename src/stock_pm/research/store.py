@@ -389,6 +389,8 @@ class ResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "source_quality": row.get("source_quality") or "secondary",
+            "independence_key": str(row.get("independence_key") or ""),
         }
         stored = self._one(
             """
@@ -396,14 +398,14 @@ class ResearchStore:
                 id, ticker, evidence_type, fact, source, source_url, source_time,
                 retrieved_at, confidence, importance, direction, raw_reference,
                 excerpt, source_type, produced_by, task_id, workflow_run_id, agent_run_id,
-                model, prompt_version
+                model, prompt_version, source_quality, independence_key
             )
             VALUES (
                 %(id)s, %(ticker)s, %(evidence_type)s, %(fact)s, %(source)s, %(source_url)s,
                 %(source_time)s, %(retrieved_at)s, %(confidence)s, %(importance)s,
                 %(direction)s, %(raw_reference)s, %(excerpt)s, %(source_type)s,
                 %(produced_by)s, %(task_id)s, %(workflow_run_id)s, %(agent_run_id)s,
-                %(model)s, %(prompt_version)s
+                %(model)s, %(prompt_version)s, %(source_quality)s, %(independence_key)s
             )
             RETURNING *
             """,
@@ -506,6 +508,7 @@ class ResearchStore:
             "evidence_id": row["evidence_id"],
             "direction": row["direction"],
             "strength": row.get("strength") or "moderate",
+            "relevance": row.get("relevance") or "indirect",
             "reason": row.get("reason"),
             "linked_by": row.get("linked_by") or "system",
             "workflow_run_id": row.get("workflow_run_id"),
@@ -514,15 +517,16 @@ class ResearchStore:
         stored = self._one(
             """
             INSERT INTO assumption_evidence_links (
-                assumption_id, evidence_id, direction, strength, reason,
+                assumption_id, evidence_id, direction, strength, relevance, reason,
                 linked_by, workflow_run_id, agent_run_id
             )
             VALUES (
-                %(assumption_id)s, %(evidence_id)s, %(direction)s, %(strength)s, %(reason)s,
+                %(assumption_id)s, %(evidence_id)s, %(direction)s, %(strength)s, %(relevance)s, %(reason)s,
                 %(linked_by)s, %(workflow_run_id)s, %(agent_run_id)s
             )
             ON CONFLICT (assumption_id, evidence_id, direction) DO UPDATE SET
                 strength = EXCLUDED.strength,
+                relevance = EXCLUDED.relevance,
                 reason = EXCLUDED.reason,
                 linked_by = EXCLUDED.linked_by
             RETURNING *
@@ -908,6 +912,9 @@ class ResearchStore:
             "proposed_status": row["proposed_status"],
             "reason": row["reason"],
             "confidence": row.get("confidence"),
+            "current_confidence": row.get("current_confidence"),
+            "confidence_delta": row.get("confidence_delta"),
+            "reasoning": _jsonb(row.get("reasoning") or {}),
             "supporting_count": int(row.get("supporting_count") or 0),
             "opposing_count": int(row.get("opposing_count") or 0),
             "contextual_count": int(row.get("contextual_count") or 0),
@@ -920,12 +927,14 @@ class ResearchStore:
             """
             INSERT INTO research_assumption_proposals (
                 id, ticker, assumption_id, current_status, proposed_status, reason,
-                confidence, supporting_count, opposing_count, contextual_count,
+                confidence, current_confidence, confidence_delta, reasoning,
+                supporting_count, opposing_count, contextual_count,
                 unresolved_gaps, produced_by, workflow_run_id, agent_run_id
             )
             VALUES (
                 %(id)s, %(ticker)s, %(assumption_id)s, %(current_status)s, %(proposed_status)s,
-                %(reason)s, %(confidence)s, %(supporting_count)s, %(opposing_count)s,
+                %(reason)s, %(confidence)s, %(current_confidence)s, %(confidence_delta)s,
+                %(reasoning)s, %(supporting_count)s, %(opposing_count)s,
                 %(contextual_count)s, %(unresolved_gaps)s, %(produced_by)s,
                 %(workflow_run_id)s, %(agent_run_id)s
             )

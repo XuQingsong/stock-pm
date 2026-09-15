@@ -13,12 +13,14 @@ from .errors import CrossTickerError, DepthLimitError, ProvenanceError, Research
 from .evidence import evidence_fingerprint
 from .issuer import IDENTITY_FIELD_KEYS, fill_issuer_identity, merge_identity
 from .pack_builder import PACK_CONTENT_FIELDS, PackBuilder, default_pack_source
+from .relevance import annotate_evidence, judge_link
 from .types import (
     ACTOR_API,
     ACTOR_PM,
     ASSUMPTION_STATUSES,
     IMPORTANCE_LEVELS,
     LINK_DIRECTIONS,
+    LINK_RELEVANCE,
     LINK_STRENGTHS,
     PROPOSED_ASSUMPTION_STATUSES,
     PROPOSED_STATUS_ALIASES,
@@ -318,7 +320,7 @@ class ResearchService:
             prompt_version=body.get("prompt_version"),
             payload={"op": "create_evidence", "fact": body.get("fact")},
         )
-        evidence = self.store.insert_evidence(
+        stamped = annotate_evidence(
             {
                 "ticker": symbol,
                 "evidence_type": _require_text(body, "evidence_type"),
@@ -333,6 +335,8 @@ class ResearchService:
                 "raw_reference": body.get("raw_reference") or {},
                 "excerpt": body.get("excerpt") or body.get("fact") or "",
                 "source_type": body.get("source_type") or "",
+                "source_quality": body.get("source_quality"),
+                "independence_key": body.get("independence_key"),
                 "produced_by": actor,
                 "task_id": body.get("task_id"),
                 "workflow_run_id": body.get("workflow_run_id"),
@@ -341,6 +345,7 @@ class ResearchService:
                 "prompt_version": body.get("prompt_version"),
             }
         )
+        evidence = self.store.insert_evidence(stamped)
         if not evidence.get("source_time") or not evidence.get("retrieved_at"):
             raise ProvenanceError("evidence requires source_time and retrieved_at")
         return evidence
@@ -390,6 +395,7 @@ class ResearchService:
         evidence_id: str,
         direction: str,
         strength: str | None = None,
+        relevance: str | None = None,
         reason: str | None = None,
         actor: str = ACTOR_API,
         workflow_run_id: str | None = None,
@@ -408,6 +414,12 @@ class ResearchService:
             raise CrossTickerError("assumption and evidence must belong to the same ticker")
         if assumption["ticker"] != evidence["ticker"]:
             raise CrossTickerError("cannot link evidence across tickers")
+        resolved_relevance = str(relevance or "").strip()
+        if resolved_relevance not in LINK_RELEVANCE:
+            judged = judge_link(evidence, assumption)
+            resolved_relevance = str((judged or {}).get("relevance") or "indirect")
+        if resolved_relevance not in LINK_RELEVANCE:
+            raise ProvenanceError("link relevance must be direct, indirect, or background")
         audit = self._audit(
             ticker=symbol,
             agent_name=actor,
@@ -418,6 +430,7 @@ class ResearchService:
                 "evidence_id": evidence_id,
                 "direction": direction,
                 "strength": resolved_strength,
+                "relevance": resolved_relevance,
             },
             output={"linked": True},
         )
@@ -427,6 +440,7 @@ class ResearchService:
                 "evidence_id": evidence_id,
                 "direction": direction,
                 "strength": resolved_strength,
+                "relevance": resolved_relevance,
                 "reason": reason,
                 "linked_by": actor,
                 "workflow_run_id": workflow_run_id or assumption.get("workflow_run_id"),
@@ -513,6 +527,9 @@ class ResearchService:
                 "proposed_status": proposed,
                 "reason": reason,
                 "confidence": body.get("confidence"),
+                "current_confidence": body.get("current_confidence"),
+                "confidence_delta": body.get("confidence_delta"),
+                "reasoning": body.get("reasoning") or {},
                 "supporting_count": body.get("supporting_count") or 0,
                 "opposing_count": body.get("opposing_count") or 0,
                 "contextual_count": body.get("contextual_count") or 0,
@@ -664,7 +681,15 @@ class ResearchService:
         assumption_rows = []
         linked_pairs: set[tuple[str, str, str]] = set()
 
-        def _link(assumption_id: str, evidence_id: str, *, direction: str, strength: str | None = None, reason: str | None = None) -> None:
+        def _link(
+            assumption_id: str,
+            evidence_id: str,
+            *,
+            direction: str,
+            strength: str | None = None,
+            relevance: str | None = None,
+            reason: str | None = None,
+        ) -> None:
             pair = (assumption_id, evidence_id, direction)
             if not assumption_id or not evidence_id or pair in linked_pairs:
                 return
@@ -675,6 +700,7 @@ class ResearchService:
                     evidence_id=evidence_id,
                     direction=direction,
                     strength=strength,
+                    relevance=relevance,
                     reason=reason,
                     actor=actor,
                     workflow_run_id=task.get("workflow_run_id"),
@@ -704,20 +730,28 @@ class ResearchService:
             for link in links:
                 evid = key_to_id.get(str(link.get("evidence_key") or "")) or link.get("evidence_id")
                 if evid:
-                    _link(row["id"], str(evid), direction=str(link.get("direction") or "support"), strength=link.get("strength"), reason=link.get("reason"))
+                    _link(
+                        row["id"],
+                        str(evid),
+                        direction=str(link.get("direction") or "support"),
+                        strength=link.get("strength"),
+                        relevance=link.get("relevance"),
+                        reason=link.get("reason"),
+                    )
 
         statement_to_id = {row["statement"]: row["id"] for row in existing_assumptions.values()}
         for link in output.assumption_links:
             assumption_id = str(link.get("assumption_id") or statement_to_id.get(str(link.get("statement") or "")) or "")
             evid = key_to_id.get(str(link.get("evidence_key") or "")) or link.get("evidence_id")
             if assumption_id and evid:
-                _link(assumption_id, str(evid), direction=str(link.get("direction") or "support"), strength=link.get("strength"), reason=link.get("reason"))
-        for assumption_id in output.supported_assumption_ids:
-            for row in evidence_rows[:2]:
-                _link(str(assumption_id), row["id"], direction="support", reason="agent marked supporting")
-        for assumption_id in output.challenged_assumption_ids:
-            for row in evidence_rows[:2]:
-                _link(str(assumption_id), row["id"], direction="oppose", reason="agent marked challenging")
+                _link(
+                    assumption_id,
+                    str(evid),
+                    direction=str(link.get("direction") or "contextual"),
+                    strength=link.get("strength"),
+                    relevance=link.get("relevance"),
+                    reason=link.get("reason"),
+                )
 
         follow_specs: list[FollowUpSpec] = []
         for item in output.follow_up_tasks:

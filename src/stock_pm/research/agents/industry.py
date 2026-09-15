@@ -8,16 +8,13 @@ from ..extract import (
     source_type_for_document,
     transcript_materials,
 )
+from ..relevance import annotate_evidence, assumption_kind, judged_links
 from ..templates import load_prompt, load_template
 from ..types import AGENT_INDUSTRY, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint3-industry-v1"
-
-DEMAND_CATEGORIES = {"demand", "guidance_delivery"}
-SUPPLY_CATEGORIES = {"execution", "supply"}
-COMPETITION_CATEGORIES = {"competition"}
+PROMPT_VERSION = "sprint35-industry-v1"
 
 
 class SearchTools(Protocol):
@@ -92,19 +89,21 @@ class IndustryAgent(BaseAgent):
             seen.add(key)
             kind = _kind_for(quote)
             evidence.append(
-                {
-                    "_key": f"ind-{len(evidence)+1}",
-                    "evidence_type": kind,
-                    "fact": quote,
-                    "excerpt": quote,
-                    "source": source,
-                    "source_url": source_url,
-                    "source_time": source_time,
-                    "source_type": source_type,
-                    "confidence": 0.75,
-                    "importance": "high",
-                    "raw_reference": {"kind": hit.get("kind") or "industry", "source_type": source_type},
-                }
+                annotate_evidence(
+                    {
+                        "_key": f"ind-{len(evidence)+1}",
+                        "evidence_type": kind,
+                        "fact": quote,
+                        "excerpt": quote,
+                        "source": source,
+                        "source_url": source_url,
+                        "source_time": source_time,
+                        "source_type": source_type,
+                        "confidence": 0.75,
+                        "importance": "high",
+                        "raw_reference": {"kind": hit.get("kind") or "industry", "source_type": source_type},
+                    }
+                )
             )
 
         materials: list[dict[str, Any]] = []
@@ -213,86 +212,72 @@ class IndustryAgent(BaseAgent):
         assumption_links = []
         proposals = []
         supported = []
-        challenged = []
         for assumption in payload.assumptions:
-            category = str(assumption.get("category") or "")
             assumption_id = str(assumption.get("id") or "")
             statement = str(assumption.get("statement") or "")
             if not assumption_id:
                 continue
-            related = []
-            if category in DEMAND_CATEGORIES:
-                related = [
-                    item
-                    for item in evidence
-                    if any(token in str(item.get("fact") or "").lower() for token in ("customer", "demand", "capex", "deploy"))
-                ]
-                direction = "support" if related else "contextual"
-            elif category in SUPPLY_CATEGORIES:
-                related = [
-                    item
-                    for item in evidence
-                    if any(
-                        token in str(item.get("fact") or "").lower()
-                        for token in ("supply", "capacity", "foundry", "contract", "agreement", "production")
+            links = judged_links(evidence, assumption, allow_support=True, allow_oppose=True, limit=3)
+            assumption_links.extend(links)
+            kind = assumption_kind(assumption)
+            direct_support = [
+                item
+                for item in links
+                if item.get("direction") == "support"
+                and item.get("relevance") == "direct"
+                and item.get("strength") in {"strong", "moderate"}
+            ]
+            support_any = [item for item in links if item.get("direction") == "support"]
+            current = assumption.get("confidence")
+            try:
+                current_conf = float(current) if current is not None else 0.5
+            except (TypeError, ValueError):
+                current_conf = 0.5
+            gaps = list(missing[:4])
+            if kind in {"demand_visibility", "growth_persist"} and "end_demand" in missing:
+                gaps.append("customer-side demand still lacks independent confirmation")
+            if kind == "execution" and "customer_capex" in missing:
+                gaps.append("deployment still lacks independent customer capex confirmation")
+            proposed = "unchanged"
+            delta = 0.0
+            if direct_support and len([item for item in gaps if "confirmation" in item or "capex" in item]) <= 1:
+                if kind in {"demand_visibility", "execution", "supply", "competition"}:
+                    proposed = "strengthen"
+                    delta = 0.08 if kind == "demand_visibility" else 0.05
+                    supported.append(assumption_id)
+                    reason = (
+                        f"direct industry evidence bears on this {kind} claim; "
+                        + "; ".join(item.get("reason") or "" for item in direct_support[:2])
                     )
-                ]
-                direction = "support" if related else "contextual"
-            elif category in COMPETITION_CATEGORIES:
-                related = [
-                    item
-                    for item in evidence
-                    if any(token in str(item.get("fact") or "").lower() for token in ("competitor", "competition", "share"))
-                ]
-                direction = "support" if related else "contextual"
+                else:
+                    reason = (
+                        f"industry facts are only {links[0].get('relevance') if links else 'indirect'} "
+                        "for this assumption, so the suggestion stays unchanged"
+                    )
+            elif support_any:
+                reason = (
+                    "industry evidence is related but too indirect or incomplete to strengthen this specific assumption"
+                )
+                delta = 0.03
             else:
-                related = evidence[:1]
-                direction = "contextual"
-            for item in related[:2]:
-                assumption_links.append(
-                    {
-                        "assumption_id": assumption_id,
-                        "evidence_key": item.get("_key"),
-                        "direction": direction,
-                        "strength": "moderate" if direction == "support" else "weak",
-                        "reason": "industry material relates to this assumption",
-                    }
-                )
-            if related and direction == "support":
-                supported.append(assumption_id)
-                proposals.append(
-                    {
-                        "assumption_id": assumption_id,
-                        "statement": statement,
-                        "proposed_status": "strengthen",
-                        "reason": "industry or customer-side source language supports the claim; PM still owns status",
-                        "confidence": 0.55,
-                        "unresolved_gaps": missing[:4],
-                    }
-                )
-            elif category in DEMAND_CATEGORIES and "end_demand" in missing:
-                challenged.append(assumption_id)
-                proposals.append(
-                    {
-                        "assumption_id": assumption_id,
-                        "statement": statement,
-                        "proposed_status": "weaken",
-                        "reason": "demand assumption still lacks customer-side or capex confirmation in scanned materials",
-                        "confidence": 0.45,
-                        "unresolved_gaps": missing[:4],
-                    }
-                )
-            elif assumption_id:
-                proposals.append(
-                    {
-                        "assumption_id": assumption_id,
-                        "statement": statement,
-                        "proposed_status": "unchanged",
-                        "reason": "industry pass did not change the balance of this assumption",
-                        "confidence": 0.4,
-                        "unresolved_gaps": missing[:4],
-                    }
-                )
+                reason = "no causally relevant industry evidence was found for this specific assumption"
+            proposals.append(
+                {
+                    "assumption_id": assumption_id,
+                    "statement": statement,
+                    "proposed_status": proposed,
+                    "reason": reason,
+                    "confidence": round(min(0.85, current_conf + delta), 3),
+                    "current_confidence": current_conf,
+                    "confidence_delta": delta,
+                    "reasoning": {
+                        "positives": [str(item.get("reason") or "") for item in support_any[:3]],
+                        "limits": gaps,
+                        "why": reason,
+                    },
+                    "unresolved_gaps": gaps,
+                }
+            )
 
         if missing:
             follow_ups.append(
@@ -314,10 +299,9 @@ class IndustryAgent(BaseAgent):
         if any("customer" in str(item.get("fact") or "").lower() for item in evidence):
             confidence = min(0.75, confidence + 0.1)
         return AgentOutput(
-            findings=findings,
+            findings=list(dict.fromkeys(findings)),
             new_evidence=evidence,
             supported_assumption_ids=supported,
-            challenged_assumption_ids=challenged,
             assumption_links=assumption_links,
             proposed_assumption_changes=proposals,
             follow_up_tasks=follow_ups,

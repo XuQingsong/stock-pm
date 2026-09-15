@@ -8,12 +8,13 @@ from ..extract import (
     source_type_for_document,
     transcript_materials,
 )
+from ..relevance import annotate_evidence, hard_opposing_links, judged_links
 from ..templates import load_prompt
 from ..types import AGENT_RISK, AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent
 
 
-PROMPT_VERSION = "sprint3-risk-v1"
+PROMPT_VERSION = "sprint35-risk-v1"
 
 RISK_LABELS = (
     "demand risk",
@@ -66,27 +67,29 @@ class RiskAgent(BaseAgent):
         if earnings:
             fallback = earnings[0].get("report_date")
 
-        def add_hit(hit: dict[str, Any], *, source: str, source_url: Any, source_time: Any, source_type: str, direction: str = "oppose") -> None:
+        def add_hit(hit: dict[str, Any], *, source: str, source_url: Any, source_time: Any, source_type: str) -> None:
             quote = str(hit.get("quote") or "").strip()
             key = quote.lower()
             if not quote or not source_time or key in seen:
                 return
             seen.add(key)
             evidence.append(
-                {
-                    "_key": f"risk-{len(evidence)+1}",
-                    "evidence_type": "industry" if _risk_kind(quote) == "demand" else "fundamental",
-                    "fact": quote,
-                    "excerpt": quote,
-                    "source": source,
-                    "source_url": source_url,
-                    "source_time": source_time,
-                    "source_type": source_type,
-                    "direction": direction,
-                    "confidence": 0.7,
-                    "importance": "high",
-                    "raw_reference": {"kind": _risk_kind(quote), "source_type": source_type},
-                }
+                annotate_evidence(
+                    {
+                        "_key": f"risk-{len(evidence)+1}",
+                        "evidence_type": "industry" if _risk_kind(quote) == "demand" else "fundamental",
+                        "fact": quote,
+                        "excerpt": quote,
+                        "source": source,
+                        "source_url": source_url,
+                        "source_time": source_time,
+                        "source_type": source_type,
+                        "direction": "neutral",
+                        "confidence": 0.7,
+                        "importance": "high",
+                        "raw_reference": {"kind": _risk_kind(quote), "source_type": source_type},
+                    }
+                )
             )
 
         materials = list(official_documents(pack))
@@ -151,22 +154,24 @@ class RiskAgent(BaseAgent):
                 fact = f"Post-print 5d return is {post_5d}%; this is a valuation-risk context fact, not an investment conclusion"
                 if fact.lower() not in seen:
                     evidence.append(
-                        {
-                            "_key": f"risk-{len(evidence)+1}",
-                            "evidence_type": "quant",
-                            "fact": fact,
-                            "excerpt": fact,
-                            "source": "daily_price_bars",
-                            "source_time": fallback,
-                            "source_type": "structured_provider",
-                            "direction": "oppose",
-                            "confidence": 0.5,
-                            "raw_reference": {"post_5d_return_pct": post_5d, "pe_ttm": pe},
-                        }
+                        annotate_evidence(
+                            {
+                                "_key": f"risk-{len(evidence)+1}",
+                                "evidence_type": "quant",
+                                "fact": fact,
+                                "excerpt": fact,
+                                "source": "daily_price_bars",
+                                "source_time": fallback,
+                                "source_type": "structured_provider",
+                                "direction": "neutral",
+                                "confidence": 0.5,
+                                "raw_reference": {"post_5d_return_pct": post_5d, "pe_ttm": pe},
+                            }
+                        )
                     )
 
         if evidence:
-            findings.append(f"located {len(evidence)} counter-facts or risk snippets")
+            findings.append(f"located {len(evidence)} risk snippets or market-context facts")
         else:
             findings.append("no explicit counter-facts were located; absence of opposition is itself a gap")
             missing.append("opposing_evidence")
@@ -193,38 +198,40 @@ class RiskAgent(BaseAgent):
             assumption_id = str(assumption.get("id") or "")
             if not assumption_id:
                 continue
-            category = str(assumption.get("category") or "")
-            related = evidence[:2]
-            if related:
-                challenged.append(assumption_id)
-                for item in related:
-                    assumption_links.append(
-                        {
-                            "assumption_id": assumption_id,
-                            "evidence_key": item.get("_key"),
-                            "direction": "oppose" if item.get("direction") == "oppose" else "contextual",
-                            "strength": "moderate" if category in {"demand", "execution", "guidance_delivery"} else "weak",
-                            "reason": "skeptic pass attaches counter-evidence or an alternative reading",
-                        }
-                    )
-            proposed = "unchanged"
-            reason = "skeptic pass did not find enough source-backed opposition to change the suggestion"
+            links = judged_links(evidence, assumption, allow_support=False, allow_oppose=True, limit=4)
+            assumption_links.extend(links)
+            hard = hard_opposing_links(links)
+            current = assumption.get("confidence")
+            try:
+                current_conf = float(current) if current is not None else 0.5
+            except (TypeError, ValueError):
+                current_conf = 0.5
             gaps = list(missing[:5])
-            if related and any(item.get("direction") == "oppose" for item in related):
-                proposed = "weaken"
-                reason = "counter-evidence or concentration/execution language challenges this assumption"
-            if not related:
-                gaps.append("no opposing evidence linked by the skeptic pass")
-            if category == "demand" and "demand_risk" in {item.replace(" ", "_") for item in missing}:
-                gaps.append("demand risk still lacks a customer-side negative fact")
+            if hard:
+                challenged.append(assumption_id)
+                proposed = "broken" if any(item.get("strength") == "strong" for item in hard) and len(hard) >= 2 else "weaken"
+                delta = -0.12 if proposed == "broken" else -0.07
+                reason = "hard opposing evidence: " + "; ".join(str(item.get("reason") or "") for item in hard[:2])
+            else:
+                proposed = "unchanged"
+                delta = 0.0
+                reason = "未发现足够反证"
+                gaps.append("未发现足够反证")
             proposals.append(
                 {
                     "assumption_id": assumption_id,
                     "statement": assumption.get("statement"),
                     "proposed_status": proposed,
                     "reason": reason,
-                    "confidence": 0.5 if related else 0.35,
-                    "unresolved_gaps": gaps,
+                    "confidence": round(min(0.85, max(0.15, current_conf + delta)), 3),
+                    "current_confidence": current_conf,
+                    "confidence_delta": delta,
+                    "reasoning": {
+                        "positives": [],
+                        "limits": gaps,
+                        "why": reason,
+                    },
+                    "unresolved_gaps": list(dict.fromkeys(gaps)),
                 }
             )
 

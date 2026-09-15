@@ -2,7 +2,7 @@ from pathlib import Path
 
 from stock_pm.research.classify import classify_template
 from stock_pm.research.issuer import cik_for, fiscal_year_end_month_for, merge_identity, ticker_for_cik
-from stock_pm.research.types import empty_valuation_case, follow_up_from_payload, normalize_valuation_case, LINK_DIRECTIONS, LINK_STRENGTHS
+from stock_pm.research.types import empty_valuation_case, follow_up_from_payload, normalize_valuation_case, LINK_DIRECTIONS, LINK_RELEVANCE, LINK_STRENGTHS
 
 
 def test_classify_uses_sector_and_themes_not_ticker() -> None:
@@ -36,6 +36,7 @@ def test_valuation_case_keeps_nulls() -> None:
 def test_link_polarity_includes_contextual() -> None:
     assert LINK_DIRECTIONS == ("support", "oppose", "contextual")
     assert LINK_STRENGTHS == ("strong", "moderate", "weak")
+    assert LINK_RELEVANCE == ("direct", "indirect", "background")
 
 
 def test_follow_up_spec_from_dict() -> None:

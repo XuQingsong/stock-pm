@@ -75,11 +75,11 @@ def test_postgres_research_roundtrip_and_issuer_seed() -> None:
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = 'assumption_evidence_links'
-              AND column_name IN ('strength', 'reason', 'direction')
+              AND column_name IN ('strength', 'reason', 'direction', 'relevance')
             ORDER BY column_name
             """
         )
-        assert {row["column_name"] for row in columns} == {"direction", "reason", "strength"}
+        assert {row["column_name"] for row in columns} == {"direction", "reason", "relevance", "strength"}
         again = svc.ensure_issuer("COHR")
         assert again["legal_name"] == "Coherent Corp"
         assert again["sector"] == "半导体"

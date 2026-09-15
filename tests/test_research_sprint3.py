@@ -120,6 +120,8 @@ def test_engine_aggregates_support_oppose_and_does_not_write_status() -> None:
     assert len(view["contextual_evidence"]) == 1
     assert view["status"] == "unverified"
     assert view["unresolved_gaps"]
+    assert "confidence_delta" in view
+    assert isinstance(view["reasoning"], dict)
 
 
 def test_persist_proposals_leave_assumption_status_unverified() -> None:
@@ -215,3 +217,5 @@ def test_risk_agent_seeks_counter_evidence() -> None:
     assert output.challenged_assumption_ids or output.proposed_assumption_changes
     assert any("alternative explanation" in item.lower() or "counter" in item.lower() or "concentration" in item.lower() for item in output.findings)
     assert all(item.get("proposed_status") in {"strengthen", "weaken", "unchanged", "broken"} for item in output.proposed_assumption_changes)
+    assert all(item.get("proposed_status") == "unchanged" for item in output.proposed_assumption_changes)
+    assert any("未发现足够反证" in str(item.get("reason") or "") for item in output.proposed_assumption_changes)

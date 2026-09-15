@@ -13,6 +13,13 @@ THESIS_ROLES = ("core", "supporting", "watch", "risk", "none")
 IMPORTANCE_LEVELS = ("low", "medium", "high", "critical")
 LINK_DIRECTIONS = ("support", "oppose", "contextual")
 LINK_STRENGTHS = ("strong", "moderate", "weak")
+LINK_RELEVANCE = ("direct", "indirect", "background")
+SOURCE_QUALITIES = (
+    "primary",
+    "high_quality_secondary",
+    "secondary",
+    "weak",
+)
 EVIDENCE_DIRECTIONS = ("support", "oppose", "neutral")
 TASK_STATUSES = ("pending", "running", "completed", "blocked", "cancelled")
 
@@ -103,6 +110,9 @@ PROPOSED_STATUS_ALIASES = {
     "broken": "broken",
 }
 TENSION_STATES = ("fundamentals_ahead", "price_ahead", "aligned", "unclear")
+NEGATIVE_MARKET_REACTION_TASK = (
+    "Explain the negative market reaction despite positive fundamental evidence"
+)
 
 AGENT_OUTPUT_SCHEMA = {
     "type": "object",

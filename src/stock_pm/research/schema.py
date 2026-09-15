@@ -7,12 +7,14 @@ from typing import Any
 
 from .errors import SchemaError
 from .extract import NEWS_SOURCE_TYPES, has_conclusion_language, has_priced_in_language
+from .relevance import annotate_evidence
 from .types import (
     AGENT_FUNDAMENTAL,
     AGENT_INDUSTRY,
     AGENT_QUANT,
     AGENT_RISK,
     AGENT_SEARCH,
+    LINK_RELEVANCE,
     PROPOSED_ASSUMPTION_STATUSES,
     PROPOSED_STATUS_ALIASES,
     AgentOutput,
@@ -40,6 +42,18 @@ def _clamp_confidence(value: Any) -> float | None:
         return None
     if number < 0:
         return 0.0
+    if number > 1:
+        return 1.0
+    return number
+
+
+def _clamp_delta(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number < -1:
+        return -1.0
     if number > 1:
         return 1.0
     return number
@@ -74,7 +88,7 @@ def _clean_evidence(item: Any) -> dict[str, Any] | None:
     payload.setdefault("direction", "neutral")
     if payload.get("confidence") is None:
         payload["confidence"] = 0.7 if payload["source_type"] != "structured_provider" else 0.55
-    return payload
+    return annotate_evidence(payload)
 
 
 def _clean_assumption(item: Any) -> dict[str, Any] | None:
@@ -111,14 +125,21 @@ def _clean_proposal(item: Any) -> dict[str, Any] | None:
     gaps = item.get("unresolved_gaps") or []
     if not isinstance(gaps, list):
         gaps = [gaps]
+    reasoning = item.get("reasoning") if isinstance(item.get("reasoning"), dict) else {}
+    relevance = str(item.get("relevance") or "").strip()
     payload = {
         "assumption_id": assumption_id,
         "statement": statement,
         "proposed_status": proposed,
         "reason": reason,
         "confidence": _clamp_confidence(item.get("confidence")),
+        "current_confidence": _clamp_confidence(item.get("current_confidence")),
+        "confidence_delta": _clamp_delta(item.get("confidence_delta")),
+        "reasoning": reasoning,
         "unresolved_gaps": [str(gap).strip() for gap in gaps if str(gap).strip()],
     }
+    if relevance in LINK_RELEVANCE:
+        payload["relevance"] = relevance
     return payload
 
 
