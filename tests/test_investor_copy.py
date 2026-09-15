@@ -216,6 +216,7 @@ def test_main_path_drops_english_headline_walls() -> None:
         "盘面：走坏；消息：行业利多（Profits surge to record high）；因此：当前先按盘面读。"
     )
     assert display_title("AVGO and MSFT mentioned while NVDA reports orders") == "相关新闻"
+    assert display_title("订单超预期：Profits surge to record high") == "订单超预期"
     env = synthesize_symbol_environment(
         as_of_date="2026-09-15",
         symbol="MU",

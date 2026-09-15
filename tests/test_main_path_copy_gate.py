@@ -26,7 +26,7 @@ from stock_pm.pack.copy import (
 from stock_pm.pack.overview import build_overview_payload
 from stock_pm.pack.review_page import build_review_payload
 from stock_pm.pack.stock_page import build_stock_payload
-from stock_pm.ux_copy import is_english_headline
+from stock_pm.ux_copy import display_title, is_english_headline
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -250,6 +250,23 @@ def test_packed_thesis_fields_have_no_english_headline_walls() -> None:
             assert not is_english_headline(text), field
             for token in HORIZON_ENUM_TOKENS:
                 assert token not in text, f"{field}: {token}"
+
+
+def test_display_title_keeps_chinese_remainder_of_mixed_headlines() -> None:
+    assert display_title("订单超预期：Profits surge to record high") == "订单超预期"
+    assert display_title("Profits surge to record high after export curbs ease") == "相关新闻"
+    mixed = news_card(
+        {
+            "headline": "订单超预期：Profits surge to record high after export curbs ease",
+            "summary": "",
+            "themes": ["semis"],
+            "symbol": "NVDA",
+        },
+        [{"symbol": "NVDA", "name": "NVIDIA", "themes": ["semis"], "active": True}],
+    )
+    assert mixed["title"] == "订单超预期"
+    assert "Profits surge" not in mixed["title"]
+    assert "Profits surge" in ((mixed.get("basis") or {}).get("source_title") or "")
 
 
 def test_carousel_and_featured_titles_are_chinese_not_english_walls() -> None:
