@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..deep_case import build_delivery_history
 from ..extract import (
     beat_label,
     extract_commitments,
@@ -21,7 +22,7 @@ from ..types import AGENT_FUNDAMENTAL, AGENT_INDUSTRY, AGENT_QUANT, AGENT_RISK, 
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint25-fundamental-v2"
+PROMPT_VERSION = "sprint5-fundamental-v1"
 
 
 def _stamp(row: dict[str, Any], fallback: str | None = None) -> str | None:
@@ -160,6 +161,17 @@ class FundamentalAgent(BaseAgent):
                 source=_source_for(prints_with_estimate[0]),
                 source_time=_stamp(prints_with_estimate[0]),
                 raw_reference={"sample": len(prints_with_estimate)},
+            )
+        delivery = build_delivery_history(pack)
+        if delivery.get("prints_scored") and latest:
+            findings.append("management delivery history: " + str(delivery.get("summary") or ""))
+            add_evidence(
+                fact="Management delivery versus consensus: " + str(delivery.get("summary") or ""),
+                source=_source_for(latest),
+                source_time=_stamp(latest),
+                evidence_type="fundamental",
+                raw_reference={"kind": "management_delivery", "history": delivery.get("history") or []},
+                importance="high",
             )
 
         material_rows: list[dict[str, Any]] = []

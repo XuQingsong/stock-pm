@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from ..extract import extract_commitments, extract_guidance_mentions, official_documents, source_type_for_document
+from ..deep_case import search_queries_for, stamp_evidence_side
+from ..extract import extract_commitments, extract_guidance_mentions, extract_industry_mentions, official_documents, source_type_for_document
 from ..templates import load_prompt
 from ..types import AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint25-search-v2"
+PROMPT_VERSION = "sprint5-search-v1"
 
 
 class SearchTools(Protocol):
@@ -76,19 +77,21 @@ class SearchDataAgent(BaseAgent):
                     continue
                 seen.add(quote.lower())
                 evidence.append(
-                    {
-                        "_key": f"search-{len(evidence)+1}",
-                        "evidence_type": evidence_type,
-                        "fact": quote,
-                        "excerpt": quote,
-                        "source": source,
-                        "source_url": source_url,
-                        "source_time": source_time,
-                        "source_type": source_type,
-                        "confidence": 0.75,
-                        "raw_reference": {"kind": hit.get("kind"), "source_type": source_type},
-                        "importance": "high" if hit.get("kind") == "management_commitment" else "medium",
-                    }
+                    stamp_evidence_side(
+                        {
+                            "_key": f"search-{len(evidence)+1}",
+                            "evidence_type": evidence_type,
+                            "fact": quote,
+                            "excerpt": quote,
+                            "source": source,
+                            "source_url": source_url,
+                            "source_time": source_time,
+                            "source_type": source_type,
+                            "confidence": 0.75,
+                            "raw_reference": {"kind": hit.get("kind"), "source_type": source_type},
+                            "importance": "high" if hit.get("kind") == "management_commitment" else "medium",
+                        }
+                    )
                 )
 
         profile = pack.get("company_profile") or {}
@@ -126,24 +129,46 @@ class SearchDataAgent(BaseAgent):
             )
 
         still_missing = [item for item in (needed or missing) if item in {"transcripts", "guidance_history"}]
-        if self.tools is not None and still_missing:
-            filings = _pack_filing_urls(pack)
-            try:
-                fetched_docs.extend(self.tools.official_documents(payload.ticker, filings) or [])
-                findings.append("search tools fetched official documents after structured providers were incomplete")
-            except Exception as exc:
-                findings.append(f"official document fetch incomplete: {exc}")
+        customer_needed = [
+            item
+            for item in (needed or missing)
+            if item
+            in {
+                "customer_confirmation",
+                "customer_capex",
+                "power_capacity",
+                "end_demand",
+                "supply_lock_in",
+                "supply_capacity",
+            }
+        ]
+        if self.tools is not None:
+            if still_missing:
+                filings = _pack_filing_urls(pack)
+                try:
+                    fetched_docs.extend(self.tools.official_documents(payload.ticker, filings) or [])
+                    findings.append("search tools fetched official documents after structured providers were incomplete")
+                except Exception as exc:
+                    findings.append(f"official document fetch incomplete: {exc}")
             queries = []
             if "transcripts" in still_missing:
                 queries.append(f"{payload.ticker} earnings call transcript")
             if "guidance_history" in still_missing:
                 queries.append(f"{payload.ticker} earnings release guidance")
-            for query in queries[:2]:
+            extra = search_queries_for(payload.ticker, pack, needed or customer_needed)
+            for query in extra:
+                if query not in queries:
+                    queries.append(query)
+            for query in queries[:4]:
                 try:
                     hits = self.tools.web_search(query) or []
                 except Exception:
                     hits = []
                 findings.append(f"web search for {query!r} returned {len(hits)} candidates")
+                customer_query = any(
+                    token in query.lower()
+                    for token in ("customer", "capex", "data center", "power", "foundry", "deploy", "offtake")
+                )
                 for hit in hits[:3]:
                     url = str(hit.get("url") or "")
                     if not url:
@@ -163,21 +188,49 @@ class SearchDataAgent(BaseAgent):
                             "source": "web_search",
                             "source_provider": "web_search",
                             "published_at": None,
-                            "doc_type": "transcript" if "transcript" in query else "earnings_release",
+                            "doc_type": "web_search" if customer_query else ("transcript" if "transcript" in query else "earnings_release"),
+                            "source_type": "web_search" if customer_query else None,
+                            "query": query,
                         }
                     )
             for item in fetched_docs:
                 stamp = item.get("published_at") or item.get("source_time")
                 if not stamp:
                     stamp = (pack.get("earnings_history") or [{}])[0].get("report_date")
+                source_type = str(item.get("source_type") or "") or source_type_for_document(item)
                 add_from_text(
                     str(item.get("text") or ""),
                     source=str(item.get("source") or item.get("source_provider") or "web_search"),
                     source_url=item.get("url"),
                     source_time=stamp,
-                    source_type=source_type_for_document(item),
+                    source_type=source_type,
                     evidence_type="transcript" if str(item.get("doc_type")) == "transcript" else "guidance",
                 )
+                if str(item.get("source") or "") == "web_search":
+                    seen = {str(row.get("fact") or "").lower() for row in evidence}
+                    for hit in extract_industry_mentions(str(item.get("text") or ""))[:8]:
+                        quote = str(hit.get("quote") or "").strip()
+                        if not quote or quote.lower() in seen:
+                            continue
+                        seen.add(quote.lower())
+                        evidence.append(
+                            stamp_evidence_side(
+                                {
+                                    "_key": f"search-{len(evidence)+1}",
+                                    "evidence_type": "industry",
+                                    "fact": quote,
+                                    "excerpt": quote,
+                                    "source": "web_search",
+                                    "source_url": item.get("url"),
+                                    "source_time": stamp,
+                                    "source_type": "web_search",
+                                    "confidence": 0.65,
+                                    "raw_reference": {"kind": hit.get("kind"), "query": item.get("query")},
+                                    "importance": "high",
+                                },
+                                query=str(item.get("query") or ""),
+                            )
+                        )
 
         unresolved = []
         for field in needed or missing:

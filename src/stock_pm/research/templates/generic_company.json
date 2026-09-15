@@ -12,9 +12,9 @@
     {
       "task_type": "industry_check",
       "title": "Verify industry demand, customer capex, competition, and supply",
-      "description": "Check customer demand, competitive responses, and whether supply can support the plan.",
+      "description": "Check customer demand, independent confirmation, competitive responses, and whether supply can support the plan. Keep issuer claims and customer confirmation as separate evidence families.",
       "assigned_agents": ["industry"],
-      "required_data": ["end_demand", "customer_capex", "supply_capacity"],
+      "required_data": ["end_demand", "customer_capex", "customer_confirmation", "supply_capacity"],
       "priority": 20
     },
     {

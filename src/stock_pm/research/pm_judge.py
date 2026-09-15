@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from .assumptions import engine_views_for_ticker
+from .deep_case import build_delivery_history, reaction_window, synthesize_deep_case
 from .extract import to_number
 from .quality import assess_research_quality_axes
 from .relevance import CONTRACT_RE, HARD_COUNTER_RE, assumption_kind
@@ -19,7 +20,7 @@ from .types import (
 from .valuation import attribute_target_change, build_valuation_cases, display_target
 
 
-PROMPT_VERSION = "sprint46-pm-v1"
+PROMPT_VERSION = "sprint5-pm-v1"
 ENGINE_TO_STATUS = {
     "strengthen": "strengthened",
     "weaken": "weakened",
@@ -77,6 +78,9 @@ def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = N
                 "source_quality": row.get("source_quality"),
                 "independence_key": row.get("independence_key"),
                 "evidence_type": row.get("evidence_type"),
+                "evidence_side": (row.get("raw_reference") or {}).get("evidence_side") if isinstance(row.get("raw_reference"), dict) else None,
+                "independence_family": (row.get("raw_reference") or {}).get("independence_family") if isinstance(row.get("raw_reference"), dict) else None,
+                "raw_reference": row.get("raw_reference"),
             }
         )
     return {
@@ -245,9 +249,36 @@ def adjudicate_assumption(view: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def apply_delivery_history(rulings: list[dict[str, Any]], delivery: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Use scored prints as credibility input. History is retained; a single rate is not a substitute."""
+    payload = delivery or {}
+    miss = payload.get("miss_rate")
+    summary = str(payload.get("summary") or "")
+    if not rulings:
+        return rulings
+    for row in rulings:
+        kind = str(row.get("kind") or "")
+        if kind not in {"guidance", "growth_persist", "execution", "demand_visibility"}:
+            continue
+        gaps = list(row.get("unresolved_gaps") or [])
+        if summary:
+            gaps = list(dict.fromkeys(gaps + ["management delivery history is an input to long-term commitment credibility"]))
+            row["unresolved_gaps"] = gaps[:8]
+            row["reasoning"] = (row.get("reasoning") or "") + (" Delivery history: " + summary + ".")
+        if miss is None:
+            continue
+        if miss >= 0.25 and kind in {"guidance", "growth_persist"} and row.get("final_status") == "strengthened":
+            row["final_status"] = "unchanged"
+            row["reasoning"] += " Recent scored prints include misses, so PM does not strengthen the outlook on delivery score alone."
+        elif miss >= 0.4 and kind == "guidance" and row.get("final_status") == "unchanged":
+            row["final_status"] = "weakened"
+            row["reasoning"] += " Delivery history miss-rate is elevated versus recent prints."
+    return rulings
+
+
 def explain_market_reaction(brief: dict[str, Any]) -> dict[str, Any]:
     pack = brief.get("pack") or {}
-    reaction = (pack.get("price_reaction_history") or [{}])[0]
+    reaction = reaction_window(pack)
     findings = list(brief.get("quant_findings") or [])
     evidence = list(brief.get("evidence") or [])
     tasks = brief.get("tasks") or []
@@ -414,6 +445,8 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
 def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
     views = list(brief.get("engine_views") or [])
     rulings = [adjudicate_assumption(view) for view in views]
+    delivery = build_delivery_history(brief.get("pack"))
+    apply_delivery_history(rulings, delivery)
     reaction = explain_market_reaction(brief)
     horizons = _horizon_views(brief, rulings, reaction)
     core_ids = [row["assumption_id"] for row in rulings if row.get("thesis_role") == "core"]
@@ -426,6 +459,39 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         key_assumption_ids=core_ids,
         rulings=rulings,
     )
+    deep = synthesize_deep_case(
+        brief.get("pack"),
+        evidence=brief.get("evidence") or [],
+        rulings=rulings,
+        valuation=cases,
+        mapping=cases.get("driver_map"),
+        quant_findings=brief.get("quant_findings") or [],
+        reaction=reaction,
+        ticker=brief.get("ticker"),
+    )
+    classified = deep.get("market_reaction") or {}
+    reaction = {
+        **reaction,
+        "confirmed": classified.get("confirmed") or [],
+        "plausible_unconfirmed": classified.get("plausible_unconfirmed") or [],
+        "unresolved": classified.get("unresolved") or reaction.get("unresolved") or [],
+        "summary": classified.get("summary") or reaction.get("summary"),
+        "classification": classified,
+        "applicable": classified.get("applicable", reaction.get("applicable")),
+    }
+    cal = dict(cases.get("calibration_json") or {})
+    cal["deep_case"] = deep
+    cal["market_implied_case"] = (deep.get("market_implied") or {}).get("case")
+    cal["case_columns"] = deep.get("case_columns") or {
+        "bear": cases.get("bear_case"),
+        "market_implied": (deep.get("market_implied") or {}).get("case"),
+        "base": cases.get("base_case"),
+        "bull": cases.get("bull_case"),
+    }
+    cal["delivery_history"] = deep.get("delivery_history")
+    cases["calibration_json"] = cal
+    cases["market_implied_case"] = cal["market_implied_case"]
+    cases["deep_case"] = deep
     axes = assess_research_quality_axes(
         brief.get("pack"),
         evidence=brief.get("evidence"),
@@ -452,9 +518,19 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
     invalidation = list(dict.fromkeys(row.get("invalidation_condition") for row in rulings if row.get("thesis_role") == "core"))
     if not invalidation:
         invalidation = ["core delivery claims fail in subsequent official reports"]
-    monitoring = list(dict.fromkeys([row.get("next_verification") for row in rulings if row.get("next_verification")] + (reaction.get("unresolved") or [])))
+    golden = deep.get("golden_answers") or {}
+    monitoring = list(
+        dict.fromkeys(
+            [item for item in (golden.get("monitor") or []) if item]
+            + [row.get("next_verification") for row in rulings if row.get("next_verification")]
+            + (reaction.get("unresolved") or [])
+        )
+    )
+    quality_payload = dict(axes)
+    quality_payload["golden_answers"] = golden
+    quality_payload["management_delivery"] = delivery
     thesis = {
-        "core_thesis": _core_thesis(brief, rulings, horizons, reaction),
+        "core_thesis": _core_thesis(brief, rulings, horizons, reaction) + " " + str(golden.get("core_thesis") or ""),
         "short_term_view": horizons["short_term_view"],
         "mid_term_view": horizons["mid_term_view"],
         "long_term_view": horizons["long_term_view"],
@@ -466,7 +542,7 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         "invalidation_conditions": [item for item in invalidation if item][:8],
         "monitoring_items": [item for item in monitoring if item][:10],
         "confidence": thesis_confidence,
-        "research_quality": axes,
+        "research_quality": quality_payload,
         "market_reaction": reaction["summary"],
         "prompt_version": PROMPT_VERSION,
     }
@@ -477,6 +553,7 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         "market_reaction": reaction,
         "research_quality": axes,
         "monitoring_assumption_ids": monitoring_ids,
+        "deep_case": deep,
         "prompt_version": PROMPT_VERSION,
         "agent_name": AGENT_PM,
     }
@@ -569,6 +646,7 @@ def record_pm_judgment(
         "thesis_diff": diff,
         "market_reaction": judgment["market_reaction"],
         "research_quality": judgment["research_quality"],
+        "deep_case": judgment.get("deep_case"),
         "prompt_version": PROMPT_VERSION,
         "produced_by": ACTOR_PM,
     }

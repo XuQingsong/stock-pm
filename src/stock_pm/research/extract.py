@@ -388,6 +388,7 @@ def source_type_for_document(row: dict[str, Any] | None) -> str:
         "conference_remarks": "conference_remarks",
         "press_release": "press_release",
         "guidance": "earnings_release",
+        "web_search": "web_search",
     }
     if explicit in mapping:
         return mapping[explicit]

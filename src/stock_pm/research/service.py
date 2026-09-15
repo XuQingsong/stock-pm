@@ -9,6 +9,7 @@ from typing import Any
 from datetime import datetime, timezone
 
 from .classify import classify_from_issuer, classify_template
+from .deep_case import stamp_evidence_side
 from .errors import CrossTickerError, DepthLimitError, ProvenanceError, ResearchPermissionError
 from .evidence import evidence_fingerprint
 from .issuer import IDENTITY_FIELD_KEYS, fill_issuer_identity, merge_identity
@@ -362,6 +363,8 @@ class ResearchService:
                 "source_type": body.get("source_type") or "",
                 "source_quality": body.get("source_quality"),
                 "independence_key": body.get("independence_key"),
+                "evidence_side": body.get("evidence_side"),
+                "independence_family": body.get("independence_family"),
                 "produced_by": actor,
                 "task_id": body.get("task_id"),
                 "workflow_run_id": body.get("workflow_run_id"),
@@ -370,6 +373,7 @@ class ResearchService:
                 "prompt_version": body.get("prompt_version"),
             }
         )
+        stamp_evidence_side(stamped)
         evidence = self.store.insert_evidence(stamped)
         if not evidence.get("source_time") or not evidence.get("retrieved_at"):
             raise ProvenanceError("evidence requires source_time and retrieved_at")

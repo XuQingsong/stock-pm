@@ -12,9 +12,9 @@
     {
       "task_type": "industry_check",
       "title": "Verify industry demand, customer capex, competition, and supply",
-      "description": "Check downstream demand, project capacity, and whether production plans are supported outside issuer commentary.",
+      "description": "Check downstream demand, project capacity, and whether production plans are supported outside issuer commentary. Keep issuer claims and independent confirmation as separate evidence families.",
       "assigned_agents": ["industry"],
-      "required_data": ["end_demand", "supply_capacity", "customer_capex"],
+      "required_data": ["end_demand", "supply_capacity", "customer_capex", "customer_confirmation"],
       "priority": 20
     },
     {

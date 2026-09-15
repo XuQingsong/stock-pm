@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
+from ..deep_case import search_queries_for, stamp_evidence_side
 from ..extract import (
     extract_industry_mentions,
     official_documents,
@@ -14,7 +15,7 @@ from ..types import AGENT_INDUSTRY, AGENT_SEARCH, AgentInput, AgentOutput, Follo
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint35-industry-v1"
+PROMPT_VERSION = "sprint5-industry-v1"
 
 
 class SearchTools(Protocol):
@@ -49,6 +50,8 @@ def _axis_gaps(template: dict[str, Any], quotes: list[str]) -> list[str]:
         "end_demand": ("customer", "demand", "hyperscal"),
         "supply_capacity": ("supply", "capacity", "foundry", "production"),
         "competition": ("competitor", "competition", "market share"),
+        "power_capacity": ("power", "electric", "data center", "grid"),
+        "customer_confirmation": ("customer", "hyperscal", "deploy"),
     }
     for axis in template.get("question_axes") or []:
         axis_id = str(axis.get("id") or "")
@@ -81,7 +84,7 @@ class IndustryAgent(BaseAgent):
         if earnings:
             fallback_stamp = earnings[0].get("report_date")
 
-        def add_hit(hit: dict[str, Any], *, source: str, source_url: Any, source_time: Any, source_type: str) -> None:
+        def add_hit(hit: dict[str, Any], *, source: str, source_url: Any, source_time: Any, source_type: str, query: str | None = None) -> None:
             quote = str(hit.get("quote") or "").strip()
             key = quote.lower()
             if not quote or not source_time or key in seen:
@@ -89,20 +92,23 @@ class IndustryAgent(BaseAgent):
             seen.add(key)
             kind = _kind_for(quote)
             evidence.append(
-                annotate_evidence(
-                    {
-                        "_key": f"ind-{len(evidence)+1}",
-                        "evidence_type": kind,
-                        "fact": quote,
-                        "excerpt": quote,
-                        "source": source,
-                        "source_url": source_url,
-                        "source_time": source_time,
-                        "source_type": source_type,
-                        "confidence": 0.75,
-                        "importance": "high",
-                        "raw_reference": {"kind": hit.get("kind") or "industry", "source_type": source_type},
-                    }
+                stamp_evidence_side(
+                    annotate_evidence(
+                        {
+                            "_key": f"ind-{len(evidence)+1}",
+                            "evidence_type": kind,
+                            "fact": quote,
+                            "excerpt": quote,
+                            "source": source,
+                            "source_url": source_url,
+                            "source_time": source_time,
+                            "source_type": source_type,
+                            "confidence": 0.75,
+                            "importance": "high",
+                            "raw_reference": {"kind": hit.get("kind") or "industry", "source_type": source_type},
+                        }
+                    ),
+                    query=query,
                 )
             )
 
@@ -135,18 +141,21 @@ class IndustryAgent(BaseAgent):
             )
 
         if self.tools is not None:
-            queries = [
-                f"{payload.ticker} customer capital expenditure data center",
-                f"{payload.ticker} supply capacity production",
-                f"{payload.ticker} market share competition",
-            ]
+            needed = [str(item) for item in (payload.task.get("required_data") or [])]
+            queries = search_queries_for(payload.ticker, pack, needed)
+            if not queries:
+                queries = [
+                    f"{payload.ticker} customer capital expenditure data center",
+                    f"{payload.ticker} supply capacity production",
+                    f"{payload.ticker} market share competition",
+                ]
             try:
                 fetched = self.tools.official_documents(payload.ticker, None) or []
                 materials.extend(fetched)
                 findings.append("industry tools fetched additional official documents")
             except Exception as exc:
                 findings.append(f"industry official fetch incomplete: {exc}")
-            for query in queries[:2]:
+            for query in queries[:3]:
                 try:
                     hits = self.tools.web_search(query) or []
                 except Exception:
@@ -169,7 +178,8 @@ class IndustryAgent(BaseAgent):
                             "url": url,
                             "source": "web_search",
                             "published_at": fallback_stamp,
-                            "source_type": "official_document",
+                            "source_type": "web_search",
+                            "query": query,
                         }
                     )
 
@@ -184,7 +194,8 @@ class IndustryAgent(BaseAgent):
                     source=str(material.get("source") or material.get("source_provider") or "official"),
                     source_url=material.get("url") or material.get("source_url"),
                     source_time=stamp,
-                    source_type=source_type_for_document(material),
+                    source_type=source_type_for_document(material) if str(material.get("source_type") or "") != "web_search" else "web_search",
+                    query=str(material.get("query") or "") or None,
                 )
 
         quotes = [str(item.get("fact") or "") for item in evidence]
@@ -234,9 +245,9 @@ class IndustryAgent(BaseAgent):
             except (TypeError, ValueError):
                 current_conf = 0.5
             gaps = list(missing[:4])
-            if kind in {"demand_visibility", "growth_persist"} and "end_demand" in missing:
+            if kind in {"demand_visibility", "growth_persist"} and ("end_demand" in missing or "customer_confirmation" in missing):
                 gaps.append("customer-side demand still lacks independent confirmation")
-            if kind == "execution" and "customer_capex" in missing:
+            if kind == "execution" and ("customer_capex" in missing or "power_capacity" in missing):
                 gaps.append("deployment still lacks independent customer capex confirmation")
             proposed = "unchanged"
             delta = 0.0
