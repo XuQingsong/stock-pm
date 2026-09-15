@@ -1,0 +1,83 @@
+{
+  "AAPL": {
+    "legal_name": "Apple Inc",
+    "cik": "0000320193",
+    "fiscal_year_end_month": 9,
+    "sector": "消费电子",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["apple"]
+  },
+  "NVDA": {
+    "legal_name": "NVIDIA Corp",
+    "cik": "0001045810",
+    "fiscal_year_end_month": 1,
+    "sector": "半导体",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["nvidia"]
+  },
+  "XOM": {
+    "legal_name": "Exxon Mobil Corp",
+    "cik": "0000034088",
+    "fiscal_year_end_month": 12,
+    "sector": "能源",
+    "primary_exchange": "NYSE",
+    "asset_class": "stocks",
+    "aliases": ["exxon", "exxonmobil"]
+  },
+  "JPM": {
+    "legal_name": "JPMorgan Chase & Co",
+    "cik": "0000019617",
+    "fiscal_year_end_month": 12,
+    "sector": "银行",
+    "primary_exchange": "NYSE",
+    "asset_class": "stocks",
+    "aliases": ["jpmorgan"]
+  },
+  "MU": {
+    "legal_name": "Micron Technology Inc",
+    "cik": "0000723125",
+    "fiscal_year_end_month": 8,
+    "sector": "半导体",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["micron"]
+  },
+  "INTC": {
+    "legal_name": "Intel Corp",
+    "cik": "0000050863",
+    "fiscal_year_end_month": 12,
+    "sector": "半导体",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["intel"]
+  },
+  "GOOGL": {
+    "legal_name": "Alphabet Inc Class A",
+    "cik": "0001652044",
+    "fiscal_year_end_month": 12,
+    "sector": "互联网",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["alphabet", "google"]
+  },
+  "AVGO": {
+    "legal_name": "Broadcom Inc",
+    "cik": "0001730168",
+    "fiscal_year_end_month": 10,
+    "sector": "半导体",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["broadcom"]
+  },
+  "NOK": {
+    "legal_name": "Nokia Corp ADR",
+    "cik": "0000924619",
+    "fiscal_year_end_month": 12,
+    "sector": "通信设备",
+    "primary_exchange": "NYSE",
+    "asset_class": "stocks",
+    "aliases": ["nokia"]
+  }
+}

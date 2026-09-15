@@ -173,16 +173,25 @@ def parse_av_earnings(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def _issuer_cik(symbol: str) -> str:
+    try:
+        from stock_pm.research.issuer import cik_for
+
+        return cik_for(symbol) or WATCH_CIKS.get(symbol.upper(), "")
+    except Exception:
+        return WATCH_CIKS.get(symbol.upper(), "")
+
+
 def sec_company_8k_url(symbol: str) -> str:
     """Company 8-K search page. Not a citation of a specific earnings print."""
-    cik = WATCH_CIKS.get(symbol.upper(), "")
+    cik = _issuer_cik(symbol)
     if not cik:
         return ""
     return f"{SEC_COMPANY_ATOM}?action=getcompany&CIK={cik}&type=8-K&owner=include&count=8"
 
 
 def company_8k_atom_url(symbol: str) -> str:
-    cik = WATCH_CIKS.get(symbol.upper(), "")
+    cik = _issuer_cik(symbol)
     if not cik:
         return ""
     return (

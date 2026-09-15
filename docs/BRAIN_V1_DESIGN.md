@@ -1,8 +1,10 @@
 # Stock-PM Brain V1：设计与改造计划
 
-> 状态：设计冻结草案（本文件只定架构与 Sprint 1 文件级计划，不改生产主流程）。
+> 状态：总体设计已通过。评审修订（2026-09-15）已纳入 Sprint 1。
 > 目标：把系统从「信息展示 / 新闻聚合 / 日循环判断」升级为「Evidence → Assumption → Thesis → Valuation → Monitoring → Review」的可持续研究系统。
 > AVGO 只是 Golden Case 测试数据，禁止任何 ticker 专属流程代码。
+>
+> 已确认：不重写现网；Brain 作为独立研究主链。不引入 VoltAgent runtime，只借 Agent 思想。
 
 本文回答五件事：
 
@@ -292,13 +294,33 @@ ResearchPack 是 **可重建快照**，不是第二套行情库。
 
 Sprint 1 允许只存空壳 + `missing_fields`；Sprint 2 builder 填实。
 
-#### `research_runs`（Sprint 1 建表，Sprint 2 才写）
+#### `research_workflow_runs` / `research_agent_runs`
 
-一次 workflow 执行的审计日志：`id, ticker, trigger, status, template_id, task_ids, agent_outputs_ref, error, started_at, completed_at`。
+Sprint 1 就要真正写入，不是空表。
+
+`research_workflow_runs`：`id, ticker, workflow_name, trigger, template_id, status, config_json(max_depth,max_tasks), item_counts, error, started_at, completed_at`
+
+`research_agent_runs`：`id, workflow_run_id, task_id, ticker, agent_name, model, prompt_version, input_hash, output_json, confidence, status, error, started_at, completed_at`
+
+### 3.1b 评审修订后必须进入 Sprint 1 的对象
+
+1. **`issuer_profiles`**（不再等到 Sprint 6）  
+   新 ticker 的基础身份：CIK、fiscal year end、legal name、aliases、sector、exchange。身份是数据，不是流程 if/else。未知字段 Honest 留空，禁止发明。
+
+2. **`assumption_evidence_links`**  
+   Evidence ↔ Assumption 多对多；一条 Evidence 可支持/反对多条 Assumption。
+
+3. **Assumption `importance` / `thesis_role`**  
+   区分核心假设与普通假设。`thesis_role=core` 只能由 `pm_judge` 设定。
+
+4. **ResearchTask 树：`parent_task_id` / `root_task_id` / `depth`**  
+   Workflow 从 Sprint 1 起就是队列 + 递归 follow-up，不是一轮流水线。`max_depth` / `max_tasks` 截断并记审计，不丢原因。
+
+5. **`research_workflow_runs` + `research_agent_runs`**  
+   从 Sprint 1 就保存 `agent` / `model` / `prompt_version` / `workflow_run_id`，给以后 Learning 打底。API 人工写入也要落一条 agent_run（`human_api` 或 `pm_judge`）。
 
 ### 3.2 不在 Sprint 1 建、但预留
 
-- `issuer_profiles`（CIK、FYE、GICS）→ Sprint 6 去耦合
 - `monitoring_items` 独立表 → Sprint 7
 - `review_evaluations` → Review/Learning 后续
 - `research_templates` 表：V1 用仓库内 JSON，不入库
@@ -448,11 +470,10 @@ Agent 实现约定：
 5. **新闻不得改 Brain Thesis**  
    现有 `trusted_events` → desk 判断链保持。Brain 监控路径：新闻 → Evidence → 匹配 Assumption → 是否提请 PM。没有 PM 步骤就没有新 Thesis 版本。
 
-### 5.2 应改但可晚于 POC（Sprint 6）
+### 5.2 应改但可晚于 POC
 
-1. `WATCH_CIKS` / `FISCAL_YEAR_END_MONTH` → `issuer_profiles` 数据。未知 issuer：Honest 降级，不发明 CIK/FYE。
-2. `ENTITY_ALIASES` / `SEMIS_MARKERS` / 新闻关键词里的公司名 → 配置或 issuer 别名，避免新票映射失败。
-3. `fundamentals_thesis_view` 降级为 ResearchPack 的一个只读摘要字段，不再叫 thesis。
+1. `ENTITY_ALIASES` / `SEMIS_MARKERS` / 新闻关键词里的公司名 → issuer aliases（Sprint 6 事件映射）。Sprint 1 先把 CIK/FYE 查表切到 `issuer_profiles` + 身份目录。
+2. `fundamentals_thesis_view` 降级为 ResearchPack 的一个只读摘要字段，不再叫 thesis。
 
 ### 5.3 不要改
 
@@ -577,12 +598,32 @@ GET    /api/research/{symbol}/pack                   # Sprint 1：表内快照�
 8. 不存在从 `news_articles` 或 `trusted_events` 直接写 `investment_theses` 的 store 方法。
 9. `research/` 源码与未来 prompt 目录不得出现 `30GW`、`if symbol == "AVGO"` 一类分支。
 
-### 7.5 Sprint 1 验收
+### 7.5 Sprint 1 验收（评审修订后）
 
-- `python -m stock_pm.migrate` 后 `0004_research_brain` 在 `schema_migrations`。
-- `pytest tests/test_research_*.py -q` 过。
-- 现有 `tests/test_decision_kernel.py`、`tests/test_pack_desk.py`、desk API 测试无回归。
-- 用任意 ticker（测试里可用 `FAKE` 或自选里已有符号）走完：建 task → 建 evidence → 建 assumption → link →（非 pm 写 thesis 失败）→ pm 写 thesis v1 → 再写 v2 → history 两条且 v1 正文未变。
+Sprint 1 **有**，Sprint 1 **没有**：
+
+有：表、issuer 身份、CRUD API、PM 写权限墙、Assumption↔Evidence 多对多、Assumption importance/thesis_role、递归 follow-up 队列、workflow/agent 审计字段。  
+没有：真实 LLM Agent、行业 Template 执行、个股研究 UI、AVGO Golden Case 自动发现 30GW。
+
+验证命令：
+
+```bash
+python -m stock_pm.migrate
+pytest tests/test_research_*.py tests/test_api.py tests/test_decision_kernel.py tests/test_pack_desk.py -q
+```
+
+人工/API 走通（任意 ticker，例如 `ZZZZ` 或新票 `COHR`）：
+
+1. `PUT /api/research/{symbol}/issuer` → 有 issuer 行；未知 CIK 为 null，不编造
+2. `POST /api/research/{symbol}/workflow/runs` → 生成 `workflow_run`
+3. 建 task → evidence（无 source/time 失败）→ assumption（强制 unverified）
+4. `POST .../assumptions/{id}/links` 多对多
+5. 非 `pm_judge` 写 thesis / 改 status → 403
+6. `pm_judge` 写 thesis v1 再写 v2，history 两条且 v1 正文不变
+7. follow-up 任务 `depth` 递增；超过 `max_depth` 被丢弃并记入 `item_counts.dropped_follow_ups`
+8. 每次写入都能在 `.../workflow/runs/{id}/agent-runs` 看到 `agent_name` / `model` / `prompt_version` / `input_hash`
+
+扫描：`tests/test_research_no_ticker_coupling.py` 禁止 `research/` 生产代码出现 ticker 分支或 30GW。
 
 ### 7.6 建议实现顺序（仍在 Sprint 1 内）
 
@@ -604,7 +645,7 @@ GET    /api/research/{symbol}/pack                   # Sprint 1：表内快照�
 | 3 | Assumption Engine 实装、Industry、Quant、Risk | Quant 不输出 `priced_in` |
 | 4 | PM/Judge、Thesis 版本 diff、Valuation | 其他 Agent 不得调 thesis store |
 | 5 | AVGO Golden Case 夹具驱动，调 prompt/工具 | 不把 30GW 写进代码 |
-| 6 | NVDA/XOM/COHR 复用；issuer_profiles 替换 CIK/FYE 硬编码 | 不改 `workflow.py` 主逻辑 |
+| 6 | NVDA/XOM/COHR 复用；清事件映射里残留的公司名词典 | 不改 `workflow.py` 主逻辑 |
 | 7 | 个股研究区 UI + 增量 Monitoring | 不重做首页；Narrative/Review 可继续 stub |
 
 ---

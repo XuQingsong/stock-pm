@@ -9,6 +9,8 @@ __pycache__/
 data/
 !src/stock_pm/data/
 !src/stock_pm/data/*.json
+!src/stock_pm/research/data/
+!src/stock_pm/research/data/*.json
 build/
 dist/
 *.egg-info/

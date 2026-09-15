@@ -207,7 +207,14 @@ def period_month_key(fiscal_date_ending: str) -> str:
 def fiscal_quarter_id(symbol: str, fiscal_date_ending: str) -> str:
     """Map period-end to issuer fiscal quarter under fiscal_quarter.v1."""
     ending = _as_date(fiscal_date_ending)
-    fye = FISCAL_YEAR_END_MONTH.get(str(symbol or "").upper())
+    try:
+        from stock_pm.research.issuer import fiscal_year_end_month_for
+
+        fye = fiscal_year_end_month_for(str(symbol or ""))
+    except Exception:
+        fye = None
+    if fye is None:
+        fye = FISCAL_YEAR_END_MONTH.get(str(symbol or "").upper())
     if ending is None or fye is None:
         return ""
     if fye == 12:

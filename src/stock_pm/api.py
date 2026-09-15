@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .database import Database
 from .errors import DatabaseError
+from .research.api import router as research_router
 from .review import retry_reviews_for_llm
 
 SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9.]{0,9}$")
@@ -89,10 +90,12 @@ app = FastAPI(
         "Watchlist analysis API. Knife 4: Prediction "
         "(/api/stock/{symbol}/prediction, /predictions, /prediction/checks) "
         "and judgment-change supersede. Knife 3 TapeAnalysis and Knife 2 "
-        "EnvironmentSnapshot remain as premises."
+        "EnvironmentSnapshot remain as premises. Brain research lives under "
+        "/api/research and does not replace the daily desk."
     ),
     lifespan=lifespan,
 )
+app.include_router(research_router)
 
 
 def _http_error(exc: Exception) -> HTTPException:
@@ -293,6 +296,20 @@ def add_watchlist(
         database.upsert_watchlist(row)
     except DatabaseError as exc:
         raise _http_error(exc) from exc
+    try:
+        from .research.service import ResearchService
+        from .research.store import ResearchStore
+
+        ResearchService(ResearchStore(database)).ensure_issuer(
+            symbol,
+            legal_name=row["name"],
+            sector=row.get("sector"),
+            primary_exchange=row.get("primary_exchange") or "",
+            asset_class=row.get("asset_class") or "stocks",
+            source="watchlist",
+        )
+    except Exception:
+        pass
     background.add_task(_backfill_symbol, symbol)
     return {"status": "added", "symbol": symbol, "backfill": "scheduled"}
 

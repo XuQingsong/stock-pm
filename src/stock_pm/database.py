@@ -91,6 +91,10 @@ class Database(QueryMixin, PersistMixin):
                 verify = verify_migrations(conn)
                 if verify["status"] != "ok":
                     raise DatabaseError(f"migration verify failed: {verify}")
+                from psycopg.types.json import Jsonb
+
+                from .research.issuer import merge_identity
+
                 for item in DEFAULT_WATCHLIST.values():
                     conn.execute(
                         """
@@ -109,6 +113,32 @@ class Database(QueryMixin, PersistMixin):
                             list(item.themes),
                             item.rate_sensitivity,
                         ),
+                    )
+                    identity = merge_identity(
+                        item.symbol,
+                        legal_name=item.name,
+                        sector=item.sector,
+                        primary_exchange=item.primary_exchange,
+                        asset_class=item.asset_class,
+                        source="watchlist_seed",
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO issuer_profiles (
+                            ticker, legal_name, cik, fiscal_year_end_month, sector,
+                            primary_exchange, asset_class, aliases, missing_fields, source
+                        )
+                        VALUES (
+                            %(ticker)s, %(legal_name)s, %(cik)s, %(fiscal_year_end_month)s,
+                            %(sector)s, %(primary_exchange)s, %(asset_class)s, %(aliases)s,
+                            %(missing_fields)s, %(source)s
+                        )
+                        ON CONFLICT (ticker) DO NOTHING
+                        """,
+                        {
+                            **identity,
+                            "missing_fields": Jsonb(identity.get("missing_fields") or []),
+                        },
                     )
         except DatabaseError:
             raise
