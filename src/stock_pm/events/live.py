@@ -39,6 +39,7 @@ from .bodies import (
     resolve_redirect_url,
 )
 from .feeds import RateLimiter, fetch_feed, parse_feed_items, strip_markup
+from .budget import BudgetTimeout, budget_exhausted, call_with_timeout, provider_timeout_seconds
 from .policy import events_data_mode, is_safe_public_http_url
 from .types import EventDocument
 
@@ -799,8 +800,31 @@ def discover_live_documents(settings: Settings | None = None) -> list[EventDocum
     """Each provider is isolated. One failure does not stop the others."""
     rows: list[EventDocument] = []
     for provider in live_provider_instances(settings):
+        if budget_exhausted():
+            _record(
+                provider.name,
+                status="upstream_error",
+                reason_code="timeout",
+                docs=[],
+                live=False,
+                request_url=getattr(provider, "name", ""),
+            )
+            continue
+        timeout = provider_timeout_seconds()
         try:
-            rows.extend(provider.discover())
+            if timeout is None:
+                rows.extend(provider.discover())
+            else:
+                rows.extend(call_with_timeout(provider.discover, timeout))
+        except BudgetTimeout:
+            _record(
+                provider.name,
+                status="upstream_error",
+                reason_code="timeout",
+                docs=[],
+                live=False,
+                request_url=getattr(provider, "name", ""),
+            )
         except Exception as exc:
             _record(
                 provider.name,

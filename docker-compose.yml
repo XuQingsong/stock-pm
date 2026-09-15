@@ -17,6 +17,7 @@ services:
   app:
     build: .
     restart: unless-stopped
+    # Dockerfile CMD uses uvicorn --workers 2 so one blocked assemble cannot 502 /health.
     environment:
       DATABASE_URL: postgresql://stock_pm:${POSTGRES_PASSWORD}@postgres:5432/stock_pm
       DATABASE_POOL_SIZE: 8

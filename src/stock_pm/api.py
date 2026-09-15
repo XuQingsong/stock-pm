@@ -12,7 +12,7 @@ from typing import Annotated
 import uvicorn
 from fastapi import BackgroundTasks, Body, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 
 from .database import Database
 from .errors import DatabaseError
@@ -28,7 +28,7 @@ def _warm_event_book() -> None:
     try:
         from .events.service import build_event_book
 
-        build_event_book()
+        build_event_book(refresh=True)
     except Exception as exc:
         print(json.dumps({"events_warm_error": type(exc).__name__, "affects_chain": "events"}, ensure_ascii=False))
 
@@ -349,43 +349,43 @@ def market_events(
 
 
 @app.get("/api/events")
-def api_market_events(request: Request, macro_inject: str | None = Query(None)) -> dict:
+async def api_market_events(request: Request, macro_inject: str | None = Query(None)) -> dict:
     from .decision.inject import inject_allowed
     from .events.service import market_center
 
     tokens = None
     if inject_allowed():
         tokens = macro_inject or request.headers.get("x-stock-pm-macro-inject")
-        return market_center(inject=tokens)
-    return market_center()
+        return await run_in_threadpool(market_center, inject=tokens)
+    return await run_in_threadpool(market_center)
 
 
 @app.get("/api/events/coverage")
-def api_events_coverage() -> dict:
+async def api_events_coverage() -> dict:
     from .events.service import coverage
 
-    return coverage()
+    return await run_in_threadpool(coverage)
 
 
 @app.get("/api/events/{event_id}")
-def api_event_detail(event_id: str) -> dict:
+async def api_event_detail(event_id: str) -> dict:
     from .events.service import event_detail
 
-    payload = event_detail(event_id)
+    payload = await run_in_threadpool(event_detail, event_id)
     if not payload:
         raise HTTPException(status_code=404, detail="event_not_found")
     return payload
 
 
 @app.get("/api/stock/{symbol}/events")
-def api_stock_events(symbol: str, request: Request, macro_inject: str | None = Query(None)) -> dict:
+async def api_stock_events(symbol: str, request: Request, macro_inject: str | None = Query(None)) -> dict:
     from .decision.inject import inject_allowed
     from .events.service import stock_events
 
     if inject_allowed():
         tokens = macro_inject or request.headers.get("x-stock-pm-macro-inject")
-        return stock_events(symbol, inject=tokens)
-    return stock_events(symbol)
+        return await run_in_threadpool(stock_events, symbol, inject=tokens)
+    return await run_in_threadpool(stock_events, symbol)
 
 
 @app.get("/api/market/news")
@@ -918,33 +918,33 @@ def briefing(date_: Annotated[str | None, Query(alias="date")] = None) -> dict:
 
 
 @app.get("/api/desk/overview")
-def desk_overview() -> dict:
+async def desk_overview() -> dict:
     from .pack.assemble import build_overview
 
     try:
-        return build_overview(database)
+        return await run_in_threadpool(build_overview, database)
     except DatabaseError:
         return _degraded_payload("desk_overview", featured=None, carousel=[], focus={"priority": [], "watch": [], "skip": []})
 
 
 @app.get("/api/desk/stock/{symbol}")
-def desk_stock(symbol: str) -> dict:
+async def desk_stock(symbol: str) -> dict:
     from .pack.assemble import build_stock
 
     if not SYMBOL_PATTERN.fullmatch(symbol.upper()):
         raise HTTPException(status_code=400, detail="invalid symbol")
     try:
-        return build_stock(database, symbol.upper())
+        return await run_in_threadpool(build_stock, database, symbol.upper())
     except DatabaseError:
         return _degraded_payload("desk_stock", symbol=symbol.upper())
 
 
 @app.get("/api/desk/review")
-def desk_review() -> dict:
+async def desk_review() -> dict:
     from .pack.assemble import build_review
 
     try:
-        return build_review(database)
+        return await run_in_threadpool(build_review, database)
     except DatabaseError:
         return _degraded_payload("desk_review", formal=[], observations=[], learning=[])
 
@@ -1123,7 +1123,8 @@ app.mount(
 
 
 def run() -> None:
-    uvicorn.run("stock_pm.api:app", host="127.0.0.1", port=8000, reload=False)
+    # workers>=2 keeps /health and static pages up if one worker is in discovery.
+    uvicorn.run("stock_pm.api:app", host="127.0.0.1", port=8000, reload=False, workers=2)
 
 
 if __name__ == "__main__":

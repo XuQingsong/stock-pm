@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 from stock_pm.config import Settings
 
+from .budget import budget_exhausted, capped_timeout, remaining_seconds
 from .live import live_provider_coverage
 from .policy import events_data_mode, is_safe_public_http_url, redact_url, sanitize_untrusted
 from .replay import RecordedReplayProvider
@@ -201,9 +202,13 @@ class GoogleDiscoveryProvider:
         req = Request(raw_url, headers={"User-Agent": "stock-pm-events/5b"})
         payload: dict[str, Any] = {}
         last_error: Exception | None = None
-        for attempt in range(3):
+        attempts = 1 if remaining_seconds() is not None else 3
+        for attempt in range(attempts):
+            if budget_exhausted():
+                self.last_error = "timeout"
+                return []
             try:
-                with urlopen(req, timeout=12) as resp:
+                with urlopen(req, timeout=capped_timeout(12)) as resp:
                     payload = json.loads(resp.read().decode("utf-8"))
                 last_error = None
                 break
