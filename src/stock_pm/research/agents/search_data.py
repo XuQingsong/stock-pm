@@ -2,14 +2,20 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from ..deep_case import search_queries_for, stamp_evidence_side
+from ..deep_case import (
+    customer_search_program,
+    fetch_demand_side_documents,
+    filer_in_query,
+    search_queries_for,
+    stamp_evidence_side,
+)
 from ..extract import extract_commitments, extract_guidance_mentions, extract_industry_mentions, official_documents, source_type_for_document
 from ..templates import load_prompt
 from ..types import AGENT_SEARCH, AgentInput, AgentOutput, FollowUpSpec
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint5-search-v1"
+PROMPT_VERSION = "sprint5-search-v2"
 
 
 class SearchTools(Protocol):
@@ -67,7 +73,18 @@ class SearchDataAgent(BaseAgent):
         findings: list[str] = []
         fetched_docs: list[dict[str, Any]] = []
 
-        def add_from_text(text: str, *, source: str, source_url: Any, source_time: Any, source_type: str, evidence_type: str) -> None:
+        def add_from_text(
+            text: str,
+            *,
+            source: str,
+            source_url: Any,
+            source_time: Any,
+            source_type: str,
+            evidence_type: str,
+            query: str | None = None,
+            customer_ticker: str | None = None,
+            candidate_type: str | None = None,
+        ) -> None:
             if not str(text).strip() or not source_time:
                 return
             seen = {str(item.get("fact") or "").lower() for item in evidence}
@@ -90,7 +107,11 @@ class SearchDataAgent(BaseAgent):
                             "confidence": 0.75,
                             "raw_reference": {"kind": hit.get("kind"), "source_type": source_type},
                             "importance": "high" if hit.get("kind") == "management_commitment" else "medium",
-                        }
+                        },
+                        query=query,
+                        ticker=payload.ticker,
+                        customer_ticker=customer_ticker,
+                        candidate_type=candidate_type,
                     )
                 )
 
@@ -156,10 +177,21 @@ class SearchDataAgent(BaseAgent):
             if "guidance_history" in still_missing:
                 queries.append(f"{payload.ticker} earnings release guidance")
             extra = search_queries_for(payload.ticker, pack, needed or customer_needed)
+            program = customer_search_program(payload.ticker, pack)
+            findings.append(
+                "customer search program candidate types: "
+                + ", ".join(str(item.get("id") or item) for item in (program.get("candidate_types") or []))
+                + "; demand-side filers: "
+                + ", ".join(program.get("demand_side_filers") or [])
+            )
             for query in extra:
                 if query not in queries:
                     queries.append(query)
-            for query in queries[:4]:
+            try:
+                fetched_docs.extend(fetch_demand_side_documents(self.tools, payload.ticker, pack, findings))
+            except Exception as exc:
+                findings.append(f"demand-side official fetch incomplete: {exc}")
+            for query in queries[:6]:
                 try:
                     hits = self.tools.web_search(query) or []
                 except Exception:
@@ -167,7 +199,20 @@ class SearchDataAgent(BaseAgent):
                 findings.append(f"web search for {query!r} returned {len(hits)} candidates")
                 customer_query = any(
                     token in query.lower()
-                    for token in ("customer", "capex", "data center", "power", "foundry", "deploy", "offtake")
+                    for token in (
+                        "customer",
+                        "capex",
+                        "capital expend",
+                        "data center",
+                        "power",
+                        "foundry",
+                        "deploy",
+                        "offtake",
+                        "sec.gov",
+                        "silicon",
+                        "accelerator",
+                        "tpu",
+                    )
                 )
                 for hit in hits[:3]:
                     url = str(hit.get("url") or "")
@@ -180,17 +225,22 @@ class SearchDataAgent(BaseAgent):
                     text = str(fetched.get("text") or "")
                     if len(text) < 400:
                         continue
+                    url_l = url.lower()
+                    filer = filer_in_query(query, program.get("demand_side_filers") or [])
+                    sec_hit = "sec.gov" in url_l
                     fetched_docs.append(
                         {
                             "text": text,
                             "url": url,
                             "title": hit.get("title"),
-                            "source": "web_search",
+                            "source": "sec.gov" if sec_hit else "web_search",
                             "source_provider": "web_search",
                             "published_at": None,
-                            "doc_type": "web_search" if customer_query else ("transcript" if "transcript" in query else "earnings_release"),
-                            "source_type": "web_search" if customer_query else None,
+                            "doc_type": "sec_filing" if sec_hit else ("web_search" if customer_query else ("transcript" if "transcript" in query else "earnings_release")),
+                            "source_type": "sec_filing" if sec_hit else ("web_search" if customer_query else None),
                             "query": query,
+                            "customer_ticker": filer,
+                            "candidate_type": "demand_side_filer" if filer else None,
                         }
                     )
             for item in fetched_docs:
@@ -205,8 +255,11 @@ class SearchDataAgent(BaseAgent):
                     source_time=stamp,
                     source_type=source_type,
                     evidence_type="transcript" if str(item.get("doc_type")) == "transcript" else "guidance",
+                    query=str(item.get("query") or "") or None,
+                    customer_ticker=str(item.get("customer_ticker") or "") or None,
+                    candidate_type=str(item.get("candidate_type") or "") or None,
                 )
-                if str(item.get("source") or "") == "web_search":
+                if str(item.get("source") or "") in {"web_search", "sec.gov"} or item.get("customer_ticker"):
                     seen = {str(row.get("fact") or "").lower() for row in evidence}
                     for hit in extract_industry_mentions(str(item.get("text") or ""))[:8]:
                         quote = str(hit.get("quote") or "").strip()
@@ -220,15 +273,18 @@ class SearchDataAgent(BaseAgent):
                                     "evidence_type": "industry",
                                     "fact": quote,
                                     "excerpt": quote,
-                                    "source": "web_search",
+                                    "source": str(item.get("source") or "web_search"),
                                     "source_url": item.get("url"),
                                     "source_time": stamp,
-                                    "source_type": "web_search",
+                                    "source_type": source_type if str(item.get("source_type") or "") == "sec_filing" else "web_search",
                                     "confidence": 0.65,
                                     "raw_reference": {"kind": hit.get("kind"), "query": item.get("query")},
                                     "importance": "high",
                                 },
                                 query=str(item.get("query") or ""),
+                                ticker=payload.ticker,
+                                customer_ticker=str(item.get("customer_ticker") or "") or None,
+                                candidate_type=str(item.get("candidate_type") or "") or None,
                             )
                         )
 

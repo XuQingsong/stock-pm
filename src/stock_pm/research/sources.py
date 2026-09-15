@@ -8,7 +8,7 @@ from typing import Any, Protocol
 
 class PackSource(Protocol):
     def issuer(self, ticker: str) -> dict[str, Any] | None: ...
-    def earnings(self, ticker: str, *, limit: int = 6) -> list[dict[str, Any]]: ...
+    def earnings(self, ticker: str, *, limit: int = 12) -> list[dict[str, Any]]: ...
     def fundamentals(self, ticker: str) -> dict[str, Any] | None: ...
     def transcripts(self, ticker: str) -> list[dict[str, Any]]: ...
     def news(self, ticker: str, *, days: int = 365) -> list[dict[str, Any]]: ...
@@ -37,7 +37,7 @@ class DictPackSource:
         row = self._row(ticker).get("issuer")
         return dict(row) if isinstance(row, dict) else None
 
-    def earnings(self, ticker: str, *, limit: int = 6) -> list[dict[str, Any]]:
+    def earnings(self, ticker: str, *, limit: int = 12) -> list[dict[str, Any]]:
         rows = list(self._row(ticker).get("earnings") or [])
         return [dict(item) for item in rows[:limit]]
 
@@ -184,7 +184,7 @@ class DatabasePackSource:
         )
         return rows[0] if rows else None
 
-    def earnings(self, ticker: str, *, limit: int = 6) -> list[dict[str, Any]]:
+    def earnings(self, ticker: str, *, limit: int = 12) -> list[dict[str, Any]]:
         sql = """
             SELECT
                 e.symbol, e.report_date, e.report_timing, e.fiscal_period,
@@ -335,7 +335,7 @@ class StorePackSource:
         getter = getattr(self.store, "get_issuer", None)
         return getter(ticker) if callable(getter) else None
 
-    def earnings(self, ticker: str, *, limit: int = 6) -> list[dict[str, Any]]:
+    def earnings(self, ticker: str, *, limit: int = 12) -> list[dict[str, Any]]:
         rows = list(getattr(self.store, "raw_earnings", {}).get(ticker.upper()) or [])
         return [dict(item) for item in rows[:limit]]
 

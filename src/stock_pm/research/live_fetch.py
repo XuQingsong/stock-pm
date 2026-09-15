@@ -36,7 +36,7 @@ def parse_quarter_parts(quarter: str) -> tuple[int, int] | None:
     return int(match.group(1)), int(match.group(2))
 
 
-def calendar_quarters(count: int = 6, *, today: date | None = None) -> list[str]:
+def calendar_quarters(count: int = 8, *, today: date | None = None) -> list[str]:
     current = today or date.today()
     year, qn = current.year, (current.month - 1) // 3 + 1
     out: list[str] = []
@@ -322,7 +322,7 @@ class LiveResearchFetchers:
         sources: list[str] = []
         fmp = self._fmp()
         av_key = (self.settings.alpha_vantage_api_key or "").strip()
-        for quarter in quarters[:6]:
+        for quarter in quarters[:8]:
             item = self._fmp_transcript(symbol, quarter)
             if item:
                 found.append(item)
@@ -356,8 +356,8 @@ class LiveResearchFetchers:
             "transcripts": found,
             "source": source,
             "error": error,
-            "records_attempted": len(quarters[:6]),
-            "quarter_errors": errors[:6],
+            "records_attempted": len(quarters[:8]),
+            "quarter_errors": errors[:8],
         }
 
     def _fmp_transcript(self, symbol: str, quarter: str) -> dict[str, Any] | None:
@@ -588,7 +588,7 @@ def _filings_from_submissions(payload: dict[str, Any], cik: str) -> list[dict[st
     return out
 
 
-def quarters_from_earnings(symbol: str, earnings: list[dict[str, Any]], *, fallback: int = 6) -> list[str]:
+def quarters_from_earnings(symbol: str, earnings: list[dict[str, Any]], *, fallback: int = 8) -> list[str]:
     from stock_pm.events.earnings import fiscal_quarter_id
 
     found: list[str] = []

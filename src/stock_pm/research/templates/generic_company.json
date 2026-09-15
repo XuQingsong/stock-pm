@@ -1,6 +1,11 @@
 {
   "id": "generic_company",
   "benchmark_etf": "SPY",
+  "customer_candidate_types": [
+    {"id": "named_customer", "label": "named commercial customer"},
+    {"id": "channel_partner", "label": "channel or distribution partner"}
+  ],
+  "demand_side_filers": [],
   "question_axes": [
     {"id": "revenue_growth", "question": "Is recent revenue growth durable over the next two years?"},
     {"id": "guidance_delivery", "question": "Can management deliver the latest outlook and historical guidance?"},

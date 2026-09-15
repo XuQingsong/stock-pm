@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .extract import (
@@ -59,6 +60,12 @@ TREE_BRANCHES = (
 )
 
 
+def _raw_ref(item: dict[str, Any] | None) -> dict[str, Any]:
+    payload = item or {}
+    raw = payload.get("raw_reference")
+    return raw if isinstance(raw, dict) else {}
+
+
 def _issuer_owned_channel(item: dict[str, Any], ticker: str | None = None) -> bool:
     payload = item or {}
     symbol = str(ticker or payload.get("ticker") or "").lower()
@@ -74,10 +81,30 @@ def _issuer_owned_channel(item: dict[str, Any], ticker: str | None = None) -> bo
     return False
 
 
+def _other_filer_ticker(item: dict[str, Any] | None, ticker: str | None = None) -> str:
+    payload = item or {}
+    raw = _raw_ref(payload)
+    other = str(payload.get("customer_ticker") or raw.get("customer_ticker") or "").upper().strip()
+    researched = str(ticker or payload.get("ticker") or raw.get("researched_ticker") or "").upper().strip()
+    if other and other != researched:
+        return other
+    return ""
+
+
+def _news_not_filing(item: dict[str, Any] | None) -> bool:
+    payload = item or {}
+    url = str(payload.get("source_url") or "").lower()
+    source = str(payload.get("source") or "").lower()
+    source_type = str(payload.get("source_type") or "").lower()
+    if "sec.gov" in url:
+        return False
+    return source == "web_search" or source_type == "web_search"
+
+
 def evidence_side(row: dict[str, Any] | None, ticker: str | None = None) -> str:
     """Issuer management claim vs independent customer/industry confirmation. Never mixed."""
     item = row or {}
-    raw = item.get("raw_reference") if isinstance(item.get("raw_reference"), dict) else {}
+    raw = _raw_ref(item)
     explicit = str(
         item.get("evidence_side")
         or item.get("independence_family")
@@ -87,10 +114,13 @@ def evidence_side(row: dict[str, Any] | None, ticker: str | None = None) -> str:
     ).strip()
     if _issuer_owned_channel(item, ticker):
         return "issuer_management"
+    other = _other_filer_ticker(item, ticker)
+    if other:
+        if _news_not_filing(item):
+            return "industry_third_party"
+        return "independent_customer"
     if explicit == "independent_customer":
-        url = str(item.get("source_url") or "").lower()
-        source = str(item.get("source") or "").lower()
-        if source == "web_search" and "sec.gov" not in url:
+        if _news_not_filing(item):
             return "industry_third_party"
         return explicit
     if explicit in {"issuer_management", "industry_third_party", "market"}:
@@ -134,18 +164,172 @@ def evidence_side(row: dict[str, Any] | None, ticker: str | None = None) -> str:
     return "industry_third_party"
 
 
-def stamp_evidence_side(item: dict[str, Any], *, query: str | None = None, ticker: str | None = None) -> dict[str, Any]:
+def stamp_evidence_side(
+    item: dict[str, Any],
+    *,
+    query: str | None = None,
+    ticker: str | None = None,
+    customer_ticker: str | None = None,
+    candidate_type: str | None = None,
+) -> dict[str, Any]:
     """Persist issuer vs customer vs industry family on the evidence row. Never overwrites independence_key."""
-    del query
     payload = item or {}
     raw = dict(payload.get("raw_reference") or {})
-    side = evidence_side(payload, ticker=ticker or payload.get("ticker"))
+    researched = str(ticker or payload.get("ticker") or "").upper() or None
+    if researched:
+        payload["ticker"] = researched
+        raw["researched_ticker"] = researched
+    if query:
+        raw["query"] = query
+        payload.setdefault("query", query)
+    other = str(customer_ticker or payload.get("customer_ticker") or raw.get("customer_ticker") or "").upper().strip()
+    if other and other != (researched or ""):
+        payload["customer_ticker"] = other
+        raw["customer_ticker"] = other
+    kind = candidate_type or payload.get("candidate_type") or raw.get("candidate_type")
+    if kind:
+        payload["candidate_type"] = kind
+        raw["candidate_type"] = kind
+    side = evidence_side(payload, ticker=researched)
     payload["evidence_side"] = side
     payload["independence_family"] = side
     raw["evidence_side"] = side
     raw["independence_family"] = side
     payload["raw_reference"] = raw
     return payload
+
+
+CATEGORY_DEMAND_TOKENS = (
+    "custom silicon",
+    "asic",
+    "tpu",
+    "accelerator",
+    "xpu",
+    "custom chip",
+)
+INDUSTRY_DEMAND_TOKENS = (
+    "capex",
+    "capital expend",
+    "capital spend",
+    "data center",
+    "data-center",
+    "power",
+    "deploy",
+    "interconnect",
+    "procurement",
+)
+
+
+def customer_hit_relation(row: dict[str, Any] | None, *, ticker: str | None = None, legal_name: str | None = None) -> str:
+    """What a customer/industry fact can prove. Family and relation are separate."""
+    item = row or {}
+    fact = str(item.get("fact") or item.get("excerpt") or "").lower()
+    symbol = str(ticker or item.get("ticker") or _raw_ref(item).get("researched_ticker") or "").strip()
+    name = str(legal_name or "").strip()
+    if symbol and len(symbol) >= 3:
+        if re.search(rf"\b{re.escape(symbol.lower())}\b", fact):
+            return "direct_issuer_cross_check"
+    if name and len(name) >= 6 and name.lower() in fact:
+        return "direct_issuer_cross_check"
+    category = any(token in fact for token in CATEGORY_DEMAND_TOKENS)
+    demand = any(token in fact for token in INDUSTRY_DEMAND_TOKENS) or bool(DEMAND_RE.search(fact) or CAPEX_RE.search(fact))
+    if category and demand:
+        return "category_cross_check"
+    if category:
+        return "category_cross_check"
+    if demand:
+        return "industry_demand_only"
+    return "not_demand_evidence"
+
+
+def customer_search_program(ticker: str | None, pack: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Template-driven demand-side search plan. Filers are an industry universe, not an issuer branch."""
+    symbol = str(ticker or (pack or {}).get("ticker") or "").upper()
+    template = load_template((pack or {}).get("template_id"))
+    template_id = str(template.get("id") or "generic_company")
+    types = [dict(item) if isinstance(item, dict) else {"id": str(item), "label": str(item)} for item in (template.get("customer_candidate_types") or [])]
+    filers: list[str] = []
+    for item in template.get("demand_side_filers") or []:
+        name = str(item).upper().strip()
+        if name and name != symbol and name not in filers:
+            filers.append(name)
+    legal = str(((pack or {}).get("company_profile") or {}).get("legal_name") or "").strip()
+    queries: list[str] = []
+    if template_id == "semiconductor":
+        queries.extend(
+            [
+                'site:sec.gov 10-Q OR 10-K "capital expenditure" "data center"',
+                'site:sec.gov 10-Q OR 10-K "custom silicon" OR TPU OR accelerator',
+                "site:sec.gov hyperscaler capital expenditure guidance 10-Q",
+                "data center power procurement interconnection 10-K",
+            ]
+        )
+        if legal:
+            queries.append(f'site:sec.gov "{legal}" 10-K OR 10-Q')
+        for filer in filers[:5]:
+            queries.append(f"site:sec.gov {filer} 10-Q capital expenditure data center")
+            queries.append(f"site:sec.gov {filer} 10-K custom silicon OR TPU OR accelerator")
+            queries.append(f"{filer} earnings call capex guidance investor presentation")
+    elif template_id == "energy":
+        queries.extend(
+            [
+                'site:sec.gov 10-K offtake OR "purchase agreement" volume',
+                f"{symbol} downstream demand project capex",
+                f"{symbol} production volume offtake",
+            ]
+        )
+    else:
+        queries.extend(
+            [
+                f"{symbol} customer demand capital expenditure 10-Q",
+                'site:sec.gov 10-Q "capital expenditure" customer',
+                f"{symbol} customer deployment confirmation",
+            ]
+        )
+    seen: set[str] = set()
+    unique: list[str] = []
+    for query in queries:
+        if query in seen:
+            continue
+        seen.add(query)
+        unique.append(query)
+    return {
+        "candidate_types": types,
+        "demand_side_filers": filers,
+        "legal_name": legal or None,
+        "queries": unique[:16],
+        "note": "demand-side official filings are an industry search universe; a named filer is not an issuer-specific production branch",
+    }
+
+
+def filer_in_query(query: str | None, filers: list[str] | None) -> str | None:
+    hay = str(query or "").upper()
+    for filer in filers or []:
+        token = str(filer).upper()
+        if token and token in hay:
+            return token
+    return None
+
+
+def fetch_demand_side_documents(tools: Any, ticker: str, pack: dict[str, Any] | None, findings: list[str]) -> list[dict[str, Any]]:
+    """Pull official 10-Q / 10-K / IR materials for demand-side filers. Empty when tools are absent."""
+    if tools is None or not hasattr(tools, "official_documents"):
+        return []
+    program = customer_search_program(ticker, pack)
+    out: list[dict[str, Any]] = []
+    for filer in (program.get("demand_side_filers") or [])[:4]:
+        try:
+            docs = tools.official_documents(filer, None) or []
+        except Exception as exc:
+            findings.append(f"demand-side official fetch for {filer} incomplete: {exc}")
+            continue
+        findings.append(f"demand-side official fetch for {filer} returned {len(docs)} documents")
+        for item in docs:
+            row = dict(item)
+            row["customer_ticker"] = filer
+            row["candidate_type"] = "demand_side_filer"
+            out.append(row)
+    return out
 
 
 def _metric_from_quote(quote: str) -> str:
@@ -293,25 +477,105 @@ def reaction_window(pack: dict[str, Any] | None) -> dict[str, Any]:
     return rows[0] if rows else {}
 
 
+def _match_guidance_for_print(
+    guidance: list[dict[str, Any]],
+    print_row: dict[str, Any],
+    prior_stamp,
+) -> dict[str, Any] | None:
+    """Bind a guidance row to one print by period or source_time window. Never copy the latest move onto every quarter."""
+    period = str(print_row.get("fiscal_period") or "")
+    stamp = _iso_date(print_row.get("report_date") or print_row.get("period_end"))
+    period_hits: list[dict[str, Any]] = []
+    window_hits: list[dict[str, Any]] = []
+    for item in guidance:
+        blob = " ".join(str(item.get(key) or "") for key in ("text", "quote", "fiscal_period", "source_time", "published_at"))
+        if period and period in blob:
+            period_hits.append(item)
+            continue
+        gstamp = _iso_date(item.get("source_time") or item.get("published_at") or item.get("fiscal_period"))
+        if stamp is None or gstamp is None:
+            continue
+        if prior_stamp is None:
+            if gstamp <= stamp:
+                window_hits.append(item)
+        elif prior_stamp < gstamp <= stamp:
+            window_hits.append(item)
+    if period_hits:
+        return period_hits[0]
+    if window_hits:
+        return window_hits[-1]
+    return None
+
+
+def _delivery_guidance_payload(row: dict[str, Any], matched: dict[str, Any] | None) -> dict[str, Any]:
+    company_text = None
+    move = None
+    if matched:
+        company_text = str(matched.get("text") or matched.get("quote") or "").strip() or None
+        move = str(matched.get("move") or "").lower() or None
+    revenue_est = to_number(row.get("revenue_estimate"))
+    eps_est = to_number(row.get("eps_estimate"))
+    if company_text:
+        kind = "company_outlook"
+    elif revenue_est is not None or eps_est is not None:
+        kind = "consensus_estimate"
+    else:
+        kind = "insufficient_data"
+    return {
+        "kind": kind,
+        "company_text": (company_text[:240] if company_text else None),
+        "revenue_estimate": revenue_est,
+        "eps_estimate": eps_est,
+        "ai_revenue": to_number(row.get("ai_revenue_guidance") or (row.get("provider_fields") or {}).get("ai_revenue_guidance")),
+        "margin": to_number(row.get("margin_guidance") or (row.get("provider_fields") or {}).get("margin_guidance")),
+        "revision": move if move in {"raised", "lowered", "maintained"} else None,
+    }
+
+
+def _delivery_actual_payload(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "revenue": to_number(row.get("revenue")),
+        "eps": to_number(row.get("eps")),
+        "ai_revenue": to_number(row.get("ai_revenue") or (row.get("provider_fields") or {}).get("ai_revenue")),
+        "margin": to_number(
+            row.get("gross_margin_pct") or row.get("operating_margin_pct") or row.get("net_margin_pct")
+        ),
+    }
+
+
+def _quarter_label(row: dict[str, Any]) -> str:
+    period = str(row.get("fiscal_period") or "").strip()
+    if re.match(r"20\d{2}Q[1-4]$", period, re.I):
+        return period.upper()
+    end = _iso_date(row.get("period_end")) or _iso_date(row.get("report_date"))
+    match = re.match(r"Q([1-4])$", period, re.I)
+    if match and end:
+        return f"{end.year}Q{match.group(1)}"
+    if period:
+        return period
+    if end:
+        return f"{end.year}Q{(end.month - 1) // 3 + 1}"
+    return period
+
+
 def build_delivery_history(pack: dict[str, Any] | None) -> dict[str, Any]:
     earnings = _dedupe_prints(list((pack or {}).get("earnings_history") or []))
     guidance = list((pack or {}).get("guidance_history") or [])
     history: list[dict[str, Any]] = []
     counts = {"beat": 0, "met": 0, "missed": 0, "revised": 0, "unscored": 0}
+    chronological = list(reversed(earnings))
+    prior_stamp = None
+    matched_by_id: dict[int, dict[str, Any] | None] = {}
+    for row in chronological:
+        matched_by_id[id(row)] = _match_guidance_for_print(guidance, row, prior_stamp)
+        prior_stamp = _iso_date(row.get("report_date") or row.get("period_end")) or prior_stamp
     for row in earnings:
         rev = beat_label(to_number(row.get("revenue")), to_number(row.get("revenue_estimate")))
         eps = beat_label(to_number(row.get("eps")), to_number(row.get("eps_estimate")))
-        period = str(row.get("fiscal_period") or row.get("report_date") or "")
-        move = None
-        for item in guidance:
-            blob = " ".join(str(item.get(key) or "") for key in ("text", "quote", "fiscal_period", "source_time"))
-            if period and period in blob:
-                move = str(item.get("move") or "").lower() or None
-                break
-        if move is None and guidance:
-            first = str((guidance[0] or {}).get("move") or "").lower()
-            if first in {"raised", "lowered", "maintained"}:
-                move = first
+        period = _quarter_label(row)
+        matched = matched_by_id.get(id(row))
+        guidance_payload = _delivery_guidance_payload(row, matched)
+        move = guidance_payload.get("revision")
         outcome = None
         if rev == "miss" or eps == "miss":
             outcome = "missed"
@@ -325,36 +589,61 @@ def build_delivery_history(pack: dict[str, Any] | None) -> dict[str, Any]:
             counts[outcome] += 1
         else:
             counts["unscored"] += 1
+        actual = _delivery_actual_payload(row)
         history.append(
             {
+                "quarter": period,
                 "period": period,
                 "report_date": row.get("report_date"),
+                "guidance": guidance_payload,
+                "actual": actual,
+                "outcome": outcome or "unscored",
+                "guidance_revision": move,
+                "source": row.get("source") or (row.get("ref") or {}).get("source") or "earnings_history",
                 "revenue": outcome_label(rev),
                 "eps": outcome_label(eps),
                 "guidance_move": move,
-                "outcome": outcome or "unscored",
             }
         )
     scored = counts["beat"] + counts["met"] + counts["missed"]
     beat_rate = round(counts["beat"] / scored, 3) if scored else None
     miss_rate = round(counts["missed"] / scored, 3) if scored else None
+    scored_quarters = [row["quarter"] for row in history if row["outcome"] in {"beat", "met", "missed"}]
+    unscored_quarters = [row["quarter"] for row in history if row["outcome"] == "unscored"]
     summary = (
-        f"{counts['beat']} beat / {counts['met']} met / {counts['missed']} missed across {scored} scored prints; "
-        f"{counts['revised']} guidance revisions in the same window"
-        if scored
-        else "not enough consensus-versus-actual prints to score delivery"
+        f"{counts['beat']} beat / {counts['met']} met / {counts['missed']} missed / {counts['revised']} revised "
+        f"across {scored} scored prints; {counts['unscored']} unscored in a {len(history)}-quarter ledger"
+        if history
+        else "not enough prints to build a delivery ledger"
     )
+    if scored and scored < 6:
+        credibility = (
+            f"The scored sample is {scored} quarter(s), below a 6–8 quarter history. "
+            f"A {counts['beat']}/{scored} beat rate is not a substitute for the ledger "
+            "and is not 100% long-term credibility."
+        )
+    elif scored:
+        credibility = (
+            f"{summary}. Beat rate is a compact summary of scored prints only; "
+            "it is not 100% long-term credibility even when every scored print beat."
+        )
+    else:
+        credibility = "No scored consensus-versus-actual prints; delivery credibility stays unresolved."
     return {
         "history": history,
         "beat": counts["beat"],
         "met": counts["met"],
         "missed": counts["missed"],
         "revised": counts["revised"],
+        "unscored": counts["unscored"],
         "prints_scored": scored,
+        "scored_quarters": scored_quarters,
+        "unscored_quarters": unscored_quarters,
         "beat_rate": beat_rate,
         "miss_rate": miss_rate,
         "summary": summary,
-        "note": "history is retained; beat_rate is a summary, not a substitute for the ledger",
+        "credibility": credibility,
+        "note": "history is retained; beat_rate is a summary, not a substitute for the ledger, and a short beat streak is not 100% long-term credibility",
     }
 
 
@@ -366,17 +655,94 @@ def outcome_label(value: str | None) -> str | None:
     return value
 
 
-def customer_side_evidence(evidence: list[dict[str, Any]] | None) -> dict[str, Any]:
+def customer_side_evidence(
+    evidence: list[dict[str, Any]] | None,
+    *,
+    pack: dict[str, Any] | None = None,
+    ticker: str | None = None,
+) -> dict[str, Any]:
     rows = list(evidence or [])
-    issuer = [row for row in rows if evidence_side(row) == "issuer_management"]
-    customer = [row for row in rows if evidence_side(row) == "independent_customer"]
-    industry = [row for row in rows if evidence_side(row) == "industry_third_party"]
+    symbol = str(ticker or (pack or {}).get("ticker") or "")
+    legal = str(((pack or {}).get("company_profile") or {}).get("legal_name") or "")
+    program = customer_search_program(symbol, pack)
+    issuer = [row for row in rows if evidence_side(row, ticker=symbol) == "issuer_management"]
+    customer = [row for row in rows if evidence_side(row, ticker=symbol) == "independent_customer"]
+    industry = [row for row in rows if evidence_side(row, ticker=symbol) == "industry_third_party"]
+    searched_filers = list(program.get("demand_side_filers") or [])
+    queries_run: list[str] = []
+    for row in rows:
+        raw = _raw_ref(row)
+        query = str(row.get("query") or raw.get("query") or "").strip()
+        if query and query not in queries_run:
+            queries_run.append(query)
+        filer = str(row.get("customer_ticker") or raw.get("customer_ticker") or "").upper()
+        if filer and filer not in searched_filers:
+            searched_filers.append(filer)
+
+    def _annotate(pool: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        out = []
+        for row in pool:
+            item = dict(_brief_evidence([row])[0])
+            item["relation"] = customer_hit_relation(row, ticker=symbol, legal_name=legal)
+            item["customer_ticker"] = row.get("customer_ticker") or _raw_ref(row).get("customer_ticker")
+            out.append(item)
+        return out
+
+    customer_annotated = _annotate(customer)
+    industry_annotated = _annotate(industry)
+    direct = [row for row in customer_annotated if row.get("relation") == "direct_issuer_cross_check"]
+    category = [row for row in customer_annotated if row.get("relation") == "category_cross_check"]
+    industry_only = [row for row in customer_annotated if row.get("relation") == "industry_demand_only"] + [
+        row for row in industry_annotated if row.get("relation") == "industry_demand_only"
+    ]
+    demand_side_hits = [row for row in customer_annotated if row.get("relation") in {"direct_issuer_cross_check", "category_cross_check", "industry_demand_only"}]
+    if direct:
+        conclusion = (
+            "at least one independent customer-side source names the researched issuer, "
+            "which can cross-check management claims"
+        )
+    elif category:
+        conclusion = (
+            "customer-side capex / custom-silicon / accelerator evidence was located, "
+            "but it does not name the researched issuer; it can validate category demand, not a specific contract"
+        )
+    elif industry_only:
+        conclusion = (
+            "no independent customer filing confirming a named contract with the researched issuer was found; "
+            "located demand-side language only supports industry demand"
+        )
+    elif customer:
+        conclusion = (
+            "independent customer-side filings were retrieved, but they do not contain capex / deployment "
+            "language that confirms the researched issuer"
+        )
+    elif industry:
+        conclusion = (
+            "no independent customer filing confirming a named contract with the researched issuer was found; "
+            "located demand-side language only supports industry demand"
+        )
+    else:
+        conclusion = (
+            "no independent customer filing confirming a named contract with the researched issuer was found "
+            "after searching the candidate-customer program"
+        )
     return {
         "issuer_management": _brief_evidence(issuer),
-        "independent_customer": _brief_evidence(customer),
-        "industry_third_party": _brief_evidence(industry),
+        "independent_customer": customer_annotated,
+        "industry_third_party": industry_annotated,
         "independent_confirmation_present": bool(customer),
-        "note": "issuer claims and independent customer confirmation are separate evidence families",
+        "named_issuer_cross_check_present": bool(direct),
+        "demand_side_hits_present": bool(demand_side_hits),
+        "direct_issuer_cross_check": direct,
+        "category_cross_check": category,
+        "industry_demand_only": industry_only,
+        "search_program": {
+            **program,
+            "queries_run": queries_run,
+            "filers_observed": searched_filers,
+        },
+        "conclusion": conclusion,
+        "note": "issuer claims and independent customer confirmation are separate evidence families; industry news is never customer confirmation",
     }
 
 
@@ -626,6 +992,9 @@ def classify_market_reaction(
     }
 
 
+MARKET_IMPLIED_MULTIPLES = (25, 30, 33, 35, 40)
+
+
 def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] | None) -> dict[str, Any]:
     profile = (pack or {}).get("company_profile") or {}
     spot = to_number(profile.get("last_close") or (valuation or {}).get("spot_price"))
@@ -652,6 +1021,49 @@ def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] |
         implied_eps_at_base_mult = float(spot) / float(base_multiple)
         if ttm_eps not in (None, 0) and years:
             implied_2y_growth = (implied_eps_at_base_mult / float(ttm_eps)) ** (1.0 / years) - 1.0
+
+    def _cell(multiple: float | None) -> dict[str, Any]:
+        implied_eps = None
+        cagr = None
+        if spot not in (None, 0) and multiple not in (None, 0):
+            implied_eps = float(spot) / float(multiple)
+            if ttm_eps not in (None, 0) and years:
+                cagr = (implied_eps / float(ttm_eps)) ** (1.0 / years) - 1.0
+        return {
+            "multiple": multiple,
+            "implied_forward_eps": round(implied_eps, 2) if implied_eps is not None else None,
+            "implied_2y_eps_cagr": coarsen_growth(cagr),
+            "implied_2y_eps_cagr_display": display_pct(cagr),
+        }
+
+    sensitivity = []
+    for multiple in MARKET_IMPLIED_MULTIPLES:
+        row = _cell(float(multiple))
+        row["is_base_multiple"] = bool(base_multiple is not None and abs(float(multiple) - float(base_multiple)) < 0.51)
+        sensitivity.append(row)
+    under_base = _cell(base_multiple)
+    under_base["label"] = "market_implied_under_base_multiple"
+    cagrs = [row["implied_2y_eps_cagr"] for row in sensitivity if row.get("implied_2y_eps_cagr") is not None]
+    implied_range = {"low": min(cagrs), "high": max(cagrs)} if cagrs else None
+    vs_base = None
+    vs_bull = None
+    if implied_range and base_g is not None:
+        vs_base = "below" if implied_range["high"] < base_g - 0.02 else ("above" if implied_range["low"] > base_g + 0.02 else "overlaps")
+    if implied_range and bull_g is not None:
+        vs_bull = "below" if implied_range["high"] < bull_g - 0.02 else ("above" if implied_range["low"] > bull_g + 0.02 else "overlaps")
+    if vs_base == "below":
+        pm_wording = (
+            "Under the multiple range PM considers reasonable, the growth implied by the current price is clearly below PM Base."
+        )
+    elif vs_base == "above":
+        pm_wording = (
+            "Under the multiple range PM considers reasonable, the growth implied by the current price is above PM Base."
+        )
+    else:
+        pm_wording = (
+            "Under the multiple range PM considers reasonable, implied growth depends on the multiple; "
+            "the Base-multiple cell is not the unique market-implied growth rate."
+        )
     implied_multiple_on_base_eps = None
     if spot not in (None, 0) and base_eps not in (None, 0):
         implied_multiple_on_base_eps = float(spot) / float(base_eps)
@@ -665,8 +1077,10 @@ def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] |
     if implied_multiple_on_base_eps is not None and to_number(bull.get("multiple")) and implied_multiple_on_base_eps > float(bull.get("multiple")) + 1:
         doubts.append("the tape's implied multiple on Base EPS sits at or above Bull")
     if not doubts:
-        if implied_2y_growth is not None and base_g is not None and implied_2y_growth < base_g - 0.03:
-            doubts.append("the tape prices less growth than Base, so the market may be discounting duration, execution, or mix")
+        if vs_base == "below":
+            doubts.append("across the PM-reasonable multiple range, current price implies less growth than PM Base")
+        elif implied_2y_growth is not None and base_g is not None and implied_2y_growth < base_g - 0.03:
+            doubts.append("at the researched Base multiple, the tape prices less growth than Base")
         elif implied_multiple_on_base_eps is not None and base_multiple is not None and implied_multiple_on_base_eps < base_multiple - 3:
             doubts.append("the tape applies a lower multiple than Base on the same EPS path (concentration, duration, or de-rating)")
         else:
@@ -685,15 +1099,21 @@ def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] |
         "multiple": round(implied_multiple_on_base_eps, 1) if implied_multiple_on_base_eps else pe_ttm,
         "growth_assumptions": {
             "annual_rate": coarsen_growth(implied_2y_growth),
-            "origin": "market_implied",
+            "origin": "market_implied_under_base_multiple",
             "display": display_pct(implied_2y_growth),
-            "source": "spot divided by researched Base multiple, then CAGR versus TTM EPS",
+            "source": "spot divided by researched Base multiple, then CAGR versus TTM EPS; not the unique market-implied growth rate",
         },
-        "notes": "this column is the tape, not a researched case; it exists to show disagreement",
-        "case_narrative": "market-implied path: what growth and/or multiple the current price requires",
+        "notes": "this column is the tape under the Base multiple only; implied growth is a sensitivity range, not a single 10% cell",
+        "case_narrative": "market-implied path under the Base multiple, with a 25x-40x sensitivity around it",
     }
     return {
         "case": case,
+        "market_implied_under_base_multiple": under_base,
+        "sensitivity": sensitivity,
+        "market_implied_range": implied_range,
+        "vs_pm_base": vs_base,
+        "vs_pm_bull": vs_bull,
+        "pm_wording": pm_wording,
         "implied_ntm_eps": round(implied_ntm_eps, 2) if implied_ntm_eps else None,
         "implied_ntm_growth": coarsen_growth(implied_ntm_growth),
         "implied_2y_eps_at_base_multiple": round(implied_eps_at_base_mult, 2) if implied_eps_at_base_mult else None,
@@ -706,7 +1126,7 @@ def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] |
         "base_multiple": base_multiple,
         "display": g_display,
         "market_doubts": doubts,
-        "summary": " ".join(doubts),
+        "summary": pm_wording + " " + " ".join(doubts),
     }
 
 
@@ -803,14 +1223,16 @@ def golden_answers(
         }
         if fragile
         else None,
-        "market_worry": implied.get("summary") or reaction.get("summary") or "market worry is not isolated beyond valuation context",
+        "market_worry": implied.get("pm_wording") or implied.get("summary") or reaction.get("summary") or "market worry is not isolated beyond valuation context",
+        "pm_conclusion": implied.get("pm_wording"),
+        "customer_validation": (artifacts.get("customer_side_evidence") or {}).get("conclusion"),
         "thesis_events": {
             "strengthen": "independent customer confirmation that capex and deployments convert on the stated horizon, plus delivery versus the commitment ledger",
             "weaken": f"slippage on the weakest chain layer ({chain.get('weakest_link')})" if chain.get("weakest_link") else "customer capex cuts or delayed conversion",
             "break": "cancellation or a guidance cut that breaks a core delivery claim, or a sustained miss versus the delivery history",
         },
         "monitor": monitor[:5],
-        "delivery_context": delivery.get("summary"),
+        "delivery_context": delivery.get("credibility") or delivery.get("summary"),
     }
     return answers
 
@@ -835,7 +1257,7 @@ def synthesize_deep_case(
         tagged.append(item)
     ledger = build_commitment_ledger(pack, tagged)
     delivery = build_delivery_history(pack)
-    customers = customer_side_evidence(tagged)
+    customers = customer_side_evidence(tagged, pack=pack, ticker=symbol)
     revenue_bridge = build_revenue_bridge(pack, valuation)
     chain = build_causal_chain(pack, tagged)
     tree = build_assumption_tree(rulings, mapping)
@@ -868,7 +1290,8 @@ def synthesize_deep_case(
         "evidence_count": len(evidence or []),
         "ruling_count": len(rulings or []),
         "weakest_link": chain.get("weakest_link"),
-        "independent_customer": customers.get("independent_confirmation_present"),
+        "independent_customer": customers.get("named_issuer_cross_check_present"),
+        "independent_customer_family_present": customers.get("independent_confirmation_present"),
         "delivery": lineage(
             delivery.get("beat_rate"),
             origin="historical_delivery",
@@ -886,6 +1309,7 @@ def search_queries_for(ticker: str, pack: dict[str, Any] | None, required: list[
     template = load_template((pack or {}).get("template_id"))
     template_id = str(template.get("id") or "generic_company")
     needed = {str(item) for item in (required or [])}
+    program = customer_search_program(symbol, pack)
     queries: list[str] = []
     axes = [str(item.get("id") or "") for item in (template.get("question_axes") or [])]
     wants_customer = bool(
@@ -896,14 +1320,13 @@ def search_queries_for(ticker: str, pack: dict[str, Any] | None, required: list[
             queries.append(f"{symbol} customer capital expenditure data center")
             queries.append(f"{symbol} customer capex AI infrastructure")
             queries.append(f"{symbol} customer deployment custom accelerator")
-            queries.append("hyperscaler capital expenditure 10-Q AI data center")
-            queries.append("data center power procurement interconnection")
         elif template_id == "energy":
             queries.append(f"{symbol} downstream demand project capex")
             queries.append(f"{symbol} production volume offtake")
         else:
             queries.append(f"{symbol} customer demand capital expenditure")
             queries.append(f"{symbol} customer deployment confirmation")
+        queries.extend(list(program.get("queries") or []))
     if "power_capacity" in needed or (template_id == "semiconductor" and "customer_capex" in axes):
         queries.append(f"{symbol} data center power capacity procurement")
     if "supply_capacity" in axes or "supply_lock_in" in needed:
@@ -924,4 +1347,4 @@ def search_queries_for(ticker: str, pack: dict[str, Any] | None, required: list[
             continue
         seen.add(query)
         unique.append(query)
-    return unique[:8]
+    return unique[:14]

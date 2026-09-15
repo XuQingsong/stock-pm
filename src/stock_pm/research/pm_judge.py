@@ -20,7 +20,7 @@ from .types import (
 from .valuation import attribute_target_change, build_valuation_cases, display_target
 
 
-PROMPT_VERSION = "sprint5-pm-v1"
+PROMPT_VERSION = "sprint5-pm-v2"
 ENGINE_TO_STATUS = {
     "strengthen": "strengthened",
     "weaken": "weakened",
@@ -261,10 +261,14 @@ def apply_delivery_history(rulings: list[dict[str, Any]], delivery: dict[str, An
         if kind not in {"guidance", "growth_persist", "execution", "demand_visibility"}:
             continue
         gaps = list(row.get("unresolved_gaps") or [])
+        credibility = str(payload.get("credibility") or "")
         if summary:
-            gaps = list(dict.fromkeys(gaps + ["management delivery history is an input to long-term commitment credibility"]))
+            extra = ["management delivery history is an input to long-term commitment credibility"]
+            if int(payload.get("prints_scored") or 0) < 6:
+                extra.append("scored delivery sample is shorter than 6 quarters; a clean beat streak is not long-term proof")
+            gaps = list(dict.fromkeys(gaps + extra))
             row["unresolved_gaps"] = gaps[:8]
-            row["reasoning"] = (row.get("reasoning") or "") + (" Delivery history: " + summary + ".")
+            row["reasoning"] = (row.get("reasoning") or "") + (" Delivery history: " + (credibility or summary) + ".")
         if miss is None:
             continue
         if miss >= 0.25 and kind in {"guidance", "growth_persist"} and row.get("final_status") == "strengthened":
@@ -530,7 +534,15 @@ def build_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
     quality_payload["golden_answers"] = golden
     quality_payload["management_delivery"] = delivery
     thesis = {
-        "core_thesis": _core_thesis(brief, rulings, horizons, reaction) + " " + str(golden.get("core_thesis") or ""),
+        "core_thesis": _core_thesis(brief, rulings, horizons, reaction)
+        + " "
+        + str(golden.get("core_thesis") or "")
+        + (" " + str(golden.get("pm_conclusion") or "") if golden.get("pm_conclusion") else "")
+        + (
+            " Customer-side validation: " + str(golden.get("customer_validation"))
+            if golden.get("customer_validation")
+            else ""
+        ),
         "short_term_view": horizons["short_term_view"],
         "mid_term_view": horizons["mid_term_view"],
         "long_term_view": horizons["long_term_view"],

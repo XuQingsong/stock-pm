@@ -145,6 +145,15 @@ INDUSTRY_PATTERNS = (
         r"(long[- ]term|multi-year|supply).{0,80}(agreement|contract|commit|purchase)",
         re.I | re.S,
     ),
+    re.compile(
+        r"(custom silicon|asic|tpu|accelerat\w*|xpu).{0,160}"
+        r"(deploy|capex|cluster|rack|capacity|purchase|order|guidance)",
+        re.I | re.S,
+    ),
+    re.compile(
+        r"(capital expenditure|capex).{0,100}(guidance|outlook|increase|decrease|expect|plan)",
+        re.I | re.S,
+    ),
 )
 
 RISK_PATTERNS = (

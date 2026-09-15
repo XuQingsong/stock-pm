@@ -365,6 +365,9 @@ class ResearchService:
                 "independence_key": body.get("independence_key"),
                 "evidence_side": body.get("evidence_side"),
                 "independence_family": body.get("independence_family"),
+                "customer_ticker": body.get("customer_ticker"),
+                "candidate_type": body.get("candidate_type"),
+                "query": body.get("query"),
                 "produced_by": actor,
                 "task_id": body.get("task_id"),
                 "workflow_run_id": body.get("workflow_run_id"),
@@ -373,7 +376,23 @@ class ResearchService:
                 "prompt_version": body.get("prompt_version"),
             }
         )
-        stamp_evidence_side(stamped)
+        stamp_evidence_side(
+            stamped,
+            ticker=symbol,
+            query=str(body.get("query") or (stamped.get("raw_reference") or {}).get("query") or "") or None,
+            customer_ticker=str(
+                body.get("customer_ticker")
+                or (stamped.get("raw_reference") or {}).get("customer_ticker")
+                or ""
+            )
+            or None,
+            candidate_type=str(
+                body.get("candidate_type")
+                or (stamped.get("raw_reference") or {}).get("candidate_type")
+                or ""
+            )
+            or None,
+        )
         evidence = self.store.insert_evidence(stamped)
         if not evidence.get("source_time") or not evidence.get("retrieved_at"):
             raise ProvenanceError("evidence requires source_time and retrieved_at")

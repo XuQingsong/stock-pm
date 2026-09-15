@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from ..deep_case import search_queries_for, stamp_evidence_side
+from ..deep_case import (
+    customer_search_program,
+    fetch_demand_side_documents,
+    filer_in_query,
+    search_queries_for,
+    stamp_evidence_side,
+)
 from ..extract import (
     extract_industry_mentions,
     official_documents,
@@ -15,7 +21,7 @@ from ..types import AGENT_INDUSTRY, AGENT_SEARCH, AgentInput, AgentOutput, Follo
 from .base import BaseAgent, JsonCompleter
 
 
-PROMPT_VERSION = "sprint5-industry-v1"
+PROMPT_VERSION = "sprint5-industry-v2"
 
 
 class SearchTools(Protocol):
@@ -84,7 +90,17 @@ class IndustryAgent(BaseAgent):
         if earnings:
             fallback_stamp = earnings[0].get("report_date")
 
-        def add_hit(hit: dict[str, Any], *, source: str, source_url: Any, source_time: Any, source_type: str, query: str | None = None) -> None:
+        def add_hit(
+            hit: dict[str, Any],
+            *,
+            source: str,
+            source_url: Any,
+            source_time: Any,
+            source_type: str,
+            query: str | None = None,
+            customer_ticker: str | None = None,
+            candidate_type: str | None = None,
+        ) -> None:
             quote = str(hit.get("quote") or "").strip()
             key = quote.lower()
             if not quote or not source_time or key in seen:
@@ -109,6 +125,9 @@ class IndustryAgent(BaseAgent):
                         }
                     ),
                     query=query,
+                    ticker=payload.ticker,
+                    customer_ticker=customer_ticker,
+                    candidate_type=candidate_type,
                 )
             )
 
@@ -143,6 +162,13 @@ class IndustryAgent(BaseAgent):
         if self.tools is not None:
             needed = [str(item) for item in (payload.task.get("required_data") or [])]
             queries = search_queries_for(payload.ticker, pack, needed)
+            program = customer_search_program(payload.ticker, pack)
+            findings.append(
+                "industry customer search program candidate types: "
+                + ", ".join(str(item.get("id") or item) for item in (program.get("candidate_types") or []))
+                + "; demand-side filers: "
+                + ", ".join(program.get("demand_side_filers") or [])
+            )
             if not queries:
                 queries = [
                     f"{payload.ticker} customer capital expenditure data center",
@@ -155,7 +181,11 @@ class IndustryAgent(BaseAgent):
                 findings.append("industry tools fetched additional official documents")
             except Exception as exc:
                 findings.append(f"industry official fetch incomplete: {exc}")
-            for query in queries[:3]:
+            try:
+                materials.extend(fetch_demand_side_documents(self.tools, payload.ticker, pack, findings))
+            except Exception as exc:
+                findings.append(f"industry demand-side fetch incomplete: {exc}")
+            for query in queries[:5]:
                 try:
                     hits = self.tools.web_search(query) or []
                 except Exception:
@@ -172,14 +202,19 @@ class IndustryAgent(BaseAgent):
                     text = str(fetched_page.get("text") or "")
                     if len(text) < 400:
                         continue
+                    url_l = url.lower()
+                    filer = filer_in_query(query, program.get("demand_side_filers") or [])
+                    sec_hit = "sec.gov" in url_l
                     materials.append(
                         {
                             "text": text,
                             "url": url,
-                            "source": "web_search",
+                            "source": "sec.gov" if sec_hit else "web_search",
                             "published_at": fallback_stamp,
-                            "source_type": "web_search",
+                            "source_type": "sec_filing" if sec_hit else "web_search",
                             "query": query,
+                            "customer_ticker": filer,
+                            "candidate_type": "demand_side_filer" if filer else None,
                         }
                     )
 
@@ -188,14 +223,23 @@ class IndustryAgent(BaseAgent):
             stamp = _stamp(material, fallback_stamp)
             if not text.strip() or not stamp:
                 continue
+            source_type = (
+                source_type_for_document(material)
+                if str(material.get("source_type") or "") not in {"web_search", "sec_filing"}
+                else str(material.get("source_type") or "web_search")
+            )
+            if str(material.get("source_type") or "") == "sec_filing" or "sec.gov" in str(material.get("url") or "").lower():
+                source_type = "sec_filing"
             for hit in extract_industry_mentions(text)[:10]:
                 add_hit(
                     hit,
                     source=str(material.get("source") or material.get("source_provider") or "official"),
                     source_url=material.get("url") or material.get("source_url"),
                     source_time=stamp,
-                    source_type=source_type_for_document(material) if str(material.get("source_type") or "") != "web_search" else "web_search",
+                    source_type=source_type,
                     query=str(material.get("query") or "") or None,
+                    customer_ticker=str(material.get("customer_ticker") or "") or None,
+                    candidate_type=str(material.get("candidate_type") or "") or None,
                 )
 
         quotes = [str(item.get("fact") or "") for item in evidence]

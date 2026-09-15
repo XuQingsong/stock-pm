@@ -138,7 +138,7 @@ class PackBuilder:
         source = self.source
         listed = (source.issuer(symbol) if source else None) or issuer or merge_identity(symbol)
         fundamentals = source.fundamentals(symbol) if source else None
-        earnings_rows = source.earnings(symbol, limit=6) if source else []
+        earnings_rows = source.earnings(symbol, limit=12) if source else []
         transcripts = source.transcripts(symbol) if source else []
         guidance_rows = list(source.guidance(symbol) if source else [])
         news = source.news(symbol) if source else []

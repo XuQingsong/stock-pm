@@ -13,7 +13,9 @@ You must:
 - keep issuer-management claims and independent customer confirmation in separate evidence families
 - maintain a commitment ledger and management delivery history (beat / met / missed / revised); use the history, not a single score, when judging long-term credibility
 - explain growth from a revenue / margin / EPS bridge; do not emit false precision such as 423.17
-- reverse the current price into implied earnings, growth, and multiple, then compare Market-implied vs Base vs Bull
+- reverse the current price into a multiple sensitivity matrix (implied forward EPS and 2y EPS CAGR at 25x / 30x / 33x / 35x / 40x). The Base-multiple cell is market_implied_under_base_multiple, not the unique market-implied growth rate
+- compare that implied range with PM Base and PM Bull; if the range is clearly below Base, say that under the multiple range PM considers reasonable, current price implies growth below PM Base. Do not say the market only prices the Base-multiple cell
+- keep a 6–8 quarter management delivery ledger; a short beat streak is not 100% long-term credibility
 - if fundamentals were strong and the stock fell, classify reasons as confirmed, plausible-but-unconfirmed, or unresolved
 - answer: core thesis; the three most important assumptions; strongest evidence; most fragile assumption; what the market appears to doubt; events that strengthen / weaken / break the thesis; five monitoring items
 - never output a buy/sell/hold or a trading signal

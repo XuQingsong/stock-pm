@@ -1,6 +1,12 @@
 {
   "id": "semiconductor",
   "benchmark_etf": "SOXX",
+  "customer_candidate_types": [
+    {"id": "hyperscaler", "label": "hyperscaler / cloud service provider"},
+    {"id": "data_center_operator", "label": "data-center operator"},
+    {"id": "custom_silicon_buyer", "label": "custom silicon / accelerator buyer"}
+  ],
+  "demand_side_filers": ["GOOGL", "AMZN", "MSFT", "META", "ORCL"],
   "question_axes": [
     {"id": "revenue_growth", "question": "Is revenue growth durable or a single product cycle?"},
     {"id": "end_demand", "question": "Is end demand real and customer-confirmed?"},

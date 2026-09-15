@@ -1,6 +1,11 @@
 {
   "id": "energy",
   "benchmark_etf": "XLE",
+  "customer_candidate_types": [
+    {"id": "downstream_offtaker", "label": "downstream offtaker / refiner"},
+    {"id": "industrial_buyer", "label": "industrial demand customer"}
+  ],
+  "demand_side_filers": [],
   "question_axes": [
     {"id": "revenue_growth", "question": "Is cash generation durable through the commodity cycle?"},
     {"id": "guidance_delivery", "question": "Can management deliver production and capex guidance?"},

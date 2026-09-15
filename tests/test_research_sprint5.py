@@ -10,6 +10,9 @@ from stock_pm.research.deep_case import (
     build_delivery_history,
     build_revenue_bridge,
     classify_market_reaction,
+    customer_hit_relation,
+    customer_search_program,
+    customer_side_evidence,
     evidence_side,
     golden_answers,
     market_implied_case,
@@ -346,7 +349,15 @@ def test_search_queries_are_template_generic() -> None:
     assert "broadcom" not in blob
     assert "vmware" not in blob
     assert any("customer" in item.lower() for item in semi)
+    assert any("site:sec.gov" in item.lower() for item in semi)
     assert any("production" in item.lower() or "offtake" in item.lower() for item in energy)
+    program = customer_search_program("ZZZZ", {"template_id": "semiconductor"})
+    assert program["candidate_types"]
+    assert program["demand_side_filers"]
+    assert "ZZZZ" not in program["demand_side_filers"]
+    energy_program = customer_search_program("ZZZZ", {"template_id": "energy"})
+    assert energy_program["candidate_types"]
+    assert energy_program["demand_side_filers"] == []
 
 
 def test_synthesize_deep_case_pack() -> None:
@@ -455,3 +466,142 @@ def test_sprint5_same_path_avgo_cohr_xom() -> None:
             assert deep["causal_chain"]["template_id"] == "semiconductor"
             families = {row.get("family") for row in deep["revenue_bridge"].get("lines") or []}
             assert families
+
+
+def test_other_issuer_sec_filing_is_customer_family_not_issuer() -> None:
+    row = {
+        "ticker": "TEST",
+        "fact": "Capital expenditure for data-center AI deployments is expected to increase next year.",
+        "source": "sec.gov",
+        "source_type": "sec_filing",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000000/goog10-q.htm",
+        "customer_ticker": "GOOGL",
+        "source_time": "2026-04-25",
+    }
+    assert evidence_side(row, ticker="TEST") == "independent_customer"
+    news = {
+        "ticker": "TEST",
+        "fact": "Hyperscalers are raising AI capex.",
+        "source": "web_search",
+        "source_type": "web_search",
+        "source_url": "https://www.reuters.com/technology/ai-capex",
+        "customer_ticker": "GOOGL",
+        "evidence_side": "independent_customer",
+        "source_time": "2026-04-25",
+    }
+    assert evidence_side(news, ticker="TEST") == "industry_third_party"
+
+
+def test_customer_hit_relation_splits_industry_category_and_direct() -> None:
+    industry_only = {
+        "fact": "Capital expenditure for data centers will increase, and power procurement remains a constraint.",
+        "ticker": "TEST",
+    }
+    category = {
+        "fact": "Custom silicon accelerator racks are being deployed as capital expenditure rises for AI data centers.",
+        "ticker": "TEST",
+    }
+    direct = {
+        "fact": "TEST custom silicon is being deployed in our data-center fleet this year.",
+        "ticker": "TEST",
+    }
+    assert customer_hit_relation(industry_only, ticker="TEST") == "industry_demand_only"
+    assert customer_hit_relation(category, ticker="TEST") == "category_cross_check"
+    assert customer_hit_relation(direct, ticker="TEST") == "direct_issuer_cross_check"
+    families = customer_side_evidence(
+        [
+            {**category, "source": "customer 10-Q", "source_type": "sec_filing", "source_url": "https://www.sec.gov/Archives/edgar/data/1/a.htm", "evidence_side": "independent_customer", "customer_ticker": "GOOGL"},
+            {**industry_only, "source": "web_search", "source_type": "web_search", "source_url": "https://www.example.test/news", "evidence_side": "independent_customer"},
+        ],
+        pack=_semi_pack(),
+        ticker="TEST",
+    )
+    assert families["search_program"]["candidate_types"]
+    assert families["independent_confirmation_present"] is True
+    assert families["named_issuer_cross_check_present"] is False
+    assert families["category_cross_check"]
+    assert families["industry_demand_only"]
+    assert "named contract" in families["conclusion"] or "does not name" in families["conclusion"]
+
+
+def test_delivery_history_covers_unscored_quarters_and_does_not_copy_latest_guidance() -> None:
+    pack = _semi_pack()
+    pack["earnings_history"] = list(pack["earnings_history"]) + [
+        {"fiscal_period": "2025Q3", "report_date": "2025-09-05", "revenue": 12000000000, "eps": 1.10, "source": "sec.companyfacts"},
+        {"fiscal_period": "2025Q2", "report_date": "2025-06-06", "revenue": 11500000000, "eps": 1.05, "source": "sec.companyfacts"},
+        {"fiscal_period": "2025Q1", "report_date": "2025-03-07", "revenue": 11000000000, "eps": 1.00, "source": "sec.companyfacts"},
+        {"fiscal_period": "2024Q4", "report_date": "2024-12-12", "revenue": 10500000000, "eps": 0.95, "source": "sec.companyfacts"},
+    ]
+    history = build_delivery_history(pack)
+    assert 6 <= len(history["history"]) <= 8
+    for row in history["history"]:
+        for key in ("quarter", "guidance", "actual", "outcome", "guidance_revision", "source"):
+            assert key in row
+    assert history["unscored_quarters"]
+    assert history["scored_quarters"]
+    revisions = [row["guidance_revision"] for row in history["history"]]
+    assert revisions.count("raised") == 1
+    assert any(item is None for item in revisions)
+    three_beat = {
+        "earnings_history": [
+            {"fiscal_period": "2026Q3", "report_date": "2026-09-04", "eps": 1.8, "eps_estimate": 1.7, "revenue": 16, "revenue_estimate": 15},
+            {"fiscal_period": "2026Q2", "report_date": "2026-06-05", "eps": 1.6, "eps_estimate": 1.5, "revenue": 15, "revenue_estimate": 14},
+            {"fiscal_period": "2026Q1", "report_date": "2026-03-06", "eps": 1.4, "eps_estimate": 1.3, "revenue": 14, "revenue_estimate": 13},
+            {"fiscal_period": "2025Q4", "report_date": "2025-12-12", "eps": 1.2, "revenue": 13},
+            {"fiscal_period": "2025Q3", "report_date": "2025-09-05", "eps": 1.1, "revenue": 12},
+            {"fiscal_period": "2025Q2", "report_date": "2025-06-06", "eps": 1.0, "revenue": 11},
+            {"fiscal_period": "2025Q1", "report_date": "2025-03-07", "eps": 0.9, "revenue": 10},
+        ]
+    }
+    short = build_delivery_history(three_beat)
+    assert short["prints_scored"] == 3
+    assert short["beat_rate"] == 1.0
+    assert "not 100%" in short["credibility"].lower() or "not a substitute" in short["credibility"].lower()
+    assert "100% long-term" in short["credibility"]
+
+
+def test_market_implied_is_a_sensitivity_matrix_not_a_single_growth() -> None:
+    from stock_pm.research.valuation import build_valuation_cases
+
+    pack = _semi_pack()
+    cases = build_valuation_cases(pack)
+    implied = market_implied_case(pack, cases)
+    assert implied["market_implied_under_base_multiple"]
+    assert implied["market_implied_under_base_multiple"]["label"] == "market_implied_under_base_multiple"
+    assert [row["multiple"] for row in implied["sensitivity"]] == [25, 30, 33, 35, 40]
+    for row in implied["sensitivity"]:
+        assert "implied_forward_eps" in row
+        assert "implied_2y_eps_cagr" in row
+    assert implied["market_implied_range"]
+    assert implied["vs_pm_base"]
+    assert implied["pm_wording"]
+    blob = (implied["summary"] + " " + implied["pm_wording"] + " " + str(implied["case"]["growth_assumptions"])).lower()
+    assert "only prices" not in blob
+    assert implied["case"]["growth_assumptions"]["origin"] == "market_implied_under_base_multiple"
+    judgment = build_pm_judgment(
+        {
+            "ticker": "TEST",
+            "pack": pack,
+            "assumptions": [],
+            "engine_views": [
+                {
+                    "assumption_id": "a1",
+                    "statement": "Two-year growth persists",
+                    "category": "growth_persist",
+                    "proposed_status": "unchanged",
+                    "current_confidence": 0.5,
+                    "supporting_evidence": [],
+                    "opposing_evidence": [],
+                    "unresolved_gaps": [],
+                }
+            ],
+            "evidence": _evidence(),
+            "quant_findings": [],
+            "tasks": [],
+        }
+    )
+    thesis = json.dumps(judgment["thesis"], default=str).lower()
+    assert "only prices" not in thesis
+    assert judgment["deep_case"]["market_implied"]["sensitivity"]
+    assert judgment["deep_case"]["golden_answers"]["pm_conclusion"]
+

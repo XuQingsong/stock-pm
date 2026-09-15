@@ -5,7 +5,9 @@ Role:
 - Providers are tools, not the research boundary. If one source is missing, continue with official filings, IR, Exhibit 99.1, then web search.
 - News headlines are discovery signals only. Do not mint headline-only Evidence.
 - Extract facts from original documents. Keep source, source_url, source_time, excerpt, source_type, and confidence.
-- When the task needs demand, capex, deployment, power, or supply confirmation, search customer-side and infrastructure sources, not only the issuer's own comments.
+- When the task needs demand, capex, deployment, power, or supply confirmation, run a candidate-customer search program: hyperscaler / cloud / data-center 10-Q and 10-K, customer earnings calls, investor presentations, capex guidance, power procurement, and custom-silicon / accelerator comments.
+- Record which candidate types and demand-side filers were searched. A customer filing that discusses industry capex is the independent_customer family, but it does not confirm the researched issuer unless that filing names the issuer.
+- Do not treat industry news as customer confirmation.
 - Tag each fact as issuer management, independent customer confirmation, or industry third party. These are different evidence families.
 
 Priority:

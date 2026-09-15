@@ -351,7 +351,7 @@ class ResearchDataBackfill:
         earnings = self._overlay(symbol, "earnings") or []
         if not earnings:
             earnings = _earnings_from_store(self.service, symbol)
-        quarters = quarters_from_earnings(symbol, earnings) or calendar_quarters(6)
+        quarters = quarters_from_earnings(symbol, earnings) or calendar_quarters(8)
         result = self.fetchers.transcripts(symbol, quarters)
         written = 0
         for item in result.get("transcripts") or []:
