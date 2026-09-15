@@ -101,6 +101,17 @@ def _prediction(database, symbol: str) -> dict[str, Any]:
         return {"state": "missing", "prediction_ready": False}
 
 
+def _has_review_snapshot(pred: dict[str, Any] | None) -> bool:
+    """True when a prediction row is stored or incomplete-but-real, not a missing placeholder."""
+    if not pred:
+        return False
+    if pred.get("id") or pred.get("as_of_date") or pred.get("created_at") or pred.get("window_start"):
+        return True
+    if pred.get("prediction_ready") or pred.get("thesis"):
+        return True
+    return False
+
+
 def _decision(database, symbol: str) -> dict[str, Any] | None:
     try:
         from stock_pm.decision.assemble import assemble_from_bundle
@@ -222,7 +233,7 @@ def build_review(database, *, today=None) -> dict[str, Any]:
             history = []
         if not history:
             live = _prediction(database, symbol)
-            history = [live] if live else []
+            history = [live] if _has_review_snapshot(live) else []
         predictions[symbol] = history
         for pred in history[:2]:
             pid = pred.get("id")

@@ -244,3 +244,31 @@ def test_overview_assemble_does_not_block_on_cold_event_book(monkeypatch):
     assert payload["featured"] is None
     assert payload["gaps"]["events"] is True
     assert payload["diagnostics"]["warming"] is True
+
+
+def test_review_assemble_skips_missing_prediction_placeholders(monkeypatch):
+    from stock_pm.events import service
+    from stock_pm.pack.assemble import build_review
+
+    monkeypatch.setattr(service, "peek_event_book", lambda: [])
+    monkeypatch.setattr(service, "kick_event_book_warm", lambda: None)
+
+    class DB:
+        def watchlist_rows(self):
+            return WATCH
+
+        def briefing(self, date=None, *, live_synthesize=True):
+            return {"rows": []}
+
+        def prediction_history(self, symbol, limit=8):
+            return []
+
+        def prediction_payload(self, date=None, symbol=None, *, live_fallback=True):
+            return {"state": "missing", "prediction_ready": False, "symbol": symbol}
+
+        def prediction_checks(self, prediction_id, limit=8):
+            return []
+
+    payload = build_review(DB())
+    assert payload["observations"] == []
+    assert payload["formal"] == []
