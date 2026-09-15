@@ -1,0 +1,75 @@
+{
+  "issuer": {
+    "legal_name": "Example Photonics Co",
+    "fiscal_year_end_month": 6,
+    "sector": "半导体",
+    "asset_class": "stocks"
+  },
+  "fundamentals": {
+    "captured_at": "2026-02-06T00:00:00+00:00",
+    "revenue_ttm": 5800000000,
+    "eps_ttm": 1.1,
+    "gross_margin_pct": 38.0,
+    "revenue_growth_yoy_pct": 22.0,
+    "source": "fixture"
+  },
+  "earnings": [
+    {
+      "fiscal_period": "2026Q2",
+      "report_date": "2026-02-05",
+      "source": "earnings_reports",
+      "revenue_actual": 1520000000,
+      "revenue_estimate": 1470000000,
+      "eps_actual": 0.31,
+      "eps_estimate": 0.28,
+      "net_income_actual": 180000000,
+      "post_1d_return_pct": 5.5,
+      "provider_fields": {
+        "segments": [
+          {"name": "datacom", "revenue": 820000000, "growth_yoy_pct": 41.0}
+        ]
+      }
+    },
+    {
+      "fiscal_period": "2025Q2",
+      "report_date": "2025-02-05",
+      "source": "earnings_reports",
+      "revenue_actual": 1240000000,
+      "eps_actual": 0.22,
+      "net_income_actual": 120000000
+    },
+    {
+      "fiscal_period": "2025Q1",
+      "report_date": "2024-11-06",
+      "source": "earnings_reports",
+      "revenue_actual": 1180000000,
+      "eps_actual": 0.19
+    },
+    {
+      "fiscal_period": "2024Q4",
+      "report_date": "2024-08-07",
+      "source": "earnings_reports",
+      "revenue_actual": 1100000000,
+      "eps_actual": 0.16
+    }
+  ],
+  "guidance": [
+    {
+      "text": "We raised our full-year revenue guidance on datacom demand.",
+      "move": "raised",
+      "source": "earnings call",
+      "source_time": "2026-02-05T21:30:00+00:00"
+    }
+  ],
+  "transcripts": [
+    {
+      "quarter": "2026Q2",
+      "source": "earnings call",
+      "source_time": "2026-02-05T21:30:00+00:00",
+      "text": "Management said the long-term goal is to supply opticals into AI clusters as customers add capacity. We raised full-year revenue guidance on datacom demand. Execution depends on factory ramps.",
+      "excerpts": [
+        {"text": "the long-term goal is to supply opticals into AI clusters as customers add capacity"}
+      ]
+    }
+  ]
+}

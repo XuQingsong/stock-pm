@@ -83,3 +83,24 @@ def test_research_api_happy_path_and_pm_gate(monkeypatch) -> None:
     assert missing.json()["status"] == "missing"
     audits = client.get(f"/api/research/ZZZZ/workflow/runs/{run.json()['id']}/agent-runs")
     assert audits.status_code == 200
+
+
+def test_research_api_rebuilds_pack_and_chain(monkeypatch) -> None:
+    from stock_pm.research.sources import DictPackSource
+
+    from tests.test_research_sprint2 import load_fixture
+
+    source = DictPackSource.from_mapping("COHR", load_fixture("cohr.json"))
+    svc = ResearchService(InMemoryResearchStore(), pack_source=source)
+    monkeypatch.setattr(research_api, "_service_override", svc)
+    client = TestClient(api.app)
+    rebuilt = client.post("/api/research/COHR/pack/rebuild", json={})
+    assert rebuilt.status_code == 200
+    assert rebuilt.json()["earnings_history"]
+    executed = client.post("/api/research/COHR/workflow/runs", json={"execute": True, "max_depth": 2, "max_tasks": 12})
+    assert executed.status_code == 201
+    chain = client.get("/api/research/COHR/chain")
+    body = chain.json()
+    assert len(body["assumptions"]) >= 3
+    assert body["evidence"]
+    assert body["tasks"]

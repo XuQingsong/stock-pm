@@ -63,6 +63,23 @@ def get_pack(symbol: str) -> dict[str, Any]:
         raise _http(exc) from exc
 
 
+@router.post("/{symbol}/pack/rebuild")
+def rebuild_pack(symbol: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
+    payload = body or {}
+    try:
+        return get_service().build_pack(symbol, workflow_run_id=payload.get("workflow_run_id"))
+    except Exception as exc:
+        raise _http(exc) from exc
+
+
+@router.get("/{symbol}/chain")
+def research_chain(symbol: str, workflow_run_id: str | None = None) -> dict[str, Any]:
+    try:
+        return get_service().research_snapshot(symbol, workflow_run_id)
+    except Exception as exc:
+        raise _http(exc) from exc
+
+
 @router.get("/{symbol}/tasks")
 def list_tasks(symbol: str, workflow_run_id: str | None = None) -> list[dict[str, Any]]:
     try:
@@ -239,6 +256,18 @@ def create_valuation(symbol: str, body: Annotated[dict, Body()]) -> dict[str, An
 def create_workflow_run(symbol: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
     payload = body or {}
     try:
+        if payload.get("execute") or payload.get("start"):
+            from .workflow import run_new_ticker_research
+
+            result = run_new_ticker_research(
+                get_service(),
+                symbol,
+                trigger=str(payload.get("trigger") or "api"),
+                max_depth=int(payload.get("max_depth") or 4),
+                max_tasks=int(payload.get("max_tasks") or 32),
+                execute=True,
+            )
+            return result["workflow_run"]
         run = get_service().start_workflow_run(
             symbol,
             workflow_name=str(payload.get("workflow_name") or "new_ticker_research"),
@@ -269,6 +298,25 @@ def get_workflow_run(symbol: str, run_id: str) -> dict[str, Any]:
     if row is None or row.get("ticker") != symbol.upper():
         raise HTTPException(status_code=404, detail="workflow run not found")
     return row
+
+
+@router.post("/{symbol}/workflow/runs/{run_id}/execute")
+def execute_workflow_run(symbol: str, run_id: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
+    payload = body or {}
+    try:
+        from .workflow import run_new_ticker_research
+
+        return run_new_ticker_research(
+            get_service(),
+            symbol,
+            workflow_run_id=run_id,
+            trigger=str(payload.get("trigger") or "api"),
+            max_depth=int(payload.get("max_depth") or 4),
+            max_tasks=int(payload.get("max_tasks") or 32),
+            execute=True,
+        )
+    except Exception as exc:
+        raise _http(exc) from exc
 
 
 @router.get("/{symbol}/workflow/runs/{run_id}/agent-runs")

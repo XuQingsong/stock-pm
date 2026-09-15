@@ -76,6 +76,26 @@ class AgentInput:
     market_context: dict[str, Any] = field(default_factory=dict)
 
 
+AGENT_SEARCH = "search_data"
+AGENT_FUNDAMENTAL = "fundamental"
+
+AGENT_OUTPUT_SCHEMA = {
+    "type": "object",
+    "required": ["findings", "new_evidence", "follow_up_tasks", "confidence"],
+    "properties": {
+        "findings": {"type": "array", "items": {"type": "string"}},
+        "new_evidence": {"type": "array", "items": {"type": "object"}},
+        "new_assumptions": {"type": "array", "items": {"type": "object"}},
+        "supported_assumption_ids": {"type": "array", "items": {"type": "string"}},
+        "challenged_assumption_ids": {"type": "array", "items": {"type": "string"}},
+        "assumption_links": {"type": "array", "items": {"type": "object"}},
+        "follow_up_tasks": {"type": "array"},
+        "missing_data": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"type": "number"},
+    },
+}
+
+
 @dataclass(slots=True)
 class AgentOutput:
     findings: list[str] = field(default_factory=list)
@@ -83,7 +103,9 @@ class AgentOutput:
     new_assumptions: list[dict[str, Any]] = field(default_factory=list)
     supported_assumption_ids: list[str] = field(default_factory=list)
     challenged_assumption_ids: list[str] = field(default_factory=list)
+    assumption_links: list[dict[str, Any]] = field(default_factory=list)
     follow_up_tasks: list[FollowUpSpec | dict[str, Any]] = field(default_factory=list)
+    missing_data: list[str] = field(default_factory=list)
     confidence: float | None = None
     agent_name: str = ""
     model: str | None = None

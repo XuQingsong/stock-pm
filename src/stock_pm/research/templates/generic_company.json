@@ -1,0 +1,10 @@
+{
+  "id": "generic_company",
+  "question_axes": [
+    {"id": "revenue_growth", "question": "Is recent revenue growth durable over the next two years?"},
+    {"id": "guidance_delivery", "question": "Can management deliver the latest outlook and historical guidance?"},
+    {"id": "end_demand", "question": "Is end demand real and confirmed outside management commentary?"},
+    {"id": "cash_generation", "question": "Can earnings and cash generation support the plan?"},
+    {"id": "management_delivery", "question": "Has management historically delivered against stated targets?"}
+  ]
+}

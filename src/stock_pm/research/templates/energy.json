@@ -1,0 +1,10 @@
+{
+  "id": "energy",
+  "question_axes": [
+    {"id": "revenue_growth", "question": "Is cash generation durable through the commodity cycle?"},
+    {"id": "guidance_delivery", "question": "Can management deliver production and capex guidance?"},
+    {"id": "end_demand", "question": "Is downstream demand consistent with the volume plan?"},
+    {"id": "supply_capacity", "question": "Can upstream capacity and projects come online as stated?"},
+    {"id": "management_delivery", "question": "Has management historically delivered against production and return targets?"}
+  ]
+}

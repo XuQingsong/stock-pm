@@ -40,7 +40,7 @@ stock-pm-events = "stock_pm.events.job:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-stock_pm = ["sql/*.sql", "sql/migrations/*.sql", "static/*", "data/*.json", "research/data/*.json"]
+stock_pm = ["sql/*.sql", "sql/migrations/*.sql", "static/*", "data/*.json", "research/data/*.json", "research/templates/*.json", "research/prompts/*.txt"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

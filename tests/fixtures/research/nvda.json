@@ -1,0 +1,83 @@
+{
+  "issuer": {
+    "legal_name": "Example Compute Co",
+    "cik": "0001045810",
+    "fiscal_year_end_month": 1,
+    "sector": "半导体",
+    "asset_class": "stocks"
+  },
+  "fundamentals": {
+    "captured_at": "2026-02-27T00:00:00+00:00",
+    "revenue_ttm": 130000000000,
+    "eps_ttm": 3.1,
+    "gross_margin_pct": 75.0,
+    "revenue_growth_yoy_pct": 114.0,
+    "source": "fixture"
+  },
+  "earnings": [
+    {
+      "fiscal_period": "2026Q4",
+      "report_date": "2026-02-26",
+      "source": "earnings_reports",
+      "revenue_actual": 39300000000,
+      "revenue_estimate": 38100000000,
+      "eps_actual": 0.89,
+      "eps_estimate": 0.84,
+      "net_income_actual": 11000000000,
+      "post_1d_return_pct": 3.4,
+      "provider_fields": {
+        "segments": [
+          {"name": "data center", "revenue": 32000000000, "growth_yoy_pct": 93.0}
+        ]
+      }
+    },
+    {
+      "fiscal_period": "2025Q4",
+      "report_date": "2025-02-26",
+      "source": "earnings_reports",
+      "revenue_actual": 22100000000,
+      "eps_actual": 0.51,
+      "net_income_actual": 6800000000
+    },
+    {
+      "fiscal_period": "2025Q3",
+      "report_date": "2024-11-20",
+      "source": "earnings_reports",
+      "revenue_actual": 18100000000,
+      "eps_actual": 0.40
+    },
+    {
+      "fiscal_period": "2025Q2",
+      "report_date": "2024-08-28",
+      "source": "earnings_reports",
+      "revenue_actual": 13500000000,
+      "eps_actual": 0.29
+    },
+    {
+      "fiscal_period": "2025Q1",
+      "report_date": "2024-05-22",
+      "source": "earnings_reports",
+      "revenue_actual": 10300000000,
+      "eps_actual": 0.21
+    }
+  ],
+  "guidance": [
+    {
+      "text": "We expect data-center AI revenue to grow for several years as the new architecture ramps.",
+      "move": "stated",
+      "source": "earnings call",
+      "source_time": "2026-02-26T22:00:00+00:00"
+    }
+  ],
+  "transcripts": [
+    {
+      "quarter": "2026Q4",
+      "source": "earnings call",
+      "source_time": "2026-02-26T22:00:00+00:00",
+      "text": "Over the next several years we expect AI accelerator revenue to keep compounding. The long-term target is to remain the training and inference platform of record. Customer capex plans support this ramp.",
+      "excerpts": [
+        {"text": "Over the next several years we expect AI accelerator revenue to keep compounding."}
+      ]
+    }
+  ]
+}

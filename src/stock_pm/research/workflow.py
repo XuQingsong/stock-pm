@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from .runtime import AgentRuntime, agent_name_for_task
 from .service import ResearchService
-from .types import AgentInput, AgentOutput, to_plain
+from .types import AGENT_FUNDAMENTAL, AgentInput, AgentOutput, to_plain
 
 
 Runner = Callable[[dict[str, Any], AgentInput], AgentOutput]
@@ -81,10 +82,13 @@ def run_follow_up_loop(
                 output_json={
                     "findings": output.findings,
                     "follow_up_count": len(persisted.get("follow_ups") or []),
+                    "missing_data": list(output.missing_data),
                     "model": output.model,
                     "prompt_version": output.prompt_version,
                 },
                 confidence=output.confidence,
+                model=output.model,
+                prompt_version=output.prompt_version,
             )
             service.store.update_task(task["id"], status="completed")
             processed += 1
@@ -128,3 +132,74 @@ def run_follow_up_loop(
 
 def loop_result_plain(result: dict[str, Any]) -> dict[str, Any]:
     return to_plain(result)
+
+
+def runtime_runner(runtime: AgentRuntime) -> Runner:
+    def _run(task: dict[str, Any], payload: AgentInput) -> AgentOutput:
+        return runtime.run(agent_name_for_task(task), payload)
+
+    return _run
+
+
+def run_new_ticker_research(
+    service: ResearchService,
+    ticker: str,
+    *,
+    workflow_run_id: str | None = None,
+    trigger: str = "api",
+    max_depth: int = 4,
+    max_tasks: int = 32,
+    runtime: AgentRuntime | None = None,
+    execute: bool = True,
+) -> dict[str, Any]:
+    symbol = str(ticker or "").upper()
+    service.ensure_issuer(symbol)
+    if workflow_run_id:
+        run = service.store.get_workflow_run(workflow_run_id)
+        if run is None or run.get("ticker") != symbol:
+            raise ValueError("workflow run not found")
+    else:
+        run = service.start_workflow_run(
+            symbol,
+            workflow_name="new_ticker_research",
+            trigger=trigger,
+            max_depth=max_depth,
+            max_tasks=max_tasks,
+        )
+        workflow_run_id = run["id"]
+    pack = service.build_pack(symbol, workflow_run_id=workflow_run_id)
+    existing = service.store.list_tasks(symbol, workflow_run_id)
+    if not existing:
+        service.create_task(
+            symbol,
+            {
+                "workflow_run_id": workflow_run_id,
+                "task_type": "discover_fundamentals",
+                "title": "Discover fundamentals, guidance, and management commitments",
+                "description": "Analyze the research pack. Extract evidence, propose unverified assumptions, and open follow-up tasks.",
+                "source_reason": "template seed",
+                "assigned_agents": [AGENT_FUNDAMENTAL],
+                "required_data": ["earnings", "guidance", "transcript"],
+                "priority": 10,
+            },
+            actor="workflow",
+        )
+    if not execute:
+        return {
+            "workflow_run": service.store.get_workflow_run(workflow_run_id),
+            "pack": pack,
+            "snapshot": service.research_snapshot(symbol, workflow_run_id),
+        }
+    resolved_runtime = runtime
+    if resolved_runtime is None:
+        resolved_runtime = AgentRuntime(completer=service.completer)
+    result = run_follow_up_loop(
+        service,
+        ticker=symbol,
+        workflow_run_id=workflow_run_id,
+        runner=runtime_runner(resolved_runtime),
+        actor="workflow",
+    )
+    result["pack"] = service.get_pack(symbol)
+    result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
+    return result

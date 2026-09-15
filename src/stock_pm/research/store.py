@@ -325,6 +325,8 @@ class ResearchStore:
             "confidence": fields.get("confidence"),
             "error": fields.get("error"),
             "completed_at": fields.get("completed_at") or _now(),
+            "model": fields.get("model"),
+            "prompt_version": fields.get("prompt_version"),
         }
         stored = self._one(
             """
@@ -333,7 +335,9 @@ class ResearchStore:
                 output_json = %(output_json)s,
                 confidence = %(confidence)s,
                 error = %(error)s,
-                completed_at = %(completed_at)s
+                completed_at = %(completed_at)s,
+                model = COALESCE(%(model)s, model),
+                prompt_version = COALESCE(%(prompt_version)s, prompt_version)
             WHERE id = %(id)s
             RETURNING *
             """,

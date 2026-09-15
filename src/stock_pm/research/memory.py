@@ -169,6 +169,10 @@ class InMemoryResearchStore:
         row["confidence"] = fields.get("confidence")
         row["error"] = fields.get("error")
         row["completed_at"] = fields.get("completed_at") or _now()
+        if fields.get("model"):
+            row["model"] = fields.get("model")
+        if fields.get("prompt_version"):
+            row["prompt_version"] = fields.get("prompt_version")
         return _copy(row)
 
     def list_agent_runs(self, ticker: str, workflow_run_id: str | None = None) -> list[dict[str, Any]]:

@@ -8,13 +8,13 @@ TICKER_BRANCH = re.compile(
     r"""if\s*\(\s*(ticker|symbol)\s*(==|!=)\s*['\"](AVGO|NVDA|XOM|COHR|AAPL)['\"]""",
     re.I,
 )
-COMMITMENT = re.compile(r"30\s*GW|thirty\s*gigawatt", re.I)
+COMMITMENT = re.compile(r"30\s*GW|thirty\s*gigawatt|broadcom", re.I)
 
 
 def test_research_package_has_no_ticker_specific_branches() -> None:
     offenders = []
     for path in ROOT.rglob("*"):
-        if path.suffix not in {".py", ".json", ".md"}:
+        if path.suffix not in {".py", ".json", ".md", ".txt"}:
             continue
         if path.name == "issuer_directory.json":
             continue

@@ -1,6 +1,6 @@
 # Stock-PM Brain V1：设计与改造计划
 
-> 状态：总体设计已通过。评审修订（2026-09-15）已纳入 Sprint 1。
+> 状态：总体设计已通过。Sprint 1 已验收。Sprint 2：Research Pack + Search/Data + Fundamental 真实链路。
 > 目标：把系统从「信息展示 / 新闻聚合 / 日循环判断」升级为「Evidence → Assumption → Thesis → Valuation → Monitoring → Review」的可持续研究系统。
 > AVGO 只是 Golden Case 测试数据，禁止任何 ticker 专属流程代码。
 >
@@ -646,7 +646,7 @@ pytest tests/test_research_*.py tests/test_api.py tests/test_decision_kernel.py 
 
 | Sprint | 交付 | 明确不做 |
 | --- | --- | --- |
-| 2 | Pack builder、Runtime、Search、Fundamental；template JSON×3；watchlist 挂钩 workflow | 不写行业数字进 template；不改 desk |
+| 2 | Pack builder、Runtime、Search、Fundamental；template JSON×3；watchlist 挂钩 workflow | **已落地。** 不写行业数字进 template；不改 desk |
 | 3 | Assumption Engine 实装、Industry、Quant、Risk | Quant 不输出 `priced_in` |
 | 4 | PM/Judge、Thesis 版本 diff、Valuation | 其他 Agent 不得调 thesis store |
 | 5 | AVGO Golden Case 夹具驱动，调 prompt/工具 | 不把 30GW 写进代码 |

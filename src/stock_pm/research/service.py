@@ -6,9 +6,13 @@ import hashlib
 import json
 from typing import Any
 
+from datetime import datetime, timezone
+
 from .classify import classify_from_issuer, classify_template
 from .errors import CrossTickerError, DepthLimitError, ProvenanceError, ResearchPermissionError
+from .evidence import evidence_fingerprint
 from .issuer import IDENTITY_FIELD_KEYS, fill_issuer_identity, merge_identity
+from .pack_builder import PACK_CONTENT_FIELDS, PackBuilder, default_pack_source
 from .types import (
     ACTOR_API,
     ACTOR_PM,
@@ -22,17 +26,6 @@ from .types import (
     follow_up_from_payload,
     normalize_valuation_case,
     to_plain,
-)
-
-
-PACK_CONTENT_FIELDS = (
-    "company_profile",
-    "earnings_history",
-    "guidance_history",
-    "price_reaction_history",
-    "industry_context",
-    "competitive_context",
-    "major_events",
 )
 
 
@@ -56,8 +49,10 @@ def _hash_payload(payload: Any) -> str:
 
 
 class ResearchService:
-    def __init__(self, store: Any) -> None:
+    def __init__(self, store: Any, *, pack_source: Any | None = None, completer: Any | None = None) -> None:
         self.store = store
+        self.pack_source = pack_source
+        self.completer = completer
 
     def _audit(
         self,
@@ -143,6 +138,50 @@ class ResearchService:
             "status": "missing",
             "template_id": classify_template(),
             "missing_fields": list(PACK_CONTENT_FIELDS) + ["issuer_profile"],
+        }
+
+    def build_pack(self, ticker: str, *, workflow_run_id: str | None = None) -> dict[str, Any]:
+        symbol = _ticker(ticker)
+        issuer = self.get_issuer(symbol) or self.ensure_issuer(symbol)
+        source = self.pack_source or default_pack_source(self.store)
+        snapshot = PackBuilder(source).build(symbol, issuer=issuer, workflow_run_id=workflow_run_id)
+        stored = self.store.upsert_pack(snapshot)
+        self._audit(
+            ticker=symbol,
+            agent_name="pack_builder",
+            workflow_run_id=workflow_run_id,
+            payload={"op": "build_pack", "missing_fields": stored.get("missing_fields")},
+            output={"template_id": stored.get("template_id")},
+        )
+        return stored
+
+    def research_snapshot(self, ticker: str, workflow_run_id: str | None = None) -> dict[str, Any]:
+        symbol = _ticker(ticker)
+        pack = self.get_pack(symbol)
+        assumptions = []
+        for row in self.store.list_assumptions(symbol):
+            links = self.store.list_links(assumption_id=row["id"])
+            item = dict(row)
+            item["supporting_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "support"]
+            item["counter_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "oppose"]
+            item["contextual_evidence_ids"] = [link["evidence_id"] for link in links if link["direction"] == "contextual"]
+            item["links"] = links
+            assumptions.append(item)
+        agent_runs = self.store.list_agent_runs(symbol, workflow_run_id)
+        findings = []
+        for run in agent_runs:
+            payload = run.get("output_json") or {}
+            for item in payload.get("findings") or []:
+                findings.append({"agent": run.get("agent_name"), "text": item, "agent_run_id": run.get("id")})
+        return {
+            "ticker": symbol,
+            "pack": pack,
+            "findings": findings,
+            "evidence": self.store.list_evidence(symbol),
+            "assumptions": assumptions,
+            "tasks": self.store.list_tasks(symbol, workflow_run_id),
+            "workflow_runs": self.store.list_workflow_runs(symbol),
+            "agent_runs": agent_runs,
         }
 
     def start_workflow_run(
@@ -524,24 +563,127 @@ class ResearchService:
     ) -> dict[str, Any]:
         ticker = task["ticker"]
         actor = output.agent_name or task.get("created_by") or "agent"
+        retrieved_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        existing_evidence = {evidence_fingerprint(row): row["id"] for row in self.store.list_evidence(ticker)}
+        key_to_id: dict[str, str] = {}
         evidence_rows = []
         for item in output.new_evidence:
             payload = dict(item)
+            local_key = str(payload.pop("_key", "") or "")
+            payload.setdefault("retrieved_at", retrieved_at)
             payload.setdefault("workflow_run_id", task.get("workflow_run_id"))
             payload.setdefault("task_id", task["id"])
             payload.setdefault("model", output.model)
             payload.setdefault("prompt_version", output.prompt_version)
-            evidence_rows.append(self.create_evidence(ticker, payload, actor=actor))
+            fingerprint = evidence_fingerprint(payload)
+            if fingerprint in existing_evidence:
+                evidence_id = existing_evidence[fingerprint]
+                if local_key:
+                    key_to_id[local_key] = evidence_id
+                key_to_id[evidence_id] = evidence_id
+                continue
+            try:
+                row = self.create_evidence(ticker, payload, actor=actor)
+            except ProvenanceError:
+                continue
+            evidence_rows.append(row)
+            existing_evidence[fingerprint] = row["id"]
+            key_to_id[row["id"]] = row["id"]
+            if local_key:
+                key_to_id[local_key] = row["id"]
+
+        existing_assumptions = {row["statement"]: row for row in self.store.list_assumptions(ticker)}
         assumption_rows = []
+        linked_pairs: set[tuple[str, str, str]] = set()
+
+        def _link(assumption_id: str, evidence_id: str, *, direction: str, strength: str | None = None, reason: str | None = None) -> None:
+            pair = (assumption_id, evidence_id, direction)
+            if not assumption_id or not evidence_id or pair in linked_pairs:
+                return
+            try:
+                self.link_assumption_evidence(
+                    ticker,
+                    assumption_id=assumption_id,
+                    evidence_id=evidence_id,
+                    direction=direction,
+                    strength=strength,
+                    reason=reason,
+                    actor=actor,
+                    workflow_run_id=task.get("workflow_run_id"),
+                )
+            except (ProvenanceError, CrossTickerError):
+                return
+            linked_pairs.add(pair)
+
         for item in output.new_assumptions:
             payload = dict(item)
+            links = list(payload.pop("links", []) or [])
+            payload.pop("_key", None)
             payload.setdefault("workflow_run_id", task.get("workflow_run_id"))
             payload.setdefault("model", output.model)
             payload.setdefault("prompt_version", output.prompt_version)
-            assumption_rows.append(self.create_assumption(ticker, payload, actor=actor))
+            statement = str(payload.get("statement") or "").strip()
+            existing = existing_assumptions.get(statement)
+            if existing:
+                row = existing
+            else:
+                try:
+                    row = self.create_assumption(ticker, payload, actor=actor)
+                except (ProvenanceError, ResearchPermissionError):
+                    continue
+                existing_assumptions[statement] = row
+            assumption_rows.append(row)
+            for link in links:
+                evid = key_to_id.get(str(link.get("evidence_key") or "")) or link.get("evidence_id")
+                if evid:
+                    _link(row["id"], str(evid), direction=str(link.get("direction") or "support"), strength=link.get("strength"), reason=link.get("reason"))
+
+        statement_to_id = {row["statement"]: row["id"] for row in existing_assumptions.values()}
+        for link in output.assumption_links:
+            assumption_id = str(link.get("assumption_id") or statement_to_id.get(str(link.get("statement") or "")) or "")
+            evid = key_to_id.get(str(link.get("evidence_key") or "")) or link.get("evidence_id")
+            if assumption_id and evid:
+                _link(assumption_id, str(evid), direction=str(link.get("direction") or "support"), strength=link.get("strength"), reason=link.get("reason"))
+        for assumption_id in output.supported_assumption_ids:
+            for row in evidence_rows[:2]:
+                _link(str(assumption_id), row["id"], direction="support", reason="agent marked supporting")
+        for assumption_id in output.challenged_assumption_ids:
+            for row in evidence_rows[:2]:
+                _link(str(assumption_id), row["id"], direction="oppose", reason="agent marked challenging")
+
+        follow_specs: list[FollowUpSpec] = []
+        for item in output.follow_up_tasks:
+            spec = follow_up_from_payload(item)
+            required = []
+            for raw in spec.required_data:
+                text = str(raw)
+                if text.startswith("assumption:") and "rasm_" not in text:
+                    needle = text.split(":", 1)[1]
+                    match = next(
+                        (
+                            assumption_id
+                            for statement, assumption_id in statement_to_id.items()
+                            if statement.startswith(needle) or needle.startswith(statement[:48])
+                        ),
+                        None,
+                    )
+                    required.append(f"assumption:{match}" if match else text)
+                else:
+                    required.append(text)
+            follow_specs.append(
+                FollowUpSpec(
+                    title=spec.title,
+                    description=spec.description,
+                    task_type=spec.task_type,
+                    assigned_agents=spec.assigned_agents,
+                    required_data=tuple(required),
+                    priority=spec.priority,
+                    source_reason=spec.source_reason,
+                )
+            )
         follow_ups, dropped = self.enqueue_follow_ups(
             task,
-            list(output.follow_up_tasks),
+            follow_specs,
             max_depth=max_depth,
             actor=actor,
             agent_run_id=agent_run_id,
@@ -551,6 +693,7 @@ class ResearchService:
             "assumptions": assumption_rows,
             "follow_ups": follow_ups,
             "dropped_follow_ups": dropped,
+            "missing_data": list(output.missing_data),
         }
 
     def empty_thesis(self, ticker: str) -> dict[str, Any]:

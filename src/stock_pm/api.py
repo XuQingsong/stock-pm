@@ -258,6 +258,23 @@ def _backfill_symbol(symbol: str) -> None:
         database.ingest(payload)
     except Exception:
         pass
+    _start_research_workflow(symbol)
+
+
+def _start_research_workflow(symbol: str) -> None:
+    try:
+        from .research.agents.base import SettingsCompleter
+        from .research.service import ResearchService
+        from .research.store import ResearchStore
+        from .research.workflow import run_new_ticker_research
+
+        run_new_ticker_research(
+            ResearchService(ResearchStore(database), completer=SettingsCompleter()),
+            symbol,
+            trigger="watchlist",
+        )
+    except Exception:
+        pass
 
 
 @app.post("/api/watchlist", status_code=201)

@@ -25,3 +25,7 @@ class CrossTickerError(ResearchError):
 
 class DepthLimitError(ResearchError):
     """Follow-up task exceeded the workflow max_depth."""
+
+
+class SchemaError(ResearchError):
+    """Agent output failed schema validation."""

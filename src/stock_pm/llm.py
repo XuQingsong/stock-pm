@@ -161,7 +161,7 @@ def _post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
         raise LLMRequestError(exc.code, error_body) from exc
 
 
-def _openai_complete(settings: Settings, context: dict) -> tuple[str, str]:
+def _chat_openai_compatible(settings: Settings, system: str, user: str) -> tuple[str, str]:
     base = (settings.llm_base_url or "https://api.openai.com/v1").rstrip("/")
     model = settings.llm_model or "gpt-4o-mini"
     payload = _post_json(
@@ -174,8 +174,8 @@ def _openai_complete(settings: Settings, context: dict) -> tuple[str, str]:
             "model": model,
             "temperature": 0.2,
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(context, ensure_ascii=False, default=str)},
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
             ],
         },
     )
@@ -183,7 +183,7 @@ def _openai_complete(settings: Settings, context: dict) -> tuple[str, str]:
     return text, model
 
 
-def _anthropic_complete(settings: Settings, context: dict) -> tuple[str, str]:
+def _chat_anthropic(settings: Settings, system: str, user: str) -> tuple[str, str]:
     model = settings.llm_model or "claude-3-5-haiku-latest"
     payload = _post_json(
         "https://api.anthropic.com/v1/messages",
@@ -194,19 +194,99 @@ def _anthropic_complete(settings: Settings, context: dict) -> tuple[str, str]:
         },
         {
             "model": model,
-            "max_tokens": 1200,
-            "system": SYSTEM_PROMPT,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": json.dumps(context, ensure_ascii=False, default=str),
-                }
-            ],
+            "max_tokens": 2400,
+            "system": system,
+            "messages": [{"role": "user", "content": user}],
         },
     )
     blocks = payload.get("content") or []
     text = "".join(block.get("text") or "" for block in blocks if isinstance(block, dict))
     return text, model
+
+
+def _openai_complete(settings: Settings, context: dict) -> tuple[str, str]:
+    return _chat_openai_compatible(
+        settings,
+        SYSTEM_PROMPT,
+        json.dumps(context, ensure_ascii=False, default=str),
+    )
+
+
+def _anthropic_complete(settings: Settings, context: dict) -> tuple[str, str]:
+    return _chat_anthropic(
+        settings,
+        SYSTEM_PROMPT,
+        json.dumps(context, ensure_ascii=False, default=str),
+    )
+
+
+def parse_json_object(text: str) -> dict[str, Any]:
+    raw = (text or "").strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not match:
+        raise ValueError("model response is not JSON")
+    payload = json.loads(match.group(0))
+    if not isinstance(payload, dict):
+        raise ValueError("model JSON must be an object")
+    return payload
+
+
+def complete_json(
+    *,
+    system: str,
+    user: str,
+    schema: dict[str, Any] | None = None,
+    settings: Settings | None = None,
+) -> dict[str, Any]:
+    """Provider-agnostic JSON completion for research agents. Never uses daily review prompts."""
+    config = settings or Settings()
+    provider = (config.llm_provider or "openai").strip().lower()
+    model = config.llm_model or None
+    empty = {
+        "status": "missing_key",
+        "payload": None,
+        "model": model,
+        "provider": provider,
+        "error": llm_status_message("missing_key"),
+        "raw_text": None,
+    }
+    if not config.llm_api_key:
+        return empty
+    prompt = user
+    if schema:
+        prompt = user + "\n\nReturn a single JSON object matching this schema:\n" + json.dumps(schema, ensure_ascii=False)
+    try:
+        if provider == "anthropic":
+            text, used_model = _chat_anthropic(config, system, prompt)
+        else:
+            text, used_model = _chat_openai_compatible(config, system, prompt)
+        return {
+            "status": "ok",
+            "payload": parse_json_object(text),
+            "model": used_model,
+            "provider": provider,
+            "error": None,
+            "raw_text": text,
+        }
+    except LLMRequestError as exc:
+        status = classify_llm_error(exc.status, exc.body)
+        return {
+            **empty,
+            "status": status,
+            "error": llm_status_message(status),
+            "model": model,
+        }
+    except (HTTPError, URLError, TimeoutError, ValueError, json.JSONDecodeError, KeyError) as exc:
+        status = classify_llm_error(getattr(exc, "code", None), str(exc))
+        return {
+            **empty,
+            "status": status,
+            "error": llm_status_message(status),
+            "model": model,
+        }
 
 
 def complete_review(context: dict, settings: Settings | None = None) -> dict[str, Any]:

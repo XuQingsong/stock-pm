@@ -1,0 +1,127 @@
+{
+  "issuer": {
+    "legal_name": "Example Semiconductor Inc",
+    "cik": "0001730168",
+    "fiscal_year_end_month": 10,
+    "sector": "半导体",
+    "asset_class": "stocks"
+  },
+  "fundamentals": {
+    "captured_at": "2026-03-10T00:00:00+00:00",
+    "revenue_ttm": 51000000000,
+    "eps_ttm": 4.8,
+    "gross_margin_pct": 63.0,
+    "operating_margin_pct": 38.0,
+    "net_margin_pct": 31.0,
+    "revenue_growth_yoy_pct": 42.0,
+    "eps_growth_yoy_pct": 55.0,
+    "source": "fixture",
+    "raw_data": {"metrics": {"freeCashFlowTTM": 18000000000}}
+  },
+  "earnings": [
+    {
+      "fiscal_period": "2026Q1",
+      "fiscal_year": 2026,
+      "report_date": "2026-03-05",
+      "period_end": "2026-02-01",
+      "source": "earnings_reports",
+      "revenue_actual": 15000000000,
+      "revenue_estimate": 14200000000,
+      "eps_actual": 1.40,
+      "eps_estimate": 1.28,
+      "net_income_actual": 4500000000,
+      "post_1d_return_pct": 4.2,
+      "post_5d_return_pct": 6.1,
+      "provider_fields": {
+        "segments": [
+          {"name": "custom silicon", "revenue": 6200000000, "growth_yoy_pct": 78.0},
+          {"name": "networking", "revenue": 4100000000, "growth_yoy_pct": 18.0}
+        ]
+      }
+    },
+    {
+      "fiscal_period": "2025Q4",
+      "fiscal_year": 2025,
+      "report_date": "2025-12-10",
+      "source": "earnings_reports",
+      "revenue_actual": 14100000000,
+      "revenue_estimate": 13900000000,
+      "eps_actual": 1.31,
+      "eps_estimate": 1.22,
+      "net_income_actual": 4100000000,
+      "post_1d_return_pct": 2.0
+    },
+    {
+      "fiscal_period": "2025Q3",
+      "fiscal_year": 2025,
+      "report_date": "2025-09-08",
+      "source": "earnings_reports",
+      "revenue_actual": 13000000000,
+      "revenue_estimate": 12800000000,
+      "eps_actual": 1.18,
+      "eps_estimate": 1.15,
+      "net_income_actual": 3700000000
+    },
+    {
+      "fiscal_period": "2025Q2",
+      "fiscal_year": 2025,
+      "report_date": "2025-06-08",
+      "source": "earnings_reports",
+      "revenue_actual": 12100000000,
+      "revenue_estimate": 12000000000,
+      "eps_actual": 1.05,
+      "eps_estimate": 1.04,
+      "net_income_actual": 3300000000
+    },
+    {
+      "fiscal_period": "2025Q1",
+      "fiscal_year": 2025,
+      "report_date": "2025-03-07",
+      "source": "earnings_reports",
+      "revenue_actual": 10500000000,
+      "revenue_estimate": 10800000000,
+      "eps_actual": 0.90,
+      "eps_estimate": 0.95,
+      "net_income_actual": 2800000000
+    },
+    {
+      "fiscal_period": "2024Q4",
+      "fiscal_year": 2024,
+      "report_date": "2024-12-12",
+      "source": "earnings_reports",
+      "revenue_actual": 9800000000,
+      "eps_actual": 0.82,
+      "net_income_actual": 2500000000
+    }
+  ],
+  "guidance": [
+    {
+      "text": "We raised full-year revenue guidance on custom-silicon demand.",
+      "move": "raised",
+      "source": "earnings call",
+      "source_time": "2026-03-05T21:00:00+00:00",
+      "fiscal_period": "2026Q1"
+    }
+  ],
+  "transcripts": [
+    {
+      "quarter": "2026Q1",
+      "source": "earnings call",
+      "source_url": "https://example.test/transcript/2026q1",
+      "source_time": "2026-03-05T21:00:00+00:00",
+      "text": "Long-term we are targeting custom silicon capacity of 30 gigawatts as AI accelerator demand ramps. ASIC growth remains the primary driver. We raised guidance because customer forecasts expanded.",
+      "excerpts": [
+        {"text": "Long-term we are targeting custom silicon capacity of 30 gigawatts as AI accelerator demand ramps."},
+        {"text": "We raised guidance because customer forecasts expanded."}
+      ]
+    }
+  ],
+  "news": [
+    {
+      "headline": "Customer disclosed a larger data-center build for next year",
+      "source": "company press",
+      "published_at": "2026-02-20T15:00:00+00:00",
+      "url": "https://example.test/news/capex"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+"""Validate AgentOutput before persistence. Drop ungrounded or conclusion-like items."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any
+
+from .errors import SchemaError
+from .extract import has_conclusion_language
+from .types import (
+    AGENT_FUNDAMENTAL,
+    AGENT_SEARCH,
+    AgentOutput,
+    follow_up_from_payload,
+)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def _clamp_confidence(value: Any) -> float | None:
+    number = value
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number < 0:
+        return 0.0
+    if number > 1:
+        return 1.0
+    return number
+
+
+def _clean_evidence(item: Any) -> dict[str, Any] | None:
+    if not isinstance(item, dict):
+        return None
+    fact = str(item.get("fact") or "").strip()
+    source = str(item.get("source") or "").strip()
+    source_time = item.get("source_time")
+    if not fact or not source or not source_time:
+        return None
+    if has_conclusion_language(fact):
+        return None
+    payload = dict(item)
+    payload["fact"] = fact
+    payload["source"] = source
+    payload["evidence_type"] = str(item.get("evidence_type") or "fundamental").strip() or "fundamental"
+    payload.setdefault("retrieved_at", _now())
+    payload.setdefault("direction", "neutral")
+    return payload
+
+
+def _clean_assumption(item: Any) -> dict[str, Any] | None:
+    if not isinstance(item, dict):
+        return None
+    statement = str(item.get("statement") or "").strip()
+    if not statement or has_conclusion_language(statement):
+        return None
+    payload = dict(item)
+    payload["statement"] = statement
+    payload["status"] = "unverified"
+    if payload.get("thesis_role") == "core":
+        payload["thesis_role"] = "supporting"
+    payload.setdefault("category", "other")
+    payload.setdefault("importance", "medium")
+    return payload
+
+
+def output_from_payload(payload: dict[str, Any], *, agent_name: str = "") -> AgentOutput:
+    if not isinstance(payload, dict):
+        raise SchemaError("agent output must be a JSON object")
+    follow_ups = []
+    for item in _as_list(payload.get("follow_up_tasks")):
+        try:
+            spec = follow_up_from_payload(item)
+        except Exception as exc:
+            raise SchemaError(f"invalid follow-up: {exc}") from exc
+        if spec.title:
+            follow_ups.append(spec)
+    findings = []
+    for item in _as_list(payload.get("findings")):
+        text = str(item).strip()
+        if not text:
+            continue
+        if agent_name == AGENT_SEARCH and has_conclusion_language(text):
+            continue
+        findings.append(text)
+    evidence = [row for row in (_clean_evidence(item) for item in _as_list(payload.get("new_evidence"))) if row]
+    assumptions = [row for row in (_clean_assumption(item) for item in _as_list(payload.get("new_assumptions"))) if row]
+    if agent_name == AGENT_SEARCH:
+        assumptions = []
+    return AgentOutput(
+        findings=findings,
+        new_evidence=evidence,
+        new_assumptions=assumptions,
+        supported_assumption_ids=[str(item) for item in _as_list(payload.get("supported_assumption_ids")) if item],
+        challenged_assumption_ids=[str(item) for item in _as_list(payload.get("challenged_assumption_ids")) if item],
+        assumption_links=[dict(item) for item in _as_list(payload.get("assumption_links")) if isinstance(item, dict)],
+        follow_up_tasks=follow_ups,
+        missing_data=[str(item).strip() for item in _as_list(payload.get("missing_data")) if str(item).strip()],
+        confidence=_clamp_confidence(payload.get("confidence")),
+        agent_name=str(payload.get("agent_name") or agent_name),
+        model=payload.get("model"),
+        prompt_version=payload.get("prompt_version"),
+    )
+
+
+def validate_agent_output(output: AgentOutput | dict[str, Any], *, agent_name: str = "") -> AgentOutput:
+    if isinstance(output, AgentOutput):
+        payload = {
+            "findings": output.findings,
+            "new_evidence": output.new_evidence,
+            "new_assumptions": output.new_assumptions,
+            "supported_assumption_ids": output.supported_assumption_ids,
+            "challenged_assumption_ids": output.challenged_assumption_ids,
+            "assumption_links": output.assumption_links,
+            "follow_up_tasks": output.follow_up_tasks,
+            "missing_data": output.missing_data,
+            "confidence": output.confidence,
+            "agent_name": output.agent_name or agent_name,
+            "model": output.model,
+            "prompt_version": output.prompt_version,
+        }
+        name = output.agent_name or agent_name
+    else:
+        payload = dict(output)
+        name = str(payload.get("agent_name") or agent_name)
+    cleaned = output_from_payload(payload, agent_name=name)
+    if name == AGENT_FUNDAMENTAL and has_conclusion_language(" ".join(cleaned.findings)):
+        cleaned.findings = [item for item in cleaned.findings if not has_conclusion_language(item)]
+    return cleaned

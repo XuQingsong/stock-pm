@@ -1,0 +1,13 @@
+{
+  "id": "semiconductor",
+  "question_axes": [
+    {"id": "revenue_growth", "question": "Is revenue growth durable or a single product cycle?"},
+    {"id": "end_demand", "question": "Is end demand real and customer-confirmed?"},
+    {"id": "customer_capex", "question": "Can customer capital spending support the growth plan?"},
+    {"id": "design_wins", "question": "Are design wins converting into revenue?"},
+    {"id": "supply_capacity", "question": "Can supply, foundry, and packaging support the plan?"},
+    {"id": "gross_margin", "question": "Are margins sustainable as mix shifts?"},
+    {"id": "competition", "question": "What competitive responses could invalidate the plan?"},
+    {"id": "management_delivery", "question": "Has management historically delivered against guidance and long-term targets?"}
+  ]
+}
