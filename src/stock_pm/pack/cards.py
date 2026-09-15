@@ -10,7 +10,8 @@ from stock_pm.ux_copy import is_http_url
 from .copy import (
     action_verbs,
     horizon_label,
-    mmdd,
+    judgment_reason,
+    main_path_copy,
     near_state,
     research_lean,
     strip_holdings,
@@ -94,7 +95,7 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
     )
     why_strength = "；".join(
         f"{row['symbol']}：{row.get('why') or row.get('label')}" for row in mapped[:4]
-    ) or "没有可反查的自选暴露，不把标题抄到全部标的"
+    ) or "暂未形成对自选股的明确影响"
     transmit = str((analysis.get("mechanism") or {}).get("text") or "") or _layer_text(analysis, "impact")
     conclusion = strip_holdings(
         (analysis.get("answers") or {}).get("what_happened")
@@ -103,8 +104,9 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         or ""
     )
     if withheld or not closed:
-        reason = (analysis.get("withheld") or {}).get("reason") or "证据不足，不形成方向"
+        reason = (analysis.get("withheld") or {}).get("reason") or "当前条件不足，暂不形成明确方向"
         conclusion = strip_holdings(reason) if not mapped else strip_holdings(conclusion or reason)
+    conclusion = main_path_copy(conclusion)
     horizon = horizon_label(
         _layer_field(analysis, "expectation", "horizon")
         or payload.get("duration")
@@ -123,7 +125,7 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         "tickers": [_ticker_chip(row) for row in mapped],
         "mapping": mapped,
         "mapped": bool(mapped),
-        "transmit": strip_holdings(transmit)[:180] if transmit else "",
+        "transmit": main_path_copy(transmit)[:180] if transmit else "",
         "basis": {
             "fact": fact or "事实暂缺",
             "change": change or "相对基线变化暂缺",
@@ -177,7 +179,7 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
     return {
         "event_id": None,
         "title": headline[:120],
-        "conclusion": strip_holdings(item.get("summary") or headline)[:160],
+        "conclusion": main_path_copy(item.get("summary") or headline)[:160],
         "scope_label": (
             "公司级"
             if any(row.get("mechanism") == "watchlist_ingested_article" for row in mapped)
@@ -190,13 +192,13 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
         "tickers": [_ticker_chip(row) for row in mapped],
         "mapping": mapped,
         "mapped": bool(mapped),
-        "transmit": strip_holdings((mapped[0].get("why") if mapped else "") or ""),
+        "transmit": main_path_copy((mapped[0].get("why") if mapped else "") or ""),
         "basis": {
             "fact": headline,
-            "change": "新闻入库，不是官方事实闭环",
+            "change": "来自新闻，尚未被官方事实确认",
             "expectation": "预期暂缺",
             "why_strength": "；".join(f"{row['symbol']}：{row.get('why')}" for row in mapped[:4])
-            or "没有可反查的自选暴露",
+            or "暂未形成对自选股的明确影响",
             "invalidation": "后续官方否认或财报证伪则作废",
         },
         "news": {"url": url, "label": f"可点新闻 · {headline[:40]}"} if url else None,
@@ -295,17 +297,17 @@ def focus_rows(
             group = "skip"
             urgency = "mute"
             side = "none" if side == "none" else side
-        why = strip_holdings(
+        why = judgment_reason(
             (mapped.get("why") if mapped else None)
             or brief.get("row_thesis")
             or brief.get("env_half")
             or (brief.get("environment") or {}).get("one_liner")
-            or ("无公司级映射" if group == "skip" else "依据暂缺")
+            or ("暂未形成对公司级影响" if group == "skip" else "依据暂缺，维持观察")
         )
-        hint = strip_holdings(
+        hint = main_path_copy(
             (mapped.get("hint") if mapped else None)
             or (brief.get("prediction") or {}).get("missing_label")
-            or "留意：是否出现新映射"
+            or "留意：是否出现可改变判断的新信息"
         )
         if hint and not str(hint).startswith("留意"):
             hint = f"留意：{hint}"
@@ -348,11 +350,12 @@ def stock_judge(row: dict[str, Any], mapped: list[dict[str, Any]] | None) -> dic
         confidence=(hit or {}).get("label"),
         horizon=None,
     )
-    quote = strip_holdings(
-        (row.get("environment") or {}).get("one_liner")
+    quote = judgment_reason(
+        (hit or {}).get("why")
+        or (row.get("environment") or {}).get("one_liner")
         or row.get("env_half")
         or row.get("row_thesis")
-        or "判断暂缺，不编方向"
+        or "依据暂缺，维持观察"
     )
     return {
         "stance": lean,

@@ -169,7 +169,8 @@ def test_snapshot_answers_acceptance_environment_questions() -> None:
     assert env["conflict"] is True
     line = env["one_liner"]
     assert line.index("盘面") < line.index("消息") < line.index("因此")
-    assert "不当成两套并列结论" in env["row_thesis"]
+    assert "方向相反" in env["row_thesis"]
+    assert "先以收盘盘面为准" in env["row_thesis"]
     assert env["one_liner"] == env["row_thesis"] == env["synthesis"]
     assert is_causal_chain(line)
     assert "可能相关" not in line
@@ -197,7 +198,8 @@ def test_empty_inputs_are_honest_missing() -> None:
         "sentiment",
     ):
         assert flag in env["missingFlags"]
-    assert "暂缺" in env["synthesis"]
+    assert "不足" in env["synthesis"]
+    assert "置信度有限" in env["synthesis"]
     assert env["struct"]["fundamentals"]["valuation"] is None
     assert env["struct"]["sentiment"] is None
     text = str(env)
@@ -276,7 +278,8 @@ def test_unmapped_news_does_not_invent_bias() -> None:
     )
     assert "news.company" in env["missingFlags"]
     assert env["struct"]["news"]["company"]["bias"] is None
-    assert "不编方向" in env["struct"]["news"]["company"]["clause"]
+    assert "暂未形成对该股的明确影响" in env["struct"]["news"]["company"]["clause"]
+    assert "不编方向" not in env["struct"]["news"]["company"]["clause"]
 
 
 def test_causal_chain_rejects_slogan_halves() -> None:
@@ -305,7 +308,8 @@ def test_failed_snapshot_has_no_fabricated_numbers() -> None:
     assert snap["publishState"] == "missing"
     assert snap["struct"]["fundamentals"] is None
     assert snap["struct"]["sentiment"] is None
-    assert "未编造数字" in snap["one_liner"]
+    assert "当前判断置信度有限" in snap["one_liner"]
+    assert "未编造" not in snap["one_liner"]
     assert snap["struct"]["news"] == {"macro": None, "sector": None, "company": None}
     dumped = str(snap["struct"])
     assert "return_1y" not in dumped
@@ -332,7 +336,8 @@ def test_aligned_tape_and_news_still_not_a_prediction() -> None:
     assert line.index("盘面") < line.index("消息") < line.index("因此")
     assert is_causal_chain(line)
     assert "同向" in line
-    assert "不写成预测" in line
+    assert "背景信息" in line
+    assert "不写成预测" not in line
     assert env["prediction_ready"] is False
     assert env["conflict"] is False
 
@@ -346,7 +351,8 @@ def test_holiday_publish_state_is_stale() -> None:
         session={"is_trading_day": False, "label": "劳动节，美股休市"},
     )
     assert env["publishState"] == "stale"
-    assert "不编造当日盘面" in env["one_liner"]
+    assert "沿用最近交易日环境作为背景" in env["one_liner"]
+    assert "不编造" not in env["one_liner"]
 
 
 def test_latest_environment_snapshot_sql_casts_nullable_symbol() -> None:

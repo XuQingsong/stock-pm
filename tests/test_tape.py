@@ -39,7 +39,7 @@ def _metrics(**overrides) -> dict:
 
 def _bear_env() -> dict:
     return {
-        "one_liner": "盘面：走坏；消息：宏观利空（加息预期升温）；因此：盘面与消息同向，只作环境理解，不写成预测或打脸。",
+        "one_liner": "盘面：走坏；消息：宏观利空（加息预期升温）；因此：盘面与消息同向，当前仅作为背景信息，不改变现有判断。",
         "struct": {
             "fundamentals": {"year_move": {"clause": "过去一年约跌 12.0%"}},
             "news": {
@@ -64,7 +64,7 @@ def _bear_env() -> dict:
 
 def _bull_env() -> dict:
     return {
-        "one_liner": "盘面：趋势健康；消息：行业利多（缺货延续）；因此：盘面与消息同向，只作环境理解，不写成预测或打脸。",
+        "one_liner": "盘面：趋势健康；消息：行业利多（缺货延续）；因此：盘面与消息同向，当前仅作为背景信息，不改变现有判断。",
         "struct": {
             "fundamentals": {"year_move": {"clause": "过去一年约涨 42.5%"}},
             "news": {
@@ -143,7 +143,8 @@ def test_tape_env_link_is_not_tape_restatement() -> None:
     assert clause != tape["volume_price"]["clause"]
     assert tape["conflict"] is True
     assert tape["weak_vs_env"]["status"] == "missing"
-    assert "不编造偏弱" in tape["weak_vs_env"]["clause"]
+    assert "暂不能判断是否弱于环境" in tape["weak_vs_env"]["clause"]
+    assert "不编造" not in tape["weak_vs_env"]["clause"]
     assert "推断" not in (tape["weak_vs_env"]["clause"] or "")
 
 
@@ -158,7 +159,8 @@ def test_honest_missing_chips_and_env() -> None:
     assert "chips" in tape["missingFlags"]
     assert "筹码带与支撑压力暂缺" in tape["struct"]["answers"]["q2_chips"]
     assert "env_link" in tape["missingFlags"]
-    assert "不编诱多" in tape["struct"]["answers"]["q4_env_link"]
+    assert "暂不判断诱多" in tape["struct"]["answers"]["q4_env_link"]
+    assert "不编" not in tape["struct"]["answers"]["q4_env_link"]
 
 
 def test_break_aftermath_pullback_and_fake_break() -> None:
@@ -243,7 +245,8 @@ def test_conflict_row_is_one_causal_sentence() -> None:
     sentence = env_tape_conflict_sentence(_bear_env(), tape)
     assert is_env_tape_conflict_sentence(sentence)
     assert sentence.count("。") == 1
-    assert "不当成两套并列结论" in sentence
+    assert "方向相反" in sentence
+    assert "先按昨盘收盘读" in sentence
     assert "可能相关" not in sentence
 
 
@@ -357,7 +360,8 @@ def test_weak_vs_env_missing_relative_is_honest() -> None:
     weak = tape["weak_vs_env"]
     assert "weak_vs_env" in tape["missingFlags"]
     assert weak["status"] == "missing"
-    assert "不编造偏弱" in weak["clause"]
+    assert "暂不能判断是否弱于环境" in weak["clause"]
+    assert "不编造" not in weak["clause"]
     assert "推断" not in weak["clause"]
     assert weak["prior_relative_return_pct"] is None
     assert "结论 无法判定" in weak["facts_line"]

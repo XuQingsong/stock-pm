@@ -113,7 +113,7 @@ def map_news_to_watchlist(item: dict[str, Any], watch: list[dict[str, Any]] | No
                 "symbol": symbol,
                 "channel": "company",
                 "mechanism": "watchlist_ingested_article",
-                "why_relevant": "该条新闻按自选标的入库，不是从标题里扫全部代码",
+                "why_relevant": "该条新闻针对这只自选股",
                 "scope": "company",
                 "strength_hint": "indirect",
             }
@@ -137,7 +137,7 @@ def map_news_to_watchlist(item: dict[str, Any], watch: list[dict[str, Any]] | No
                 "symbol": other,
                 "channel": "theme_overlap",
                 "mechanism": "watchlist_theme_intersection",
-                "why_relevant": f"新闻主题 {joined} 与自选主题相交，不是标题点名该代码",
+                "why_relevant": f"新闻主题 {joined} 与该股行业主题相关",
                 "scope": "industry",
                 "strength_hint": "weak",
             }

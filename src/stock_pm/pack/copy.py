@@ -1,7 +1,7 @@
-"""Trader-facing copy for the frozen decision-system pages.
+"""Investor-facing copy for the frozen decision-system pages.
 
-No portfolio/position verbs on the main path. No A/B/C, R-codes, L0,
-PredictionCheck, v0, or re-eval queue as primary labels.
+Main path only says: conclusion · reason · action.
+System self-justification stays in diagnostic / settings / expand-evidence.
 """
 
 from __future__ import annotations
@@ -31,6 +31,99 @@ JARGON_BANNED_PRIMARY = (
     "重评队列",
     "R-0",
     "v0",
+)
+
+# User-visible main-path copy. Internal JSON keys (alert_id, prediction_ready)
+# may still travel on the wire; they must not be spoken as labels.
+MAIN_PATH_BANNED = (
+    "不补假数",
+    "不编方向",
+    "不写成预测或打脸",
+    "不写成预测",
+    "不静默判对",
+    "禁止进校验",
+    "字段齐全",
+    "标题扫代码",
+    "数据源健康",
+    "API 未配置",
+    "抓取失败",
+    "evidence version",
+    "closed loop",
+    "can_form_direction",
+    "prediction_ready",
+    "source tier",
+    "rule v0",
+    "本页不出现",
+    "未编造",
+    "不编造",
+    "不编",
+    "不补",
+    "不硬编",
+)
+
+_SKIP_SCRUB_KEYS = {
+    "alert_id",
+    "prediction_id",
+    "event_id",
+    "id",
+    "href",
+    "url",
+    "diagnostics",
+    "closed_loop",
+    "can_form_direction",
+    "prediction_ready",
+    "source_kind",
+    "event_type",
+    "symbol",
+}
+
+# Longer phrases first. System-rule language → investment meaning.
+_PHRASE_REWRITES: tuple[tuple[str, str], ...] = (
+    ("只作环境理解，不写成预测或打脸。", "当前仅作为背景信息，不改变现有判断。"),
+    ("只作环境理解，不写成预测或打脸", "当前仅作为背景信息，不改变现有判断"),
+    ("宏观有标题未映射，不编方向", "宏观信息暂未形成对该股的明确影响"),
+    ("行业有标题未映射，不编方向", "行业信息暂未形成对该股的明确影响"),
+    ("公司有标题未映射，不编方向", "公司信息暂未形成对该股的明确影响"),
+    ("有标题未映射，不编方向", "暂未形成对该股的明确影响"),
+    ("暂缺，不编方向", "暂未形成对该股的明确影响"),
+    ("判断暂缺，不编方向", "判断暂缺，维持观察"),
+    ("不编结论，也不编预测。", "当前判断置信度有限。"),
+    ("不编结论，也不编预测", "当前判断置信度有限"),
+    ("也不编预测。", "置信度有限。"),
+    ("也不编预测", "置信度有限"),
+    ("不编影响，也不编预测。", "当前判断主要依据盘面。"),
+    ("不编影响，也不编预测", "当前判断主要依据盘面"),
+    ("不把消息标题当成盘面结论，也不编预测。", "当前判断主要依据消息，置信度有限。"),
+    ("不把利多加成预测。", "暂不提高置信度。"),
+    ("不把标题墙当成两套结论。", "先按盘面读。"),
+    ("不当成两套并列结论。", "当前先以收盘盘面为准。"),
+    ("缺口：", ""),
+    ("，不补假数。", "不足，当前判断置信度有限。"),
+    ("不补假数。", "当前判断置信度有限。"),
+    ("不补假数", "当前判断置信度有限"),
+    ("对照行情暂缺，不静默判对", "对照行情暂缺，暂不判定对错"),
+    ("对照价缺失，不静默判对", "对照价格暂缺，暂不判定对错"),
+    ("禁止进校验主口径", "不计入预测准确率"),
+    ("字段齐全、可进校验的正式预测", "可验证的正式预测"),
+    ("字段齐全才可进校验", "可验证后才计入准确率"),
+    ("未编造时间窗口或涨跌边界。", "当前仅作为观察，不计入预测准确率。"),
+    ("未编造时间窗口或涨跌边界", "当前仅作为观察，不计入预测准确率"),
+    ("决策未形成方向，不展示百分比预测", "当前条件不足，暂不形成可验证预测"),
+    ("无法形成正式预测", "当前条件不足，暂不形成可验证预测"),
+    ("证据不足，不形成方向", "当前条件不足，暂不形成明确方向"),
+    ("未映射方向，不编影响", "暂未形成对该股的明确影响"),
+    ("环境快照生成失败，数据暂缺，未编造数字。", "环境信息暂缺，当前判断置信度有限。"),
+    ("昨盘数据暂缺，未编造量价。", "昨盘信息不足，当前判断主要依据消息与环境。"),
+    ("复盘总结暂缺，未编造白话。", "复盘总结暂缺，尚不能解释昨天为何这样走。"),
+    ("不编造当日盘面。", "沿用最近交易日环境作为背景。"),
+    ("不编造当日量价。", "沿用最近交易日盘面作为背景。"),
+    ("不编当日预测边界。", "暂不形成当日预测。"),
+    ("不编当日因果。", "沿用最近交易日解释作为背景。"),
+    ("不是从标题里扫全部代码", "针对这只自选股"),
+    ("不是标题点名该代码", "与该股行业主题相关"),
+    ("不是把战争标题抄到所有股票", "直接受油价变化影响"),
+    ("不是把宏观标题抄到所有股票", "对该股估值有影响"),
+    ("不把标题抄到全部标的", "暂未形成对自选股的明确影响"),
 )
 
 _HOLDINGS_RE = re.compile("|".join(re.escape(item) for item in HOLDINGS_BANNED))
@@ -87,6 +180,94 @@ def strip_holdings(text: str | None) -> str:
     raw = str(text or "")
     cleaned = _HOLDINGS_RE.sub("研究倾向", raw)
     return " ".join(cleaned.split())
+
+
+_TOKEN_RE = re.compile(
+    r"\b(?:can_form_direction|prediction_ready|closed_loop|source[_\s-]?tier|rule\s*v0|evidence[_\s-]?version)\b(?:\s*=\s*\S+)?",
+    re.I,
+)
+
+
+def investorize(text: str | None) -> str:
+    """Rewrite leftover system-rule phrasing into investment meaning."""
+    raw = str(text or "")
+    for old, new in _PHRASE_REWRITES:
+        raw = raw.replace(old, new)
+    raw = _TOKEN_RE.sub("", raw)
+    return " ".join(raw.split())
+
+
+def main_path_copy(text: str | None, *, fallback: str = "") -> str:
+    cleaned = investorize(strip_holdings(text))
+    return cleaned or fallback
+
+
+def judgment_reason(text: str | None, *, fallback: str = "依据暂缺，维持观察") -> str:
+    """One reason sentence. Drops 盘面/消息 scaffolding and 缺口 dumps."""
+    raw = main_path_copy(text)
+    if "因此：" in raw:
+        raw = raw.split("因此：", 1)[1]
+    elif "因此" in raw:
+        raw = raw.split("因此", 1)[1].lstrip("：: ")
+    for marker in ("缺口：", "缺："):
+        if marker in raw:
+            raw = raw.split(marker, 1)[0]
+    for sep in ("。", "；"):
+        if sep in raw:
+            head = raw.split(sep, 1)[0].strip()
+            if head:
+                raw = head
+                break
+    raw = raw.strip(" ；。")
+    return raw[:120] if raw else fallback
+
+
+def judgment_headline(text: str | None, *, fallback: str) -> str:
+    """Short yesterday/today line: conclusion, not a tape+news dump."""
+    raw = main_path_copy(text)
+    if not raw:
+        return fallback
+    if "盘面：" in raw or "消息：" in raw:
+        return judgment_reason(raw, fallback=fallback)
+    return raw[:80]
+
+
+def missing_consequence(flags: list[str] | None, *, fallback: str = "当前判断置信度有限") -> str:
+    """Missing data as a decision consequence, not a tech dump."""
+    from stock_pm.ux_copy import named_missing_labels
+
+    labels = named_missing_labels(flags)
+    nouns = [item[1:] if item.startswith("缺") else item for item in labels]
+    if not nouns:
+        return fallback
+    joined = "、".join(nouns)
+    if any(key in joined for key in ("估值",)):
+        return f"{joined}不足，暂不提高置信度"
+    if any(key in joined for key in ("宏观",)):
+        return f"{joined}不足，当前判断主要依据公司与行业"
+    if any(key in joined for key in ("新闻", "消息")):
+        return f"{joined}不足，暂未形成对自选股的明确影响"
+    if any(key in joined for key in ("时间窗", "上沿", "下沿", "对照")):
+        return f"{joined}不足，当前仅作为观察，不计入预测准确率"
+    return f"{joined}不足，当前判断置信度有限"
+
+
+def main_path_violations(text: str | None) -> list[str]:
+    raw = text or ""
+    return [phrase for phrase in MAIN_PATH_BANNED if phrase in raw]
+
+
+def scrub_visible(value: Any, *, key: str | None = None) -> Any:
+    """Last-line defense: investorize string leaves in a packed payload."""
+    if key in _SKIP_SCRUB_KEYS:
+        return value
+    if isinstance(value, str):
+        return investorize(value)
+    if isinstance(value, list):
+        return [scrub_visible(item) for item in value]
+    if isinstance(value, dict):
+        return {inner: scrub_visible(item, key=inner) for inner, item in value.items()}
+    return value
 
 
 def scope_label(scope: str | None, event_type: str | None = None) -> str:

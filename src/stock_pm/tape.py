@@ -38,14 +38,14 @@ FLAG_LABELS = {
 }
 
 TAPE_PLACEHOLDER = "昨盘结论未就绪"
-TAPE_MISSING_LINE = "昨盘数据暂缺，未编造量价。"
-REVIEW_UNEXPLAINED = "解释不了：消息与情绪依据不足，不硬编诱多、转势、吸筹或逃跑。"
+TAPE_MISSING_LINE = "昨盘信息不足，当前判断主要依据消息与环境。"
+REVIEW_UNEXPLAINED = "消息与情绪依据不足，暂不能解释昨天为何这样走。"
 
 EXPAND_VOL = 1.2
 SHRINK_VOL = 0.8
 SIGNIFICANT_LAG_PP = 1.0
 SECTOR_THEMES = frozenset({"semis", "consumer_electronics", "telecom"})
-WEAK_MISSING_CLAUSE = "相对收益或破位路径暂缺，无法判定弱于环境，不编造偏弱。"
+WEAK_MISSING_CLAUSE = "相对收益或破位路径不足，暂不能判断是否弱于环境。"
 
 
 def flag_labels(flags: list[str]) -> str:
@@ -125,7 +125,7 @@ def _chip_block(metrics: dict) -> tuple[dict | None, bool]:
     if support is not None or resistance is not None:
         bits.append(f"支撑 {_price(support)} / 压力 {_price(resistance)}")
     else:
-        bits.append("支撑压力暂缺，不编价位")
+        bits.append("支撑压力暂缺，暂不给出具体价位")
     if position:
         bits.append(position)
     ma_text = _ma_context(metrics)
@@ -230,7 +230,7 @@ def _env_news_stance(environment: dict | None) -> tuple[str | None, str | None]:
                 piece += f"（{_as_clause(str(headline), '')}）"
             bits.append(piece)
         elif layer.get("clause"):
-            bits.append(f"{label}有标题未映射，不编方向")
+            bits.append(f"{label}信息暂未形成对该股的明确影响")
     sentiment = struct.get("sentiment") if isinstance(struct.get("sentiment"), dict) else None
     atmosphere = (sentiment or {}).get("atmosphere")
     if atmosphere:
@@ -412,7 +412,7 @@ def _weak_vs_env(
     if lags and not path_true and not path_false:
         return _missing_weak_block(
             **facts,
-            clause="破位路径或放量下跌材料暂缺，无法判定弱于环境，不编造偏弱。",
+            clause="破位路径或放量下跌材料不足，暂不能判断是否弱于环境。",
         ), True
     five_led = relative_5d is not None and relative_5d > 0
     if lags and path_true and not five_led:
@@ -464,7 +464,7 @@ def env_tape_conflict_sentence(environment: dict | None, tape: dict | None) -> s
     return (
         f"环境：{env_disp}；"
         f"昨盘：{tape_disp}；"
-        f"因此：环境与昨盘反向，先按昨盘收盘读，不当成两套并列结论。"
+        f"因此：环境与昨盘方向相反，当前先按昨盘收盘读。"
     )
 
 
@@ -479,7 +479,7 @@ def is_env_tape_conflict_sentence(text: str | None) -> bool:
     first_stop = text.find("。")
     if first_stop != -1 and first_stop < i_so:
         return False
-    return "不当成两套并列结论" in text
+    return "方向相反" in text
 
 
 def _publish_state(*, missing: list[str], has_form: bool, session: dict | None) -> str:
@@ -579,7 +579,7 @@ def failed_review_note(symbol: str, as_of_date: str | None, error: str) -> dict:
     return {
         "as_of_date": as_of_date,
         "symbol": symbol.upper(),
-        "summary": "复盘总结暂缺，未编造白话。",
+        "summary": "复盘总结暂缺，尚不能解释昨天为何这样走。",
         "explanation": REVIEW_UNEXPLAINED,
         "unexplained": True,
         "struct": {"error": error},
@@ -649,7 +649,7 @@ def synthesize_tape_analysis(
     has_form = volume_block is not None
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
-        one_liner = f"{as_of_date or ''} {label}，昨盘沿用最近交易日，不编造当日量价。".strip()
+        one_liner = f"{as_of_date or ''} {label}，今日休市，沿用最近交易日盘面作为背景。".strip()
         conclusion = one_liner
         publish_state = "stale"
     elif not has_form:
@@ -674,11 +674,11 @@ def synthesize_tape_analysis(
 
     answers = {
         "q1_volume_price": (volume_block or {}).get("form")
-        or "量价形态暂缺，不编放量缩量",
-        "q2_chips": (chips or {}).get("clause") or "筹码带与支撑压力暂缺，不编价位",
-        "q3_break": (brk or {}).get("clause") or "破位走法暂缺，不编拉回续杀",
+        or "量价形态暂缺，暂不判断放量或缩量",
+        "q2_chips": (chips or {}).get("clause") or "筹码带与支撑压力暂缺，暂不给出具体价位",
+        "q3_break": (brk or {}).get("clause") or "破位走法暂缺，暂不判断拉回或续杀",
         "q4_env_link": (env_link or {}).get("clause")
-        or "环境依据不足，不编诱多/转势/吸筹/逃跑",
+        or "环境依据不足，暂不判断诱多、转势、吸筹或逃跑",
         "q5_weak_vs_env": (weak or {}).get("clause") or WEAK_MISSING_CLAUSE,
     }
     struct = {
@@ -731,7 +731,7 @@ def synthesize_review_note(
 
     if not form:
         missing.append("volume_price")
-        summary = "昨天盘面量价不足，复盘总结暂缺，不编白话。"
+        summary = "昨天盘面量价不足，复盘总结暂缺，尚不能解释昨天为何这样走。"
     else:
         change = volume.get("day_change_pct")
         aftermath = brk.get("aftermath")
@@ -750,7 +750,7 @@ def synthesize_review_note(
         env_text and ((environment or {}).get("struct") or {}).get("sentiment")
     )
     if session and session.get("is_trading_day") is False:
-        explanation = f"{as_of_date or ''} {session.get('label') or '美股休市'}，不编当日因果。".strip()
+        explanation = f"{as_of_date or ''} {session.get('label') or '美股休市'}，今日休市，沿用最近交易日解释作为背景。".strip()
         unexplained = False
         publish_state = "stale"
     elif not form:
@@ -768,8 +768,8 @@ def synthesize_review_note(
             f"{form}，{brk.get('aftermath') or '未破位'}", "结论不足"
         )
         therefore = _as_clause(
-            (env_link or {}).get("clause") or "证据不够，不硬编",
-            "证据不够，不硬编",
+            (env_link or {}).get("clause") or "证据不够，暂不能解释昨天为何这样走",
+            "证据不够，暂不能解释昨天为何这样走",
         )
         explanation = f"环境：{env_disp}。昨盘：{tape_disp}。因此：{therefore}。"
         unexplained = False

@@ -81,18 +81,18 @@ def news_stance(directions: list[str] | None) -> str | None:
 def conclusion_from_stances(tape: str | None, news: str | None) -> str:
     """Environment conclusion only. Never a prediction bound or face-slap rewrite."""
     if tape is None and news is None:
-        return "盘面与消息都暂缺，不编结论，也不编预测。"
+        return "盘面与消息都不足，当前判断置信度有限。"
     if tape is None:
-        return "盘面不足，不把消息标题当成盘面结论，也不编预测。"
+        return "盘面信息不足，当前判断主要依据消息，置信度有限。"
     if news is None:
-        return "消息不足，只按盘面读，不编影响，也不编预测。"
+        return "消息不足，当前判断主要依据盘面。"
     if news == "mixed":
-        return "消息内部分歧，先按盘面读，不把标题墙当成两套结论。"
+        return "消息内部分歧，当前先按盘面读。"
     if (tape == "bear" and news == "bull") or (tape == "bull" and news == "bear"):
-        return "盘面与消息反向，先以收盘盘面为准，不当成两套并列结论。"
+        return "盘面与消息方向相反，当前先以收盘盘面为准。"
     if tape == "hot" and news == "bull":
-        return "盘面过热而消息仍偏多，先按盘面过热读，不把利多加成预测。"
-    return "盘面与消息同向，只作环境理解，不写成预测或打脸。"
+        return "盘面过热而消息仍偏多，当前按过热处理，暂不提高置信度。"
+    return "盘面与消息同向，当前仅作为背景信息，不改变现有判断。"
 
 
 def _as_clause(text: str | None, fallback: str) -> str:
@@ -115,19 +115,20 @@ def causal_one_liner(
 ) -> str:
     """A-line: 盘面 → 消息 → 因此. Not juxtaposed slogans."""
     tape_disp = _as_clause(tape_text, "结论不足")
-    news_disp = _as_clause(news_text, "暂缺，不编方向")
+    news_disp = _as_clause(news_text, "暂未形成对该股的明确影响")
     text = (
         f"盘面：{tape_disp}；"
         f"消息：{news_disp}；"
         f"因此：{conclusion_from_stances(tape, news)}"
     )
     if missing_note:
-        text += f"缺口：{missing_note}，不补假数。"
+        text += f"{missing_note}不足，暂不提高置信度。"
     return text
 
 
 def is_conflict_sentence(text: str | None) -> bool:
-    return "不当成两套并列结论" in (text or "")
+    raw = text or ""
+    return "方向相反" in raw or "不当成两套并列结论" in raw
 
 
 def is_causal_chain(text: str | None) -> bool:
@@ -185,7 +186,7 @@ def failed_snapshot(
     """Visible missing state after a job/input failure. No fabricated numbers."""
     normalized = symbol.upper() if symbol else None
     resolved_scope = scope or ("symbol" if normalized else "market")
-    line = "环境快照生成失败，数据暂缺，未编造数字。"
+    line = "环境信息暂缺，当前判断置信度有限。"
     flags = list(SYMBOL_FIELD_FLAGS) if resolved_scope == "symbol" else ["environment"]
     return {
         "as_of_date": as_of_date,
@@ -342,7 +343,7 @@ def _news_layer(
         return {
             "bias": None,
             "headline": headline,
-            "clause": f"有{empty_reason}但规则未映射到这只票，不编方向"
+            "clause": f"{empty_reason}暂未形成对该股的明确影响"
             + (f"（{headline}）" if headline else ""),
         }, True
     headline = items[0].get("headline") or items[0].get("name") or items[0].get("narrative")
@@ -527,7 +528,7 @@ def _news_scan_text(
             dirs.append(bias)
             bits.append(f"{label}{bias}")
         elif layer.get("clause"):
-            bits.append(f"{label}有标题未映射，不编方向")
+            bits.append(f"{label}信息暂未形成对该股的明确影响")
     if not bits:
         return None, None
     return "，".join(bits), news_stance(dirs)
@@ -616,7 +617,7 @@ def synthesize_symbol_environment(
     conflict = is_conflict_sentence(synthesis)
     if session and session.get("is_trading_day") is False:
         label = session.get("label") or "美股休市"
-        synthesis = f"{as_of_date or ''} {label}，隔夜环境沿用最近交易日，不编造当日盘面。".strip()
+        synthesis = f"{as_of_date or ''} {label}，今日休市，沿用最近交易日环境作为背景。".strip()
         one_liner = synthesis
         row_thesis = synthesis
         has_synthesis = True
@@ -652,7 +653,7 @@ def synthesize_symbol_environment(
             bullets.append(
                 {
                     "title": title,
-                    "clause": f"{FLAG_LABELS[key]}暂缺，不编造",
+                    "clause": f"{FLAG_LABELS[key]}不足，暂不提高置信度",
                     "points_to": "A",
                     "missing": True,
                 }

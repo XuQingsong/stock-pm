@@ -112,11 +112,11 @@ def named_missing_line(
     *,
     fallback: str = "本条未产出",
 ) -> str:
-    """Never a bare「缺数」. Name the missing inputs, then refuse to invent bounds."""
+    """Never a bare「缺数」. Name the missing inputs as a decision consequence."""
     labels = named_missing_labels(flags)
     if labels:
-        return f"{'、'.join(labels)}，未编造时间窗口或涨跌边界。"
-    return f"{fallback}，未编造时间窗口或涨跌边界。"
+        return f"{'、'.join(labels)}，当前仅作为观察，不计入预测准确率。"
+    return f"{fallback}，当前仅作为观察，不计入预测准确率。"
 
 
 def is_http_url(value: Any) -> bool:
@@ -158,8 +158,8 @@ def _because_from_item(item: dict) -> str:
     if summary:
         return summary[:80]
     if item.get("sentiment") in {"positive", "negative"}:
-        return "标题情绪已标注，规则未写出独立依据"
-    return "规则未映射到可核对依据"
+        return "标题有情绪标注，但暂未形成可核对依据"
+    return "暂未形成可核对依据"
 
 
 def news_stance_line(item: dict | None) -> str:

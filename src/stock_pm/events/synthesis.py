@@ -650,7 +650,7 @@ def _rates_net_text(state: dict[str, Any]) -> tuple[str, str]:
             "rates_discount_relief",
             "利率/折现缓和仅有有限独立证据（综合条件预期，不是已发生事实）",
         )
-    return ("watch", "利率/折现主题证据不足以下结论，不编造方向")
+    return ("watch", "利率或折现主题证据不足，对该股暂不形成明确方向")
 
 
 def _energy_net_text(state: dict[str, Any]) -> tuple[str, str]:
@@ -700,7 +700,7 @@ def _net_for_states(states: list[dict[str, Any]], *, vix_only: bool, missing: li
         parts.append("信用/融资事件只沿已验证银行暴露传导，无暴露股票不展示（综合条件预期）")
     fx = next((row for row in states if row["theme"] == "fx"), None)
     if fx:
-        parts.append("美元代理只在有海外收入折算暴露时进入个股；当前不编造缺失暴露")
+        parts.append("美元代理只在有海外收入折算暴露时进入个股；当前缺少该暴露，暂不形成影响")
     geo = next((row for row in states if row["theme"] == "geopolitics"), None)
     if geo:
         parts.append("地缘/制裁先到市场风险与能源渠道，再按已有暴露映射，不复制到全部股票")

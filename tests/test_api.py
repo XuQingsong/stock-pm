@@ -522,7 +522,7 @@ def test_pages_render(monkeypatch):
     review_page = c.get("/review").text
     assert "为什么对、为什么错" in review_page
     assert "正式预测" in review_page
-    assert "错误归因" in review_page
+    assert "学到什么" in c.get("/static/desk.js").text
     assert "toISOString" not in review_page
     assert "stock-pm-flow" not in review_page
     assert "保存确认" not in review_page

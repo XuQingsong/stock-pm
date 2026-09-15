@@ -7,7 +7,7 @@ from typing import Any
 
 from stock_pm.prediction import has_real_bounds
 
-from .copy import mmdd, strip_holdings
+from .copy import mmdd, main_path_copy
 
 
 FORMAL_FIELDS = (
@@ -64,7 +64,7 @@ def missing_formal_fields(pred: dict[str, Any] | None) -> list[str]:
     if not (row.get("created_at") or row.get("as_of_date")):
         gaps.append("数据时间")
     if not row.get("id"):
-        gaps.append("证据版本")
+        gaps.append("核对记录")
     return gaps
 
 
@@ -128,28 +128,28 @@ def _actual_line(pred: dict[str, Any], check: dict[str, Any] | None, brief: dict
     chg = (brief or {}).get("day_change_pct")
     if chg is not None:
         return f"最近交易日 {_pct(chg)} · 状态：跟踪中"
-    return "对照行情暂缺，不静默判对"
+    return "对照行情暂缺，暂不判定对错"
 
 
 def _evidence_lines(pred: dict[str, Any], check: dict[str, Any] | None, events: list[dict[str, Any]] | None) -> list[str]:
     lines: list[str] = []
-    thesis = strip_holdings(pred.get("thesis") or pred.get("therefore") or "")
+    thesis = main_path_copy(pred.get("thesis") or pred.get("therefore") or "")
     if thesis:
         lines.append(f"✓ 有效：当时叙事「{thesis[:60]}」")
     outcome = (check or {}).get("outcome")
-    reason = strip_holdings((check or {}).get("reason") or "")
+    reason = main_path_copy((check or {}).get("reason") or "")
     if outcome == "hit":
         lines.append("✓ 有效：窗内未破界")
     elif outcome in {"downside_break", "expired"} or pred.get("state") == "invalidated":
         lines.append(f"✗ 高估或打脸：{reason or '边界被突破或到期未兑现'}")
     elif outcome == "missing_price":
-        lines.append("对照价缺失，不静默判对")
+        lines.append("对照价格暂缺，暂不判定对错")
     for card in (events or [])[:2]:
         title = card.get("title")
         if title:
             lines.append(f"预测后信息：{title}")
     if len(lines) < 2:
-        lines.append("证据有效/高估对照不足，不编归因")
+        lines.append("尚不足以判断哪条证据被高估")
     return lines[:4]
 
 
@@ -157,20 +157,20 @@ def _learning(symbol: str, pred: dict[str, Any], check: dict[str, Any] | None) -
     if not is_formal(pred):
         return None
     outcome = (check or {}).get("outcome") or pred.get("state")
-    right = "窗与边界齐全，可以对照"
-    wrong = "证据权重对照不足，不编具体错因"
-    nxt = "下次仍只把齐备字段的预测计入命中"
+    right = "当时有明确窗口与边界，可以对对照"
+    wrong = "尚不足以判断具体错因"
+    nxt = "下次只把可验证的预测计入准确率"
     if outcome == "hit" or pred.get("state") == "hit":
         right = "窗内走势未打脸，叙事与价格同向"
         wrong = "若把旁证当成硬上界，仍属过度解读"
         nxt = "旁证只作确认度，不单独抬上界预期"
     elif pred.get("state") == "invalidated" or outcome in {"downside_break", "expired"}:
-        right = "窗与边界齐全，打脸可核对"
-        wrong = strip_holdings((check or {}).get("reason") or "边界被突破或到期未兑现")
+        right = "当时窗口与边界明确，打脸可以对对照"
+        wrong = main_path_copy((check or {}).get("reason") or "边界被突破或到期未兑现")
         nxt = "失效条件触发时同步下调近端权重"
     elif pred.get("state") == "superseded":
         right = "改口留痕可核对"
-        wrong = strip_holdings(pred.get("change_reason") or "原边界不再适用")
+        wrong = main_path_copy(pred.get("change_reason") or "原边界不再适用")
         nxt = "改口必须引用严重提醒后再写原因"
     return {
         "symbol": symbol,
@@ -199,14 +199,14 @@ def formal_card(
         "upside": _pct(pred.get("upside_bound_pct")),
         "downside": _pct(pred.get("downside_bound_pct")),
         "baseline": f"{mmdd(as_of)} 收盘" if pred.get("entry_price") is None else f"基准 {pred.get('entry_price')}",
-        "invalidation": strip_holdings(str(invalidation)),
+        "invalidation": main_path_copy(str(invalidation)),
         "data_time": str(pred.get("created_at") or as_of or "—"),
-        "evidence_version": f"p-{evidence}" if evidence else "证据版本暂缺",
+        "evidence_version": f"p-{evidence}" if evidence else None,
         "complete": True,
         "actual": _actual_line(pred, check, brief),
         "evidence_lines": _evidence_lines(pred, check, events),
         "new_info": (events[0].get("title") if events else None) or "预测后暂无新的可映射事件",
-        "revision": strip_holdings(
+        "revision": main_path_copy(
             (brief or {}).get("env_half")
             or (brief or {}).get("row_thesis")
             or "维持原窗；作废条件不变"
@@ -219,14 +219,15 @@ def formal_card(
 def observe_card(pred: dict[str, Any] | None, symbol: str) -> dict[str, Any]:
     gaps = missing_formal_fields(pred)
     direction = _direction_label(pred or {}) if pred else "—"
+    gap_text = "、".join(gaps) if gaps else "时间窗与涨跌边界"
     return {
         "symbol": symbol,
-        "title": f"{symbol} · 规则倾向（不完整）",
+        "title": f"{symbol} · 观察",
         "text": (
-            f"仅有方向「{direction}」· 缺：{'、'.join(gaps) or '窗、上下边界、失效、基准、数据时间、证据版本'}"
-            " → 标签【观察】· 禁止进校验主口径"
+            f"仅有方向「{direction}」。缺少{gap_text}，"
+            "当前仅作为观察，不计入预测准确率"
         ),
-        "note": "用途：辅助理解总览「判断不变」，不计命中率",
+        "note": "用来理解总览里「判断未变」，不计入准确率",
     }
 
 
@@ -270,11 +271,11 @@ def build_review_payload(
     return {
         "page": {
             "title": "为什么对、为什么错",
-            "sub": "正式预测对在哪 · 错在哪 · 证据有效或被高估 · 当前如何修正 · 错误归因 / 学到什么",
+            "sub": "正式预测对在哪 · 错在哪 · 新信息 · 以后怎么改",
         },
         "filter": "需复盘的正式预测（本周到期 / 已触发）",
         "formal": formal,
         "learning": learning,
         "observations": observations,
-        "empty_formal": None if formal else "本周没有字段齐全、可进校验的正式预测。",
+        "empty_formal": None if formal else "本周没有可验证的正式预测。",
     }

@@ -65,9 +65,8 @@
           </div>
           <div class="pred-fields">
             <span>数据时间：<strong>09-08 16:00 ET</strong></span>
-            <span>证据版本：<strong>ev-4421</strong></span>
           </div>
-          <p class="muted" style="font-size:0.75rem;margin-top:6px">字段齐全 → 可进校验</p>
+          <p class="muted" style="font-size:0.75rem;margin-top:6px">可验证预测 · 计入准确率</p>
         </div>
 
         <div class="pred-section">
@@ -111,7 +110,7 @@
           </div>
           <div class="pred-fields">
             <span>失效：<strong>重大减持</strong></span>
-            <span>基准 / 数据时间 / 证据版本：齐全</span>
+            <span>基准 / 数据时间：已记录</span>
           </div>
         </div>
 
@@ -132,9 +131,9 @@
       </article>
     </section>
 
-    <!-- 错误归因 / 学习（正式预测侧） -->
+    <!-- 学到什么（正式预测侧） -->
     <section class="section" aria-labelledby="sec-learn">
-      <h2 class="section-label" id="sec-learn">错误归因 · 学习</h2>
+      <h2 class="section-label" id="sec-learn">学到什么</h2>
       <div class="learn-grid">
         <article class="card learn-card">
           <h3>NVDA · 学到什么</h3>
@@ -160,17 +159,17 @@
     <section class="section" aria-labelledby="sec-observe">
       <div class="group-head" id="sec-observe">
         <span class="badge-observe" style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:4px;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;background:#64748b;color:#fff">观察</span>
-        <h2 style="color:#64748b;font-weight:600">规则倾向 · 不进命中率</h2>
+        <h2 style="color:#64748b;font-weight:600">观察 · 不计入准确率</h2>
       </div>
 
       <article class="pred-observe">
         <div>
           <span class="badge-observe">观察</span>
         </div>
-        <div class="pred-ticker">MU · 规则倾向（不完整）</div>
-        <p>仅有方向「弱偏多」· 缺：窗、上下边界、失效、基准、数据时间、证据版本 → 标签【观察】· 禁止进校验主口径</p>
+        <div class="pred-ticker">MU · 观察</div>
+        <p>仅有方向「弱偏多」。缺少时间窗与涨跌边界，当前仅作为观察，不计入预测准确率</p>
         <div class="warn-incomplete">
-          用途：辅助理解总览「判断不变」，不计命中率
+          用来理解总览里「判断未变」，不计入准确率
         </div>
       </article>
 

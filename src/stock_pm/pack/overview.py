@@ -57,7 +57,7 @@ def build_overview_payload(
         "featured": featured,
         "featured_missing": None if featured else "今日没有可置顶的主事件。",
         "focus": {
-            "lead": "每行：标的｜近端判断 · 一句原因 · 一个观察条件。",
+            "lead": "每行：状态 · 原因 · 看什么。",
             "priority": focus["priority"],
             "watch": focus["watch"],
             "skip": focus["skip"],
