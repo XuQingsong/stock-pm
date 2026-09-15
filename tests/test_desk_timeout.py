@@ -25,11 +25,23 @@ def _short_budget(monkeypatch) -> None:
     monkeypatch.setattr("stock_pm.events.budget.DEGRADED_COOLDOWN_SECONDS", 30.0)
 
 
+def _empty_mode(_settings=None) -> str:
+    return "empty"
+
+
 def _hanging_discover(monkeypatch) -> TestClient:
     reset_cache()
     _short_budget(monkeypatch)
-    monkeypatch.setattr("stock_pm.events.service.events_data_mode", lambda settings=None: "empty")
+    # Production default is empty; pytest otherwise forces fixture documents.
+    for target in (
+        "stock_pm.events.policy.events_data_mode",
+        "stock_pm.events.service.events_data_mode",
+        "stock_pm.events.providers.events_data_mode",
+        "stock_pm.events.live.events_data_mode",
+    ):
+        monkeypatch.setattr(target, _empty_mode)
     monkeypatch.setattr("stock_pm.events.service.discover_live_documents", _hang)
+    monkeypatch.setattr("stock_pm.events.providers.OfficialFeedProvider.discover", lambda self, *a, **k: [])
     monkeypatch.setattr(api, "database", FakeDatabase())
     monkeypatch.setattr("stock_pm.series.collect_live_macro_overlay", lambda *a, **k: {})
     return TestClient(api.app)
@@ -45,9 +57,13 @@ def test_call_with_timeout_raises_on_hang():
     assert time.monotonic() - start < 1.0
 
 
-def test_fetch_feed_returns_timeout_when_budget_exhausted():
-    with discovery_budget(overall=0.01, provider=0.01):
-        time.sleep(0.03)
+def test_fetch_feed_returns_timeout_when_budget_exhausted(monkeypatch):
+    def _must_not_open(*_args, **_kwargs):
+        raise AssertionError("fetch_feed must not open a socket after the budget expires")
+
+    monkeypatch.setattr("stock_pm.events.feeds._OPENER.open", _must_not_open)
+    with discovery_budget(overall=0.05, provider=0.05):
+        time.sleep(0.08)
         resp = fetch_feed("https://www.federalreserve.gov/feeds/press_all.xml", user_agent="stock-pm-test")
     assert resp.error == "timeout"
     assert not resp.ok
