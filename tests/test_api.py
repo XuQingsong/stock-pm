@@ -508,7 +508,7 @@ def test_health(monkeypatch):
 
 def test_pages_render(monkeypatch):
     c = client(monkeypatch)
-    for path in ("/", "/stock/NVDA", "/events", "/replay", "/review", "/settings"):
+    for path in ("/", "/stock/NVDA", "/events", "/replay", "/review", "/settings", "/research/AVGO"):
         assert c.get(path).status_code == 200, path
     events_page = c.get("/events").text
     assert "市场事件中心" in events_page

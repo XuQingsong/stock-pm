@@ -101,6 +101,16 @@ def rebuild_pack(symbol: str, body: Annotated[dict, Body()] | None = None) -> di
         raise _http(exc) from exc
 
 
+@router.get("/{symbol}/review")
+def research_review(symbol: str) -> dict[str, Any]:
+    try:
+        from .review_view import build_research_review
+
+        return build_research_review(get_service(), symbol)
+    except Exception as exc:
+        raise _http(exc) from exc
+
+
 @router.get("/{symbol}/chain")
 def research_chain(symbol: str, workflow_run_id: str | None = None) -> dict[str, Any]:
     try:

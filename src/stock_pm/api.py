@@ -205,6 +205,17 @@ def review_page() -> str:
     return _page("review.html")
 
 
+@app.get("/research", include_in_schema=False)
+def research_index() -> RedirectResponse:
+    return RedirectResponse("/research/AVGO", status_code=307)
+
+
+@app.get("/research/{symbol}", response_class=HTMLResponse, include_in_schema=False)
+def research_review_page(symbol: str) -> str:
+    del symbol
+    return _page("research_review.html")
+
+
 @app.get("/events", response_class=HTMLResponse, include_in_schema=False)
 def events_page() -> str:
     return _page("events.html")
