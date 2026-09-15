@@ -25,17 +25,21 @@ long_term_view (1–3 years)
 market_disagreement: at most 2 items. Each:
   pm_believes, market_appears_to_price, why_pm_differs, evidence_that_would_prove_market_right
 top_thesis_changing_evidence: at most 5 items {evidence_id, why_it_changes_thesis}
-looks_important_but_does_not_change_thesis: at most 3 items {evidence_id, why_not}
+looks_important_but_does_not_change_thesis / low_value_evidence / non_thesis_changing_evidence: at most 3 items {evidence_id, why_not}
+competing_hypotheses: at most 4 items. Each: statement, probability_band (low/medium/high), how_to_test, impact_if_true, missing_evidence as short phrases (never one character per item)
 strongest_evidence: {evidence_id, why}
 weakest_link
-what_could_make_me_wrong
+what_could_make_me_wrong / most_likely_wrong
 next_information_to_seek
+what_would_change_my_mind
 thesis_invalidation
 valuation_driver_judgment: how the Python valuation cases should be read; do not emit a new target
 counterfactuals: at least 3 items. Each:
   if, thesis_impact, eps_or_valuation_direction, what_to_recompute
 golden_answers:
   core_contradiction, three_variables, market_disagreement, most_likely_error, evidence_that_would_change_the_call
+
+User-facing prose (core_thesis, contradiction, variables, disagreement, wrong-path, evidence why, next information, counterfactuals) must be in 中文.
 
 Rules:
 - Never a buy/sell/hold or trading signal

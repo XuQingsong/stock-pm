@@ -308,7 +308,19 @@ def test_pm_llm_owns_thesis_and_keeps_python_valuation() -> None:
                 "strongest_evidence": {"evidence_id": "e1", "why": "official print"},
                 "weakest_link": "no independent customer confirmation",
                 "what_could_make_me_wrong": "duration is real",
+                "most_likely_wrong": "treating the last print as duration proof",
                 "next_information_to_seek": "customer capex",
+                "what_would_change_my_mind": "independent multi-year customer capex",
+                "low_value_evidence": [{"evidence_id": "e1", "why_not": "a print is not duration"}],
+                "competing_hypotheses": [
+                    {
+                        "statement": "duration overstated",
+                        "probability_band": "medium",
+                        "how_to_test": "next capex",
+                        "impact_if_true": "base case fails",
+                        "missing_evidence": ["independent confirmation"],
+                    }
+                ],
                 "thesis_invalidation": "customer capex cuts",
                 "valuation_driver_judgment": "python base case is a map, not a target to replace",
                 "counterfactuals": [
@@ -331,6 +343,11 @@ def test_pm_llm_owns_thesis_and_keeps_python_valuation() -> None:
     assert len(llm["pm_reasoning"]["counterfactuals"]) == 3
     assert llm["valuation"]["bear_case"] == python_only["valuation"]["bear_case"]
     assert llm["pm_reasoning"]["top_thesis_changing_evidence"][0]["evidence_id"] == "e1"
+    assert llm["pm_reasoning"]["most_likely_wrong"] == "treating the last print as duration proof"
+    assert llm["pm_reasoning"]["what_would_change_my_mind"] == "independent multi-year customer capex"
+    assert llm["pm_reasoning"]["low_value_evidence"][0]["evidence_id"] == "e1"
+    assert llm["pm_reasoning"]["non_thesis_changing_evidence"][0]["evidence_id"] == "e1"
+    assert llm["pm_reasoning"]["competing_hypotheses"][0]["statement"] == "duration overstated"
 
 
 def test_get_service_injects_completer() -> None:

@@ -578,7 +578,9 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
         "missing": missing,
         "quality": snapshot.get("research_quality_axes") or thesis.get("research_quality") or {},
     }
+    from .pm_desk import build_pm_desk
     from .review_copy import build_review_ui
 
+    payload["pm_reasoning"] = build_pm_desk(thesis=thesis, snapshot=snapshot, evidence=evidence)
     payload["ui"] = build_review_ui(payload)
     return payload

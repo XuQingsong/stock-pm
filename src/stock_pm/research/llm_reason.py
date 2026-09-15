@@ -108,10 +108,14 @@ def _text_list(value: Any, *, limit: int = 6, width: int = 160) -> list[str]:
     if isinstance(value, str):
         text = compact_text(value, width)
         return [text] if text else []
+    items = [str(item) for item in (value or [])]
+    if items and all(len(str(item).strip()) <= 1 for item in items):
+        joined = compact_text("".join(items), width)
+        return [joined] if joined else []
     out = []
-    for item in value or []:
+    for item in items:
         text = compact_text(item, width)
-        if text:
+        if text and len(text) > 1:
             out.append(text)
         if len(out) >= limit:
             break

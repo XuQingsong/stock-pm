@@ -91,6 +91,24 @@ def test_research_review_payload_from_fixtures(monkeypatch) -> None:
             "thesis_history",
         ):
             assert section in body, section
+        desk = body["pm_reasoning"]
+        for key in (
+            "conclusion",
+            "decisive_variables",
+            "top_thesis_changing_evidence",
+            "low_value_evidence",
+            "non_thesis_changing_evidence",
+            "competing_hypotheses",
+            "most_likely_wrong",
+            "market_disagreement",
+            "next_information_to_seek",
+            "counterfactuals",
+            "what_would_change_my_mind",
+        ):
+            assert key in desk, key
+        assert len(desk["decisive_variables"]) <= 3
+        assert len(desk["top_thesis_changing_evidence"]) <= 5
+        assert len(desk["market_disagreement"]) <= 2
 
 
 def test_research_review_sparse_ticker_does_not_500(monkeypatch) -> None:
@@ -128,8 +146,13 @@ def test_review_static_has_no_hardcoded_thesis() -> None:
         assert "Broadcom" not in text
         assert "Market implies 10% growth" not in text
     js = (static / "research_review.js").read_text(encoding="utf-8")
-    assert "查看详细研究" in js
-    assert "三个关键假设" in js
+    assert "详细研究" in js
+    assert "三个决定性变量" in js
+    assert "改变判断的五条证据" in js
+    assert "与市场真正分歧" in js
+    assert "最可能错在哪里" in js
+    assert "三个关键假设" not in js
+    assert "查看详细研究" not in js
     assert "客户侧独立验证" in js
     html = (static / "research_review.html").read_text(encoding="utf-8")
     assert "research_review.js" in html

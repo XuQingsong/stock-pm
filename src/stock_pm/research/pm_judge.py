@@ -728,7 +728,12 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
         if len(changing) >= 5:
             break
     not_changing = []
-    for item in raw.get("looks_important_but_does_not_change_thesis") or []:
+    for item in (
+        raw.get("looks_important_but_does_not_change_thesis")
+        or raw.get("low_value_evidence")
+        or raw.get("non_thesis_changing_evidence")
+        or []
+    ):
         if not isinstance(item, dict):
             continue
         eid = str(item.get("evidence_id") or "").strip()
@@ -759,6 +764,45 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
         if item
     ]
     golden = raw.get("golden_answers") if isinstance(raw.get("golden_answers"), dict) else {}
+    most_wrong = compact_text(
+        raw.get("most_likely_wrong") or golden.get("most_likely_error") or raw.get("what_could_make_me_wrong") or "",
+        320,
+    )
+    change_mind = compact_text(
+        raw.get("what_would_change_my_mind")
+        or golden.get("evidence_that_would_change_the_call")
+        or raw.get("thesis_invalidation")
+        or "",
+        320,
+    )
+    hypotheses = []
+    for item in raw.get("competing_hypotheses") or []:
+        if not isinstance(item, dict):
+            continue
+        statement = compact_text(item.get("statement") or "", 280)
+        if not statement:
+            continue
+        missing = item.get("missing_evidence")
+        if isinstance(missing, str):
+            missing_list = [missing] if missing.strip() else []
+        else:
+            parts = [str(gap) for gap in (missing or [])]
+            if parts and all(len(part.strip()) <= 1 for part in parts):
+                joined = "".join(parts).strip()
+                missing_list = [joined] if joined else []
+            else:
+                missing_list = [part.strip() for part in parts if part.strip() and len(part.strip()) > 1][:4]
+        hypotheses.append(
+            {
+                "statement": statement,
+                "probability_band": compact_text(item.get("probability_band") or "", 40),
+                "how_to_test": compact_text(item.get("how_to_test") or "", 200),
+                "impact_if_true": compact_text(item.get("impact_if_true") or "", 200),
+                "missing_evidence": missing_list,
+            }
+        )
+        if len(hypotheses) >= 4:
+            break
     return {
         "core_contradiction": compact_text(raw.get("core_contradiction") or golden.get("core_contradiction") or "", 400),
         "decisive_variables": variables,
@@ -771,10 +815,15 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
         "market_disagreement": disagreement,
         "top_thesis_changing_evidence": changing,
         "looks_important_but_does_not_change_thesis": not_changing,
+        "low_value_evidence": not_changing,
+        "non_thesis_changing_evidence": not_changing,
         "strongest_evidence": raw.get("strongest_evidence") if isinstance(raw.get("strongest_evidence"), dict) else {"evidence_id": None, "why": compact_text(raw.get("strongest_evidence"), 200)},
         "weakest_link": compact_text(raw.get("weakest_link") or "", 280),
-        "what_could_make_me_wrong": compact_text(raw.get("what_could_make_me_wrong") or "", 320),
+        "what_could_make_me_wrong": most_wrong,
+        "most_likely_wrong": most_wrong,
         "next_information_to_seek": compact_text(raw.get("next_information_to_seek") or "", 240),
+        "what_would_change_my_mind": change_mind,
+        "competing_hypotheses": hypotheses,
         "thesis_invalidation": compact_text(raw.get("thesis_invalidation") or "", 280),
         "valuation_driver_judgment": compact_text(raw.get("valuation_driver_judgment") or "", 400),
         "counterfactuals": counterfactuals,
@@ -782,8 +831,8 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
             "core_contradiction": compact_text(golden.get("core_contradiction") or raw.get("core_contradiction") or "", 400),
             "three_variables": [row.get("name") for row in variables],
             "market_disagreement": disagreement,
-            "most_likely_error": compact_text(golden.get("most_likely_error") or raw.get("what_could_make_me_wrong") or "", 280),
-            "evidence_that_would_change_the_call": compact_text(golden.get("evidence_that_would_change_the_call") or raw.get("next_information_to_seek") or "", 280),
+            "most_likely_error": most_wrong,
+            "evidence_that_would_change_the_call": change_mind,
         },
     }
 
@@ -863,23 +912,28 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
         thesis["monitoring_items"] = list(dict.fromkeys(thesis["monitoring_items"]))[:10]
     reasoning = {
         "source": "llm",
+        "core_thesis": cleaned["core_thesis"],
         "core_contradiction": cleaned["core_contradiction"],
         "decisive_variables": cleaned["decisive_variables"],
         "conviction_hierarchy": cleaned["conviction_hierarchy"],
         "market_disagreement": cleaned["market_disagreement"],
         "top_thesis_changing_evidence": cleaned["top_thesis_changing_evidence"],
         "looks_important_but_does_not_change_thesis": cleaned["looks_important_but_does_not_change_thesis"],
+        "low_value_evidence": cleaned["low_value_evidence"],
+        "non_thesis_changing_evidence": cleaned["non_thesis_changing_evidence"],
         "strongest_evidence": cleaned["strongest_evidence"],
         "weakest_link": cleaned["weakest_link"],
         "what_could_make_me_wrong": cleaned["what_could_make_me_wrong"],
+        "most_likely_wrong": cleaned["most_likely_wrong"],
         "next_information_to_seek": cleaned["next_information_to_seek"],
+        "what_would_change_my_mind": cleaned["what_would_change_my_mind"],
         "thesis_invalidation": cleaned["thesis_invalidation"],
         "valuation_driver_judgment": cleaned["valuation_driver_judgment"],
         "counterfactuals": cleaned["counterfactuals"],
         "golden_answers": cleaned["golden_answers"],
         "validation_warnings": warnings,
         "llm_audit": audit,
-        "competing_hypotheses": clip(brief.get("competing_hypotheses"), 8),
+        "competing_hypotheses": cleaned.get("competing_hypotheses") or clip(brief.get("competing_hypotheses"), 8),
     }
     thesis["research_quality"] = dict(thesis.get("research_quality") or {})
     thesis["research_quality"]["pm_reasoning"] = reasoning
