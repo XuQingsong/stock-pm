@@ -5,7 +5,15 @@ from __future__ import annotations
 from typing import Any
 
 from stock_pm.events.types import TrustedEvent
-from stock_pm.ux_copy import display_title, is_english_headline, is_http_url
+from stock_pm.ux_copy import (
+    carousel_label_ok,
+    display_title,
+    has_cjk,
+    is_english_headline,
+    is_http_url,
+    is_price_like,
+    is_readable_chinese,
+)
 
 from .copy import (
     action_verbs,
@@ -49,9 +57,23 @@ def _news_link(event: dict[str, Any]) -> dict[str, Any] | None:
         url = source.get("source_url") or source.get("canonical_url")
         if is_http_url(url):
             title = source.get("title") or event.get("canonical_title") or "原文"
-            label = "可点新闻" if is_english_headline(title) else f"可点新闻 · {title[:40]}"
+            label = (
+                "可点新闻"
+                if (is_english_headline(title) or is_price_like(title) or not has_cjk(title))
+                else f"可点新闻 · {title[:40]}"
+            )
             return {"url": url, "label": label}
     return None
+
+
+def _off_main_original(raw: str | None) -> str:
+    """English walls, quote ticks, and non-Chinese leftovers belong in evidence."""
+    text = str(raw or "").strip()
+    if not text:
+        return ""
+    if is_english_headline(text) or is_price_like(text) or not has_cjk(text):
+        return text
+    return ""
 
 
 def _ticker_chip(row: dict[str, Any]) -> dict[str, Any]:
@@ -102,15 +124,11 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
     # as the main-path conclusion.
     raw_title = payload.get("canonical_title") or payload.get("title") or "未命名事件"
     what = strip_holdings((analysis.get("answers") or {}).get("what_happened") or "")
-    english_original = ""
-    if is_english_headline(raw_title):
-        english_original = raw_title
-    elif is_english_headline(what):
-        english_original = what
+    evidence_original = _off_main_original(raw_title) or _off_main_original(what)
 
     def _usable_conclusion(text: str | None) -> str:
         cleaned = main_path_copy(text)
-        if not cleaned or is_english_headline(cleaned):
+        if not is_readable_chinese(cleaned):
             return ""
         if cleaned.startswith("方向"):
             return ""
@@ -128,10 +146,10 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
         or payload.get("duration")
         or (analysis.get("horizon") or {}).get("text")
     )
-    zh_fallback = conclusion[:40] if conclusion and not is_english_headline(conclusion) else "市场事件"
+    zh_fallback = conclusion[:40] if is_readable_chinese(conclusion) else "市场事件"
     title = display_title(raw_title, fallback=zh_fallback)
-    if is_english_headline(title):
-        title = zh_fallback
+    if not is_readable_chinese(title):
+        title = zh_fallback if is_readable_chinese(zh_fallback) else "市场事件"
     return {
         "event_id": payload.get("event_id"),
         "title": title,
@@ -151,7 +169,7 @@ def event_card(event: TrustedEvent | dict[str, Any], watch: list[dict[str, Any]]
             "expectation": expectation or "预期暂缺",
             "why_strength": why_strength,
             "invalidation": invalidation or "失效条件暂缺",
-            "source_title": english_original,
+            "source_title": evidence_original,
         },
         "news": _news_link(payload),
         "closed_loop": closed,
@@ -197,16 +215,20 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
     url = item.get("url") if is_http_url(item.get("url")) else None
     headline = strip_holdings(item.get("headline") or "") or "未命名新闻"
     summary = main_path_copy(item.get("summary") or "")
-    if summary and is_english_headline(summary):
+    if not is_readable_chinese(summary):
         summary = ""
-    zh_fallback = summary[:40] if summary else "相关新闻"
+    zh_fallback = summary[:40] if is_readable_chinese(summary) else "相关新闻"
     title = display_title(headline, fallback=zh_fallback)
-    if is_english_headline(title):
-        title = zh_fallback
-    conclusion = summary or title
-    if is_english_headline(conclusion):
-        conclusion = "相关新闻"
-    news_label = "可点新闻" if is_english_headline(headline) else f"可点新闻 · {headline[:40]}"
+    if not is_readable_chinese(title):
+        title = zh_fallback if is_readable_chinese(zh_fallback) else "相关新闻"
+    conclusion = summary or (title if is_readable_chinese(title) else "")
+    if not is_readable_chinese(conclusion):
+        conclusion = title if is_readable_chinese(title) else "相关新闻"
+    news_label = (
+        "可点新闻"
+        if (is_english_headline(headline) or is_price_like(headline) or not has_cjk(headline))
+        else f"可点新闻 · {headline[:40]}"
+    )
     return {
         "event_id": None,
         "title": title[:120],
@@ -231,7 +253,7 @@ def news_card(item: dict[str, Any], watch: list[dict[str, Any]] | None) -> dict[
             "why_strength": "；".join(f"{row['symbol']}：{row.get('why')}" for row in mapped[:4])
             or "暂未形成对自选股的明确影响",
             "invalidation": "后续官方否认或财报证伪则作废",
-            "source_title": headline if is_english_headline(headline) else "",
+            "source_title": _off_main_original(headline),
         },
         "news": {"url": url, "label": news_label} if url else None,
         "closed_loop": False,
@@ -252,9 +274,14 @@ def build_event_cards(
     news_cards = [news_card(item, watch) for item in news or []]
     trusted = split_events(cards)
     extra = split_events(news_cards)
+    carousel = [
+        card
+        for card in (trusted["carousel"] + extra["carousel"])
+        if carousel_label_ok(card)
+    ]
     return {
         "featured": trusted["featured"],
-        "carousel": trusted["carousel"] + extra["carousel"],
+        "carousel": carousel,
         "unmapped": trusted["unmapped"] + extra["unmapped"],
     }
 

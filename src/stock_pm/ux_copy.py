@@ -87,6 +87,21 @@ _ENGLISH_PHRASE = re.compile(
 )
 _LONG_ENGLISH = re.compile(r"\b[A-Za-z]{6,}\b")
 _LATIN_WORD = re.compile(r"[A-Za-z]+")
+_CJK = re.compile(r"[\u4e00-\u9fff]")
+_PRICE_TICK = re.compile(
+    r"\$\s*[\d,]+(?:\.\d+)?|[+-]\s*[\d,]+(?:\.\d+)?\s*%|\b[\d,]+\.\d{2}\b"
+)
+
+# Placeholder labels are Chinese but not an event title/conclusion.
+GENERIC_EVENT_LABELS = frozenset(
+    {
+        "相关新闻",
+        "市场事件",
+        "未命名事件",
+        "未命名新闻",
+        "结论暂缺",
+    }
+)
 
 
 def publish_label(state: str | None) -> str:
@@ -221,22 +236,58 @@ def strip_embedded_headlines(text: str | None) -> str:
     return drop_english_headlines(text)
 
 
+def has_cjk(text: str | None) -> bool:
+    return bool(_CJK.search(text or ""))
+
+
 def _has_cjk(text: str | None) -> bool:
-    return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
+    return has_cjk(text)
+
+
+def is_price_like(text: str | None) -> bool:
+    """True when the string is a quote tick / price fragment, not an event title."""
+    raw = str(text or "").strip()
+    if not raw or has_cjk(raw):
+        return False
+    letters = sum(1 for char in raw if char.isalpha())
+    digits = sum(1 for char in raw if char.isdigit())
+    if letters > 8:
+        return False
+    if digits >= 3 and _PRICE_TICK.search(raw):
+        return True
+    if digits >= 3 and letters <= 2:
+        return True
+    if not letters and digits:
+        return True
+    return False
+
+
+def is_readable_chinese(text: str | None) -> bool:
+    """Main-path event copy: readable Chinese, not English walls or quote ticks."""
+    raw = str(text or "").strip()
+    if not raw or is_price_like(raw) or is_english_headline(raw):
+        return False
+    return has_cjk(raw)
+
+
+def carousel_label_ok(card: dict | None) -> bool:
+    """Carousel primary fields must be a real Chinese title and/or conclusion."""
+    row = card or {}
+    for field in ("title", "conclusion"):
+        text = str(row.get(field) or "").strip()
+        if is_readable_chinese(text) and text not in GENERIC_EVENT_LABELS:
+            return True
+    return False
 
 
 def display_title(raw: str | None, *, fallback: str = "相关新闻") -> str:
-    """Main-path title: Chinese conclusion, never an English headline wall."""
+    """Main-path title: Chinese event copy, never English walls or quote ticks."""
     text = str(raw or "").strip()
-    safe_fallback = fallback if fallback and not is_english_headline(fallback) else "相关新闻"
+    safe_fallback = fallback if is_readable_chinese(fallback) else "相关新闻"
     if not text:
         return safe_fallback
     cleaned = drop_english_headlines(text)
-    # Mixed 中英 titles: keep the Chinese remainder. Pure English walls
-    # (or leftover acronyms like EIA) fall back instead of becoming the label.
-    if cleaned and not is_english_headline(cleaned) and (
-        not is_english_headline(text) or _has_cjk(cleaned)
-    ):
+    if is_readable_chinese(cleaned):
         return cleaned
     return safe_fallback
 

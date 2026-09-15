@@ -23,6 +23,26 @@
     return content.length >= 3;
   }
 
+  function hasCjk(text) {
+    return /[\u4e00-\u9fff]/.test(String(text || ""));
+  }
+
+  function isPriceLike(text) {
+    const raw = String(text || "").trim();
+    if (!raw || hasCjk(raw)) return false;
+    const letters = (raw.match(/[A-Za-z]/g) || []).length;
+    const digits = (raw.match(/\d/g) || []).length;
+    if (letters > 8) return false;
+    if (digits >= 3 && /\$\s*[\d,]+|[+-]\s*[\d,.]+\s*%|\d+\.\d{2}/.test(raw)) return true;
+    if (digits >= 3 && letters <= 2) return true;
+    return !letters && digits > 0;
+  }
+
+  function isReadableChinese(text) {
+    const raw = String(text || "").trim();
+    return Boolean(raw) && hasCjk(raw) && !isPriceLike(raw) && !isEnglishHeadline(raw);
+  }
+
   function looksLikeHorizonEnum(text) {
     return /^[a-z]+(_[a-z0-9]+)+$/.test(String(text || "").trim());
   }
@@ -30,14 +50,14 @@
   function mainPathTitle(card) {
     const title = String((card && card.title) || "").trim();
     const conclusion = String((card && card.conclusion) || "").trim();
-    if (title && !isEnglishHeadline(title)) return title;
-    if (conclusion && !isEnglishHeadline(conclusion)) return conclusion;
+    if (isReadableChinese(title)) return title;
+    if (isReadableChinese(conclusion)) return conclusion;
     return "市场事件";
   }
 
   function mainPathConclusion(card) {
     const conclusion = String((card && card.conclusion) || "").trim();
-    if (conclusion && !isEnglishHeadline(conclusion)) return conclusion;
+    if (isReadableChinese(conclusion)) return conclusion;
     return "结论暂缺";
   }
 
@@ -174,7 +194,13 @@
     const priority = (focus.priority || []).map(focusRow).join("");
     const watch = (focus.watch || []).map(focusRow).join("");
     const skip = (focus.skip || []).map(focusRow).join("");
-    const carousel = data.carousel || [];
+    const carousel = (data.carousel || []).filter((card) => {
+      const title = String((card && card.title) || "").trim();
+      const conclusion = String((card && card.conclusion) || "").trim();
+      const generic = /^(相关新闻|市场事件|未命名事件|未命名新闻|结论暂缺)$/;
+      return (isReadableChinese(title) && !generic.test(title))
+        || (isReadableChinese(conclusion) && !generic.test(conclusion));
+    });
     const unmapped = data.unmapped || [];
     const first = (data.watchlist || [])[0];
     const stockHref = first ? `/stock/${encodeURIComponent(first.symbol)}` : "/settings";

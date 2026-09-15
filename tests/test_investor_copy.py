@@ -16,7 +16,7 @@ from stock_pm.pack.copy import MAIN_PATH_BANNED, investorize, judgment_reason, m
 from stock_pm.pack.overview import build_overview_payload
 from stock_pm.pack.review_page import build_review_payload, observe_card
 from stock_pm.pack.stock_page import build_stock_payload
-from stock_pm.ux_copy import display_title, drop_english_headlines, named_missing_line
+from stock_pm.ux_copy import display_title, drop_english_headlines, is_price_like, named_missing_line
 
 
 MAIN_PATH_STATIC = [
@@ -217,6 +217,8 @@ def test_main_path_drops_english_headline_walls() -> None:
     )
     assert display_title("AVGO and MSFT mentioned while NVDA reports orders") == "相关新闻"
     assert display_title("订单超预期：Profits surge to record high") == "订单超预期"
+    assert display_title("$332.48, +1.81% .") == "相关新闻"
+    assert is_price_like("$332.48, +1.81% .")
     env = synthesize_symbol_environment(
         as_of_date="2026-09-15",
         symbol="MU",
@@ -246,8 +248,11 @@ def test_main_path_drops_english_headline_walls() -> None:
         ],
     )
     titles = " ".join(card["title"] for card in overview["carousel"])
+    conclusions = " ".join(card.get("conclusion") or "" for card in overview["carousel"])
     assert "reports orders" not in titles
-    assert "订单" in titles or "相关新闻" in titles
+    assert "订单" in titles or "订单" in conclusions
+    assert "$332.48" not in titles
+    assert "+1.81%" not in titles
     stock = build_stock_payload(
         symbol="NVDA",
         watch=[{"symbol": "NVDA", "active": True}],
