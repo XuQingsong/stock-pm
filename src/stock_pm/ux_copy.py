@@ -221,15 +221,24 @@ def strip_embedded_headlines(text: str | None) -> str:
     return drop_english_headlines(text)
 
 
+def _has_cjk(text: str | None) -> bool:
+    return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
+
+
 def display_title(raw: str | None, *, fallback: str = "相关新闻") -> str:
     """Main-path title: Chinese conclusion, never an English headline wall."""
     text = str(raw or "").strip()
+    safe_fallback = fallback if fallback and not is_english_headline(fallback) else "相关新闻"
     if not text:
-        return fallback
-    if is_english_headline(text):
-        cleaned = drop_english_headlines(text)
-        return cleaned or fallback
-    return drop_english_headlines(text) or fallback
+        return safe_fallback
+    cleaned = drop_english_headlines(text)
+    # Mixed 中英 titles: keep the Chinese remainder. Pure English walls
+    # (or leftover acronyms like EIA) fall back instead of becoming the label.
+    if cleaned and not is_english_headline(cleaned) and (
+        not is_english_headline(text) or _has_cjk(cleaned)
+    ):
+        return cleaned
+    return safe_fallback
 
 
 def env_half_display(env: dict | None, fallback: str | None = None) -> str:

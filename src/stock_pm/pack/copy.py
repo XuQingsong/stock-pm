@@ -49,6 +49,12 @@ MAIN_PATH_GATE_TOKENS = (
     "API 未配置",
     "抓取失败",
     "L0",
+    "当前可用等级",
+    "数据源",
+    "days_to_weeks",
+    "weeks_to_months",
+    "until_next_earnings",
+    "session_to_days",
 )
 MAIN_PATH_BANNED = (
     "不补假数",
@@ -92,6 +98,12 @@ MAIN_PATH_BANNED = (
     "risk_state",
     "chain_id",
     "synthesis_id",
+    "当前可用等级",
+    "数据源",
+    "days_to_weeks",
+    "weeks_to_months",
+    "until_next_earnings",
+    "session_to_days",
 )
 
 _SKIP_SCRUB_KEYS = {
@@ -174,11 +186,23 @@ SCOPE_LABELS = {
 }
 
 HORIZON_LABELS = {
-    "days_to_weeks": "数日至数周",
-    "weeks_to_months": "1–4 周",
+    "days_to_weeks": "数天到数周",
+    "weeks_to_months": "数周到数月",
     "until_next_earnings": "至下份财报",
+    "session_to_days": "当日到数日",
     "unspecified": "期限暂缺",
+    "short": "短期",
+    "medium": "中期",
+    "long": "长期",
 }
+
+# Internal duration codes. Never spoken on featured / carousel / stock main path.
+HORIZON_ENUM_TOKENS = (
+    "days_to_weeks",
+    "weeks_to_months",
+    "until_next_earnings",
+    "session_to_days",
+)
 
 DIRECTION_LABELS = {
     "bull": "偏多",
@@ -223,13 +247,15 @@ _TOKEN_RE = re.compile(
 _LEVEL_RE = re.compile(r"未达\s*L3|\bL[0-3]\b")
 _CLAUSE_SPLIT_RE = re.compile(r"(?<=[。！？；;])")
 _RESIDUE_RE = re.compile(
-    r"不编|不补|未编|禁止|抓取|字段齐全|本页不出现|本页不展开|标题扫代码|数据源健康|"
-    r"API\s*未配置|closed[\s_-]*loop|prediction_ready|can_form_direction|"
+    r"不编|不补|未编|禁止|抓取|字段齐全|本页不出现|本页不展开|标题扫代码|数据源|"
+    r"当前可用等级|API\s*未配置|closed[\s_-]*loop|prediction_ready|can_form_direction|"
     r"evidence[\s_-]*version|rule\s*v0|rule_id|chain_id|synthesis_id|"
     r"system[-_]risk|risk_state|\bL[0-3]\b|withheld|不形成方向|不静默|"
-    r"不写成预测|编出来|不硬编",
+    r"不写成预测|编出来|不硬编|days_to_weeks|weeks_to_months|"
+    r"until_next_earnings|session_to_days",
     re.I,
 )
+_SNAKE_ENUM_RE = re.compile(r"^[a-z]+(?:_[a-z0-9]+)+$")
 
 
 def main_path_violations(text: str | None) -> list[str]:
@@ -261,6 +287,8 @@ def investorize(text: str | None) -> str:
     raw = str(text or "")
     for old, new in _PHRASE_REWRITES:
         raw = raw.replace(old, new)
+    for key in sorted(HORIZON_ENUM_TOKENS, key=len, reverse=True):
+        raw = raw.replace(key, HORIZON_LABELS[key])
     raw = raw.replace("风险状态", "市场波动风险")
     from stock_pm.ux_copy import drop_english_headlines
 
@@ -356,7 +384,16 @@ def horizon_label(raw: str | None) -> str:
     text = str(raw or "").strip()
     if not text or text in {"unspecified", "none", "null"}:
         return HORIZON_LABELS["unspecified"]
-    return HORIZON_LABELS.get(text, text.replace("_", " "))
+    if text in HORIZON_LABELS:
+        return HORIZON_LABELS[text]
+    for key in sorted(HORIZON_ENUM_TOKENS, key=len, reverse=True):
+        if key in text:
+            return HORIZON_LABELS[key]
+    if _SNAKE_ENUM_RE.match(text):
+        return HORIZON_LABELS["unspecified"]
+    if re.search(r"_[a-z]", text) and not re.search(r"[\u4e00-\u9fff]", text):
+        return HORIZON_LABELS["unspecified"]
+    return text
 
 
 def direction_side(raw: str | None) -> str:

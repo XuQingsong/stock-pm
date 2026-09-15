@@ -17,6 +17,37 @@
     return `<span class="bars" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</span>`;
   }
 
+  function isEnglishHeadline(text) {
+    const words = String(text || "").match(/[A-Za-z]+/g) || [];
+    const content = words.filter((word) => !(word === word.toUpperCase() && word.length <= 5));
+    return content.length >= 3;
+  }
+
+  function looksLikeHorizonEnum(text) {
+    return /^[a-z]+(_[a-z0-9]+)+$/.test(String(text || "").trim());
+  }
+
+  function mainPathTitle(card) {
+    const title = String((card && card.title) || "").trim();
+    const conclusion = String((card && card.conclusion) || "").trim();
+    if (title && !isEnglishHeadline(title)) return title;
+    if (conclusion && !isEnglishHeadline(conclusion)) return conclusion;
+    return "市场事件";
+  }
+
+  function mainPathConclusion(card) {
+    const conclusion = String((card && card.conclusion) || "").trim();
+    if (conclusion && !isEnglishHeadline(conclusion)) return conclusion;
+    return "结论暂缺";
+  }
+
+  function mainPathHorizon(raw) {
+    const text = String(raw || "").trim();
+    if (!text || text === "none" || text === "null" || looksLikeHorizonEnum(text)) return "期限暂缺";
+    if (/_[a-z]/.test(text) && !/[\u4e00-\u9fff]/.test(text)) return "期限暂缺";
+    return text;
+  }
+
   function newsLink(news) {
     if (news && news.url) {
       return `<a class="news-link" href="${esc(news.url)}" target="_blank" rel="noopener noreferrer">${esc(news.label || "可点新闻")}</a>`;
@@ -26,9 +57,13 @@
 
   function basisHtml(basis) {
     const row = basis || {};
+    const original = row.source_title
+      ? `<div class="expand-step"><span class="step-label">原文标题</span>${esc(row.source_title)}</div>`
+      : "";
     return `<details class="expand-b">
       <summary>展开依据 · 事实→变化→预期→为何此强度→消失条件</summary>
       <div class="expand-chain">
+        ${original}
         <div class="expand-step"><span class="step-label">事实</span>${esc(row.fact || "事实暂缺")}</div>
         <div class="expand-step"><span class="step-label">变化</span>${esc(row.change || "变化暂缺")}</div>
         <div class="expand-step"><span class="step-label">预期</span>${esc(row.expectation || "预期暂缺")}</div>
@@ -51,9 +86,9 @@
         <span class="impact-pill ${esc(kind)}">${esc(card.impact_label || "")}</span>
         <span class="chip">${esc(card.scope_label || "")}</span>
       </div>
-      <h3 class="event-title">${esc(card.title || "")}</h3>
-      <p class="event-conclusion">${featured ? "结论：" : ""}${esc(card.conclusion || "")}</p>
-      ${featured ? `<div class="event-meta"><span>期限：<strong>${esc(card.horizon || "期限暂缺")}</strong></span></div>` : ""}
+      <h3 class="event-title">${esc(mainPathTitle(card))}</h3>
+      <p class="event-conclusion">${featured ? "结论：" : ""}${esc(mainPathConclusion(card))}</p>
+      ${featured ? `<div class="event-meta"><span>期限：<strong>${esc(mainPathHorizon(card.horizon))}</strong></span></div>` : ""}
       ${tickers ? `<div class="impact-row">${featured ? '<span class="label">影响谁</span>' : ""}${tickers}</div>` : ""}
       ${card.transmit ? `<p class="transmit">传导：${esc(card.transmit)}</p>` : ""}
       ${basisHtml(card.basis)}
