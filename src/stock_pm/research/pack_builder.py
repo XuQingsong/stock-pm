@@ -84,6 +84,8 @@ def _earnings_item(row: dict[str, Any], *, fundamentals: dict[str, Any] | None) 
     revenue = to_number(row.get("revenue_actual") or row.get("revenue"))
     earnings = to_number(row.get("net_income_actual") or row.get("earnings") or row.get("net_income"))
     eps = to_number(row.get("eps_actual") or row.get("eps"))
+    fields = row.get("provider_fields") if isinstance(row.get("provider_fields"), dict) else {}
+    net_m = to_number(fields.get("net_margin_pct") or row.get("net_margin_pct")) or net_margin(revenue, earnings)
     item = {
         "fiscal_period": row.get("fiscal_period"),
         "fiscal_year": row.get("fiscal_year"),
@@ -98,7 +100,12 @@ def _earnings_item(row: dict[str, Any], *, fundamentals: dict[str, Any] | None) 
         "eps_estimate": to_number(row.get("eps_estimate")),
         "eps_surprise_pct": to_number(row.get("eps_surprise_pct")),
         "earnings": earnings,
-        "margin_pct": to_number(row.get("margin_pct")) or net_margin(revenue, earnings),
+        "gross_margin_pct": to_number(fields.get("gross_margin_pct") or row.get("gross_margin_pct")),
+        "operating_margin_pct": to_number(fields.get("operating_margin_pct") or row.get("operating_margin_pct")),
+        "net_margin_pct": net_m,
+        "margin_pct": net_m,
+        "diluted_shares": to_number(fields.get("diluted_shares") or row.get("diluted_shares")),
+        "provider_fields": fields,
         "fcf": _fcf(row, fundamentals),
         "segments": _segments(row),
         "source": row.get("source"),
@@ -295,6 +302,8 @@ class PackBuilder:
                 }
             )
 
+        fund = fundamentals or {}
+        fund_raw = fund.get("raw_data") if isinstance(fund.get("raw_data"), dict) else {}
         profile = {
             "legal_name": listed.get("legal_name") or symbol,
             "cik": listed.get("cik"),
@@ -302,24 +311,45 @@ class PackBuilder:
             "sector": listed.get("sector"),
             "asset_class": listed.get("asset_class") or "stocks",
             "primary_exchange": listed.get("primary_exchange") or "",
-            "revenue_ttm": to_number((fundamentals or {}).get("revenue_ttm")),
-            "eps_ttm": to_number((fundamentals or {}).get("eps_ttm")),
-            "gross_margin_pct": to_number((fundamentals or {}).get("gross_margin_pct")),
-            "operating_margin_pct": to_number((fundamentals or {}).get("operating_margin_pct")),
-            "net_margin_pct": to_number((fundamentals or {}).get("net_margin_pct")),
-            "revenue_growth_yoy_pct": to_number((fundamentals or {}).get("revenue_growth_yoy_pct"))
+            "revenue_ttm": to_number(fund.get("revenue_ttm")),
+            "eps_ttm": to_number(fund.get("eps_ttm")),
+            "gross_margin_pct": to_number(fund.get("gross_margin_pct")),
+            "operating_margin_pct": to_number(fund.get("operating_margin_pct")),
+            "net_margin_pct": to_number(fund.get("net_margin_pct")),
+            "revenue_growth_yoy_pct": to_number(fund.get("revenue_growth_yoy_pct"))
             or yoy_from_quarters(earnings_history, "revenue"),
-            "eps_growth_yoy_pct": to_number((fundamentals or {}).get("eps_growth_yoy_pct"))
+            "eps_growth_yoy_pct": to_number(fund.get("eps_growth_yoy_pct"))
             or yoy_from_quarters(earnings_history, "eps"),
             "fcf": _fcf({}, fundamentals),
+            "market_cap": to_number(fund.get("market_cap") or fund_raw.get("market_cap")),
+            "pe_forward": to_number(fund.get("pe_forward") or fund_raw.get("pe_forward")),
+            "pe_ttm": to_number(fund.get("pe_ttm")),
+            "net_income_ttm": to_number(fund.get("net_income_ttm") or fund_raw.get("net_income_ttm")),
+            "diluted_shares": to_number(
+                fund.get("diluted_shares")
+                or fund_raw.get("diluted_shares")
+                or fund.get("diluted_weighted_average_shares")
+            ),
+            "diluted_shares_origin": fund.get("diluted_shares_origin") or fund_raw.get("diluted_shares_origin"),
+            "diluted_shares_period": fund.get("diluted_shares_period") or fund_raw.get("diluted_shares_period"),
+            "diluted_shares_source": fund.get("diluted_shares_source") or fund_raw.get("diluted_shares_source") or fund.get("source"),
+            "diluted_shares_source_url": fund.get("diluted_shares_source_url") or fund_raw.get("diluted_shares_source_url"),
             "transcripts": transcripts,
             "official_documents": official_documents,
         }
         last_close = stock_px[-1][1] if stock_px else None
         profile["last_close"] = last_close
         eps_ttm = to_number(profile.get("eps_ttm"))
-        if last_close not in (None, 0) and eps_ttm not in (None, 0):
+        if profile.get("pe_ttm") is None and last_close not in (None, 0) and eps_ttm not in (None, 0):
             profile["pe_ttm"] = round(float(last_close) / float(eps_ttm), 2)
+        if profile.get("diluted_shares") in (None, 0):
+            for row in earnings_history:
+                if to_number(row.get("diluted_shares")) not in (None, 0):
+                    profile["diluted_shares"] = to_number(row.get("diluted_shares"))
+                    profile["diluted_shares_origin"] = profile.get("diluted_shares_origin") or "earnings_release"
+                    profile["diluted_shares_period"] = str(row.get("fiscal_period") or row.get("period_end") or "")
+                    profile["diluted_shares_source"] = str(row.get("source") or "earnings_print")
+                    break
         profile["recent_closes"] = [{"session_date": day.isoformat(), "close": price} for day, price in stock_px[-40:]]
         missing: list[str] = []
         if not listed.get("cik"):
@@ -338,6 +368,12 @@ class PackBuilder:
             missing.append("fcf")
         if all(not row.get("segments") for row in earnings_history):
             missing.append("segment_growth")
+        if profile.get("net_margin_pct") is None and all(
+            row.get("net_margin_pct") is None and row.get("margin_pct") is None for row in earnings_history
+        ):
+            missing.append("net_margin")
+        if profile.get("diluted_shares") in (None, 0) and all(row.get("diluted_shares") in (None, 0) for row in earnings_history):
+            missing.append("diluted_shares")
         if not price_reaction:
             missing.append("price_reaction_history")
         if not major_events:

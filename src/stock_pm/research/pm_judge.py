@@ -19,7 +19,7 @@ from .types import (
 from .valuation import attribute_target_change, build_valuation_cases, display_target
 
 
-PROMPT_VERSION = "sprint45-pm-v1"
+PROMPT_VERSION = "sprint46-pm-v1"
 ENGINE_TO_STATUS = {
     "strengthen": "strengthened",
     "weaken": "weakened",

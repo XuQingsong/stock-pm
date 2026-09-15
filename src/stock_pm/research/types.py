@@ -59,6 +59,17 @@ CASE_KEYS = (
 )
 VALUATION_STATUSES = ("usable", "provisional", "insufficient")
 METRIC_ORIGINS = ("observed", "derived", "assumption", "template_fallback")
+GROWTH_ORIGINS = (
+    "management_guidance",
+    "consensus",
+    "historical_delivery",
+    "evidence_derived",
+    "fallback",
+    "observed",
+    "derived",
+    "assumption",
+    "template_fallback",
+)
 
 
 def to_plain(row: Any) -> dict[str, Any]:

@@ -38,10 +38,15 @@ def assess_research_quality_axes(
     eps = to_number(profile.get("eps_ttm"))
     fcf = to_number(profile.get("fcf"))
     last_close = to_number(profile.get("last_close"))
-    net_margin = to_number(profile.get("net_margin_pct") or profile.get("operating_margin_pct") or profile.get("gross_margin_pct"))
+    net_margin = to_number(profile.get("net_margin_pct"))
     if net_margin is None:
         for row in earnings:
-            value = to_number(row.get("margin_pct"))
+            value = to_number(row.get("net_margin_pct"))
+            if value is None:
+                revenue = to_number(row.get("revenue"))
+                net_income = to_number(row.get("earnings") or row.get("net_income"))
+                if revenue not in (None, 0) and net_income is not None:
+                    value = 100.0 * float(net_income) / float(revenue)
             if value is not None:
                 net_margin = value
                 break
@@ -78,7 +83,7 @@ def assess_research_quality_axes(
     material_gap = bool(missing & {"segment_growth", "fcf", "forward_margin", "commodity_price"})
     if template_id == "energy":
         energy_ready = (fcf not in (None, 0) or has_series) and bool(guidance) and has_baseline
-        valuation_sufficient = energy_ready and has_margin and not used_fallback and "commodity_price" not in missing
+        valuation_sufficient = energy_ready and not used_fallback and "commodity_price" not in missing
         valuation_partial = has_baseline or has_print or last_close is not None
     else:
         valuation_sufficient = (

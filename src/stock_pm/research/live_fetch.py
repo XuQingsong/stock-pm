@@ -650,10 +650,19 @@ def enrich_earnings_rows(
         revenue = _number(item.get("revenue_actual") or matched_income.get("revenue"))
         gross = _number(matched_income.get("grossProfit"))
         operating = _number(matched_income.get("operatingIncome"))
+        net_income = _number(matched_income.get("netIncome") or item.get("net_income_actual"))
+        diluted = _number(
+            matched_income.get("weightedAverageShsOutDil")
+            or matched_income.get("weightedAverageShsOut")
+        )
         if revenue and gross is not None:
             fields["gross_margin_pct"] = round(100.0 * gross / revenue, 2)
         if revenue and operating is not None:
             fields["operating_margin_pct"] = round(100.0 * operating / revenue, 2)
+        if revenue and net_income is not None:
+            fields["net_margin_pct"] = round(100.0 * net_income / revenue, 2)
+        if diluted:
+            fields["diluted_shares"] = diluted
         fcf = _number(matched_cash.get("freeCashFlow") or matched_cash.get("freeCashFlowReported"))
         if fcf is not None:
             fields["fcf"] = fcf
@@ -699,6 +708,87 @@ def _normalize_segments(payload: Any) -> dict[str, list[dict[str, Any]]]:
     return by_date
 
 
+SHARE_CONCEPTS = (
+    "WeightedAverageNumberOfDilutedSharesOutstanding",
+    "WeightedAverageNumberOfShareOutstandingDiluted",
+    "WeightedAverageNumberOfSharesOutstandingDiluted",
+    "WeightedAverageNumberOfDilutedSharesOutstandingProForma",
+    "WeightedAverageNumberOfDilutedSharesOutstandingBasicAndDiluted",
+    "WeightedAverageNumberOfDilutedSharesOutstandingCommonStock",
+)
+
+
+def _duration_days(row: dict[str, Any]) -> int | None:
+    start = str(row.get("start") or "")[:10]
+    end = str(row.get("end") or "")[:10]
+    try:
+        return (date.fromisoformat(end) - date.fromisoformat(start)).days
+    except ValueError:
+        return None
+
+
+def _collapse_points(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    best: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in points:
+        key = (str(row.get("end") or ""), str(row.get("fp") or ""))
+        prev = best.get(key)
+        if prev is None:
+            best[key] = row
+            continue
+        d_new = _duration_days(row)
+        d_old = _duration_days(prev)
+        new_q = d_new is not None and 60 <= d_new <= 120
+        old_q = d_old is not None and 60 <= d_old <= 120
+        if new_q != old_q:
+            if new_q:
+                best[key] = row
+            continue
+        if str(row.get("filed") or "") >= str(prev.get("filed") or ""):
+            best[key] = row
+    return list(best.values())
+
+
+def _share_points(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extract diluted weighted-average share counts (units=SHARES) from companyfacts."""
+    taxonomies = payload.get("facts") or {}
+    trees = [taxonomies.get("us-gaap") or {}, taxonomies.get("ifrs-full") or {}]
+    points: list[dict[str, Any]] = []
+    for gaap in trees:
+        for name in SHARE_CONCEPTS:
+            concept = gaap.get(name) or {}
+            units = concept.get("units") or {}
+            for unit, rows in units.items():
+                if not isinstance(rows, list):
+                    continue
+                if "SHARE" not in str(unit).upper():
+                    continue
+                for row in rows:
+                    if not isinstance(row, dict):
+                        continue
+                    form = str(row.get("form") or "").upper()
+                    fp = str(row.get("fp") or "").upper()
+                    if form not in {"10-Q", "10-K", "10-Q/A", "10-K/A", "20-F", "6-K"}:
+                        continue
+                    if fp not in {"Q1", "Q2", "Q3", "Q4", "FY"}:
+                        continue
+                    end = str(row.get("end") or "")[:10]
+                    val = _number(row.get("val"))
+                    if not end or val in (None, 0):
+                        continue
+                    points.append(
+                        {
+                            "end": end,
+                            "start": str(row.get("start") or "")[:10],
+                            "val": val,
+                            "form": form,
+                            "fp": fp,
+                            "fy": row.get("fy"),
+                            "filed": row.get("filed"),
+                        }
+                    )
+    return _collapse_points(points)
+
+
 def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[str, Any]]:
     taxonomies = (payload.get("facts") or {})
     trees = [taxonomies.get("us-gaap") or {}, taxonomies.get("ifrs-full") or {}]
@@ -718,7 +808,7 @@ def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[s
                         continue
                     form = str(row.get("form") or "").upper()
                     fp = str(row.get("fp") or "").upper()
-                    if form not in {"10-Q", "10-K", "20-F", "6-K"}:
+                    if form not in {"10-Q", "10-K", "10-Q/A", "10-K/A", "20-F", "6-K"}:
                         continue
                     if fp not in {"Q1", "Q2", "Q3", "Q4"}:
                         continue
@@ -726,10 +816,18 @@ def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[s
                     val = _number(row.get("val"))
                     if not end or val is None:
                         continue
-                    points.append({"end": end, "val": val, "form": form, "fp": fp, "fy": row.get("fy"), "filed": row.get("filed")})
-            if points:
-                return points
-    return points
+                    points.append(
+                        {
+                            "end": end,
+                            "start": str(row.get("start") or "")[:10],
+                            "val": val,
+                            "form": form,
+                            "fp": fp,
+                            "fy": row.get("fy"),
+                            "filed": row.get("filed"),
+                        }
+                    )
+    return _collapse_points(points)
 
 
 def _quarters_from_companyfacts(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -744,10 +842,19 @@ def _quarters_from_companyfacts(payload: dict[str, Any]) -> list[dict[str, Any]]
             "RevenueFromContractsWithCustomers",
         ),
     )
-    net_income = _fact_points(payload, ("NetIncomeLoss", "ProfitLoss"))
+    net_income = _fact_points(
+        payload,
+        (
+            "ProfitLoss",
+            "NetIncomeLoss",
+            "NetIncomeLossAvailableToCommonStockholdersBasic",
+            "NetIncomeLossAvailableToCommonStockholdersDiluted",
+        ),
+    )
     eps = _fact_points(payload, ("EarningsPerShareDiluted", "EarningsPerShareBasic"))
     gross = _fact_points(payload, ("GrossProfit",))
     operating = _fact_points(payload, ("OperatingIncomeLoss",))
+    shares = _share_points(payload)
     by_end: dict[str, dict[str, Any]] = {}
     for row in revenue:
         by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy"), "form": row.get("form"), "filed": row.get("filed")})
@@ -766,6 +873,20 @@ def _quarters_from_companyfacts(payload: dict[str, Any]) -> list[dict[str, Any]]
         item = by_end.get(row["end"])
         if item and item.get("revenue_actual"):
             item.setdefault("provider_fields", {})["operating_margin_pct"] = round(100.0 * row["val"] / item["revenue_actual"], 2)
+    for row in shares:
+        item = by_end.get(row["end"])
+        if item:
+            item.setdefault("provider_fields", {})["diluted_shares"] = row["val"]
+    for item in by_end.values():
+        if item.get("net_income_actual") is None:
+            eps = item.get("eps_actual")
+            sh = (item.get("provider_fields") or {}).get("diluted_shares")
+            if eps is not None and sh not in (None, 0):
+                item["net_income_actual"] = float(eps) * float(sh)
+        rev = item.get("revenue_actual")
+        ni = item.get("net_income_actual")
+        if rev and ni is not None:
+            item.setdefault("provider_fields", {})["net_margin_pct"] = round(100.0 * ni / rev, 1)
     rows = sorted(by_end.values(), key=lambda item: str(item.get("period_end")), reverse=True)
     return rows[:12]
 
@@ -854,10 +975,32 @@ def enrich_fundamentals_from_facts(snapshot: dict[str, Any] | None, facts: dict[
     if out.get("revenue_growth_yoy_pct") is None and yoy is not None:
         out["revenue_growth_yoy_pct"] = yoy
     margins = (quarters[0].get("provider_fields") or {}) if quarters else {}
+    nis = [row.get("net_income_actual") for row in quarters[:4]]
+    net_income_ttm = sum(item for item in nis if item is not None) if nis and all(item is not None for item in nis) and len(nis) == 4 else None
+    if out.get("net_income_ttm") is None and net_income_ttm is not None:
+        out["net_income_ttm"] = net_income_ttm
     if out.get("gross_margin_pct") is None:
         out["gross_margin_pct"] = margins.get("gross_margin_pct")
     if out.get("operating_margin_pct") is None:
         out["operating_margin_pct"] = margins.get("operating_margin_pct")
+    if out.get("net_margin_pct") is None:
+        out["net_margin_pct"] = margins.get("net_margin_pct")
+    if out.get("net_margin_pct") is None and revenue_ttm not in (None, 0) and net_income_ttm is not None:
+        out["net_margin_pct"] = round(100.0 * float(net_income_ttm) / float(revenue_ttm), 1)
+    for row in quarters:
+        shares = (row.get("provider_fields") or {}).get("diluted_shares")
+        if shares in (None, 0):
+            continue
+        form = str(row.get("form") or "")
+        origin = "sec_10k" if "10-K" in form else "sec_10q" if "10-Q" in form else "companyfacts"
+        out["diluted_shares"] = shares
+        out["diluted_shares_origin"] = origin
+        fy = row.get("fiscal_year")
+        fp = row.get("fiscal_period")
+        out["diluted_shares_period"] = f"{fp} FY{fy}" if fy else str(fp or "")
+        out["diluted_shares_source"] = "sec.companyfacts"
+        out["diluted_shares_source_url"] = None
+        break
     if snapshot is None:
         out["source"] = "sec.companyfacts"
     elif "sec.companyfacts" not in str(out.get("source") or ""):
