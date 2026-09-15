@@ -9,20 +9,13 @@
 
   const miss = (value) => {
     if (value === null || value === undefined || value === "" || value === "Missing") {
-      return '<span class="muted">Missing / Unresolved</span>';
+      return '<span class="muted">尚未解决</span>';
     }
     return esc(value);
   };
 
-  const pct = (value) => {
-    if (value === null || value === undefined || value === "") return "Missing";
-    const n = Number(value);
-    if (Number.isNaN(n)) return String(value);
-    return `${Math.round(n * 100)}%`;
-  };
-
   const money = (value) => {
-    if (value === null || value === undefined || value === "") return "Missing";
+    if (value === null || value === undefined || value === "") return "待补";
     const n = Number(value);
     if (Number.isNaN(n)) return String(value);
     if (Math.abs(n) >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
@@ -30,326 +23,268 @@
     return String(n);
   };
 
-  const outcomeLabel = (value) => {
-    const raw = String(value || "unscored").toLowerCase();
-    if (raw === "missed") return "miss";
-    return raw;
-  };
-
-  const pill = (text, kind) => `<span class="pill ${esc(kind || text || "")}">${esc(text || "unresolved")}</span>`;
-
-  const sourceLink = (row) => {
-    if (row && row.source_url) {
-      return `<a href="${esc(row.source_url)}" target="_blank" rel="noreferrer">${esc(row.source || "source")}</a>`;
-    }
-    if (row && (row.source || row.source_time)) return esc(row.source || "");
-    return '<span class="unverified">UNVERIFIED</span>';
-  };
-
-  const clip = (value, limit = 240) => {
-    const text = String(value ?? "");
-    if (!text || text === "Missing") return miss(value);
-    if (text.length <= limit) return esc(text);
-    return `<details class="ev clip"><summary>${esc(text.slice(0, limit))}…</summary><p>${esc(text)}</p></details>`;
-  };
+  const pill = (label, kind) => `<span class="pill ${esc(kind || "")}">${esc(label || "待验证")}</span>`;
 
   const tickerFromPath = () => {
     const parts = location.pathname.split("/").filter(Boolean);
     return (parts[1] || "AVGO").toUpperCase();
   };
 
+    const sourceLink = (row) => {
+    if (row && row.source_url) {
+      return `<a href="${esc(row.source_url)}" target="_blank" rel="noreferrer">${esc(row.source_zh || row.source || "来源")}</a>`;
+    }
+    if (row && (row.source_zh || row.source)) return esc(row.source_zh || row.source);
+    return '<span class="unverified">来源未追溯</span>';
+  };
+
   const evidenceBlock = (rows, label) => {
     const list = rows || [];
-    if (!list.length) return `<p class="missing">${esc(label || "Evidence")}: Missing / Unresolved</p>`;
-    return `<details class="ev"><summary>${esc(label || "Evidence")} (${list.length})</summary>${
+    if (!list.length) return `<p class="missing">${esc(label || "证据")}：尚未解决</p>`;
+    return `<details class="ev"><summary>${esc(label || "查看证据")}（${list.length}）</summary>${
       list.map((row) => {
         const url = row.source_url
-          ? `<a href="${esc(row.source_url)}" target="_blank" rel="noreferrer">source</a>`
-          : '<span class="unverified">UNVERIFIED</span>';
-        return `<p><b>${esc(row.fact || "Missing")}</b><br><span class="muted">${esc(row.source || "")} · ${esc(row.source_time || "")} · ${url}</span>${
+          ? `<a href="${esc(row.source_url)}" target="_blank" rel="noreferrer">来源</a>`
+          : '<span class="unverified">来源未追溯</span>';
+        return `<p>${esc(row.fact || "尚未解决")}<br><span class="muted">${esc(row.source || "")} · ${esc(row.source_time || "")} · ${url}</span>${
           row.excerpt && row.excerpt !== row.fact ? `<br>${esc(row.excerpt)}` : ""
-        }${row.reason ? `<br><span class="muted">${esc(row.reason)}</span>` : ""}</p>`;
+        }</p>`;
       }).join("")
     }</details>`;
   };
 
   function render(data) {
+    const ui = data.ui || {};
     const hero = data.hero || {};
-    const cases = data.cases || {};
     const tree = data.assumption_tree || {};
     const delivery = data.delivery_history || {};
     const customer = data.customer_side || {};
     const bridge = data.revenue_bridge || {};
-    const chain = data.causal_chain || {};
     const implied = data.market_implied || {};
     const reaction = data.market_reaction || {};
     const valuation = data.valuation || {};
-    const missing = (data.missing || []).map((item) => esc(item)).join(" · ") || "none listed";
+    const cases = ui.cases || {};
+    const cust = ui.customer || {};
+    const ledgerSum = ui.ledger_summary || {};
+    const deliv = ui.delivery_summary || {};
 
-    const caseCell = (name, row) => {
-      const c = row || {};
-      return `<div class="cell"><span>${esc(name)}</span><b>${miss(c.target)}</b>
-        <div class="muted">g ${miss(c.growth_display || pct(c.growth))} · m ${miss(c.multiple)} · EPS ${miss(c.eps)}</div>
-        <div class="muted">${esc(c.origin || "")}</div></div>`;
+    const caseCol = (key) => {
+      const row = cases[key] || {};
+      return `<div class="case"><div class="name">${esc(row.label || "")}</div><b>${esc(row.target || "待补")}</b>
+        <div class="meta">EPS ${esc(row.eps)} · ${esc(row.growth)}${row.multiple === "待补" || row.multiple == null ? "" : ` · ${esc(row.multiple)}x`}</div></div>`;
     };
 
+    const keyHtml = (ui.key_assumptions || []).map((row) => `<details>
+      <summary>
+        <div class="assump-title">${esc(row.title)}<div>${pill(row.status_label, row.status)}</div></div>
+        <div>${esc(row.support)}<div class="muted">${esc(row.risk)}</div></div>
+      </summary>
+      <p class="muted">${esc(row.statement || "")}</p>
+      ${evidenceBlock((row.node && row.node.supporting) || [], "支持证据")}
+      ${evidenceBlock((row.node && row.node.opposing) || [], "反证")}
+    </details>`).join("") || '<p class="missing">关键假设尚未形成</p>';
+
+    const chainHtml = (ui.chain || []).map((layer, idx) => `${idx ? '<span class="muted">→</span>' : ""}
+      <button type="button" class="chain-node ${layer.weakest ? "weak" : ""}" data-layer="${esc(layer.layer || "")}">
+        <span class="nm">${esc(layer.label)}</span>
+        <span class="st">${esc(layer.strength)}</span>
+      </button>`).join("");
+
+    const chainPanels = (ui.chain || []).map((layer) => `<div class="chain-panel" hidden data-panel="${esc(layer.layer || "")}">
+      <b>${esc(layer.label)}</b> · ${esc(layer.strength)} · ${esc(layer.family || "")}
+      ${layer.weakest ? " · 当前最薄弱环节" : ""}
+      <p>${(layer.unresolved || []).map(esc).join("；") || "这一层暂无额外待验证说明"}</p>
+      ${evidenceBlock(layer.evidence, "查看证据")}
+    </div>`).join("");
+
+    const monitorRows = (ui.monitor || []).map((row) => `<tr>
+      <td>${esc(row.item)}</td>
+      <td>${esc(row.current_state)}</td>
+      <td>${esc(row.next_check)}</td>
+      <td class="muted">${esc(row.swing)}</td>
+    </tr>`).join("") || '<tr><td colspan="4" class="muted">跟踪项尚未建立</td></tr>';
+
     const treeHtml = (tree.branches || []).map((branch) => {
-      const nodes = (branch.nodes || []).map((node) => {
-        return `<details class="node" data-node="${esc(node.assumption_id || "")}">
-          <summary><b>${esc(node.statement || "Missing")}</b><br>
-            ${pill(node.status, node.status)} ${pill(node.thesis_role, node.thesis_role)}
-            <span class="counts">conf ${miss(node.confidence)} · support ${node.supporting_count ?? 0} · oppose ${node.opposing_count ?? 0} · unresolved ${node.unresolved_count ?? 0}</span>
-          </summary>
-          ${evidenceBlock(node.supporting, "Supporting")}
-          ${evidenceBlock(node.opposing, "Opposing")}
-          <p class="muted">Next verification: ${miss(node.next_verification)}</p>
-          <p class="muted">Invalidation: ${miss(node.invalidation)}</p>
-          ${(node.unresolved || []).length ? `<p class="muted">Unresolved: ${esc((node.unresolved || []).join("; "))}</p>` : ""}
-        </details>`;
-      }).join("") || `<p class="missing">No assumptions in this branch.</p>`;
-      return `<div><h3>${esc(branch.id)}. ${esc(branch.title)}</h3>${nodes}</div>`;
+      const nodes = (branch.nodes || []).map((node) => `<details class="node">
+        <summary><b>${esc(node.statement || "尚未解决")}</b> ${pill(node.status_label || node.status, node.status)} ${pill(node.role_label || node.thesis_role, node.thesis_role)}
+          <span class="muted">支持 ${node.supporting_count ?? 0} · 反证 ${node.opposing_count ?? 0} · 待验证 ${node.unresolved_count ?? 0}</span>
+        </summary>
+        ${evidenceBlock(node.supporting, "支持证据")}
+        ${evidenceBlock(node.opposing, "反证")}
+        <p class="muted">下次验证：${miss(node.next_verification)}</p>
+        <p class="muted">失效条件：${miss(node.invalidation)}</p>
+        ${(node.unresolved_zh || node.unresolved || []).length ? `<p class="muted">${esc((node.unresolved_zh || node.unresolved).join("；"))}</p>` : ""}
+      </details>`).join("") || '<p class="missing">这一支没有假设</p>';
+      return `<div><h3>${esc(branch.title_zh || branch.title)}</h3>${nodes}</div>`;
     }).join("");
 
-    const ledger = (data.commitment_ledger || []).map((row) => `<tr>
-      <td>${esc(row.commitment || "Missing")}${row.trace === "UNVERIFIED" ? ' <span class="unverified">UNVERIFIED</span>' : ""}</td>
+    const ledgerRows = (data.commitment_ledger || []).map((row) => `<tr>
+      <td>${esc(row.commitment || "尚未解决")}${row.trace === "UNVERIFIED" ? ' <span class="unverified">来源未追溯</span>' : ""}</td>
       <td>${miss(row.date)}</td>
       <td>${sourceLink(row)}</td>
-      <td>${miss(row.time_horizon)}</td>
-      <td>${miss(row.metric)}</td>
+      <td>${miss(row.time_horizon_zh || row.time_horizon)}</td>
+      <td>${miss(row.metric_zh || row.metric)}</td>
       <td>${miss(row.stated_value_or_range)}</td>
-      <td>${pill(row.status || row.current_status, row.status || row.current_status)}</td>
-      <td>${pill(row.delivery_status || row.status, row.delivery_status || row.status)}</td>
-      <td>${miss(row.next_check)}</td>
-    </tr>`).join("") || `<tr><td colspan="9" class="muted">Missing / Unresolved</td></tr>`;
+      <td>${pill(row.status_zh || "待验证", row.status)}</td>
+      <td>${miss(row.next_check_zh || row.next_check)}</td>
+    </tr>`).join("") || '<tr><td colspan="8" class="muted">尚未建立承诺记录</td></tr>';
 
     const hist = (delivery.history || []).map((row) => {
       const g = row.guidance || {};
       const a = row.actual || {};
+      const outcome = row.outcome === "missed" ? "miss" : (row.outcome || "unscored");
+      const outcomeZh = { beat: "超预期", met: "符合预期", miss: "低于预期", unscored: "未评分" }[outcome] || outcome;
       return `<tr>
-        <td>${esc(row.quarter || row.period || "Missing")}</td>
-        <td>${esc(g.kind || "insufficient_data")}${g.eps_estimate != null ? ` · EPS est ${esc(g.eps_estimate)}` : ""}${g.company_text ? `<div class="muted">${esc(g.company_text)}</div>` : ""}</td>
-        <td>${a.eps != null ? `EPS ${esc(a.eps)}` : "Missing"}${a.revenue != null ? `<div class="muted">rev ${money(a.revenue)}</div>` : ""}</td>
-        <td>${pill(outcomeLabel(row.outcome), outcomeLabel(row.outcome))}</td>
-        <td>${row.guidance_revision && row.guidance_revision !== "unchanged" ? pill("revised", "revised") + ` ${esc(row.guidance_revision)}` : "—"}</td>
+        <td>${esc(row.quarter || row.period || "待补")}</td>
+        <td>${esc(g.kind === "insufficient_data" ? "数据不足" : (g.kind || "数据不足"))}${g.eps_estimate != null ? ` · EPS ${esc(g.eps_estimate)}` : ""}</td>
+        <td>${a.eps != null ? `EPS ${esc(a.eps)}` : "待补"}</td>
+        <td>${pill(outcomeZh, outcome)}</td>
+        <td>${row.guidance_revision && row.guidance_revision !== "unchanged" ? "有修订" : "—"}</td>
         <td>${miss(row.source)}</td>
       </tr>`;
-    }).join("") || `<tr><td colspan="6" class="muted">Missing / Unresolved</td></tr>`;
-
-    const chainHtml = (chain.layers || []).map((layer, idx, arr) => {
-      const weak = layer.weakest ? " weak" : "";
-      return `<div class="layer">
-        <div class="rail"><i class="dot"></i>${idx < arr.length - 1 ? '<i class="line"></i>' : ""}</div>
-        <div class="layer-body${weak}">
-          <b>${esc(layer.label || layer.layer)}</b>
-          ${layer.weakest ? " " + pill("weakest layer", "weak") : ""}
-          <div class="muted">confidence ${miss(layer.confidence)} · family ${miss(layer.evidence_family)} · bottleneck ${layer.bottleneck ? "yes" : "no"}</div>
-          <div class="muted">unresolved: ${esc((layer.unresolved || []).join("; ") || "none")}</div>
-          ${evidenceBlock(layer.evidence, "Layer evidence")}
-        </div>
-      </div>`;
-    }).join("") || `<p class="missing">Causal chain Missing / Unresolved</p>`;
-
-    const bridgeHtml = [`<div class="layer-body"><span class="kicker">Current revenue</span><b>${money(bridge.current_revenue)}</b><div class="muted">${esc(bridge.mode || "")} · ${esc(bridge.origin || "")}</div></div>`]
-      .concat((bridge.lines || []).map((line) => `<div class="layer-body"><span class="kicker">${esc(line.label || line.family || "unknown / missing")}</span><b>${line.latest_print_revenue != null ? money(line.latest_print_revenue) : "Missing / estimated"}</b><div class="muted">${esc(line.origin || "")}${line.share != null ? ` · share ${esc(line.share)}` : ""}</div></div>`))
-      .join('<div class="muted" style="margin:2px 8px">↓</div>');
-
-    const sens = (implied.sensitivity || []).map((row) => `<tr>
-      <td>${esc(row.multiple)}${row.is_base_multiple ? " (base)" : ""}</td>
-      <td>${miss(row.implied_forward_eps)}</td>
-      <td>${miss(row.implied_2y_eps_cagr_display || pct(row.implied_2y_eps_cagr))}</td>
-    </tr>`).join("") || `<tr><td colspan="3" class="muted">Missing / Unresolved</td></tr>`;
-
-    const group = (title, rows) => `<div class="cell"><h3>${esc(title)}</h3>${
-      (rows || []).length
-        ? rows.map((row) => `<div><p>${esc(row.text || "")} ${row.trace === "UNVERIFIED" ? '<span class="unverified">UNVERIFIED</span>' : ""}</p>${evidenceBlock(row.evidence, "Evidence")}</div>`).join("")
-        : '<p class="missing">Missing / Unresolved</p>'
-    }</div>`;
-
-    const monitors = (data.monitoring || []).map((row) => `<div class="cell">
-      <b>${esc(row.item || "Missing")}</b>
-      <p>Current: ${miss(row.current_state)}</p>
-      <p>Next check: ${miss(row.next_check)}</p>
-      <p class="muted">Strengthen: ${miss(row.strengthen)}</p>
-      <p class="muted">Weaken: ${miss(row.weaken)}</p>
-      <p class="muted">Break: ${miss(row.break_condition || row.break)}</p>
-    </div>`).join("") || `<p class="missing">Monitoring Missing / Unresolved</p>`;
+    }).join("") || '<tr><td colspan="6" class="muted">兑现记录尚未建立</td></tr>';
 
     const versions = (data.thesis_history || []).map((row) => `<details class="node">
-      <summary><b>v${esc(row.version)}</b> · ${esc(row.what_changed || "")} · conf ${miss(row.confidence)}</summary>
+      <summary>第 ${esc(row.version)} 版 · ${esc(row.what_changed === "initial thesis" ? "初始逻辑" : (row.what_changed === "thesis version incremented" ? "逻辑版本更新" : row.what_changed || ""))}</summary>
       <p>${esc(row.core_thesis || "")}</p>
-      <p class="muted">Assumptions strengthened: ${esc((row.strengthened_assumptions || []).join(", ") || "none")} · weakened: ${esc((row.weakened_assumptions || []).join(", ") || "none")}</p>
-      <p class="muted">Valuation: ${esc(JSON.stringify(row.valuation_change || "n/a"))}</p>
-      <p class="muted">Confidence change: ${esc(JSON.stringify(row.confidence_change || "n/a"))}</p>
-    </details>`).join("") || `<p class="missing">Thesis history Missing / Unresolved</p>`;
+    </details>`).join("") || '<p class="missing">尚无版本历史</p>';
 
-    const valRow = (label, key) => {
-      const b = cases.bear || {};
-      const m = cases.market_implied || {};
-      const ba = cases.base || {};
-      const bu = cases.bull || {};
-      const pick = (row) => row[key];
-      return `<tr><th>${esc(label)}</th><td>${miss(pick(b))}</td><td>${miss(pick(m))}</td><td>${miss(pick(ba))}</td><td>${miss(pick(bu))}</td></tr>`;
-    };
+    const mark = (ok, yes, no) => `<span class="${ok ? "yes" : "no"}">${ok ? yes : no}</span>`;
 
     document.getElementById("root").innerHTML = `
-      <section id="hero">
-        <div class="kicker">${esc(data.legal_name || data.ticker)} · ${esc(data.template_id || "")}</div>
-        <h1>Core thesis</h1>
-        <p class="thesis">${miss(hero.core_thesis)}</p>
-        ${hero.core_thesis_full && hero.core_thesis_full !== hero.core_thesis ? `<details class="ev"><summary>Full stored thesis</summary><p>${esc(hero.core_thesis_full)}</p></details>` : ""}
-        <div class="banner">
-          <div>Direct issuer cross-check: <span class="${hero.customer_direct ? "yes" : "zero"}">${esc(hero.customer_direct ?? "Missing")}</span></div>
-          <div>Category cross-check: <span class="${hero.customer_category ? "yes" : "zero"}">${esc(hero.customer_category ?? "Missing")}</span></div>
-          <div>Industry demand confirmation: <span class="${hero.industry_demand ? "yes" : "zero"}">${hero.industry_demand ? "有" : "无"}</span></div>
+      <section id="conclusion">
+        <div class="ident">
+          <div>${esc(data.ticker)} <b>${esc(data.legal_name || data.ticker)}</b></div>
+          <div>当前股价 <b>${hero.spot != null ? esc(Number(hero.spot).toFixed(2)) : "待补"}</b></div>
+          <div>逻辑可信度 <b>${miss(ui.confidence_band)}${ui.confidence_value != null ? ` · ${esc(ui.confidence_value)}` : ""}</b></div>
+          <div>估值可靠性 <b>${esc(ui.valuation_reliability || "待补")}</b>${ui.valuation_why ? `<div class="muted">${esc(ui.valuation_why)}</div>` : ""}</div>
         </div>
-        <div class="grid g4">
-          <div class="cell"><span>Thesis confidence</span><b>${miss(hero.confidence)}</b></div>
-          <div class="cell"><span>Valuation status</span><b>${pill(hero.valuation_status, hero.valuation_status)}</b>
-            ${(hero.why_provisional || []).length ? `<div class="muted">because ${(hero.why_provisional || []).map(esc).join("; ")}</div>` : ""}
-            ${(valuation.why_provisional || []).length && !(hero.why_provisional || []).length ? `<div class="muted">because ${(valuation.why_provisional || []).map(esc).join("; ")}</div>` : ""}
-          </div>
-          <div class="cell"><span>Weakest causal layer</span><b>${miss(hero.weakest_layer)}</b></div>
-          <div class="cell"><span>Spot</span><b>${hero.spot != null ? esc(Number(hero.spot).toFixed(2)) : miss(hero.spot)}</b></div>
+        <h1>${esc(ui.headline || "投资逻辑仍待补全")}</h1>
+        <div class="cards3">
+          <div class="card"><h3>为什么值得关注</h3><p>${esc(ui.why_watch || "待补")}</p></div>
+          <div class="card"><h3>最大风险</h3><p>${esc(ui.biggest_risk || "待补")}</p></div>
+          <div class="card"><h3>下一步验证</h3><p>${esc(ui.next_check || "下次官方更新")}</p></div>
         </div>
-        <div class="views">
-          <div><span class="kicker">Short</span><p>${clip(hero.short_term_view)}</p></div>
-          <div><span class="kicker">Mid</span><p>${clip(hero.mid_term_view)}</p></div>
-          <div><span class="kicker">Long</span><p>${clip(hero.long_term_view)}</p></div>
-        </div>
-        <div class="grid g4" id="hero-cases">
-          ${caseCell("Bear", cases.bear)}
-          ${caseCell("Market-implied", cases.market_implied)}
-          ${caseCell("Base", cases.base)}
-          ${caseCell("Bull", cases.bull)}
-        </div>
-        <div class="grid g3" style="margin-top:10px">
-          <div class="cell"><span>Strongest assumption</span><b>${miss((hero.strongest_assumption || {}).statement)}</b><div class="muted">${esc((hero.strongest_assumption || {}).status || "")}</div></div>
-          <div class="cell highlight"><span>Weakest assumption</span><b>${miss((hero.weakest_assumption || {}).statement)}</b><div class="muted">${esc(((hero.weakest_assumption || {}).unresolved || []).join("; "))}</div></div>
-          <div class="cell"><span>Biggest unresolved gap</span><b>${miss(hero.biggest_unresolved_gap)}</b></div>
-        </div>
-        <div class="cell" style="margin-top:10px">
-          <span>Most important assumptions</span>
-          <ol class="top3">${
-            (hero.top_assumptions || []).length
-              ? (hero.top_assumptions || []).slice(0, 3).map((row) => `<li>${esc(row.statement || "Missing")} <span class="muted">${esc(row.status || "")} · ${esc(row.role || "")}</span></li>`).join("")
-              : "<li class='muted'>Missing / Unresolved</li>"
-          }</ol>
-        </div>
+        <details class="deep" id="full-thesis"><summary>完整研究逻辑</summary>
+          <p>${esc(hero.core_thesis || "")}</p>
+          ${hero.core_thesis_full && hero.core_thesis_full !== hero.core_thesis ? `<p class="muted">${esc(hero.core_thesis_full)}</p>` : ""}
+          <p class="muted">短期：${esc(hero.short_term_view || "")}</p>
+          <p class="muted">中期：${esc(hero.mid_term_view || "")}</p>
+          <p class="muted">长期：${esc(hero.long_term_view || "")}</p>
+        </details>
       </section>
 
-      <section id="tree">
-        <h2>Assumption tree</h2>
-        <p class="sub">Core thesis: ${miss(hero.core_thesis)}</p>
-        <div class="grid g2">${treeHtml}</div>
-      </section>
-
-      <section id="ledger">
-        <h2>Commitment ledger</h2>
-        <table><thead><tr><th>Commitment</th><th>Date</th><th>Source</th><th>Horizon</th><th>Metric</th><th>Value / range</th><th>Status</th><th>Delivery</th><th>Next check</th></tr></thead><tbody>${ledger}</tbody></table>
-      </section>
-
-      <section id="delivery">
-        <h2>Management delivery history</h2>
-        <p>Scored: ${esc((delivery.scored_quarters || []).join(", ") || "none")} · Unscored: ${esc((delivery.unscored_quarters || []).join(", ") || "none")}</p>
-        <p class="muted">${esc(delivery.credibility || delivery.summary || "")}</p>
-        <table><thead><tr><th>Quarter</th><th>Guidance</th><th>Actual</th><th>Outcome</th><th>Revision</th><th>Source</th></tr></thead><tbody>${hist}</tbody></table>
-      </section>
-
-      <section id="customer">
-        <h2>Customer-side validation</h2>
-        <div class="banner">
-          <div>Direct issuer cross-check: <span class="${customer.direct_issuer_cross_check ? "yes" : "zero"}">${esc(customer.direct_issuer_cross_check ?? "Missing")}</span></div>
-          <div>Category cross-check: <span class="${customer.category_cross_check ? "yes" : "zero"}">${esc(customer.category_cross_check ?? "Missing")}</span></div>
-          <div>Industry demand confirmation: <span class="${customer.industry_demand_confirmation ? "yes" : "zero"}">${customer.industry_demand_confirmation ? "有" : "无"}</span></div>
+      <section id="judgment">
+        <h2>投资判断</h2>
+        <div class="cases">
+          ${caseCol("bear")}${caseCol("market_implied")}${caseCol("base")}${caseCol("bull")}
         </div>
-        <p>${miss(customer.conclusion)}</p>
-        <p class="muted">Industry demand can be real without confirming a named contract with ${esc(data.ticker)}.</p>
-        <div class="grid g3">
-          <div class="cell"><h3>Issuer claims</h3>${evidenceBlock(customer.issuer_management, "Issuer")}</div>
-          <div class="cell"><h3>Independent customer</h3>${evidenceBlock(customer.independent_customer, "Customer")} ${evidenceBlock(customer.industry_demand_only, "Industry-demand only")}</div>
-          <div class="cell"><h3>Industry third-party</h3>${evidenceBlock(customer.industry_third_party, "Industry")}</div>
-        </div>
+        <p class="note">${esc(ui.judgment_note || "")}</p>
+        <p class="muted">目标价 / EPS / 增长 / 估值倍数。增长在市场隐含一列是不同估值倍数下的反推区间，不是单一增长率。</p>
       </section>
 
-      <section id="bridge">
-        <h2>Revenue bridge</h2>
-        ${bridge.mode === "top_down_range" || bridge.origin === "estimated" ? '<p class="missing">top_down_range / estimated — official segment mix missing, no invented split.</p>' : ""}
-        ${bridgeHtml}
-        <div class="grid g4" style="margin-top:10px">
-          ${caseCell("Bear", cases.bear)}
-          ${caseCell("Market-implied", cases.market_implied)}
-          ${caseCell("Base", cases.base)}
-          ${caseCell("Bull", cases.bull)}
-        </div>
+      <section id="assumptions">
+        <h2>三个关键假设</h2>
+        <div class="assumptions">${keyHtml}</div>
+        <p><button class="text-btn" type="button" data-open="tree-detail">查看全部假设</button></p>
       </section>
 
       <section id="chain">
-        <h2>Demand → deployment causal chain</h2>
-        <p>Weakest layer = <b>${miss(chain.weakest_link)}</b></p>
-        <p class="muted">Keyword hits on customer filings are not a named contract with ${esc(data.ticker)}. ${esc(chain.note || "")}</p>
-        <div class="chain">${chainHtml}</div>
-      </section>
-
-      <section id="implied">
-        <h2>Market-implied growth under different multiple assumptions</h2>
-        <p>Spot ${implied.spot != null ? esc(Number(implied.spot).toFixed(2)) : miss(implied.spot)} · Market-implied range <b>${miss(implied.market_implied_range_display)}</b> · vs PM Base <b>${miss(implied.vs_pm_base)}</b> · vs PM Bull <b>${miss(implied.vs_pm_bull)}</b></p>
-        <p>${miss(implied.pm_wording)}</p>
-        <div class="grid g2">
-          <table class="matrix"><thead><tr><th>Multiple</th><th>Implied forward EPS</th><th>Implied 2y EPS CAGR</th></tr></thead><tbody>${sens}</tbody></table>
-          <div class="cell">
-            <p>PM Base growth: <b>${pct(implied.pm_base_growth)}</b></p>
-            <p>PM Bull growth: <b>${pct(implied.pm_bull_growth)}</b></p>
-            <p class="muted">The 33x row is market_implied_under_base_multiple, not the unique market growth rate.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="reaction">
-        <h2>Why did ${esc(data.ticker)} fall despite positive fundamentals?</h2>
-        <p class="muted">${miss(reaction.summary)}${reaction.applicable === false ? " (not a clean strong-print / down-tape case)" : ""}</p>
-        <div class="grid g3">
-          ${group("Confirmed", reaction.confirmed)}
-          ${group("Plausible but unconfirmed", reaction.plausible_unconfirmed)}
-          ${group("Unresolved", reaction.unresolved)}
-        </div>
-      </section>
-
-      <section id="valuation">
-        <h2>Valuation</h2>
-        <p>Status ${pill(valuation.status, valuation.status)} ${
-          (valuation.why_provisional || []).length
-            ? "because " + esc((valuation.why_provisional || []).join("; "))
-            : ""
-        }</p>
-        <table class="valtable">
-          <thead><tr><th></th><th>Bear</th><th>Market-implied</th><th>Base</th><th>Bull</th></tr></thead>
-          <tbody>
-            ${valRow("Growth", "growth_display")}
-            ${valRow("Margin", "margin")}
-            ${valRow("EPS", "eps")}
-            ${valRow("Multiple", "multiple")}
-            ${valRow("Target", "target")}
-            ${valRow("Origin", "origin")}
-            ${valRow("Confidence", "confidence")}
-          </tbody>
-        </table>
+        <h2>需求兑现链条</h2>
+        <p class="muted">最弱环节：${esc(ui.weakest_layer || "尚未判断")}。点击节点查看证据。</p>
+        <div class="chain-row">${chainHtml}</div>
+        ${chainPanels}
       </section>
 
       <section id="monitor">
-        <h2>Monitoring</h2>
-        <div class="grid g2">${monitors}</div>
+        <h2>下一步重点跟踪</h2>
+        <table class="monitor">
+          <thead><tr><th>观察项</th><th>当前状态</th><th>下次验证</th><th>增强 / 削弱</th></tr></thead>
+          <tbody>${monitorRows}</tbody>
+        </table>
       </section>
 
-      <section id="history">
-        <h2>Thesis version history</h2>
-        ${versions}
+      <section id="customer-brief">
+        <h2>客户侧独立验证</h2>
+        <div class="checks">
+          <div class="check"><span>行业需求</span>${mark(cust.industry, "已确认", "尚未确认")}</div>
+          <div class="check"><span>独立客户公开文件支持该公司具体合同</span>${mark(cust.named, "已确认", "尚未确认")}</div>
+          <div class="check"><span>直接客户点名该公司</span>${mark(cust.direct, "已发现", "尚未发现")}</div>
+        </div>
+        <p>${esc(cust.summary || "")}</p>
       </section>
 
       <section>
-        <h2>Still missing / unresolved</h2>
-        <p>${missing}</p>
+        <h2>管理层承诺与兑现</h2>
+        <div class="summary-strip">
+          <span>承诺 <b>${esc(ledgerSum.total ?? 0)}</b> 条</span>
+          <span>已兑现 <b>${esc(ledgerSum.delivered ?? 0)}</b></span>
+          <span>待验证 <b>${esc(ledgerSum.pending ?? 0)}</b></span>
+          <span>延迟 <b>${esc(ledgerSum.delayed ?? 0)}</b></span>
+          <span>失效 <b>${esc(ledgerSum.broken ?? 0)}</b></span>
+        </div>
+        <p class="muted">下一次重要验证：${esc(ledgerSum.next || "下次财报对照承诺")}</p>
+        <p>最近可评分季度：<b>${esc(deliv.beat ?? 0)} 次超预期 / ${esc(deliv.missed ?? 0)} 次低于预期</b>（另有符合预期 ${esc(deliv.met ?? 0)}）</p>
+        <p class="muted">${esc(deliv.note || "")}</p>
       </section>
+
+      <details class="deep" id="deep">
+        <summary>查看详细研究</summary>
+        <details class="block" id="tree-detail"><summary>查看全部假设</summary>${treeHtml || '<p class="missing">假设树尚未建立</p>'}</details>
+        <details class="block" id="ledger-detail"><summary>查看全部承诺</summary>
+          <table class="plain"><thead><tr><th>承诺</th><th>日期</th><th>来源</th><th>期限</th><th>指标</th><th>数值</th><th>状态</th><th>下次验证</th></tr></thead><tbody>${ledgerRows}</tbody></table>
+        </details>
+        <details class="block" id="delivery-detail"><summary>查看兑现记录</summary>
+          <p class="muted">已评分：${esc((delivery.scored_quarters || []).join("、") || "无")} · 未评分：${esc((delivery.unscored_quarters || []).join("、") || "无")}</p>
+          <table class="plain"><thead><tr><th>季度</th><th>指引</th><th>实际</th><th>结果</th><th>修订</th><th>来源</th></tr></thead><tbody>${hist}</tbody></table>
+        </details>
+        <details class="block"><summary>查看客户侧证据</summary>
+          ${evidenceBlock(customer.issuer_management, "公司管理层")}
+          ${evidenceBlock(customer.independent_customer, "独立客户来源")}
+          ${evidenceBlock(customer.industry_third_party, "行业第三方")}
+          ${evidenceBlock(customer.industry_demand_only, "仅支持行业需求")}
+        </details>
+        <details class="block"><summary>查看收入增长来源</summary>
+          <p>${bridge.mode === "top_down_range" || bridge.origin === "estimated" ? "自上而下区间 / 估算 — 缺少官方分部结构，不补假拆分。" : ""}</p>
+          <p>当前收入 ${money(bridge.current_revenue)}</p>
+          ${(bridge.lines || []).map((line) => `<p>${esc(line.label || "未知 / 缺失")} · ${line.latest_print_revenue != null ? money(line.latest_print_revenue) : "待补 / 估算"} · ${esc(line.origin === "estimated" ? "估算" : (line.origin || ""))}</p>`).join("")}
+        </details>
+        <details class="block"><summary>为什么基本面不错，股价却下跌？</summary>
+          <p>${miss(reaction.summary)}${reaction.applicable === false ? "（这一窗口不是典型的好财报却下跌）" : ""}</p>
+          <p><b>已确认</b></p>${(reaction.confirmed || []).map((row) => `<p>${esc(row.text || "")}${evidenceBlock(row.evidence, "查看证据")}</p>`).join("") || '<p class="missing">尚未确认</p>'}
+          <p><b>可能但未证实</b></p>${(reaction.plausible_unconfirmed || []).map((row) => `<p>${esc(row.text || "")}${evidenceBlock(row.evidence, "查看证据")}</p>`).join("") || '<p class="missing">暂无</p>'}
+          <p><b>尚未解决</b></p>${(reaction.unresolved || []).map((row) => `<p>${esc(row.text || "")}${evidenceBlock(row.evidence, "查看证据")}</p>`).join("") || '<p class="missing">暂无</p>'}
+        </details>
+        <details class="block"><summary>查看估值细节</summary>
+          <p>估值可靠性：${esc(ui.valuation_reliability || "")} ${esc(ui.valuation_why || "")}</p>
+          <p>${esc(implied.title || "当前股价隐含的增长预期")} · 区间 ${esc(implied.market_implied_range_display || "待补")}</p>
+          <table class="plain"><thead><tr><th>估值倍数</th><th>隐含远期 EPS</th><th>隐含两年 EPS 复合增速</th></tr></thead>
+          <tbody>${(implied.sensitivity || []).map((row) => `<tr><td>${esc(row.multiple)}${row.is_base_multiple ? "（基准）" : ""}</td><td>${miss(row.implied_forward_eps)}</td><td>${miss(row.implied_2y_eps_cagr_display)}</td></tr>`).join("") || '<tr><td colspan="3">待补</td></tr>'}</tbody></table>
+          <p class="muted">基准一列的增长是在基准估值倍数下反推，不是市场唯一隐含增速。</p>
+        </details>
+        <details class="block"><summary>查看投资逻辑变化历史</summary>${versions}</details>
+        <details class="block"><summary>尚未解决的问题</summary><p>${esc((ui.missing || []).join("；") || "未另列")}</p></details>
+      </details>
     `;
+
+    document.querySelectorAll("[data-open]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const el = document.getElementById(btn.getAttribute("data-open"));
+        if (!el) return;
+        const deep = document.getElementById("deep");
+        if (deep) deep.open = true;
+        el.open = true;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    document.querySelectorAll(".chain-node").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-layer");
+        document.querySelectorAll(".chain-panel").forEach((panel) => {
+          panel.hidden = panel.getAttribute("data-panel") !== id;
+        });
+      });
+    });
   }
 
   function boot() {
@@ -358,19 +293,19 @@
     nav.innerHTML = DEFAULTS.map((item) =>
       `<a href="/research/${item}" class="${item === ticker ? "on" : ""}">${item}</a>`
     ).join("");
-    document.title = `Research Review · ${ticker}`;
+    document.title = `投资研究 · ${ticker}`;
     fetch(`/api/research/${encodeURIComponent(ticker)}/review`)
       .then((res) => {
-        if (!res.ok) throw new Error(`review ${res.status}`);
+        if (!res.ok) throw new Error(`无法读取研究结论 ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        document.getElementById("rr-status").textContent = `${data.ticker || ticker} · ${(data.hero || {}).valuation_status || "loaded"}`;
+        document.getElementById("rr-status").textContent = `${data.ticker || ticker} · ${((data.ui || {}).valuation_reliability) || "已载入"}`;
         render(data);
       })
       .catch((err) => {
-        document.getElementById("rr-status").textContent = "error";
-        document.getElementById("root").innerHTML = `<p class="missing">Research review unavailable. ${esc(err.message || "")}</p>`;
+        document.getElementById("rr-status").textContent = "出错";
+        document.getElementById("root").innerHTML = `<p class="missing">研究页暂时无法打开。${esc(err.message || "")}</p>`;
       });
   }
 

@@ -11,29 +11,29 @@ from .relevance import assumption_kind
 
 
 LAYER_LABELS = {
-    "customer_demand": "Customer Demand",
-    "customer_capex": "Customer Capex",
-    "site_power": "Data Center / Power",
-    "product_deployments": "Deployment",
-    "networking": "Networking",
-    "foundry_packaging": "Foundry / Packaging",
-    "issuer_revenue": "Issuer Revenue",
-    "commodity_price": "Commodity Price",
-    "production_volume": "Production Volume",
-    "project_capex": "Project Capex",
-    "cash_generation": "Cash Generation",
-    "end_demand": "End Demand",
-    "conversion": "Conversion",
-    "supply": "Supply",
+    "customer_demand": "客户需求",
+    "customer_capex": "客户资本开支",
+    "site_power": "数据中心 / 电力",
+    "product_deployments": "部署",
+    "networking": "网络",
+    "foundry_packaging": "供应链",
+    "issuer_revenue": "公司收入",
+    "commodity_price": "商品价格",
+    "production_volume": "产量",
+    "project_capex": "项目资本开支",
+    "cash_generation": "现金创造",
+    "end_demand": "终端需求",
+    "conversion": "转化",
+    "supply": "供给",
 }
 
 FAMILY_LABELS = {
-    "growth_end_market": "AI / growth end-market",
-    "core_product": "non-AI / core semiconductor",
-    "software_recurring": "infrastructure software",
-    "networking": "networking",
-    "production_volume": "production volume",
-    "commodity_price": "commodity price",
+    "growth_end_market": "AI / 终端需求增长",
+    "core_product": "核心半导体业务",
+    "software_recurring": "软件经常性收入",
+    "networking": "网络",
+    "production_volume": "产量",
+    "commodity_price": "商品价格",
 }
 
 
@@ -120,19 +120,27 @@ def _case_brief(case: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def _ledger_row(row: dict[str, Any]) -> dict[str, Any]:
+    from .review_copy import _horizon_zh, _metric_zh, zh_gap, zh_origin, zh_status
+
     status = row.get("current_status") or row.get("status") or "unresolved"
+    source = row.get("source")
     return {
         "commitment": row.get("commitment"),
         "date": row.get("date"),
-        "source": row.get("source"),
+        "source": source,
+        "source_zh": zh_origin(source),
         "source_url": row.get("source_url"),
         "time_horizon": row.get("time_horizon"),
+        "time_horizon_zh": _horizon_zh(row.get("time_horizon")),
         "metric": row.get("metric"),
+        "metric_zh": _metric_zh(row.get("metric")),
         "stated_value_or_range": row.get("stated_value_or_range"),
         "status": status,
+        "status_zh": zh_status(status),
         "delivery_status": row.get("delivery_status") or status,
         "next_check": row.get("next_check"),
-        "trace": "ok" if (row.get("source") or row.get("source_url") or row.get("source_id")) else "UNVERIFIED",
+        "next_check_zh": zh_gap(row.get("next_check")),
+        "trace": "ok" if (source or row.get("source_url") or row.get("source_id")) else "UNVERIFIED",
     }
 
 
@@ -488,7 +496,7 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
     compact, full_thesis = _compact_thesis(thesis, golden)
     spot = _spot(profile.get("last_close") or valuation.get("spot_price"))
 
-    return {
+    payload = {
         "ticker": symbol,
         "legal_name": profile.get("legal_name") or symbol,
         "template_id": pack.get("template_id"),
@@ -546,7 +554,7 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
             "note": chain.get("note"),
         },
         "market_implied": {
-            "title": "Market-implied growth under different multiple assumptions",
+            "title": "当前股价隐含的增长预期",
             "spot": spot,
             "market_implied_under_base_multiple": implied.get("market_implied_under_base_multiple"),
             "sensitivity": implied.get("sensitivity") or [],
@@ -570,3 +578,7 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
         "missing": missing,
         "quality": snapshot.get("research_quality_axes") or thesis.get("research_quality") or {},
     }
+    from .review_copy import build_review_ui
+
+    payload["ui"] = build_review_ui(payload)
+    return payload

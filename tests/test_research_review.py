@@ -68,10 +68,12 @@ def test_research_review_payload_from_fixtures(monkeypatch) -> None:
         assert "history" in body["delivery_history"]
         assert "direct_issuer_cross_check" in body["customer_side"]
         assert "industry_demand_confirmation" in body["customer_side"]
-        assert body["market_implied"]["title"] == "Market-implied growth under different multiple assumptions"
+        assert body["market_implied"]["title"] == "当前股价隐含的增长预期"
         assert "Market implies 10% growth" not in json.dumps(body)
-        assert "only prices" not in json.dumps(body["market_implied"]).lower()
-        assert "top_assumptions" in hero
+        assert body["ui"]["headline"]
+        assert len(body["ui"]["key_assumptions"]) == 3
+        assert "customer_capex" not in body["ui"]["headline"]
+        assert "management_guidance" not in json.dumps(body["ui"])
         blob = json.dumps(body, default=str).lower()
         assert "30gw" not in blob
         assert "if ticker ==" not in blob
@@ -104,16 +106,18 @@ def test_research_review_sparse_ticker_does_not_500(monkeypatch) -> None:
 
 
 def test_build_research_review_is_generic() -> None:
-    src = Path("src/stock_pm/research/review_view.py").read_text(encoding="utf-8")
-    assert "30GW" not in src
-    assert "broadcom" not in src.lower()
-    assert "if ticker ==" not in src
+    for rel in ("src/stock_pm/research/review_view.py", "src/stock_pm/research/review_copy.py"):
+        src = Path(rel).read_text(encoding="utf-8")
+        assert "30GW" not in src
+        assert "broadcom" not in src.lower()
+        assert "if ticker ==" not in src
     svc = service_with_fixture("AVGO", "avgo.json")
     run_new_ticker_research(svc, "AVGO", max_depth=2, max_tasks=16, adjudicate=True)
     payload = build_research_review(svc, "AVGO")
     assert payload["causal_chain"]["layers"]
     assert payload["delivery_history"]["history"] is not None
     assert isinstance(payload["customer_side"]["direct_issuer_cross_check"], int)
+    assert payload["ui"]["key_assumptions"]
 
 
 def test_review_static_has_no_hardcoded_thesis() -> None:
@@ -124,9 +128,10 @@ def test_review_static_has_no_hardcoded_thesis() -> None:
         assert "Broadcom" not in text
         assert "Market implies 10% growth" not in text
     js = (static / "research_review.js").read_text(encoding="utf-8")
-    assert "Market-implied growth under different multiple assumptions" in js
-    assert "Direct issuer cross-check" in js
-    assert "Industry demand confirmation" in js
+    assert "查看详细研究" in js
+    assert "三个关键假设" in js
+    assert "客户侧独立验证" in js
     html = (static / "research_review.html").read_text(encoding="utf-8")
     assert "research_review.js" in html
-    assert "Core Thesis" not in html  # conclusions are filled from live data, not baked into the shell
+    assert "lang=\"zh-CN\"" in html
+    assert "Core Thesis" not in html
