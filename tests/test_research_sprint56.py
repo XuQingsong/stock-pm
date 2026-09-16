@@ -8,7 +8,8 @@ import pytest
 from stock_pm.research.consistency import audit_pm_reasoning
 from stock_pm.research.errors import FixtureRejectedError
 from stock_pm.research.memory import InMemoryResearchStore
-from stock_pm.research.pm_judge import record_pm_judgment, thesis_diff
+from stock_pm.research.pm_judge import build_pm_judgment, thesis_diff
+from stock_pm.research.quality import assess_research_quality_axes
 from stock_pm.research.service import ResearchService
 from stock_pm.research.snapshot import (
     apply_missing_spot_guard,
@@ -262,3 +263,82 @@ def test_freeze_live_snapshot_marks_invalid_on_ticker_mismatch() -> None:
     )
     assert frozen["snapshot_status"] == "invalid"
     assert any("pack ticker" in item for item in frozen["invalid_reasons"])
+
+
+def _rich_pack() -> dict:
+    return {
+        "ticker": "AVGO",
+        "template_id": "semiconductor",
+        "company_profile": {
+            "legal_name": "Broadcom Inc",
+            "revenue_ttm": 87_041_000_000,
+            "eps_ttm": 8.57,
+            "last_close": 344.82,
+            "pe_ttm": 40.24,
+            "gross_margin_pct": 69.13,
+            "operating_margin_pct": 53.92,
+            "net_margin_pct": 44.2,
+            "diluted_shares": 4_887_000_000,
+        },
+        "earnings_history": [
+            {"report_date": f"2026-0{i}-10", "revenue": 15_000_000_000, "eps": 0.8, "transcript_text": "guidance"}
+            for i in range(1, 5)
+        ],
+        "guidance_history": [{"text": "Q4 AI revenue $21.7 billion", "source_type": "transcript"}],
+        "official_documents": [{"source": "sec.gov"}],
+        "missing_fields": ["fcf", "segment_growth"],
+    }
+
+
+def test_sparse_evidence_or_assumptions_downgrade_final_thesis_quality() -> None:
+    pack = _rich_pack()
+    many_evidence = [{"id": f"e{i}", "fact": f"fact {i}"} for i in range(12)]
+    many_assumptions = [{"id": f"a{i}", "statement": f"claim {i}", "status": "strengthened"} for i in range(5)]
+    rich = assess_research_quality_axes(pack, evidence=many_evidence, assumptions=many_assumptions)
+    assert rich["quality_for_final_thesis"] in {"partial", "sufficient"}
+    sparse_evidence = assess_research_quality_axes(
+        pack,
+        evidence=[{"id": "e1", "fact": "one print"}],
+        assumptions=many_assumptions,
+    )
+    assert sparse_evidence["quality_for_final_thesis"] == "insufficient"
+    sparse_assumptions = assess_research_quality_axes(
+        pack,
+        evidence=many_evidence,
+        assumptions=[{"id": "a1", "statement": "one claim", "status": "strengthened"}],
+    )
+    assert sparse_assumptions["quality_for_final_thesis"] == "insufficient"
+    omitted = assess_research_quality_axes(pack)
+    assert omitted["quality_for_final_thesis"] in {"partial", "sufficient"}
+
+
+def test_sparse_snapshot_caps_pm_thesis_confidence() -> None:
+    brief = {
+        "ticker": "AVGO",
+        "snapshot_id": "rsnap_sparse",
+        "spot_price": 344.82,
+        "pack": _rich_pack(),
+        "evidence": [{"id": "e1", "fact": "latest print beat", "source": "sec.companyfacts", "excerpt": "revenue"}],
+        "assumptions": [
+            {
+                "id": "a1",
+                "statement": "Management can deliver the latest stated guidance",
+                "status": "unverified",
+                "category": "guidance_delivery",
+                "confidence": 0.7,
+            }
+        ],
+        "engine_views": [
+            {
+                "assumption_id": "a1",
+                "statement": "Management can deliver the latest stated guidance",
+                "engine_proposed_status": "strengthened",
+                "current_confidence": 0.7,
+                "confidence": 0.7,
+                "category": "guidance_delivery",
+            }
+        ],
+    }
+    judgment = build_pm_judgment(brief)
+    assert judgment["research_quality"]["quality_for_final_thesis"] == "insufficient"
+    assert float(judgment["thesis"]["confidence"]) <= 0.35

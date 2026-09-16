@@ -29,7 +29,11 @@ from .snapshot import (
     market_comparison_for,
     valuation_method_version,
 )
-from .quality import assess_research_quality_axes
+from .quality import (
+    MIN_ASSUMPTIONS_FOR_HIGH_CONFIDENCE_THESIS,
+    MIN_EVIDENCE_FOR_HIGH_CONFIDENCE_THESIS,
+    assess_research_quality_axes,
+)
 from .relevance import CONTRACT_RE, HARD_COUNTER_RE, assumption_kind
 from .templates import load_prompt
 from .types import (
@@ -598,6 +602,11 @@ def _rule_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
     )
     confidences = [float(row["final_confidence"]) for row in rulings] or [0.4]
     thesis_confidence = round(min(0.8, sum(confidences) / len(confidences)), 3)
+    if (
+        len(brief.get("evidence") or []) < MIN_EVIDENCE_FOR_HIGH_CONFIDENCE_THESIS
+        or len(brief.get("assumptions") or []) < MIN_ASSUMPTIONS_FOR_HIGH_CONFIDENCE_THESIS
+    ):
+        axes["quality_for_final_thesis"] = "insufficient"
     if axes.get("quality_for_final_thesis") == "insufficient":
         thesis_confidence = min(thesis_confidence, 0.35)
     elif axes.get("quality_for_final_thesis") == "partial":

@@ -7,6 +7,10 @@ from typing import Any
 from .extract import has_official_source, has_transcript_source, to_number
 from .types import QUALITY_AXES
 
+# Sparse frozen snapshots cannot emit a high-confidence PM thesis.
+MIN_EVIDENCE_FOR_HIGH_CONFIDENCE_THESIS = 10
+MIN_ASSUMPTIONS_FOR_HIGH_CONFIDENCE_THESIS = 3
+
 
 def _level(*, sufficient: bool, partial: bool) -> str:
     if sufficient:
@@ -30,6 +34,8 @@ def assess_research_quality_axes(
     profile = payload.get("company_profile") or {}
     official = has_official_source(payload)
     transcripts = has_transcript_source(payload)
+    evidence_given = evidence is not None
+    assumptions_given = assumptions is not None
     evidence_rows = list(evidence or [])
     assumptions = list(assumptions or [])
     ruled = [row for row in assumptions if str(row.get("status") or "unverified") != "unverified"]
@@ -117,6 +123,10 @@ def assess_research_quality_axes(
     if not transcripts and fundamental == "sufficient":
         if thesis == "sufficient":
             thesis = "partial"
+    if evidence_given and len(evidence_rows) < MIN_EVIDENCE_FOR_HIGH_CONFIDENCE_THESIS:
+        thesis = "insufficient"
+    if assumptions_given and len(assumptions) < MIN_ASSUMPTIONS_FOR_HIGH_CONFIDENCE_THESIS:
+        thesis = "insufficient"
     return {
         "quality_for_discovery": discovery,
         "quality_for_fundamental_analysis": fundamental,

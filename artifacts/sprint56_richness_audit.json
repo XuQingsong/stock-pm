@@ -1,0 +1,116 @@
+{
+  "audit": "production_snapshot_rerun_richness",
+  "verdict": "FAIL",
+  "reason": [
+    "Migration 0013 is not on the production host: pack_id/is_fixture/source are null and OpenAPI has no snapshot freeze.",
+    "SSH port 22 from this environment to 43.166.2.31 timed out (80/443 open). Tip-tar deploy of c9e6e7c + migrate could not run.",
+    "No frozen non-fixture research_snapshot_id exists on production.",
+    "Latest production PM/Judge did not call an LLM (model null, llm_called false), so decisive_variables / top 5 / competing hypotheses / counterfactuals are absent.",
+    "Pack is numerically rich (rev/EPS/margins/shares/guidance/spot) but missing FCF and official segment mix."
+  ],
+  "deploy": {
+    "target": "43.166.2.31",
+    "desired_commit": "c9e6e7c2b9eb2e57877db3d921c0e9ee8bba4f54",
+    "migration_0013": "not_applied",
+    "ssh_port_22": "timeout",
+    "http_80": "open",
+    "http_443": "open",
+    "pack_source_on_get_service": "DatabasePackSource when current main is running; live host is pre-0013"
+  },
+  "snapshot_id": null,
+  "workflow_run_id": "wrun_2842870f551e4a1dac33719f51447d46",
+  "is_fixture": null,
+  "pack": {
+    "revenue_ttm": 87041000000.0,
+    "eps_ttm": 8.57,
+    "margins": {
+      "gross_margin_pct": 69.13,
+      "operating_margin_pct": 53.92,
+      "net_margin_pct": 44.2,
+      "latest_print_net_margin_pct": 26.0
+    },
+    "diluted_shares": 4887000000.0,
+    "latest_print_diluted_shares": 4860000000.0,
+    "guidance": {
+      "count": 19,
+      "latest_excerpt": "expect Q4 AI revenue to be $21.7 billion, up 236",
+      "latest_source": "web_search"
+    },
+    "segment_mix": null,
+    "earnings_with_segments": 0,
+    "fcf": null,
+    "earnings_history": 12,
+    "official_documents": 7,
+    "missing_fields": ["fcf", "segment_growth"]
+  },
+  "market": {
+    "spot": 344.820007324219,
+    "timestamp": "2026-09-15",
+    "timestamp_source": "company_profile.recent_closes[-1].session_date",
+    "pack_updated_at": "2026-09-15T13:36:34+00:00",
+    "pe_ttm": 40.24
+  },
+  "research": {
+    "evidence_count": 5064,
+    "assumption_count": 6,
+    "customer_side_evidence_count": 401,
+    "issuer_evidence_count": 986,
+    "industry_third_party_count": 3666,
+    "market_evidence_count": 11,
+    "named_issuer_customer_cross_check": 0,
+    "unresolved_gaps": [
+      "FCF",
+      "official segment mix",
+      "segment growth",
+      "independent customer filing confirming a named contract with AVGO",
+      "scored delivery sample shorter than 6 quarters",
+      "customer_capex chain layer"
+    ]
+  },
+  "sparse_gate": {
+    "evidence_count_lt_10": false,
+    "assumption_count_lt_3": false,
+    "would_auto_downgrade": false,
+    "live_research_quality": {
+      "quality_for_discovery": "sufficient",
+      "quality_for_fundamental_analysis": "sufficient",
+      "quality_for_valuation": "partial",
+      "quality_for_final_thesis": "partial"
+    },
+    "live_thesis_confidence": 0.48,
+    "live_confidence_cap_reason": "valuation_status=provisional (missing FCF and segment mix), not sparse counts",
+    "code_path": "quality_for_final_thesis becomes insufficient when evidence<10 or assumptions<3; thesis_confidence then caps at 0.35"
+  },
+  "llm": {
+    "model": null,
+    "llm_called": false,
+    "prompt_version": "sprint5-pm-v2",
+    "agent_name": "pm_judge",
+    "decisive_variables": [],
+    "top_5_evidence": [],
+    "competing_hypotheses": [],
+    "most_likely_wrong": null,
+    "market_disagreement": [],
+    "counterfactuals": [],
+    "note": "All 2601 agent runs on the latest workflow have model=None and llm_called=false. Production PM is the rule engine path."
+  },
+  "valuation": {
+    "bear": 350,
+    "base": 530,
+    "bull": 720,
+    "spot": 344.82,
+    "market_implied_under_base_multiple": 340,
+    "valuation_status": "provisional",
+    "valuation_method": "eps_pe",
+    "eps_method": "complete_bridge",
+    "valuation_method_version": null,
+    "growth_origin": "management_guidance",
+    "growth_base_annual_rate": 0.45,
+    "margin_origin": "observed",
+    "net_margin_ttm": 44.2,
+    "multiple_origin": "derived",
+    "multiple_base": 33.0,
+    "multiple_starting_anchor": 31.0,
+    "why_provisional": ["FCF missing", "official segment mix missing"]
+  }
+}
