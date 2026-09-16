@@ -35,6 +35,7 @@ class InMemoryResearchStore:
         self.backfills: dict[str, dict[str, Any]] = {}
         self.assumption_proposals: dict[str, dict[str, Any]] = {}
         self.pm_rulings: dict[str, dict[str, Any]] = {}
+        self.snapshots: dict[str, dict[str, Any]] = {}
         self.raw_earnings: dict[str, list[dict[str, Any]]] = {}
         self.raw_fundamentals: dict[str, Any] = {}
         self.raw_news: dict[str, list[dict[str, Any]]] = {}
@@ -359,6 +360,7 @@ class InMemoryResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "snapshot_id": row.get("snapshot_id"),
             "created_at": _now(),
         }
         self.theses[stored["id"]] = stored
@@ -408,6 +410,8 @@ class InMemoryResearchStore:
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
             "calibration_json": dict(row.get("calibration_json") or {}),
+            "snapshot_id": row.get("snapshot_id"),
+            "valuation_method_version": row.get("valuation_method_version"),
             "created_at": _now(),
         }
         self.valuations[stored["id"]] = stored
@@ -430,7 +434,7 @@ class InMemoryResearchStore:
         row = self.theses.get(thesis_id)
         if row is None:
             raise DatabaseError(f"thesis not found: {thesis_id}")
-        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id"}
+        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id", "snapshot_id"}
         for key, value in fields.items():
             if key in allowed:
                 row[key] = value
@@ -453,6 +457,7 @@ class InMemoryResearchStore:
             "invalidation_condition": row.get("invalidation_condition"),
             "next_verification": row.get("next_verification"),
             "engine_proposed_status": row.get("engine_proposed_status"),
+            "snapshot_id": row.get("snapshot_id"),
             "created_at": _now(),
         }
         self.pm_rulings[stored["id"]] = stored
@@ -471,8 +476,13 @@ class InMemoryResearchStore:
         official = list(row.get("official_documents") or profile.get("official_documents") or [])
         if official:
             profile["official_documents"] = official
+        existing = self.packs.get(ticker) or {}
+        pack_version = int(row.get("pack_version") or (int(existing.get("pack_version") or 0) + 1) or 1)
+        pack_id = row.get("pack_id") or f"pack_{ticker.lower()}_v{pack_version}"
         stored = {
             "ticker": ticker,
+            "pack_id": pack_id,
+            "pack_version": pack_version,
             "template_id": row.get("template_id") or "generic_company",
             "company_profile": profile,
             "earnings_history": list(row.get("earnings_history") or []),
@@ -485,6 +495,8 @@ class InMemoryResearchStore:
             "missing_fields": list(row.get("missing_fields") or []),
             "source_refs": dict(row.get("source_refs") or {}),
             "workflow_run_id": row.get("workflow_run_id"),
+            "is_fixture": bool(row.get("is_fixture")),
+            "source": row.get("source") or ("fixture" if row.get("is_fixture") else "production"),
             "updated_at": _now(),
         }
         self.packs[ticker] = stored
@@ -608,3 +620,92 @@ class InMemoryResearchStore:
             rows = [row for row in rows if row.get("workflow_run_id") == workflow_run_id]
         rows.sort(key=lambda item: str(item.get("created_at") or ""))
         return [_copy(row) for row in rows]
+
+    def insert_snapshot(self, row: dict[str, Any]) -> dict[str, Any]:
+        snapshot_id = row.get("snapshot_id") or row.get("id") or new_id("rsnap")
+        stored = {
+            "snapshot_id": snapshot_id,
+            "id": snapshot_id,
+            "ticker": str(row["ticker"]).upper(),
+            "created_at": row.get("created_at") or _now(),
+            "workflow_run_id": row.get("workflow_run_id"),
+            "pack_id": row.get("pack_id"),
+            "pack_version": row.get("pack_version"),
+            "pack_payload": _copy(row.get("pack_payload") or row.get("pack") or {}),
+            "pack": _copy(row.get("pack") or row.get("pack_payload") or {}),
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "evidence_payload": _copy(row.get("evidence_payload") or row.get("evidence") or []),
+            "evidence": _copy(row.get("evidence") or row.get("evidence_payload") or []),
+            "assumption_ids": list(row.get("assumption_ids") or []),
+            "assumption_payload": _copy(row.get("assumption_payload") or row.get("assumptions") or []),
+            "assumptions": _copy(row.get("assumptions") or row.get("assumption_payload") or []),
+            "findings_payload": _copy(row.get("findings_payload") or row.get("findings") or []),
+            "findings": _copy(row.get("findings") or row.get("findings_payload") or []),
+            "assumption_engine": _copy(row.get("assumption_engine") or []),
+            "competing_hypotheses": _copy(row.get("competing_hypotheses") or []),
+            "economic_drivers": _copy(row.get("economic_drivers") or []),
+            "agent_reasoning": _copy(row.get("agent_reasoning") or []),
+            "market_data_timestamp": row.get("market_data_timestamp"),
+            "spot_price": row.get("spot_price"),
+            "valuation_input_version": row.get("valuation_input_version"),
+            "valuation_method_version": row.get("valuation_method_version"),
+            "valuation_id": row.get("valuation_id"),
+            "is_fixture": bool(row.get("is_fixture")),
+            "snapshot_status": row.get("snapshot_status") or "valid",
+            "invalid_reasons": list(row.get("invalid_reasons") or []),
+            "pack_latest_report_date": row.get("pack_latest_report_date"),
+            "pack_updated_at": row.get("pack_updated_at"),
+            "source": row.get("source") or ("fixture" if row.get("is_fixture") else "production"),
+            "manifest": dict(row.get("manifest") or {}),
+            "model": row.get("model"),
+            "prompt_version": row.get("prompt_version"),
+            "pack_fingerprint": row.get("pack_fingerprint"),
+            "market_comparison": dict(row.get("market_comparison") or {}),
+        }
+        self.snapshots[snapshot_id] = stored
+        return _copy(stored)
+
+    def get_snapshot(self, snapshot_id: str) -> dict[str, Any] | None:
+        row = self.snapshots.get(snapshot_id)
+        return _copy(row) if row else None
+
+    def get_snapshot_for_workflow(self, workflow_run_id: str) -> dict[str, Any] | None:
+        rows = [row for row in self.snapshots.values() if row.get("workflow_run_id") == workflow_run_id]
+        if not rows:
+            return None
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return _copy(rows[-1])
+
+    def get_latest_snapshot(self, ticker: str, *, include_fixture: bool = False) -> dict[str, Any] | None:
+        rows = [row for row in self.snapshots.values() if row["ticker"] == ticker.upper()]
+        if not include_fixture:
+            rows = [row for row in rows if not row.get("is_fixture")]
+        if not rows:
+            return None
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return _copy(rows[-1])
+
+    def list_snapshots(self, ticker: str, *, include_fixture: bool = False) -> list[dict[str, Any]]:
+        rows = [row for row in self.snapshots.values() if row["ticker"] == ticker.upper()]
+        if not include_fixture:
+            rows = [row for row in rows if not row.get("is_fixture")]
+        rows.sort(key=lambda item: str(item.get("created_at") or ""))
+        return [_copy(row) for row in rows]
+
+    def update_snapshot(self, snapshot_id: str, **fields: Any) -> dict[str, Any]:
+        row = self.snapshots.get(snapshot_id)
+        if row is None:
+            raise DatabaseError(f"snapshot not found: {snapshot_id}")
+        allowed = {
+            "valuation_id",
+            "valuation_method_version",
+            "manifest",
+            "model",
+            "prompt_version",
+            "snapshot_status",
+            "invalid_reasons",
+        }
+        for key, value in fields.items():
+            if key in allowed:
+                row[key] = value
+        return _copy(row)

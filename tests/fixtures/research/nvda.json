@@ -1,4 +1,5 @@
 {
+  "is_fixture": true,
   "issuer": {
     "legal_name": "Example Compute Co",
     "cik": "0001045810",

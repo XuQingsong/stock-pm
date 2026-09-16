@@ -1,4 +1,5 @@
 {
+  "is_fixture": true,
   "issuer": {
     "legal_name": "Example Energy Co",
     "cik": "0000034088",

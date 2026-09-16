@@ -266,8 +266,11 @@ def run_new_ticker_research(
         from .pm_judge import record_pm_judgment
 
         pm_result = record_pm_judgment(service, symbol, workflow_run_id=workflow_run_id)
-    result["pack"] = service.get_pack(symbol)
-    result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
+    result["pack"] = (pm_result or {}).get("snapshot", {}).get("pack") or service.get_pack(symbol)
+    if pm_result and pm_result.get("snapshot_id"):
+        result["snapshot"] = service.research_snapshot(symbol, workflow_run_id, snapshot_id=pm_result["snapshot_id"])
+    else:
+        result["snapshot"] = service.research_snapshot(symbol, workflow_run_id)
     result["backfill"] = backfill_row
     result["assumption_engine"] = engine_rows
     result["pm_judge"] = pm_result

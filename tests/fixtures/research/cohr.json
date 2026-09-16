@@ -1,4 +1,5 @@
 {
+  "is_fixture": true,
   "issuer": {
     "legal_name": "Example Photonics Co",
     "fiscal_year_end_month": 6,

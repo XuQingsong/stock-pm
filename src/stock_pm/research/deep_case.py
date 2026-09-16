@@ -998,6 +998,42 @@ MARKET_IMPLIED_MULTIPLES = (25, 30, 33, 35, 40)
 def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] | None) -> dict[str, Any]:
     profile = (pack or {}).get("company_profile") or {}
     spot = to_number(profile.get("last_close") or (valuation or {}).get("spot_price"))
+    if spot in (None, 0):
+        empty = {
+            "horizon": ((valuation or {}).get("base_case") or {}).get("horizon"),
+            "valuation_method": "market_implied",
+            "target_value": None,
+            "target_display": None,
+            "eps": None,
+            "multiple": None,
+            "growth_assumptions": {"annual_rate": None, "origin": "unavailable", "display": None, "source": "spot_price_missing"},
+            "notes": "spot_price_missing",
+            "case_narrative": "market comparison unavailable because snapshot.spot_price is missing",
+        }
+        return {
+            "market_comparison_status": "unavailable",
+            "reason": "spot_price_missing",
+            "case": empty,
+            "market_implied_under_base_multiple": None,
+            "sensitivity": [],
+            "market_implied_range": None,
+            "vs_pm_base": None,
+            "vs_pm_bull": None,
+            "pm_wording": "market_comparison_status=unavailable; spot_price_missing",
+            "implied_ntm_eps": None,
+            "implied_ntm_growth": None,
+            "implied_2y_eps_at_base_multiple": None,
+            "implied_2y_growth_at_base_multiple": None,
+            "implied_multiple_on_base_eps": None,
+            "current_pe": to_number(profile.get("pe_ttm")),
+            "forward_pe": to_number(profile.get("pe_forward")),
+            "base_growth": None,
+            "bull_growth": None,
+            "base_multiple": None,
+            "display": None,
+            "market_doubts": [],
+            "summary": "market_comparison_status=unavailable; spot_price_missing",
+        }
     ttm_eps = to_number(profile.get("eps_ttm"))
     pe_ttm = to_number(profile.get("pe_ttm"))
     pe_fwd = to_number(profile.get("pe_forward"))
@@ -1127,6 +1163,8 @@ def market_implied_case(pack: dict[str, Any] | None, valuation: dict[str, Any] |
         "display": g_display,
         "market_doubts": doubts,
         "summary": pm_wording + " " + " ".join(doubts),
+        "market_comparison_status": "available",
+        "reason": None,
     }
 
 
@@ -1223,8 +1261,12 @@ def golden_answers(
         }
         if fragile
         else None,
-        "market_worry": implied.get("pm_wording") or implied.get("summary") or reaction.get("summary") or "market worry is not isolated beyond valuation context",
-        "pm_conclusion": implied.get("pm_wording"),
+        "market_worry": (
+            "market_comparison_status=unavailable; spot_price_missing"
+            if implied.get("market_comparison_status") == "unavailable"
+            else implied.get("pm_wording") or implied.get("summary") or reaction.get("summary") or "market worry is not isolated beyond valuation context"
+        ),
+        "pm_conclusion": None if implied.get("market_comparison_status") == "unavailable" else implied.get("pm_wording"),
         "customer_validation": (artifacts.get("customer_side_evidence") or {}).get("conclusion"),
         "thesis_events": {
             "strengthen": "independent customer confirmation that capex and deployments convert on the stated horizon, plus delivery versus the commitment ledger",

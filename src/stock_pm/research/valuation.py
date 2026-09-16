@@ -10,6 +10,7 @@ import re
 from typing import Any
 
 from .extract import to_number
+from .snapshot import valuation_method_version
 from .financials import (
     GROWTH_ORIGINS,
     coarsen_growth,
@@ -995,7 +996,12 @@ def _market_vs_model(
     bull_t = to_number(bull.get("target_value"))
     base_t = to_number(base.get("target_value"))
     if spot in (None, 0) or bull_t is None:
-        return {"applicable": False, "summary": "spot vs model is not comparable without a target and a last close"}
+        return {
+            "applicable": False,
+            "market_comparison_status": "unavailable",
+            "reason": "spot_price_missing" if spot in (None, 0) else "bull_target_missing",
+            "summary": "spot vs model is not comparable without a target and a last close",
+        }
     above_bull = spot > bull_t
     above_base = base_t is not None and spot > base_t
     explanations = []
@@ -1487,6 +1493,8 @@ def build_valuation_cases(
         "forward_revenue_bridge": growth.get("forward_revenue_bridge"),
         "eps_bridge": eps_bridge,
     }
+    method_version = valuation_method_version({"eps_method": eps_method, "method": method, "calibration_json": calibration})
+    calibration["valuation_method_version"] = method_version
     return {
         "horizon": f"{years}y",
         "spot_price": last_close,
@@ -1497,5 +1505,6 @@ def build_valuation_cases(
         "base_case": cases["base_case"],
         "bull_case": cases["bull_case"],
         "calibration_json": calibration,
+        "valuation_method_version": method_version,
         **calibration,
     }

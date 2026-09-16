@@ -53,11 +53,12 @@ Rules:
 - Horizons may disagree
 - Do not copy the engine's strengthen/weaken suggestion
 - Cite only evidence_id values from the user JSON. If a fact is not there, say unresolved.
+- The user JSON includes snapshot_id. Cite only that snapshot's evidence_id, valuation_id, and spot_price.
 - A capacity target (including GW figures) may be used only when an evidence_id quotes it.
 - Do not treat issuer “customers increased capex” language as a named-customer contract.
 - Industry AI capex is not issuer-specific demand, and issuer-specific demand is not a signed contract.
 - If spot > bull, say the market is more optimistic than the researched bull case. Do not also say implied growth is below PM Base.
-- If spot is missing, do not describe what the market is pricing.
+- If market_comparison_status is unavailable or snapshot.spot_price is missing, do not describe market implied growth, market disagreement, or spot vs base/bull.
 - Mark pull-forward / inventory claims as speculation unless Evidence says so.
 - Every top_thesis_changing_evidence item must have a real evidence_id.
 - A short beat streak is not long-term credibility

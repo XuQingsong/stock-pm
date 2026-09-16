@@ -9,6 +9,7 @@ from .classify import classify_from_issuer, classify_template
 from .extract import extract_guidance_mentions, first_present, nested_get, net_margin, to_number, yoy_from_quarters
 from .issuer import merge_identity
 from .prices import index_closes, index_volumes, price_reaction_for_print
+from .snapshot import source_is_fixture
 from .sources import DatabasePackSource, PackSource, StorePackSource
 from .templates import load_template
 
@@ -381,6 +382,9 @@ class PackBuilder:
         if fundamentals is None:
             missing.append("fundamentals_snapshot")
 
+        is_fixture = source_is_fixture(source, fundamentals=fundamentals) or bool(
+            (fundamentals or {}).get("is_fixture")
+        )
         refs = {
             "issuer_profiles": symbol,
             "earnings_reports": [row.get("ref") for row in earnings_history],
@@ -412,6 +416,8 @@ class PackBuilder:
             "missing_fields": missing,
             "source_refs": refs,
             "workflow_run_id": workflow_run_id,
+            "is_fixture": is_fixture,
+            "source": "fixture" if is_fixture else "production",
         }
 
 

@@ -5,10 +5,12 @@ from .classify import classify_template
 from .errors import (
     CrossTickerError,
     DepthLimitError,
+    FixtureRejectedError,
     ProvenanceError,
     ResearchError,
     ResearchPermissionError,
     SchemaError,
+    SnapshotIntegrityError,
 )
 from .issuer import cik_for, fiscal_year_end_month_for, merge_identity
 from .service import ResearchService
@@ -27,6 +29,7 @@ __all__ = [
     "AgentOutput",
     "CrossTickerError",
     "DepthLimitError",
+    "FixtureRejectedError",
     "FollowUpSpec",
     "ProvenanceError",
     "ResearchDataBackfill",
@@ -34,6 +37,7 @@ __all__ = [
     "ResearchPermissionError",
     "ResearchService",
     "SchemaError",
+    "SnapshotIntegrityError",
     "cik_for",
     "classify_template",
     "fiscal_year_end_month_for",

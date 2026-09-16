@@ -232,13 +232,26 @@ def audit_pm_reasoning(
     pack: dict[str, Any] | None = None,
     previous_valuation: dict[str, Any] | None = None,
     ticker: str | None = None,
+    snapshot_id: str | None = None,
+    allowed_evidence_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     """Ground, classify, and warn. Mutates reasoning in place. Never changes Bear/Base/Bull numbers."""
     reasoning = reasoning if isinstance(reasoning, dict) else {}
     index = _index(evidence)
+    if allowed_evidence_ids:
+        index = {key: row for key, row in index.items() if key in allowed_evidence_ids}
     symbol = str(ticker or (pack or {}).get("ticker") or "").upper() or None
     snap = valuation_snapshot(valuation, pack)
     stance = valuation_stance(snap["spot"], snap["targets"])
+    if snap["spot"] in (None, 0):
+        stance["market_comparison_status"] = "unavailable"
+        stance["reason"] = "spot_price_missing"
+    else:
+        stance["market_comparison_status"] = "available"
+        stance["reason"] = None
+    reasoning["snapshot_id"] = snapshot_id or reasoning.get("snapshot_id")
+    reasoning["market_comparison_status"] = stance.get("market_comparison_status")
+    reasoning["market_comparison_reason"] = stance.get("reason")
     warnings: list[str] = []
     unsupported: list[str] = []
     stale: list[str] = []
@@ -372,9 +385,12 @@ def audit_pm_reasoning(
     elif stance["code"] == "incomparable":
         warnings.append(stance["summary"])
         blob = json_blob(disagreement)
-        if BELOW_BASE_RE.search(blob) or "market appears to price" in blob.lower():
-            unsupported.append("market_disagreement talks about the tape but last_close/spot is missing on this valuation object")
+        if disagreement and (BELOW_BASE_RE.search(blob) or "market appears to price" in blob.lower() or "implied growth" in blob.lower()):
+            unsupported.append("market_disagreement talks about the tape but last_close/spot is missing on this snapshot")
             stale.append("tape language may be leaking from another pack or from model memory")
+        reasoning["market_disagreement"] = []
+        reasoning["market_comparison_status"] = "unavailable"
+        reasoning["market_comparison_reason"] = "spot_price_missing"
 
     customer_rows = []
     for item in grounded_top:
@@ -389,12 +405,16 @@ def audit_pm_reasoning(
             )
 
     delta = attribute_target_change(previous_valuation, valuation) if previous_valuation else None
-    verdict = "FAIL" if (unsupported or dropped_top or (stance["code"] == "market_above_bull" and BELOW_BASE_RE.search(json_blob(disagreement)))) else "PASS"
-    if warnings and verdict == "PASS" and (stance["code"] in {"market_above_bull", "incomparable"}):
+    tape_contradiction = stance["code"] == "market_above_bull" and BELOW_BASE_RE.search(json_blob(disagreement))
+    missing_spot_leak = bool(stale) and stance["code"] == "incomparable"
+    verdict = "FAIL" if (unsupported or dropped_top or tape_contradiction or missing_spot_leak) else "PASS"
+    if warnings and verdict == "PASS" and stance["code"] == "market_above_bull":
         verdict = "FAIL"
 
     audit = {
         "verdict": verdict,
+        "snapshot_id": snapshot_id or reasoning.get("snapshot_id"),
+        "market_comparison_status": stance.get("market_comparison_status"),
         "valuation_consistency": {
             "python_engine_targets": python_targets,
             "snapshot": snap,

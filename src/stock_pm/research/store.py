@@ -638,6 +638,7 @@ class ResearchStore:
             "agent_run_id": row.get("agent_run_id"),
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
+            "snapshot_id": row.get("snapshot_id"),
         }
         stored = self._one(
             """
@@ -646,7 +647,7 @@ class ResearchStore:
                 core_thesis, key_assumption_ids, core_assumption_ids, supporting_assumption_ids,
                 key_risks, key_catalysts, invalidation_conditions, monitoring_items, confidence,
                 research_quality, market_reaction, thesis_diff, valuation_id, change_summary, actor,
-                workflow_run_id, agent_run_id, model, prompt_version
+                workflow_run_id, agent_run_id, model, prompt_version, snapshot_id
             )
             VALUES (
                 %(id)s, %(ticker)s, %(version)s, %(short_term_view)s, %(mid_term_view)s,
@@ -655,7 +656,7 @@ class ResearchStore:
                 %(invalidation_conditions)s, %(monitoring_items)s, %(confidence)s,
                 %(research_quality)s, %(market_reaction)s, %(thesis_diff)s, %(valuation_id)s,
                 %(change_summary)s, %(actor)s, %(workflow_run_id)s, %(agent_run_id)s,
-                %(model)s, %(prompt_version)s
+                %(model)s, %(prompt_version)s, %(snapshot_id)s
             )
             RETURNING *
             """,
@@ -726,19 +727,21 @@ class ResearchStore:
             "model": row.get("model"),
             "prompt_version": row.get("prompt_version"),
             "calibration_json": _jsonb(row.get("calibration_json") or {}),
+            "snapshot_id": row.get("snapshot_id"),
+            "valuation_method_version": row.get("valuation_method_version"),
         }
         stored = self._one(
             """
             INSERT INTO research_valuations (
                 id, ticker, thesis_id, thesis_version, horizon, bear_case, base_case,
                 bull_case, spot_price, actor, workflow_run_id, agent_run_id, model, prompt_version,
-                calibration_json
+                calibration_json, snapshot_id, valuation_method_version
             )
             VALUES (
                 %(id)s, %(ticker)s, %(thesis_id)s, %(thesis_version)s, %(horizon)s,
                 %(bear_case)s, %(base_case)s, %(bull_case)s, %(spot_price)s, %(actor)s,
                 %(workflow_run_id)s, %(agent_run_id)s, %(model)s, %(prompt_version)s,
-                %(calibration_json)s
+                %(calibration_json)s, %(snapshot_id)s, %(valuation_method_version)s
             )
             RETURNING *
             """,
@@ -772,7 +775,7 @@ class ResearchStore:
         )
 
     def update_thesis_meta(self, thesis_id: str, **fields: Any) -> dict[str, Any]:
-        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id"}
+        allowed = {"thesis_diff", "research_quality", "market_reaction", "change_summary", "valuation_id", "snapshot_id"}
         updates = {key: value for key, value in fields.items() if key in allowed}
         if "thesis_diff" in updates:
             updates["thesis_diff"] = _jsonb(updates.get("thesis_diff") or {})
@@ -809,6 +812,7 @@ class ResearchStore:
             "invalidation_condition": row.get("invalidation_condition"),
             "next_verification": row.get("next_verification"),
             "engine_proposed_status": row.get("engine_proposed_status"),
+            "snapshot_id": row.get("snapshot_id"),
         }
         stored = self._one(
             """
@@ -816,13 +820,14 @@ class ResearchStore:
                 id, ticker, thesis_id, workflow_run_id, assumption_id, final_status,
                 final_confidence, thesis_role, reasoning, key_supporting_evidence_ids,
                 key_opposing_evidence_ids, unresolved_gaps, invalidation_condition,
-                next_verification, engine_proposed_status
+                next_verification, engine_proposed_status, snapshot_id
             )
             VALUES (
                 %(id)s, %(ticker)s, %(thesis_id)s, %(workflow_run_id)s, %(assumption_id)s,
                 %(final_status)s, %(final_confidence)s, %(thesis_role)s, %(reasoning)s,
                 %(key_supporting_evidence_ids)s, %(key_opposing_evidence_ids)s, %(unresolved_gaps)s,
-                %(invalidation_condition)s, %(next_verification)s, %(engine_proposed_status)s
+                %(invalidation_condition)s, %(next_verification)s, %(engine_proposed_status)s,
+                %(snapshot_id)s
             )
             RETURNING *
             """,
@@ -855,8 +860,13 @@ class ResearchStore:
         official = list(row.get("official_documents") or profile.get("official_documents") or [])
         if official:
             profile["official_documents"] = official
+        existing = self.get_pack(row["ticker"])
+        pack_version = int(row.get("pack_version") or (int((existing or {}).get("pack_version") or 0) + 1) or 1)
+        pack_id = row.get("pack_id") or f"pack_{row['ticker'].lower()}_v{pack_version}"
         payload = {
             "ticker": row["ticker"].upper(),
+            "pack_id": pack_id,
+            "pack_version": pack_version,
             "template_id": row.get("template_id") or "generic_company",
             "company_profile": _jsonb(profile),
             "earnings_history": _jsonb(row.get("earnings_history") or []),
@@ -868,22 +878,26 @@ class ResearchStore:
             "missing_fields": _jsonb(row.get("missing_fields") or []),
             "source_refs": _jsonb(row.get("source_refs") or {}),
             "workflow_run_id": row.get("workflow_run_id"),
+            "is_fixture": bool(row.get("is_fixture")),
+            "source": row.get("source") or ("fixture" if row.get("is_fixture") else "production"),
             "updated_at": _now(),
         }
         stored = self._one(
             """
             INSERT INTO research_packs (
-                ticker, template_id, company_profile, earnings_history, guidance_history,
+                ticker, pack_id, pack_version, template_id, company_profile, earnings_history, guidance_history,
                 price_reaction_history, industry_context, competitive_context, major_events,
-                missing_fields, source_refs, workflow_run_id, updated_at
+                missing_fields, source_refs, workflow_run_id, is_fixture, source, updated_at
             )
             VALUES (
-                %(ticker)s, %(template_id)s, %(company_profile)s, %(earnings_history)s,
+                %(ticker)s, %(pack_id)s, %(pack_version)s, %(template_id)s, %(company_profile)s, %(earnings_history)s,
                 %(guidance_history)s, %(price_reaction_history)s, %(industry_context)s,
                 %(competitive_context)s, %(major_events)s, %(missing_fields)s,
-                %(source_refs)s, %(workflow_run_id)s, %(updated_at)s
+                %(source_refs)s, %(workflow_run_id)s, %(is_fixture)s, %(source)s, %(updated_at)s
             )
             ON CONFLICT (ticker) DO UPDATE SET
+                pack_id = EXCLUDED.pack_id,
+                pack_version = EXCLUDED.pack_version,
                 template_id = EXCLUDED.template_id,
                 company_profile = EXCLUDED.company_profile,
                 earnings_history = EXCLUDED.earnings_history,
@@ -895,6 +909,8 @@ class ResearchStore:
                 missing_fields = EXCLUDED.missing_fields,
                 source_refs = EXCLUDED.source_refs,
                 workflow_run_id = EXCLUDED.workflow_run_id,
+                is_fixture = EXCLUDED.is_fixture,
+                source = EXCLUDED.source,
                 updated_at = EXCLUDED.updated_at
             RETURNING *
             """,
@@ -1118,3 +1134,159 @@ class ResearchStore:
             """,
             {"ticker": ticker.upper()},
         )
+
+    def insert_snapshot(self, row: dict[str, Any]) -> dict[str, Any]:
+        snapshot_id = row.get("snapshot_id") or row.get("id") or new_id("rsnap")
+        payload = {
+            "snapshot_id": snapshot_id,
+            "ticker": str(row["ticker"]).upper(),
+            "workflow_run_id": row.get("workflow_run_id"),
+            "pack_id": row.get("pack_id"),
+            "pack_version": row.get("pack_version"),
+            "pack_payload": _jsonb(row.get("pack_payload") or row.get("pack") or {}),
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "evidence_payload": _jsonb(row.get("evidence_payload") or row.get("evidence") or []),
+            "assumption_ids": list(row.get("assumption_ids") or []),
+            "assumption_payload": _jsonb(row.get("assumption_payload") or row.get("assumptions") or []),
+            "findings_payload": _jsonb(row.get("findings_payload") or row.get("findings") or []),
+            "market_data_timestamp": row.get("market_data_timestamp"),
+            "spot_price": row.get("spot_price"),
+            "valuation_input_version": row.get("valuation_input_version"),
+            "valuation_method_version": row.get("valuation_method_version"),
+            "valuation_id": row.get("valuation_id"),
+            "is_fixture": bool(row.get("is_fixture")),
+            "snapshot_status": row.get("snapshot_status") or "valid",
+            "invalid_reasons": _jsonb(row.get("invalid_reasons") or []),
+            "pack_latest_report_date": row.get("pack_latest_report_date"),
+            "pack_updated_at": row.get("pack_updated_at"),
+            "source": row.get("source") or ("fixture" if row.get("is_fixture") else "production"),
+            "manifest": _jsonb(row.get("manifest") or {}),
+            "model": row.get("model"),
+            "prompt_version": row.get("prompt_version"),
+        }
+        stored = self._one(
+            """
+            INSERT INTO research_snapshots (
+                snapshot_id, ticker, workflow_run_id, pack_id, pack_version, pack_payload,
+                evidence_ids, evidence_payload, assumption_ids, assumption_payload, findings_payload,
+                market_data_timestamp, spot_price, valuation_input_version, valuation_method_version,
+                valuation_id, is_fixture, snapshot_status, invalid_reasons, pack_latest_report_date,
+                pack_updated_at, source, manifest, model, prompt_version
+            )
+            VALUES (
+                %(snapshot_id)s, %(ticker)s, %(workflow_run_id)s, %(pack_id)s, %(pack_version)s,
+                %(pack_payload)s, %(evidence_ids)s, %(evidence_payload)s, %(assumption_ids)s,
+                %(assumption_payload)s, %(findings_payload)s, %(market_data_timestamp)s, %(spot_price)s,
+                %(valuation_input_version)s, %(valuation_method_version)s, %(valuation_id)s,
+                %(is_fixture)s, %(snapshot_status)s, %(invalid_reasons)s, %(pack_latest_report_date)s,
+                %(pack_updated_at)s, %(source)s, %(manifest)s, %(model)s, %(prompt_version)s
+            )
+            RETURNING *
+            """,
+            payload,
+        )
+        assert stored is not None
+        return self._hydrate_snapshot(stored)
+
+    def _hydrate_snapshot(self, stored: dict[str, Any] | None) -> dict[str, Any] | None:
+        if not stored:
+            return None
+        stored["id"] = stored.get("snapshot_id")
+        stored["pack"] = stored.get("pack_payload") or {}
+        stored["evidence"] = stored.get("evidence_payload") or []
+        stored["assumptions"] = stored.get("assumption_payload") or []
+        stored["findings"] = stored.get("findings_payload") or []
+        return stored
+
+    def get_snapshot(self, snapshot_id: str) -> dict[str, Any] | None:
+        return self._hydrate_snapshot(
+            self._one("SELECT * FROM research_snapshots WHERE snapshot_id = %(id)s", {"id": snapshot_id})
+        )
+
+    def get_snapshot_for_workflow(self, workflow_run_id: str) -> dict[str, Any] | None:
+        return self._hydrate_snapshot(
+            self._one(
+                """
+                SELECT * FROM research_snapshots
+                WHERE workflow_run_id = %(workflow_run_id)s
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                {"workflow_run_id": workflow_run_id},
+            )
+        )
+
+    def get_latest_snapshot(self, ticker: str, *, include_fixture: bool = False) -> dict[str, Any] | None:
+        if include_fixture:
+            return self._hydrate_snapshot(
+                self._one(
+                    """
+                    SELECT * FROM research_snapshots
+                    WHERE ticker = %(ticker)s
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """,
+                    {"ticker": ticker.upper()},
+                )
+            )
+        return self._hydrate_snapshot(
+            self._one(
+                """
+                SELECT * FROM research_snapshots
+                WHERE ticker = %(ticker)s AND is_fixture = FALSE
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                {"ticker": ticker.upper()},
+            )
+        )
+
+    def list_snapshots(self, ticker: str, *, include_fixture: bool = False) -> list[dict[str, Any]]:
+        if include_fixture:
+            rows = self._execute(
+                """
+                SELECT * FROM research_snapshots
+                WHERE ticker = %(ticker)s
+                ORDER BY created_at
+                """,
+                {"ticker": ticker.upper()},
+            )
+        else:
+            rows = self._execute(
+                """
+                SELECT * FROM research_snapshots
+                WHERE ticker = %(ticker)s AND is_fixture = FALSE
+                ORDER BY created_at
+                """,
+                {"ticker": ticker.upper()},
+            )
+        return [self._hydrate_snapshot(row) or row for row in rows]
+
+    def update_snapshot(self, snapshot_id: str, **fields: Any) -> dict[str, Any]:
+        allowed = {
+            "valuation_id",
+            "valuation_method_version",
+            "manifest",
+            "model",
+            "prompt_version",
+            "snapshot_status",
+            "invalid_reasons",
+        }
+        updates = {key: value for key, value in fields.items() if key in allowed}
+        if "manifest" in updates:
+            updates["manifest"] = _jsonb(updates.get("manifest") or {})
+        if "invalid_reasons" in updates:
+            updates["invalid_reasons"] = _jsonb(updates.get("invalid_reasons") or [])
+        if not updates:
+            stored = self.get_snapshot(snapshot_id)
+            if stored is None:
+                raise DatabaseError(f"snapshot not found: {snapshot_id}")
+            return stored
+        assignments = ", ".join(f"{key} = %({key})s" for key in updates)
+        stored = self._one(
+            f"UPDATE research_snapshots SET {assignments} WHERE snapshot_id = %(snapshot_id)s RETURNING *",
+            {"snapshot_id": snapshot_id, **updates},
+        )
+        if stored is None:
+            raise DatabaseError(f"snapshot not found: {snapshot_id}")
+        return self._hydrate_snapshot(stored)

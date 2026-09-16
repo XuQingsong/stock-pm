@@ -1,4 +1,5 @@
 {
+  "is_fixture": true,
   "issuer": {
     "legal_name": "Example Semiconductor Inc",
     "cik": "0001730168",

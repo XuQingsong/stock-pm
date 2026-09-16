@@ -29,3 +29,11 @@ class DepthLimitError(ResearchError):
 
 class SchemaError(ResearchError):
     """Agent output failed schema validation."""
+
+
+class FixtureRejectedError(ProvenanceError):
+    """Fixture/demo rows cannot enter a production ticker snapshot."""
+
+
+class SnapshotIntegrityError(ProvenanceError):
+    """Pack, market, valuation, and evidence are not the same frozen object."""

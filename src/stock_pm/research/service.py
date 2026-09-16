@@ -15,6 +15,14 @@ from .evidence import evidence_fingerprint
 from .issuer import IDENTITY_FIELD_KEYS, fill_issuer_identity, merge_identity
 from .pack_builder import PACK_CONTENT_FIELDS, PackBuilder, default_pack_source
 from .relevance import annotate_evidence, judge_link
+from .snapshot import (
+    build_snapshot_manifest,
+    fixture_allowed,
+    freeze_live_snapshot,
+    hydrate_snapshot_row,
+    reject_fixture_write,
+    source_is_fixture,
+)
 from .types import (
     ACTOR_API,
     ACTOR_PM,
@@ -177,17 +185,22 @@ class ResearchService:
         issuer = self.get_issuer(symbol) or self.ensure_issuer(symbol)
         source = self.pack_source or default_pack_source(self.store)
         snapshot = PackBuilder(source).build(symbol, issuer=issuer, workflow_run_id=workflow_run_id)
+        is_fixture = source_is_fixture(source, snapshot)
+        snapshot["is_fixture"] = is_fixture
+        snapshot["source"] = "fixture" if is_fixture else (snapshot.get("source") or "production")
+        existing = self.store.get_pack(symbol)
+        reject_fixture_write(symbol, is_fixture=is_fixture, existing=existing)
         stored = self.store.upsert_pack(snapshot)
         self._audit(
             ticker=symbol,
             agent_name="pack_builder",
             workflow_run_id=workflow_run_id,
-            payload={"op": "build_pack", "missing_fields": stored.get("missing_fields")},
-            output={"template_id": stored.get("template_id")},
+            payload={"op": "build_pack", "missing_fields": stored.get("missing_fields"), "is_fixture": stored.get("is_fixture")},
+            output={"template_id": stored.get("template_id"), "pack_id": stored.get("pack_id")},
         )
         return stored
 
-    def research_snapshot(self, ticker: str, workflow_run_id: str | None = None) -> dict[str, Any]:
+    def assemble_live_snapshot(self, ticker: str, workflow_run_id: str | None = None) -> dict[str, Any]:
         symbol = _ticker(ticker)
         pack = self.get_pack(symbol)
         assumptions = []
@@ -260,6 +273,101 @@ class ResearchService:
             "economic_drivers": economic_drivers,
             "backfill": self.store.latest_backfill(symbol) if hasattr(self.store, "latest_backfill") else None,
         }
+
+    def freeze_research_snapshot(self, ticker: str, workflow_run_id: str | None = None) -> dict[str, Any]:
+        symbol = _ticker(ticker)
+        live = self.assemble_live_snapshot(symbol, workflow_run_id)
+        frozen = freeze_live_snapshot(live, pack_source=self.pack_source, workflow_run_id=workflow_run_id)
+        inserter = getattr(self.store, "insert_snapshot", None)
+        stored = inserter(frozen) if callable(inserter) else frozen
+        stored = hydrate_snapshot_row(stored) or stored
+        stored["assumption_engine"] = frozen.get("assumption_engine") or []
+        stored["competing_hypotheses"] = frozen.get("competing_hypotheses") or []
+        stored["economic_drivers"] = frozen.get("economic_drivers") or []
+        stored["agent_reasoning"] = frozen.get("agent_reasoning") or []
+        stored["pack_fingerprint"] = frozen.get("pack_fingerprint")
+        stored["market_comparison"] = frozen.get("market_comparison")
+        self._audit(
+            ticker=symbol,
+            agent_name="research_snapshot",
+            workflow_run_id=stored.get("workflow_run_id"),
+            payload={"op": "freeze_snapshot", "snapshot_id": stored.get("snapshot_id"), "status": stored.get("snapshot_status")},
+            output={"invalid_reasons": stored.get("invalid_reasons") or [], "is_fixture": stored.get("is_fixture")},
+        )
+        return stored
+
+    def get_frozen_snapshot(self, snapshot_id: str) -> dict[str, Any] | None:
+        getter = getattr(self.store, "get_snapshot", None)
+        if not callable(getter):
+            return None
+        return hydrate_snapshot_row(getter(snapshot_id))
+
+    def research_snapshot(
+        self,
+        ticker: str,
+        workflow_run_id: str | None = None,
+        *,
+        snapshot_id: str | None = None,
+        prefer_frozen: bool = False,
+    ) -> dict[str, Any]:
+        symbol = _ticker(ticker)
+        getter = getattr(self.store, "get_snapshot", None)
+        if snapshot_id and callable(getter):
+            frozen = hydrate_snapshot_row(getter(snapshot_id))
+            if frozen:
+                return self._attach_live_context(frozen, symbol, workflow_run_id or frozen.get("workflow_run_id"))
+        workflow_getter = getattr(self.store, "get_snapshot_for_workflow", None)
+        if workflow_run_id and callable(workflow_getter):
+            frozen = hydrate_snapshot_row(workflow_getter(workflow_run_id))
+            if frozen:
+                return self._attach_live_context(frozen, symbol, workflow_run_id)
+        if prefer_frozen:
+            latest_getter = getattr(self.store, "get_latest_snapshot", None)
+            if callable(latest_getter):
+                frozen = hydrate_snapshot_row(latest_getter(symbol, include_fixture=fixture_allowed()))
+                if frozen:
+                    return self._attach_live_context(frozen, symbol, frozen.get("workflow_run_id"))
+        return self.assemble_live_snapshot(symbol, workflow_run_id)
+
+    def _attach_live_context(self, frozen: dict[str, Any], ticker: str, workflow_run_id: str | None) -> dict[str, Any]:
+        live = self.assemble_live_snapshot(ticker, workflow_run_id)
+        payload = dict(live)
+        payload.update(frozen)
+        payload["pack"] = frozen.get("pack") or live.get("pack")
+        payload["evidence"] = frozen.get("evidence") if frozen.get("evidence") is not None else live.get("evidence")
+        payload["assumptions"] = frozen.get("assumptions") if frozen.get("assumptions") is not None else live.get("assumptions")
+        payload["findings"] = frozen.get("findings") if frozen.get("findings") is not None else live.get("findings")
+        payload["snapshot_id"] = frozen.get("snapshot_id")
+        if frozen.get("valuation_id") and hasattr(self.store, "get_valuation"):
+            bound = self.store.get_valuation(frozen["valuation_id"])
+            if bound:
+                payload["valuation"] = bound
+        return payload
+
+    def bind_snapshot_outputs(
+        self,
+        snapshot_id: str,
+        *,
+        valuation: dict[str, Any] | None = None,
+        pm_meta: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        getter = getattr(self.store, "get_snapshot", None)
+        updater = getattr(self.store, "update_snapshot", None)
+        if not callable(getter) or not callable(updater):
+            return {"snapshot_id": snapshot_id}
+        row = hydrate_snapshot_row(getter(snapshot_id)) or {"snapshot_id": snapshot_id}
+        method_version = None
+        if valuation:
+            method_version = valuation.get("valuation_method_version")
+        manifest = build_snapshot_manifest(row, valuation=valuation, pm_meta=pm_meta)
+        return updater(
+            snapshot_id,
+            valuation_id=(valuation or {}).get("id"),
+            valuation_method_version=method_version,
+            manifest=manifest,
+            model=(pm_meta or {}).get("model"),
+            prompt_version=(pm_meta or {}).get("prompt_version"),
+        )
 
     def start_workflow_run(
         self,
@@ -699,6 +807,7 @@ class ResearchService:
                 "agent_run_id": audit["id"],
                 "model": body.get("model"),
                 "prompt_version": body.get("prompt_version"),
+                "snapshot_id": body.get("snapshot_id"),
             }
         )
 
@@ -713,15 +822,35 @@ class ResearchService:
         for key in ("bear_case", "base_case", "bull_case"):
             if key not in body:
                 raise ProvenanceError("valuation requires bear_case, base_case, and bull_case")
+        snapshot_id = body.get("snapshot_id") or thesis.get("snapshot_id")
+        snapshot = None
+        if snapshot_id:
+            getter = getattr(self.store, "get_snapshot", None)
+            snapshot = hydrate_snapshot_row(getter(snapshot_id)) if callable(getter) else None
+            if snapshot is None:
+                raise ProvenanceError("valuation snapshot_id was not found")
+            if str(snapshot.get("ticker") or "").upper() != symbol:
+                raise CrossTickerError("valuation snapshot ticker mismatch")
+            if snapshot.get("snapshot_status") == "invalid":
+                raise ProvenanceError("cannot write valuation against an invalid snapshot")
         audit = self._audit(
             ticker=symbol,
             agent_name=actor,
             workflow_run_id=body.get("workflow_run_id"),
             model=body.get("model"),
             prompt_version=body.get("prompt_version"),
-            payload={"op": "create_valuation", "thesis_id": thesis["id"]},
+            payload={"op": "create_valuation", "thesis_id": thesis["id"], "snapshot_id": snapshot_id},
             llm_audit=body.get("llm_audit") if isinstance(body.get("llm_audit"), dict) else None,
         )
+        spot = snapshot.get("spot_price") if snapshot is not None else body.get("spot_price")
+        method_version = body.get("valuation_method_version") or (body.get("calibration_json") or {}).get("valuation_method_version")
+        calibration = dict(body.get("calibration_json") or {})
+        if snapshot_id:
+            calibration["snapshot_id"] = snapshot_id
+            calibration["pack_id"] = snapshot.get("pack_id") if snapshot else None
+            calibration["valuation_input_version"] = snapshot.get("valuation_input_version") if snapshot else None
+        if method_version:
+            calibration["valuation_method_version"] = method_version
         valuation = self.store.insert_valuation(
             {
                 "ticker": symbol,
@@ -731,8 +860,10 @@ class ResearchService:
                 "bear_case": normalize_valuation_case(body.get("bear_case")),
                 "base_case": normalize_valuation_case(body.get("base_case")),
                 "bull_case": normalize_valuation_case(body.get("bull_case")),
-                "spot_price": body.get("spot_price"),
-                "calibration_json": body.get("calibration_json") or {},
+                "spot_price": spot,
+                "calibration_json": calibration,
+                "snapshot_id": snapshot_id,
+                "valuation_method_version": method_version,
                 "actor": actor,
                 "workflow_run_id": body.get("workflow_run_id"),
                 "agent_run_id": audit["id"],

@@ -352,7 +352,7 @@ def _reaction_groups(reaction: dict[str, Any], evidence: list[dict[str, Any]]) -
 
 def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
-    snapshot = service.research_snapshot(symbol)
+    snapshot = service.research_snapshot(symbol, prefer_frozen=True)
     pack = snapshot.get("pack") or {}
     thesis = snapshot.get("thesis") or service.empty_thesis(symbol)
     valuation = snapshot.get("valuation") or service.empty_valuation(symbol)
@@ -500,6 +500,9 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
         "ticker": symbol,
         "legal_name": profile.get("legal_name") or symbol,
         "template_id": pack.get("template_id"),
+        "snapshot_id": snapshot.get("snapshot_id"),
+        "snapshot_status": snapshot.get("snapshot_status"),
+        "snapshot_manifest": snapshot.get("manifest") or {},
         "hero": {
             "core_thesis": compact,
             "core_thesis_full": full_thesis,
@@ -556,6 +559,8 @@ def build_research_review(service: Any, ticker: str) -> dict[str, Any]:
         "market_implied": {
             "title": "当前股价隐含的增长预期",
             "spot": spot,
+            "market_comparison_status": implied.get("market_comparison_status") or ("unavailable" if spot in (None, 0) else "available"),
+            "reason": implied.get("reason") if implied.get("market_comparison_status") == "unavailable" or spot in (None, 0) else None,
             "market_implied_under_base_multiple": implied.get("market_implied_under_base_multiple"),
             "sensitivity": implied.get("sensitivity") or [],
             "market_implied_range": implied.get("market_implied_range"),

@@ -23,6 +23,8 @@ class PackSource(Protocol):
 class DictPackSource:
     """Fixture or test overlay. Production workflow uses DatabasePackSource."""
 
+    is_fixture = True
+
     def __init__(self, payload: dict[str, Any] | None = None) -> None:
         self.payload = {str(key).upper(): dict(value or {}) for key, value in (payload or {}).items()}
 
@@ -166,6 +168,8 @@ def documents_to_official(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 class DatabasePackSource:
+    is_fixture = False
+
     def __init__(self, database: Any) -> None:
         self.database = database
 
@@ -327,6 +331,8 @@ class DatabasePackSource:
 
 class StorePackSource:
     """Read backfill overlays and source documents from an in-memory research store."""
+
+    is_fixture = False
 
     def __init__(self, store: Any) -> None:
         self.store = store

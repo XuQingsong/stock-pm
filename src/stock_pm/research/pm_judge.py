@@ -22,6 +22,13 @@ from .llm_reason import (
     skipped_audit,
     validate_pm_payload,
 )
+from .snapshot import (
+    apply_missing_spot_guard,
+    build_snapshot_manifest,
+    classify_target_change,
+    market_comparison_for,
+    valuation_method_version,
+)
 from .quality import assess_research_quality_axes
 from .relevance import CONTRACT_RE, HARD_COUNTER_RE, assumption_kind
 from .templates import load_prompt
@@ -69,11 +76,23 @@ def _agent_findings(snapshot: dict[str, Any], name: str) -> list[str]:
     return rows
 
 
-def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = None) -> dict[str, Any]:
-    snapshot = service.research_snapshot(ticker, workflow_run_id)
-    pack = snapshot.get("pack") or service.get_pack(ticker)
-    views = snapshot.get("assumption_engine") or engine_views_for_ticker(service, ticker)
-    evidence = snapshot.get("evidence") or []
+def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = None, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
+    freezer = getattr(service, "freeze_research_snapshot", None)
+    frozen = snapshot
+    if frozen is None and callable(freezer):
+        frozen = freezer(ticker, workflow_run_id)
+    live = service.assemble_live_snapshot(ticker, workflow_run_id) if hasattr(service, "assemble_live_snapshot") else service.research_snapshot(ticker, workflow_run_id)
+    if frozen is None:
+        frozen = live
+    pack = frozen.get("pack") or live.get("pack") or service.get_pack(ticker)
+    views = frozen.get("assumption_engine") or live.get("assumption_engine") or engine_views_for_ticker(service, ticker)
+    allowed_ids = {str(item) for item in (frozen.get("assumption_ids") or []) if item}
+    if allowed_ids:
+        views = [row for row in views if str(row.get("assumption_id") or row.get("id") or "") in allowed_ids]
+    evidence = frozen.get("evidence") if frozen.get("evidence") is not None else (live.get("evidence") or [])
+    allowed_evidence = {str(item) for item in (frozen.get("evidence_ids") or []) if item}
+    if allowed_evidence:
+        evidence = [row for row in evidence if str(row.get("id") or "") in allowed_evidence]
     previous_thesis = service.store.get_latest_thesis(ticker)
     previous_valuation = None
     if previous_thesis and previous_thesis.get("valuation_id"):
@@ -99,23 +118,33 @@ def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = N
                 "raw_reference": row.get("raw_reference"),
             }
         )
+    spot = frozen.get("spot_price")
+    comparison = frozen.get("market_comparison") or market_comparison_for(spot)
     return {
         "ticker": str(ticker).upper(),
+        "snapshot_id": frozen.get("snapshot_id"),
+        "snapshot": frozen,
+        "snapshot_status": frozen.get("snapshot_status") or "valid",
+        "snapshot_invalid": frozen.get("snapshot_status") == "invalid",
+        "invalid_reasons": list(frozen.get("invalid_reasons") or []),
         "pack": pack,
-        "assumptions": snapshot.get("assumptions") or [],
+        "assumptions": frozen.get("assumptions") if frozen.get("assumptions") is not None else (live.get("assumptions") or []),
         "engine_views": views,
         "evidence": evidence_brief,
-        "industry_findings": _agent_findings(snapshot, "industry"),
-        "quant_findings": _agent_findings(snapshot, "quant"),
-        "risk_findings": _agent_findings(snapshot, "risk"),
-        "search_findings": _agent_findings(snapshot, "search_data"),
-        "competing_hypotheses": snapshot.get("competing_hypotheses") or [],
-        "economic_drivers": snapshot.get("economic_drivers") or [],
-        "agent_reasoning": snapshot.get("agent_reasoning") or [],
-        "tasks": snapshot.get("tasks") or [],
+        "industry_findings": _agent_findings(frozen if frozen.get("findings") else live, "industry"),
+        "quant_findings": _agent_findings(frozen if frozen.get("findings") else live, "quant"),
+        "risk_findings": _agent_findings(frozen if frozen.get("findings") else live, "risk"),
+        "search_findings": _agent_findings(frozen if frozen.get("findings") else live, "search_data"),
+        "competing_hypotheses": frozen.get("competing_hypotheses") or live.get("competing_hypotheses") or [],
+        "economic_drivers": frozen.get("economic_drivers") or live.get("economic_drivers") or [],
+        "agent_reasoning": frozen.get("agent_reasoning") or live.get("agent_reasoning") or [],
+        "tasks": live.get("tasks") or [],
         "previous_thesis": previous_thesis,
         "previous_valuation": previous_valuation,
-        "snapshot": snapshot,
+        "spot_price": spot,
+        "market_comparison": comparison,
+        "valuation_input_version": frozen.get("valuation_input_version"),
+        "pack_fingerprint": frozen.get("pack_fingerprint"),
     }
 
 
@@ -426,6 +455,9 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
             "valuation_change": None,
             "confidence_change": None,
             "thesis_change": "first version",
+            "snapshot_changed": False,
+            "methodology_change": False,
+            "target_change_due_to": [],
         }
     prev_ids = set(previous.get("key_assumption_ids") or []) | set(previous.get("core_assumption_ids") or [])
     curr_ids = set(current.get("key_assumption_ids") or []) | set(current.get("core_assumption_ids") or [])
@@ -440,19 +472,43 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
             weakened.append(row.get("assumption_id"))
     prev_target = to_number(((previous_valuation or {}).get("base_case") or {}).get("target_value"))
     curr_target = to_number(((current_valuation or {}).get("base_case") or {}).get("target_value"))
+    classified = classify_target_change(previous_valuation, current_valuation)
+    if not classified.get("previous_snapshot_id"):
+        classified["previous_snapshot_id"] = previous.get("snapshot_id")
+    if not classified.get("current_snapshot_id"):
+        classified["current_snapshot_id"] = current.get("snapshot_id")
+        classified["snapshot_changed"] = bool(
+            classified.get("previous_snapshot_id")
+            and classified.get("current_snapshot_id")
+            and classified["previous_snapshot_id"] != classified["current_snapshot_id"]
+        )
     valuation_change = None
     if prev_target is not None or curr_target is not None:
         attribution = attribute_target_change(previous_valuation, current_valuation)
+        due = classified.get("target_change_due_to") or []
+        if classified.get("snapshot_changed") and not due:
+            due = ["data refresh"]
+        reason = "recomputed from the current frozen snapshot"
+        if classified.get("snapshot_changed"):
+            reason = "DATA SNAPSHOT CHANGED; " + (", ".join(due) if due else "new snapshot")
+        elif due:
+            reason = "target change due to: " + ", ".join(due)
         valuation_change = {
             "base_target": {"from": display_target(prev_target), "to": display_target(curr_target)},
             "attribution": attribution.get("parts") or [],
-            "reason": "recomputed from current pack inputs, PM rulings, and the earnings bridge",
+            "reason": reason,
+            "target_change_due_to": due,
+            "methodology_change": classified.get("methodology_change"),
+            "snapshot_changed": classified.get("snapshot_changed"),
         }
     prev_conf = to_number(previous.get("confidence"))
     curr_conf = to_number(current.get("confidence"))
     thesis_changed = str(previous.get("core_thesis") or "") != str(current.get("core_thesis") or "")
+    what_changed = "thesis version incremented"
+    if classified.get("snapshot_changed"):
+        what_changed = "DATA SNAPSHOT CHANGED"
     return {
-        "what_changed": "thesis version incremented",
+        "what_changed": what_changed,
         "strengthened_assumptions": strengthened,
         "weakened_assumptions": weakened,
         "new_core_assumption_ids": sorted(curr_ids - prev_ids),
@@ -462,6 +518,13 @@ def thesis_diff(previous: dict[str, Any] | None, current: dict[str, Any], *, pre
         "valuation_change": valuation_change,
         "confidence_change": {"from": prev_conf, "to": curr_conf} if prev_conf is not None or curr_conf is not None else None,
         "thesis_change": "core thesis text changed" if thesis_changed else "core thesis text unchanged",
+        "snapshot_changed": bool(classified.get("snapshot_changed")),
+        "previous_snapshot_id": classified.get("previous_snapshot_id"),
+        "current_snapshot_id": classified.get("current_snapshot_id"),
+        "methodology_change": bool(classified.get("methodology_change")),
+        "target_change_due_to": classified.get("target_change_due_to") or [],
+        "previous_method_version": classified.get("previous_method_version"),
+        "current_method_version": classified.get("current_method_version"),
     }
 
 
@@ -482,6 +545,18 @@ def _rule_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         key_assumption_ids=core_ids,
         rulings=rulings,
     )
+    method_version = valuation_method_version(cases)
+    cases["valuation_method_version"] = method_version
+    cases["snapshot_id"] = brief.get("snapshot_id")
+    cases["pack_fingerprint"] = brief.get("pack_fingerprint")
+    if brief.get("spot_price") is not None:
+        cases["spot_price"] = brief.get("spot_price")
+    cal = dict(cases.get("calibration_json") or {})
+    cal["valuation_method_version"] = method_version
+    cal["snapshot_id"] = brief.get("snapshot_id")
+    cal["pack_fingerprint"] = brief.get("pack_fingerprint")
+    cal["valuation_input_version"] = brief.get("valuation_input_version")
+    cases["calibration_json"] = cal
     deep = synthesize_deep_case(
         brief.get("pack"),
         evidence=brief.get("evidence") or [],
@@ -576,6 +651,7 @@ def _rule_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         "research_quality": quality_payload,
         "market_reaction": reaction["summary"],
         "prompt_version": PROMPT_VERSION,
+        "snapshot_id": brief.get("snapshot_id"),
     }
     return {
         "rulings": rulings,
@@ -588,7 +664,7 @@ def _rule_pm_judgment(brief: dict[str, Any]) -> dict[str, Any]:
         "prompt_version": PROMPT_VERSION,
         "agent_name": AGENT_PM,
         "llm_audit": skipped_audit(error="rule engine path"),
-        "pm_reasoning": {"source": "deterministic_fallback"},
+        "pm_reasoning": {"source": "deterministic_fallback", "snapshot_id": brief.get("snapshot_id")},
     }
 
 
@@ -640,6 +716,10 @@ def _pm_user_payload(brief: dict[str, Any], base: dict[str, Any]) -> dict[str, A
     previous = brief.get("previous_thesis") or {}
     return {
         "ticker": brief.get("ticker"),
+        "snapshot_id": brief.get("snapshot_id"),
+        "spot_price": brief.get("spot_price"),
+        "market_comparison_status": (brief.get("market_comparison") or {}).get("market_comparison_status"),
+        "market_comparison_reason": (brief.get("market_comparison") or {}).get("reason"),
         "research_pack": compact_pack(brief.get("pack")),
         "assumptions": compact_assumptions(brief.get("assumptions"), limit=10),
         "evidence": compact_evidence(brief.get("evidence"), limit=24),
@@ -669,11 +749,14 @@ def _pm_user_payload(brief: dict[str, Any], base: dict[str, Any]) -> dict[str, A
         "previous_thesis": {
             "core_thesis": compact_text(previous.get("core_thesis"), 400),
             "version": previous.get("version"),
+            "snapshot_id": previous.get("snapshot_id"),
         },
         "rules": [
-            "Cite only evidence_id values from evidence[].",
+            "Cite only evidence_id values from evidence[] on this snapshot_id.",
             "Do not invent evidence.",
             "Do not replace valuation_math numbers.",
+            "Do not copy spot, pack, or valuation from previous_thesis.",
+            "If market_comparison_status is unavailable, do not write market implied growth, market disagreement, or spot vs base/bull.",
             "decisive_variables: 1-3 items. market_disagreement: at most 2. thesis-changing evidence: at most 5.",
             "Keep each assumption ruling to one sentence.",
         ],
@@ -855,6 +938,18 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
     }
 
 
+def _brief_spot(brief: dict[str, Any], valuation: dict[str, Any] | None = None) -> float | None:
+    spot = to_number(brief.get("spot_price"))
+    if spot not in (None, 0):
+        return spot
+    pack = brief.get("pack") or {}
+    profile = pack.get("company_profile") or {}
+    spot = to_number(profile.get("last_close"))
+    if spot not in (None, 0):
+        return spot
+    return to_number((valuation or {}).get("spot_price"))
+
+
 def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> dict[str, Any]:
     base = _rule_pm_judgment(brief)
     assumption_ids = {str(row.get("assumption_id") or row.get("id") or "") for row in (brief.get("assumptions") or []) if row.get("id") or row.get("assumption_id")}
@@ -869,10 +964,16 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
         validator=validate_pm_payload,
     )
     if not raw:
+        spot = _brief_spot(brief, base.get("valuation"))
+        fallback = {"source": "deterministic_fallback", "llm_audit": audit, "snapshot_id": brief.get("snapshot_id")}
+        apply_missing_spot_guard(fallback, spot=spot)
         base["llm_audit"] = audit
         base["thesis"]["research_quality"] = dict(base["thesis"].get("research_quality") or {})
-        base["thesis"]["research_quality"]["pm_reasoning"] = {"source": "deterministic_fallback", "llm_audit": audit}
-        base["pm_reasoning"] = {"source": "deterministic_fallback"}
+        base["thesis"]["research_quality"]["pm_reasoning"] = fallback
+        base["thesis"]["snapshot_id"] = brief.get("snapshot_id")
+        base["pm_reasoning"] = fallback
+        if base.get("valuation") is not None:
+            base["valuation"]["snapshot_id"] = brief.get("snapshot_id")
         return base
     cleaned = _clean_pm_payload(raw, assumption_ids=assumption_ids, evidence_ids=evidence_ids)
     warnings = _guardrail_warnings(cleaned["assumption_rulings"], brief.get("engine_views") or [])
@@ -952,13 +1053,16 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
         "validation_warnings": warnings,
         "llm_audit": audit,
         "competing_hypotheses": cleaned.get("competing_hypotheses") or clip(brief.get("competing_hypotheses"), 8),
+        "snapshot_id": brief.get("snapshot_id"),
     }
+    cases = dict(base["valuation"])
+    apply_missing_spot_guard(reasoning, spot=_brief_spot(brief, cases))
     thesis["research_quality"] = dict(thesis.get("research_quality") or {})
     thesis["research_quality"]["pm_reasoning"] = reasoning
     thesis["research_quality"]["golden_answers"] = cleaned["golden_answers"]
+    thesis["snapshot_id"] = brief.get("snapshot_id")
     if audit.get("llm_status") == "ok":
         thesis["model"] = audit.get("model")
-    cases = dict(base["valuation"])
     audit_pm_reasoning(
         reasoning,
         evidence=brief.get("evidence") or [],
@@ -966,12 +1070,17 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
         pack=brief.get("pack") or {},
         previous_valuation=brief.get("previous_valuation"),
         ticker=brief.get("ticker"),
+        snapshot_id=brief.get("snapshot_id"),
+        allowed_evidence_ids={str(row.get("id")) for row in (brief.get("evidence") or []) if row.get("id")},
     )
+    apply_missing_spot_guard(reasoning, spot=_brief_spot(brief, cases))
     cal = dict(cases.get("calibration_json") or {})
     cal["pm_reasoning"] = reasoning
     cal["valuation_driver_judgment"] = cleaned["valuation_driver_judgment"]
     cal["consistency_audit"] = reasoning.get("consistency_audit")
+    cal["snapshot_id"] = brief.get("snapshot_id")
     cases["calibration_json"] = cal
+    cases["snapshot_id"] = brief.get("snapshot_id")
     return {
         **base,
         "rulings": rulings,
@@ -994,8 +1103,24 @@ def record_pm_judgment(
 ) -> dict[str, Any]:
     """Persist PM rulings, a new thesis version, and a valuation. Never used by other agents."""
     brief = build_pm_brief(service, ticker, workflow_run_id=workflow_run_id)
+    snapshot = brief.get("snapshot") or {}
+    if brief.get("snapshot_invalid"):
+        return {
+            "ticker": str(ticker).upper(),
+            "skipped": True,
+            "reason": "invalid snapshot",
+            "snapshot_id": brief.get("snapshot_id"),
+            "snapshot_status": "invalid",
+            "invalid_reasons": brief.get("invalid_reasons") or snapshot.get("invalid_reasons") or [],
+            "snapshot": snapshot,
+        }
     if not brief.get("engine_views") and not brief.get("assumptions"):
-        return {"ticker": str(ticker).upper(), "skipped": True, "reason": "no assumptions to adjudicate"}
+        return {
+            "ticker": str(ticker).upper(),
+            "skipped": True,
+            "reason": "no assumptions to adjudicate",
+            "snapshot_id": brief.get("snapshot_id"),
+        }
     judgment = build_pm_judgment(brief, completer=getattr(service, "completer", None))
     previous_thesis = brief.get("previous_thesis")
     previous_valuation = brief.get("previous_valuation")
@@ -1027,6 +1152,7 @@ def record_pm_judgment(
     thesis_body["workflow_run_id"] = workflow_run_id
     thesis_body["prompt_version"] = PROMPT_VERSION
     thesis_body["llm_audit"] = judgment.get("llm_audit")
+    thesis_body["snapshot_id"] = brief.get("snapshot_id")
     if (judgment.get("llm_audit") or {}).get("llm_status") == "ok":
         thesis_body["model"] = (judgment.get("llm_audit") or {}).get("model")
     thesis = service.create_thesis(ticker, thesis_body, actor=ACTOR_PM)
@@ -1036,12 +1162,14 @@ def record_pm_judgment(
         "bear_case": judgment["valuation"]["bear_case"],
         "base_case": judgment["valuation"]["base_case"],
         "bull_case": judgment["valuation"]["bull_case"],
-        "spot_price": judgment["valuation"].get("spot_price"),
+        "spot_price": brief.get("spot_price") if brief.get("spot_price") is not None else judgment["valuation"].get("spot_price"),
         "calibration_json": judgment["valuation"].get("calibration_json") or {},
         "workflow_run_id": workflow_run_id,
         "prompt_version": PROMPT_VERSION,
         "llm_audit": judgment.get("llm_audit"),
         "model": thesis_body.get("model"),
+        "snapshot_id": brief.get("snapshot_id"),
+        "valuation_method_version": judgment["valuation"].get("valuation_method_version"),
     }
     valuation = service.create_valuation(ticker, valuation_body, actor=ACTOR_PM)
     diff = thesis_diff(
@@ -1067,9 +1195,26 @@ def record_pm_judgment(
                         "ticker": str(ticker).upper(),
                         "thesis_id": thesis["id"],
                         "workflow_run_id": workflow_run_id,
+                        "snapshot_id": brief.get("snapshot_id"),
                     }
                 )
             )
+    binder = getattr(service, "bind_snapshot_outputs", None)
+    snapshot_row = snapshot
+    if callable(binder) and brief.get("snapshot_id"):
+        snapshot_row = binder(
+            brief["snapshot_id"],
+            valuation=valuation,
+            pm_meta={
+                "model": thesis_body.get("model") or (judgment.get("llm_audit") or {}).get("model"),
+                "prompt_version": PROMPT_VERSION,
+            },
+        ) or snapshot
+    manifest = (snapshot_row or {}).get("manifest") or build_snapshot_manifest(
+        snapshot or {"ticker": str(ticker).upper(), "snapshot_id": brief.get("snapshot_id"), "pack": brief.get("pack")},
+        valuation=valuation,
+        pm_meta={"model": thesis_body.get("model"), "prompt_version": PROMPT_VERSION},
+    )
     return {
         "ticker": str(ticker).upper(),
         "skipped": False,
@@ -1084,4 +1229,9 @@ def record_pm_judgment(
         "llm_audit": judgment.get("llm_audit"),
         "prompt_version": PROMPT_VERSION,
         "produced_by": ACTOR_PM,
+        "snapshot_id": brief.get("snapshot_id"),
+        "snapshot": snapshot_row or snapshot,
+        "snapshot_manifest": manifest,
+        "market_comparison": brief.get("market_comparison"),
+        "consistency_audit": judgment.get("consistency_audit"),
     }
