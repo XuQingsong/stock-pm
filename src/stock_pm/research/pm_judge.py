@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from .assumptions import engine_views_for_ticker
+from .consistency import audit_pm_reasoning
 from .deep_case import build_delivery_history, reaction_window, synthesize_deep_case
 from .extract import to_number
 from .llm_reason import (
@@ -85,6 +86,7 @@ def build_pm_brief(service: Any, ticker: str, *, workflow_run_id: str | None = N
             {
                 "id": row.get("id"),
                 "fact": row.get("fact"),
+                "excerpt": row.get("excerpt") or row.get("fact"),
                 "source": row.get("source"),
                 "source_url": row.get("source_url"),
                 "source_time": row.get("source_time"),
@@ -686,13 +688,22 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
         name = compact_text(item.get("name") or item.get("variable") or "", 80)
         if not name:
             continue
-        ids = [str(eid) for eid in (item.get("evidence_ids") or item.get("evidence") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)]
+        ids = [str(eid) for eid in (item.get("evidence_ids") or item.get("supporting_evidence_ids") or item.get("evidence") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)]
+        oppose = [str(eid) for eid in (item.get("opposing_evidence_ids") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)]
+        missing = item.get("missing_evidence")
+        if isinstance(missing, str):
+            missing_list = [missing] if missing.strip() else []
+        else:
+            missing_list = [str(gap).strip() for gap in (missing or []) if str(gap).strip() and len(str(gap).strip()) > 1][:4]
         variables.append(
             {
                 "name": name,
                 "why_decisive": compact_text(item.get("why_decisive") or "", 240),
                 "current_view": compact_text(item.get("current_view") or "", 240),
                 "evidence_ids": ids[:6],
+                "supporting_evidence_ids": ids[:6],
+                "opposing_evidence_ids": oppose[:6],
+                "missing_evidence": missing_list,
                 "sensitivity": compact_text(item.get("sensitivity") or "", 200),
                 "next_check": compact_text(item.get("next_check") or "", 160),
             }
@@ -795,9 +806,16 @@ def _clean_pm_payload(raw: dict[str, Any], *, assumption_ids: set[str], evidence
         hypotheses.append(
             {
                 "statement": statement,
-                "probability_band": compact_text(item.get("probability_band") or "", 40),
+                "probability_band": compact_text(item.get("probability_band") or item.get("confidence_band") or "", 40),
+                "confidence_band": compact_text(item.get("confidence_band") or item.get("probability_band") or "", 40),
                 "how_to_test": compact_text(item.get("how_to_test") or "", 200),
                 "impact_if_true": compact_text(item.get("impact_if_true") or "", 200),
+                "supporting_evidence_ids": [
+                    str(eid) for eid in (item.get("supporting_evidence_ids") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)
+                ][:6],
+                "opposing_evidence_ids": [
+                    str(eid) for eid in (item.get("opposing_evidence_ids") or []) if str(eid).strip() and (not evidence_ids or str(eid) in evidence_ids)
+                ][:6],
                 "missing_evidence": missing_list,
             }
         )
@@ -941,9 +959,18 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
     if audit.get("llm_status") == "ok":
         thesis["model"] = audit.get("model")
     cases = dict(base["valuation"])
+    audit_pm_reasoning(
+        reasoning,
+        evidence=brief.get("evidence") or [],
+        valuation=cases,
+        pack=brief.get("pack") or {},
+        previous_valuation=brief.get("previous_valuation"),
+        ticker=brief.get("ticker"),
+    )
     cal = dict(cases.get("calibration_json") or {})
     cal["pm_reasoning"] = reasoning
     cal["valuation_driver_judgment"] = cleaned["valuation_driver_judgment"]
+    cal["consistency_audit"] = reasoning.get("consistency_audit")
     cases["calibration_json"] = cal
     return {
         **base,
@@ -955,6 +982,7 @@ def build_pm_judgment(brief: dict[str, Any], completer: Any | None = None) -> di
         "pm_reasoning": reasoning,
         "prompt_version": PROMPT_VERSION,
         "agent_name": AGENT_PM,
+        "consistency_audit": reasoning.get("consistency_audit"),
     }
 
 

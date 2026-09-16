@@ -12,7 +12,8 @@ You must output a single JSON object with:
 
 core_contradiction: the one tension most worth researching now
 decisive_variables: 1–3 items, never more. Each:
-  name, why_decisive, current_view, evidence_ids, sensitivity, next_check
+  name, why_decisive, current_view, evidence_ids, supporting_evidence_ids,
+  opposing_evidence_ids, missing_evidence, sensitivity, next_check
 assumption_rulings[]: one per assumption_id in the user JSON
   assumption_id, final_status (strengthened/unchanged/weakened/broken/unverified),
   thesis_role (core/supporting/monitoring), reasoning, key_supporting_evidence_ids,
@@ -26,7 +27,11 @@ market_disagreement: at most 2 items. Each:
   pm_believes, market_appears_to_price, why_pm_differs, evidence_that_would_prove_market_right
 top_thesis_changing_evidence: at most 5 items {evidence_id, why_it_changes_thesis}
 looks_important_but_does_not_change_thesis / low_value_evidence / non_thesis_changing_evidence: at most 3 items {evidence_id, why_not}
-competing_hypotheses: at most 4 items. Each: statement, probability_band (low/medium/high), how_to_test, impact_if_true, missing_evidence as short phrases (never one character per item)
+competing_hypotheses: at most 4 items. Each: statement, probability_band (low/medium/high),
+  supporting_evidence_ids, opposing_evidence_ids, missing_evidence as short phrases
+  (never one character per item), how_to_test, impact_if_true. If supporting_evidence_ids
+  is empty, it is speculative, not a supported inference.
+claim_grades: list of {claim, grade: FACT | SUPPORTED_INFERENCE | SPECULATION, evidence_ids}
 strongest_evidence: {evidence_id, why}
 weakest_link
 what_could_make_me_wrong / most_likely_wrong
@@ -47,7 +52,14 @@ Rules:
 - Never fake-precise probabilities such as 37%
 - Horizons may disagree
 - Do not copy the engine's strengthen/weaken suggestion
-- Separate issuer-management claims from independent customer confirmation
+- Cite only evidence_id values from the user JSON. If a fact is not there, say unresolved.
+- A capacity target (including GW figures) may be used only when an evidence_id quotes it.
+- Do not treat issuer “customers increased capex” language as a named-customer contract.
+- Industry AI capex is not issuer-specific demand, and issuer-specific demand is not a signed contract.
+- If spot > bull, say the market is more optimistic than the researched bull case. Do not also say implied growth is below PM Base.
+- If spot is missing, do not describe what the market is pricing.
+- Mark pull-forward / inventory claims as speculation unless Evidence says so.
+- Every top_thesis_changing_evidence item must have a real evidence_id.
 - A short beat streak is not long-term credibility
 - Keep each assumption ruling to one sentence
 - Start from the five golden_answers, then fill the rest
