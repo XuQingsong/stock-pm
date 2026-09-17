@@ -108,6 +108,8 @@ class Settings:
     )
     google_cse_api_key: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_API_KEY", ""))
     google_cse_id: str = field(default_factory=lambda: os.getenv("GOOGLE_CSE_ID", ""))
+    tavily_api_key: str = field(default_factory=lambda: os.getenv("TAVILY_API_KEY", "").strip())
+    exa_api_key: str = field(default_factory=lambda: os.getenv("EXA_API_KEY", "").strip())
     events_mode: str = field(
         default_factory=lambda: (os.getenv("STOCK_PM_EVENTS_MODE") or "").strip().lower()
     )

@@ -1,0 +1,22 @@
+STEP_ID: external_fact_extract
+Extract dated, source-bounded facts from full page text. You do not invent facts.
+Search-engine summaries are not facts and are not provided as authority.
+Return one JSON object:
+{
+  "facts": [
+    {
+      "document_id": "xdoc_...",
+      "fact": "one concrete statement copied or tightly paraphrased from the text",
+      "excerpt": "verbatim substring from the document text",
+      "claim_title": "optional matching core claim title or empty",
+      "materiality": "high|medium|low"
+    }
+  ]
+}
+Rules:
+- Use only documents[].text.
+- excerpt must appear in that document's text.
+- Prefer numbers, named customers/suppliers, demand, capex, guidance, and technology ramps.
+- Industry demand is not an issuer-specific contract.
+- If the page is thin, promotional, or undated noise, return no fact for it.
+- Maximum 16 facts.

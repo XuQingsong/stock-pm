@@ -267,7 +267,6 @@ def test_brain_run_calls_llm_and_grounds_claims(monkeypatch) -> None:
     news = result["news"]
     assert news
     assert news[0]["layer"] == "material"
-    assert news[0].get("evidence_id")
     versions = store.list_versions(claim["claim_id"])
     assert len(versions) >= 2
     assert news[0]["claim_version_changed"] is True
@@ -329,7 +328,7 @@ def test_quality_partial_when_only_undated_sec_index() -> None:
     assert any("Reuters" in str(item.get("reason")) or "last-30-day" in str(item.get("reason")) for item in quality["warnings"])
 
 
-def test_uninterpreted_news_keeps_evidence_id(monkeypatch) -> None:
+def test_uninterpreted_news_does_not_promote_snippets_to_evidence(monkeypatch) -> None:
     source = DictPackSource.from_mapping("ZZZT", _pack())
     svc = ResearchService(InMemoryResearchStore(), pack_source=source, completer=SilentCompleter())
     svc.store.upsert_pack(_pack())
@@ -350,8 +349,10 @@ def test_uninterpreted_news_keeps_evidence_id(monkeypatch) -> None:
     )
     result = run_brain(svc, "ZZZT", store=BrainStore(), completer=SilentCompleter(), fetch_live=False)
     assert result["news"]
-    assert result["news"][0].get("evidence_id")
     assert result["news"][0]["layer"] == "uninterpreted"
+    assert result["news"][0].get("evidence_id") in {None, ""}
+    facts = [row.get("fact") for row in svc.store.list_evidence("ZZZT")]
+    assert "A high-quality source reported a demand update." not in facts
 
 
 def test_brain_pages_and_json(monkeypatch) -> None:

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-PROMPT_VERSION = "brain-phase1-v1.1"
+PROMPT_VERSION = "brain-phase1-v1.2"
 GOLDEN_TICKERS = ("AVGO", "AAPL", "LITE")
 NEWS_WINDOW_DAYS = 30
 FINANCIAL_EVIDENCE_DAYS = 370
 LLM_EVIDENCE_LIMIT = 80
+TAVILY_SEARCH_BUDGET = 10
+EXA_SEARCH_BUDGET = 10
 
 STATE_TYPES = ("company", "industry", "macro", "event")
 CLAIM_TYPES = ("structural", "operating", "valuation", "event")
@@ -34,6 +36,7 @@ HIGH_QUALITY_NEWS_HOSTS = (
     "apnews.com",
     "ft.com",
     "wsj.com",
+    "cnbc.com",
     "sec.gov",
     "federalreserve.gov",
 )

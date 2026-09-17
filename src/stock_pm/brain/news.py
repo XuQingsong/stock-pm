@@ -296,15 +296,22 @@ def classify_news_hits(hits: list[dict[str, Any]], *, days: int = NEWS_WINDOW_DA
 
 
 def hits_to_evidence_bodies(ticker: str, hits: list[dict[str, Any]], *, retrieved_at: str) -> list[dict[str, Any]]:
+    """Search snippets are not Evidence. Only dated full-text / extracted facts qualify."""
     bodies: list[dict[str, Any]] = []
     for row in hits:
+        if not row.get("is_full_text") and not row.get("extracted_fact"):
+            continue
+        if not row.get("published_at"):
+            continue
         title = str(row.get("title") or "").strip()
-        snippet = str(row.get("snippet") or "").strip()
-        fact = snippet or title
+        snippet = str(row.get("snippet") or row.get("excerpt") or row.get("extracted_fact") or "").strip()
+        fact = str(row.get("extracted_fact") or snippet or title).strip()
         if not fact:
             continue
-        published = row.get("published_at") or retrieved_at
+        published = row.get("published_at")
         url = row.get("url")
+        if not url:
+            continue
         bodies.append(
             {
                 "id": new_id("rev"),

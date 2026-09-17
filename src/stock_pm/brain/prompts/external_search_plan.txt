@@ -1,0 +1,32 @@
+STEP_ID: external_search_plan
+Generate a bounded external-search plan. You do not fetch pages and you do not invent facts.
+Tavily and Exa are discovery providers, not publishers.
+Return one JSON object:
+{
+  "related_entities": [
+    {
+      "name": "Google",
+      "relation": "customer|supplier|competitor|peer|technology|market",
+      "why": "why this entity can change the claims without being ticker news"
+    }
+  ],
+  "queries": [
+    {
+      "query": "searchable query text",
+      "query_type": "company_official|company_earnings|company_news|industry_news|claim|related_entity|customer|supplier",
+      "provider_hint": "tavily|exa|both",
+      "claim_title": "optional core claim title",
+      "entity": "optional related entity"
+    }
+  ],
+  "coverage_gaps": ["what this plan still cannot cover"]
+}
+Rules:
+- Start with company official / earnings / company news / industry news.
+- For each Core Claim, emit 2-4 queries that search the driver, not "{ticker} news".
+- Prefer customers, suppliers, hyperscaler capex, technologies, and regulation that could move the claim.
+- Search the last 30 days. Do not pin queries to a stale calendar year.
+- Do not invent named contracts, dollar figures, or customers that are not implied by the supplied understanding/claims.
+- Keep the list short. No more than 16 queries and 10 related entities.
+- Exa is better for semantic / long-tail / claim-driven / customer-supplier discovery.
+- Tavily is better for dated recent news and page bodies.

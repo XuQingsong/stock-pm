@@ -1,0 +1,95 @@
+{
+  "AAPL": {
+    "tavily_status": "not_configured",
+    "exa_status": "not_configured",
+    "tavily": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "exa": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "better_for_news": "none",
+    "better_for_industry": "none",
+    "better_for_customer_supplier": "none",
+    "better_for_full_text": "none",
+    "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+  },
+  "AVGO": {
+    "tavily_status": "not_configured",
+    "exa_status": "not_configured",
+    "tavily": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "exa": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "better_for_news": "none",
+    "better_for_industry": "none",
+    "better_for_customer_supplier": "none",
+    "better_for_full_text": "none",
+    "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+  },
+  "LITE": {
+    "tavily_status": "not_configured",
+    "exa_status": "not_configured",
+    "tavily": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "exa": {
+      "hit_count": 0,
+      "dated_recent": 0,
+      "full_text": 0,
+      "tier1_2": 0,
+      "news": 0,
+      "industry": 0,
+      "customer_supplier": 0,
+      "unique_domains": [],
+      "avg_full_text_chars": 0
+    },
+    "better_for_news": "none",
+    "better_for_industry": "none",
+    "better_for_customer_supplier": "none",
+    "better_for_full_text": "none",
+    "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "phase": "1.2",
+  "generated_at": "2026-09-17T12:34:57+00:00",
+  "news_window_days": 30,
+  "keys_present": {
+    "tavily": false,
+    "exa": false,
+    "fred": false,
+    "alpha_vantage": true,
+    "llm": true,
+    "benzinga": false
+  },
+  "benzinga": "not_wired",
+  "provider_call_success": {
+    "AAPL": {
+      "alpha_vantage": "partial",
+      "fred": "partial",
+      "duckduckgo": "ok",
+      "tavily": "not_configured",
+      "exa": "not_configured"
+    },
+    "AVGO": {
+      "alpha_vantage": "partial",
+      "fred": "partial",
+      "duckduckgo": "ok",
+      "tavily": "not_configured",
+      "exa": "not_configured"
+    },
+    "LITE": {
+      "alpha_vantage": "partial",
+      "fred": "partial",
+      "duckduckgo": "ok",
+      "tavily": "not_configured",
+      "exa": "not_configured"
+    }
+  },
+  "provider_hit_counts": {
+    "AAPL": {
+      "alpha_vantage": 20,
+      "fred": 11,
+      "duckduckgo": 50,
+      "tavily": 0,
+      "exa": 0
+    },
+    "AVGO": {
+      "alpha_vantage": 20,
+      "fred": 11,
+      "duckduckgo": 50,
+      "tavily": 0,
+      "exa": 0
+    },
+    "LITE": {
+      "alpha_vantage": 20,
+      "fred": 11,
+      "duckduckgo": 35,
+      "tavily": 0,
+      "exa": 0
+    }
+  },
+  "coverage_30d": {
+    "AAPL": {
+      "dated_recent_items": 24,
+      "full_text_items": 22,
+      "tier1_count": 16,
+      "tier2_count": 1,
+      "tier3_count": 1,
+      "tier4_count": 66,
+      "customer_sources": 0,
+      "supplier_sources": 15,
+      "industry_sources": 25,
+      "duplicates_removed": 6,
+      "raw_count": 90,
+      "evidence_extracted": 9,
+      "coverage_gaps": [
+        "No customer-related documents were retrieved.",
+        "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+      ],
+      "valuable_domains": [
+        "barrons.com",
+        "cnbc.com",
+        "fred.stlouisfed.org",
+        "sec.gov"
+      ],
+      "claim_query_examples": [
+        "TSMC advanced chip capacity constraints 2026",
+        "Foxconn iPhone assembly capacity labor issues",
+        "Apple services monetization cloud payments growth",
+        "Apple PE ratio forward valuation 2026",
+        "TSMC AAPL supplier demand OR capex OR supply"
+      ]
+    },
+    "AVGO": {
+      "dated_recent_items": 27,
+      "full_text_items": 22,
+      "tier1_count": 18,
+      "tier2_count": 2,
+      "tier3_count": 0,
+      "tier4_count": 64,
+      "customer_sources": 20,
+      "supplier_sources": 5,
+      "industry_sources": 33,
+      "duplicates_removed": 8,
+      "raw_count": 92,
+      "evidence_extracted": 7,
+      "coverage_gaps": [
+        "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+      ],
+      "valuable_domains": [
+        "cnbc.com",
+        "fred.stlouisfed.org",
+        "reuters.com",
+        "sec.gov"
+      ],
+      "claim_query_examples": [
+        "Google TPU AI accelerator 2026",
+        "Meta custom AI chip 2026",
+        "Microsoft AI chip development 2026",
+        "Amazon AWS custom AI chip 2026",
+        "TSMC advanced packaging capacity 2026"
+      ]
+    },
+    "LITE": {
+      "dated_recent_items": 21,
+      "full_text_items": 19,
+      "tier1_count": 19,
+      "tier2_count": 0,
+      "tier3_count": 0,
+      "tier4_count": 42,
+      "customer_sources": 4,
+      "supplier_sources": 5,
+      "industry_sources": 17,
+      "duplicates_removed": 10,
+      "raw_count": 73,
+      "evidence_extracted": 7,
+      "coverage_gaps": [
+        "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+      ],
+      "valuable_domains": [
+        "fred.stlouisfed.org",
+        "investor.lumentum.com",
+        "sec.gov"
+      ],
+      "claim_query_examples": [
+        "optical component supply chain constraints indium phosphide 2026",
+        "Lumentum customer orders datacom transceiver 2026",
+        "Datacom hyperscaler customers (e.g., cloud service providers) LITE customer demand OR capex OR supply",
+        "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.) LITE customer demand OR capex OR supply",
+        "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei) LITE customer demand OR capex OR supply"
+      ]
+    }
+  },
+  "tavily_vs_exa": {
+    "AAPL": {
+      "tavily_status": "not_configured",
+      "exa_status": "not_configured",
+      "tavily": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "exa": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "better_for_news": "none",
+      "better_for_industry": "none",
+      "better_for_customer_supplier": "none",
+      "better_for_full_text": "none",
+      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+    },
+    "AVGO": {
+      "tavily_status": "not_configured",
+      "exa_status": "not_configured",
+      "tavily": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "exa": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "better_for_news": "none",
+      "better_for_industry": "none",
+      "better_for_customer_supplier": "none",
+      "better_for_full_text": "none",
+      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+    },
+    "LITE": {
+      "tavily_status": "not_configured",
+      "exa_status": "not_configured",
+      "tavily": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "exa": {
+        "hit_count": 0,
+        "dated_recent": 0,
+        "full_text": 0,
+        "tier1_2": 0,
+        "news": 0,
+        "industry": 0,
+        "customer_supplier": 0,
+        "unique_domains": [],
+        "avg_full_text_chars": 0
+      },
+      "better_for_news": "none",
+      "better_for_industry": "none",
+      "better_for_customer_supplier": "none",
+      "better_for_full_text": "none",
+      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+    }
+  },
+  "brains": {},
+  "still_missing": {
+    "tavily_key": true,
+    "exa_key": true,
+    "fred_key": true,
+    "note": "FRED can use keyless CSV. Paste TAVILY_API_KEY and EXA_API_KEY into .env to enable those discovery providers. Benzinga is intentionally not wired."
+  }
+}

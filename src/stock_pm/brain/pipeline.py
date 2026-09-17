@@ -5,9 +5,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from stock_pm.config import Settings
 from stock_pm.research.agents.base import SettingsCompleter
 from stock_pm.research.backfill import ResearchDataBackfill, can_live_backfill, pack_needs_research_data
-from stock_pm.research.ids import new_id
 from stock_pm.research.llm_reason import compact_pack, compact_text
 
 from .header import company_header
@@ -22,10 +22,17 @@ from .llm_steps import (
     normalize_news_item,
     pm_synthesis,
 )
-from .news import classify_news_hits, hits_to_evidence_bodies, is_high_quality, search_recent_news
+from .news import classify_news_hits, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
 from .store import BrainStore
-from .types import FINANCIAL_EVIDENCE_DAYS, LLM_EVIDENCE_LIMIT, NEWS_WINDOW_DAYS, PROMPT_VERSION
+from .types import (
+    EXA_SEARCH_BUDGET,
+    FINANCIAL_EVIDENCE_DAYS,
+    LLM_EVIDENCE_LIMIT,
+    NEWS_WINDOW_DAYS,
+    PROMPT_VERSION,
+    TAVILY_SEARCH_BUDGET,
+)
 
 
 def _now() -> datetime:
@@ -218,26 +225,49 @@ def _persist_pack_evidence(research: Any, ticker: str, pack: dict[str, Any], *, 
     return created
 
 
-def _persist_news_evidence(research: Any, ticker: str, hits: list[dict[str, Any]], *, actor: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _persist_extracted_evidence(
+    research: Any, ticker: str, bodies: list[dict[str, Any]], *, actor: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     existing = research.store.list_evidence(ticker)
     by_url = {str(row.get("source_url") or ""): row for row in existing if row.get("source_url")}
+    seen_facts = {str(row.get("fact") or "").strip().lower() for row in existing}
     created: list[dict[str, Any]] = []
     matched: list[dict[str, Any]] = []
-    retrieved = _now().isoformat()
-    for body in hits_to_evidence_bodies(ticker, hits, retrieved_at=retrieved):
+    for body in bodies:
         url = str(body.get("source_url") or "")
+        fact = str(body.get("fact") or "").strip().lower()
+        if not fact:
+            continue
         if url and url in by_url:
             matched.append(by_url[url])
+            continue
+        if fact in seen_facts:
             continue
         try:
             row = research.create_evidence(ticker, body, actor=actor)
         except Exception:
             continue
+        seen_facts.add(fact)
         if url:
             by_url[url] = row
         created.append(row)
         matched.append(row)
     return created, matched
+
+
+def _merge_news_hits(*groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for group in groups:
+        for row in group or []:
+            if not isinstance(row, dict):
+                continue
+            key = str(row.get("url") or row.get("title") or "")
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            out.append(row)
+    return out
 
 
 def _evidence_id_for_hit(hit: dict[str, Any], rows: list[dict[str, Any]]) -> str | None:
@@ -326,6 +356,9 @@ def run_brain(
     fetch_live: bool = True,
     days: int = NEWS_WINDOW_DAYS,
 ) -> dict[str, Any]:
+    from stock_pm.external.clients import SearchBudget, exa_configured, tavily_configured
+    from stock_pm.external.layer import gather_external_intelligence, merge_intelligence
+
     symbol = str(ticker or "").upper()
     brain = store or BrainStore(getattr(getattr(research, "store", None), "database", None))
     model_completer = completer if completer is not None else getattr(research, "completer", None) or SettingsCompleter()
@@ -375,8 +408,38 @@ def run_brain(
     snapshot_id = (snapshot or {}).get("snapshot_id")
 
     extra_queries: list[str] = []
-    hits = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days)
-    created_news, news_evidence = _persist_news_evidence(research, symbol, hits, actor=actor) if fetch_live or hits else ([], [])
+    settings = Settings()
+    budget = SearchBudget(
+        tavily=TAVILY_SEARCH_BUDGET if tavily_configured(settings) else 0,
+        exa=EXA_SEARCH_BUDGET if exa_configured(settings) else 0,
+    )
+    intel_base: dict[str, Any] = {}
+    if fetch_live:
+        intel_base = gather_external_intelligence(
+            symbol,
+            pack=pack,
+            header=header,
+            claims=[],
+            understanding=None,
+            completer=model_completer,
+            settings=settings,
+            days=days,
+            fetch_live=True,
+            phase="base",
+            budget=budget,
+        )
+        llm_calls.extend(intel_base.get("llm_calls") or [])
+        warnings.extend(intel_base.get("warnings") or [])
+    providers = (intel_base.get("providers") or {}) if intel_base else {}
+    need_ddg = (not fetch_live) or (
+        str((providers.get("tavily") or {}).get("status") or "not_configured") in {"not_configured", "failed", "not_run", ""}
+        and str((providers.get("exa") or {}).get("status") or "not_configured") in {"not_configured", "failed", "not_run", ""}
+    )
+    ddg_hits = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days) if need_ddg else []
+    hits = _merge_news_hits(intel_base.get("news_hits") or [], ddg_hits)
+    created_news, news_evidence = _persist_extracted_evidence(
+        research, symbol, list(intel_base.get("evidence_bodies") or []), actor=actor
+    )
     created_pack = _persist_pack_evidence(research, symbol, pack, actor=actor)
     evidence = list(research.store.list_evidence(symbol) or [])
     llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
@@ -412,10 +475,7 @@ def run_brain(
         ]
         if extra_queries and fetch_live:
             more = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days)
-            more_created, more_matched = _persist_news_evidence(research, symbol, more, actor=actor)
-            created_news.extend(more_created)
-            news_evidence.extend(more_matched)
-            hits.extend(more)
+            hits = _merge_news_hits(hits, more)
             evidence = list(research.store.list_evidence(symbol) or [])
             llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
             allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
@@ -542,6 +602,37 @@ def run_brain(
             brain.insert_link({"claim_id": claim["claim_id"], "evidence_id": eid, "direction": "oppose", "strength": "medium", "run_id": run_id})
         persisted_claims.append(claim)
         claim_ids.add(claim["claim_id"])
+
+    intel_claims: dict[str, Any] | None = None
+    if fetch_live and persisted_claims:
+        prior_urls = {str(row.get("canonical_url") or row.get("url") or "") for row in (intel_base.get("documents") or []) if row.get("url")}
+        intel_claims = gather_external_intelligence(
+            symbol,
+            pack=pack,
+            header=header,
+            claims=persisted_claims,
+            understanding=understanding,
+            completer=model_completer,
+            settings=settings,
+            days=days,
+            fetch_live=True,
+            phase="claims",
+            budget=budget,
+            prior_urls=prior_urls,
+            include_macro=False,
+            include_alphavantage=False,
+        )
+        llm_calls.extend(intel_claims.get("llm_calls") or [])
+        warnings.extend(intel_claims.get("warnings") or [])
+        more_created, more_matched = _persist_extracted_evidence(
+            research, symbol, list(intel_claims.get("evidence_bodies") or []), actor=actor
+        )
+        created_news.extend(more_created)
+        news_evidence.extend(more_matched)
+        hits = _merge_news_hits(hits, intel_claims.get("news_hits") or [])
+        evidence = list(research.store.list_evidence(symbol) or [])
+        llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
+        allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
 
     news_payload = []
     for idx, hit in enumerate(hits[:24]):
@@ -733,6 +824,7 @@ def run_brain(
             "cannot_conclude": ["pm_synthesis_failed"],
         }
 
+    intel = merge_intelligence(intel_base, intel_claims) if intel_claims else intel_base
     news_stats = classify_news_hits(hits, days=days)
     quality = assess_brain_quality(
         header=header,
@@ -781,6 +873,12 @@ def run_brain(
         "news_coverage_stats": news_stats,
         "integrity": integrity,
         "llm_invoked": llm_ok,
+        "external_intelligence_report": (intel or {}).get("report") or {},
+        "external_providers": (intel or {}).get("providers") or {},
+        "tavily_vs_exa": ((intel or {}).get("report") or {}).get("tavily_vs_exa") or {},
+        "related_entities": (intel or {}).get("related_entities") or [],
+        "claim_queries": (intel or {}).get("claim_queries") or [],
+        "duplicates_removed": (intel or {}).get("duplicates_removed") or 0,
     }
     completed = brain.complete_run(
         run_id,
@@ -823,4 +921,5 @@ def run_brain(
         "audit": audit,
         "pack": pack,
         "integrity": integrity,
+        "external_intelligence": intel or {},
     }

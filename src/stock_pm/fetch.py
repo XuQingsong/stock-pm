@@ -88,6 +88,58 @@ def write_cache(cache_key: str, payload: Any, directory: Path | None = None, *, 
     path.write_text(dumped, encoding="utf-8")
 
 
+def json_post(
+    url: str,
+    payload: dict[str, Any],
+    *,
+    headers: dict[str, str] | None = None,
+    timeout: float = 30,
+    retries: int = 2,
+) -> FetchResult:
+    """POST JSON. Never caches the body (search APIs include secrets)."""
+    last_error: Exception | None = None
+    reason = "query_error"
+    body = json.dumps(payload).encode("utf-8")
+    hdrs = {"Accept": "application/json", "Content-Type": "application/json", "User-Agent": "stock-pm/0.9"}
+    if headers:
+        hdrs.update(headers)
+    for attempt in range(max(1, retries)):
+        try:
+            request = Request(url, data=body, headers=hdrs, method="POST")
+            with urlopen(request, timeout=timeout) as response:
+                raw = response.read()
+            try:
+                parsed = json.loads(raw.decode("utf-8") if raw else "{}")
+            except json.JSONDecodeError as exc:
+                raise FetchError("query_error", _scrub(str(exc))) from exc
+            return FetchResult(
+                payload=parsed,
+                status="ok",
+                reason_code="within_threshold",
+                fetched_at=utc_now(),
+                from_cache=False,
+                http_source=url,
+                transport="json_post",
+            )
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code == 429 and attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            reason = "rate_limited" if exc.code == 429 else "query_error"
+            break
+        except FetchError:
+            raise
+        except (TimeoutError, URLError, OSError) as exc:
+            last_error = exc
+            if attempt < retries - 1:
+                time.sleep(1 + attempt)
+                continue
+            reason = "timeout" if isinstance(exc, (TimeoutError, URLError)) else "query_error"
+            break
+    raise FetchError(reason, _scrub(str(last_error or "query failed")))
+
+
 def json_get(
     url: str,
     *,
