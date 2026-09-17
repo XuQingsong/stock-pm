@@ -1,0 +1,442 @@
+{
+  "generated_at": "2026-09-17T14:30:31+00:00",
+  "AAPL": [
+    {
+      "claim_id": "bclm_959b7eedd451456786536d788d349313",
+      "title": "Revenue growth is accelerating with broad-based geographic strength",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Apple's total revenue grew 14.24% YoY on a TTM basis and 16.36% YoY in the June 2026 quarter, with double-digit growth in every geographic segment despite supply constraints.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_0e9b3ce0cd8a485dbb70a52bdc6d968e",
+          "claim_id": "bclm_959b7eedd451456786536d788d349313",
+          "version": 1,
+          "statement": "Apple's total revenue grew 14.24% YoY on a TTM basis and 16.36% YoY in the June 2026 quarter, with double-digit growth in every geographic segment despite supply constraints.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_d14550396fc142e69c965ec968029790",
+            "rev_55f4dd45bc8941149aa47b269dcadf21"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_189e175c5a8e4e20bf0eef261bdcbfe5",
+          "run_id": "brun_b2d497de322c4bcfbc6dfa5474f31d30",
+          "created_at": "2026-09-17T14:25:09+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_04cb7c84f0ce4895a78f1ab71ca0b035",
+      "title": "Services mix shift is a structural margin tailwind",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Services revenue reached all-time records and grew 12-16% YoY, with Services gross margin around 75.6-75.7%, well above products gross margin, driving an increasing share of total profit.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_4bdf561c889f4f6d88e9022ce54e326a",
+          "claim_id": "bclm_04cb7c84f0ce4895a78f1ab71ca0b035",
+          "version": 1,
+          "statement": "Services revenue reached all-time records and grew 12-16% YoY, with Services gross margin around 75.6-75.7%, well above products gross margin, driving an increasing share of total profit.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_55f4dd45bc8941149aa47b269dcadf21",
+            "rev_1b777438599c44709e66e808a09df6df",
+            "rev_171346ec4a5a41f28537cc94f3f395a8"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_189e175c5a8e4e20bf0eef261bdcbfe5",
+          "run_id": "brun_b2d497de322c4bcfbc6dfa5474f31d30",
+          "created_at": "2026-09-17T14:25:09+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_3994dd80f87548b9a83d17c2afc9c008",
+      "title": "Supply constraints are capping near-term hardware upside",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Management cited supply constraints on iPhone and, to a lesser extent, Mac in the March 2026 quarter, and indicated June guidance may also reflect constraints, suggesting demand exceeds supply.",
+        "status": "partially_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_24e4d0795cb944ef89550d0e83a448f8",
+          "claim_id": "bclm_3994dd80f87548b9a83d17c2afc9c008",
+          "version": 1,
+          "statement": "Management cited supply constraints on iPhone and, to a lesser extent, Mac in the March 2026 quarter, and indicated June guidance may also reflect constraints, suggesting demand exceeds supply.",
+          "status": "partially_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_7e4c8e0f98f443539333381556a04753",
+            "rev_facd5c04078a4ab8865898092ea03101"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_189e175c5a8e4e20bf0eef261bdcbfe5",
+          "run_id": "brun_b2d497de322c4bcfbc6dfa5474f31d30",
+          "created_at": "2026-09-17T14:25:09+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_d17a33ceb3034e37bd2e03b0531a3508",
+      "title": "Tariff and FX headwinds pressure gross margin",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Prior quarters included approximately $800 million in tariff-related costs and FX headwinds of about 2.5 percentage points, pressuring gross margin.",
+        "status": "partially_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_2bdc6161ef3d4f41bd32b44f6d0fba1b",
+          "claim_id": "bclm_d17a33ceb3034e37bd2e03b0531a3508",
+          "version": 1,
+          "statement": "Prior quarters included approximately $800 million in tariff-related costs and FX headwinds of about 2.5 percentage points, pressuring gross margin.",
+          "status": "partially_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed",
+            "rev_1b777438599c44709e66e808a09df6df"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_189e175c5a8e4e20bf0eef261bdcbfe5",
+          "run_id": "brun_b2d497de322c4bcfbc6dfa5474f31d30",
+          "created_at": "2026-09-17T14:25:09+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_4d99041bc5254e68b9c18c3a962f0a76",
+      "title": "Elevated valuation with limited forward visibility",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "PE TTM is 37.95 with market cap $4.88T; forward PE, PS, EV/EBITDA and FCF yield are unavailable.",
+        "status": "partially_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_c1123118cf044d57af0445631c30def8",
+          "claim_id": "bclm_4d99041bc5254e68b9c18c3a962f0a76",
+          "version": 1,
+          "statement": "PE TTM is 37.95 with market cap $4.88T; forward PE, PS, EV/EBITDA and FCF yield are unavailable.",
+          "status": "partially_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_d14550396fc142e69c965ec968029790"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_189e175c5a8e4e20bf0eef261bdcbfe5",
+          "run_id": "brun_b2d497de322c4bcfbc6dfa5474f31d30",
+          "created_at": "2026-09-17T14:25:09+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    }
+  ],
+  "AVGO": [
+    {
+      "claim_id": "bclm_602484a891474f5bac5f624496f40710",
+      "title": "AI semiconductor revenue is the dominant growth engine",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_f392d850fae5493ba394abd755233758",
+          "claim_id": "bclm_602484a891474f5bac5f624496f40710",
+          "version": 1,
+          "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_79ac43eeb93e45948b8f1c0397601803",
+            "rev_47ecf667661f44ada184571be8fbdd60",
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+            "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "title": "Operating margin expanded sharply year-over-year",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_ac0c53901eca42f2a6c5752340e97407",
+          "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+          "version": 1,
+          "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_63b210a0bc2d4fe39d03c86e21c45b02",
+          "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+          "version": 1,
+          "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+      "title": "High valuation with limited forward visibility",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+        "status": "partially_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_1325ef810b6148c3ab0621a1596a4569",
+          "claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+          "version": 1,
+          "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+          "status": "partially_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5ae3067a5bfd4c0097b7d50121782241",
+            "rev_4406a0fe08024f9c81ba1c3191ca58e6"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    }
+  ],
+  "LITE": [
+    {
+      "claim_id": "bclm_2195f2c8bdb14c048a2151bd999ab05a",
+      "title": "Sequential revenue acceleration into AI/datacom optical cycle",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Lumentum's quarterly revenue rose sequentially from $533.8M (FY26 Q1) to $665.5M (Q2) to $808.4M (Q3) to $1,006.3M (Q4), with TTM revenue of $3.014B and 83.22% YoY growth, indicating a steep demand upcycle.",
+        "status": "unverified",
+        "confidence": "low"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_3beb8c42b5354e9d9b70c8bc7fe47757",
+          "claim_id": "bclm_2195f2c8bdb14c048a2151bd999ab05a",
+          "version": 1,
+          "statement": "Lumentum's quarterly revenue rose sequentially from $533.8M (FY26 Q1) to $665.5M (Q2) to $808.4M (Q3) to $1,006.3M (Q4), with TTM revenue of $3.014B and 83.22% YoY growth, indicating a steep demand upcycle.",
+          "status": "unverified",
+          "confidence": "low",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+            "rev_2e312f885e5f410b8fc1765017baf3d2",
+            "rev_6eea3ad92c9d43e490e77ea7c5999464",
+            "rev_14bb0d25bc0a4d57996ac830e7042d86"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_0d18c41833f143db93db721110d48914",
+          "run_id": "brun_c75bb0fd0e944cea958467209d25ed84",
+          "created_at": "2026-09-17T14:29:29+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_b72672cdf6fa4d1c8c23ce3488fd6e80",
+      "title": "Dramatic gross and operating margin expansion",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "GAAP gross margin expanded from 16.64% in FY24 Q4 to 47.43% in FY26 Q4, and GAAP operating margin went from -43.27% to 27.76% over the same span, reflecting a major profitability inflection.",
+        "status": "unverified",
+        "confidence": "low"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_216a9d8db3ba44e5acdebe4402612e70",
+          "claim_id": "bclm_b72672cdf6fa4d1c8c23ce3488fd6e80",
+          "version": 1,
+          "statement": "GAAP gross margin expanded from 16.64% in FY24 Q4 to 47.43% in FY26 Q4, and GAAP operating margin went from -43.27% to 27.76% over the same span, reflecting a major profitability inflection.",
+          "status": "unverified",
+          "confidence": "low",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_14bb0d25bc0a4d57996ac830e7042d86",
+            "rev_ab1965f3cdb44c1bb501d023787a61b1",
+            "rev_4d11fe1ba49b44dba7418de98c6e5f44"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_0d18c41833f143db93db721110d48914",
+          "run_id": "brun_c75bb0fd0e944cea958467209d25ed84",
+          "created_at": "2026-09-17T14:29:29+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_0250af9a1fda4ca0852e74817aa274e3",
+      "title": "FY27 Q1 guidance implies continued sequential growth",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Management guided FY2027 Q1 net revenue to $1.225B–$1.275B, above the FY26 Q4 actual of $1.0063B, implying further sequential acceleration.",
+        "status": "unverified",
+        "confidence": "low"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_e2a0e701be0245b68360477e63fc9157",
+          "claim_id": "bclm_0250af9a1fda4ca0852e74817aa274e3",
+          "version": 1,
+          "statement": "Management guided FY2027 Q1 net revenue to $1.225B–$1.275B, above the FY26 Q4 actual of $1.0063B, implying further sequential acceleration.",
+          "status": "unverified",
+          "confidence": "low",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c",
+            "rev_15b8a51a64b6417eb355974725fc6b1d"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_0d18c41833f143db93db721110d48914",
+          "run_id": "brun_c75bb0fd0e944cea958467209d25ed84",
+          "created_at": "2026-09-17T14:29:29+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_3aea7d99c9204b2ebb95d20cc1aee1b3",
+      "title": "Valuation opacity limits assessment",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable in the pack, so valuation cannot be assessed from reported data.",
+        "status": "unverified",
+        "confidence": "low"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_8166a9a7db834593a5c2bb3937691a6e",
+          "claim_id": "bclm_3aea7d99c9204b2ebb95d20cc1aee1b3",
+          "version": 1,
+          "statement": "PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable in the pack, so valuation cannot be assessed from reported data.",
+          "status": "unverified",
+          "confidence": "low",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_bf1fd788e8ec4a91afc4debf35742e2b",
+            "rev_2d9f6033e80e4f2db1e56112acdc10ed"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_0d18c41833f143db93db721110d48914",
+          "run_id": "brun_c75bb0fd0e944cea958467209d25ed84",
+          "created_at": "2026-09-17T14:29:29+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    }
+  ]
+}

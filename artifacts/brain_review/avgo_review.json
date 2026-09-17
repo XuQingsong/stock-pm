@@ -1,0 +1,3210 @@
+{
+  "ticker": "AVGO",
+  "generated_at": "2026-09-17T14:28:38+00:00",
+  "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+  "run_status": "success",
+  "prompt_version": "brain-phase1-v1.2",
+  "model": "deepseek-flash",
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Partial",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Independent validation: Missing. issuer-supported but independently unconfirmed"
+      }
+    ],
+    "poor_axes": [],
+    "headline": "Brain quality"
+  },
+  "warnings": [
+    {
+      "code": "BRAIN QUALITY WARNING",
+      "axis": "Data Coverage",
+      "reason": "FCF is unavailable."
+    },
+    {
+      "code": "BRAIN QUALITY WARNING",
+      "axis": "Data Coverage",
+      "reason": "Official segment mix is missing."
+    },
+    {
+      "code": "BRAIN QUALITY WARNING",
+      "axis": "Data Coverage",
+      "reason": "No trusted consensus source is wired; consensus stays unavailable."
+    },
+    {
+      "code": "BRAIN QUALITY WARNING",
+      "axis": "News Coverage",
+      "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
+    },
+    {
+      "code": "BRAIN QUALITY WARNING",
+      "axis": "Data Coverage",
+      "reason": "Independent validation: Missing. issuer-supported but independently unconfirmed"
+    }
+  ],
+  "core_claims": [
+    {
+      "claim_id": "bclm_602484a891474f5bac5f624496f40710",
+      "title": "AI semiconductor revenue is the dominant growth engine",
+      "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+      "claim_type": "operating",
+      "status": "strongly_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "medium",
+      "importance": "high",
+      "why_it_matters": "AI semiconductor revenue is the single largest swing factor for AVGO's consolidated growth, margin mix, and valuation multiple; if it decelerates, the 48.69% TTM revenue growth and 215.29% EPS growth would be at risk.",
+      "financial_driver": "AI semiconductor revenue growth",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "AI semiconductor revenue is the dominant growth engine",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_79ac43eeb93e45948b8f1c0397601803",
+            "fact": "AI compute is the primary growth driver, with revenue",
+            "excerpt": "AI compute is the primary growth driver, with revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          },
+          {
+            "evidence_id": "rev_47ecf667661f44ada184571be8fbdd60",
+            "fact": "acceleration. Multi-year supply agreements and a growing customer base support visibility for continued growth",
+            "excerpt": "acceleration. Multi-year supply agreements and a growing customer base support visibility for continued growth",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          },
+          {
+            "evidence_id": "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+            "fact": "AI backlog reached $73B, and Q1 2026 guidance projects 28% revenue growth, with AI revenue",
+            "excerpt": "AI backlog reached $73B, and Q1 2026 guidance projects 28% revenue growth, with AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          },
+          {
+            "evidence_id": "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+            "fact": "AI semiconductor demand, with strong bookings and long-term agreements supporting robust growth",
+            "excerpt": "AI semiconductor demand, with strong bookings and long-term agreements supporting robust growth",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          },
+          {
+            "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "excerpt": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Primary source (earnings release, 10-Q, or 10-K) explicitly stating the $21.7 billion AI semiconductor revenue figure and the 236% growth rate.",
+          "Independent third-party validation (e.g., analyst reports, industry data) confirming AVGO's AI semiconductor revenue trajectory.",
+          "Counter-evidence or bear-case analysis on AI semiconductor demand sustainability, customer concentration, or competitive displacement.",
+          "Segment-level revenue breakdown isolating AI semiconductor revenue from VMware/infrastructure software to substantiate 'dominant growth engine'.",
+          "Fiscal period alignment: the claim's $21.7B figure is not tied to a specific fiscal period in the evidence."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Primary source (earnings release, 10-Q, or 10-K) explicitly stating the $21.7 billion AI semiconductor revenue figure and the 236% growth rate.",
+          "Independent third-party validation (e.g., analyst reports, industry data) confirming AVGO's AI semiconductor revenue trajectory.",
+          "Counter-evidence or bear-case analysis on AI semiconductor demand sustainability, customer concentration, or competitive displacement.",
+          "Segment-level revenue breakdown isolating AI semiconductor revenue from VMware/infrastructure software to substantiate 'dominant growth engine'.",
+          "Fiscal period alignment: the claim's $21.7B figure is not tied to a specific fiscal period in the evidence."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "The claim is directionally supported by issuer management transcript evidence that repeatedly identifies AI compute as the primary growth driver, with multi-year supply agreements and a growing customer base cited as visibility support. However, the specific figure of $21.7 billion AI semiconductor revenue (up 236%) is not present in any provided evidence excerpt, and all supporting evidence is from a single issuer-management transcript source family with no independent or counter evidence. The claim is therefore weakly supported at the quantitative level and moderately supported at the qualitative level.",
+          "why_important": "AI semiconductor revenue is the single largest swing factor for AVGO's consolidated growth, margin mix, and valuation multiple. If AI semiconductor revenue decelerates, the reported 48.69% TTM revenue growth and 215.29% EPS growth would be at risk, and the valuation premium implied by the gap between the $339.27 close and the $531.85 average analyst price target would be difficult to sustain.",
+          "evidence_boundary": {
+            "proves": "Issuer management has repeatedly stated in earnings transcripts that AI compute is the primary growth driver, that AI semiconductor revenue is growing rapidly (e.g., up 46%, up 86% in specific periods), that AI backlog reached $73B, and that multi-year supply agreements and a growing customer base support visibility for continued growth.",
+            "does_not_prove": "The evidence does not prove the specific $21.7 billion AI semiconductor revenue figure or the 236% growth rate cited in the claim, as no provided excerpt contains those numbers. It also does not prove that AI semiconductor revenue is the dominant growth engine relative to other segments (e.g., VMware infrastructure software), nor does it provide independent third-party validation of management's projections or any counter-evidence testing the durability of the AI growth trajectory."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "supported",
+              "statement": "AI semiconductor revenue growth is real and management-guided, but the specific $21.7B / 236% figure is unverified and may be stale or misattributed.",
+              "evidence_ids": [
+                "rev_79ac43eeb93e45948b8f1c0397601803",
+                "rev_47ecf667661f44ada184571be8fbdd60",
+                "rev_5cd194cb4f7c408b876cdeee7169287f"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "Google's engagement of Marvell for custom TPU-adjacent silicon could erode Broadcom's AI semiconductor growth trajectory and challenge the claim that AI semiconductor revenue is a durable dominant growth engine.",
+              "evidence_ids": [
+                "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "Infrastructure software (VMware) may be a co-dominant growth and margin engine, meaning AI semiconductor revenue is not uniquely dominant.",
+              "evidence_ids": [
+                "rev_5ae3067a5bfd4c0097b7d50121782241",
+                "rev_36e9c3539d5742adae3ff99570b77872"
+              ]
+            }
+          ],
+          "what_strengthens": [
+            "A primary filing (10-Q/10-K) or earnings release explicitly reporting AI semiconductor revenue of $21.7 billion and 236% growth.",
+            "Independent analyst or industry data corroborating AVGO's AI semiconductor revenue and backlog.",
+            "Evidence of additional multi-year supply agreements or new customer wins beyond those already cited.",
+            "Segment disclosure showing AI semiconductor revenue growth outpacing all other segments by a wide margin."
+          ],
+          "what_weakens": [
+            "Evidence that Google or other key customers are diversifying custom silicon away from Broadcom (e.g., Marvell engagement).",
+            "Transcript evidence showing AI revenue growth decelerating or guidance being lowered.",
+            "Evidence that VMware/infrastructure software is contributing comparable or greater incremental growth.",
+            "Independent reports questioning the durability of AI capex or custom XPU demand."
+          ],
+          "what_invalidates": [
+            "A primary filing showing AI semiconductor revenue materially below $21.7 billion or growth materially below 236%.",
+            "Management guidance explicitly revising AI semiconductor revenue downward or signaling a slowdown.",
+            "Evidence that a major customer (e.g., Google) has terminated or significantly reduced its custom silicon relationship with Broadcom.",
+            "Audited financials showing AI semiconductor revenue is not a material contributor to consolidated growth."
+          ],
+          "next_research_question": "What is the exact fiscal period and primary-source basis for the $21.7 billion AI semiconductor revenue and 236% growth figure, and does independent third-party data corroborate this trajectory?",
+          "strongest_support_evidence_ids": [
+            "rev_79ac43eeb93e45948b8f1c0397601803",
+            "rev_47ecf667661f44ada184571be8fbdd60",
+            "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+            "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+            "rev_36e9c3539d5742adae3ff99570b77872",
+            "rev_5ae3067a5bfd4c0097b7d50121782241",
+            "rev_5c5742e12c9547fbaca98316b251bc9c",
+            "rev_a8ff12322b854198b906dcfa5fd90a91"
+          ],
+          "strongest_opposing_evidence_ids": [
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ]
+        }
+      }
+    },
+    {
+      "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "title": "Operating margin expanded sharply year-over-year",
+      "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+      "claim_type": "operating",
+      "status": "strongly_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "medium",
+      "importance": "high",
+      "why_it_matters": "Margin expansion is a key driver of EPS growth (215.29% YoY) and supports the high PE TTM of 43.3; if margins revert, the valuation multiple would be harder to justify.",
+      "financial_driver": "Operating margin and gross margin",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "Operating margin expanded sharply year-over-year",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "excerpt": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Primary financial statements (10-Q or 10-K) for Q3 FY2026 showing operating income, gross profit, and revenue.",
+          "Earnings call transcript for Q3 FY2026 with management commentary on margins and non-GAAP operating margin guidance.",
+          "Independent third-party analysis or data provider confirming the reported margin figures.",
+          "Historical margin data for Q3 FY2025 to verify the 36.9% and 67.1% comparatives.",
+          "Counter-evidence or bear-case analysis questioning the sustainability of margin expansion."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Primary financial statements (10-Q or 10-K) for Q3 FY2026 showing operating income, gross profit, and revenue.",
+          "Earnings call transcript for Q3 FY2026 with management commentary on margins and non-GAAP operating margin guidance.",
+          "Independent third-party analysis or data provider confirming the reported margin figures.",
+          "Historical margin data for Q3 FY2025 to verify the 36.9% and 67.1% comparatives.",
+          "Counter-evidence or bear-case analysis questioning the sustainability of margin expansion."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "The claim that Q3 FY2026 operating margin improved to 53.92% from 36.9% YoY and gross margin improved to 69.13% from 67.1% is not verifiable from the provided evidence. No evidence item contains these specific margin figures, and no primary financial statement or transcript excerpt confirms them. The claim remains unsubstantiated by the current evidence set.",
+          "why_important": "Margin expansion is cited as a key driver of 215.29% YoY EPS growth and supports a high PE TTM of 43.3. If margins revert or the reported figures are inaccurate, the valuation multiple would be harder to justify, making this claim central to the investment thesis.",
+          "evidence_boundary": {
+            "proves": "Nothing directly. The evidence set contains no margin figures, no Q3 FY2026 income statement data, and no management guidance on non-GAAP operating margin.",
+            "does_not_prove": "It does not prove or disprove the specific operating margin (53.92% vs 36.9%), gross margin (69.13% vs 67.1%), or the 66% non-GAAP operating margin guidance. It also does not establish the reliability of the reported figures."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "speculative",
+              "statement": "The margin expansion is real and driven by a favorable mix shift toward high-margin AI semiconductor and VMware software revenue.",
+              "evidence_ids": [
+                "rev_5ae3067a5bfd4c0097b7d50121782241",
+                "rev_5cd194cb4f7c408b876cdeee7169287f"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "The reported margin figures are inaccurate or misstated, and actual margins are lower or flat.",
+              "evidence_ids": []
+            },
+            {
+              "status": "speculative",
+              "statement": "Margin expansion is partly due to one-time cost reductions or accounting effects rather than sustainable operating leverage.",
+              "evidence_ids": []
+            }
+          ],
+          "what_strengthens": [
+            "A primary SEC filing (10-Q/10-K) for Q3 FY2026 confirming the operating and gross margin figures.",
+            "Management commentary on the Q3 FY2026 earnings call explicitly stating the margins and guidance.",
+            "Independent verification from a reputable financial data provider or analyst report.",
+            "Evidence showing that the margin expansion is driven by sustainable mix shift rather than one-time items."
+          ],
+          "what_weakens": [
+            "Discovery that the reported margin figures are incorrect or based on non-GAAP adjustments that are not comparable.",
+            "Management guidance implying margin compression in future quarters.",
+            "Evidence of rising costs or competitive pressure that would erode margins.",
+            "Lack of independent confirmation from primary sources."
+          ],
+          "what_invalidates": [
+            "A primary financial statement showing operating margin was not 53.92% or gross margin was not 69.13%.",
+            "Management explicitly stating that the margin figures are misreported or that guidance is withdrawn.",
+            "Audited financials revealing a restatement of Q3 FY2026 results."
+          ],
+          "next_research_question": "What are the exact operating and gross margin figures reported in Broadcom's Q3 FY2026 10-Q, and how do they compare to Q3 FY2025 and management's non-GAAP operating margin guidance?",
+          "strongest_support_evidence_ids": [],
+          "strongest_opposing_evidence_ids": []
+        }
+      }
+    },
+    {
+      "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+      "claim_type": "event",
+      "status": "strongly_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "short",
+      "importance": "medium",
+      "why_it_matters": "The divergence between strong revenue growth and an EPS miss suggests cost or mix pressures that could undermine the earnings trajectory and the premium valuation.",
+      "financial_driver": "Revenue growth vs. EPS execution",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "Revenue growth is accelerating but earnings execution missed expectations",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "excerpt": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Primary source (AVGO press release or 10-Q) confirming Q3 FY2026 GAAP/non-GAAP EPS of $2.68.",
+          "Consensus EPS estimate of $2.83 and the source/date of that estimate.",
+          "Report-date (Q3 FY2026 earnings) AVGO closing price change of -2.74%.",
+          "QQQ and SPY same-day returns to verify the -3.93% and -3.79% relative underperformance.",
+          "Segment-level margin data (semiconductor vs infrastructure software) to test the cost/mix hypothesis.",
+          "Management guidance for Q4 FY2026 and any explanation for the EPS miss.",
+          "Independent (non-community, non-issuer) confirmation of the earnings event and market reaction."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Primary source (AVGO press release or 10-Q) confirming Q3 FY2026 GAAP/non-GAAP EPS of $2.68.",
+          "Consensus EPS estimate of $2.83 and the source/date of that estimate.",
+          "Report-date (Q3 FY2026 earnings) AVGO closing price change of -2.74%.",
+          "QQQ and SPY same-day returns to verify the -3.93% and -3.79% relative underperformance.",
+          "Segment-level margin data (semiconductor vs infrastructure software) to test the cost/mix hypothesis.",
+          "Management guidance for Q4 FY2026 and any explanation for the EPS miss.",
+          "Independent (non-community, non-issuer) confirmation of the earnings event and market reaction."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "The claim is not verifiable with the supplied evidence. The evidence set contains no AVGO Q3 FY2026 EPS figure, no consensus EPS estimate, no report-date price move, and no relative performance versus QQQ or SPY. The only revenue datapoint in the evidence is a community-tier signal (revenue +85.5% YoY to $29,591M), which is consistent with the claim's revenue figure but is not primary or independently validated. The earnings-miss and underperformance components are entirely unsupported.",
+          "why_important": "If true, the claim describes a classic growth-vs-profitability divergence: revenue accelerating sharply while EPS misses, which would imply cost, mix, or margin pressure and could challenge the premium multiple. If false or misstated, it would be a material factual error about a core event (earnings reaction) that could distort the earnings-trajectory thesis.",
+          "evidence_boundary": {
+            "proves": "The evidence supports that AVGO has had strong AI-driven revenue growth and record quarterly revenue in prior periods (e.g., rev_1d283b914d864f439de700e39a9318bf, rev_5cd194cb4f7c408b876cdeee7169287f), and that a community-tier source reports Q3 FY2026 revenue growth of 85.5% YoY. It also shows a competitive threat (Google tapping Marvell for custom silicon) that could pressure future growth expectations.",
+            "does_not_prove": "It does not prove the Q3 FY2026 EPS of $2.68, the $2.83 consensus estimate, the EPS miss, the -2.74% report-date stock move, or the underperformance vs QQQ (-3.93%) and SPY (-3.79%). It also does not establish whether any EPS miss was driven by cost/mix pressures versus one-time items, nor whether the market reaction was attributable to the EPS miss rather than guidance or other factors."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "speculative",
+              "statement": "Revenue growth is genuinely accelerating (AI semiconductor demand) while EPS missed due to margin/cost pressure, causing the stock to underperform.",
+              "evidence_ids": [
+                "rev_5cd194cb4f7c408b876cdeee7169287f",
+                "rev_1d283b914d864f439de700e39a9318bf"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "The EPS miss and stock decline were driven by guidance or one-time items rather than underlying cost/mix deterioration.",
+              "evidence_ids": []
+            },
+            {
+              "status": "speculative",
+              "statement": "The revenue acceleration is partly inorganic (VMware consolidation), so the 85.5% YoY figure overstates organic momentum.",
+              "evidence_ids": [
+                "rev_c5b8e053d1a7492c951c98d9bb1061ec"
+              ]
+            },
+            {
+              "status": "supported",
+              "statement": "Competitive displacement (Google/Marvell custom silicon) poses a medium-term risk to AVGO's AI growth trajectory.",
+              "evidence_ids": [
+                "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+              ]
+            }
+          ],
+          "what_strengthens": [
+            "A primary AVGO earnings release or 10-Q showing Q3 FY2026 EPS of $2.68.",
+            "A reputable consensus data source (e.g., FactSet, Refinitiv) showing the $2.83 estimate.",
+            "Exchange price data confirming the -2.74% move and QQQ/SPY relative performance.",
+            "Management commentary attributing the miss to cost, mix, or margin pressure."
+          ],
+          "what_weakens": [
+            "Primary data showing EPS actually met or beat the $2.83 estimate.",
+            "Price data showing AVGO did not underperform QQQ/SPY on the report date.",
+            "Evidence that the revenue growth figure is largely inorganic (VMware) rather than organic acceleration.",
+            "Guidance or commentary indicating the EPS miss was due to one-time/non-recurring items."
+          ],
+          "what_invalidates": [
+            "A primary filing showing Q3 FY2026 EPS materially different from $2.68.",
+            "Authoritative consensus data showing the estimate was not $2.83.",
+            "Exchange data showing the stock did not fall 2.74% or did not underperform QQQ/SPY on the report date.",
+            "Confirmation that the 'Q3 FY2026' event as described did not occur (e.g., wrong fiscal period or ticker)."
+          ],
+          "next_research_question": "What were AVGO's actual Q3 FY2026 GAAP and non-GAAP EPS, the consensus estimate, and the report-date price reaction versus QQQ and SPY, and what did management cite as the reason for any EPS shortfall?",
+          "strongest_support_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "rev_1d283b914d864f439de700e39a9318bf",
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d"
+          ],
+          "strongest_opposing_evidence_ids": [
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ]
+        }
+      }
+    },
+    {
+      "claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+      "title": "High valuation with limited forward visibility",
+      "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+      "claim_type": "valuation",
+      "status": "partially_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "medium",
+      "importance": "high",
+      "why_it_matters": "A 43.3 PE TTM on a company with high growth but an EPS miss and no forward multiples or FCF yield creates valuation risk if growth decelerates or margins compress.",
+      "financial_driver": "Valuation multiple and earnings growth",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "High valuation with limited forward visibility",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Partial",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_5ae3067a5bfd4c0097b7d50121782241",
+            "fact": "AI semiconductor revenue up 46% and infrastructure software up 25%. AI growth",
+            "excerpt": "AI semiconductor revenue up 46% and infrastructure software up 25%. AI growth",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          },
+          {
+            "evidence_id": "rev_4406a0fe08024f9c81ba1c3191ca58e6",
+            "fact": "over the next 2 years, '27, '28, that there are 30 gigawatts that will go into production, and therefore, we ship it",
+            "excerpt": "over the next 2 years, '27, '28, that there are 30 gigawatts that will go into production, and therefore, we ship it",
+            "source": "web_search",
+            "publisher": "fool.com",
+            "source_url": "https://www.fool.com/earnings/call-transcripts/2026/09/09/broadcom-avgo-q3-2026-earnings-call-transcript/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:06:05+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Direct evidence_id stating the PE TTM of 43.3 (no source in evidence set provides this number).",
+          "Forward PE, PS, EV/EBITDA, or FCF yield figures for AVGO from any source.",
+          "Independent (non-issuer) validation of AI backlog, revenue guidance, or margin trajectory.",
+          "Counter-evidence on valuation risk, such as analyst downgrades, short interest, or insider selling.",
+          "Historical valuation multiple range for AVGO to contextualize whether 43.3 PE TTM is high relative to its own history.",
+          "Free cash flow actuals or guidance to assess FCF yield."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Direct evidence_id stating the PE TTM of 43.3 (no source in evidence set provides this number).",
+          "Forward PE, PS, EV/EBITDA, or FCF yield figures for AVGO from any source.",
+          "Independent (non-issuer) validation of AI backlog, revenue guidance, or margin trajectory.",
+          "Counter-evidence on valuation risk, such as analyst downgrades, short interest, or insider selling.",
+          "Historical valuation multiple range for AVGO to contextualize whether 43.3 PE TTM is high relative to its own history.",
+          "Free cash flow actuals or guidance to assess FCF yield."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "Partially supported. The PE TTM of 43.3 is asserted in the claim but no evidence_id in the provided evidence set directly states this multiple. The absence of forward PE, PS, EV/EBITDA, and FCF yield is consistent with the evidence set, which contains no forward valuation multiples or free cash flow yield data. However, the evidence does contain forward-looking growth signals (AI backlog, guidance, multi-year supply agreements) that partially offset the 'limited forward visibility' framing, though these are issuer-sourced and unaudited.",
+          "why_important": "If the 43.3 PE TTM is accurate, the stock embeds high growth expectations. Without forward multiples or FCF yield, investors cannot assess whether current price is justified by expected earnings or cash generation. This creates asymmetric downside risk if AI growth decelerates, margins compress, or customer concentration (e.g., Google/Marvell competitive threat) erodes Broadcom's custom silicon franchise.",
+          "evidence_boundary": {
+            "proves": "The evidence set contains no forward PE, PS, EV/EBITDA, or FCF yield figures for AVGO, confirming the 'unavailable' portion of the claim. It also shows a large gap between the last close ($339.27) and average analyst target ($531.85), and a competitive threat from Google tapping Marvell for custom silicon.",
+            "does_not_prove": "The evidence does not prove the PE TTM is 43.3 (no evidence_id states this), does not prove that forward fundamentals are weak or deteriorating, and does not prove that the valuation is unsupported. Issuer transcripts show strong AI backlog, revenue growth, and multi-year supply agreements that could support the multiple."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "supported",
+              "statement": "The high PE TTM is justified by exceptional AI-driven growth, as evidenced by a $73B AI backlog, 28% Q1 2026 revenue growth guidance, and multi-year supply agreements with major customers.",
+              "evidence_ids": [
+                "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+                "rev_36e9c3539d5742adae3ff99570b77872",
+                "rev_47ecf667661f44ada184571be8fbdd60",
+                "rev_5cd194cb4f7c408b876cdeee7169287f"
+              ]
+            },
+            {
+              "status": "supported",
+              "statement": "Forward visibility is limited because the evidence set lacks forward valuation multiples and FCF yield, and the only independent industry signal (Google/Marvell) suggests potential customer defection risk.",
+              "evidence_ids": [
+                "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "The 43.3 PE TTM figure itself is unverified within this evidence set and may be inaccurate or stale.",
+              "evidence_ids": []
+            }
+          ],
+          "what_strengthens": [
+            "Evidence of decelerating AI revenue growth or margin compression.",
+            "Independent confirmation that Google is shifting custom silicon volume from Broadcom to Marvell.",
+            "Forward EPS estimates that imply a PE significantly above 43.3.",
+            "Negative free cash flow trends or guidance cuts.",
+            "Analyst downgrades or reductions in price targets."
+          ],
+          "what_weakens": [
+            "Evidence that forward PE is reasonable (e.g., below 30) due to expected EPS growth.",
+            "Strong FCF yield (e.g., above 3%) supported by actual cash flow statements.",
+            "Independent confirmation of AI backlog and multi-year supply agreements.",
+            "Evidence that Marvell's Google win is incremental rather than a share shift from Broadcom.",
+            "Upward revisions to AI revenue guidance or new customer wins."
+          ],
+          "what_invalidates": [
+            "A verified forward PE that is low (e.g., under 20) with strong FCF yield, showing valuation is supported by forward fundamentals.",
+            "Evidence that the 43.3 PE TTM is factually incorrect (e.g., actual PE TTM is much lower).",
+            "Proof that forward multiples and FCF yield are actually available and favorable, contradicting the 'unavailable' premise."
+          ],
+          "next_research_question": "What are AVGO's forward PE, PS, EV/EBITDA, and FCF yield based on consensus estimates, and how do they compare to its historical averages and peer group?",
+          "strongest_support_evidence_ids": [
+            "rev_d60ccc6b804c4c4f8f7a0d37b3699ef3",
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ],
+          "strongest_opposing_evidence_ids": [
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+            "rev_36e9c3539d5742adae3ff99570b77872",
+            "rev_47ecf667661f44ada184571be8fbdd60",
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ]
+        }
+      }
+    }
+  ],
+  "why_candidates_not_selected": [
+    {
+      "title": "Multi-year supply agreements and backlog support revenue visibility",
+      "statement": "Transcript evidence references multi-year supply agreements, a $73B AI backlog, and a growing customer base supporting visibility for continued growth.",
+      "claim_type": "structural",
+      "value_impact": "medium",
+      "uncertainty": "medium",
+      "valuation_relevance": "medium",
+      "persistence": "high",
+      "testability": "medium",
+      "supporting_evidence_ids": [
+        "rev_47ecf667661f44ada184571be8fbdd60",
+        "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+        "rev_8dcab4ebc6a048208d568ea6c3d0d42f"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Backlog conversion schedule",
+        "Customer concentration data",
+        "Contract terms and cancellability"
+      ],
+      "selected_as_core": false,
+      "reason_for_selection_or_rejection": "Not present in the Core Claim list returned/accepted by this run."
+    }
+  ],
+  "candidate_claims": [
+    {
+      "title": "AI semiconductor revenue is the dominant growth engine",
+      "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+      "claim_type": "operating",
+      "value_impact": "high",
+      "uncertainty": "medium",
+      "valuation_relevance": "high",
+      "persistence": "medium",
+      "testability": "high",
+      "supporting_evidence_ids": [
+        "rev_79ac43eeb93e45948b8f1c0397601803",
+        "rev_47ecf667661f44ada184571be8fbdd60",
+        "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+        "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+        "rev_5cd194cb4f7c408b876cdeee7169287f"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Segment-level revenue split between AI semiconductors and infrastructure software",
+        "Contract-level backlog composition and customer concentration",
+        "Forward consensus AI revenue estimates"
+      ],
+      "selected_as_core": true,
+      "reason_for_selection_or_rejection": ""
+    },
+    {
+      "title": "Operating margin expanded sharply year-over-year",
+      "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+      "claim_type": "operating",
+      "value_impact": "high",
+      "uncertainty": "medium",
+      "valuation_relevance": "high",
+      "persistence": "medium",
+      "testability": "high",
+      "supporting_evidence_ids": [
+        "rev_5cd194cb4f7c408b876cdeee7169287f"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Segment-level margin breakdown",
+        "Non-GAAP operating margin reconciliation",
+        "Forward margin guidance details beyond the 66% figure"
+      ],
+      "selected_as_core": true,
+      "reason_for_selection_or_rejection": ""
+    },
+    {
+      "title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+      "claim_type": "event",
+      "value_impact": "medium",
+      "uncertainty": "medium",
+      "valuation_relevance": "high",
+      "persistence": "low",
+      "testability": "high",
+      "supporting_evidence_ids": [
+        "rev_5cd194cb4f7c408b876cdeee7169287f"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Detailed EPS bridge and cost breakdown",
+        "Analyst commentary on the EPS miss",
+        "Forward EPS consensus"
+      ],
+      "selected_as_core": true,
+      "reason_for_selection_or_rejection": ""
+    },
+    {
+      "title": "High valuation with limited forward visibility",
+      "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+      "claim_type": "valuation",
+      "value_impact": "high",
+      "uncertainty": "high",
+      "valuation_relevance": "high",
+      "persistence": "medium",
+      "testability": "medium",
+      "supporting_evidence_ids": [
+        "rev_5ae3067a5bfd4c0097b7d50121782241",
+        "rev_4406a0fe08024f9c81ba1c3191ca58e6"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Forward PE, PS, EV/EBITDA, and FCF yield",
+        "Consensus forward estimates",
+        "Free cash flow figures"
+      ],
+      "selected_as_core": true,
+      "reason_for_selection_or_rejection": ""
+    },
+    {
+      "title": "Multi-year supply agreements and backlog support revenue visibility",
+      "statement": "Transcript evidence references multi-year supply agreements, a $73B AI backlog, and a growing customer base supporting visibility for continued growth.",
+      "claim_type": "structural",
+      "value_impact": "medium",
+      "uncertainty": "medium",
+      "valuation_relevance": "medium",
+      "persistence": "high",
+      "testability": "medium",
+      "supporting_evidence_ids": [
+        "rev_47ecf667661f44ada184571be8fbdd60",
+        "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+        "rev_8dcab4ebc6a048208d568ea6c3d0d42f"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Backlog conversion schedule",
+        "Customer concentration data",
+        "Contract terms and cancellability"
+      ],
+      "selected_as_core": false,
+      "reason_for_selection_or_rejection": "Not present in the Core Claim list returned/accepted by this run."
+    }
+  ],
+  "company_understanding": {
+    "how_the_company_makes_money": "Broadcom Inc is a semiconductor company. Reported financials show TTM revenue of $89.104B, TTM EPS of $7.84, gross margin of 69.13%, operating margin of 53.92%, and net margin of 44.2%. The latest quarter (Q3 FY2026, period ended 2026-08-02) reported revenue of $29.591B, EPS of $2.68, gross margin of 69.13%, and operating margin of 53.92%. Evidence rows reference AI semiconductor and infrastructure software (VMware) as revenue areas, but no segment-level revenue breakdown is available in the provided data.",
+    "growth_drivers": "AI semiconductor revenue. Management guidance states it expects AI semiconductor revenue to accelerate to $21.7 billion, up 236 (guidance_history, source sec.exhibit, 2026-09-02). Evidence rows also reference AI compute as the primary growth driver and AI backlog figures, but these are qualitative transcript excerpts.",
+    "key_risks": "Earnings execution versus expectations. Q3 FY2026 EPS of $2.68 came in below the $2.83 estimate, and the stock fell 2.74% on the report date (earnings_history, price_reaction_history). Q2 FY2026 EPS of $1.91 was below the $2.02 estimate with a -12.59% post-1d return. The company also carries a high valuation (PE TTM 43.3) with no forward PE, PS, EV/EBITDA, or FCF yield available.",
+    "important_value_drivers": [
+      "AI semiconductor revenue trajectory versus the guided $21.7 billion acceleration (guidance_history)",
+      "Non-GAAP operating margin maintenance at 66% as guided (guidance_history)",
+      "Revenue growth sustainability: TTM revenue growth 48.69% YoY, latest quarter revenue growth 85.5% YoY (reported_financials)",
+      "EPS growth: TTM EPS growth 215.29% YoY, latest quarter EPS growth 215.29% YoY (reported_financials)",
+      "Gross margin trend: 69.13% in Q3 FY2026 vs 67.99% in Q4 FY2025 and 67.1% in Q3 FY2025 (earnings_history)",
+      "Operating margin trend: 53.92% in Q3 FY2026 vs 41.68% in Q4 FY2025 and 36.9% in Q3 FY2025 (earnings_history)",
+      "Valuation: PE TTM 43.3 with forward PE, PS, EV/EBITDA, and FCF yield unavailable (reported_financials)"
+    ],
+    "candidate_research_questions": [
+      "What is the segment-level revenue breakdown between AI semiconductors and infrastructure software?",
+      "How much of the guided $21.7 billion AI semiconductor revenue is already under contract or backlog?",
+      "What is the free cash flow and FCF yield, given these fields are unavailable?",
+      "What is the forward PE and consensus EPS, given these are unavailable?",
+      "What drove the Q2 FY2026 -12.59% post-earnings decline despite revenue growth?",
+      "How sustainable is the 53.92% operating margin and 69.13% gross margin?",
+      "What is the customer concentration in the AI semiconductor business?"
+    ],
+    "search_questions_last_30d": [
+      "Broadcom AI semiconductor revenue guidance $21.7 billion September 2026",
+      "Broadcom Q3 FY2026 earnings call transcript September 2026",
+      "Broadcom VMware infrastructure software revenue growth 2026",
+      "Broadcom AI backlog 2026",
+      "Broadcom custom XPU accelerator customer demand 2026",
+      "Broadcom non-GAAP operating margin 66% guidance 2026",
+      "Broadcom Q4 FY2026 revenue guidance $34.8 billion",
+      "Broadcom semiconductor supply chain investments 2026",
+      "Broadcom AI partnerships announcements September 2026",
+      "Broadcom earnings reaction analyst commentary September 2026"
+    ],
+    "states": [
+      {
+        "name": "AI semiconductor revenue acceleration",
+        "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "Non-GAAP operating margin maintenance",
+        "statement": "Management expects to maintain non-GAAP operating margin at 66%, flat from a year ago.",
+        "direction": "flat",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "Q4 FY2026 revenue guidance",
+        "statement": "Fourth quarter revenue guidance of approximately $34.8 billion.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "Revenue growth",
+        "statement": "TTM revenue growth of 48.69% YoY and latest quarter revenue growth of 85.5% YoY.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "EPS growth",
+        "statement": "TTM EPS growth of 215.29% YoY and latest quarter EPS growth of 215.29% YoY.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "Margin expansion",
+        "statement": "Gross margin improved to 69.13% in Q3 FY2026 from 67.1% in Q3 FY2025; operating margin improved to 53.92% from 36.9%.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      },
+      {
+        "name": "Earnings miss and negative price reaction",
+        "statement": "Q3 FY2026 EPS of $2.68 missed the $2.83 estimate; stock fell 2.74% on the report date and underperformed QQQ by 3.93% and SPY by 3.79% on day 1.",
+        "direction": "down",
+        "confidence": "high",
+        "state_type": "event",
+        "evidence_ids": []
+      },
+      {
+        "name": "High valuation with limited forward visibility",
+        "statement": "PE TTM is 43.3; forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+        "direction": "flat",
+        "confidence": "medium",
+        "state_type": "company",
+        "evidence_ids": []
+      }
+    ],
+    "coverage_gaps": [
+      "Free cash flow (fcf) is unavailable in reported_financials and latest_quarter.",
+      "Segment growth (segment_growth) is unavailable.",
+      "Forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+      "Consensus estimates are unavailable (no trusted consensus source wired).",
+      "System forecast is unavailable (Phase 1 does not run a system forecast).",
+      "No segment-level revenue breakdown between AI semiconductors and infrastructure software is provided.",
+      "No customer concentration data is provided.",
+      "No R&D expense figures are provided."
+    ],
+    "cannot_conclude": [
+      "Cannot conclude the exact revenue split between AI semiconductors and infrastructure software.",
+      "Cannot conclude free cash flow or FCF yield.",
+      "Cannot conclude forward valuation multiples.",
+      "Cannot conclude consensus revenue or EPS expectations.",
+      "Cannot conclude customer concentration or contract-level backlog composition.",
+      "Cannot conclude R&D or AI investment levels.",
+      "Cannot conclude whether the guided $21.7 billion AI semiconductor revenue is fully contracted."
+    ],
+    "related_entities": [
+      {
+        "name": "Google",
+        "relation": "hyperscaler/customer",
+        "why": "Google is a major hyperscaler and potential customer for Broadcom's custom AI chips and networking solutions; their AI infrastructure spending and chip design…"
+      },
+      {
+        "name": "Meta",
+        "relation": "hyperscaler/customer",
+        "why": "Meta is a large hyperscaler investing heavily in AI infrastructure; they may source custom silicon and networking components from Broadcom, impacting demand."
+      },
+      {
+        "name": "Microsoft",
+        "relation": "hyperscaler/customer",
+        "why": "Microsoft's Azure and AI initiatives drive demand for data center chips and networking, making them a key potential customer for Broadcom's semiconductor and i…"
+      },
+      {
+        "name": "Amazon",
+        "relation": "hyperscaler/customer",
+        "why": "Amazon Web Services (AWS) is a leading cloud provider with significant custom chip development; they could be a customer or competitor for Broadcom's networkin…"
+      },
+      {
+        "name": "TSMC",
+        "relation": "supplier",
+        "why": "TSMC is a critical semiconductor foundry supplier for Broadcom's chip production; any capacity, pricing, or geopolitical issues at TSMC can affect Broadcom's s…"
+      },
+      {
+        "name": "NVIDIA",
+        "relation": "competitor",
+        "why": "NVIDIA dominates the AI accelerator market and competes with Broadcom's custom AI chip and networking solutions; their product launches and pricing can influen…"
+      },
+      {
+        "name": "Marvell Technology",
+        "relation": "competitor",
+        "why": "Marvell is a direct competitor in custom ASICs, networking, and storage semiconductors; their wins and losses can signal shifts in Broadcom's competitive posit…"
+      },
+      {
+        "name": "Arista Networks",
+        "relation": "competitor",
+        "why": "Arista competes in data center networking switches, an area where Broadcom supplies chips; their adoption of Broadcom's Tomahawk/Jericho chips or alternatives…"
+      },
+      {
+        "name": "Cisco",
+        "relation": "competitor",
+        "why": "Cisco is a major networking equipment provider and competitor; their use of Broadcom silicon or in-house designs impacts Broadcom's market opportunity."
+      },
+      {
+        "name": "VMware",
+        "relation": "technology",
+        "why": "Broadcom acquired VMware, making its virtualization and cloud infrastructure software a key part of Broadcom's infrastructure software segment; VMware's perfor…"
+      },
+      {
+        "name": "AMD",
+        "relation": "competitor",
+        "why": "AMD's AI accelerator and datacenter networking expansion can affect AVGO's competitive position and AI revenue growth assumptions."
+      }
+    ],
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "supplier",
+      "technology",
+      "competitor",
+      "datacenter infrastructure"
+    ],
+    "note": "related_entities and important_relationship_types come from External Intelligence search plan, not from the company_understanding prompt schema.",
+    "raw_company_understanding": {
+      "how_company_makes_money": "Broadcom Inc is a semiconductor company. Reported financials show TTM revenue of $89.104B, TTM EPS of $7.84, gross margin of 69.13%, operating margin of 53.92%, and net margin of 44.2%. The latest quarter (Q3 FY2026, period ended 2026-08-02) reported revenue of $29.591B, EPS of $2.68, gross margin of 69.13%, and operating margin of 53.92%. Evidence rows reference AI semiconductor and infrastructure software (VMware) as revenue areas, but no segment-level revenue breakdown is available in the provided data.",
+      "largest_growth_driver": "AI semiconductor revenue. Management guidance states it expects AI semiconductor revenue to accelerate to $21.7 billion, up 236 (guidance_history, source sec.exhibit, 2026-09-02). Evidence rows also reference AI compute as the primary growth driver and AI backlog figures, but these are qualitative transcript excerpts.",
+      "largest_operating_risk": "Earnings execution versus expectations. Q3 FY2026 EPS of $2.68 came in below the $2.83 estimate, and the stock fell 2.74% on the report date (earnings_history, price_reaction_history). Q2 FY2026 EPS of $1.91 was below the $2.02 estimate with a -12.59% post-1d return. The company also carries a high valuation (PE TTM 43.3) with no forward PE, PS, EV/EBITDA, or FCF yield available.",
+      "value_variables_1to3y": [
+        "AI semiconductor revenue trajectory versus the guided $21.7 billion acceleration (guidance_history)",
+        "Non-GAAP operating margin maintenance at 66% as guided (guidance_history)",
+        "Revenue growth sustainability: TTM revenue growth 48.69% YoY, latest quarter revenue growth 85.5% YoY (reported_financials)",
+        "EPS growth: TTM EPS growth 215.29% YoY, latest quarter EPS growth 215.29% YoY (reported_financials)",
+        "Gross margin trend: 69.13% in Q3 FY2026 vs 67.99% in Q4 FY2025 and 67.1% in Q3 FY2025 (earnings_history)",
+        "Operating margin trend: 53.92% in Q3 FY2026 vs 41.68% in Q4 FY2025 and 36.9% in Q3 FY2025 (earnings_history)",
+        "Valuation: PE TTM 43.3 with forward PE, PS, EV/EBITDA, and FCF yield unavailable (reported_financials)"
+      ],
+      "candidate_questions": [
+        "What is the segment-level revenue breakdown between AI semiconductors and infrastructure software?",
+        "How much of the guided $21.7 billion AI semiconductor revenue is already under contract or backlog?",
+        "What is the free cash flow and FCF yield, given these fields are unavailable?",
+        "What is the forward PE and consensus EPS, given these are unavailable?",
+        "What drove the Q2 FY2026 -12.59% post-earnings decline despite revenue growth?",
+        "How sustainable is the 53.92% operating margin and 69.13% gross margin?",
+        "What is the customer concentration in the AI semiconductor business?"
+      ],
+      "search_questions_last_30d": [
+        "Broadcom AI semiconductor revenue guidance $21.7 billion September 2026",
+        "Broadcom Q3 FY2026 earnings call transcript September 2026",
+        "Broadcom VMware infrastructure software revenue growth 2026",
+        "Broadcom AI backlog 2026",
+        "Broadcom custom XPU accelerator customer demand 2026",
+        "Broadcom non-GAAP operating margin 66% guidance 2026",
+        "Broadcom Q4 FY2026 revenue guidance $34.8 billion",
+        "Broadcom semiconductor supply chain investments 2026",
+        "Broadcom AI partnerships announcements September 2026",
+        "Broadcom earnings reaction analyst commentary September 2026"
+      ],
+      "states": [
+        {
+          "name": "AI semiconductor revenue acceleration",
+          "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236.",
+          "direction": "up",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "Non-GAAP operating margin maintenance",
+          "statement": "Management expects to maintain non-GAAP operating margin at 66%, flat from a year ago.",
+          "direction": "flat",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "Q4 FY2026 revenue guidance",
+          "statement": "Fourth quarter revenue guidance of approximately $34.8 billion.",
+          "direction": "up",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "Revenue growth",
+          "statement": "TTM revenue growth of 48.69% YoY and latest quarter revenue growth of 85.5% YoY.",
+          "direction": "up",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "EPS growth",
+          "statement": "TTM EPS growth of 215.29% YoY and latest quarter EPS growth of 215.29% YoY.",
+          "direction": "up",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "Margin expansion",
+          "statement": "Gross margin improved to 69.13% in Q3 FY2026 from 67.1% in Q3 FY2025; operating margin improved to 53.92% from 36.9%.",
+          "direction": "up",
+          "confidence": "high",
+          "state_type": "company",
+          "evidence_ids": []
+        },
+        {
+          "name": "Earnings miss and negative price reaction",
+          "statement": "Q3 FY2026 EPS of $2.68 missed the $2.83 estimate; stock fell 2.74% on the report date and underperformed QQQ by 3.93% and SPY by 3.79% on day 1.",
+          "direction": "down",
+          "confidence": "high",
+          "state_type": "event",
+          "evidence_ids": []
+        },
+        {
+          "name": "High valuation with limited forward visibility",
+          "statement": "PE TTM is 43.3; forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+          "direction": "flat",
+          "confidence": "medium",
+          "state_type": "company",
+          "evidence_ids": []
+        }
+      ],
+      "coverage_gaps": [
+        "Free cash flow (fcf) is unavailable in reported_financials and latest_quarter.",
+        "Segment growth (segment_growth) is unavailable.",
+        "Forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+        "Consensus estimates are unavailable (no trusted consensus source wired).",
+        "System forecast is unavailable (Phase 1 does not run a system forecast).",
+        "No segment-level revenue breakdown between AI semiconductors and infrastructure software is provided.",
+        "No customer concentration data is provided.",
+        "No R&D expense figures are provided."
+      ],
+      "cannot_conclude": [
+        "Cannot conclude the exact revenue split between AI semiconductors and infrastructure software.",
+        "Cannot conclude free cash flow or FCF yield.",
+        "Cannot conclude forward valuation multiples.",
+        "Cannot conclude consensus revenue or EPS expectations.",
+        "Cannot conclude customer concentration or contract-level backlog composition.",
+        "Cannot conclude R&D or AI investment levels.",
+        "Cannot conclude whether the guided $21.7 billion AI semiconductor revenue is fully contracted."
+      ]
+    }
+  },
+  "pm_synthesis": {
+    "current_view": "AVGO 的 AI 半导体增长叙事在方向上得到管理层指引和 Q3 FY2026 实际业绩（营收 $29.6B，同比 +85.5%）的支持，但 Brain 数据覆盖存在明显缺口：forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable，consensus 和 system forecast 未接入，且核心 claim 的支撑证据多为发行人管理层单一来源，缺少独立第三方验证。估值数学（PE TTM 43.3、EPS TTM 7.84、价格 339.51）为 reported，不可替换。因此当前只能形成方向性判断，无法对估值是否被 forward 基本面支撑下结论。",
+    "core_claim_ids": [
+      "bclm_602484a891474f5bac5f624496f40710",
+      "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "bclm_164165ad13094afa8fe5084013fa373a"
+    ],
+    "decisive_variables": [
+      {
+        "name": "AI 半导体收入增速的可持续性与客户集中度",
+        "why": "这是 AVGO 合并营收增速、毛利率结构和估值倍数的最大单一摆动因子；若 AI 收入减速或大客户（如 Google）将定制芯片订单转向 Marvell，48.69% TTM 营收增速和 215.29% EPS 增速将面临风险。",
+        "evidence_ids": [
+          "rev_79ac43eeb93e45948b8f1c0397601803",
+          "rev_47ecf667661f44ada184571be8fbdd60",
+          "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+        ]
+      },
+      {
+        "name": "利润率能否维持（非 GAAP 经营利润率 66% 指引 vs 实际 GAAP 利润率）",
+        "why": "利润率扩张是 215.29% EPS 增长和 43.3 PE TTM 的关键支撑；管理层指引非 GAAP 经营利润率 66% 同比持平，而 Q3 GAAP 经营利润率 53.92% 与指引口径存在差异，若利润率回落则高倍数难以维持。",
+        "evidence_ids": [
+          "rev_5ae3067a5bfd4c0097b7d50121782241",
+          "rev_5cd194cb4f7c408b876cdeee7169287f"
+        ]
+      },
+      {
+        "name": "前瞻估值可见性（forward PE / FCF yield 缺失）",
+        "why": "forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable，consensus 未接入，无法判断 43.3 PE TTM 是否被前瞻盈利或现金流支撑，构成估值风险的核心盲区。",
+        "evidence_ids": [
+          "rev_d60ccc6b804c4c4f8f7a0d37b3699ef3",
+          "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+        ]
+      }
+    ],
+    "strongest_claim": {
+      "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+      "claim_type": "event",
+      "status": "strongly_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "short",
+      "importance": "medium",
+      "why_it_matters": "The divergence between strong revenue growth and an EPS miss suggests cost or mix pressures that could undermine the earnings trajectory and the premium valuation.",
+      "financial_driver": "Revenue growth vs. EPS execution",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "Revenue growth is accelerating but earnings execution missed expectations",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "excerpt": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Primary source (AVGO press release or 10-Q) confirming Q3 FY2026 GAAP/non-GAAP EPS of $2.68.",
+          "Consensus EPS estimate of $2.83 and the source/date of that estimate.",
+          "Report-date (Q3 FY2026 earnings) AVGO closing price change of -2.74%.",
+          "QQQ and SPY same-day returns to verify the -3.93% and -3.79% relative underperformance.",
+          "Segment-level margin data (semiconductor vs infrastructure software) to test the cost/mix hypothesis.",
+          "Management guidance for Q4 FY2026 and any explanation for the EPS miss.",
+          "Independent (non-community, non-issuer) confirmation of the earnings event and market reaction."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Primary source (AVGO press release or 10-Q) confirming Q3 FY2026 GAAP/non-GAAP EPS of $2.68.",
+          "Consensus EPS estimate of $2.83 and the source/date of that estimate.",
+          "Report-date (Q3 FY2026 earnings) AVGO closing price change of -2.74%.",
+          "QQQ and SPY same-day returns to verify the -3.93% and -3.79% relative underperformance.",
+          "Segment-level margin data (semiconductor vs infrastructure software) to test the cost/mix hypothesis.",
+          "Management guidance for Q4 FY2026 and any explanation for the EPS miss.",
+          "Independent (non-community, non-issuer) confirmation of the earnings event and market reaction."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "The claim is not verifiable with the supplied evidence. The evidence set contains no AVGO Q3 FY2026 EPS figure, no consensus EPS estimate, no report-date price move, and no relative performance versus QQQ or SPY. The only revenue datapoint in the evidence is a community-tier signal (revenue +85.5% YoY to $29,591M), which is consistent with the claim's revenue figure but is not primary or independently validated. The earnings-miss and underperformance components are entirely unsupported.",
+          "why_important": "If true, the claim describes a classic growth-vs-profitability divergence: revenue accelerating sharply while EPS misses, which would imply cost, mix, or margin pressure and could challenge the premium multiple. If false or misstated, it would be a material factual error about a core event (earnings reaction) that could distort the earnings-trajectory thesis.",
+          "evidence_boundary": {
+            "proves": "The evidence supports that AVGO has had strong AI-driven revenue growth and record quarterly revenue in prior periods (e.g., rev_1d283b914d864f439de700e39a9318bf, rev_5cd194cb4f7c408b876cdeee7169287f), and that a community-tier source reports Q3 FY2026 revenue growth of 85.5% YoY. It also shows a competitive threat (Google tapping Marvell for custom silicon) that could pressure future growth expectations.",
+            "does_not_prove": "It does not prove the Q3 FY2026 EPS of $2.68, the $2.83 consensus estimate, the EPS miss, the -2.74% report-date stock move, or the underperformance vs QQQ (-3.93%) and SPY (-3.79%). It also does not establish whether any EPS miss was driven by cost/mix pressures versus one-time items, nor whether the market reaction was attributable to the EPS miss rather than guidance or other factors."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "speculative",
+              "statement": "Revenue growth is genuinely accelerating (AI semiconductor demand) while EPS missed due to margin/cost pressure, causing the stock to underperform.",
+              "evidence_ids": [
+                "rev_5cd194cb4f7c408b876cdeee7169287f",
+                "rev_1d283b914d864f439de700e39a9318bf"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "The EPS miss and stock decline were driven by guidance or one-time items rather than underlying cost/mix deterioration.",
+              "evidence_ids": []
+            },
+            {
+              "status": "speculative",
+              "statement": "The revenue acceleration is partly inorganic (VMware consolidation), so the 85.5% YoY figure overstates organic momentum.",
+              "evidence_ids": [
+                "rev_c5b8e053d1a7492c951c98d9bb1061ec"
+              ]
+            },
+            {
+              "status": "supported",
+              "statement": "Competitive displacement (Google/Marvell custom silicon) poses a medium-term risk to AVGO's AI growth trajectory.",
+              "evidence_ids": [
+                "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+              ]
+            }
+          ],
+          "what_strengthens": [
+            "A primary AVGO earnings release or 10-Q showing Q3 FY2026 EPS of $2.68.",
+            "A reputable consensus data source (e.g., FactSet, Refinitiv) showing the $2.83 estimate.",
+            "Exchange price data confirming the -2.74% move and QQQ/SPY relative performance.",
+            "Management commentary attributing the miss to cost, mix, or margin pressure."
+          ],
+          "what_weakens": [
+            "Primary data showing EPS actually met or beat the $2.83 estimate.",
+            "Price data showing AVGO did not underperform QQQ/SPY on the report date.",
+            "Evidence that the revenue growth figure is largely inorganic (VMware) rather than organic acceleration.",
+            "Guidance or commentary indicating the EPS miss was due to one-time/non-recurring items."
+          ],
+          "what_invalidates": [
+            "A primary filing showing Q3 FY2026 EPS materially different from $2.68.",
+            "Authoritative consensus data showing the estimate was not $2.83.",
+            "Exchange data showing the stock did not fall 2.74% or did not underperform QQQ/SPY on the report date.",
+            "Confirmation that the 'Q3 FY2026' event as described did not occur (e.g., wrong fiscal period or ticker)."
+          ],
+          "next_research_question": "What were AVGO's actual Q3 FY2026 GAAP and non-GAAP EPS, the consensus estimate, and the report-date price reaction versus QQQ and SPY, and what did management cite as the reason for any EPS shortfall?",
+          "strongest_support_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "rev_1d283b914d864f439de700e39a9318bf",
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d"
+          ],
+          "strongest_opposing_evidence_ids": [
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ]
+        }
+      }
+    },
+    "strongest_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+    "weakest_claim": {
+      "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "title": "Operating margin expanded sharply year-over-year",
+      "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+      "claim_type": "operating",
+      "status": "strongly_supported",
+      "confidence": "medium",
+      "evidence_confidence": "medium",
+      "independent_validation": "Missing",
+      "independence_gap": "issuer-supported but independently unconfirmed",
+      "time_horizon": "medium",
+      "importance": "high",
+      "why_it_matters": "Margin expansion is a key driver of EPS growth (215.29% YoY) and supports the high PE TTM of 43.3; if margins revert, the valuation multiple would be harder to justify.",
+      "financial_driver": "Operating margin and gross margin",
+      "why_selected_as_core": null,
+      "evidence_coverage_matrix": {
+        "claim_title": "Operating margin expanded sharply year-over-year",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      "evidence_set": {
+        "supporting": [
+          {
+            "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+            "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "excerpt": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+            "source": "web_search",
+            "publisher": "stockanalysis.com",
+            "source_url": "https://stockanalysis.com/stocks/avgo/transcripts/",
+            "source_tier": 4,
+            "source_date": "2026-09-15T13:36:17+00:00",
+            "source_type": "transcript",
+            "source_quality": "primary",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": null,
+            "proves": null,
+            "does_not_prove": null,
+            "source_relationship": {
+              "stored_source_tier": 4,
+              "stored_source": "web_search",
+              "stored_source_type": "transcript",
+              "stored_evidence_class": null,
+              "stored_query_type": null,
+              "stored_entity": null,
+              "brain_currently_treats_as": "community",
+              "reviewer_inferred_relationship": "community_signal",
+              "brain_distinguishes_related_entity_primary": false
+            }
+          }
+        ],
+        "opposing": [],
+        "contextual": [],
+        "missing_evidence": [
+          "Primary financial statements (10-Q or 10-K) for Q3 FY2026 showing operating income, gross profit, and revenue.",
+          "Earnings call transcript for Q3 FY2026 with management commentary on margins and non-GAAP operating margin guidance.",
+          "Independent third-party analysis or data provider confirming the reported margin figures.",
+          "Historical margin data for Q3 FY2025 to verify the 36.9% and 67.1% comparatives.",
+          "Counter-evidence or bear-case analysis questioning the sustainability of margin expansion."
+        ],
+        "claim_reasoning_missing_evidence": [
+          "Primary financial statements (10-Q or 10-K) for Q3 FY2026 showing operating income, gross profit, and revenue.",
+          "Earnings call transcript for Q3 FY2026 with management commentary on margins and non-GAAP operating margin guidance.",
+          "Independent third-party analysis or data provider confirming the reported margin figures.",
+          "Historical margin data for Q3 FY2025 to verify the 36.9% and 67.1% comparatives.",
+          "Counter-evidence or bear-case analysis questioning the sustainability of margin expansion."
+        ],
+        "research_leads": [
+          {
+            "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+            "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+            "source_tier": 4,
+            "source_domain": "techtimes.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+            "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+            "url": "https://longbridge.com/en/news/297876806",
+            "source_tier": 4,
+            "source_domain": "longbridge.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+            "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+            "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+            "source_tier": 4,
+            "source_domain": "thenextweb.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+            "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification",
+            "verification_ran": true,
+            "verification_status": "ok",
+            "verification_hit_count": 5,
+            "verified_quality_hits": 0
+          },
+          {
+            "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+            "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+            "source_tier": 4,
+            "source_domain": "gate.com",
+            "why": "high-novelty/material clue from aggregator or community; not Evidence",
+            "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+            "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "status": "pending_verification"
+          }
+        ],
+        "reasoning": {
+          "current_conclusion": "The claim that Q3 FY2026 operating margin improved to 53.92% from 36.9% YoY and gross margin improved to 69.13% from 67.1% is not verifiable from the provided evidence. No evidence item contains these specific margin figures, and no primary financial statement or transcript excerpt confirms them. The claim remains unsubstantiated by the current evidence set.",
+          "why_important": "Margin expansion is cited as a key driver of 215.29% YoY EPS growth and supports a high PE TTM of 43.3. If margins revert or the reported figures are inaccurate, the valuation multiple would be harder to justify, making this claim central to the investment thesis.",
+          "evidence_boundary": {
+            "proves": "Nothing directly. The evidence set contains no margin figures, no Q3 FY2026 income statement data, and no management guidance on non-GAAP operating margin.",
+            "does_not_prove": "It does not prove or disprove the specific operating margin (53.92% vs 36.9%), gross margin (69.13% vs 67.1%), or the 66% non-GAAP operating margin guidance. It also does not establish the reliability of the reported figures."
+          },
+          "competing_hypotheses": [
+            {
+              "status": "speculative",
+              "statement": "The margin expansion is real and driven by a favorable mix shift toward high-margin AI semiconductor and VMware software revenue.",
+              "evidence_ids": [
+                "rev_5ae3067a5bfd4c0097b7d50121782241",
+                "rev_5cd194cb4f7c408b876cdeee7169287f"
+              ]
+            },
+            {
+              "status": "speculative",
+              "statement": "The reported margin figures are inaccurate or misstated, and actual margins are lower or flat.",
+              "evidence_ids": []
+            },
+            {
+              "status": "speculative",
+              "statement": "Margin expansion is partly due to one-time cost reductions or accounting effects rather than sustainable operating leverage.",
+              "evidence_ids": []
+            }
+          ],
+          "what_strengthens": [
+            "A primary SEC filing (10-Q/10-K) for Q3 FY2026 confirming the operating and gross margin figures.",
+            "Management commentary on the Q3 FY2026 earnings call explicitly stating the margins and guidance.",
+            "Independent verification from a reputable financial data provider or analyst report.",
+            "Evidence showing that the margin expansion is driven by sustainable mix shift rather than one-time items."
+          ],
+          "what_weakens": [
+            "Discovery that the reported margin figures are incorrect or based on non-GAAP adjustments that are not comparable.",
+            "Management guidance implying margin compression in future quarters.",
+            "Evidence of rising costs or competitive pressure that would erode margins.",
+            "Lack of independent confirmation from primary sources."
+          ],
+          "what_invalidates": [
+            "A primary financial statement showing operating margin was not 53.92% or gross margin was not 69.13%.",
+            "Management explicitly stating that the margin figures are misreported or that guidance is withdrawn.",
+            "Audited financials revealing a restatement of Q3 FY2026 results."
+          ],
+          "next_research_question": "What are the exact operating and gross margin figures reported in Broadcom's Q3 FY2026 10-Q, and how do they compare to Q3 FY2025 and management's non-GAAP operating margin guidance?",
+          "strongest_support_evidence_ids": [],
+          "strongest_opposing_evidence_ids": []
+        }
+      }
+    },
+    "weakest_claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+    "market_disagreement": "not_in_current_pm_synthesis_schema",
+    "most_likely_wrong": "最可能出错的是对 AI 半导体收入增速可持续性的外推：$21.7B / +236% 这一具体数字未在任何提供的证据片段中出现，且全部支撑证据来自发行人管理层单一来源，缺少独立第三方验证；同时 Google 与 Marvell 的定制芯片合作（rev_7cd9d4b96c354550a1f5be1ed8bb87ae）可能侵蚀 AVGO 的 AI 增长轨迹。",
+    "next_information_to_seek": "获取 AVGO 的 forward PE、PS、EV/EBITDA、FCF yield 及 consensus 前瞻 EPS 估计，并与历史均值和同业对比；同时核实 $21.7B AI 半导体收入 / +236% 增速的具体财季与一手来源（10-Q/10-K 或财报发布），以及 Google/Marvell 合作对 AVGO 定制芯片份额的量化影响。",
+    "what_changed_last_30d": [
+      "2026-09-02 发布 Q3 FY2026 业绩：营收 $29.6B，同比 +86%（8-K Exhibit 99.1），GAAP 摊薄 EPS $2.68。",
+      "2026-09-02 发行人 IR 确认 Q3 FY2026 财报及季度股息（rev_d6d3ddbff8eb450784c4939611a77a09）。",
+      "2026-09-08 第三方报道确认 Q3 营收 +85.5% 至 $29,591M、净利润 +216.1% 至 $13,088M，并给出 33.4 EV/EBITDA（rev_9de711ffd3b7432b99bc1bf89570dd60）。",
+      "2026-09-10 提交截至 2026-08-02 季度的 10-Q（bnws_f96ad831e4224dd596113c6e3688dd28）。",
+      "管理层指引 Q4 FY2026 营收约 $34.8B，AI 半导体收入加速至 $21.7B（+236%）。"
+    ],
+    "short_view": "Q3 FY2026 营收强劲（+85.5% YoY）但 GAAP EPS $2.68 低于 $2.83 预期，报告日股价下跌 2.74% 并跑输 QQQ/SPY；短期叙事由 AI 指引与 EPS 执行落差之间的张力主导，且缺少 consensus 与前瞻估值数据，方向性判断受限。",
+    "mid_view": "若 AI 半导体收入按管理层指引加速至 $21.7B 且非 GAAP 经营利润率维持 66%，则 48.69% TTM 营收增速和 215.29% EPS 增速可延续，43.3 PE TTM 有基本面支撑；但该路径依赖发行人单一来源证据，且客户集中度与 Google/Marvell 竞争是中期风险点。",
+    "long_view": "长期取决于 AVGO 能否在定制 XPU/AI 计算领域维持多年代工与供应协议带来的可见性，并将 AI 收入转化为可持续的自由现金流；由于 FCF yield、forward 倍数和独立验证均缺失，长期估值合理性的判断目前无法完成。",
+    "cannot_conclude": [
+      "无法判断 43.3 PE TTM 是否被前瞻盈利或自由现金流支撑，因为 forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable。",
+      "无法独立验证 $21.7B AI 半导体收入 / +236% 增速，因为该数字未出现在任何提供的证据片段中，且支撑证据均为发行人管理层单一来源。",
+      "无法确认 Q3 FY2026 经营利润率 53.92% 与毛利率 69.13% 的具体数字，因为证据集中没有对应的利润表数据（claim bclm_f153259899ee4091a91aeff1f32b2b6a 的 strongest_support_evidence_ids 为空）。",
+      "无法量化 Google/Marvell 定制芯片合作对 AVGO AI 收入份额的实际影响，仅有单一社区/行业信号（rev_7cd9d4b96c354550a1f5be1ed8bb87ae）。",
+      "无法评估 EPS 低于预期是源于成本/结构压力还是一次性项目，因为缺少分部利润率数据和管理层对 miss 的解释。"
+    ],
+    "raw_pm_synthesis": {
+      "current_view": "AVGO 的 AI 半导体增长叙事在方向上得到管理层指引和 Q3 FY2026 实际业绩（营收 $29.6B，同比 +85.5%）的支持，但 Brain 数据覆盖存在明显缺口：forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable，consensus 和 system forecast 未接入，且核心 claim 的支撑证据多为发行人管理层单一来源，缺少独立第三方验证。估值数学（PE TTM 43.3、EPS TTM 7.84、价格 339.51）为 reported，不可替换。因此当前只能形成方向性判断，无法对估值是否被 forward 基本面支撑下结论。",
+      "core_claim_ids": [
+        "bclm_602484a891474f5bac5f624496f40710",
+        "bclm_f153259899ee4091a91aeff1f32b2b6a",
+        "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "bclm_164165ad13094afa8fe5084013fa373a"
+      ],
+      "decisive_variables": [
+        {
+          "name": "AI 半导体收入增速的可持续性与客户集中度",
+          "why": "这是 AVGO 合并营收增速、毛利率结构和估值倍数的最大单一摆动因子；若 AI 收入减速或大客户（如 Google）将定制芯片订单转向 Marvell，48.69% TTM 营收增速和 215.29% EPS 增速将面临风险。",
+          "evidence_ids": [
+            "rev_79ac43eeb93e45948b8f1c0397601803",
+            "rev_47ecf667661f44ada184571be8fbdd60",
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ]
+        },
+        {
+          "name": "利润率能否维持（非 GAAP 经营利润率 66% 指引 vs 实际 GAAP 利润率）",
+          "why": "利润率扩张是 215.29% EPS 增长和 43.3 PE TTM 的关键支撑；管理层指引非 GAAP 经营利润率 66% 同比持平，而 Q3 GAAP 经营利润率 53.92% 与指引口径存在差异，若利润率回落则高倍数难以维持。",
+          "evidence_ids": [
+            "rev_5ae3067a5bfd4c0097b7d50121782241",
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ]
+        },
+        {
+          "name": "前瞻估值可见性（forward PE / FCF yield 缺失）",
+          "why": "forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable，consensus 未接入，无法判断 43.3 PE TTM 是否被前瞻盈利或现金流支撑，构成估值风险的核心盲区。",
+          "evidence_ids": [
+            "rev_d60ccc6b804c4c4f8f7a0d37b3699ef3",
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae"
+          ]
+        }
+      ],
+      "strongest_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "weakest_claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "what_changed_last_30d": [
+        "2026-09-02 发布 Q3 FY2026 业绩：营收 $29.6B，同比 +86%（8-K Exhibit 99.1），GAAP 摊薄 EPS $2.68。",
+        "2026-09-02 发行人 IR 确认 Q3 FY2026 财报及季度股息（rev_d6d3ddbff8eb450784c4939611a77a09）。",
+        "2026-09-08 第三方报道确认 Q3 营收 +85.5% 至 $29,591M、净利润 +216.1% 至 $13,088M，并给出 33.4 EV/EBITDA（rev_9de711ffd3b7432b99bc1bf89570dd60）。",
+        "2026-09-10 提交截至 2026-08-02 季度的 10-Q（bnws_f96ad831e4224dd596113c6e3688dd28）。",
+        "管理层指引 Q4 FY2026 营收约 $34.8B，AI 半导体收入加速至 $21.7B（+236%）。"
+      ],
+      "most_likely_wrong": "最可能出错的是对 AI 半导体收入增速可持续性的外推：$21.7B / +236% 这一具体数字未在任何提供的证据片段中出现，且全部支撑证据来自发行人管理层单一来源，缺少独立第三方验证；同时 Google 与 Marvell 的定制芯片合作（rev_7cd9d4b96c354550a1f5be1ed8bb87ae）可能侵蚀 AVGO 的 AI 增长轨迹。",
+      "next_information_to_seek": "获取 AVGO 的 forward PE、PS、EV/EBITDA、FCF yield 及 consensus 前瞻 EPS 估计，并与历史均值和同业对比；同时核实 $21.7B AI 半导体收入 / +236% 增速的具体财季与一手来源（10-Q/10-K 或财报发布），以及 Google/Marvell 合作对 AVGO 定制芯片份额的量化影响。",
+      "short_view": "Q3 FY2026 营收强劲（+85.5% YoY）但 GAAP EPS $2.68 低于 $2.83 预期，报告日股价下跌 2.74% 并跑输 QQQ/SPY；短期叙事由 AI 指引与 EPS 执行落差之间的张力主导，且缺少 consensus 与前瞻估值数据，方向性判断受限。",
+      "mid_view": "若 AI 半导体收入按管理层指引加速至 $21.7B 且非 GAAP 经营利润率维持 66%，则 48.69% TTM 营收增速和 215.29% EPS 增速可延续，43.3 PE TTM 有基本面支撑；但该路径依赖发行人单一来源证据，且客户集中度与 Google/Marvell 竞争是中期风险点。",
+      "long_view": "长期取决于 AVGO 能否在定制 XPU/AI 计算领域维持多年代工与供应协议带来的可见性，并将 AI 收入转化为可持续的自由现金流；由于 FCF yield、forward 倍数和独立验证均缺失，长期估值合理性的判断目前无法完成。",
+      "cannot_conclude": [
+        "无法判断 43.3 PE TTM 是否被前瞻盈利或自由现金流支撑，因为 forward PE、PS、EV/EBITDA、FCF yield 全部 unavailable。",
+        "无法独立验证 $21.7B AI 半导体收入 / +236% 增速，因为该数字未出现在任何提供的证据片段中，且支撑证据均为发行人管理层单一来源。",
+        "无法确认 Q3 FY2026 经营利润率 53.92% 与毛利率 69.13% 的具体数字，因为证据集中没有对应的利润表数据（claim bclm_f153259899ee4091a91aeff1f32b2b6a 的 strongest_support_evidence_ids 为空）。",
+        "无法量化 Google/Marvell 定制芯片合作对 AVGO AI 收入份额的实际影响，仅有单一社区/行业信号（rev_7cd9d4b96c354550a1f5be1ed8bb87ae）。",
+        "无法评估 EPS 低于预期是源于成本/结构压力还是一次性项目，因为缺少分部利润率数据和管理层对 miss 的解释。"
+      ]
+    }
+  },
+  "news": {
+    "material": [
+      {
+        "news_id": "bnws_f96ad831e4224dd596113c6e3688dd28",
+        "title": "10-Q",
+        "source": "sec",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+        "date": "2026-09-10T00:00:00+00:00",
+        "layer": "material",
+        "new_fact": "Broadcom filed its Form 10-Q for the quarter ended August 2, 2026.",
+        "affected_claim_id": null,
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "Official SEC filing confirms quarterly report but snippet contains only XBRL metadata, no new financial figures beyond what is in the earnings release.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "Official SEC filing confirms quarterly report but snippet contains only XBRL metadata, no new financial figures beyond what is in the earnings release."
+      },
+      {
+        "news_id": "bnws_0d9b8312d8e14e318349724f56922e41",
+        "title": "Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial ...",
+        "source": "issuer_ir",
+        "url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+        "date": "2026-09-02T00:00:00+00:00",
+        "layer": "material",
+        "new_fact": "Broadcom announced Q3 FY2026 financial results and quarterly dividend.",
+        "affected_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Issuer IR confirms earnings release, supporting the claim that revenue growth is accelerating, but no details to quantify.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": false,
+        "quantifiable_reason": "Headline only; no specific figures in snippet.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "Issuer IR confirms earnings release, supporting the claim that revenue growth is accelerating, but no details to quantify."
+      },
+      {
+        "news_id": "bnws_cdeb38088f23443cbb3d1a90951ae401",
+        "title": "Exhibit 99.1",
+        "source": "sec",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "date": "2026-09-02T00:00:00+00:00",
+        "layer": "material",
+        "new_fact": "Q3 FY2026 revenue of $29.6 billion, up 86% YoY; GAAP operating income $16.0B; non-GAAP operating income $20.1B; GAAP diluted EPS $2.68.",
+        "affected_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Official 8-K exhibit provides key Q3 metrics: revenue growth 86% YoY, EPS $2.68, supporting claim of accelerating revenue but also potential earnings miss.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": true,
+        "quantifiable_reason": "Revenue and EPS figures are provided and can be compared to estimates.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "Official 8-K exhibit provides key Q3 metrics: revenue growth 86% YoY, EPS $2.68, supporting claim of accelerating revenue but also potential earnings miss."
+      },
+      {
+        "news_id": "bnws_ccb6b1ff84ab4c1fa55d0dc261cb70f5",
+        "title": "Broadcom Inc.: quarterly revenue up 85.5%, yet shares still trade at 33.4 EV/EBITDA — Frontier",
+        "source": "frontier.eninvs.com",
+        "url": "https://frontier.eninvs.com/region/us/article/avgo-q32026",
+        "date": "2026-09-08T00:00:00+00:00",
+        "layer": "material",
+        "new_fact": "Q3 FY2026 revenue up 85.5% YoY to $29,591 million; net income up 216.1% to $13,088 million; shares trade at 33.4 EV/EBITDA.",
+        "affected_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Confirms Q3 results with specific figures, supporting revenue growth claim.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": true,
+        "quantifiable_reason": "Revenue and net income figures are provided.",
+        "claim_version_changed": false,
+        "novelty": "repeat",
+        "source_credibility": "medium",
+        "reason": "Confirms Q3 results with specific figures, supporting revenue growth claim."
+      }
+    ],
+    "noise_contextual_uninterpreted": [
+      {
+        "news_id": "bnws_fd6801570bb14944b8bfa50648426ea8",
+        "title": "8-K",
+        "source": "sec",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+        "date": "2026-09-02T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom filed a Form 8-K on September 2, 2026.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "8-K filing notice without financial details; contextual only.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "8-K filing notice without financial details; contextual only."
+      },
+      {
+        "news_id": "bnws_99aecf3ea8584b8f8b78465c32a7b984",
+        "title": "Broadcom Unveils AgentMinder, An Enterprise Solution for AI Agent ...",
+        "source": "issuer_ir",
+        "url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-unveils-agentminder-enterprise-solution-ai-agent",
+        "date": "2026-08-31T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom unveiled AgentMinder, an enterprise solution for AI agent governance and runtime control.",
+        "affected_claim_id": null,
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "New product announcement, but no immediate financial impact specified; contextual for AI strategy.",
+        "financial_impact": "unavailable",
+        "quantifiable": false,
+        "quantifiable_reason": "No financial details or revenue impact provided.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "New product announcement, but no immediate financial impact specified; contextual for AI strategy."
+      },
+      {
+        "news_id": "bnws_bf2bcb4c0e1348a99492d5875f13765d",
+        "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+        "source": "The Motley Fool",
+        "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+        "date": "2026-09-17T00:00:00+00:00",
+        "layer": "noise",
+        "new_fact": "Stanley Druckenmiller sold Broadcom shares and increased stake in another company.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Third-party investor activity, not material to company fundamentals.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Third-party investor activity, not material to company fundamentals."
+      },
+      {
+        "news_id": "bnws_ab538c3bf261488b9ff453dc4e83e3d9",
+        "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+        "source": "Zacks",
+        "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+        "date": "2026-09-16T00:00:00+00:00",
+        "layer": "noise",
+        "new_fact": "Arista Networks highlighted as Zacks Bull of the Day.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Not directly related to Broadcom; noise.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Not directly related to Broadcom; noise."
+      },
+      {
+        "news_id": "bnws_fbd83cca01464e7082b49a09775acbe5",
+        "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+        "source": "The Motley Fool",
+        "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+        "date": "2026-09-16T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom expects $230 billion in AI semiconductor revenue by 2028.",
+        "affected_claim_id": "bclm_602484a891474f5bac5f624496f40710",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Reiterates management's long-term AI revenue target, supporting AI growth claim.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": false,
+        "quantifiable_reason": "Long-term projection, not current financials.",
+        "claim_version_changed": false,
+        "novelty": "repeat",
+        "source_credibility": "medium",
+        "reason": "Reiterates management's long-term AI revenue target, supporting AI growth claim."
+      },
+      {
+        "news_id": "bnws_57c0046e6637451da3b6312adcca8998",
+        "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+        "source": "The Motley Fool",
+        "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+        "date": "2026-09-16T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Hock Tan guided Broadcom's AI revenue to reach $230 billion by 2028.",
+        "affected_claim_id": "bclm_602484a891474f5bac5f624496f40710",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Same as news 7, reiterating AI revenue guidance.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": false,
+        "quantifiable_reason": "Long-term projection.",
+        "claim_version_changed": false,
+        "novelty": "repeat",
+        "source_credibility": "medium",
+        "reason": "Same as news 7, reiterating AI revenue guidance."
+      },
+      {
+        "news_id": "bnws_3a2959a709d34c27a9bb2b2884a1a639",
+        "title": "EDGAR Entity Landing Page - SEC.gov",
+        "source": "sec",
+        "url": "https://www.sec.gov/edgar/browse/?CIK=0001730168",
+        "date": "2026-09-10T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "SEC EDGAR shows Broadcom filed a 10-Q and S-4 on September 10, 2026.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Filing index page, no new financial data.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "high",
+        "reason": "Filing index page, no new financial data."
+      },
+      {
+        "news_id": "bnws_d51cb8e015364a3f949d9b9d6d86fb29",
+        "title": "Broadcom Inc. (AVGO) Q3 2026 Earnings Call Transcript",
+        "source": "web_search",
+        "url": "https://seekingalpha.com/article/4942557-broadcom-inc-avgo-q3-2026-earnings-call-transcript",
+        "date": "2026-09-02T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom held its Q3 2026 earnings call on September 2, 2026.",
+        "affected_claim_id": null,
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "Transcript availability, no new facts in snippet.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Transcript availability, no new facts in snippet."
+      },
+      {
+        "news_id": "bnws_8f45063e2e5a40408676ac6489c789e4",
+        "title": "Semiconductor Supply Chain Investments",
+        "source": "web_search",
+        "url": "https://www.semiconductors.org/chip-supply-chain-investments/",
+        "date": "2026-09-09T00:00:00+00:00",
+        "layer": "noise",
+        "new_fact": "Over $825 billion in semiconductor supply chain investments announced.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Industry-wide data, not issuer-specific.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Industry-wide data, not issuer-specific."
+      },
+      {
+        "news_id": "bnws_2eb41dccc7ba4defab347933037ca9df",
+        "title": "Google pits Marvell against Broadcom as it chases AI crown",
+        "source": "theregister.com",
+        "url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+        "date": "2026-08-19T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Google is pitting Marvell against Broadcom for AI chip business; Marvell offered a $12.2B stake.",
+        "affected_claim_id": null,
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "Competitive news, but no immediate contract loss or gain quantified.",
+        "financial_impact": "unavailable",
+        "quantifiable": false,
+        "quantifiable_reason": "No direct financial impact on Broadcom specified.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Competitive news, but no immediate contract loss or gain quantified."
+      },
+      {
+        "news_id": "bnws_f2fe3068edbb41a8bd367d7817378e44",
+        "title": "Broadcom Stock: Wall Street's Price Targets Point to a Widening Value Gap",
+        "source": "kobaran.com",
+        "url": "https://www.kobaran.com/broadcom-stock-wall-streets-price-targets-point-to-a-widening-value-gap/",
+        "date": "2026-09-16T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom stock has fallen sharply since summer despite strong AI chip growth; Wall Street price targets point to a widening value gap.",
+        "affected_claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "Commentary on stock performance and valuation gap, but no new quantifiable data.",
+        "financial_impact": "unavailable",
+        "quantifiable": false,
+        "quantifiable_reason": "No specific price targets or valuation metrics provided.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "low",
+        "reason": "Commentary on stock performance and valuation gap, but no new quantifiable data."
+      },
+      {
+        "news_id": "bnws_6e72d2a49a3b4176ad01d70274a7ee20",
+        "title": "Broadcom Inc. (AVGO) Stock Analysis | InTickers",
+        "source": "intickers.com",
+        "url": "https://intickers.com/reports/avgo/",
+        "date": "2026-09-13T00:00:00+00:00",
+        "layer": "noise",
+        "new_fact": "InTickers rates Broadcom as a Buy with a score of 84.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Third-party rating, not material.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "low",
+        "reason": "Third-party rating, not material."
+      },
+      {
+        "news_id": "bnws_607e2336264e46e49e490a88e34af6cc",
+        "title": "Broadcom: Buckle Up For What's Coming (NASDAQ:AVGO)",
+        "source": "seekingalpha.com",
+        "url": "https://seekingalpha.com/article/4945835-broadcom-buckle-up-for-whats-coming",
+        "date": "2026-09-13T00:00:00+00:00",
+        "layer": "noise",
+        "new_fact": "Seeking Alpha article suggests Broadcom stock is poised for a move.",
+        "affected_claim_id": null,
+        "impact": "none",
+        "support_weaken_contextual": "none",
+        "why_material": "Opinion piece, no new facts.",
+        "financial_impact": "none",
+        "quantifiable": false,
+        "quantifiable_reason": "",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "low",
+        "reason": "Opinion piece, no new facts."
+      },
+      {
+        "news_id": "bnws_fa8ddafac76d43ebb977b5b0a5801bd2",
+        "title": "Broadcom stock: AI growth demands $90B of FCF | SageNoodle",
+        "source": "sagenoodle.com",
+        "url": "https://sagenoodle.com/research/broadcom-ai-revenue-90-billion-free-cash-flow",
+        "date": "2026-09-10T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom's AI revenue rose 221% but shares require roughly $90 billion of fiscal 2030 free cash flow at $360.83.",
+        "affected_claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+        "impact": "contextual",
+        "support_weaken_contextual": "contextual",
+        "why_material": "Provides valuation context but not a new fact about company performance.",
+        "financial_impact": "unavailable",
+        "quantifiable": false,
+        "quantifiable_reason": "Long-term FCF requirement is an analyst estimate, not company guidance.",
+        "claim_version_changed": false,
+        "novelty": "new",
+        "source_credibility": "medium",
+        "reason": "Provides valuation context but not a new fact about company performance."
+      },
+      {
+        "news_id": "bnws_a805912fb53a4911842d2bad7143631e",
+        "title": "Broadcom Beats Q4 2025 Earnings, Highlights AI Growth Amid Margin Concerns - AVGO News - EveryTicker",
+        "source": "everyticker.com",
+        "url": "https://everyticker.com/quote/AVGO/news/broadcom-beats-q4-2025-earnings-highlights-ai-growth-amid-margin-concerns",
+        "date": "2026-09-05T00:00:00+00:00",
+        "layer": "contextual",
+        "new_fact": "Broadcom beat Q4 2025 earnings, highlighted AI growth amid margin concerns; AI semiconductor revenue projected to $56 billion.",
+        "affected_claim_id": "bclm_602484a891474f5bac5f624496f40710",
+        "impact": "support",
+        "support_weaken_contextual": "support",
+        "why_material": "Reiterates AI growth trajectory and margin concerns, supporting AI revenue claim.",
+        "financial_impact": "qualitative_positive",
+        "quantifiable": false,
+        "quantifiable_reason": "Projection, not current quarter.",
+        "claim_version_changed": false,
+        "novelty": "repeat",
+        "source_credibility": "medium",
+        "reason": "Reiterates AI growth trajectory and margin concerns, supporting AI revenue claim."
+      }
+    ],
+    "news_coverage_stats": {
+      "official_sec": 6,
+      "high_quality_independent": 0,
+      "aggregator": 13,
+      "headline_only": 2,
+      "dated": 19,
+      "undated": 0,
+      "full_text_available": 14,
+      "in_window": 19,
+      "count": 19,
+      "window_days": 30
+    }
+  },
+  "independence": {
+    "independent_validation_from_audit": "Missing",
+    "coverage_matrix": [
+      {
+        "claim_title": "Operating margin expanded sharply year-over-year",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Revenue growth is accelerating but earnings execution missed expectations",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "High valuation with limited forward visibility",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Partial",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "AI semiconductor revenue is the dominant growth engine",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "counts_by_reviewer_inferred_relationship": {
+      "community_signal": 7
+    },
+    "note": "Brain stores source_tier / source_type / source_family / optional evidence_class. It does not currently persist a dedicated related_entity_primary label. reviewer_inferred_relationship is inspection of stored fields, not a Brain output.",
+    "evidence_in_core_links": [
+      {
+        "evidence_id": "rev_79ac43eeb93e45948b8f1c0397601803",
+        "fact": "AI compute is the primary growth driver, with revenue",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_47ecf667661f44ada184571be8fbdd60",
+        "fact": "acceleration. Multi-year supply agreements and a growing customer base support visibility for continued growth",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+        "fact": "AI backlog reached $73B, and Q1 2026 guidance projects 28% revenue growth, with AI revenue",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+        "fact": "AI semiconductor demand, with strong bookings and long-term agreements supporting robust growth",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_5cd194cb4f7c408b876cdeee7169287f",
+        "fact": "AI semiconductor demand, with revenue up 86% and operating income up 92% year-on-year. AI revenue",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_5ae3067a5bfd4c0097b7d50121782241",
+        "fact": "AI semiconductor revenue up 46% and infrastructure software up 25%. AI growth",
+        "publisher": "stockanalysis.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      },
+      {
+        "evidence_id": "rev_4406a0fe08024f9c81ba1c3191ca58e6",
+        "fact": "over the next 2 years, '27, '28, that there are 30 gigawatts that will go into production, and therefore, we ship it",
+        "publisher": "fool.com",
+        "source_tier": 4,
+        "brain_currently_treats_as": "community",
+        "reviewer_inferred_relationship": "community_signal",
+        "brain_distinguishes_related_entity_primary": false
+      }
+    ]
+  },
+  "claim_version_changes": [
+    {
+      "claim_id": "bclm_602484a891474f5bac5f624496f40710",
+      "title": "AI semiconductor revenue is the dominant growth engine",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_f392d850fae5493ba394abd755233758",
+          "claim_id": "bclm_602484a891474f5bac5f624496f40710",
+          "version": 1,
+          "statement": "Management expects AI semiconductor revenue to accelerate to $21.7 billion, up 236%, and transcript evidence repeatedly identifies AI compute as the primary growth driver with multi-year supply agreements supporting visibility.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_79ac43eeb93e45948b8f1c0397601803",
+            "rev_47ecf667661f44ada184571be8fbdd60",
+            "rev_f0edf2b08b5c4e24b50c1c0725b3084d",
+            "rev_8dcab4ebc6a048208d568ea6c3d0d42f",
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "title": "Operating margin expanded sharply year-over-year",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_ac0c53901eca42f2a6c5752340e97407",
+          "claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+          "version": 1,
+          "statement": "Q3 FY2026 operating margin improved to 53.92% from 36.9% in Q3 FY2025, and gross margin improved to 69.13% from 67.1%, while management guides non-GAAP operating margin at 66%, flat year-over-year.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+        "status": "strongly_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_63b210a0bc2d4fe39d03c86e21c45b02",
+          "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+          "version": 1,
+          "statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+          "status": "strongly_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5cd194cb4f7c408b876cdeee7169287f"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    },
+    {
+      "claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+      "title": "High valuation with limited forward visibility",
+      "change": "new_core_claim_this_run",
+      "old": null,
+      "new": {
+        "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+        "status": "partially_supported",
+        "confidence": "medium"
+      },
+      "versions_this_claim": [
+        {
+          "claim_version_id": "bclv_1325ef810b6148c3ab0621a1596a4569",
+          "claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+          "version": 1,
+          "statement": "PE TTM is 43.3, while forward PE, PS, EV/EBITDA, and FCF yield are unavailable, leaving limited visibility into whether the valuation is supported by forward fundamentals.",
+          "status": "partially_supported",
+          "confidence": "medium",
+          "reason_for_change": "initial core claim",
+          "added_evidence_ids": [
+            "rev_5ae3067a5bfd4c0097b7d50121782241",
+            "rev_4406a0fe08024f9c81ba1c3191ca58e6"
+          ],
+          "removed_evidence_ids": [],
+          "counter_evidence_ids": [],
+          "snapshot_id": "rsnap_4896f150a63a480e9457729cfb477126",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62",
+          "created_at": "2026-09-17T14:27:27+00:00"
+        }
+      ],
+      "reason_for_change": "new claim created this run",
+      "triggering_evidence": null
+    }
+  ],
+  "unresolved_questions": [
+    {
+      "question": "What are AVGO's forward PE, PS, EV/EBITDA, and FCF yield based on consensus estimates, and how do they compare to its historical averages and peer group?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+      "priority": "high",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What were AVGO's actual Q3 FY2026 GAAP and non-GAAP EPS, the consensus estimate, and the report-date price reaction versus QQQ and SPY, and what did management cite as the reason for any EPS shortfall?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "priority": "high",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What are the exact operating and gross margin figures reported in Broadcom's Q3 FY2026 10-Q, and how do they compare to Q3 FY2025 and management's non-GAAP operating margin guidance?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "priority": "high",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the exact fiscal period and primary-source basis for the $21.7 billion AI semiconductor revenue and 236% growth figure, and does independent third-party data corroborate this trajectory?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_602484a891474f5bac5f624496f40710",
+      "priority": "high",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What drove the Q2 FY2026 -12.59% post-earnings decline despite revenue growth?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the segment-level revenue breakdown between AI semiconductors and infrastructure software?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the customer concentration in the AI semiconductor business?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "How sustainable is the 53.92% operating margin and 69.13% gross margin?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "How much of the guided $21.7 billion AI semiconductor revenue is already under contract or backlog?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the free cash flow and FCF yield, given these fields are unavailable?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the forward PE and consensus EPS, given these are unavailable?",
+      "why_it_matters": "company understanding coverage gap",
+      "related_claim_id": null,
+      "priority": "medium",
+      "status": "open",
+      "what_evidence_is_missing": null,
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "note": "Brain stores question + why_it_matters + related_claim_id. It does not store can_public_data_resolve_it."
+    },
+    {
+      "question": "What is the exact fiscal period and primary-source basis for the $21.7 billion AI semiconductor revenue and 236% growth figure, and does independent third-party data corroborate this trajectory?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_602484a891474f5bac5f624496f40710",
+      "related_claim_title": "AI semiconductor revenue is the dominant growth engine",
+      "what_evidence_is_missing": [],
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "source": "claim_reasoning.next_research_question"
+    },
+    {
+      "question": "What are the exact operating and gross margin figures reported in Broadcom's Q3 FY2026 10-Q, and how do they compare to Q3 FY2025 and management's non-GAAP operating margin guidance?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_f153259899ee4091a91aeff1f32b2b6a",
+      "related_claim_title": "Operating margin expanded sharply year-over-year",
+      "what_evidence_is_missing": [],
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "source": "claim_reasoning.next_research_question"
+    },
+    {
+      "question": "What were AVGO's actual Q3 FY2026 GAAP and non-GAAP EPS, the consensus estimate, and the report-date price reaction versus QQQ and SPY, and what did management cite as the reason for any EPS shortfall?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "related_claim_title": "Revenue growth is accelerating but earnings execution missed expectations",
+      "what_evidence_is_missing": [],
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "source": "claim_reasoning.next_research_question"
+    },
+    {
+      "question": "What are AVGO's forward PE, PS, EV/EBITDA, and FCF yield based on consensus estimates, and how do they compare to its historical averages and peer group?",
+      "why_it_matters": "claim reasoning gap",
+      "related_claim_id": "bclm_164165ad13094afa8fe5084013fa373a",
+      "related_claim_title": "High valuation with limited forward visibility",
+      "what_evidence_is_missing": [],
+      "can_public_data_resolve_it": null,
+      "next_search_direction": null,
+      "source": "claim_reasoning.next_research_question"
+    }
+  ],
+  "llm_audit": {
+    "model": "deepseek-flash",
+    "prompt_version": "brain-phase1-v1.2",
+    "input_tokens": 70675,
+    "output_tokens": 21990,
+    "latency_ms": 86286,
+    "errors": [],
+    "fallbacks": [],
+    "steps": [
+      {
+        "step": "external_search_plan",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6188,
+        "input_tokens": 728,
+        "output_tokens": 1489,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "external_fact_extract",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 5402,
+        "input_tokens": 5958,
+        "output_tokens": 1704,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "company_understanding",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6820,
+        "input_tokens": 8954,
+        "output_tokens": 1752,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "core_claims",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 11894,
+        "input_tokens": 8644,
+        "output_tokens": 3383,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "external_search_plan",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6230,
+        "input_tokens": 1740,
+        "output_tokens": 1611,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "external_fact_extract",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 5333,
+        "input_tokens": 3770,
+        "output_tokens": 1624,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "news_interpretation",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 11380,
+        "input_tokens": 4182,
+        "output_tokens": 3505,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "claim_reasoning",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6927,
+        "input_tokens": 6328,
+        "output_tokens": 1472,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "claim_reasoning",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 4691,
+        "input_tokens": 6346,
+        "output_tokens": 923,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "claim_reasoning",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6960,
+        "input_tokens": 6360,
+        "output_tokens": 1420,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "claim_reasoning",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 6537,
+        "input_tokens": 6316,
+        "output_tokens": 1343,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      },
+      {
+        "step": "pm_synthesis",
+        "llm_called": true,
+        "llm_status": "ok",
+        "model": "deepseek-flash",
+        "latency_ms": 7924,
+        "input_tokens": 11349,
+        "output_tokens": 1764,
+        "error": null,
+        "fallback_used": false,
+        "retries": null
+      }
+    ]
+  },
+  "external_intelligence_summary": {
+    "independent_validation": "Missing",
+    "related_entities": [
+      {
+        "name": "Google",
+        "relation": "hyperscaler/customer",
+        "why": "Google is a major hyperscaler and potential customer for Broadcom's custom AI chips and networking solutions; their AI infrastructure spending and chip design…"
+      },
+      {
+        "name": "Meta",
+        "relation": "hyperscaler/customer",
+        "why": "Meta is a large hyperscaler investing heavily in AI infrastructure; they may source custom silicon and networking components from Broadcom, impacting demand."
+      },
+      {
+        "name": "Microsoft",
+        "relation": "hyperscaler/customer",
+        "why": "Microsoft's Azure and AI initiatives drive demand for data center chips and networking, making them a key potential customer for Broadcom's semiconductor and i…"
+      },
+      {
+        "name": "Amazon",
+        "relation": "hyperscaler/customer",
+        "why": "Amazon Web Services (AWS) is a leading cloud provider with significant custom chip development; they could be a customer or competitor for Broadcom's networkin…"
+      },
+      {
+        "name": "TSMC",
+        "relation": "supplier",
+        "why": "TSMC is a critical semiconductor foundry supplier for Broadcom's chip production; any capacity, pricing, or geopolitical issues at TSMC can affect Broadcom's s…"
+      },
+      {
+        "name": "NVIDIA",
+        "relation": "competitor",
+        "why": "NVIDIA dominates the AI accelerator market and competes with Broadcom's custom AI chip and networking solutions; their product launches and pricing can influen…"
+      },
+      {
+        "name": "Marvell Technology",
+        "relation": "competitor",
+        "why": "Marvell is a direct competitor in custom ASICs, networking, and storage semiconductors; their wins and losses can signal shifts in Broadcom's competitive posit…"
+      },
+      {
+        "name": "Arista Networks",
+        "relation": "competitor",
+        "why": "Arista competes in data center networking switches, an area where Broadcom supplies chips; their adoption of Broadcom's Tomahawk/Jericho chips or alternatives…"
+      },
+      {
+        "name": "Cisco",
+        "relation": "competitor",
+        "why": "Cisco is a major networking equipment provider and competitor; their use of Broadcom silicon or in-house designs impacts Broadcom's market opportunity."
+      },
+      {
+        "name": "VMware",
+        "relation": "technology",
+        "why": "Broadcom acquired VMware, making its virtualization and cloud infrastructure software a key part of Broadcom's infrastructure software segment; VMware's perfor…"
+      },
+      {
+        "name": "AMD",
+        "relation": "competitor",
+        "why": "AMD's AI accelerator and datacenter networking expansion can affect AVGO's competitive position and AI revenue growth assumptions."
+      }
+    ],
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "supplier",
+      "technology",
+      "competitor",
+      "datacenter infrastructure"
+    ],
+    "research_leads": [
+      {
+        "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+        "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+        "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+        "url": "https://longbridge.com/en/news/297876806",
+        "source_tier": 4,
+        "source_domain": "longbridge.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+        "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom",
+        "url": "https://thenextweb.com/news/google-marvell-ai-chips-inference-tpu-broadcom",
+        "source_tier": 4,
+        "source_domain": "thenextweb.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Google is in talks with Marvell to build custom AI inference chips as it diversifies beyond Broadcom Google is in talks with Marvell to build custom AI inference chips as it diver…",
+        "verification_query": "AVGO Google is in talks with Marvell to build custom AI inference chips as it divers… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News",
+        "url": "https://www.gate.com/news/detail/broadcom-ceo-discloses-google-openai-to-deploy-xpu-chips-worth-billions-23966204",
+        "source_tier": 4,
+        "source_domain": "gate.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through 2028 | Gate News Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Through…",
+        "verification_query": "AVGO Broadcom CEO Discloses Google, OpenAI to Deploy XPU Chips Worth Billions Throug… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_64b4c3a8ee30433d8a38e7e36961e7f6",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_64b4c3a8ee30433d8a38e7e36961e7f6",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_64b4c3a8ee30433d8a38e7e36961e7f6",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_64b4c3a8ee30433d8a38e7e36961e7f6",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_64b4c3a8ee30433d8a38e7e36961e7f6",
+          "metric": "dividend",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_a313ab4950424297b6f5ce52189ea2ed",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion (Consideration Cap Amount).",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_cc7542b10b86402a9ba44735db10b98c",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom introduced AgentMinder, an enterprise solution for AI agent governance and runtime control, announced August 31, 2026.",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-unveils-agentminder-enterprise-solution-ai-agent",
+          "source_time": "2026-08-31",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "issuer_ir",
+          "document_id": "xdoc_131d3d327e324a7485750fc860a69211",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.126,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [
+        {
+          "fact": "Marvell announced in an SEC filing that Google tapped it to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators, storage controllers, and network interface controllers.",
+          "source_url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+          "source_time": "2026-08-19",
+          "source_tier": 3,
+          "claim_title": null,
+          "source": "theregister.com",
+          "document_id": "xdoc_1cdb34bb00ed452fbde5297297d6ff4f",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "industry",
+          "priority": 0.2205,
+          "signal_only": null
+        }
+      ],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [],
+      "missing_classes": [
+        "independent",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "coverage_matrix": [
+      {
+        "claim_title": "Operating margin expanded sharply year-over-year",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Revenue growth is accelerating but earnings execution missed expectations",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "High valuation with limited forward visibility",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Partial",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "AI semiconductor revenue is the dominant growth engine",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ]
+  }
+}
