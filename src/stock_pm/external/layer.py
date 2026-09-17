@@ -17,6 +17,7 @@ from .clients import (
     exa_search,
     fill_missing_bodies,
     fred_macro_documents,
+    recover_dates_from_pages,
     tavily_configured,
     tavily_search,
     within_days,
@@ -25,7 +26,8 @@ from .dedupe import dedupe_documents
 from .extract import deterministic_facts, facts_to_evidence_bodies, llm_extract_facts
 from .quality import host_of, source_family, source_tier
 from .queries import allocate_queries, generate_search_plan
-from .types import EXA_SEARCH_BUDGET, NEWS_WINDOW_DAYS, TAVILY_SEARCH_BUDGET, empty_provider_status
+from .select import compress_reasoning_context, docs_for_extraction, select_reasoning_documents
+from .types import EXA_SEARCH_BUDGET, NEWS_WINDOW_DAYS, PROVIDER_ROLES, TAVILY_SEARCH_BUDGET, empty_provider_status
 
 
 BASE_QUERY_TYPES = {"company_official", "company_earnings", "company_news", "industry_news"}
@@ -196,7 +198,8 @@ def compare_tavily_exa(docs: list[dict[str, Any]], *, tavily_status: str, exa_st
         "better_for_full_text": _winner(tavily, exa, "full_text")
         if int(tavily.get("avg_full_text_chars") or 0) == int(exa.get("avg_full_text_chars") or 0)
         else ("tavily" if int(tavily.get("avg_full_text_chars") or 0) > int(exa.get("avg_full_text_chars") or 0) else "exa"),
-        "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL.",
+        "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
+        "roles": {"exa": PROVIDER_ROLES["exa"], "tavily": PROVIDER_ROLES["tavily"]},
     }
 
 
@@ -242,6 +245,9 @@ def build_report(
     warnings: list[dict[str, str]],
     overview: dict[str, Any] | None,
     evidence_count: int,
+    quality_stats: dict[str, Any] | None = None,
+    reasoning_context: dict[str, Any] | None = None,
+    date_recovered_count: int = 0,
 ) -> dict[str, Any]:
     recent = [row for row in docs if within_days(row.get("published_at"), days)]
     background = [row for row in docs if not within_days(row.get("published_at"), days)]
@@ -249,10 +255,9 @@ def build_report(
         return sum(1 for row in docs if predicate(row))
 
     gaps: list[str] = list(plan.get("coverage_gaps") or [])
-    if _count(lambda row: row.get("query_type") in {"customer", "related_entity"} and "customer" in str(row.get("query_type") or row.get("metadata") or "")) == 0 and not any(
-        str(item.get("relation") or "") == "customer" for item in (plan.get("related_entities") or [])
-    ):
-        gaps.append("No customer-related documents were retrieved.")
+    types = [str(item) for item in (plan.get("important_relationship_types") or []) if str(item).strip()]
+    if types and not any(row.get("query_type") in CLAIM_QUERY_TYPES or row.get("relationship_type") for row in docs):
+        gaps.append("No relationship/claim documents were retrieved for the business-model types.")
     if not any(int(row.get("source_tier") or 9) == 2 and within_days(row.get("published_at"), days) for row in docs):
         gaps.append("No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window.")
     if not any(row.get("is_full_text") and within_days(row.get("published_at"), days) for row in docs):
@@ -319,6 +324,30 @@ def build_report(
                 if int(row.get("source_tier") or 9) <= 3 and host_of(row.get("url"))
             }
         )[:24],
+        "provider_roles": PROVIDER_ROLES,
+        "important_relationship_types": plan.get("important_relationship_types") or [],
+        "date_recovered_count": date_recovered_count,
+        "discovered_docs": (quality_stats or {}).get("discovered_docs", len(docs)),
+        "retained_for_reasoning": (quality_stats or {}).get("retained_for_reasoning"),
+        "archived_docs": (quality_stats or {}).get("archived_docs"),
+        "tier_distribution_before": (quality_stats or {}).get("tier_distribution_before"),
+        "tier_distribution_after": (quality_stats or {}).get("tier_distribution_after"),
+        "primary_source_count": (quality_stats or {}).get("primary_source_count"),
+        "independent_source_count": (quality_stats or {}).get("independent_source_count"),
+        "industry_source_count": (quality_stats or {}).get("industry_source_count"),
+        "tier45_filtered_count": (quality_stats or {}).get("tier45_filtered_count"),
+        "top_10_facts": (reasoning_context or {}).get("top_10_facts") or [],
+        "reasoning_context": {
+            "top_primary_facts": (reasoning_context or {}).get("top_primary_facts") or [],
+            "top_independent_evidence": (reasoning_context or {}).get("top_independent_evidence") or [],
+            "top_industry_evidence": (reasoning_context or {}).get("top_industry_evidence") or [],
+            "top_counter_evidence": (reasoning_context or {}).get("top_counter_evidence") or [],
+            "top_community_signals": (reasoning_context or {}).get("top_community_signals") or [],
+            "open_gaps": (reasoning_context or {}).get("open_gaps") or [],
+            "per_claim": (reasoning_context or {}).get("per_claim") or [],
+        }
+        if reasoning_context
+        else None,
     }
 
 
@@ -388,17 +417,27 @@ def gather_external_intelligence(
         filtered["queries"] = [row for row in (plan.get("queries") or []) if str(row.get("query_type") or "") in wanted]
         if phase == "claims":
             extra: list[dict[str, Any]] = []
-            for entity in (plan.get("related_entities") or [])[:6]:
+            for rtype in (plan.get("important_relationship_types") or [])[:6]:
+                extra.append(
+                    {
+                        "query": f"{symbol} {rtype}",
+                        "query_type": "related_entity",
+                        "relationship_type": rtype,
+                        "provider_hint": "exa",
+                    }
+                )
+            for entity in (plan.get("related_entities") or [])[:4]:
                 name = compact_text(entity.get("name"), 80)
                 relation = str(entity.get("relation") or "related")
                 if not name:
                     continue
                 extra.append(
                     {
-                        "query": f"{name} {symbol} {relation} demand OR capex OR supply",
-                        "query_type": "customer" if relation == "customer" else "supplier" if relation == "supplier" else "related_entity",
+                        "query": f'{name} investor OR earnings OR "press release"',
+                        "query_type": "related_entity",
                         "provider_hint": "exa",
                         "entity": name,
+                        "relationship_type": relation,
                     }
                 )
             filtered["queries"] = (filtered.get("queries") or []) + extra
@@ -407,6 +446,19 @@ def gather_external_intelligence(
             tavily_budget=search_budget.tavily if tavily_ok else 0,
             exa_budget=search_budget.exa if exa_ok else 0,
         )
+        if (
+            tavily_ok
+            and search_budget.tavily > 0
+            and not any("tavily" in (row.get("providers") or []) for row in allocated)
+        ):
+            allocated.append(
+                {
+                    "query": f"{symbol} news",
+                    "query_type": "company_news",
+                    "providers": ["tavily"],
+                    "provider_hint": "tavily",
+                }
+            )
         for item in allocated:
             for provider in item.get("providers") or []:
                 if not search_budget.take(provider):
@@ -515,31 +567,36 @@ def gather_external_intelligence(
 
     raw_count = len(documents)
     documents, removed = dedupe_documents(documents)
+    date_recovered_count = 0
     if fetch_live:
+        primary_full = sum(
+            1
+            for row in documents
+            if row.get("is_full_text") and int(row.get("source_tier") or 9) <= 2 and str(row.get("source_type") or "") != "macro"
+        )
         need_bodies = [
             row
             for row in documents
             if not row.get("is_full_text")
-            and int(row.get("source_tier") or 9) <= 4
+            and int(row.get("source_tier") or 9) <= (3 if primary_full >= 8 else 4)
             and str(row.get("source_type") or "") != "macro"
         ]
-        fill_missing_bodies(need_bodies[:8], settings=config, limit=8)
+        fill_missing_bodies(need_bodies[:12], settings=config, limit=8)
         for row in documents:
             if len(str(row.get("clean_text") or "")) >= 400:
                 row["is_full_text"] = True
+        date_recovered_count = recover_dates_from_pages(documents, limit=8)
 
+    retained, archived, quality_stats = select_reasoning_documents(documents)
+    extractable = docs_for_extraction(retained)
     facts: list[dict[str, Any]] = []
-    extractable = [
-        row
-        for row in documents
-        if row.get("is_full_text") and str(row.get("source_type") or "") != "macro"
-    ]
     llm_facts, extract_audit = llm_extract_facts(completer, extractable, ticker=symbol, claims=claims)
     llm_calls.append(extract_audit)
     facts.extend(llm_facts)
     if not facts:
         for row in extractable[:8]:
             facts.extend(deterministic_facts(row, limit=1))
+    reasoning_context = compress_reasoning_context(retained, facts, claims)
 
     from .clients import _now
 
@@ -563,18 +620,30 @@ def gather_external_intelligence(
         warnings=warnings,
         overview=overview,
         evidence_count=len(evidence_bodies),
+        quality_stats=quality_stats,
+        reasoning_context=reasoning_context,
+        date_recovered_count=date_recovered_count,
     )
-    recent = [row for row in documents if within_days(row.get("published_at"), days) and row.get("source_type") != "macro"]
-    background = [row for row in documents if row not in recent]
+    extra_gaps = list(reasoning_context.get("open_gaps") or [])
+    merged_gaps = list(report.get("coverage_gaps") or [])
+    for gap in extra_gaps:
+        if gap not in merged_gaps:
+            merged_gaps.append(gap)
+    report["coverage_gaps"] = merged_gaps[:12]
+    recent = [row for row in retained if within_days(row.get("published_at"), days) and row.get("source_type") != "macro"]
+    background = [row for row in documents if row not in retained]
     return {
         "ticker": symbol,
         "documents": documents,
+        "retained_documents": retained,
+        "archived_documents": archived,
         "recent_documents": recent,
         "background_documents": background,
         "facts": facts,
         "evidence_bodies": evidence_bodies,
-        "news_hits": documents_to_news_hits(documents, days=days),
+        "news_hits": documents_to_news_hits(retained, days=days),
         "related_entities": plan.get("related_entities") or [],
+        "important_relationship_types": plan.get("important_relationship_types") or [],
         "claim_queries": report.get("claim_queries") or [],
         "query_results": query_results,
         "provider_audits": audits,
@@ -584,6 +653,7 @@ def gather_external_intelligence(
         "duplicates_removed": removed,
         "raw_count": raw_count,
         "report": report,
+        "reasoning_context": reasoning_context,
         "budget_remaining": {"tavily": search_budget.tavily, "exa": search_budget.exa},
         "phase": phase,
     }
@@ -610,6 +680,10 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
             "duplicates_removed": 0,
             "raw_count": 0,
             "report": {},
+            "reasoning_context": {},
+            "retained_documents": [],
+            "archived_documents": [],
+            "important_relationship_types": [],
             "budget_remaining": {"tavily": 0, "exa": 0},
             "phase": "merged",
         }
@@ -669,7 +743,31 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
         seen_entities.add(key)
         entities_unique.append(item)
     entities = entities_unique[:12]
-    plan = {"related_entities": entities, "queries": allocated, "coverage_gaps": []}
+    relationship_types: list[str] = []
+    seen_types: set[str] = set()
+    for part in chunks:
+        for item in part.get("important_relationship_types") or (part.get("report") or {}).get("important_relationship_types") or []:
+            key = str(item or "").strip()
+            if not key or key in seen_types:
+                continue
+            seen_types.add(key)
+            relationship_types.append(key)
+    retained, archived, quality_stats = select_reasoning_documents(docs)
+    retained_ids = {str(row.get("document_id") or "") for row in retained}
+    facts = [row for row in facts if str(row.get("document_id") or "") in retained_ids] or facts[:12]
+    claim_rows = [
+        {"title": row.get("claim_title") or row.get("title") or row.get("query")}
+        for row in allocated
+        if row.get("claim_title") or row.get("query_type") == "claim"
+    ]
+    reasoning_context = compress_reasoning_context(retained, facts, claim_rows)
+    bodies = [row for row in bodies if str((row.get("raw_reference") or {}).get("document_id") or "") in retained_ids] or bodies
+    plan = {
+        "related_entities": entities,
+        "queries": allocated,
+        "coverage_gaps": list(reasoning_context.get("open_gaps") or []),
+        "important_relationship_types": relationship_types,
+    }
     report = build_report(
         docs,
         days=NEWS_WINDOW_DAYS,
@@ -682,17 +780,22 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
         warnings=warnings,
         overview=overview,
         evidence_count=len(bodies),
+        quality_stats=quality_stats,
+        reasoning_context=reasoning_context,
     )
     last = chunks[-1]
     return {
         "ticker": ticker,
         "documents": docs,
-        "recent_documents": [row for row in docs if within_days(row.get("published_at"), NEWS_WINDOW_DAYS) and row.get("source_type") != "macro"],
-        "background_documents": [row for row in docs if not within_days(row.get("published_at"), NEWS_WINDOW_DAYS) or row.get("source_type") == "macro"],
+        "retained_documents": retained,
+        "archived_documents": archived,
+        "recent_documents": [row for row in retained if within_days(row.get("published_at"), NEWS_WINDOW_DAYS) and row.get("source_type") != "macro"],
+        "background_documents": archived,
         "facts": facts,
         "evidence_bodies": bodies,
-        "news_hits": documents_to_news_hits(docs, days=NEWS_WINDOW_DAYS),
+        "news_hits": documents_to_news_hits(retained, days=NEWS_WINDOW_DAYS),
         "related_entities": entities,
+        "important_relationship_types": relationship_types,
         "claim_queries": allocated,
         "query_results": query_results,
         "provider_audits": audits,
@@ -702,6 +805,7 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
         "duplicates_removed": report["duplicates_removed"],
         "raw_count": raw_count,
         "report": report,
+        "reasoning_context": reasoning_context,
         "budget_remaining": last.get("budget_remaining") or {"tavily": 0, "exa": 0},
         "phase": "merged",
     }

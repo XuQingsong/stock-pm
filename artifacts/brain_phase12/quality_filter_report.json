@@ -1,0 +1,397 @@
+{
+  "AAPL": {
+    "discovered_docs": 84,
+    "retained_for_reasoning": 20,
+    "archived_docs": 64,
+    "tier_distribution_before": {
+      "tier1": 21,
+      "tier2": 2,
+      "tier3": 2,
+      "tier4": 58,
+      "tier5": 1
+    },
+    "tier_distribution_after": {
+      "tier1": 16,
+      "tier2": 2,
+      "tier3": 2,
+      "tier4": 0,
+      "tier5": 0
+    },
+    "primary_source_count": 16,
+    "independent_source_count": 2,
+    "industry_source_count": 2,
+    "tier45_filtered_count": 59,
+    "important_relationship_types": [
+      "product",
+      "supplier",
+      "channel",
+      "geography",
+      "regulation",
+      "developer ecosystem"
+    ],
+    "top_10_facts": [
+      {
+        "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+      },
+      {
+        "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+      },
+      {
+        "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+      },
+      {
+        "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+      },
+      {
+        "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+      },
+      {
+        "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+      },
+      {
+        "fact": "Apple announced iPhone 18 Pro and iPhone 18 Pro Max on September 9, 2026, featuring a 48MP Fusion Main camera with variable aperture.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_d15d9d4b8fc140d8b448e44d717b8f0e"
+      },
+      {
+        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, on September 9, 2026, with a 7.6-inch inner display and 5.4-inch outer display.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+      },
+      {
+        "fact": "iPhone Duo is powered by the new A20 Pro chip.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+      },
+      {
+        "fact": "Apple's software updates including Siri AI rolled out starting September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_36bb7b2c01444e4fb3c98ac66b01f093"
+      }
+    ],
+    "coverage_gaps": [],
+    "date_recovered_count": 0,
+    "provider_roles": {
+      "exa": "primary_discovery",
+      "tavily": "extract_and_news_supplement",
+      "sec": "primary_facts",
+      "company_ir": "primary_facts",
+      "fred": "macro_facts",
+      "alpha_vantage": "supplemental_cross_check",
+      "duckduckgo": "fallback_only"
+    }
+  },
+  "AVGO": {
+    "discovered_docs": 83,
+    "retained_for_reasoning": 21,
+    "archived_docs": 62,
+    "tier_distribution_before": {
+      "tier1": 19,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 59,
+      "tier5": 0
+    },
+    "tier_distribution_after": {
+      "tier1": 16,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 0,
+      "tier5": 0
+    },
+    "primary_source_count": 16,
+    "independent_source_count": 3,
+    "industry_source_count": 2,
+    "tier45_filtered_count": 59,
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "supplier",
+      "technology",
+      "competitor",
+      "datacenter infrastructure"
+    ],
+    "top_10_facts": [
+      {
+        "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
+        "source_time": "2026-06-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
+      },
+      {
+        "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+        "source_time": "2026-06-18",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
+      },
+      {
+        "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+        "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+        "source_time": "2026-09-14",
+        "source_tier": 2,
+        "claim_title": null,
+        "source": "high_quality_news",
+        "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+      }
+    ],
+    "coverage_gaps": [],
+    "date_recovered_count": 0,
+    "provider_roles": {
+      "exa": "primary_discovery",
+      "tavily": "extract_and_news_supplement",
+      "sec": "primary_facts",
+      "company_ir": "primary_facts",
+      "fred": "macro_facts",
+      "alpha_vantage": "supplemental_cross_check",
+      "duckduckgo": "fallback_only"
+    }
+  },
+  "LITE": {
+    "discovered_docs": 85,
+    "retained_for_reasoning": 14,
+    "archived_docs": 71,
+    "tier_distribution_before": {
+      "tier1": 17,
+      "tier2": 0,
+      "tier3": 0,
+      "tier4": 65,
+      "tier5": 3
+    },
+    "tier_distribution_after": {
+      "tier1": 14,
+      "tier2": 0,
+      "tier3": 0,
+      "tier4": 0,
+      "tier5": 0
+    },
+    "primary_source_count": 14,
+    "independent_source_count": 0,
+    "industry_source_count": 0,
+    "tier45_filtered_count": 68,
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "peer",
+      "supplier",
+      "technology",
+      "capacity",
+      "optical ecosystem"
+    ],
+    "top_10_facts": [
+      {
+        "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+      },
+      {
+        "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+      },
+      {
+        "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+      },
+      {
+        "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+        "source_time": "2026-05-05",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+      },
+      {
+        "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+        "source_time": "2026-05-05",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+      },
+      {
+        "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+        "source_time": "2026-05-05",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+      },
+      {
+        "fact": "Lumentum reported fiscal Q3 2026 GAAP diluted net income per share of $1.50 and non-GAAP diluted net income per share of $2.37.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+        "source_time": "2026-05-05",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+      },
+      {
+        "fact": "Lumentum filed an 8-K with the SEC dated August 11, 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_0fc24d3ac45d4ee59768477713c5b053"
+      },
+      {
+        "fact": "Lumentum filed an 8-K with the SEC dated May 29, 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526249535/d112771d8k.htm",
+        "source_time": "2026-06-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_78a58f5fa85d420794758c32caae120e"
+      }
+    ],
+    "coverage_gaps": [
+      "No Tier-2 independent facts in the reasoning set.",
+      "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+    ],
+    "date_recovered_count": 0,
+    "provider_roles": {
+      "exa": "primary_discovery",
+      "tavily": "extract_and_news_supplement",
+      "sec": "primary_facts",
+      "company_ir": "primary_facts",
+      "fred": "macro_facts",
+      "alpha_vantage": "supplemental_cross_check",
+      "duckduckgo": "fallback_only"
+    }
+  }
+}

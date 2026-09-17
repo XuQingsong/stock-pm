@@ -1,0 +1,68 @@
+{
+  "Apple earnings news": {
+    "status": "ok",
+    "topic": "news",
+    "hit_count": 5,
+    "dated_count": 0,
+    "full_text_count": 5,
+    "date_return_rate": 0.0,
+    "sample_dates": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sample_domains": [
+      "tradingview.com",
+      "finance.yahoo.com",
+      "fool.com",
+      "macobserver.com",
+      "mercurynews.com"
+    ]
+  },
+  "Broadcom AI semiconductor news": {
+    "status": "ok",
+    "topic": "news",
+    "hit_count": 5,
+    "dated_count": 0,
+    "full_text_count": 5,
+    "date_return_rate": 0.0,
+    "sample_dates": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sample_domains": [
+      "zacks.com",
+      "cnbc.com",
+      "finance.yahoo.com",
+      "qz.com",
+      "247wallst.com"
+    ]
+  },
+  "Lumentum optical 800G news": {
+    "status": "ok",
+    "topic": "news",
+    "hit_count": 5,
+    "dated_count": 0,
+    "full_text_count": 5,
+    "date_return_rate": 0.0,
+    "sample_dates": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sample_domains": [
+      "in.investing.com",
+      "tradingview.com",
+      "finance.yahoo.com",
+      "tickeron.com",
+      "quiverquant.com"
+    ]
+  }
+}

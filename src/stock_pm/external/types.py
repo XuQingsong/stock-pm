@@ -20,6 +20,16 @@ QUERY_TYPES = (
     "fallback",
 )
 DISCOVERY_PROVIDERS = ("tavily", "exa", "duckduckgo", "google_cse")
+PROVIDER_ROLES = {
+    "exa": "primary_discovery",
+    "tavily": "extract_and_news_supplement",
+    "sec": "primary_facts",
+    "company_ir": "primary_facts",
+    "fred": "macro_facts",
+    "alpha_vantage": "supplemental_cross_check",
+    "duckduckgo": "fallback_only",
+}
+TAVILY_NEWS_TYPES = ("company_news",)
 
 
 class ExternalDocument(TypedDict, total=False):

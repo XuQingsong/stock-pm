@@ -43,6 +43,26 @@ def _key_status(settings: Settings) -> dict[str, bool]:
     }
 
 
+def _quality_slice(intel: dict) -> dict:
+    report = intel.get("report") or {}
+    return {
+        "discovered_docs": report.get("discovered_docs") or len(intel.get("documents") or []),
+        "retained_for_reasoning": report.get("retained_for_reasoning") or len(intel.get("retained_documents") or []),
+        "archived_docs": report.get("archived_docs"),
+        "tier_distribution_before": report.get("tier_distribution_before"),
+        "tier_distribution_after": report.get("tier_distribution_after"),
+        "primary_source_count": report.get("primary_source_count"),
+        "independent_source_count": report.get("independent_source_count"),
+        "industry_source_count": report.get("industry_source_count"),
+        "tier45_filtered_count": report.get("tier45_filtered_count"),
+        "important_relationship_types": intel.get("important_relationship_types") or report.get("important_relationship_types") or [],
+        "top_10_facts": report.get("top_10_facts") or [],
+        "coverage_gaps": report.get("coverage_gaps") or [],
+        "date_recovered_count": report.get("date_recovered_count") or 0,
+        "provider_roles": report.get("provider_roles") or {},
+    }
+
+
 def _slim_doc(row: dict) -> dict:
     return {
         "provider": row.get("provider"),
@@ -140,6 +160,8 @@ def main() -> None:
             "related_entities": intel.get("related_entities") or [],
             "providers": _provider_summary(intel.get("providers") or {}),
             "report": intel.get("report") or {},
+            "quality": _quality_slice(intel),
+            "important_relationship_types": intel.get("important_relationship_types") or [],
             "duplicates_removed": intel.get("duplicates_removed"),
             "raw_count": intel.get("raw_count"),
             "evidence_extracted": len(intel.get("evidence_bodies") or []),
@@ -165,6 +187,39 @@ def main() -> None:
         for ticker, row in results.items()
     }
     _write("tavily_vs_exa.json", comparison)
+
+    news_date_probe = {}
+    if keys["tavily"]:
+        print("tavily topic=news date probe", flush=True)
+        from stock_pm.external.clients import tavily_search
+
+        for query in ("Apple earnings news", "Broadcom AI semiconductor news", "Lumentum optical 800G news"):
+            rows, audit = tavily_search(
+                query,
+                settings=settings,
+                ticker=None,
+                query_type="company_news",
+                days=NEWS_WINDOW_DAYS,
+                max_results=5,
+                topic="news",
+            )
+            news_date_probe[query] = {
+                "status": audit.get("status"),
+                "topic": audit.get("topic"),
+                "hit_count": audit.get("hit_count") or 0,
+                "dated_count": audit.get("dated_count") or 0,
+                "full_text_count": audit.get("full_text_count") or 0,
+                "date_return_rate": audit.get("date_return_rate"),
+                "sample_dates": [row.get("published_at") for row in rows[:5]],
+                "sample_domains": [row.get("source_domain") for row in rows[:5]],
+            }
+        _write("tavily_news_date_probe.json", news_date_probe)
+
+    quality_report = {
+        ticker: row.get("quality") or {}
+        for ticker, row in results.items()
+    }
+    _write("quality_filter_report.json", quality_report)
 
     brains = {}
     if keys["llm"] and os.getenv("PHASE12_SKIP_BRAIN") not in {"1", "true", "yes"}:
@@ -218,10 +273,22 @@ def main() -> None:
                 "coverage_gaps": (item.get("report") or {}).get("coverage_gaps"),
                 "valuable_domains": (item.get("report") or {}).get("valuable_domains"),
                 "claim_query_examples": [row.get("query") for row in (item.get("claim_queries") or [])][:8],
+                "discovered_docs": (item.get("quality") or {}).get("discovered_docs"),
+                "retained_for_reasoning": (item.get("quality") or {}).get("retained_for_reasoning"),
+                "tier_distribution_before": (item.get("quality") or {}).get("tier_distribution_before"),
+                "tier_distribution_after": (item.get("quality") or {}).get("tier_distribution_after"),
+                "primary_source_count": (item.get("quality") or {}).get("primary_source_count"),
+                "independent_source_count": (item.get("quality") or {}).get("independent_source_count"),
+                "industry_source_count": (item.get("quality") or {}).get("industry_source_count"),
+                "tier45_filtered_count": (item.get("quality") or {}).get("tier45_filtered_count"),
+                "important_relationship_types": item.get("important_relationship_types") or (item.get("quality") or {}).get("important_relationship_types"),
+                "top_10_facts": (item.get("quality") or {}).get("top_10_facts"),
+                "date_recovered_count": (item.get("quality") or {}).get("date_recovered_count"),
             }
             for ticker, item in results.items()
         },
         "tavily_vs_exa": comparison,
+        "tavily_topic_news_date_probe": news_date_probe,
         "brains": brains,
         "still_missing": {
             "tavily_key": not keys["tavily"],

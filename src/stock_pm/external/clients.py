@@ -141,9 +141,18 @@ def tavily_search(
     query_type: str,
     days: int,
     max_results: int = 5,
+    topic: str = "news",
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     started = time.perf_counter()
-    audit: dict[str, Any] = {"provider": "tavily", "query": query, "query_type": query_type, "status": "ok"}
+    topic_name = topic or "news"
+    audit: dict[str, Any] = {
+        "provider": "tavily",
+        "query": query,
+        "query_type": query_type,
+        "status": "ok",
+        "topic": topic_name,
+        "role": "extract_and_news_supplement",
+    }
     if not tavily_configured(settings):
         audit.update({"status": "not_configured", "hit_count": 0, "error": "TAVILY_API_KEY missing"})
         return [], audit
@@ -157,7 +166,7 @@ def tavily_search(
                 "max_results": max_results,
                 "include_raw_content": True,
                 "days": days,
-                "topic": "news" if query_type in {"company_news", "industry_news"} else "general",
+                "topic": topic_name,
             },
             timeout=35,
             retries=2,
@@ -175,28 +184,41 @@ def tavily_search(
         raw = str(item.get("raw_content") or "")
         # Tavily "content" is a search summary — keep only as discovery text, not evidence.
         summary = str(item.get("content") or "")
-        rows.append(
-            _document(
-                provider="tavily",
-                url=url,
-                title=str(item.get("title") or ""),
-                ticker=ticker,
-                query=query,
-                query_type=query_type,
-                published_at=parse_published(item.get("published_date") or item.get("published_at")),
-                raw_text=raw,
-                clean_text=raw or "",
-                score=float(item.get("score") or 0) or None,
-                extra={"tavily_summary": summary[:400], "discovery_only_summary": True},
-            )
+        published = parse_published(item.get("published_date") or item.get("published_at"))
+        recovered = False
+        if not published and raw:
+            from .dates import recover_published_at
+
+            published = recover_published_at(raw)
+            recovered = bool(published)
+        row = _document(
+            provider="tavily",
+            url=url,
+            title=str(item.get("title") or ""),
+            ticker=ticker,
+            query=query,
+            query_type=query_type,
+            published_at=published,
+            raw_text=raw,
+            clean_text=raw or "",
+            score=float(item.get("score") or 0) or None,
+            extra={
+                "tavily_summary": summary[:400],
+                "discovery_only_summary": True,
+                "tavily_topic": topic_name,
+                "date_recovered": recovered,
+            },
         )
+        rows.append(row)
+    dated = sum(1 for row in rows if row.get("is_dated"))
     audit.update(
         {
             "hit_count": len(rows),
             "usable_count": sum(1 for row in rows if row.get("url")),
             "high_quality_count": sum(1 for row in rows if int(row.get("source_tier") or 9) <= 2),
             "full_text_count": sum(1 for row in rows if row.get("is_full_text")),
-            "dated_count": sum(1 for row in rows if row.get("is_dated")),
+            "dated_count": dated,
+            "date_return_rate": round(dated / len(rows), 3) if rows else 0.0,
             "latency_ms": int((time.perf_counter() - started) * 1000),
         }
     )
@@ -497,24 +519,76 @@ def fred_macro_documents(*, settings: Settings, ticker: str | None = None) -> tu
     return rows, audit
 
 
+def _apply_recovered_date(row: dict[str, Any], html_or_text: str) -> None:
+    if row.get("published_at") or not html_or_text:
+        return
+    from .dates import recover_published_at
+
+    found = recover_published_at(html_or_text)
+    if not found:
+        return
+    row["published_at"] = found
+    row["is_dated"] = True
+    meta = dict(row.get("metadata") or {})
+    meta["date_recovered"] = True
+    row["metadata"] = meta
+
+
 def fill_missing_bodies(rows: list[dict[str, Any]], *, settings: Settings, limit: int = 8) -> list[dict[str, Any]]:
-    need = [row for row in rows if not row.get("is_full_text") and row.get("url")]
-    if not need:
-        return rows
-    extracted = tavily_extract([str(row.get("url")) for row in need[:limit]], settings=settings)
+    need = sorted(
+        [row for row in rows if not row.get("is_full_text") and row.get("url") and int(row.get("source_tier") or 9) <= 4],
+        key=lambda row: (int(row.get("source_tier") or 9), 0 if row.get("is_primary_source") else 1),
+    )
+    targets = {canonical_url(row.get("url")) for row in need[:limit]}
+    extracted = tavily_extract([str(row.get("url")) for row in need[:limit]], settings=settings) if targets else {}
     for row in rows:
-        if row.get("is_full_text"):
-            continue
         url = canonical_url(row.get("url"))
+        if row.get("is_full_text"):
+            _apply_recovered_date(row, str(row.get("raw_text") or row.get("clean_text") or ""))
+            continue
+        if url not in targets:
+            continue
         text = extracted.get(url)
+        html = ""
         if not text:
             try:
                 fetched = fetch_html(str(row.get("url") or ""), timeout=18)
-                text = _clean(fetched.get("text") or document_text(str(fetched.get("html") or "")))
+                html = str(fetched.get("html") or "")
+                text = _clean(fetched.get("text") or document_text(html))
             except Exception:
                 text = ""
         if len(text) >= 400:
             row["clean_text"] = text
             row["raw_text"] = text
             row["is_full_text"] = True
+        _apply_recovered_date(row, html or text)
     return rows
+
+
+def recover_dates_from_pages(rows: list[dict[str, Any]], *, limit: int = 10) -> int:
+    """Fetch HTML only to recover high-confidence dates for full-text undated docs."""
+    recovered = 0
+    candidates = [
+        row
+        for row in rows
+        if not row.get("published_at") and row.get("is_full_text") and row.get("url") and int(row.get("source_tier") or 9) <= 4
+    ]
+    for row in candidates[:limit]:
+        found = None
+        html = ""
+        try:
+            fetched = fetch_html(str(row.get("url") or ""), timeout=12)
+            html = str(fetched.get("html") or "")
+            from .dates import recover_published_at
+
+            found = recover_published_at(html)
+        except Exception:
+            found = None
+        if found:
+            row["published_at"] = found
+            row["is_dated"] = True
+            meta = dict(row.get("metadata") or {})
+            meta["date_recovered"] = True
+            row["metadata"] = meta
+            recovered += 1
+    return recovered

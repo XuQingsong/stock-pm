@@ -1,20 +1,23 @@
 STEP_ID: external_search_plan
 Generate a bounded external-search plan. You do not fetch pages and you do not invent facts.
-Tavily and Exa are discovery providers, not publishers.
+Exa is Primary Discovery. Tavily is news supplement / extract only. They are not equal.
+SEC, company IR, and related-entity IR are Primary Facts.
 Return one JSON object:
 {
+  "important_relationship_types": ["product", "supplier", "channel"],
   "related_entities": [
     {
       "name": "Google",
-      "relation": "customer|supplier|competitor|peer|technology|market",
+      "relation": "hyperscaler/customer|supplier|peer|technology|channel|geography|regulation",
       "why": "why this entity can change the claims without being ticker news"
     }
   ],
   "queries": [
     {
       "query": "searchable query text",
-      "query_type": "company_official|company_earnings|company_news|industry_news|claim|related_entity|customer|supplier",
-      "provider_hint": "tavily|exa|both",
+      "query_type": "company_official|company_earnings|company_news|industry_news|claim|related_entity",
+      "relationship_type": "optional type from important_relationship_types",
+      "provider_hint": "exa|tavily",
       "claim_title": "optional core claim title",
       "entity": "optional related entity"
     }
@@ -22,11 +25,13 @@ Return one JSON object:
   "coverage_gaps": ["what this plan still cannot cover"]
 }
 Rules:
-- Start with company official / earnings / company news / industry news.
-- For each Core Claim, emit 2-4 queries that search the driver, not "{ticker} news".
-- Prefer customers, suppliers, hyperscaler capex, technologies, and regulation that could move the claim.
+- First output important_relationship_types from company understanding / business model.
+- Do not force every ticker to search customers, suppliers, and competitors.
+- Generate relationship queries only for those types.
+- Primary source first for each Core Claim: company official, related-entity official (IR/earnings/press), government/regulatory. Media only after that.
+- If official sources can cover a claim, do not emit aggregator/media repeats.
+- Start with company official / earnings, then one Tavily company_news query, then relationship and claim queries.
 - Search the last 30 days. Do not pin queries to a stale calendar year.
 - Do not invent named contracts, dollar figures, or customers that are not implied by the supplied understanding/claims.
 - Keep the list short. No more than 16 queries and 10 related entities.
-- Exa is better for semantic / long-tail / claim-driven / customer-supplier discovery.
-- Tavily is better for dated recent news and page bodies.
+- provider_hint=exa for discovery, official, claims, relationships, industry. provider_hint=tavily only for company_news. Never both.

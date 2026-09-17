@@ -129,6 +129,9 @@ def test_allocate_queries_respects_budget() -> None:
     assert tavily <= 10
     assert exa <= 10
     assert tavily + exa <= 20
+    assert all(len(row["providers"]) == 1 for row in allocated)
+    assert all(row["providers"] == ["tavily"] for row in allocated if row["query_type"] == "company_news")
+    assert all(row["providers"] == ["exa"] for row in allocated if row["query_type"] == "claim")
 
 
 def test_fallback_plan_has_claim_and_entity_queries() -> None:
@@ -214,6 +217,7 @@ def test_gather_mocked_providers_extract_reuters_not_tavily(monkeypatch) -> None
     monkeypatch.setattr("stock_pm.external.layer.alphavantage_overview", lambda *a, **k: (None, {"provider": "alpha_vantage", "status": "ok"}))
     monkeypatch.setattr("stock_pm.external.layer.fred_macro_documents", lambda **k: ([], {"provider": "fred", "status": "ok", "hit_count": 0}))
     monkeypatch.setattr("stock_pm.external.layer.fill_missing_bodies", lambda rows, **k: rows)
+    monkeypatch.setattr("stock_pm.external.layer.recover_dates_from_pages", lambda rows, **k: 0)
     monkeypatch.setattr(
         "stock_pm.external.layer.generate_search_plan",
         lambda *a, **k: (
@@ -273,6 +277,69 @@ def test_report_counts_tiers() -> None:
     assert report["tier4_count"] == 1
     assert report["duplicates_removed"] == 2
     assert report["claim_queries"]
+
+
+def test_community_and_personal_are_tier5() -> None:
+    assert source_tier("https://www.linkedin.com/pulse/apple-ai") == 5
+    assert source_tier("https://someone.substack.com/p/notes") == 5
+    assert source_tier("https://medium.com/@user/post") == 5
+    assert source_tier("https://unknown-blog.example/aapl") == 4
+    assert source_tier("https://www.stocktitan.net/sec-filings/FN/10-k.html") == 4
+
+
+def test_newsroom_and_ir_paths_are_tier1() -> None:
+    assert source_tier("https://www.apple.com/newsroom/2026/09/iphone/") == 1
+    assert source_tier("https://investors.broadcom.com/news-releases") == 1
+    assert source_tier("https://ir.lumentum.com/financials") == 1
+    assert source_tier("https://www.sec.gov/Archives/edgar/aapl") == 1
+
+
+def test_jsonld_date_recovery_does_not_guess() -> None:
+    from stock_pm.external.dates import recover_published_at
+
+    html = """
+    <html><head>
+    <script type="application/ld+json">{"@type":"NewsArticle","datePublished":"2026-09-12T08:00:00Z"}</script>
+    <meta property="article:published_time" content="2026-09-12T08:00:00Z">
+    </head><body>posted 2 days ago</body></html>
+    """
+    assert recover_published_at(html) == "2026-09-12"
+    assert recover_published_at("Updated 3 days ago. Yesterday the company said...") is None
+    og = '<meta property="article:published_time" content="2026-08-01T00:00:00Z">'
+    assert recover_published_at(og) == "2026-08-01"
+
+
+def test_select_caps_reasoning_docs_and_skips_tier4_when_primary_enough() -> None:
+    from stock_pm.external.select import docs_for_extraction, select_reasoning_documents
+
+    docs = []
+    for i in range(8):
+        docs.append(_doc(url=f"https://www.sec.gov/a{i}", query_type="company_official", clean_text="sec " * 200, raw_text="sec " * 200))
+    for i in range(8):
+        docs.append(_doc(url=f"https://www.reuters.com/n{i}", query_type="company_news", clean_text="news " * 200, raw_text="news " * 200))
+    for i in range(8):
+        docs.append(_doc(url=f"https://www.lightreading.com/o{i}", query_type="industry_news", clean_text="opt " * 200, raw_text="opt " * 200))
+    for i in range(40):
+        docs.append(_doc(url=f"https://finance.yahoo.com/y{i}", query_type="company_news", clean_text="agg " * 200, raw_text="agg " * 200))
+    for i in range(10):
+        docs.append(_doc(url=f"https://www.linkedin.com/pulse/{i}", query_type="company_news", published_at=None, clean_text="li " * 200, raw_text="li " * 200))
+    retained, archived, stats = select_reasoning_documents(docs)
+    assert 20 <= stats["retained_for_reasoning"] <= 40
+    assert stats["discovered_docs"] == len(docs)
+    assert stats["tier45_filtered_count"] >= 40
+    assert len(archived) == stats["archived_docs"]
+    extractable = docs_for_extraction(retained)
+    assert all(int(row.get("source_tier") or 9) <= 3 for row in extractable)
+
+
+def test_fallback_plan_uses_business_model_relationships() -> None:
+    aapl = fallback_plan("AAPL", {"company_profile": {"legal_name": "Apple Inc"}}, {"ticker": "AAPL"}, [])
+    assert "product" in aapl["important_relationship_types"]
+    assert "developer ecosystem" in aapl["important_relationship_types"]
+    assert not any(row.get("query_type") == "customer" for row in aapl["queries"])
+    avgo = fallback_plan("AVGO", {"company_profile": {"legal_name": "Broadcom Inc"}}, {"ticker": "AVGO"}, [])
+    assert "hyperscaler/customer" in avgo["important_relationship_types"]
+    assert any(row.get("entity") == "Google" for row in avgo["queries"])
 
 
 def test_official_pack_docs_convert() -> None:

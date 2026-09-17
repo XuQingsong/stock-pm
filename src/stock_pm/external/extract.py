@@ -57,9 +57,24 @@ def llm_extract_facts(
     ticker: str,
     claims: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    usable = [row for row in docs if row.get("is_full_text") and str(row.get("clean_text") or "").strip()][:8]
+    usable = [row for row in docs if row.get("is_full_text") and str(row.get("clean_text") or "").strip()]
     if not usable or completer is None:
         return [], {"step": "external_fact_extract", "llm_called": False, "llm_status": "skipped"}
+    primary = [row for row in usable if int(row.get("source_tier") or 9) <= 1]
+    independent = [row for row in usable if int(row.get("source_tier") or 9) == 2]
+    industry = [row for row in usable if int(row.get("source_tier") or 9) == 3]
+    rest = [row for row in usable if int(row.get("source_tier") or 9) >= 4]
+    picked = primary[:6] + independent[:4] + industry[:2]
+    if len(picked) < 12:
+        seen = {id(row) for row in picked}
+        for row in rest + primary[6:] + independent[4:] + industry[2:]:
+            if id(row) in seen:
+                continue
+            picked.append(row)
+            seen.add(id(row))
+            if len(picked) >= 12:
+                break
+    usable = picked[:12]
     user = {
         "ticker": ticker,
         "claims": [{"title": compact_text(row.get("title"), 80), "statement": compact_text(row.get("statement"), 160)} for row in claims[:5]],

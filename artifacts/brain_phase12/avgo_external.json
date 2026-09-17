@@ -18,162 +18,146 @@
   ],
   "claim_queries": [
     {
-      "query": "Google TPU AI chip development 2025",
-      "query_type": "customer",
+      "query": "Broadcom custom XPU customer concentration risk",
+      "query_type": "claim",
       "providers": [
         "exa"
       ],
       "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-      "entity": "Google"
+      "entity": null
     },
     {
-      "query": "Meta custom AI chip MTIA 2025",
-      "query_type": "customer",
+      "query": "Broadcom operating margin sustainability mix shift",
+      "query_type": "claim",
       "providers": [
         "exa"
       ],
-      "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-      "entity": "Meta"
+      "claim_title": "Operating margin expected to be sustained despite mix shift",
+      "entity": null
     },
     {
-      "query": "Microsoft AI chip Maia 2025",
-      "query_type": "customer",
+      "query": "Broadcom gross margin pressure XPU mix",
+      "query_type": "claim",
       "providers": [
         "exa"
       ],
-      "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-      "entity": "Microsoft"
+      "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+      "entity": null
     },
     {
-      "query": "Amazon AWS Trainium Inferentia 2025",
-      "query_type": "customer",
+      "query": "Broadcom AI semiconductor revenue acceleration guidance",
+      "query_type": "claim",
       "providers": [
-        "exa"
-      ],
-      "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-      "entity": "Amazon"
-    },
-    {
-      "query": "TSMC CoWoS capacity advanced packaging 2025",
-      "query_type": "supplier",
-      "providers": [
-        "tavily",
         "exa"
       ],
       "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
-      "entity": "TSMC"
+      "entity": null
     },
     {
-      "query": "NVIDIA AI accelerator roadmap 2025 competition",
-      "query_type": "related_entity",
+      "query": "Broadcom AI semiconductor revenue majority of total revenue",
+      "query_type": "claim",
       "providers": [
-        "tavily",
         "exa"
       ],
       "claim_title": "AI semiconductor revenue is now the majority of total revenue",
-      "entity": "NVIDIA"
+      "entity": null
     },
     {
-      "query": "Marvell custom AI silicon design wins 2025",
+      "query": "Google custom AI chip Broadcom TPU",
       "query_type": "related_entity",
       "providers": [
-        "tavily"
-      ],
-      "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-      "entity": "Marvell Technology"
-    },
-    {
-      "query": "Google AVGO customer demand OR capex OR supply",
-      "query_type": "customer",
-      "providers": [
-        "tavily"
+        "exa"
       ],
       "claim_title": null,
       "entity": "Google"
+    },
+    {
+      "query": "Meta custom AI accelerator Broadcom",
+      "query_type": "related_entity",
+      "providers": [
+        "exa"
+      ],
+      "claim_title": null,
+      "entity": "Meta"
     }
   ],
   "related_entities": [
     {
-      "name": "NVIDIA",
-      "relation": "competitor",
-      "why": "Competes in AI networking and custom silicon; product cycles and pricing can shift Broadcom's semiconductor demand."
+      "name": "Google",
+      "relation": "hyperscaler/customer",
+      "why": "Google is a major hyperscaler and custom AI chip customer; their capex and TPU roadmap directly affect Broadcom's AI revenue."
     },
     {
-      "name": "Marvell Technology",
-      "relation": "competitor",
-      "why": "Direct competitor in custom ASIC and networking; wins/losses can alter Broadcom's growth trajectory."
+      "name": "Meta",
+      "relation": "hyperscaler/customer",
+      "why": "Meta is a large hyperscaler and potential custom silicon customer; their AI infrastructure spending impacts Broadcom's growth."
+    },
+    {
+      "name": "Microsoft",
+      "relation": "hyperscaler/customer",
+      "why": "Microsoft Azure is a key cloud customer; their AI investments and custom chip initiatives influence Broadcom's semiconductor demand."
+    },
+    {
+      "name": "Amazon",
+      "relation": "hyperscaler/customer",
+      "why": "AWS is a major cloud provider and custom chip customer; their datacenter expansion affects Broadcom's networking and custom silicon."
     },
     {
       "name": "TSMC",
       "relation": "supplier",
-      "why": "Sole foundry for Broadcom's advanced chips; capacity, pricing, and node transitions affect margins and supply."
+      "why": "TSMC is a critical foundry supplier for Broadcom's chips; capacity and pricing changes impact margins and supply."
     },
     {
-      "name": "Hyperscaler capex (e.g., Microsoft, Google, Amazon, Meta)",
-      "relation": "customer",
-      "why": "Cloud providers are key customers for custom AI chips and networking; capex shifts directly impact Broadcom's revenue."
+      "name": "NVIDIA",
+      "relation": "competitor",
+      "why": "NVIDIA competes in AI accelerators and networking; their product launches and pricing affect Broadcom's market position."
     },
     {
-      "name": "AI networking technology (e.g., Ethernet vs. InfiniBand)",
-      "relation": "technology",
-      "why": "Adoption of Ethernet for AI backends could expand Broadcom's addressable market in switching and routing."
+      "name": "Marvell Technology",
+      "relation": "competitor",
+      "why": "Marvell competes in custom silicon and networking; their wins and losses signal competitive dynamics."
     },
     {
-      "name": "Semiconductor export regulations",
-      "relation": "market",
-      "why": "US-China export controls can restrict Broadcom's sales to certain customers and disrupt supply chains."
+      "name": "Arista Networks",
+      "relation": "competitor",
+      "why": "Arista competes in datacenter networking; their traction impacts Broadcom's networking segment."
     },
     {
-      "name": "Apple",
-      "relation": "customer",
-      "why": "Broadcom supplies wireless components; Apple's product cycles and insourcing efforts affect Broadcom's wireless segment."
+      "name": "AMD",
+      "relation": "competitor",
+      "why": "AMD competes in datacenter CPUs and GPUs; their AI roadmap influences Broadcom's custom chip opportunities."
+    },
+    {
+      "name": "Cisco",
+      "relation": "competitor",
+      "why": "Cisco competes in networking and custom silicon; their strategy affects Broadcom's market share."
     },
     {
       "name": "VMware",
-      "relation": "customer",
-      "why": "Broadcom's acquisition of VMware drives software revenue; customer adoption and pricing changes are key value drivers."
-    },
-    {
-      "name": "AI chip demand from cloud and enterprise",
-      "relation": "market",
-      "why": "Overall AI infrastructure spending influences demand for Broadcom's custom AI accelerators and networking solutions."
-    },
-    {
-      "name": "Advanced packaging capacity (e.g., CoWoS)",
-      "relation": "supplier",
-      "why": "Packaging bottlenecks can constrain AI chip shipments, impacting Broadcom's ability to meet customer demand."
-    },
-    {
-      "name": "Google",
-      "relation": "customer",
-      "why": "Google is a major hyperscaler that designs custom AI accelerators (TPUs) and could be a Broadcom XPU customer; their AI capex and chip strategy directly affect…"
-    },
-    {
-      "name": "Meta",
-      "relation": "customer",
-      "why": "Meta is investing heavily in AI infrastructure and custom silicon; they could be a Broadcom XPU customer, and their AI capex plans impact demand for custom acc…"
+      "relation": "technology",
+      "why": "VMware is Broadcom's infrastructure software segment; its performance and integration affect overall margins and the company's ability to fund AI growth."
     }
   ],
   "providers": {
-    "tavily": {
-      "status": "ok",
-      "hit_count": 46,
-      "usable_count": 46,
-      "high_quality_count": 0,
-      "full_text_count": 46,
-      "dated_count": 0,
-      "error": null,
-      "query_count": 10
-    },
     "exa": {
       "status": "ok",
       "hit_count": 50,
       "usable_count": 50,
-      "high_quality_count": 2,
+      "high_quality_count": 5,
       "full_text_count": 50,
-      "dated_count": 49,
+      "dated_count": 46,
       "error": null,
       "query_count": 10
+    },
+    "tavily": {
+      "status": "ok",
+      "hit_count": 10,
+      "usable_count": 10,
+      "high_quality_count": 0,
+      "full_text_count": 10,
+      "dated_count": 0,
+      "error": null,
+      "query_count": 2
     },
     "alpha_vantage": {
       "status": "partial",
@@ -197,160 +181,166 @@
     }
   },
   "report": {
-    "official_documents": 18,
-    "independent_news": 2,
-    "industry_sources": 69,
-    "customer_sources": 24,
-    "supplier_sources": 10,
-    "dated_recent_items": 69,
-    "undated_or_background_items": 56,
-    "full_text_items": 105,
-    "tier1_count": 18,
-    "tier2_count": 2,
-    "tier3_count": 3,
-    "tier4_count": 95,
-    "tier5_count": 7,
+    "official_documents": 19,
+    "independent_news": 3,
+    "industry_sources": 15,
+    "customer_sources": 0,
+    "supplier_sources": 0,
+    "dated_recent_items": 66,
+    "undated_or_background_items": 17,
+    "full_text_items": 56,
+    "tier1_count": 19,
+    "tier2_count": 3,
+    "tier3_count": 2,
+    "tier4_count": 59,
+    "tier5_count": 0,
     "related_entities": [
       {
-        "name": "NVIDIA",
-        "relation": "competitor",
-        "why": "Competes in AI networking and custom silicon; product cycles and pricing can shift Broadcom's semiconductor demand."
+        "name": "Google",
+        "relation": "hyperscaler/customer",
+        "why": "Google is a major hyperscaler and custom AI chip customer; their capex and TPU roadmap directly affect Broadcom's AI revenue."
       },
       {
-        "name": "Marvell Technology",
-        "relation": "competitor",
-        "why": "Direct competitor in custom ASIC and networking; wins/losses can alter Broadcom's growth trajectory."
+        "name": "Meta",
+        "relation": "hyperscaler/customer",
+        "why": "Meta is a large hyperscaler and potential custom silicon customer; their AI infrastructure spending impacts Broadcom's growth."
+      },
+      {
+        "name": "Microsoft",
+        "relation": "hyperscaler/customer",
+        "why": "Microsoft Azure is a key cloud customer; their AI investments and custom chip initiatives influence Broadcom's semiconductor demand."
+      },
+      {
+        "name": "Amazon",
+        "relation": "hyperscaler/customer",
+        "why": "AWS is a major cloud provider and custom chip customer; their datacenter expansion affects Broadcom's networking and custom silicon."
       },
       {
         "name": "TSMC",
         "relation": "supplier",
-        "why": "Sole foundry for Broadcom's advanced chips; capacity, pricing, and node transitions affect margins and supply."
+        "why": "TSMC is a critical foundry supplier for Broadcom's chips; capacity and pricing changes impact margins and supply."
       },
       {
-        "name": "Hyperscaler capex (e.g., Microsoft, Google, Amazon, Meta)",
-        "relation": "customer",
-        "why": "Cloud providers are key customers for custom AI chips and networking; capex shifts directly impact Broadcom's revenue."
+        "name": "NVIDIA",
+        "relation": "competitor",
+        "why": "NVIDIA competes in AI accelerators and networking; their product launches and pricing affect Broadcom's market position."
       },
       {
-        "name": "AI networking technology (e.g., Ethernet vs. InfiniBand)",
-        "relation": "technology",
-        "why": "Adoption of Ethernet for AI backends could expand Broadcom's addressable market in switching and routing."
+        "name": "Marvell Technology",
+        "relation": "competitor",
+        "why": "Marvell competes in custom silicon and networking; their wins and losses signal competitive dynamics."
       },
       {
-        "name": "Semiconductor export regulations",
-        "relation": "market",
-        "why": "US-China export controls can restrict Broadcom's sales to certain customers and disrupt supply chains."
+        "name": "Arista Networks",
+        "relation": "competitor",
+        "why": "Arista competes in datacenter networking; their traction impacts Broadcom's networking segment."
       },
       {
-        "name": "Apple",
-        "relation": "customer",
-        "why": "Broadcom supplies wireless components; Apple's product cycles and insourcing efforts affect Broadcom's wireless segment."
+        "name": "AMD",
+        "relation": "competitor",
+        "why": "AMD competes in datacenter CPUs and GPUs; their AI roadmap influences Broadcom's custom chip opportunities."
+      },
+      {
+        "name": "Cisco",
+        "relation": "competitor",
+        "why": "Cisco competes in networking and custom silicon; their strategy affects Broadcom's market share."
       },
       {
         "name": "VMware",
-        "relation": "customer",
-        "why": "Broadcom's acquisition of VMware drives software revenue; customer adoption and pricing changes are key value drivers."
-      },
-      {
-        "name": "AI chip demand from cloud and enterprise",
-        "relation": "market",
-        "why": "Overall AI infrastructure spending influences demand for Broadcom's custom AI accelerators and networking solutions."
-      },
-      {
-        "name": "Advanced packaging capacity (e.g., CoWoS)",
-        "relation": "supplier",
-        "why": "Packaging bottlenecks can constrain AI chip shipments, impacting Broadcom's ability to meet customer demand."
-      },
-      {
-        "name": "Google",
-        "relation": "customer",
-        "why": "Google is a major hyperscaler that designs custom AI accelerators (TPUs) and could be a Broadcom XPU customer; their AI capex and chip strategy directly affect…"
-      },
-      {
-        "name": "Meta",
-        "relation": "customer",
-        "why": "Meta is investing heavily in AI infrastructure and custom silicon; they could be a Broadcom XPU customer, and their AI capex plans impact demand for custom acc…"
+        "relation": "technology",
+        "why": "VMware is Broadcom's infrastructure software segment; its performance and integration affect overall margins and the company's ability to fund AI growth."
       }
     ],
     "claim_queries": [
       {
-        "query": "Google TPU AI chip development 2025",
-        "query_type": "customer",
+        "query": "Broadcom custom XPU customer concentration risk",
+        "query_type": "claim",
         "providers": [
           "exa"
         ],
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Google"
+        "entity": null
       },
       {
-        "query": "Meta custom AI chip MTIA 2025",
-        "query_type": "customer",
+        "query": "Broadcom operating margin sustainability mix shift",
+        "query_type": "claim",
         "providers": [
           "exa"
         ],
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Meta"
+        "claim_title": "Operating margin expected to be sustained despite mix shift",
+        "entity": null
       },
       {
-        "query": "Microsoft AI chip Maia 2025",
-        "query_type": "customer",
+        "query": "Broadcom gross margin pressure XPU mix",
+        "query_type": "claim",
         "providers": [
           "exa"
         ],
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Microsoft"
+        "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+        "entity": null
       },
       {
-        "query": "Amazon AWS Trainium Inferentia 2025",
-        "query_type": "customer",
+        "query": "Broadcom AI semiconductor revenue acceleration guidance",
+        "query_type": "claim",
         "providers": [
-          "exa"
-        ],
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Amazon"
-      },
-      {
-        "query": "TSMC CoWoS capacity advanced packaging 2025",
-        "query_type": "supplier",
-        "providers": [
-          "tavily",
           "exa"
         ],
         "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
-        "entity": "TSMC"
+        "entity": null
       },
       {
-        "query": "NVIDIA AI accelerator roadmap 2025 competition",
-        "query_type": "related_entity",
+        "query": "Broadcom AI semiconductor revenue majority of total revenue",
+        "query_type": "claim",
         "providers": [
-          "tavily",
           "exa"
         ],
         "claim_title": "AI semiconductor revenue is now the majority of total revenue",
-        "entity": "NVIDIA"
+        "entity": null
       },
       {
-        "query": "Marvell custom AI silicon design wins 2025",
+        "query": "Google custom AI chip Broadcom TPU",
         "query_type": "related_entity",
         "providers": [
-          "tavily"
-        ],
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Marvell Technology"
-      },
-      {
-        "query": "Google AVGO customer demand OR capex OR supply",
-        "query_type": "customer",
-        "providers": [
-          "tavily"
+          "exa"
         ],
         "claim_title": null,
         "entity": "Google"
+      },
+      {
+        "query": "Meta custom AI accelerator Broadcom",
+        "query_type": "related_entity",
+        "providers": [
+          "exa"
+        ],
+        "claim_title": null,
+        "entity": "Meta"
       }
     ],
     "query_results": [
       {
-        "query": "Broadcom latest news AI semiconductor",
+        "query": "Broadcom Inc latest news and announcements",
+        "query_type": "company_official",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 2,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Broadcom earnings call transcript",
+        "query_type": "company_earnings",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Broadcom news last 30 days",
         "query_type": "company_news",
         "provider": "tavily",
         "hit_count": 5,
@@ -361,8 +351,8 @@
         "entity": null
       },
       {
-        "query": "Broadcom latest news AI semiconductor",
-        "query_type": "company_news",
+        "query": "Broadcom semiconductor industry outlook",
+        "query_type": "industry_news",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
@@ -372,430 +362,240 @@
         "entity": null
       },
       {
-        "query": "Broadcom earnings report AI revenue growth",
-        "query_type": "company_earnings",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Broadcom official press releases AI networking",
-        "query_type": "company_official",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "hyperscaler capex 2025 AI infrastructure spending",
-        "query_type": "industry_news",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "hyperscaler capex 2025 AI infrastructure spending",
-        "query_type": "industry_news",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 4,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "custom AI chip market growth Broadcom Marvell",
-        "query_type": "industry_news",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "custom AI chip market growth Broadcom Marvell",
-        "query_type": "industry_news",
+        "query": "Broadcom custom XPU customer concentration risk",
+        "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": null,
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": null
       },
       {
-        "query": "Ethernet vs InfiniBand AI networking adoption",
-        "query_type": "industry_news",
+        "query": "Broadcom operating margin sustainability mix shift",
+        "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 5,
+        "usable_count": 3,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": null,
+        "claim_title": "Operating margin expected to be sustained despite mix shift",
         "entity": null
       },
       {
-        "query": "semiconductor export controls China impact Broadcom",
-        "query_type": "industry_news",
-        "provider": "tavily",
-        "hit_count": 1,
+        "query": "Broadcom gross margin pressure XPU mix",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 2,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+        "entity": null
+      },
+      {
+        "query": "Broadcom AI semiconductor revenue acceleration guidance",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 1,
+        "high_quality_count": 1,
+        "status": "ok",
+        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+        "entity": null
+      },
+      {
+        "query": "Broadcom AI semiconductor revenue majority of total revenue",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
         "usable_count": 1,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": null,
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
         "entity": null
       },
       {
-        "query": "Google TPU AI chip development 2025",
-        "query_type": "customer",
+        "query": "Google custom AI chip Broadcom TPU",
+        "query_type": "related_entity",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "claim_title": null,
         "entity": "Google"
       },
       {
-        "query": "Meta custom AI chip MTIA 2025",
-        "query_type": "customer",
+        "query": "Meta custom AI accelerator Broadcom",
+        "query_type": "related_entity",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 1,
         "status": "ok",
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "claim_title": null,
         "entity": "Meta"
       },
       {
-        "query": "Microsoft AI chip Maia 2025",
-        "query_type": "customer",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Microsoft"
-      },
-      {
-        "query": "Amazon AWS Trainium Inferentia 2025",
-        "query_type": "customer",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Amazon"
-      },
-      {
-        "query": "TSMC CoWoS capacity advanced packaging 2025",
-        "query_type": "supplier",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
-        "entity": "TSMC"
-      },
-      {
-        "query": "TSMC CoWoS capacity advanced packaging 2025",
-        "query_type": "supplier",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
-        "entity": "TSMC"
-      },
-      {
-        "query": "NVIDIA AI accelerator roadmap 2025 competition",
-        "query_type": "related_entity",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
-        "entity": "NVIDIA"
-      },
-      {
-        "query": "NVIDIA AI accelerator roadmap 2025 competition",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
-        "entity": "NVIDIA"
-      },
-      {
-        "query": "Marvell custom AI silicon design wins 2025",
-        "query_type": "related_entity",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-        "entity": "Marvell Technology"
-      },
-      {
-        "query": "Google AVGO customer demand OR capex OR supply",
-        "query_type": "customer",
+        "query": "AVGO news",
+        "query_type": "company_news",
         "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
-        "entity": "Google"
+        "entity": null
       }
     ],
-    "duplicates_removed": 15,
-    "raw_count_before_dedupe": 140,
+    "duplicates_removed": 9,
+    "raw_count_before_dedupe": 92,
     "coverage_gaps": [],
     "providers": {
-      "tavily": {
-        "provider": "tavily",
+      "exa": {
+        "provider": "exa",
         "status": "ok",
         "queries": [
           {
-            "query": "Broadcom latest news AI semiconductor",
-            "query_type": "company_news",
+            "query": "Broadcom Inc latest news and announcements",
+            "query_type": "company_official",
             "hit_count": 5,
             "usable_count": 5,
-            "high_quality_count": 0,
+            "high_quality_count": 2,
             "status": "ok",
             "error": null,
-            "latency_ms": 810
+            "latency_ms": 97
           },
           {
-            "query": "Broadcom earnings report AI revenue growth",
+            "query": "Broadcom earnings call transcript",
             "query_type": "company_earnings",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 701
+            "latency_ms": 1528
           },
           {
-            "query": "Broadcom official press releases AI networking",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1061
-          },
-          {
-            "query": "hyperscaler capex 2025 AI infrastructure spending",
+            "query": "Broadcom semiconductor industry outlook",
             "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 2286
-          },
-          {
-            "query": "custom AI chip market growth Broadcom Marvell",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 940
-          },
-          {
-            "query": "semiconductor export controls China impact Broadcom",
-            "query_type": "industry_news",
-            "hit_count": 1,
-            "usable_count": 1,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 927
-          },
-          {
-            "query": "TSMC CoWoS capacity advanced packaging 2025",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1112
-          },
-          {
-            "query": "NVIDIA AI accelerator roadmap 2025 competition",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1570
-          },
-          {
-            "query": "Marvell custom AI silicon design wins 2025",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 2122
-          },
-          {
-            "query": "Google AVGO customer demand OR capex OR supply",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 740
-          }
-        ],
-        "hit_count": 46,
-        "usable_count": 46,
-        "high_quality_count": 0,
-        "full_text_count": 46,
-        "dated_count": 0,
-        "error": null
-      },
-      "exa": {
-        "provider": "exa",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Broadcom latest news AI semiconductor",
-            "query_type": "company_news",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 1,
             "status": "ok",
             "error": null,
-            "latency_ms": 2211
+            "latency_ms": 1209
           },
           {
-            "query": "hyperscaler capex 2025 AI infrastructure spending",
-            "query_type": "industry_news",
+            "query": "Broadcom custom XPU customer concentration risk",
+            "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1333
+            "latency_ms": 1818
           },
           {
-            "query": "custom AI chip market growth Broadcom Marvell",
-            "query_type": "industry_news",
+            "query": "Broadcom operating margin sustainability mix shift",
+            "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1197
+            "latency_ms": 1675
           },
           {
-            "query": "Ethernet vs InfiniBand AI networking adoption",
-            "query_type": "industry_news",
+            "query": "Broadcom gross margin pressure XPU mix",
+            "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1593
+            "latency_ms": 1438
           },
           {
-            "query": "Google TPU AI chip development 2025",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1432
-          },
-          {
-            "query": "Meta custom AI chip MTIA 2025",
-            "query_type": "customer",
+            "query": "Broadcom AI semiconductor revenue acceleration guidance",
+            "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 1,
             "status": "ok",
             "error": null,
-            "latency_ms": 963
+            "latency_ms": 1458
           },
           {
-            "query": "Microsoft AI chip Maia 2025",
-            "query_type": "customer",
+            "query": "Broadcom AI semiconductor revenue majority of total revenue",
+            "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1330
+            "latency_ms": 1600
           },
           {
-            "query": "Amazon AWS Trainium Inferentia 2025",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 956
-          },
-          {
-            "query": "TSMC CoWoS capacity advanced packaging 2025",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 5504
-          },
-          {
-            "query": "NVIDIA AI accelerator roadmap 2025 competition",
+            "query": "Google custom AI chip Broadcom TPU",
             "query_type": "related_entity",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1188
+            "latency_ms": 5782
+          },
+          {
+            "query": "Meta custom AI accelerator Broadcom",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 3179
           }
         ],
         "hit_count": 50,
         "usable_count": 50,
-        "high_quality_count": 2,
+        "high_quality_count": 5,
         "full_text_count": 50,
-        "dated_count": 49,
+        "dated_count": 46,
+        "error": null
+      },
+      "tavily": {
+        "provider": "tavily",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Broadcom news last 30 days",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1525
+          },
+          {
+            "query": "AVGO news",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 35
+          }
+        ],
+        "hit_count": 10,
+        "usable_count": 10,
+        "high_quality_count": 0,
+        "full_text_count": 10,
+        "dated_count": 0,
         "error": null
       },
       "alpha_vantage": {
@@ -810,7 +610,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 41
+            "latency_ms": 297
           },
           {
             "query": "OVERVIEW AVGO",
@@ -857,95 +657,674 @@
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 40,
-        "dated_recent": 0,
-        "full_text": 40,
+        "hit_count": 8,
+        "dated_recent": 6,
+        "full_text": 8,
         "tier1_2": 0,
-        "news": 13,
-        "industry": 26,
-        "customer_supplier": 18,
+        "news": 8,
+        "industry": 0,
+        "customer_supplier": 0,
         "unique_domains": [
           "247wallst.com",
-          "allpcb.com",
           "barchart.com",
-          "broadcom.com",
-          "cryptobriefing.com",
-          "digitimes.com",
-          "facebook.com",
-          "futurumgroup.com",
-          "introl.com",
-          "investors.broadcom.com",
-          "investors.com",
-          "linkedin.com",
-          "marketbeat.com",
-          "michaelparekh.substack.com",
-          "moomoo.com",
-          "networkworld.com",
-          "nextplatform.com",
-          "nomadsemi.com",
-          "pwc.com",
-          "qz.com"
+          "chartmill.com",
+          "finance.yahoo.com",
+          "seekingalpha.com",
+          "stockstory.org",
+          "tradingview.com"
         ],
-        "avg_full_text_chars": 15298
+        "avg_full_text_chars": 13536
       },
       "exa": {
-        "hit_count": 49,
-        "dated_recent": 46,
-        "full_text": 49,
-        "tier1_2": 2,
-        "news": 20,
-        "industry": 43,
-        "customer_supplier": 30,
+        "hit_count": 37,
+        "dated_recent": 35,
+        "full_text": 37,
+        "tier1_2": 4,
+        "news": 7,
+        "industry": 15,
+        "customer_supplier": 10,
         "unique_domains": [
-          "247wallst.com",
           "ainvest.com",
-          "arxiv.org",
-          "ascentoptics.com",
-          "aws-news.com",
-          "aws.amazon.com",
+          "beancount.io",
           "bloomberg.com",
-          "cheemaomer.substack.com",
+          "businessnewsforprofit.com",
           "cnbc.com",
-          "cryptobriefing.com",
+          "convergedigest.com",
           "datacenterdynamics.com",
-          "developer.nvidia.com",
           "engineering.fb.com",
-          "enterprisetimes.in",
+          "exa.ai",
           "fool.com",
-          "fourweekmba.com",
-          "gate.com",
-          "globemarketresearch.com",
-          "insights.trendforce.com",
-          "itpro.com"
+          "hyperframeresearch.com",
+          "insidermonkey.com",
+          "investing.com",
+          "investors.broadcom.com",
+          "khancapitals.com",
+          "kobaran.com",
+          "last10k.com",
+          "longbridge.com",
+          "nova.kapualabs.com",
+          "rcrtech.com"
         ],
-        "avg_full_text_chars": 9717
+        "avg_full_text_chars": 9821
       },
-      "better_for_news": "exa",
+      "better_for_news": "tavily",
       "better_for_industry": "exa",
       "better_for_customer_supplier": "exa",
       "better_for_full_text": "tavily",
-      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+      "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
+      "roles": {
+        "exa": "primary_discovery",
+        "tavily": "extract_and_news_supplement"
+      }
     },
     "alphavantage_overview": {
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 19,
+    "evidence_extracted": 12,
     "window_days": 30,
     "valuable_domains": [
       "bloomberg.com",
       "cnbc.com",
-      "digitimes.com",
       "fred.stlouisfed.org",
+      "investors.broadcom.com",
       "sec.gov",
-      "spglobal.com",
       "theregister.com"
-    ]
+    ],
+    "provider_roles": {
+      "exa": "primary_discovery",
+      "tavily": "extract_and_news_supplement",
+      "sec": "primary_facts",
+      "company_ir": "primary_facts",
+      "fred": "macro_facts",
+      "alpha_vantage": "supplemental_cross_check",
+      "duckduckgo": "fallback_only"
+    },
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "supplier",
+      "technology",
+      "competitor",
+      "datacenter infrastructure"
+    ],
+    "date_recovered_count": 0,
+    "discovered_docs": 83,
+    "retained_for_reasoning": 21,
+    "archived_docs": 62,
+    "tier_distribution_before": {
+      "tier1": 19,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 59,
+      "tier5": 0
+    },
+    "tier_distribution_after": {
+      "tier1": 16,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 0,
+      "tier5": 0
+    },
+    "primary_source_count": 16,
+    "independent_source_count": 3,
+    "industry_source_count": 2,
+    "tier45_filtered_count": 59,
+    "top_10_facts": [
+      {
+        "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
+        "source_time": "2026-06-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
+      },
+      {
+        "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+        "source_time": "2026-06-18",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
+      },
+      {
+        "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+        "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+        "source_time": "2026-09-14",
+        "source_tier": 2,
+        "claim_title": null,
+        "source": "high_quality_news",
+        "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+      }
+    ],
+    "reasoning_context": {
+      "top_primary_facts": [
+        {
+          "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        }
+      ],
+      "top_independent_evidence": [
+        {
+          "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+          "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+          "source_time": "2026-09-14",
+          "source_tier": 2,
+          "claim_title": null,
+          "source": "high_quality_news",
+          "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+        },
+        {
+          "fact": "Meta plans to begin deploying a new in-house AI chip, MTIA 450 (Arke), in data centers during the first half of next year, with the next chip, MTIA 500 (Astrid), going into data centers at the end of 2027.",
+          "source_url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
+          "source_time": "2026-09-15",
+          "source_tier": 2,
+          "claim_title": null,
+          "source": "high_quality_news",
+          "document_id": "xdoc_8086c30fbec0444882c07e9252e3ac22"
+        }
+      ],
+      "top_industry_evidence": [
+        {
+          "fact": "Marvell announced in an SEC filing that Google tapped it to develop custom silicon, including AI inference accelerators and other products attaching to the TPU ecosystem, challenging Broadcom's role as Google's TPU partner.",
+          "source_url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+          "source_time": "2026-08-19",
+          "source_tier": 3,
+          "claim_title": null,
+          "source": "theregister.com",
+          "document_id": "xdoc_8f26f6be530345c09de9ea9094d02abe"
+        }
+      ],
+      "top_counter_evidence": [
+        {
+          "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+          "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+          "source_time": "2026-09-14",
+          "source_tier": 2,
+          "claim_title": null,
+          "source": "high_quality_news",
+          "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+        }
+      ],
+      "top_community_signals": [],
+      "open_gaps": [],
+      "per_claim": [
+        {
+          "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+          "support": [
+            {
+              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            }
+          ],
+          "counter": [],
+          "gaps": []
+        },
+        {
+          "claim_title": "Operating margin expected to be sustained despite mix shift",
+          "support": [
+            {
+              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            }
+          ],
+          "counter": [],
+          "gaps": []
+        },
+        {
+          "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+          "support": [
+            {
+              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            }
+          ],
+          "counter": [],
+          "gaps": []
+        },
+        {
+          "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+          "support": [
+            {
+              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            }
+          ],
+          "counter": [],
+          "gaps": []
+        },
+        {
+          "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+          "support": [
+            {
+              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            },
+            {
+              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "source_time": "2026-09-02",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+            }
+          ],
+          "counter": [],
+          "gaps": []
+        }
+      ]
+    }
   },
-  "duplicates_removed": 15,
-  "raw_count": 140,
-  "evidence_extracted": 19,
-  "news_hits": 67,
+  "quality": {
+    "discovered_docs": 83,
+    "retained_for_reasoning": 21,
+    "archived_docs": 62,
+    "tier_distribution_before": {
+      "tier1": 19,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 59,
+      "tier5": 0
+    },
+    "tier_distribution_after": {
+      "tier1": 16,
+      "tier2": 3,
+      "tier3": 2,
+      "tier4": 0,
+      "tier5": 0
+    },
+    "primary_source_count": 16,
+    "independent_source_count": 3,
+    "industry_source_count": 2,
+    "tier45_filtered_count": 59,
+    "important_relationship_types": [
+      "hyperscaler/customer",
+      "supplier",
+      "technology",
+      "competitor",
+      "datacenter infrastructure"
+    ],
+    "top_10_facts": [
+      {
+        "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+      },
+      {
+        "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
+        "source_time": "2026-06-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
+      },
+      {
+        "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+        "source_time": "2026-06-18",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
+      },
+      {
+        "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+        "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+        "source_time": "2026-09-14",
+        "source_tier": 2,
+        "claim_title": null,
+        "source": "high_quality_news",
+        "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+      }
+    ],
+    "coverage_gaps": [],
+    "date_recovered_count": 0,
+    "provider_roles": {
+      "exa": "primary_discovery",
+      "tavily": "extract_and_news_supplement",
+      "sec": "primary_facts",
+      "company_ir": "primary_facts",
+      "fred": "macro_facts",
+      "alpha_vantage": "supplemental_cross_check",
+      "duckduckgo": "fallback_only"
+    }
+  },
+  "important_relationship_types": [
+    "hyperscaler/customer",
+    "supplier",
+    "technology",
+    "competitor",
+    "datacenter infrastructure"
+  ],
+  "duplicates_removed": 9,
+  "raw_count": 92,
+  "evidence_extracted": 12,
+  "news_hits": 8,
   "sample_documents": [
     {
       "provider": "sec",
@@ -963,21 +1342,6 @@
       "text_chars": 24000
     },
     {
-      "provider": "sec",
-      "source_type": "official",
-      "source_family": "sec",
-      "source_tier": 1,
-      "title": "8-K",
-      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
-      "source_domain": "sec.gov",
-      "published_at": "2026-09-02",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "pack.official_documents",
-      "query_type": "company_official",
-      "text_chars": 3331
-    },
-    {
       "provider": "sec.exhibit",
       "source_type": "official",
       "source_family": "sec",
@@ -993,6 +1357,21 @@
       "text_chars": 23151
     },
     {
+      "provider": "sec",
+      "source_type": "official",
+      "source_family": "sec",
+      "source_tier": 1,
+      "title": "8-K",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+      "source_domain": "sec.gov",
+      "published_at": "2026-09-02",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "pack.official_documents",
+      "query_type": "company_official",
+      "text_chars": 3331
+    },
+    {
       "provider": "exa",
       "source_type": "independent_news",
       "source_family": "high_quality_news",
@@ -1003,129 +1382,69 @@
       "published_at": "2026-09-14",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Broadcom latest news AI semiconductor",
-      "query_type": "company_news",
+      "query": "Broadcom Inc latest news and announcements",
+      "query_type": "company_official",
       "text_chars": 3928
     },
     {
       "provider": "exa",
-      "source_type": "aggregator",
-      "source_family": "sdxcentral.com",
-      "source_tier": 4,
-      "title": "Broadcom slams AI silicon-fueled Q3, promises double-double on the way - SDxCentral",
-      "url": "https://www.sdxcentral.com/news/broadcom-slams-ai-silicon-fueled-q3-promises-double-double-on-the-way/",
-      "source_domain": "sdxcentral.com",
-      "published_at": "2026-09-03",
+      "source_type": "independent_news",
+      "source_family": "high_quality_news",
+      "source_tier": 2,
+      "title": "Meta Touts the Cost-Saving Benefits of Latest In-House AI Chips - Bloomberg",
+      "url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
+      "source_domain": "bloomberg.com",
+      "published_at": "2026-09-15",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Broadcom latest news AI semiconductor",
-      "query_type": "company_news",
-      "text_chars": 5282
+      "query": "Meta custom AI accelerator Broadcom",
+      "query_type": "related_entity",
+      "text_chars": 535
     },
     {
       "provider": "exa",
-      "source_type": "aggregator",
-      "source_family": "trendforce.com",
-      "source_tier": 4,
-      "title": "[News] Broadcom Targets $115B AI Revenue in FY27, Nearly 2X FY26; Singapore Fab to Ease Key Substrate Bottleneck",
-      "url": "https://www.trendforce.com/news/2026/09/03/news-broadcom-targets-115b-ai-revenue-in-fy27-nearly-2x-fy26-singapore-fab-to-ease-key-substrate-bottleneck/",
-      "source_domain": "trendforce.com",
-      "published_at": "2026-09-03",
+      "source_type": "independent_news",
+      "source_family": "high_quality_news",
+      "source_tier": 2,
+      "title": "Broadcom guides to big numbers but investors wanted more. Why we're OK to hold for now",
+      "url": "https://www.cnbc.com/2026/09/02/broadcom-guides-to-big-numbers-but-investors-wanted-more-why-were-ok-to-hold-for-now.html",
+      "source_domain": "cnbc.com",
+      "published_at": "2026-09-02",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Broadcom latest news AI semiconductor",
-      "query_type": "company_news",
-      "text_chars": 4366
-    },
-    {
-      "provider": "exa",
-      "source_type": "aggregator",
-      "source_family": "fool.com",
-      "source_tier": 4,
-      "title": "Broadcom Just Named Its Next Customer to Pass Google: Anthropic. Here's Why That Matters More Than the Earnings Beat. | The Motley Fool",
-      "url": "https://www.fool.com/investing/2026/09/14/broadcom-just-named-its-next-customer-to-pass-goog/",
-      "source_domain": "fool.com",
-      "published_at": "2026-09-14",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Broadcom latest news AI semiconductor",
-      "query_type": "company_news",
-      "text_chars": 5348
-    },
-    {
-      "provider": "exa",
-      "source_type": "aggregator",
-      "source_family": "techtimes.com",
-      "source_tier": 4,
-      "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
-      "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
-      "source_domain": "techtimes.com",
-      "published_at": "2026-09-03",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Broadcom latest news AI semiconductor",
-      "query_type": "company_news",
-      "text_chars": 21036
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
-      "source_tier": 4,
-      "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/arista-networks-highlighted-zacks-bull-123700090.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 24000
+      "query": "Broadcom semiconductor industry outlook",
+      "query_type": "industry_news",
+      "text_chars": 450
     },
     {
       "provider": "exa",
       "source_type": "industry",
-      "source_family": "datacenterdynamics.com",
-      "source_tier": 4,
-      "title": "Moody’s: Hyperscaler capex forecasts marked up by $85bn, to close in on $1trn by 2027 - DCD",
-      "url": "https://www.datacenterdynamics.com/en/news/moodys-hyperscaler-capex-forecasts-marked-up-by-85bn-to-close-in-on-1trn-by-2027/",
-      "source_domain": "datacenterdynamics.com",
+      "source_family": "theregister.com",
+      "source_tier": 3,
+      "title": "Meta's new MTIA 400 chip has a split personality: Training AI and serving ads",
+      "url": "https://www.theregister.com/systems/2026/08/26/metas-new-mtia-400-chip-has-a-split-personality-training-ai-and-serving-ads/5292727",
+      "source_domain": "theregister.com",
+      "published_at": "2026-08-26",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Meta custom AI accelerator Broadcom",
+      "query_type": "related_entity",
+      "text_chars": 6819
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "theregister.com",
+      "source_tier": 3,
+      "title": "Google pits Marvell against Broadcom as it chases AI crown",
+      "url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+      "source_domain": "theregister.com",
       "published_at": "2026-08-19",
       "is_dated": true,
       "is_full_text": true,
-      "query": "hyperscaler capex 2025 AI infrastructure spending",
-      "query_type": "industry_news",
-      "text_chars": 3153
-    },
-    {
-      "provider": "exa",
-      "source_type": "industry",
-      "source_family": "slicast.com",
-      "source_tier": 4,
-      "title": "Hyperscalers' combined AI capex in 2026 is approximately $725 billion, with industry-wide IT capacity under construction exceeding 23 GW.",
-      "url": "https://slicast.com/article/prs5zu",
-      "source_domain": "slicast.com",
-      "published_at": "2026-09-09",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "hyperscaler capex 2025 AI infrastructure spending",
-      "query_type": "industry_news",
-      "text_chars": 8586
-    },
-    {
-      "provider": "exa",
-      "source_type": "industry",
-      "source_family": "247wallst.com",
-      "source_tier": 4,
-      "title": "AI's Absurd Spending Boom? Hyperscalers Are Spending 102% of Cloud Revenue on Capex - 24/7 Wall St.",
-      "url": "https://247wallst.com/investing/2026/08/22/ais-absurd-spending-boom-hyperscalers-are-spending-102-of-cloud-revenue-on-capex/",
-      "source_domain": "247wallst.com",
-      "published_at": "2026-08-22",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "hyperscaler capex 2025 AI infrastructure spending",
-      "query_type": "industry_news",
-      "text_chars": 16887
+      "query": "Google custom AI chip Broadcom TPU",
+      "query_type": "related_entity",
+      "text_chars": 4070
     }
   ],
   "sample_facts": [
@@ -1148,7 +1467,7 @@
       "source_tier": 1
     },
     {
-      "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter of fiscal 2026, with capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+      "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
@@ -1172,15 +1491,15 @@
       "source_tier": 1
     },
     {
-      "fact": "Google unveiled its eighth-generation TPUs, consisting of two chips: the TPU 8t for training and the TPU 8i for inference.",
-      "source_url": "https://www.datacenterdynamics.com/en/news/google-unveils-eighth-generation-tpus-two-dedicated-training-and-inference-chips/",
-      "source_time": "2026-08-19",
-      "source_tier": 4
+      "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
+      "source_time": "2026-06-11",
+      "source_tier": 1
     }
   ],
   "warnings": [],
   "budget_remaining": {
-    "tavily": 0,
+    "tavily": 8,
     "exa": 0
   }
 }

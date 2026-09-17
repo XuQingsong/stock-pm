@@ -1,6 +1,6 @@
 {
   "phase": "1.2",
-  "generated_at": "2026-09-17T12:44:14+00:00",
+  "generated_at": "2026-09-17T13:05:15+00:00",
   "news_window_days": 30,
   "keys_present": {
     "tavily": true,
@@ -13,14 +13,14 @@
   "benzinga": "not_wired",
   "provider_call_success": {
     "AAPL": {
-      "tavily": "ok",
       "exa": "ok",
+      "tavily": "ok",
       "alpha_vantage": "partial",
       "fred": "ok"
     },
     "AVGO": {
-      "tavily": "ok",
       "exa": "ok",
+      "tavily": "ok",
       "alpha_vantage": "partial",
       "fred": "ok"
     },
@@ -33,128 +33,476 @@
   },
   "provider_hit_counts": {
     "AAPL": {
-      "tavily": 50,
-      "exa": 50,
+      "exa": 48,
+      "tavily": 10,
       "alpha_vantage": 20,
       "fred": 11
     },
     "AVGO": {
-      "tavily": 46,
       "exa": 50,
+      "tavily": 10,
       "alpha_vantage": 20,
       "fred": 11
     },
     "LITE": {
-      "tavily": 33,
-      "exa": 48,
+      "tavily": 10,
+      "exa": 50,
       "alpha_vantage": 20,
       "fred": 11
     }
   },
   "coverage_30d": {
     "AAPL": {
-      "dated_recent_items": 66,
-      "full_text_items": 109,
-      "tier1_count": 16,
-      "tier2_count": 6,
-      "tier3_count": 4,
-      "tier4_count": 97,
+      "dated_recent_items": 64,
+      "full_text_items": 58,
+      "tier1_count": 21,
+      "tier2_count": 2,
+      "tier3_count": 2,
+      "tier4_count": 58,
       "customer_sources": 0,
       "supplier_sources": 0,
-      "industry_sources": 29,
-      "duplicates_removed": 11,
-      "raw_count": 141,
-      "evidence_extracted": 15,
-      "coverage_gaps": [
-        "No customer-related documents were retrieved.",
-        "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
-      ],
+      "industry_sources": 11,
+      "duplicates_removed": 7,
+      "raw_count": 91,
+      "evidence_extracted": 13,
+      "coverage_gaps": [],
       "valuable_domains": [
-        "arstechnica.com",
+        "apple.com",
         "barrons.com",
+        "bbc.com",
         "cnbc.com",
+        "digitimes.com",
         "fred.stlouisfed.org",
-        "lightreading.com",
-        "nytimes.com",
-        "reuters.com",
-        "sec.gov",
-        "wsj.com"
+        "investor.apple.com",
+        "sec.gov"
       ],
       "claim_query_examples": [
-        "Apple PE ratio forward estimates",
-        "Apple EPS growth forecast",
-        "Apple tariff costs impact",
-        "Apple iPhone supply constraints",
-        "Apple installed base growth"
-      ]
+        "Apple tariff costs gross margin impact 2026",
+        "Apple installed base active devices all-time high 2026",
+        "Apple Services revenue growth gross margin 2026",
+        "Apple revenue growth by geographic segment 2026",
+        "Apple PE ratio forward estimates 2026",
+        "TSMC Apple chip supply constraints 2026",
+        "Foxconn Apple production capacity 2026",
+        "US tariffs on Apple products 2026"
+      ],
+      "discovered_docs": 84,
+      "retained_for_reasoning": 20,
+      "tier_distribution_before": {
+        "tier1": 21,
+        "tier2": 2,
+        "tier3": 2,
+        "tier4": 58,
+        "tier5": 1
+      },
+      "tier_distribution_after": {
+        "tier1": 16,
+        "tier2": 2,
+        "tier3": 2,
+        "tier4": 0,
+        "tier5": 0
+      },
+      "primary_source_count": 16,
+      "independent_source_count": 2,
+      "industry_source_count": 2,
+      "tier45_filtered_count": 59,
+      "important_relationship_types": [
+        "product",
+        "supplier",
+        "channel",
+        "geography",
+        "regulation",
+        "developer ecosystem"
+      ],
+      "top_10_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        },
+        {
+          "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+        },
+        {
+          "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+        },
+        {
+          "fact": "Apple announced iPhone 18 Pro and iPhone 18 Pro Max on September 9, 2026, featuring a 48MP Fusion Main camera with variable aperture.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_d15d9d4b8fc140d8b448e44d717b8f0e"
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, on September 9, 2026, with a 7.6-inch inner display and 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+        },
+        {
+          "fact": "iPhone Duo is powered by the new A20 Pro chip.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+        },
+        {
+          "fact": "Apple's software updates including Siri AI rolled out starting September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_36bb7b2c01444e4fb3c98ac66b01f093"
+        }
+      ],
+      "date_recovered_count": 0
     },
     "AVGO": {
-      "dated_recent_items": 69,
-      "full_text_items": 105,
-      "tier1_count": 18,
-      "tier2_count": 2,
-      "tier3_count": 3,
-      "tier4_count": 95,
-      "customer_sources": 24,
-      "supplier_sources": 10,
-      "industry_sources": 69,
-      "duplicates_removed": 15,
-      "raw_count": 140,
-      "evidence_extracted": 19,
+      "dated_recent_items": 66,
+      "full_text_items": 56,
+      "tier1_count": 19,
+      "tier2_count": 3,
+      "tier3_count": 2,
+      "tier4_count": 59,
+      "customer_sources": 0,
+      "supplier_sources": 0,
+      "industry_sources": 15,
+      "duplicates_removed": 9,
+      "raw_count": 92,
+      "evidence_extracted": 12,
       "coverage_gaps": [],
       "valuable_domains": [
         "bloomberg.com",
         "cnbc.com",
-        "digitimes.com",
         "fred.stlouisfed.org",
+        "investors.broadcom.com",
         "sec.gov",
-        "spglobal.com",
         "theregister.com"
       ],
       "claim_query_examples": [
-        "Google TPU AI chip development 2025",
-        "Meta custom AI chip MTIA 2025",
-        "Microsoft AI chip Maia 2025",
-        "Amazon AWS Trainium Inferentia 2025",
-        "TSMC CoWoS capacity advanced packaging 2025",
-        "NVIDIA AI accelerator roadmap 2025 competition",
-        "Marvell custom AI silicon design wins 2025",
-        "Google AVGO customer demand OR capex OR supply"
-      ]
+        "Broadcom custom XPU customer concentration risk",
+        "Broadcom operating margin sustainability mix shift",
+        "Broadcom gross margin pressure XPU mix",
+        "Broadcom AI semiconductor revenue acceleration guidance",
+        "Broadcom AI semiconductor revenue majority of total revenue",
+        "Google custom AI chip Broadcom TPU",
+        "Meta custom AI accelerator Broadcom"
+      ],
+      "discovered_docs": 83,
+      "retained_for_reasoning": 21,
+      "tier_distribution_before": {
+        "tier1": 19,
+        "tier2": 3,
+        "tier3": 2,
+        "tier4": 59,
+        "tier5": 0
+      },
+      "tier_distribution_after": {
+        "tier1": 16,
+        "tier2": 3,
+        "tier3": 2,
+        "tier4": 0,
+        "tier5": 0
+      },
+      "primary_source_count": 16,
+      "independent_source_count": 3,
+      "industry_source_count": 2,
+      "tier45_filtered_count": 59,
+      "important_relationship_types": [
+        "hyperscaler/customer",
+        "supplier",
+        "technology",
+        "competitor",
+        "datacenter infrastructure"
+      ],
+      "top_10_facts": [
+        {
+          "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        },
+        {
+          "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
+          "source_time": "2026-06-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
+        },
+        {
+          "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
+        },
+        {
+          "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
+          "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+          "source_time": "2026-09-14",
+          "source_tier": 2,
+          "claim_title": null,
+          "source": "high_quality_news",
+          "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+        }
+      ],
+      "date_recovered_count": 0
     },
     "LITE": {
       "dated_recent_items": 58,
-      "full_text_items": 83,
-      "tier1_count": 19,
+      "full_text_items": 59,
+      "tier1_count": 17,
       "tier2_count": 0,
-      "tier3_count": 1,
-      "tier4_count": 74,
-      "customer_sources": 10,
-      "supplier_sources": 10,
-      "industry_sources": 56,
-      "duplicates_removed": 17,
-      "raw_count": 118,
-      "evidence_extracted": 24,
+      "tier3_count": 0,
+      "tier4_count": 65,
+      "customer_sources": 0,
+      "supplier_sources": 0,
+      "industry_sources": 24,
+      "duplicates_removed": 10,
+      "raw_count": 95,
+      "evidence_extracted": 9,
       "coverage_gaps": [
+        "No Tier-2 independent facts in the reasoning set.",
         "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
       ],
       "valuable_domains": [
-        "congress.gov",
         "fred.stlouisfed.org",
         "investor.lumentum.com",
-        "lightreading.com",
         "sec.gov"
       ],
       "claim_query_examples": [
-        "Coherent Innolight Eoptolink datacom transceiver demand outlook",
-        "laser chip supply chain constraints photonics 2026",
-        "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink) LITE customer demand OR capex OR supply",
-        "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta) LITE market demand OR capex OR supply",
-        "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell) LITE technology demand OR capex OR supply",
-        "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE) LITE customer demand OR capex OR supply",
-        "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink) LITE competitor demand OR capex OR supply",
-        "Semiconductor laser chip suppliers and foundries LITE supplier demand OR capex OR supply"
-      ]
+        "Lumentum datacom laser shipments manufacturing utilization gross margin",
+        "Lumentum sequential revenue growth FY2026 datacom demand",
+        "Lumentum FY2027 Q1 revenue guidance $1.225 billion $1.275 billion",
+        "Coherent Corp datacom laser demand earnings commentary",
+        "Fabrinet datacom optical manufacturing capacity utilization",
+        "NVIDIA datacenter networking optical component demand",
+        "Broadcom AI networking optical component demand"
+      ],
+      "discovered_docs": 85,
+      "retained_for_reasoning": 14,
+      "tier_distribution_before": {
+        "tier1": 17,
+        "tier2": 0,
+        "tier3": 0,
+        "tier4": 65,
+        "tier5": 3
+      },
+      "tier_distribution_after": {
+        "tier1": 14,
+        "tier2": 0,
+        "tier3": 0,
+        "tier4": 0,
+        "tier5": 0
+      },
+      "primary_source_count": 14,
+      "independent_source_count": 0,
+      "industry_source_count": 0,
+      "tier45_filtered_count": 68,
+      "important_relationship_types": [
+        "hyperscaler/customer",
+        "peer",
+        "supplier",
+        "technology",
+        "capacity",
+        "optical ecosystem"
+      ],
+      "top_10_facts": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        },
+        {
+          "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+        },
+        {
+          "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 GAAP diluted net income per share of $1.50 and non-GAAP diluted net income per share of $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+        },
+        {
+          "fact": "Lumentum filed an 8-K with the SEC dated August 11, 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_0fc24d3ac45d4ee59768477713c5b053"
+        },
+        {
+          "fact": "Lumentum filed an 8-K with the SEC dated May 29, 2026.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526249535/d112771d8k.htm",
+          "source_time": "2026-06-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_78a58f5fa85d420794758c32caae120e"
+        }
+      ],
+      "date_recovered_count": 0
     }
   },
   "tavily_vs_exa": {
@@ -162,220 +510,261 @@
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 46,
-        "dated_recent": 0,
-        "full_text": 46,
-        "tier1_2": 6,
-        "news": 16,
-        "industry": 9,
+        "hit_count": 8,
+        "dated_recent": 6,
+        "full_text": 8,
+        "tier1_2": 2,
+        "news": 8,
+        "industry": 0,
         "customer_supplier": 0,
         "unique_domains": [
-          "9to5google.com",
-          "9to5mac.com",
-          "aboveavalon.com",
-          "apple.com",
-          "appleinsider.com",
+          "bbc.com",
+          "benzinga.com",
           "cnbc.com",
-          "developer.apple.com",
-          "docs.fastlane.tools",
           "finance.yahoo.com",
-          "finbox.com",
-          "fool.com",
-          "fullratio.com",
-          "instagram.com",
-          "investing.com",
-          "kiplinger.com",
-          "ktla.com",
-          "lightreading.com",
-          "macrotrends.net",
-          "macrumors.com",
-          "manilatimes.net"
+          "stockstory.org",
+          "stocktwits.com",
+          "tradingview.com"
         ],
-        "avg_full_text_chars": 14376
+        "avg_full_text_chars": 11005
       },
       "exa": {
-        "hit_count": 50,
-        "dated_recent": 46,
-        "full_text": 50,
-        "tier1_2": 0,
-        "news": 25,
-        "industry": 20,
-        "customer_supplier": 0,
+        "hit_count": 40,
+        "dated_recent": 36,
+        "full_text": 40,
+        "tier1_2": 5,
+        "news": 0,
+        "industry": 11,
+        "customer_supplier": 11,
         "unique_domains": [
           "247wallst.com",
-          "9to5google.com",
-          "9to5mac.com",
           "ainvest.com",
-          "androidpolice.com",
           "apple.com",
           "applemagazine.com",
-          "arstechnica.com",
-          "asymco.com",
+          "atlfmnews.com",
           "beancount.io",
-          "benzinga.com",
-          "beyondlink.live",
+          "businesstoday.in",
           "cfodive.com",
-          "chartmill.com",
-          "convex-trading-production.up.railway.app",
+          "computerworld.com",
           "counterpointresearch.com",
-          "delhiprofessionals.com",
-          "electronics-brands.com",
-          "en.edaily.co.kr",
-          "fool.com"
+          "cutonce.ai",
+          "digitimes.com",
+          "economictimes.indiatimes.com",
+          "fin-node.net",
+          "finance.yahoo.com",
+          "fool.com",
+          "investor.apple.com",
+          "lician.com",
+          "lilys.ai",
+          "macdailynews.com"
         ],
-        "avg_full_text_chars": 9482
+        "avg_full_text_chars": 10270
       },
-      "better_for_news": "exa",
+      "better_for_news": "tavily",
       "better_for_industry": "exa",
-      "better_for_customer_supplier": "none",
+      "better_for_customer_supplier": "exa",
       "better_for_full_text": "tavily",
-      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+      "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
+      "roles": {
+        "exa": "primary_discovery",
+        "tavily": "extract_and_news_supplement"
+      }
     },
     "AVGO": {
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 40,
-        "dated_recent": 0,
-        "full_text": 40,
+        "hit_count": 8,
+        "dated_recent": 6,
+        "full_text": 8,
         "tier1_2": 0,
-        "news": 13,
-        "industry": 26,
-        "customer_supplier": 18,
+        "news": 8,
+        "industry": 0,
+        "customer_supplier": 0,
         "unique_domains": [
           "247wallst.com",
-          "allpcb.com",
           "barchart.com",
-          "broadcom.com",
-          "cryptobriefing.com",
-          "digitimes.com",
-          "facebook.com",
-          "futurumgroup.com",
-          "introl.com",
-          "investors.broadcom.com",
-          "investors.com",
-          "linkedin.com",
-          "marketbeat.com",
-          "michaelparekh.substack.com",
-          "moomoo.com",
-          "networkworld.com",
-          "nextplatform.com",
-          "nomadsemi.com",
-          "pwc.com",
-          "qz.com"
+          "chartmill.com",
+          "finance.yahoo.com",
+          "seekingalpha.com",
+          "stockstory.org",
+          "tradingview.com"
         ],
-        "avg_full_text_chars": 15298
+        "avg_full_text_chars": 13536
       },
       "exa": {
-        "hit_count": 49,
-        "dated_recent": 46,
-        "full_text": 49,
-        "tier1_2": 2,
-        "news": 20,
-        "industry": 43,
-        "customer_supplier": 30,
+        "hit_count": 37,
+        "dated_recent": 35,
+        "full_text": 37,
+        "tier1_2": 4,
+        "news": 7,
+        "industry": 15,
+        "customer_supplier": 10,
         "unique_domains": [
-          "247wallst.com",
           "ainvest.com",
-          "arxiv.org",
-          "ascentoptics.com",
-          "aws-news.com",
-          "aws.amazon.com",
+          "beancount.io",
           "bloomberg.com",
-          "cheemaomer.substack.com",
+          "businessnewsforprofit.com",
           "cnbc.com",
-          "cryptobriefing.com",
+          "convergedigest.com",
           "datacenterdynamics.com",
-          "developer.nvidia.com",
           "engineering.fb.com",
-          "enterprisetimes.in",
+          "exa.ai",
           "fool.com",
-          "fourweekmba.com",
-          "gate.com",
-          "globemarketresearch.com",
-          "insights.trendforce.com",
-          "itpro.com"
+          "hyperframeresearch.com",
+          "insidermonkey.com",
+          "investing.com",
+          "investors.broadcom.com",
+          "khancapitals.com",
+          "kobaran.com",
+          "last10k.com",
+          "longbridge.com",
+          "nova.kapualabs.com",
+          "rcrtech.com"
         ],
-        "avg_full_text_chars": 9717
+        "avg_full_text_chars": 9821
       },
-      "better_for_news": "exa",
+      "better_for_news": "tavily",
       "better_for_industry": "exa",
       "better_for_customer_supplier": "exa",
       "better_for_full_text": "tavily",
-      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+      "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
+      "roles": {
+        "exa": "primary_discovery",
+        "tavily": "extract_and_news_supplement"
+      }
     },
     "LITE": {
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 27,
-        "dated_recent": 0,
-        "full_text": 27,
-        "tier1_2": 3,
-        "news": 11,
-        "industry": 16,
-        "customer_supplier": 10,
+        "hit_count": 8,
+        "dated_recent": 6,
+        "full_text": 8,
+        "tier1_2": 0,
+        "news": 8,
+        "industry": 0,
+        "customer_supplier": 0,
         "unique_domains": [
           "247wallst.com",
-          "acquisition.gov",
-          "artificialintelligenceact.eu",
-          "brookings.edu",
-          "congress.gov",
-          "crn.com",
-          "fibre-systems.com",
           "finance.yahoo.com",
-          "fool.com",
-          "fortunebusinessinsights.com",
-          "gminsights.com",
-          "grandviewresearch.com",
-          "hoover.org",
-          "investing.com",
-          "investor.lumentum.com",
-          "medium.com",
-          "precedenceresearch.com",
           "quiverquant.com",
+          "seekingalpha.com",
           "simplywall.st",
+          "stockstotrade.com",
           "stocktitan.net"
         ],
-        "avg_full_text_chars": 18950
+        "avg_full_text_chars": 13751
       },
       "exa": {
         "hit_count": 42,
-        "dated_recent": 40,
+        "dated_recent": 31,
         "full_text": 42,
-        "tier1_2": 0,
-        "news": 17,
-        "industry": 40,
-        "customer_supplier": 25,
+        "tier1_2": 1,
+        "news": 5,
+        "industry": 24,
+        "customer_supplier": 19,
         "unique_domains": [
           "247wallst.com",
           "404kresearch.substack.com",
-          "ainvest.com",
-          "americanbankingnews.com",
-          "asiatimes.com",
+          "allmind.ai",
           "bingx.com",
-          "c-light.com",
-          "cnbizinsight.com",
           "convergedigest.com",
-          "developer.nvidia.com",
-          "druckfin.com",
-          "eastasiabrief.com",
-          "edgewisely.com",
           "en.sedaily.com",
-          "evidinvest.com",
           "fool.com",
+          "frontier.eninvs.com",
+          "gaetanoresearch.substack.com",
+          "gate.com",
           "globenewswire.com",
           "gminsights.com",
-          "invezz.com",
-          "lightreading.com"
+          "investor.lumentum.com",
+          "lifestyle.kotaradio.com",
+          "lightwaveonline.com",
+          "lumentum.com",
+          "marketbeat.com",
+          "metatrader.com",
+          "nextplatform.com",
+          "poseidon-partner.com"
         ],
-        "avg_full_text_chars": 12881
+        "avg_full_text_chars": 9430
       },
-      "better_for_news": "exa",
+      "better_for_news": "tavily",
       "better_for_industry": "exa",
       "better_for_customer_supplier": "exa",
       "better_for_full_text": "tavily",
-      "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
+      "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
+      "roles": {
+        "exa": "primary_discovery",
+        "tavily": "extract_and_news_supplement"
+      }
+    }
+  },
+  "tavily_topic_news_date_probe": {
+    "Apple earnings news": {
+      "status": "ok",
+      "topic": "news",
+      "hit_count": 5,
+      "dated_count": 0,
+      "full_text_count": 5,
+      "date_return_rate": 0.0,
+      "sample_dates": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "sample_domains": [
+        "tradingview.com",
+        "finance.yahoo.com",
+        "fool.com",
+        "macobserver.com",
+        "mercurynews.com"
+      ]
+    },
+    "Broadcom AI semiconductor news": {
+      "status": "ok",
+      "topic": "news",
+      "hit_count": 5,
+      "dated_count": 0,
+      "full_text_count": 5,
+      "date_return_rate": 0.0,
+      "sample_dates": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "sample_domains": [
+        "zacks.com",
+        "cnbc.com",
+        "finance.yahoo.com",
+        "qz.com",
+        "247wallst.com"
+      ]
+    },
+    "Lumentum optical 800G news": {
+      "status": "ok",
+      "topic": "news",
+      "hit_count": 5,
+      "dated_count": 0,
+      "full_text_count": 5,
+      "date_return_rate": 0.0,
+      "sample_dates": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "sample_domains": [
+        "in.investing.com",
+        "tradingview.com",
+        "finance.yahoo.com",
+        "tickeron.com",
+        "quiverquant.com"
+      ]
     }
   },
   "brains": {},

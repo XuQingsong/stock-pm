@@ -46,6 +46,9 @@ TIER4_HOSTS = (
     "investopedia.com",
     "tipranks.com",
     "motleyfool.com",
+    "stocktitan.net",
+    "marketscreener.com",
+    "simplywall.st",
 )
 TIER5_HOSTS = (
     "reddit.com",
@@ -55,6 +58,24 @@ TIER5_HOSTS = (
     "youtube.com",
     "medium.com",
     "substack.com",
+    "linkedin.com",
+    "facebook.com",
+    "blogspot.com",
+    "wordpress.com",
+    "github.io",
+    "ghost.io",
+    "notion.site",
+    "typepad.com",
+    "tumblr.com",
+)
+OFFICIAL_PATH_MARKERS = (
+    "/investor",
+    "/investors",
+    "/newsroom",
+    "/press-release",
+    "/press-releases",
+    "/shareholder",
+    "/ir/",
 )
 DISCOVERY_HOSTS = (
     "tavily.com",
@@ -75,20 +96,36 @@ def _endswith_any(host: str, names: tuple[str, ...]) -> bool:
     return any(host == item or host.endswith("." + item) for item in names)
 
 
+def _official_host(host: str) -> bool:
+    return (
+        _endswith_any(host, TIER1_HOSTS)
+        or host.endswith(".gov")
+        or host.endswith(".mil")
+        or host.startswith("ir.")
+        or host.startswith("investors.")
+        or "investor." in host
+        or host.endswith(".sec.gov")
+        or "sec.gov" in host
+    )
+
+
 def source_tier(url: str | None, *, source: str | None = None) -> int:
     host = host_of(url)
-    blob = f"{host} {source or ''}".lower()
-    if _endswith_any(host, TIER1_HOSTS) or "sec.gov" in blob or host.startswith("ir.") or "investor." in host:
+    path = (urlsplit(str(url or "")).path or "").lower()
+    blob = f"{host} {source or ''} {path}".lower()
+    if _official_host(host) or "sec.gov" in blob:
         return 1
     if _endswith_any(host, TIER2_HOSTS):
         return 2
     if _endswith_any(host, TIER3_HOSTS):
         return 3
-    if _endswith_any(host, TIER4_HOSTS):
-        return 4
     if _endswith_any(host, TIER5_HOSTS) or not host:
         return 5
-    return 4 if host else 5
+    if any(marker in path for marker in OFFICIAL_PATH_MARKERS) and not _endswith_any(host, TIER4_HOSTS):
+        return 1
+    if _endswith_any(host, TIER4_HOSTS):
+        return 4
+    return 4
 
 
 def source_type_for(url: str | None, *, query_type: str | None = None) -> str:
