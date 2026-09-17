@@ -178,6 +178,16 @@ def main() -> None:
             ],
             "warnings": intel.get("warnings") or [],
             "budget_remaining": intel.get("budget_remaining"),
+            "evidence_set": {
+                "top_facts": ((intel.get("evidence_set") or {}).get("top_facts") or (intel.get("report") or {}).get("top_10_facts") or [])[:16],
+                "coverage_matrix": (intel.get("evidence_set") or {}).get("coverage_matrix") or [],
+                "current_vs_historical": (intel.get("evidence_set") or {}).get("current_vs_historical") or {},
+                "independent_validation": (intel.get("evidence_set") or {}).get("independent_validation"),
+                "research_leads": (intel.get("evidence_set") or {}).get("research_leads") or [],
+                "tier45_leads_triggered": (intel.get("evidence_set") or {}).get("tier45_leads_triggered") or 0,
+                "brain_context": (intel.get("evidence_set") or {}).get("brain_context") or {},
+                "open_gaps": (intel.get("evidence_set") or {}).get("open_gaps") or [],
+            },
         }
         results[ticker] = slim
         _write(f"{ticker.lower()}_external.json", slim)
@@ -220,6 +230,42 @@ def main() -> None:
         for ticker, row in results.items()
     }
     _write("quality_filter_report.json", quality_report)
+    evidence_set_report = {
+        ticker: {
+            "claim_titles": row.get("claim_titles") or [],
+            "top_facts": (row.get("evidence_set") or {}).get("top_facts") or [],
+            "coverage_matrix": (row.get("evidence_set") or {}).get("coverage_matrix") or [],
+            "current_vs_historical": {
+                "current": [
+                    {
+                        "fact": item.get("fact"),
+                        "fiscal_period": item.get("fiscal_period"),
+                        "role": item.get("role"),
+                        "metric": item.get("metric"),
+                        "source_url": item.get("source_url"),
+                    }
+                    for item in ((row.get("evidence_set") or {}).get("current_vs_historical") or {}).get("current") or []
+                ],
+                "historical": [
+                    {
+                        "fact": item.get("fact"),
+                        "fiscal_period": item.get("fiscal_period"),
+                        "role": item.get("role"),
+                        "metric": item.get("metric"),
+                        "source_url": item.get("source_url"),
+                    }
+                    for item in ((row.get("evidence_set") or {}).get("current_vs_historical") or {}).get("historical") or []
+                ],
+            },
+            "independent_validation": (row.get("evidence_set") or {}).get("independent_validation"),
+            "research_leads": (row.get("evidence_set") or {}).get("research_leads") or [],
+            "tier45_leads_triggered": (row.get("evidence_set") or {}).get("tier45_leads_triggered") or 0,
+            "brain_context": (row.get("evidence_set") or {}).get("brain_context") or {},
+            "open_gaps": (row.get("evidence_set") or {}).get("open_gaps") or [],
+        }
+        for ticker, row in results.items()
+    }
+    _write("evidence_set_report.json", evidence_set_report)
 
     brains = {}
     if keys["llm"] and os.getenv("PHASE12_SKIP_BRAIN") not in {"1", "true", "yes"}:

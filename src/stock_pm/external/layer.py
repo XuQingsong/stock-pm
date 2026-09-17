@@ -27,6 +27,7 @@ from .extract import deterministic_facts, facts_to_evidence_bodies, llm_extract_
 from .quality import host_of, source_family, source_tier
 from .queries import allocate_queries, generate_search_plan
 from .select import compress_reasoning_context, docs_for_extraction, select_reasoning_documents
+from .evidence_set import collect_research_leads
 from .types import EXA_SEARCH_BUDGET, NEWS_WINDOW_DAYS, PROVIDER_ROLES, TAVILY_SEARCH_BUDGET, empty_provider_status
 
 
@@ -336,7 +337,13 @@ def build_report(
         "independent_source_count": (quality_stats or {}).get("independent_source_count"),
         "industry_source_count": (quality_stats or {}).get("industry_source_count"),
         "tier45_filtered_count": (quality_stats or {}).get("tier45_filtered_count"),
-        "top_10_facts": (reasoning_context or {}).get("top_10_facts") or [],
+        "top_10_facts": (reasoning_context or {}).get("top_10_facts") or (reasoning_context or {}).get("top_facts") or [],
+        "coverage_matrix": (reasoning_context or {}).get("coverage_matrix") or [],
+        "current_vs_historical": (reasoning_context or {}).get("current_vs_historical") or {},
+        "research_leads": (reasoning_context or {}).get("research_leads") or [],
+        "tier45_leads_triggered": (reasoning_context or {}).get("tier45_leads_triggered") or 0,
+        "independent_validation": (reasoning_context or {}).get("independent_validation"),
+        "brain_context": (reasoning_context or {}).get("brain_context"),
         "reasoning_context": {
             "top_primary_facts": (reasoning_context or {}).get("top_primary_facts") or [],
             "top_independent_evidence": (reasoning_context or {}).get("top_independent_evidence") or [],
@@ -345,6 +352,7 @@ def build_report(
             "top_community_signals": (reasoning_context or {}).get("top_community_signals") or [],
             "open_gaps": (reasoning_context or {}).get("open_gaps") or [],
             "per_claim": (reasoning_context or {}).get("per_claim") or [],
+            "coverage_matrix": (reasoning_context or {}).get("coverage_matrix") or [],
         }
         if reasoning_context
         else None,
@@ -441,10 +449,11 @@ def gather_external_intelligence(
                     }
                 )
             filtered["queries"] = (filtered.get("queries") or []) + extra
+        verify_reserve = 2 if exa_ok else 0
         allocated = allocate_queries(
             filtered,
             tavily_budget=search_budget.tavily if tavily_ok else 0,
-            exa_budget=search_budget.exa if exa_ok else 0,
+            exa_budget=max(0, (search_budget.exa if exa_ok else 0) - verify_reserve),
         )
         if (
             tavily_ok
@@ -588,6 +597,60 @@ def gather_external_intelligence(
         date_recovered_count = recover_dates_from_pages(documents, limit=8)
 
     retained, archived, quality_stats = select_reasoning_documents(documents)
+    leads = collect_research_leads(archived, ticker=symbol)
+    if fetch_live and leads and search_budget.exa > 0:
+        for lead in leads[:3]:
+            query = str(lead.get("verification_query") or "").strip()
+            if not query or not search_budget.take("exa"):
+                continue
+            rows, audit = exa_search(
+                query,
+                settings=config,
+                ticker=symbol,
+                query_type="company_official",
+                days=days,
+            )
+            audits.append(audit)
+            lead["verification_ran"] = True
+            lead["verification_status"] = audit.get("status")
+            lead["verification_hit_count"] = audit.get("hit_count") or 0
+            kept = 0
+            for row in rows:
+                if int(row.get("source_tier") or 9) > 3:
+                    continue
+                url = str(row.get("canonical_url") or row.get("url") or "")
+                if url and url in seen_urls:
+                    continue
+                if url:
+                    seen_urls.add(url)
+                meta = dict(row.get("metadata") or {})
+                meta["verification_lead"] = lead.get("url")
+                row["metadata"] = meta
+                documents.append(row)
+                kept += 1
+            lead["verified_quality_hits"] = kept
+            query_results.append(
+                {
+                    "query": query,
+                    "query_type": "verification",
+                    "provider": "exa",
+                    "hit_count": audit.get("hit_count") or 0,
+                    "usable_count": kept,
+                    "high_quality_count": audit.get("high_quality_count") or 0,
+                    "status": audit.get("status"),
+                }
+            )
+        documents, extra_removed = dedupe_documents(documents)
+        removed += extra_removed
+        fill_missing_bodies(
+            [row for row in documents if not row.get("is_full_text") and int(row.get("source_tier") or 9) <= 3][:8],
+            settings=config,
+            limit=6,
+        )
+        for row in documents:
+            if len(str(row.get("clean_text") or "")) >= 400:
+                row["is_full_text"] = True
+        retained, archived, quality_stats = select_reasoning_documents(documents)
     extractable = docs_for_extraction(retained)
     facts: list[dict[str, Any]] = []
     llm_facts, extract_audit = llm_extract_facts(completer, extractable, ticker=symbol, claims=claims)
@@ -596,12 +659,20 @@ def gather_external_intelligence(
     if not facts:
         for row in extractable[:8]:
             facts.extend(deterministic_facts(row, limit=1))
-    reasoning_context = compress_reasoning_context(retained, facts, claims)
+    reasoning_context = compress_reasoning_context(
+        retained,
+        facts,
+        claims,
+        archived=archived,
+        ticker=symbol,
+        research_leads=leads,
+    )
+    selected_facts = list(reasoning_context.get("selected_facts") or facts)
 
     from .clients import _now
 
     retrieved_at = _now()
-    evidence_bodies = facts_to_evidence_bodies(symbol, facts, retrieved_at=retrieved_at)
+    evidence_bodies = facts_to_evidence_bodies(symbol, selected_facts, retrieved_at=retrieved_at)
     providers = _rollup(audits)
     if fetch_live:
         if not tavily_ok and "tavily" not in providers:
@@ -654,6 +725,8 @@ def gather_external_intelligence(
         "raw_count": raw_count,
         "report": report,
         "reasoning_context": reasoning_context,
+        "evidence_set": reasoning_context,
+        "input_claims": claims,
         "budget_remaining": {"tavily": search_budget.tavily, "exa": search_budget.exa},
         "phase": phase,
     }
@@ -760,7 +833,28 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
         for row in allocated
         if row.get("claim_title") or row.get("query_type") == "claim"
     ]
-    reasoning_context = compress_reasoning_context(retained, facts, claim_rows)
+    for part in chunks:
+        for row in part.get("input_claims") or []:
+            title = str(row.get("title") or "")
+            if title and not any(str(item.get("title") or "") == title for item in claim_rows):
+                claim_rows.append(row)
+    leads: list[dict[str, Any]] = []
+    seen_leads: set[str] = set()
+    for part in chunks:
+        for lead in (part.get("reasoning_context") or part.get("evidence_set") or {}).get("research_leads") or []:
+            key = str(lead.get("url") or lead.get("verification_query") or "")
+            if not key or key in seen_leads:
+                continue
+            seen_leads.add(key)
+            leads.append(lead)
+    reasoning_context = compress_reasoning_context(
+        retained,
+        facts,
+        claim_rows,
+        archived=archived,
+        ticker=ticker,
+        research_leads=leads,
+    )
     bodies = [row for row in bodies if str((row.get("raw_reference") or {}).get("document_id") or "") in retained_ids] or bodies
     plan = {
         "related_entities": entities,
@@ -806,6 +900,7 @@ def merge_intelligence(*parts: dict[str, Any]) -> dict[str, Any]:
         "raw_count": raw_count,
         "report": report,
         "reasoning_context": reasoning_context,
+        "evidence_set": reasoning_context,
         "budget_remaining": last.get("budget_remaining") or {"tavily": 0, "exa": 0},
         "phase": "merged",
     }

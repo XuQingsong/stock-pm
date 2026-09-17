@@ -1,0 +1,1070 @@
+{
+  "AAPL": {
+    "claim_titles": [
+      "Valuation multiple is elevated relative to growth",
+      "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "Installed base growth underpins Services monetization",
+      "Services mix shift supports margin structure",
+      "Revenue growth is broad-based and accelerating"
+    ],
+    "top_facts": [
+      {
+        "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "margin",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Installed base growth underpins Services monetization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Services mix shift supports margin structure",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Revenue growth is broad-based and accelerating",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "metric": "revenue",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm"
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "fiscal_period": null,
+          "role": "current",
+          "metric": "product",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/"
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "fiscal_period": null,
+          "role": "current",
+          "metric": "other",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/"
+        }
+      ],
+      "historical": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "metric": "revenue",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm"
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "fiscal_period": null,
+          "role": "historical",
+          "metric": "cash_flow",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm"
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "metric": "eps",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm"
+        }
+      ]
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch",
+        "url": "https://www.techtimes.co.uk/apple-earnings-boosted-tariff-refund-1808444",
+        "source_tier": 4,
+        "source_domain": "techtimes.co.uk",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 2…",
+        "verification_query": "AAPL Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% L… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine",
+        "url": "https://applemagazine.com/apple-faces-price-hikes-as-tariff-driven-import/",
+        "source_tier": 4,
+        "source_domain": "applemagazine.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Mobile & Wearab…",
+        "verification_query": "AAPL Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazi… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today",
+        "url": "https://data-today.net/stickman/apples-2-billion-tariff-refund/",
+        "source_tier": 4,
+        "source_domain": "data-today.net",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today # Apple's $2.2 Billion Tari…",
+        "verification_query": "AAPL Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage",
+        "url": "https://www.kobaran.com/apple-stock-rally-faces-a-supply-problem-not-a-demand-shortage/",
+        "source_tier": 4,
+        "source_domain": "kobaran.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage # Apple Stock Rally Faces a Supply Problem, Not a D…",
+        "verification_query": "AAPL Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records",
+        "url": "https://beancount.io/blog/2026/08/22/apple-fy2026-q3-earnings-analysis",
+        "source_tier": 4,
+        "source_domain": "beancount.io",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records # Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and S…",
+        "verification_query": "AAPL Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services a… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 2,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [
+        {
+          "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "margin",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "revenue",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "cash_flow",
+          "fiscal_period": null,
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.175,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "eps",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.1575,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing."
+    ]
+  },
+  "AVGO": {
+    "claim_titles": [
+      "AI revenue is concentrated in a few very large XPU customers",
+      "Operating margin expected to be sustained despite mix shift",
+      "Gross margin faces mix-driven pressure as XPU share grows",
+      "Management guides AI semiconductor revenue to accelerate sharply",
+      "AI semiconductor revenue is now the majority of total revenue"
+    ],
+    "top_facts": [
+      {
+        "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "margin",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "guidance",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "dividend",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+        "source_time": "2026-06-18",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Operating margin expected to be sustained despite mix shift",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "metric": "revenue",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm"
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "metric": "margin",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm"
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "metric": "guidance",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm"
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "metric": "eps",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm"
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "fiscal_period": null,
+          "role": "current",
+          "metric": "dividend",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm"
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "fiscal_period": null,
+          "role": "current",
+          "metric": "other",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm"
+        }
+      ],
+      "historical": []
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+        "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+        "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+        "url": "https://longbridge.com/en/news/297876806",
+        "source_tier": 4,
+        "source_domain": "longbridge.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+        "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA",
+        "url": "https://fourweekmba.com/ai-anthropic-broadcom-xpu-largest-customer-fy27-fy28/",
+        "source_tier": 4,
+        "source_domain": "fourweekmba.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA # Anthropic, Broadcom,…",
+        "verification_query": "AVGO Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom's Big AI Chip Bet and Key Customers",
+        "url": "https://www.briefs.co/news/broadcom-bets-big-on-ai-chips-names-anthropic-and-openai-as/",
+        "source_tier": 4,
+        "source_domain": "briefs.co",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom's Big AI Chip Bet and Key Customers Broadcom's Big AI Chip Bet and Key Customers # Broadcom bets big on AI chips, names Anthropic and OpenAI as rising anchors Jackson Mor…",
+        "verification_query": "AVGO Broadcom's Big AI Chip Bet and Key Customers (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing."
+    ]
+  },
+  "LITE": {
+    "claim_titles": [
+      "FY2027 Q1 guidance implies continued sequential growth",
+      "Margin recovery driven by Datacom laser mix and utilization",
+      "Sequential revenue acceleration through FY2026"
+    ],
+    "top_facts": [
+      {
+        "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "revenue",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "guidance",
+        "fiscal_period": "2027Q1",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Sequential revenue acceleration through FY2026",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "metric": "revenue",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm"
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "metric": "guidance",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm"
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "fiscal_period": null,
+          "role": "current",
+          "metric": "product",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm"
+        }
+      ],
+      "historical": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "metric": "eps",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm"
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "metric": "margin",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm"
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "metric": "revenue",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm"
+        }
+      ]
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence",
+        "url": "https://noah-news.com/indium-phosphide-shortage-driven-by-chinas-export-controls-threatens-ai-infrastr/",
+        "source_tier": 4,
+        "source_domain": "noah-news.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence Indium phosphide shortage driven by China’s export controls t…",
+        "verification_query": "LITE Indium phosphide shortage driven by China’s export controls threatens AI infras… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling",
+        "url": "https://www.techtimes.com/articles/325423/20260825/gaas-quantum-dot-laser-ships-ai-labs-chinas-inp-export-controls-expose-supply-ceiling.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply C…",
+        "verification_query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 1
+      },
+      {
+        "title": "Global Optical Transceiver Market to Reach $34.4 Billion by",
+        "url": "https://www.globenewswire.com/news-release/2026/08/31/3353143/0/en/global-optical-transceiver-market-to-reach-34-4-billion-by-2031-driven-by-ai-workload-and-hyperscale-data-center-expansion.html",
+        "source_tier": 4,
+        "source_domain": "globenewswire.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Global Optical Transceiver Market to Reach $34.4 Billion by Global Optical Transceiver Market to Reach $34.4 Billion by # Global Optical Transceiver Market to Reach $34.4 Billion…",
+        "verification_query": "LITE Global Optical Transceiver Market to Reach $34.4 Billion by (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum",
+        "url": "https://xenospectrum.com/en/data-center-optical-interconnect-2030/",
+        "source_tier": 4,
+        "source_domain": "xenospectrum.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconne…",
+        "verification_query": "LITE Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.65,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.56,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing."
+    ]
+  }
+}

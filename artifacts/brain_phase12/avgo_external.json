@@ -18,7 +18,7 @@
   ],
   "claim_queries": [
     {
-      "query": "Broadcom custom XPU customer concentration risk",
+      "query": "Broadcom custom XPU customer concentration largest customer",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -27,7 +27,7 @@
       "entity": null
     },
     {
-      "query": "Broadcom operating margin sustainability mix shift",
+      "query": "Broadcom non-GAAP operating margin 66% sustainability",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -36,7 +36,7 @@
       "entity": null
     },
     {
-      "query": "Broadcom gross margin pressure XPU mix",
+      "query": "Broadcom gross margin pressure XPU mix FY27 FY28",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -45,7 +45,7 @@
       "entity": null
     },
     {
-      "query": "Broadcom AI semiconductor revenue acceleration guidance",
+      "query": "Broadcom AI semiconductor revenue acceleration 236% guidance",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -54,110 +54,92 @@
       "entity": null
     },
     {
-      "query": "Broadcom AI semiconductor revenue majority of total revenue",
+      "query": "Broadcom AI semiconductor revenue 56% of total revenue",
       "query_type": "claim",
       "providers": [
         "exa"
       ],
       "claim_title": "AI semiconductor revenue is now the majority of total revenue",
       "entity": null
-    },
-    {
-      "query": "Google custom AI chip Broadcom TPU",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "Google"
-    },
-    {
-      "query": "Meta custom AI accelerator Broadcom",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "Meta"
     }
   ],
   "related_entities": [
     {
       "name": "Google",
       "relation": "hyperscaler/customer",
-      "why": "Google is a major hyperscaler and custom AI chip customer; their capex and TPU roadmap directly affect Broadcom's AI revenue."
+      "why": "Google is a major hyperscaler and a key customer for Broadcom's custom AI chips (TPUs) and networking solutions; their AI infrastructure spending directly impa…"
     },
     {
       "name": "Meta",
       "relation": "hyperscaler/customer",
-      "why": "Meta is a large hyperscaler and potential custom silicon customer; their AI infrastructure spending impacts Broadcom's growth."
+      "why": "Meta is a large hyperscaler investing heavily in AI infrastructure, including custom silicon and networking, which could drive demand for Broadcom's products."
     },
     {
       "name": "Microsoft",
       "relation": "hyperscaler/customer",
-      "why": "Microsoft Azure is a key cloud customer; their AI investments and custom chip initiatives influence Broadcom's semiconductor demand."
+      "why": "Microsoft Azure is a leading cloud provider and potential customer for Broadcom's custom AI accelerators and networking chips, influencing Broadcom's growth."
     },
     {
       "name": "Amazon",
       "relation": "hyperscaler/customer",
-      "why": "AWS is a major cloud provider and custom chip customer; their datacenter expansion affects Broadcom's networking and custom silicon."
+      "why": "Amazon AWS is the largest cloud provider and a significant buyer of networking and custom silicon; their AI investments affect Broadcom's semiconductor demand."
     },
     {
       "name": "TSMC",
       "relation": "supplier",
-      "why": "TSMC is a critical foundry supplier for Broadcom's chips; capacity and pricing changes impact margins and supply."
+      "why": "TSMC is Broadcom's primary foundry partner for manufacturing advanced semiconductors; any capacity or pricing changes at TSMC directly impact Broadcom's produc…"
     },
     {
       "name": "NVIDIA",
       "relation": "competitor",
-      "why": "NVIDIA competes in AI accelerators and networking; their product launches and pricing affect Broadcom's market position."
+      "why": "NVIDIA is a dominant player in AI accelerators and networking, competing with Broadcom's custom AI chip and networking offerings; their product launches and pr…"
     },
     {
       "name": "Marvell Technology",
       "relation": "competitor",
-      "why": "Marvell competes in custom silicon and networking; their wins and losses signal competitive dynamics."
+      "why": "Marvell competes in custom silicon and networking chips for data centers, and their wins or losses can signal shifts in Broadcom's market share."
     },
     {
       "name": "Arista Networks",
       "relation": "competitor",
-      "why": "Arista competes in datacenter networking; their traction impacts Broadcom's networking segment."
-    },
-    {
-      "name": "AMD",
-      "relation": "competitor",
-      "why": "AMD competes in datacenter CPUs and GPUs; their AI roadmap influences Broadcom's custom chip opportunities."
-    },
-    {
-      "name": "Cisco",
-      "relation": "competitor",
-      "why": "Cisco competes in networking and custom silicon; their strategy affects Broadcom's market share."
+      "why": "Arista competes in data center networking switches, an area where Broadcom supplies chips; their adoption of Broadcom silicon or alternatives affects Broadcom'…"
     },
     {
       "name": "VMware",
       "relation": "technology",
-      "why": "VMware is Broadcom's infrastructure software segment; its performance and integration affect overall margins and the company's ability to fund AI growth."
+      "why": "Broadcom acquired VMware, and its integration and performance are critical to Broadcom's software strategy and overall financial results."
+    },
+    {
+      "name": "Apple",
+      "relation": "hyperscaler/customer",
+      "why": "Apple is a major customer for Broadcom's wireless components and potentially custom chips; their product cycles and insourcing decisions impact Broadcom's reve…"
+    },
+    {
+      "name": "AMD",
+      "relation": "competitor",
+      "why": "AMD's AI accelerator and networking offerings compete with AVGO's custom XPU and AI networking solutions."
     }
   ],
   "providers": {
-    "exa": {
-      "status": "ok",
-      "hit_count": 50,
-      "usable_count": 50,
-      "high_quality_count": 5,
-      "full_text_count": 50,
-      "dated_count": 46,
-      "error": null,
-      "query_count": 10
-    },
     "tavily": {
       "status": "ok",
       "hit_count": 10,
       "usable_count": 10,
-      "high_quality_count": 0,
+      "high_quality_count": 2,
       "full_text_count": 10,
       "dated_count": 0,
       "error": null,
       "query_count": 2
+    },
+    "exa": {
+      "status": "ok",
+      "hit_count": 50,
+      "usable_count": 50,
+      "high_quality_count": 2,
+      "full_text_count": 50,
+      "dated_count": 44,
+      "error": null,
+      "query_count": 10
     },
     "alpha_vantage": {
       "status": "partial",
@@ -181,79 +163,79 @@
     }
   },
   "report": {
-    "official_documents": 19,
-    "independent_news": 3,
-    "industry_sources": 15,
+    "official_documents": 14,
+    "independent_news": 1,
+    "industry_sources": 5,
     "customer_sources": 0,
     "supplier_sources": 0,
-    "dated_recent_items": 66,
-    "undated_or_background_items": 17,
-    "full_text_items": 56,
-    "tier1_count": 19,
-    "tier2_count": 3,
-    "tier3_count": 2,
-    "tier4_count": 59,
+    "dated_recent_items": 48,
+    "undated_or_background_items": 14,
+    "full_text_items": 41,
+    "tier1_count": 14,
+    "tier2_count": 1,
+    "tier3_count": 0,
+    "tier4_count": 47,
     "tier5_count": 0,
     "related_entities": [
       {
         "name": "Google",
         "relation": "hyperscaler/customer",
-        "why": "Google is a major hyperscaler and custom AI chip customer; their capex and TPU roadmap directly affect Broadcom's AI revenue."
+        "why": "Google is a major hyperscaler and a key customer for Broadcom's custom AI chips (TPUs) and networking solutions; their AI infrastructure spending directly impa…"
       },
       {
         "name": "Meta",
         "relation": "hyperscaler/customer",
-        "why": "Meta is a large hyperscaler and potential custom silicon customer; their AI infrastructure spending impacts Broadcom's growth."
+        "why": "Meta is a large hyperscaler investing heavily in AI infrastructure, including custom silicon and networking, which could drive demand for Broadcom's products."
       },
       {
         "name": "Microsoft",
         "relation": "hyperscaler/customer",
-        "why": "Microsoft Azure is a key cloud customer; their AI investments and custom chip initiatives influence Broadcom's semiconductor demand."
+        "why": "Microsoft Azure is a leading cloud provider and potential customer for Broadcom's custom AI accelerators and networking chips, influencing Broadcom's growth."
       },
       {
         "name": "Amazon",
         "relation": "hyperscaler/customer",
-        "why": "AWS is a major cloud provider and custom chip customer; their datacenter expansion affects Broadcom's networking and custom silicon."
+        "why": "Amazon AWS is the largest cloud provider and a significant buyer of networking and custom silicon; their AI investments affect Broadcom's semiconductor demand."
       },
       {
         "name": "TSMC",
         "relation": "supplier",
-        "why": "TSMC is a critical foundry supplier for Broadcom's chips; capacity and pricing changes impact margins and supply."
+        "why": "TSMC is Broadcom's primary foundry partner for manufacturing advanced semiconductors; any capacity or pricing changes at TSMC directly impact Broadcom's produc…"
       },
       {
         "name": "NVIDIA",
         "relation": "competitor",
-        "why": "NVIDIA competes in AI accelerators and networking; their product launches and pricing affect Broadcom's market position."
+        "why": "NVIDIA is a dominant player in AI accelerators and networking, competing with Broadcom's custom AI chip and networking offerings; their product launches and pr…"
       },
       {
         "name": "Marvell Technology",
         "relation": "competitor",
-        "why": "Marvell competes in custom silicon and networking; their wins and losses signal competitive dynamics."
+        "why": "Marvell competes in custom silicon and networking chips for data centers, and their wins or losses can signal shifts in Broadcom's market share."
       },
       {
         "name": "Arista Networks",
         "relation": "competitor",
-        "why": "Arista competes in datacenter networking; their traction impacts Broadcom's networking segment."
-      },
-      {
-        "name": "AMD",
-        "relation": "competitor",
-        "why": "AMD competes in datacenter CPUs and GPUs; their AI roadmap influences Broadcom's custom chip opportunities."
-      },
-      {
-        "name": "Cisco",
-        "relation": "competitor",
-        "why": "Cisco competes in networking and custom silicon; their strategy affects Broadcom's market share."
+        "why": "Arista competes in data center networking switches, an area where Broadcom supplies chips; their adoption of Broadcom silicon or alternatives affects Broadcom'…"
       },
       {
         "name": "VMware",
         "relation": "technology",
-        "why": "VMware is Broadcom's infrastructure software segment; its performance and integration affect overall margins and the company's ability to fund AI growth."
+        "why": "Broadcom acquired VMware, and its integration and performance are critical to Broadcom's software strategy and overall financial results."
+      },
+      {
+        "name": "Apple",
+        "relation": "hyperscaler/customer",
+        "why": "Apple is a major customer for Broadcom's wireless components and potentially custom chips; their product cycles and insourcing decisions impact Broadcom's reve…"
+      },
+      {
+        "name": "AMD",
+        "relation": "competitor",
+        "why": "AMD's AI accelerator and networking offerings compete with AVGO's custom XPU and AI networking solutions."
       }
     ],
     "claim_queries": [
       {
-        "query": "Broadcom custom XPU customer concentration risk",
+        "query": "Broadcom custom XPU customer concentration largest customer",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -262,7 +244,7 @@
         "entity": null
       },
       {
-        "query": "Broadcom operating margin sustainability mix shift",
+        "query": "Broadcom non-GAAP operating margin 66% sustainability",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -271,7 +253,7 @@
         "entity": null
       },
       {
-        "query": "Broadcom gross margin pressure XPU mix",
+        "query": "Broadcom gross margin pressure XPU mix FY27 FY28",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -280,7 +262,7 @@
         "entity": null
       },
       {
-        "query": "Broadcom AI semiconductor revenue acceleration guidance",
+        "query": "Broadcom AI semiconductor revenue acceleration 236% guidance",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -289,38 +271,20 @@
         "entity": null
       },
       {
-        "query": "Broadcom AI semiconductor revenue majority of total revenue",
+        "query": "Broadcom AI semiconductor revenue 56% of total revenue",
         "query_type": "claim",
         "providers": [
           "exa"
         ],
         "claim_title": "AI semiconductor revenue is now the majority of total revenue",
         "entity": null
-      },
-      {
-        "query": "Google custom AI chip Broadcom TPU",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "Google"
-      },
-      {
-        "query": "Meta custom AI accelerator Broadcom",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "Meta"
       }
     ],
     "query_results": [
       {
-        "query": "Broadcom Inc latest news and announcements",
-        "query_type": "company_official",
-        "provider": "exa",
+        "query": "Broadcom Inc. latest news and announcements",
+        "query_type": "company_news",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 2,
@@ -329,40 +293,38 @@
         "entity": null
       },
       {
-        "query": "Broadcom earnings call transcript",
-        "query_type": "company_earnings",
+        "query": "Broadcom Inc. investor relations earnings reports",
+        "query_type": "company_official",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Broadcom news last 30 days",
-        "query_type": "company_news",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Broadcom semiconductor industry outlook",
-        "query_type": "industry_news",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
+        "usable_count": 4,
         "high_quality_count": 1,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "Broadcom custom XPU customer concentration risk",
+        "query": "Broadcom data center infrastructure demand trends",
+        "query_type": "industry_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
+      },
+      {
+        "query": "Broadcom custom XPU customer concentration largest customer",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
@@ -373,7 +335,7 @@
         "entity": null
       },
       {
-        "query": "Broadcom operating margin sustainability mix shift",
+        "query": "Broadcom non-GAAP operating margin 66% sustainability",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
@@ -384,59 +346,37 @@
         "entity": null
       },
       {
-        "query": "Broadcom gross margin pressure XPU mix",
+        "query": "Broadcom gross margin pressure XPU mix FY27 FY28",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 2,
+        "usable_count": 3,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
         "entity": null
       },
       {
-        "query": "Broadcom AI semiconductor revenue acceleration guidance",
+        "query": "Broadcom AI semiconductor revenue acceleration 236% guidance",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 1,
+        "usable_count": 2,
         "high_quality_count": 1,
         "status": "ok",
         "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
         "entity": null
       },
       {
-        "query": "Broadcom AI semiconductor revenue majority of total revenue",
+        "query": "Broadcom AI semiconductor revenue 56% of total revenue",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 1,
+        "usable_count": 2,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": "AI semiconductor revenue is now the majority of total revenue",
         "entity": null
-      },
-      {
-        "query": "Google custom AI chip Broadcom TPU",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Google"
-      },
-      {
-        "query": "Meta custom AI accelerator Broadcom",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 1,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Meta"
       },
       {
         "query": "AVGO news",
@@ -448,137 +388,48 @@
         "status": "ok",
         "claim_title": null,
         "entity": null
+      },
+      {
+        "query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
+      },
+      {
+        "query": "AVGO Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
       }
     ],
-    "duplicates_removed": 9,
-    "raw_count_before_dedupe": 92,
-    "coverage_gaps": [],
+    "duplicates_removed": 17,
+    "raw_count_before_dedupe": 79,
+    "coverage_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing.",
+      "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+    ],
     "providers": {
-      "exa": {
-        "provider": "exa",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Broadcom Inc latest news and announcements",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 2,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 97
-          },
-          {
-            "query": "Broadcom earnings call transcript",
-            "query_type": "company_earnings",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1528
-          },
-          {
-            "query": "Broadcom semiconductor industry outlook",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1209
-          },
-          {
-            "query": "Broadcom custom XPU customer concentration risk",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1818
-          },
-          {
-            "query": "Broadcom operating margin sustainability mix shift",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1675
-          },
-          {
-            "query": "Broadcom gross margin pressure XPU mix",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1438
-          },
-          {
-            "query": "Broadcom AI semiconductor revenue acceleration guidance",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1458
-          },
-          {
-            "query": "Broadcom AI semiconductor revenue majority of total revenue",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1600
-          },
-          {
-            "query": "Google custom AI chip Broadcom TPU",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 5782
-          },
-          {
-            "query": "Meta custom AI accelerator Broadcom",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 3179
-          }
-        ],
-        "hit_count": 50,
-        "usable_count": 50,
-        "high_quality_count": 5,
-        "full_text_count": 50,
-        "dated_count": 46,
-        "error": null
-      },
       "tavily": {
         "provider": "tavily",
         "status": "ok",
         "queries": [
           {
-            "query": "Broadcom news last 30 days",
+            "query": "Broadcom Inc. latest news and announcements",
             "query_type": "company_news",
             "hit_count": 5,
             "usable_count": 5,
-            "high_quality_count": 0,
+            "high_quality_count": 2,
             "status": "ok",
             "error": null,
-            "latency_ms": 1525
+            "latency_ms": 2460
           },
           {
             "query": "AVGO news",
@@ -593,9 +444,121 @@
         ],
         "hit_count": 10,
         "usable_count": 10,
-        "high_quality_count": 0,
+        "high_quality_count": 2,
         "full_text_count": 10,
         "dated_count": 0,
+        "error": null
+      },
+      "exa": {
+        "provider": "exa",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Broadcom Inc. investor relations earnings reports",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 124
+          },
+          {
+            "query": "Broadcom data center infrastructure demand trends",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1463
+          },
+          {
+            "query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1463
+          },
+          {
+            "query": "Broadcom custom XPU customer concentration largest customer",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1174
+          },
+          {
+            "query": "Broadcom non-GAAP operating margin 66% sustainability",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 924
+          },
+          {
+            "query": "Broadcom gross margin pressure XPU mix FY27 FY28",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1496
+          },
+          {
+            "query": "Broadcom AI semiconductor revenue acceleration 236% guidance",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1381
+          },
+          {
+            "query": "Broadcom AI semiconductor revenue 56% of total revenue",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2798
+          },
+          {
+            "query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1343
+          },
+          {
+            "query": "AVGO Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1345
+          }
+        ],
+        "hit_count": 50,
+        "usable_count": 50,
+        "high_quality_count": 2,
+        "full_text_count": 50,
+        "dated_count": 44,
         "error": null
       },
       "alpha_vantage": {
@@ -610,7 +573,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 297
+            "latency_ms": 97
           },
           {
             "query": "OVERVIEW AVGO",
@@ -657,59 +620,60 @@
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 8,
+        "hit_count": 10,
         "dated_recent": 6,
-        "full_text": 8,
-        "tier1_2": 0,
-        "news": 8,
+        "full_text": 10,
+        "tier1_2": 2,
+        "news": 10,
         "industry": 0,
         "customer_supplier": 0,
         "unique_domains": [
-          "247wallst.com",
           "barchart.com",
+          "ca.finance.yahoo.com",
           "chartmill.com",
           "finance.yahoo.com",
+          "investors.broadcom.com",
+          "marketbeat.com",
+          "prnewswire.com",
+          "reuters.com",
           "seekingalpha.com",
-          "stockstory.org",
-          "tradingview.com"
+          "stockstory.org"
         ],
-        "avg_full_text_chars": 13536
+        "avg_full_text_chars": 14768
       },
       "exa": {
-        "hit_count": 37,
-        "dated_recent": 35,
-        "full_text": 37,
-        "tier1_2": 4,
-        "news": 7,
-        "industry": 15,
-        "customer_supplier": 10,
+        "hit_count": 19,
+        "dated_recent": 18,
+        "full_text": 19,
+        "tier1_2": 0,
+        "news": 5,
+        "industry": 5,
+        "customer_supplier": 0,
         "unique_domains": [
-          "ainvest.com",
+          "ai2.work",
           "beancount.io",
-          "bloomberg.com",
-          "businessnewsforprofit.com",
-          "cnbc.com",
+          "briefs.co",
+          "completeaitraining.com",
           "convergedigest.com",
-          "datacenterdynamics.com",
-          "engineering.fb.com",
           "exa.ai",
           "fool.com",
+          "fourweekmba.com",
           "hyperframeresearch.com",
-          "insidermonkey.com",
-          "investing.com",
-          "investors.broadcom.com",
-          "khancapitals.com",
-          "kobaran.com",
           "last10k.com",
           "longbridge.com",
-          "nova.kapualabs.com",
-          "rcrtech.com"
+          "sdxcentral.com",
+          "slicast.com",
+          "storagenewsletter.com",
+          "techtimes.com",
+          "theglobeandmail.com",
+          "trefis.com",
+          "trendforce.com"
         ],
-        "avg_full_text_chars": 9821
+        "avg_full_text_chars": 12275
       },
       "better_for_news": "tavily",
       "better_for_industry": "exa",
-      "better_for_customer_supplier": "exa",
+      "better_for_customer_supplier": "none",
       "better_for_full_text": "tavily",
       "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
       "roles": {
@@ -721,15 +685,13 @@
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 12,
+    "evidence_extracted": 6,
     "window_days": 30,
     "valuable_domains": [
-      "bloomberg.com",
-      "cnbc.com",
       "fred.stlouisfed.org",
       "investors.broadcom.com",
-      "sec.gov",
-      "theregister.com"
+      "reuters.com",
+      "sec.gov"
     ],
     "provider_roles": {
       "exa": "primary_discovery",
@@ -748,63 +710,87 @@
       "datacenter infrastructure"
     ],
     "date_recovered_count": 0,
-    "discovered_docs": 83,
-    "retained_for_reasoning": 21,
-    "archived_docs": 62,
+    "discovered_docs": 62,
+    "retained_for_reasoning": 14,
+    "archived_docs": 48,
     "tier_distribution_before": {
-      "tier1": 19,
-      "tier2": 3,
-      "tier3": 2,
-      "tier4": 59,
+      "tier1": 14,
+      "tier2": 1,
+      "tier3": 0,
+      "tier4": 47,
       "tier5": 0
     },
     "tier_distribution_after": {
-      "tier1": 16,
-      "tier2": 3,
-      "tier3": 2,
+      "tier1": 14,
+      "tier2": 0,
+      "tier3": 0,
       "tier4": 0,
       "tier5": 0
     },
-    "primary_source_count": 16,
-    "independent_source_count": 3,
-    "industry_source_count": 2,
-    "tier45_filtered_count": 59,
+    "primary_source_count": 14,
+    "independent_source_count": 0,
+    "industry_source_count": 0,
+    "tier45_filtered_count": 47,
     "top_10_facts": [
       {
-        "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+        "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "margin",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+        "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "guidance",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+        "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
       },
       {
         "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
@@ -813,91 +799,148 @@
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "dividend",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-        "source_time": "2026-09-02",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-      },
-      {
-        "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-        "source_time": "2026-09-02",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-      },
-      {
-        "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
-        "source_time": "2026-06-11",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
-      },
-      {
-        "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+        "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
         "source_time": "2026-06-18",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
-      },
-      {
-        "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
-        "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
-        "source_time": "2026-09-14",
-        "source_tier": 2,
-        "claim_title": null,
-        "source": "high_quality_news",
-        "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+        "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
-    "reasoning_context": {
-      "top_primary_facts": [
+    "coverage_matrix": [
+      {
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Operating margin expected to be sustained despite mix shift",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
         {
-          "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
           "source_time": "2026-09-02",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
           "source_time": "2026-09-02",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
           "source_time": "2026-09-02",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
           "source_time": "2026-09-02",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
         },
         {
           "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
@@ -906,303 +949,641 @@
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         },
         {
-          "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": []
+    },
+    "research_leads": [
+      {
+        "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+        "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+        "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+        "url": "https://longbridge.com/en/news/297876806",
+        "source_tier": 4,
+        "source_domain": "longbridge.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+        "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA",
+        "url": "https://fourweekmba.com/ai-anthropic-broadcom-xpu-largest-customer-fy27-fy28/",
+        "source_tier": 4,
+        "source_domain": "fourweekmba.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA # Anthropic, Broadcom,…",
+        "verification_query": "AVGO Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom's Big AI Chip Bet and Key Customers",
+        "url": "https://www.briefs.co/news/broadcom-bets-big-on-ai-chips-names-anthropic-and-openai-as/",
+        "source_tier": 4,
+        "source_domain": "briefs.co",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom's Big AI Chip Bet and Key Customers Broadcom's Big AI Chip Bet and Key Customers # Broadcom bets big on AI chips, names Anthropic and OpenAI as rising anchors Jackson Mor…",
+        "verification_query": "AVGO Broadcom's Big AI Chip Bet and Key Customers (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "independent_validation": "Missing",
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
           "source_time": "2026-09-02",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-        }
-      ],
-      "top_independent_evidence": [
-        {
-          "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
-          "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
-          "source_time": "2026-09-14",
-          "source_tier": 2,
-          "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Meta plans to begin deploying a new in-house AI chip, MTIA 450 (Arke), in data centers during the first half of next year, with the next chip, MTIA 500 (Astrid), going into data centers at the end of 2027.",
-          "source_url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
-          "source_time": "2026-09-15",
-          "source_tier": 2,
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
           "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_8086c30fbec0444882c07e9252e3ac22"
-        }
-      ],
-      "top_industry_evidence": [
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
         {
-          "fact": "Marvell announced in an SEC filing that Google tapped it to develop custom silicon, including AI inference accelerators and other products attaching to the TPU ecosystem, challenging Broadcom's role as Google's TPU partner.",
-          "source_url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
-          "source_time": "2026-08-19",
-          "source_tier": 3,
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
           "claim_title": null,
-          "source": "theregister.com",
-          "document_id": "xdoc_8f26f6be530345c09de9ea9094d02abe"
-        }
-      ],
-      "top_counter_evidence": [
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
         {
-          "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
-          "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
-          "source_time": "2026-09-14",
-          "source_tier": 2,
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
           "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         }
       ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "reasoning_context": {
+      "top_primary_facts": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "top_independent_evidence": [],
+      "top_industry_evidence": [],
+      "top_counter_evidence": [],
       "top_community_signals": [],
-      "open_gaps": [],
+      "open_gaps": [
+        "Independent validation: Missing",
+        "Industry / related-entity evidence missing.",
+        "Counter evidence missing."
+      ],
       "per_claim": [
         {
           "claim_title": "AI revenue is concentrated in a few very large XPU customers",
-          "support": [
+          "primary": [
             {
-              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Operating margin expected to be sustained despite mix shift",
-          "support": [
+          "primary": [
             {
-              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Partial",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
-          "support": [
+          "primary": [
             {
-              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             },
             {
-              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
-          "support": [
+          "primary": [
             {
-              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+              "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             },
             {
-              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+              "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "AI semiconductor revenue is now the majority of total revenue",
-          "support": [
+          "primary": [
             {
-              "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+              "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+              "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
               "source_time": "2026-09-02",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-            },
-            {
-              "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-              "source_time": "2026-09-02",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+              "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
+        }
+      ],
+      "coverage_matrix": [
+        {
+          "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Operating margin expected to be sustained despite mix shift",
+          "primary": "Partial",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
         }
       ]
     }
   },
   "quality": {
-    "discovered_docs": 83,
-    "retained_for_reasoning": 21,
-    "archived_docs": 62,
+    "discovered_docs": 62,
+    "retained_for_reasoning": 14,
+    "archived_docs": 48,
     "tier_distribution_before": {
-      "tier1": 19,
-      "tier2": 3,
-      "tier3": 2,
-      "tier4": 59,
+      "tier1": 14,
+      "tier2": 1,
+      "tier3": 0,
+      "tier4": 47,
       "tier5": 0
     },
     "tier_distribution_after": {
-      "tier1": 16,
-      "tier2": 3,
-      "tier3": 2,
+      "tier1": 14,
+      "tier2": 0,
+      "tier3": 0,
       "tier4": 0,
       "tier5": 0
     },
-    "primary_source_count": 16,
-    "independent_source_count": 3,
-    "industry_source_count": 2,
-    "tier45_filtered_count": 59,
+    "primary_source_count": 14,
+    "independent_source_count": 0,
+    "industry_source_count": 0,
+    "tier45_filtered_count": 47,
     "important_relationship_types": [
       "hyperscaler/customer",
       "supplier",
@@ -1212,40 +1593,64 @@
     ],
     "top_10_facts": [
       {
-        "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+        "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "margin",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+        "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "guidance",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+        "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
         "source_time": "2026-09-02",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
       },
       {
         "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
@@ -1254,55 +1659,36 @@
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "dividend",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       },
       {
-        "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-        "source_time": "2026-09-02",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-      },
-      {
-        "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
-        "source_time": "2026-09-02",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4698474498b74e2f95c88c4ecd9e6ef6"
-      },
-      {
-        "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
-        "source_time": "2026-06-11",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_7f7ac456e65f4e32854e44a22b874476"
-      },
-      {
-        "fact": "Broadcom announced pricing terms of its cash tender offers on June 17, 2026, for notes up to an aggregate purchase price of $2.5 billion.",
+        "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
         "source_time": "2026-06-18",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_253bb7c9827e4464b45860d710b228ba"
-      },
-      {
-        "fact": "Broadcom CEO Hock Tan said on September 14, 2026 that the company stands by its long-term revenue targets despite concerns about a potential slowdown in frontier AI model development.",
-        "source_url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
-        "source_time": "2026-09-14",
-        "source_tier": 2,
-        "claim_title": null,
-        "source": "high_quality_news",
-        "document_id": "xdoc_d29878f600474e599dec6bf699f6bfaa"
+        "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
-    "coverage_gaps": [],
+    "coverage_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing.",
+      "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
+    ],
     "date_recovered_count": 0,
     "provider_roles": {
       "exa": "primary_discovery",
@@ -1321,10 +1707,10 @@
     "competitor",
     "datacenter infrastructure"
   ],
-  "duplicates_removed": 9,
-  "raw_count": 92,
-  "evidence_extracted": 12,
-  "news_hits": 8,
+  "duplicates_removed": 17,
+  "raw_count": 79,
+  "evidence_extracted": 6,
+  "news_hits": 4,
   "sample_documents": [
     {
       "provider": "sec",
@@ -1339,6 +1725,21 @@
       "is_full_text": true,
       "query": "pack.official_documents",
       "query_type": "company_official",
+      "text_chars": 24000
+    },
+    {
+      "provider": "tavily",
+      "source_type": "official",
+      "source_family": "issuer_ir",
+      "source_tier": 1,
+      "title": "Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial ...",
+      "url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+      "source_domain": "investors.broadcom.com",
+      "published_at": "2026-09-02",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Broadcom Inc. latest news and announcements",
+      "query_type": "company_news",
       "text_chars": 24000
     },
     {
@@ -1370,104 +1771,29 @@
       "query": "pack.official_documents",
       "query_type": "company_official",
       "text_chars": 3331
-    },
-    {
-      "provider": "exa",
-      "source_type": "independent_news",
-      "source_family": "high_quality_news",
-      "source_tier": 2,
-      "title": "Broadcom CEO on Anthropic's slowdown push: AI revenue targets haven't changed",
-      "url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
-      "source_domain": "cnbc.com",
-      "published_at": "2026-09-14",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Broadcom Inc latest news and announcements",
-      "query_type": "company_official",
-      "text_chars": 3928
-    },
-    {
-      "provider": "exa",
-      "source_type": "independent_news",
-      "source_family": "high_quality_news",
-      "source_tier": 2,
-      "title": "Meta Touts the Cost-Saving Benefits of Latest In-House AI Chips - Bloomberg",
-      "url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
-      "source_domain": "bloomberg.com",
-      "published_at": "2026-09-15",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Meta custom AI accelerator Broadcom",
-      "query_type": "related_entity",
-      "text_chars": 535
-    },
-    {
-      "provider": "exa",
-      "source_type": "independent_news",
-      "source_family": "high_quality_news",
-      "source_tier": 2,
-      "title": "Broadcom guides to big numbers but investors wanted more. Why we're OK to hold for now",
-      "url": "https://www.cnbc.com/2026/09/02/broadcom-guides-to-big-numbers-but-investors-wanted-more-why-were-ok-to-hold-for-now.html",
-      "source_domain": "cnbc.com",
-      "published_at": "2026-09-02",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Broadcom semiconductor industry outlook",
-      "query_type": "industry_news",
-      "text_chars": 450
-    },
-    {
-      "provider": "exa",
-      "source_type": "industry",
-      "source_family": "theregister.com",
-      "source_tier": 3,
-      "title": "Meta's new MTIA 400 chip has a split personality: Training AI and serving ads",
-      "url": "https://www.theregister.com/systems/2026/08/26/metas-new-mtia-400-chip-has-a-split-personality-training-ai-and-serving-ads/5292727",
-      "source_domain": "theregister.com",
-      "published_at": "2026-08-26",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Meta custom AI accelerator Broadcom",
-      "query_type": "related_entity",
-      "text_chars": 6819
-    },
-    {
-      "provider": "exa",
-      "source_type": "industry",
-      "source_family": "theregister.com",
-      "source_tier": 3,
-      "title": "Google pits Marvell against Broadcom as it chases AI crown",
-      "url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
-      "source_domain": "theregister.com",
-      "published_at": "2026-08-19",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Google custom AI chip Broadcom TPU",
-      "query_type": "related_entity",
-      "text_chars": 4070
     }
   ],
   "sample_facts": [
     {
-      "fact": "Broadcom reported third quarter fiscal year 2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+      "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
     },
     {
-      "fact": "Broadcom reported GAAP operating income of $16.0 billion and Non-GAAP operating income of $20.1 billion for the third quarter of fiscal 2026.",
+      "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
     },
     {
-      "fact": "Broadcom reported GAAP diluted EPS of $2.68 and Non-GAAP diluted EPS of $3.32 for the third quarter of fiscal 2026.",
+      "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
     },
     {
-      "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, less capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+      "fact": "Broadcom generated $14.2 billion cash from operations in Q3 FY2026, with $0.5 billion capital expenditures, resulting in $13.7 billion free cash flow, or 46 percent of revenue.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
@@ -1479,21 +1805,21 @@
       "source_tier": 1
     },
     {
-      "fact": "Broadcom guided fourth quarter fiscal year 2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+      "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
     },
     {
-      "fact": "Broadcom guided fourth quarter fiscal year 2026 Non-GAAP operating income to approximately 66 percent of projected revenue.",
+      "fact": "Broadcom guided Q4 FY2026 non-GAAP operating income to approximately 66 percent of projected revenue.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
     },
     {
-      "fact": "Broadcom commenced cash tender offers on June 11, 2026 to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion.",
-      "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717dex991.htm",
-      "source_time": "2026-06-11",
+      "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+      "source_time": "2026-06-18",
       "source_tier": 1
     }
   ],
@@ -1501,5 +1827,417 @@
   "budget_remaining": {
     "tavily": 8,
     "exa": 0
+  },
+  "evidence_set": {
+    "top_facts": [
+      {
+        "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "margin",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "guidance",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "source_time": "2026-09-02",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+        "metric": "dividend",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+        "source_time": "2026-06-18",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Operating margin expected to be sustained despite mix shift",
+        "primary": "Partial",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Gross margin faces mix-driven pressure as XPU share grows",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": []
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+        "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap # Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap Author: Elijah Ar…",
+        "verification_query": "AVGO Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge",
+        "url": "https://longbridge.com/en/news/297876806",
+        "source_tier": 4,
+        "source_domain": "longbridge.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Customer' as Google TPU Orders Explode | Longbridge Broadcom CEO Hock Tan Says Anthropic 'On Track to Beco…",
+        "verification_query": "AVGO Broadcom CEO Hock Tan Says Anthropic 'On Track to Become Our Largest XPU Custom… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA",
+        "url": "https://fourweekmba.com/ai-anthropic-broadcom-xpu-largest-customer-fy27-fy28/",
+        "source_tier": 4,
+        "source_domain": "fourweekmba.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA # Anthropic, Broadcom,…",
+        "verification_query": "AVGO Anthropic, Broadcom, and the Quarter That Priced the Wrong Year - FourWeekMBA (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Broadcom's Big AI Chip Bet and Key Customers",
+        "url": "https://www.briefs.co/news/broadcom-bets-big-on-ai-chips-names-anthropic-and-openai-as/",
+        "source_tier": 4,
+        "source_domain": "briefs.co",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Broadcom's Big AI Chip Bet and Key Customers Broadcom's Big AI Chip Bet and Key Customers # Broadcom bets big on AI chips, names Anthropic and OpenAI as rising anchors Jackson Mor…",
+        "verification_query": "AVGO Broadcom's Big AI Chip Bet and Key Customers (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Broadcom reported Q3 FY2026 revenue of $29.6 billion, up 86 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom guided Q4 FY2026 revenue to approximately $34.8 billion, an increase of 93 percent from the prior year period.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "guidance",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom reported Q3 FY2026 GAAP diluted EPS of $2.68 and non-GAAP diluted EPS of $3.32.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom declared a quarterly common stock dividend of $0.65 per share.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_time": "2026-09-02",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_fd8777b063cd4bad82b8d10c37595389",
+          "metric": "dividend",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Broadcom announced pricing terms of cash tender offers to purchase certain outstanding notes up to an aggregate purchase price of $2.5 billion, excluding accrued coupon payment.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683dex991.htm",
+          "source_time": "2026-06-18",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_51a6097debe34e27a0672c2d5f1a997f",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing."
+    ]
   }
 }

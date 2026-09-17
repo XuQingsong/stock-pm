@@ -342,6 +342,94 @@ def test_fallback_plan_uses_business_model_relationships() -> None:
     assert any(row.get("entity") == "Google" for row in avgo["queries"])
 
 
+def test_current_quarter_outranks_old_tier1() -> None:
+    from stock_pm.external.evidence_set import build_evidence_set, parse_fiscal_period
+
+    assert parse_fiscal_period("Apple reported fiscal 2026 third quarter revenue of $109.4 billion") == "2026Q3"
+    assert parse_fiscal_period("fiscal 2026 second quarter diluted earnings per share") == "2026Q2"
+    q2 = {
+        "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+        "excerpt": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+        "source_url": "https://www.sec.gov/q2",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "source": "sec",
+        "document_id": "q2",
+    }
+    q3 = {
+        "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "excerpt": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "source_url": "https://www.sec.gov/q3",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "source": "sec",
+        "document_id": "q3",
+    }
+    cash = {
+        "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+        "excerpt": "Apple's March quarter generated over $28 billion in operating cash flow.",
+        "source_url": "https://www.sec.gov/q2-cash",
+        "source_time": "2026-04-30",
+        "source_tier": 1,
+        "source": "sec",
+        "document_id": "q2c",
+    }
+    payload = build_evidence_set([], [q2, q3, cash], [], ticker="AAPL")
+    current = " ".join(row["fact"] for row in payload["brain_context"]["current_operating_facts"])
+    historical = " ".join(row["fact"] for row in payload["historical_facts"])
+    assert "third quarter" in current
+    assert "second quarter" not in current
+    assert "March quarter" not in current
+    assert "second quarter" in historical
+    assert parse_fiscal_period("March quarter generated cash", source_time="2026-04-30") == "2026Q2"
+
+
+def test_independence_gap_caps_confidence() -> None:
+    from stock_pm.external.evidence_set import apply_independence_to_claims, build_evidence_set
+
+    issuer = {
+        "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion.",
+        "excerpt": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion.",
+        "source_url": "https://www.sec.gov/lite",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "source": "sec",
+        "document_id": "lite1",
+        "source_type": "sec_filing",
+    }
+    payload = build_evidence_set([], [issuer], [{"title": "optical demand duration", "statement": "Datacenter optical demand remains the binding variable."}], ticker="LITE")
+    assert payload["independent_validation"] == "Missing"
+    matrix = payload["coverage_matrix"]
+    assert matrix[0]["independent"] == "Missing"
+    assert matrix[0]["evidence_confidence"] == "medium"
+    claims = apply_independence_to_claims(
+        [{"title": "optical demand duration", "confidence": "high", "status": "strongly_supported"}],
+        matrix,
+        ticker_independent="Missing",
+    )
+    assert claims[0]["confidence"] == "medium"
+    assert claims[0]["independent_validation"] == "Missing"
+    assert "independently unconfirmed" in (claims[0]["independence_gap"] or "")
+
+
+def test_tier45_becomes_research_lead_not_evidence() -> None:
+    from stock_pm.external.evidence_set import collect_research_leads
+
+    archived = [
+        _doc(
+            url="https://www.zacks.com/stock/news/lite-new-customer",
+            title="Zacks: Lumentum wins a new hyperscaler 1.6T order",
+            query_type="company_news",
+            clean_text="Zacks says a new customer order for 1.6T modules may be material. " * 10,
+            raw_text="Zacks says a new customer order for 1.6T modules may be material. " * 10,
+        )
+    ]
+    leads = collect_research_leads(archived, ticker="LITE")
+    assert leads
+    assert "8-K" in leads[0]["verification_query"]
+    assert leads[0]["source_tier"] >= 4
+
+
 def test_official_pack_docs_convert() -> None:
     rows = official_documents_from_pack(
         {

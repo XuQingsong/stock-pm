@@ -60,9 +60,21 @@ def llm_extract_facts(
     usable = [row for row in docs if row.get("is_full_text") and str(row.get("clean_text") or "").strip()]
     if not usable or completer is None:
         return [], {"step": "external_fact_extract", "llm_called": False, "llm_status": "skipped"}
-    primary = [row for row in usable if int(row.get("source_tier") or 9) <= 1]
-    independent = [row for row in usable if int(row.get("source_tier") or 9) == 2]
-    industry = [row for row in usable if int(row.get("source_tier") or 9) == 3]
+    primary = sorted(
+        [row for row in usable if int(row.get("source_tier") or 9) <= 1],
+        key=lambda row: str(row.get("published_at") or ""),
+        reverse=True,
+    )
+    independent = sorted(
+        [row for row in usable if int(row.get("source_tier") or 9) == 2],
+        key=lambda row: str(row.get("published_at") or ""),
+        reverse=True,
+    )
+    industry = sorted(
+        [row for row in usable if int(row.get("source_tier") or 9) == 3],
+        key=lambda row: str(row.get("published_at") or ""),
+        reverse=True,
+    )
     rest = [row for row in usable if int(row.get("source_tier") or 9) >= 4]
     picked = primary[:6] + independent[:4] + industry[:2]
     if len(picked) < 12:
@@ -131,6 +143,7 @@ def llm_extract_facts(
                 "source_tier": source_tier(doc.get("url")),
                 "source_type": "sec_filing" if source_tier(doc.get("url")) == 1 else "web_search",
                 "claim_title": compact_text(item.get("claim_title"), 80) or None,
+                "materiality": compact_text(item.get("materiality"), 16) or None,
                 "extraction": "llm",
             }
         )
@@ -173,6 +186,10 @@ def facts_to_evidence_bodies(ticker: str, facts: list[dict[str, Any]], *, retrie
                     "source_family": item.get("source"),
                     "extraction": item.get("extraction"),
                     "claim_title": item.get("claim_title"),
+                    "fiscal_period": item.get("fiscal_period"),
+                    "role": item.get("role"),
+                    "evidence_class": item.get("evidence_class"),
+                    "metric": item.get("metric"),
                 },
             }
         )

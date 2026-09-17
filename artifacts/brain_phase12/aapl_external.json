@@ -18,7 +18,7 @@
   ],
   "claim_queries": [
     {
-      "query": "Apple tariff costs gross margin impact 2026",
+      "query": "Apple tariff costs 2026",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -27,7 +27,16 @@
       "entity": null
     },
     {
-      "query": "Apple installed base active devices all-time high 2026",
+      "query": "Apple supply constraints iPhone Mac 2026",
+      "query_type": "claim",
+      "providers": [
+        "exa"
+      ],
+      "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "entity": null
+    },
+    {
+      "query": "Apple installed base 2.5 billion devices 2026",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -36,7 +45,7 @@
       "entity": null
     },
     {
-      "query": "Apple Services revenue growth gross margin 2026",
+      "query": "Apple Services revenue growth 2026",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -45,7 +54,7 @@
       "entity": null
     },
     {
-      "query": "Apple revenue growth by geographic segment 2026",
+      "query": "Apple revenue growth by geography 2026",
       "query_type": "claim",
       "providers": [
         "exa"
@@ -61,105 +70,78 @@
       ],
       "claim_title": "Valuation multiple is elevated relative to growth",
       "entity": null
-    },
-    {
-      "query": "TSMC Apple chip supply constraints 2026",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "TSMC"
-    },
-    {
-      "query": "Foxconn Apple production capacity 2026",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "Foxconn"
-    },
-    {
-      "query": "US tariffs on Apple products 2026",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "US Government (USTR/Commerce)"
     }
   ],
   "related_entities": [
     {
       "name": "Google",
       "relation": "technology",
-      "why": "Default search engine and cloud/AI partner; changes in deal terms or regulatory scrutiny can affect Services revenue and product positioning."
+      "why": "Google pays Apple for default search placement, a major high-margin services revenue stream; changes in the deal or regulatory action can alter Apple's service…"
     },
     {
       "name": "TSMC",
       "relation": "supplier",
-      "why": "Sole-source advanced chip fabrication; capacity, pricing, or geopolitical disruptions directly affect product cost, launch timing, and margins."
+      "why": "TSMC manufactures Apple's custom silicon; capacity, pricing, and geopolitical disruptions directly affect Apple's product costs, margins, and launch schedules."
     },
     {
       "name": "Foxconn",
       "relation": "supplier",
-      "why": "Primary assembly partner; labor, geopolitical, or capacity issues can affect iPhone and other hardware supply."
+      "why": "Foxconn assembles the majority of iPhones; labor issues, capacity shifts, or geopolitical tensions can impact Apple's supply chain and product availability."
     },
     {
-      "name": "European Commission",
+      "name": "European Union",
       "relation": "regulation",
-      "why": "DMA enforcement and antitrust actions can force changes to App Store, default apps, and business model in Europe."
+      "why": "EU regulations like the Digital Markets Act force changes to Apple's App Store, payments, and default settings, affecting services revenue and developer ecosys…"
     },
     {
-      "name": "US Department of Justice",
+      "name": "United States",
       "relation": "regulation",
-      "why": "Antitrust litigation can alter App Store policies, default search deals, and ecosystem control."
+      "why": "US antitrust actions and legislative proposals can challenge Apple's App Store policies and business practices, potentially altering its services model."
     },
     {
-      "name": "China Ministry of Industry and Information Technology",
-      "relation": "regulation",
-      "why": "Regulatory approvals and restrictions in China can affect product availability, features, and supply chain."
-    },
-    {
-      "name": "Verizon",
-      "relation": "channel",
-      "why": "Major carrier distribution partner; changes in carrier promotions or channel strategy can affect iPhone sales."
-    },
-    {
-      "name": "Best Buy",
-      "relation": "channel",
-      "why": "Key retail partner; shifts in retail presence or promotional activity can affect hardware sales."
-    },
-    {
-      "name": "Epic Games",
-      "relation": "developer ecosystem",
-      "why": "Ongoing legal and policy battles over App Store rules can force changes to developer terms and revenue model."
+      "name": "China",
+      "relation": "geography",
+      "why": "China is a major market and manufacturing hub; regulatory crackdowns, consumer sentiment, and geopolitical tensions can impact Apple's sales and production."
     },
     {
       "name": "Samsung",
       "relation": "peer",
-      "why": "Primary competitor in smartphones and displays; competitive dynamics affect pricing, features, and market share."
+      "why": "Samsung competes in smartphones and also supplies components; its product cycles and pricing influence Apple's competitive position and component costs."
+    },
+    {
+      "name": "Microsoft",
+      "relation": "peer",
+      "why": "Microsoft competes in services, software, and devices; its strategic moves in AI, cloud, and productivity can affect Apple's ecosystem and growth opportunities."
+    },
+    {
+      "name": "Amazon",
+      "relation": "channel",
+      "why": "Amazon is a key retail channel for Apple products and competes in services like music and cloud; changes in partnership or competition can affect Apple's reach…"
+    },
+    {
+      "name": "Meta",
+      "relation": "technology",
+      "why": "Meta's platforms and app store policies interact with Apple's privacy and advertising rules; regulatory and competitive dynamics can impact Apple's services an…"
     },
     {
       "name": "US Government (USTR/Commerce)",
       "relation": "regulation",
-      "why": "Tariff actions and trade policy directly affect Apple's cost structure and gross margin, as cited in the $800M tariff cost."
+      "why": "Tariff policy and export controls directly affect Apple's cost structure and market access, as evidenced by the $800M tariff cost cited."
     },
     {
-      "name": "EU (DMA enforcement)",
+      "name": "European Union (DMA enforcement)",
       "relation": "regulation",
-      "why": "Digital Markets Act enforcement can alter App Store and Services business models, affecting high-margin Services revenue."
+      "why": "Digital Markets Act enforcement can force changes to App Store and Services business model, affecting high-margin Services revenue."
     }
   ],
   "providers": {
     "exa": {
       "status": "ok",
-      "hit_count": 48,
-      "usable_count": 48,
-      "high_quality_count": 6,
-      "full_text_count": 48,
-      "dated_count": 41,
+      "hit_count": 50,
+      "usable_count": 50,
+      "high_quality_count": 7,
+      "full_text_count": 49,
+      "dated_count": 45,
       "error": null,
       "query_count": 10
     },
@@ -167,7 +149,7 @@
       "status": "ok",
       "hit_count": 10,
       "usable_count": 10,
-      "high_quality_count": 3,
+      "high_quality_count": 1,
       "full_text_count": 10,
       "dated_count": 0,
       "error": null,
@@ -195,84 +177,84 @@
     }
   },
   "report": {
-    "official_documents": 21,
-    "independent_news": 2,
-    "industry_sources": 11,
+    "official_documents": 22,
+    "independent_news": 1,
+    "industry_sources": 0,
     "customer_sources": 0,
     "supplier_sources": 0,
-    "dated_recent_items": 64,
-    "undated_or_background_items": 20,
-    "full_text_items": 58,
-    "tier1_count": 21,
-    "tier2_count": 2,
-    "tier3_count": 2,
-    "tier4_count": 58,
+    "dated_recent_items": 56,
+    "undated_or_background_items": 23,
+    "full_text_items": 52,
+    "tier1_count": 22,
+    "tier2_count": 1,
+    "tier3_count": 1,
+    "tier4_count": 54,
     "tier5_count": 1,
     "related_entities": [
       {
         "name": "Google",
         "relation": "technology",
-        "why": "Default search engine and cloud/AI partner; changes in deal terms or regulatory scrutiny can affect Services revenue and product positioning."
+        "why": "Google pays Apple for default search placement, a major high-margin services revenue stream; changes in the deal or regulatory action can alter Apple's service…"
       },
       {
         "name": "TSMC",
         "relation": "supplier",
-        "why": "Sole-source advanced chip fabrication; capacity, pricing, or geopolitical disruptions directly affect product cost, launch timing, and margins."
+        "why": "TSMC manufactures Apple's custom silicon; capacity, pricing, and geopolitical disruptions directly affect Apple's product costs, margins, and launch schedules."
       },
       {
         "name": "Foxconn",
         "relation": "supplier",
-        "why": "Primary assembly partner; labor, geopolitical, or capacity issues can affect iPhone and other hardware supply."
+        "why": "Foxconn assembles the majority of iPhones; labor issues, capacity shifts, or geopolitical tensions can impact Apple's supply chain and product availability."
       },
       {
-        "name": "European Commission",
+        "name": "European Union",
         "relation": "regulation",
-        "why": "DMA enforcement and antitrust actions can force changes to App Store, default apps, and business model in Europe."
+        "why": "EU regulations like the Digital Markets Act force changes to Apple's App Store, payments, and default settings, affecting services revenue and developer ecosys…"
       },
       {
-        "name": "US Department of Justice",
+        "name": "United States",
         "relation": "regulation",
-        "why": "Antitrust litigation can alter App Store policies, default search deals, and ecosystem control."
+        "why": "US antitrust actions and legislative proposals can challenge Apple's App Store policies and business practices, potentially altering its services model."
       },
       {
-        "name": "China Ministry of Industry and Information Technology",
-        "relation": "regulation",
-        "why": "Regulatory approvals and restrictions in China can affect product availability, features, and supply chain."
-      },
-      {
-        "name": "Verizon",
-        "relation": "channel",
-        "why": "Major carrier distribution partner; changes in carrier promotions or channel strategy can affect iPhone sales."
-      },
-      {
-        "name": "Best Buy",
-        "relation": "channel",
-        "why": "Key retail partner; shifts in retail presence or promotional activity can affect hardware sales."
-      },
-      {
-        "name": "Epic Games",
-        "relation": "developer ecosystem",
-        "why": "Ongoing legal and policy battles over App Store rules can force changes to developer terms and revenue model."
+        "name": "China",
+        "relation": "geography",
+        "why": "China is a major market and manufacturing hub; regulatory crackdowns, consumer sentiment, and geopolitical tensions can impact Apple's sales and production."
       },
       {
         "name": "Samsung",
         "relation": "peer",
-        "why": "Primary competitor in smartphones and displays; competitive dynamics affect pricing, features, and market share."
+        "why": "Samsung competes in smartphones and also supplies components; its product cycles and pricing influence Apple's competitive position and component costs."
+      },
+      {
+        "name": "Microsoft",
+        "relation": "peer",
+        "why": "Microsoft competes in services, software, and devices; its strategic moves in AI, cloud, and productivity can affect Apple's ecosystem and growth opportunities."
+      },
+      {
+        "name": "Amazon",
+        "relation": "channel",
+        "why": "Amazon is a key retail channel for Apple products and competes in services like music and cloud; changes in partnership or competition can affect Apple's reach…"
+      },
+      {
+        "name": "Meta",
+        "relation": "technology",
+        "why": "Meta's platforms and app store policies interact with Apple's privacy and advertising rules; regulatory and competitive dynamics can impact Apple's services an…"
       },
       {
         "name": "US Government (USTR/Commerce)",
         "relation": "regulation",
-        "why": "Tariff actions and trade policy directly affect Apple's cost structure and gross margin, as cited in the $800M tariff cost."
+        "why": "Tariff policy and export controls directly affect Apple's cost structure and market access, as evidenced by the $800M tariff cost cited."
       },
       {
-        "name": "EU (DMA enforcement)",
+        "name": "European Union (DMA enforcement)",
         "relation": "regulation",
-        "why": "Digital Markets Act enforcement can alter App Store and Services business models, affecting high-margin Services revenue."
+        "why": "Digital Markets Act enforcement can force changes to App Store and Services business model, affecting high-margin Services revenue."
       }
     ],
     "claim_queries": [
       {
-        "query": "Apple tariff costs gross margin impact 2026",
+        "query": "Apple tariff costs 2026",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -281,7 +263,16 @@
         "entity": null
       },
       {
-        "query": "Apple installed base active devices all-time high 2026",
+        "query": "Apple supply constraints iPhone Mac 2026",
+        "query_type": "claim",
+        "providers": [
+          "exa"
+        ],
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple installed base 2.5 billion devices 2026",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -290,7 +281,7 @@
         "entity": null
       },
       {
-        "query": "Apple Services revenue growth gross margin 2026",
+        "query": "Apple Services revenue growth 2026",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -299,7 +290,7 @@
         "entity": null
       },
       {
-        "query": "Apple revenue growth by geographic segment 2026",
+        "query": "Apple revenue growth by geography 2026",
         "query_type": "claim",
         "providers": [
           "exa"
@@ -315,49 +306,22 @@
         ],
         "claim_title": "Valuation multiple is elevated relative to growth",
         "entity": null
-      },
-      {
-        "query": "TSMC Apple chip supply constraints 2026",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "TSMC"
-      },
-      {
-        "query": "Foxconn Apple production capacity 2026",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "Foxconn"
-      },
-      {
-        "query": "US tariffs on Apple products 2026",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "US Government (USTR/Commerce)"
       }
     ],
     "query_results": [
       {
-        "query": "Apple Inc official investor relations news and events",
+        "query": "Apple Inc. official investor relations news and events",
         "query_type": "company_official",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
-        "high_quality_count": 4,
+        "high_quality_count": 5,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "Apple Inc earnings call transcript latest quarter",
+        "query": "Apple Inc. earnings call transcript latest quarter",
         "query_type": "company_earnings",
         "provider": "exa",
         "hit_count": 5,
@@ -368,18 +332,18 @@
         "entity": null
       },
       {
-        "query": "Apple Inc news last 30 days",
+        "query": "Apple Inc. news last 30 days",
         "query_type": "company_news",
         "provider": "tavily",
         "hit_count": 5,
-        "usable_count": 4,
-        "high_quality_count": 3,
+        "usable_count": 5,
+        "high_quality_count": 1,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "Apple tariff costs gross margin impact 2026",
+        "query": "Apple tariff costs 2026",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
@@ -390,7 +354,18 @@
         "entity": null
       },
       {
-        "query": "Apple installed base active devices all-time high 2026",
+        "query": "Apple supply constraints iPhone Mac 2026",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple installed base 2.5 billion devices 2026",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
@@ -401,18 +376,18 @@
         "entity": null
       },
       {
-        "query": "Apple Services revenue growth gross margin 2026",
+        "query": "Apple Services revenue growth 2026",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 4,
+        "usable_count": 2,
         "high_quality_count": 1,
         "status": "ok",
         "claim_title": "Services mix shift supports margin structure",
         "entity": null
       },
       {
-        "query": "Apple revenue growth by geographic segment 2026",
+        "query": "Apple revenue growth by geography 2026",
         "query_type": "claim",
         "provider": "exa",
         "hit_count": 5,
@@ -434,39 +409,6 @@
         "entity": null
       },
       {
-        "query": "TSMC Apple chip supply constraints 2026",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "TSMC"
-      },
-      {
-        "query": "Foxconn Apple production capacity 2026",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 3,
-        "usable_count": 3,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Foxconn"
-      },
-      {
-        "query": "US tariffs on Apple products 2026",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 3,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "US Government (USTR/Commerce)"
-      },
-      {
         "query": "AAPL news",
         "query_type": "company_news",
         "provider": "tavily",
@@ -476,75 +418,106 @@
         "status": "ok",
         "claim_title": null,
         "entity": null
+      },
+      {
+        "query": "AAPL Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% L… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
+      },
+      {
+        "query": "AAPL Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazi… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
       }
     ],
-    "duplicates_removed": 7,
-    "raw_count_before_dedupe": 91,
-    "coverage_gaps": [],
+    "duplicates_removed": 5,
+    "raw_count_before_dedupe": 84,
+    "coverage_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing."
+    ],
     "providers": {
       "exa": {
         "provider": "exa",
         "status": "ok",
         "queries": [
           {
-            "query": "Apple Inc official investor relations news and events",
+            "query": "Apple Inc. official investor relations news and events",
             "query_type": "company_official",
             "hit_count": 5,
             "usable_count": 5,
-            "high_quality_count": 4,
+            "high_quality_count": 5,
             "status": "ok",
             "error": null,
-            "latency_ms": 1123
+            "latency_ms": 148
           },
           {
-            "query": "Apple Inc earnings call transcript latest quarter",
+            "query": "Apple Inc. earnings call transcript latest quarter",
             "query_type": "company_earnings",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 1,
             "status": "ok",
             "error": null,
-            "latency_ms": 1521
+            "latency_ms": 116
           },
           {
-            "query": "Apple tariff costs gross margin impact 2026",
+            "query": "Apple tariff costs 2026",
             "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 113
+            "latency_ms": 963
           },
           {
-            "query": "Apple installed base active devices all-time high 2026",
+            "query": "Apple supply constraints iPhone Mac 2026",
             "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 121
+            "latency_ms": 3821
           },
           {
-            "query": "Apple Services revenue growth gross margin 2026",
+            "query": "Apple installed base 2.5 billion devices 2026",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1653
+          },
+          {
+            "query": "Apple Services revenue growth 2026",
             "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 1,
             "status": "ok",
             "error": null,
-            "latency_ms": 2641
+            "latency_ms": 1142
           },
           {
-            "query": "Apple revenue growth by geographic segment 2026",
+            "query": "Apple revenue growth by geography 2026",
             "query_type": "claim",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 117
+            "latency_ms": 103
           },
           {
             "query": "Apple PE ratio forward estimates 2026",
@@ -554,44 +527,34 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 118
+            "latency_ms": 132
           },
           {
-            "query": "TSMC Apple chip supply constraints 2026",
-            "query_type": "related_entity",
+            "query": "AAPL Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% L… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 107
+            "latency_ms": 1257
           },
           {
-            "query": "Foxconn Apple production capacity 2026",
-            "query_type": "related_entity",
-            "hit_count": 3,
-            "usable_count": 3,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 2857
-          },
-          {
-            "query": "US tariffs on Apple products 2026",
-            "query_type": "related_entity",
+            "query": "AAPL Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazi… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 1415
+            "latency_ms": 1263
           }
         ],
-        "hit_count": 48,
-        "usable_count": 48,
-        "high_quality_count": 6,
-        "full_text_count": 48,
-        "dated_count": 41,
+        "hit_count": 50,
+        "usable_count": 50,
+        "high_quality_count": 7,
+        "full_text_count": 49,
+        "dated_count": 45,
         "error": null
       },
       "tavily": {
@@ -599,14 +562,14 @@
         "status": "ok",
         "queries": [
           {
-            "query": "Apple Inc news last 30 days",
+            "query": "Apple Inc. news last 30 days",
             "query_type": "company_news",
             "hit_count": 5,
             "usable_count": 5,
-            "high_quality_count": 3,
+            "high_quality_count": 1,
             "status": "ok",
             "error": null,
-            "latency_ms": 935
+            "latency_ms": 34
           },
           {
             "query": "AAPL news",
@@ -616,12 +579,12 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 34
+            "latency_ms": 28
           }
         ],
         "hit_count": 10,
         "usable_count": 10,
-        "high_quality_count": 3,
+        "high_quality_count": 1,
         "full_text_count": 10,
         "dated_count": 0,
         "error": null
@@ -638,7 +601,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 50
+            "latency_ms": 51
           },
           {
             "query": "OVERVIEW AAPL",
@@ -685,59 +648,62 @@
       "tavily_status": "ok",
       "exa_status": "ok",
       "tavily": {
-        "hit_count": 8,
+        "hit_count": 10,
         "dated_recent": 6,
-        "full_text": 8,
-        "tier1_2": 2,
-        "news": 8,
+        "full_text": 10,
+        "tier1_2": 1,
+        "news": 10,
         "industry": 0,
         "customer_supplier": 0,
         "unique_domains": [
-          "bbc.com",
           "benzinga.com",
           "cnbc.com",
           "finance.yahoo.com",
+          "investing.com",
+          "qz.com",
           "stockstory.org",
           "stocktwits.com",
+          "support.apple.com",
+          "tickeron.com",
           "tradingview.com"
         ],
-        "avg_full_text_chars": 11005
+        "avg_full_text_chars": 14878
       },
       "exa": {
-        "hit_count": 40,
-        "dated_recent": 36,
-        "full_text": 40,
-        "tier1_2": 5,
+        "hit_count": 33,
+        "dated_recent": 28,
+        "full_text": 32,
+        "tier1_2": 6,
         "news": 0,
-        "industry": 11,
-        "customer_supplier": 11,
+        "industry": 0,
+        "customer_supplier": 0,
         "unique_domains": [
           "247wallst.com",
-          "ainvest.com",
           "apple.com",
           "applemagazine.com",
-          "atlfmnews.com",
           "beancount.io",
-          "businesstoday.in",
-          "cfodive.com",
-          "computerworld.com",
           "counterpointresearch.com",
           "cutonce.ai",
-          "digitimes.com",
-          "economictimes.indiatimes.com",
-          "fin-node.net",
-          "finance.yahoo.com",
+          "data-today.net",
+          "easternprogress.com",
+          "factset.com",
           "fool.com",
+          "hashnewz.com",
           "investor.apple.com",
+          "kobaran.com",
           "lician.com",
           "lilys.ai",
-          "macdailynews.com"
+          "macdailynews.com",
+          "macobserver.com",
+          "macrumors.com",
+          "nova.kapualabs.com",
+          "stockanalysis.com"
         ],
-        "avg_full_text_chars": 10270
+        "avg_full_text_chars": 11872
       },
       "better_for_news": "tavily",
-      "better_for_industry": "exa",
-      "better_for_customer_supplier": "exa",
+      "better_for_industry": "none",
+      "better_for_customer_supplier": "none",
       "better_for_full_text": "tavily",
       "note": "Exa is primary discovery; Tavily is topic=news supplement plus extract. They are not interchangeable. Publisher quality is taken from the original URL.",
       "roles": {
@@ -749,14 +715,12 @@
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 13,
+    "evidence_extracted": 8,
     "window_days": 30,
     "valuable_domains": [
       "apple.com",
       "barrons.com",
-      "bbc.com",
       "cnbc.com",
-      "digitimes.com",
       "fred.stlouisfed.org",
       "investor.apple.com",
       "sec.gov"
@@ -779,121 +743,210 @@
       "developer ecosystem"
     ],
     "date_recovered_count": 0,
-    "discovered_docs": 84,
-    "retained_for_reasoning": 20,
-    "archived_docs": 64,
+    "discovered_docs": 79,
+    "retained_for_reasoning": 18,
+    "archived_docs": 61,
     "tier_distribution_before": {
-      "tier1": 21,
-      "tier2": 2,
-      "tier3": 2,
-      "tier4": 58,
+      "tier1": 22,
+      "tier2": 1,
+      "tier3": 1,
+      "tier4": 54,
       "tier5": 1
     },
     "tier_distribution_after": {
       "tier1": 16,
-      "tier2": 2,
-      "tier3": 2,
+      "tier2": 1,
+      "tier3": 1,
       "tier4": 0,
       "tier5": 0
     },
     "primary_source_count": 16,
-    "independent_source_count": 2,
-    "industry_source_count": 2,
-    "tier45_filtered_count": 59,
+    "independent_source_count": 1,
+    "industry_source_count": 1,
+    "tier45_filtered_count": 55,
     "top_10_facts": [
       {
-        "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
+        "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
-      },
-      {
-        "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
-      },
-      {
-        "fact": "Apple announced iPhone 18 Pro and iPhone 18 Pro Max on September 9, 2026, featuring a 48MP Fusion Main camera with variable aperture.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_d15d9d4b8fc140d8b448e44d717b8f0e"
-      },
-      {
-        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, on September 9, 2026, with a 7.6-inch inner display and 5.4-inch outer display.",
+        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
         "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
         "source_time": "2026-09-01",
         "source_tier": 1,
         "claim_title": null,
         "source": "apple.com",
-        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+        "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       },
       {
-        "fact": "iPhone Duo is powered by the new A20 Pro chip.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
-      },
-      {
-        "fact": "Apple's software updates including Siri AI rolled out starting September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
         "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
         "source_time": "2026-09-01",
         "source_tier": 1,
         "claim_title": null,
         "source": "apple.com",
-        "document_id": "xdoc_36bb7b2c01444e4fb3c98ac66b01f093"
+        "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "margin",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
-    "reasoning_context": {
-      "top_primary_facts": [
+    "coverage_matrix": [
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Installed base growth underpins Services monetization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Services mix shift supports margin structure",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Revenue growth is broad-based and accelerating",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": [
         {
           "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
@@ -901,16 +954,13 @@
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-        },
-        {
-          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-          "source_time": "2026-04-30",
-          "source_tier": 1,
-          "claim_title": null,
-          "source": "sec",
-          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "revenue",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
         },
         {
           "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
@@ -919,202 +969,647 @@
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "cash_flow",
+          "fiscal_period": null,
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.175,
+          "signal_only": null
         },
         {
-          "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
           "source_time": "2026-04-30",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "eps",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.1575,
+          "signal_only": null
+        }
+      ]
+    },
+    "research_leads": [
+      {
+        "title": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch",
+        "url": "https://www.techtimes.co.uk/apple-earnings-boosted-tariff-refund-1808444",
+        "source_tier": 4,
+        "source_domain": "techtimes.co.uk",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 2…",
+        "verification_query": "AAPL Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% L… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine",
+        "url": "https://applemagazine.com/apple-faces-price-hikes-as-tariff-driven-import/",
+        "source_tier": 4,
+        "source_domain": "applemagazine.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Mobile & Wearab…",
+        "verification_query": "AAPL Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazi… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today",
+        "url": "https://data-today.net/stickman/apples-2-billion-tariff-refund/",
+        "source_tier": 4,
+        "source_domain": "data-today.net",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today # Apple's $2.2 Billion Tari…",
+        "verification_query": "AAPL Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage",
+        "url": "https://www.kobaran.com/apple-stock-rally-faces-a-supply-problem-not-a-demand-shortage/",
+        "source_tier": 4,
+        "source_domain": "kobaran.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage # Apple Stock Rally Faces a Supply Problem, Not a D…",
+        "verification_query": "AAPL Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records",
+        "url": "https://beancount.io/blog/2026/08/22/apple-fy2026-q3-earnings-analysis",
+        "source_tier": 4,
+        "source_domain": "beancount.io",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records # Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and S…",
+        "verification_query": "AAPL Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services a… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 2,
+    "independent_validation": "Missing",
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
-          "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
           "source_time": "2026-09-01",
           "source_tier": 1,
           "claim_title": null,
           "source": "apple.com",
-          "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         },
         {
-          "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
-          "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
           "source_time": "2026-09-01",
           "source_tier": 1,
           "claim_title": null,
           "source": "apple.com",
-          "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         }
       ],
-      "top_independent_evidence": [
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [
         {
-          "fact": "Apple shares rose 2.6% Tuesday amid a broader tech rout, with 30-day correlation to the Nasdaq-100 reaching a low of negative 0.86.",
-          "source_url": "https://www.cnbc.com/2026/09/02/apple-shares-are-doing-something-they-havent-done-in-20-years-heres-whats-happening.html",
-          "source_time": "2026-09-02",
-          "source_tier": 2,
+          "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
           "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_1ec545b7b1804d4cbabcedb36e94d806"
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
         },
         {
-          "fact": "In the past month, Apple shares were up 7% versus a 1% gain for the Nasdaq-100.",
-          "source_url": "https://www.cnbc.com/2026/09/02/apple-shares-are-doing-something-they-havent-done-in-20-years-heres-whats-happening.html",
-          "source_time": "2026-09-02",
-          "source_tier": 2,
+          "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
           "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_1ec545b7b1804d4cbabcedb36e94d806"
-        },
-        {
-          "fact": "Apple renamed Lake Ontario as Lake America on its Maps app for US-based users following a Trump executive order, amid new 50% US tariffs on $20bn worth of Canadian goods.",
-          "source_url": "https://www.bbc.com/news/articles/cddvyyz0e47o",
-          "source_time": "2026-09-02",
-          "source_tier": 2,
-          "claim_title": null,
-          "source": "high_quality_news",
-          "document_id": "xdoc_d8f563e57a474745a4563d0d06e3c4c1"
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "margin",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         }
       ],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "revenue",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "cash_flow",
+          "fiscal_period": null,
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.175,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "eps",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.1575,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry"
+      ],
+      "independent_validation": "Missing"
+    },
+    "reasoning_context": {
+      "top_primary_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "top_independent_evidence": [],
       "top_industry_evidence": [],
-      "top_counter_evidence": [],
+      "top_counter_evidence": [
+        {
+          "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "margin",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
       "top_community_signals": [],
-      "open_gaps": [],
+      "open_gaps": [
+        "Independent validation: Missing",
+        "Industry / related-entity evidence missing."
+      ],
       "per_claim": [
         {
           "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-          "support": [
+          "primary": [
             {
-              "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+              "fiscal_period": null,
+              "role": "current"
             },
             {
-              "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+              "fiscal_period": null,
+              "role": "current"
             }
           ],
-          "counter": [],
-          "gaps": []
+          "independent": [],
+          "industry": [],
+          "counter": [
+            {
+              "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
+            {
+              "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": null,
+              "role": "current"
+            }
+          ],
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Good",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
+        },
+        {
+          "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+          "primary": [
+            {
+              "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
+            {
+              "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+              "source_time": "2026-09-01",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "apple.com",
+              "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+              "fiscal_period": null,
+              "role": "current"
+            },
+            {
+              "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+              "source_time": "2026-09-01",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "apple.com",
+              "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+              "fiscal_period": null,
+              "role": "current"
+            }
+          ],
+          "independent": [],
+          "industry": [],
+          "counter": [
+            {
+              "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
+            {
+              "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": null,
+              "role": "current"
+            }
+          ],
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Good",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Installed base growth underpins Services monetization",
-          "support": [
+          "primary": [
             {
-              "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+              "fiscal_period": null,
+              "role": "current"
             },
             {
-              "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+              "fiscal_period": null,
+              "role": "current"
             }
           ],
-          "counter": [],
-          "gaps": []
+          "independent": [],
+          "industry": [],
+          "counter": [
+            {
+              "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
+            {
+              "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": null,
+              "role": "current"
+            }
+          ],
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Good",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Services mix shift supports margin structure",
-          "support": [
+          "primary": [
             {
-              "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
             },
             {
-              "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+              "fiscal_period": null,
+              "role": "current"
             },
             {
-              "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
+              "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+              "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+              "source_time": "2026-09-01",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "source": "apple.com",
+              "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+              "fiscal_period": null,
+              "role": "current"
             }
           ],
-          "counter": [],
-          "gaps": []
+          "independent": [],
+          "industry": [],
+          "counter": [
+            {
+              "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
+            {
+              "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": null,
+              "role": "current"
+            }
+          ],
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Good",
+            "freshness": "Poor",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Revenue growth is broad-based and accelerating",
-          "support": [
+          "primary": [
+            {
+              "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+              "source_time": "2026-07-30",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+              "fiscal_period": "2026Q3",
+              "role": "current"
+            },
             {
               "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
@@ -1122,107 +1617,113 @@
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+              "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+              "fiscal_period": "2026Q2",
+              "role": "historical"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
+        }
+      ],
+      "coverage_matrix": [
+        {
+          "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Good",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
         },
         {
-          "claim_title": "Valuation multiple is elevated relative to growth",
-          "support": [
-            {
-              "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            },
-            {
-              "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-              "source_time": "2026-04-30",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-            }
-          ],
-          "counter": [],
-          "gaps": []
+          "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Good",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Installed base growth underpins Services monetization",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Good",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Services mix shift supports margin structure",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Good",
+          "freshness": "Poor",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Revenue growth is broad-based and accelerating",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
         }
       ]
     }
   },
   "quality": {
-    "discovered_docs": 84,
-    "retained_for_reasoning": 20,
-    "archived_docs": 64,
+    "discovered_docs": 79,
+    "retained_for_reasoning": 18,
+    "archived_docs": 61,
     "tier_distribution_before": {
-      "tier1": 21,
-      "tier2": 2,
-      "tier3": 2,
-      "tier4": 58,
+      "tier1": 22,
+      "tier2": 1,
+      "tier3": 1,
+      "tier4": 54,
       "tier5": 1
     },
     "tier_distribution_after": {
       "tier1": 16,
-      "tier2": 2,
-      "tier3": 2,
+      "tier2": 1,
+      "tier3": 1,
       "tier4": 0,
       "tier5": 0
     },
     "primary_source_count": 16,
-    "independent_source_count": 2,
-    "industry_source_count": 2,
-    "tier45_filtered_count": 59,
+    "independent_source_count": 1,
+    "industry_source_count": 1,
+    "tier45_filtered_count": 55,
     "important_relationship_types": [
       "product",
       "supplier",
@@ -1233,97 +1734,85 @@
     ],
     "top_10_facts": [
       {
-        "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
+        "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-        "source_time": "2026-04-30",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_4ef3fee4ab14452dbc291d70c16c37f8"
-      },
-      {
-        "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
-      },
-      {
-        "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_dbf047b79c4443c0bb6c0bd10ce95733"
-      },
-      {
-        "fact": "Apple announced iPhone 18 Pro and iPhone 18 Pro Max on September 9, 2026, featuring a 48MP Fusion Main camera with variable aperture.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_d15d9d4b8fc140d8b448e44d717b8f0e"
-      },
-      {
-        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, on September 9, 2026, with a 7.6-inch inner display and 5.4-inch outer display.",
+        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
         "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
         "source_time": "2026-09-01",
         "source_tier": 1,
         "claim_title": null,
         "source": "apple.com",
-        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
+        "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       },
       {
-        "fact": "iPhone Duo is powered by the new A20 Pro chip.",
-        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
-        "source_time": "2026-09-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "apple.com",
-        "document_id": "xdoc_4bb74b363e494545a963ce72d2c17ac4"
-      },
-      {
-        "fact": "Apple's software updates including Siri AI rolled out starting September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
         "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
         "source_time": "2026-09-01",
         "source_tier": 1,
         "claim_title": null,
         "source": "apple.com",
-        "document_id": "xdoc_36bb7b2c01444e4fb3c98ac66b01f093"
+        "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "margin",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
-    "coverage_gaps": [],
+    "coverage_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing."
+    ],
     "date_recovered_count": 0,
     "provider_roles": {
       "exa": "primary_discovery",
@@ -1343,25 +1832,25 @@
     "regulation",
     "developer ecosystem"
   ],
-  "duplicates_removed": 7,
-  "raw_count": 91,
-  "evidence_extracted": 13,
-  "news_hits": 8,
+  "duplicates_removed": 5,
+  "raw_count": 84,
+  "evidence_extracted": 8,
+  "news_hits": 7,
   "sample_documents": [
     {
       "provider": "exa",
       "source_type": "official",
       "source_family": "apple.com",
       "source_tier": 1,
-      "title": "Get ready to experience iPhone 18 Pro, the new Apple Watch lineup, and AirPods 5 - Apple",
-      "url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+      "title": "Siri AI, a profoundly more capable and personal assistant, is here - Apple",
+      "url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
       "source_domain": "apple.com",
-      "published_at": "2026-09-01",
+      "published_at": "2026-09-14",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Apple Inc official investor relations news and events",
+      "query": "Apple Inc. official investor relations news and events",
       "query_type": "company_official",
-      "text_chars": 24000
+      "text_chars": 22799
     },
     {
       "provider": "exa",
@@ -1374,7 +1863,22 @@
       "published_at": "2026-09-01",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Apple Inc official investor relations news and events",
+      "query": "Apple Inc. official investor relations news and events",
+      "query_type": "company_official",
+      "text_chars": 24000
+    },
+    {
+      "provider": "exa",
+      "source_type": "official",
+      "source_family": "apple.com",
+      "source_tier": 1,
+      "title": "Get ready to experience iPhone 18 Pro, the new Apple Watch lineup, and AirPods 5 - Apple",
+      "url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+      "source_domain": "apple.com",
+      "published_at": "2026-09-01",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Apple Inc. official investor relations news and events",
       "query_type": "company_official",
       "text_chars": 24000
     },
@@ -1389,7 +1893,7 @@
       "published_at": "2026-09-01",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Apple Inc official investor relations news and events",
+      "query": "Apple Inc. official investor relations news and events",
       "query_type": "company_official",
       "text_chars": 24000
     },
@@ -1404,7 +1908,7 @@
       "published_at": "2026-09-01",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Apple Inc official investor relations news and events",
+      "query": "Apple Inc. official investor relations news and events",
       "query_type": "company_official",
       "text_chars": 24000
     },
@@ -1413,28 +1917,13 @@
       "source_type": "independent_news",
       "source_family": "high_quality_news",
       "source_tier": 2,
-      "title": "Apple Maps renames Lake Ontario as Lake America after Trump order",
-      "url": "https://www.bbc.com/news/articles/cddvyyz0e47o",
-      "source_domain": "bbc.com",
-      "published_at": "2026-09-02",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "Apple Inc news last 30 days",
-      "query_type": "company_news",
-      "text_chars": 7247
-    },
-    {
-      "provider": "tavily",
-      "source_type": "independent_news",
-      "source_family": "high_quality_news",
-      "source_tier": 2,
-      "title": "Apple shares are doing something they haven't done in 20 years ...",
+      "title": "Apple shares are doing something they haven't done in 20 years. Here’s what’s happening",
       "url": "https://www.cnbc.com/2026/09/02/apple-shares-are-doing-something-they-havent-done-in-20-years-heres-whats-happening.html",
       "source_domain": "cnbc.com",
       "published_at": "2026-09-02",
       "is_dated": true,
       "is_full_text": true,
-      "query": "Apple Inc news last 30 days",
+      "query": "Apple Inc. news last 30 days",
       "query_type": "company_news",
       "text_chars": 2321
     },
@@ -1452,24 +1941,27 @@
       "query": "AAPL news",
       "query_type": "company_news",
       "text_chars": 13764
-    },
-    {
-      "provider": "exa",
-      "source_type": "industry",
-      "source_family": "digitimes.com",
-      "source_tier": 3,
-      "title": "TSMC 3nm, 2nm, and CoWoS stay tight as AWS, MediaTek, TPU shift capacity",
-      "url": "https://www.digitimes.com/news/a20260915PD214/tsmc-3nm-2nm-capacity-cowos.html",
-      "source_domain": "digitimes.com",
-      "published_at": "2026-09-15",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "TSMC Apple chip supply constraints 2026",
-      "query_type": "related_entity",
-      "text_chars": 463
     }
   ],
   "sample_facts": [
+    {
+      "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_time": "2026-07-30",
+      "source_tier": 1
+    },
+    {
+      "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_time": "2026-07-30",
+      "source_tier": 1
+    },
+    {
+      "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_time": "2026-07-30",
+      "source_tier": 1
+    },
     {
       "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
@@ -1489,31 +1981,13 @@
       "source_tier": 1
     },
     {
-      "fact": "Apple's fiscal 2026 second quarter ended March 28, 2026.",
-      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
-      "source_time": "2026-04-30",
-      "source_tier": 1
-    },
-    {
-      "fact": "Pre-orders for iPhone 18 Pro and iPhone 18 Pro Max begin Saturday, September 12, 2026 at 5 a.m. PT.",
-      "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+      "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+      "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
       "source_time": "2026-09-01",
       "source_tier": 1
     },
     {
-      "fact": "iPhone 18 Pro and iPhone 18 Pro Max are powered by the A20 Pro chip.",
-      "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
-      "source_time": "2026-09-01",
-      "source_tier": 1
-    },
-    {
-      "fact": "Apple announced iPhone 18 Pro and iPhone 18 Pro Max on September 9, 2026, featuring a 48MP Fusion Main camera with variable aperture.",
-      "source_url": "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
-      "source_time": "2026-09-01",
-      "source_tier": 1
-    },
-    {
-      "fact": "Apple introduced iPhone Duo, its first foldable iPhone, on September 9, 2026, with a 7.6-inch inner display and 5.4-inch outer display.",
+      "fact": "iPhone Duo is powered by the new A20 Pro chip.",
       "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
       "source_time": "2026-09-01",
       "source_tier": 1
@@ -1523,5 +1997,439 @@
   "budget_remaining": {
     "tavily": 8,
     "exa": 0
+  },
+  "evidence_set": {
+    "top_facts": [
+      {
+        "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "revenue",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+        "source_time": "2026-09-01",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "apple.com",
+        "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+        "metric": "other",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "eps",
+        "fiscal_period": "2026Q3",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.35,
+        "signal_only": null
+      },
+      {
+        "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+        "source_time": "2026-07-30",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+        "metric": "margin",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Installed base growth underpins Services monetization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Services mix shift supports margin structure",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Good",
+        "freshness": "Poor",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Revenue growth is broad-based and accelerating",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "revenue",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "cash_flow",
+          "fiscal_period": null,
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.175,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "eps",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.1575,
+          "signal_only": null
+        }
+      ]
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch",
+        "url": "https://www.techtimes.co.uk/apple-earnings-boosted-tariff-refund-1808444",
+        "source_tier": 4,
+        "source_domain": "techtimes.co.uk",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% Levy: But There's a Catch Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 2…",
+        "verification_query": "AAPL Apple Scores $2.2B Tariff Refund After Trump Once Threatened iPhones With 25% L… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine",
+        "url": "https://applemagazine.com/apple-faces-price-hikes-as-tariff-driven-import/",
+        "source_tier": 4,
+        "source_domain": "applemagazine.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazine Mobile & Wearab…",
+        "verification_query": "AAPL Apple Faces Price Hikes as Tariff-Driven Import Surge Falls Short - AppleMagazi… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today",
+        "url": "https://data-today.net/stickman/apples-2-billion-tariff-refund/",
+        "source_tier": 4,
+        "source_domain": "data-today.net",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today # Apple's $2.2 Billion Tari…",
+        "verification_query": "AAPL Apple's $2.2 Billion Tariff Refund (It's Worse Than You Think) | Data Today (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage",
+        "url": "https://www.kobaran.com/apple-stock-rally-faces-a-supply-problem-not-a-demand-shortage/",
+        "source_tier": 4,
+        "source_domain": "kobaran.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage # Apple Stock Rally Faces a Supply Problem, Not a D…",
+        "verification_query": "AAPL Apple Stock Rally Faces a Supply Problem, Not a Demand Shortage (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      },
+      {
+        "title": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records",
+        "url": "https://beancount.io/blog/2026/08/22/apple-fy2026-q3-earnings-analysis",
+        "source_tier": 4,
+        "source_domain": "beancount.io",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services and Mac Hit New June Records # Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and S…",
+        "verification_query": "AAPL Apple's Strongest June Quarter Ever: $109.4B Revenue, $2.02 EPS, and Services a… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 2,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 third quarter revenue of $109.4 billion, up 16 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_3a0b57654a9d4a60a96368e0c97e6580",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's software updates including Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_time": "2026-09-01",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "apple.com",
+          "document_id": "xdoc_f481cb5b71fb4703b0a92b7302f339f0",
+          "metric": "other",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [
+        {
+          "fact": "Apple's fiscal 2026 third quarter diluted earnings per share was $2.02, up 29 percent year over year, including a favorable impact of $0.11 from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.35,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's June quarter gross margin was 50.1 percent, including a favorable impact of approximately 2 percentage points from tariff refunds.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_time": "2026-07-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_44da27037f0f4c419367f1c6137833e1",
+          "metric": "margin",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Apple reported fiscal 2026 second quarter revenue of $111.2 billion, up 17 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "revenue",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's March quarter generated over $28 billion in operating cash flow.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "cash_flow",
+          "fiscal_period": null,
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.175,
+          "signal_only": null
+        },
+        {
+          "fact": "Apple's fiscal 2026 second quarter diluted earnings per share was $2.01, up 22 percent year over year.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_time": "2026-04-30",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_9f536631d92146989761e812b97126fe",
+          "metric": "eps",
+          "fiscal_period": "2026Q2",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.1575,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing."
+    ]
   }
 }

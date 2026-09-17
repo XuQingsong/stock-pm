@@ -16,132 +16,88 @@
   ],
   "claim_queries": [
     {
-      "query": "Lumentum datacom laser shipments manufacturing utilization gross margin",
-      "query_type": "claim",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-      "entity": null
-    },
-    {
-      "query": "Lumentum sequential revenue growth FY2026 datacom demand",
-      "query_type": "claim",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": "Sequential revenue acceleration through FY2026",
-      "entity": null
-    },
-    {
-      "query": "Lumentum FY2027 Q1 revenue guidance $1.225 billion $1.275 billion",
-      "query_type": "claim",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-      "entity": null
-    },
-    {
-      "query": "Coherent Corp datacom laser demand earnings commentary",
+      "query": "Coherent Corp datacom laser demand outlook",
       "query_type": "related_entity",
       "providers": [
         "exa"
       ],
       "claim_title": null,
       "entity": "Coherent Corp."
-    },
-    {
-      "query": "Fabrinet datacom optical manufacturing capacity utilization",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "Fabrinet"
-    },
-    {
-      "query": "NVIDIA datacenter networking optical component demand",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "NVIDIA"
-    },
-    {
-      "query": "Broadcom AI networking optical component demand",
-      "query_type": "related_entity",
-      "providers": [
-        "exa"
-      ],
-      "claim_title": null,
-      "entity": "Broadcom"
     }
   ],
   "related_entities": [
     {
       "name": "Coherent Corp.",
       "relation": "peer",
-      "why": "Direct competitor in optical components and transceivers; their capacity, pricing, and product announcements can shift demand and margin expectations for Lumen…"
+      "why": "Direct competitor in optical components and transceivers; their results and commentary can signal demand trends and pricing pressure affecting Lumentum's claim…"
     },
     {
       "name": "Cisco Systems",
       "relation": "hyperscaler/customer",
-      "why": "Major networking equipment vendor and customer of optical components; their order patterns and product cycles affect Lumentum's revenue."
-    },
-    {
-      "name": "NVIDIA",
-      "relation": "technology",
-      "why": "Dominant AI accelerator supplier; their GPU and networking roadmaps drive demand for high-speed optical interconnects, a key growth area for Lumentum."
-    },
-    {
-      "name": "Amazon AWS",
-      "relation": "hyperscaler/customer",
-      "why": "Large cloud operator and potential customer for optical transceivers and components; their data center buildout and networking upgrades impact Lumentum."
-    },
-    {
-      "name": "Microsoft Azure",
-      "relation": "hyperscaler/customer",
-      "why": "Major cloud provider whose data center expansion and optical networking needs can influence Lumentum's sales."
-    },
-    {
-      "name": "Google Cloud",
-      "relation": "hyperscaler/customer",
-      "why": "Cloud provider with significant optical networking deployments; their technology choices and procurement affect Lumentum."
-    },
-    {
-      "name": "Meta",
-      "relation": "hyperscaler/customer",
-      "why": "Large-scale data center operator investing in AI infrastructure; their optical transceiver demand is relevant to Lumentum."
-    },
-    {
-      "name": "II-VI Incorporated (now Coherent)",
-      "relation": "peer",
-      "why": "Merged with Coherent; combined entity is a major competitor in optical components and materials, influencing market share and pricing."
-    },
-    {
-      "name": "Broadcom",
-      "relation": "supplier",
-      "why": "Supplies switching chips and optical components; their product cycles and pricing can affect Lumentum's cost structure and competitiveness."
-    },
-    {
-      "name": "Inphi (now Marvell)",
-      "relation": "supplier",
-      "why": "Provides high-speed analog and mixed-signal ICs for optical transceivers; their technology and availability impact Lumentum's product performance and margins."
-    },
-    {
-      "name": "Fabrinet",
-      "relation": "supplier",
-      "why": "Major contract manufacturer for optical components; their capacity utilization and commentary on datacom demand can validate Lumentum's manufacturing utilizati…"
+      "why": "Major networking equipment vendor and customer of optical components; their orders and inventory levels can impact Lumentum's revenue and guidance."
     },
     {
       "name": "Ciena Corporation",
       "relation": "hyperscaler/customer",
-      "why": "Optical networking systems vendor; their demand for coherent components and datacom optics affects Lumentum's telecom and datacom segments."
+      "why": "Optical networking systems vendor that purchases components; their demand outlook can affect Lumentum's telecom segment."
+    },
+    {
+      "name": "NVIDIA Corporation",
+      "relation": "technology",
+      "why": "Leader in AI/GPU computing; their adoption of optical interconnects and co-packaged optics can drive demand for Lumentum's products."
+    },
+    {
+      "name": "Broadcom Inc.",
+      "relation": "technology",
+      "why": "Supplier of switching chips and a key player in data center networking; their product cycles influence optical component demand."
+    },
+    {
+      "name": "Microsoft Corporation",
+      "relation": "hyperscaler/customer",
+      "why": "Major cloud operator and potential customer for optical transceivers; their capex plans affect demand for Lumentum's datacom products."
+    },
+    {
+      "name": "Amazon.com, Inc.",
+      "relation": "hyperscaler/customer",
+      "why": "AWS cloud infrastructure spending drives demand for optical components; their data center expansion impacts Lumentum."
+    },
+    {
+      "name": "Alphabet Inc.",
+      "relation": "hyperscaler/customer",
+      "why": "Google Cloud and data center investments influence optical component demand; their technology choices can affect Lumentum's product mix."
+    },
+    {
+      "name": "Meta Platforms, Inc.",
+      "relation": "hyperscaler/customer",
+      "why": "Large-scale data center operator; their AI and networking infrastructure spending can drive demand for Lumentum's optical solutions."
+    },
+    {
+      "name": "II-VI Incorporated (now Coherent Corp.)",
+      "relation": "supplier",
+      "why": "Supplier of optical materials and components; supply chain dynamics and pricing can impact Lumentum's margins and production."
+    },
+    {
+      "name": "Fabrinet",
+      "relation": "supplier",
+      "why": "Key contract manufacturer for optical modules; capacity and utilization trends at Fabrinet can validate Lumentum's manufacturing utilization and margin recover…"
+    },
+    {
+      "name": "Microsoft",
+      "relation": "hyperscaler/customer",
+      "why": "Major cloud operator and potential datacom laser customer; their AI infrastructure capex commentary can confirm or refute the durability of the datacom ramp."
     }
   ],
   "providers": {
+    "exa": {
+      "status": "ok",
+      "hit_count": 40,
+      "usable_count": 40,
+      "high_quality_count": 3,
+      "full_text_count": 40,
+      "dated_count": 34,
+      "error": null,
+      "query_count": 8
+    },
     "tavily": {
       "status": "ok",
       "hit_count": 10,
@@ -151,16 +107,6 @@
       "dated_count": 0,
       "error": null,
       "query_count": 2
-    },
-    "exa": {
-      "status": "ok",
-      "hit_count": 50,
-      "usable_count": 50,
-      "high_quality_count": 1,
-      "full_text_count": 50,
-      "dated_count": 44,
-      "error": null,
-      "query_count": 10
     },
     "alpha_vantage": {
       "status": "partial",
@@ -184,160 +130,95 @@
     }
   },
   "report": {
-    "official_documents": 17,
+    "official_documents": 13,
     "independent_news": 0,
-    "industry_sources": 24,
+    "industry_sources": 15,
     "customer_sources": 0,
     "supplier_sources": 0,
-    "dated_recent_items": 58,
-    "undated_or_background_items": 27,
-    "full_text_items": 59,
-    "tier1_count": 17,
+    "dated_recent_items": 43,
+    "undated_or_background_items": 20,
+    "full_text_items": 43,
+    "tier1_count": 13,
     "tier2_count": 0,
     "tier3_count": 0,
-    "tier4_count": 65,
-    "tier5_count": 3,
+    "tier4_count": 49,
+    "tier5_count": 1,
     "related_entities": [
       {
         "name": "Coherent Corp.",
         "relation": "peer",
-        "why": "Direct competitor in optical components and transceivers; their capacity, pricing, and product announcements can shift demand and margin expectations for Lumen…"
+        "why": "Direct competitor in optical components and transceivers; their results and commentary can signal demand trends and pricing pressure affecting Lumentum's claim…"
       },
       {
         "name": "Cisco Systems",
         "relation": "hyperscaler/customer",
-        "why": "Major networking equipment vendor and customer of optical components; their order patterns and product cycles affect Lumentum's revenue."
-      },
-      {
-        "name": "NVIDIA",
-        "relation": "technology",
-        "why": "Dominant AI accelerator supplier; their GPU and networking roadmaps drive demand for high-speed optical interconnects, a key growth area for Lumentum."
-      },
-      {
-        "name": "Amazon AWS",
-        "relation": "hyperscaler/customer",
-        "why": "Large cloud operator and potential customer for optical transceivers and components; their data center buildout and networking upgrades impact Lumentum."
-      },
-      {
-        "name": "Microsoft Azure",
-        "relation": "hyperscaler/customer",
-        "why": "Major cloud provider whose data center expansion and optical networking needs can influence Lumentum's sales."
-      },
-      {
-        "name": "Google Cloud",
-        "relation": "hyperscaler/customer",
-        "why": "Cloud provider with significant optical networking deployments; their technology choices and procurement affect Lumentum."
-      },
-      {
-        "name": "Meta",
-        "relation": "hyperscaler/customer",
-        "why": "Large-scale data center operator investing in AI infrastructure; their optical transceiver demand is relevant to Lumentum."
-      },
-      {
-        "name": "II-VI Incorporated (now Coherent)",
-        "relation": "peer",
-        "why": "Merged with Coherent; combined entity is a major competitor in optical components and materials, influencing market share and pricing."
-      },
-      {
-        "name": "Broadcom",
-        "relation": "supplier",
-        "why": "Supplies switching chips and optical components; their product cycles and pricing can affect Lumentum's cost structure and competitiveness."
-      },
-      {
-        "name": "Inphi (now Marvell)",
-        "relation": "supplier",
-        "why": "Provides high-speed analog and mixed-signal ICs for optical transceivers; their technology and availability impact Lumentum's product performance and margins."
-      },
-      {
-        "name": "Fabrinet",
-        "relation": "supplier",
-        "why": "Major contract manufacturer for optical components; their capacity utilization and commentary on datacom demand can validate Lumentum's manufacturing utilizati…"
+        "why": "Major networking equipment vendor and customer of optical components; their orders and inventory levels can impact Lumentum's revenue and guidance."
       },
       {
         "name": "Ciena Corporation",
         "relation": "hyperscaler/customer",
-        "why": "Optical networking systems vendor; their demand for coherent components and datacom optics affects Lumentum's telecom and datacom segments."
+        "why": "Optical networking systems vendor that purchases components; their demand outlook can affect Lumentum's telecom segment."
+      },
+      {
+        "name": "NVIDIA Corporation",
+        "relation": "technology",
+        "why": "Leader in AI/GPU computing; their adoption of optical interconnects and co-packaged optics can drive demand for Lumentum's products."
+      },
+      {
+        "name": "Broadcom Inc.",
+        "relation": "technology",
+        "why": "Supplier of switching chips and a key player in data center networking; their product cycles influence optical component demand."
+      },
+      {
+        "name": "Microsoft Corporation",
+        "relation": "hyperscaler/customer",
+        "why": "Major cloud operator and potential customer for optical transceivers; their capex plans affect demand for Lumentum's datacom products."
+      },
+      {
+        "name": "Amazon.com, Inc.",
+        "relation": "hyperscaler/customer",
+        "why": "AWS cloud infrastructure spending drives demand for optical components; their data center expansion impacts Lumentum."
+      },
+      {
+        "name": "Alphabet Inc.",
+        "relation": "hyperscaler/customer",
+        "why": "Google Cloud and data center investments influence optical component demand; their technology choices can affect Lumentum's product mix."
+      },
+      {
+        "name": "Meta Platforms, Inc.",
+        "relation": "hyperscaler/customer",
+        "why": "Large-scale data center operator; their AI and networking infrastructure spending can drive demand for Lumentum's optical solutions."
+      },
+      {
+        "name": "II-VI Incorporated (now Coherent Corp.)",
+        "relation": "supplier",
+        "why": "Supplier of optical materials and components; supply chain dynamics and pricing can impact Lumentum's margins and production."
+      },
+      {
+        "name": "Fabrinet",
+        "relation": "supplier",
+        "why": "Key contract manufacturer for optical modules; capacity and utilization trends at Fabrinet can validate Lumentum's manufacturing utilization and margin recover…"
+      },
+      {
+        "name": "Microsoft",
+        "relation": "hyperscaler/customer",
+        "why": "Major cloud operator and potential datacom laser customer; their AI infrastructure capex commentary can confirm or refute the durability of the datacom ramp."
       }
     ],
     "claim_queries": [
       {
-        "query": "Lumentum datacom laser shipments manufacturing utilization gross margin",
-        "query_type": "claim",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-        "entity": null
-      },
-      {
-        "query": "Lumentum sequential revenue growth FY2026 datacom demand",
-        "query_type": "claim",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": "Sequential revenue acceleration through FY2026",
-        "entity": null
-      },
-      {
-        "query": "Lumentum FY2027 Q1 revenue guidance $1.225 billion $1.275 billion",
-        "query_type": "claim",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-        "entity": null
-      },
-      {
-        "query": "Coherent Corp datacom laser demand earnings commentary",
+        "query": "Coherent Corp datacom laser demand outlook",
         "query_type": "related_entity",
         "providers": [
           "exa"
         ],
         "claim_title": null,
         "entity": "Coherent Corp."
-      },
-      {
-        "query": "Fabrinet datacom optical manufacturing capacity utilization",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "Fabrinet"
-      },
-      {
-        "query": "NVIDIA datacenter networking optical component demand",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "NVIDIA"
-      },
-      {
-        "query": "Broadcom AI networking optical component demand",
-        "query_type": "related_entity",
-        "providers": [
-          "exa"
-        ],
-        "claim_title": null,
-        "entity": "Broadcom"
       }
     ],
     "query_results": [
       {
-        "query": "Lumentum Holdings latest news and announcements",
-        "query_type": "company_news",
-        "provider": "tavily",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Lumentum investor relations earnings presentations",
+        "query": "Lumentum Holdings latest news and press releases",
         "query_type": "company_official",
         "provider": "exa",
         "hit_count": 5,
@@ -348,18 +229,29 @@
         "entity": null
       },
       {
-        "query": "Lumentum 10-K 10-Q SEC filings",
-        "query_type": "company_official",
+        "query": "Lumentum Holdings earnings call transcript latest quarter",
+        "query_type": "company_earnings",
         "provider": "exa",
         "hit_count": 5,
         "usable_count": 4,
+        "high_quality_count": 1,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Lumentum Holdings news last 30 days",
+        "query_type": "company_news",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "optical transceiver market trends 2026",
+        "query": "optical component supply chain constraints 2025",
         "query_type": "industry_news",
         "provider": "exa",
         "hit_count": 5,
@@ -370,40 +262,45 @@
         "entity": null
       },
       {
-        "query": "Lumentum datacom laser shipments manufacturing utilization gross margin",
-        "query_type": "claim",
+        "query": "data center optical transceiver market growth forecast",
+        "query_type": "industry_news",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 4,
+        "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+        "claim_title": null,
         "entity": null
       },
       {
-        "query": "Lumentum sequential revenue growth FY2026 datacom demand",
-        "query_type": "claim",
+        "query": "LITE Indium phosphide shortage driven by China’s export controls threatens AI infras… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 3,
+        "usable_count": 0,
         "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "Sequential revenue acceleration through FY2026",
-        "entity": null
+        "status": "ok"
       },
       {
-        "query": "Lumentum FY2027 Q1 revenue guidance $1.225 billion $1.275 billion",
-        "query_type": "claim",
+        "query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
         "provider": "exa",
         "hit_count": 5,
-        "usable_count": 2,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-        "entity": null
+        "usable_count": 1,
+        "high_quality_count": 1,
+        "status": "ok"
       },
       {
-        "query": "Coherent Corp datacom laser demand earnings commentary",
+        "query": "LITE Global Optical Transceiver Market to Reach $34.4 Billion by (8-K OR 10-Q OR \"press release\" OR investor)",
+        "query_type": "verification",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 0,
+        "high_quality_count": 0,
+        "status": "ok"
+      },
+      {
+        "query": "Coherent Corp datacom laser demand outlook",
         "query_type": "related_entity",
         "provider": "exa",
         "hit_count": 5,
@@ -414,70 +311,131 @@
         "entity": "Coherent Corp."
       },
       {
-        "query": "Fabrinet datacom optical manufacturing capacity utilization",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Fabrinet"
-      },
-      {
-        "query": "NVIDIA datacenter networking optical component demand",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "NVIDIA"
-      },
-      {
-        "query": "Broadcom AI networking optical component demand",
-        "query_type": "related_entity",
-        "provider": "exa",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Broadcom"
-      },
-      {
         "query": "LITE news",
         "query_type": "company_news",
         "provider": "tavily",
         "hit_count": 5,
-        "usable_count": 5,
+        "usable_count": 4,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
         "entity": null
       }
     ],
-    "duplicates_removed": 10,
-    "raw_count_before_dedupe": 95,
+    "duplicates_removed": 13,
+    "raw_count_before_dedupe": 75,
     "coverage_gaps": [
-      "No Tier-2 independent facts in the reasoning set.",
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing.",
       "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
     ],
     "providers": {
+      "exa": {
+        "provider": "exa",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Lumentum Holdings latest news and press releases",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1250
+          },
+          {
+            "query": "Lumentum Holdings earnings call transcript latest quarter",
+            "query_type": "company_earnings",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1511
+          },
+          {
+            "query": "optical component supply chain constraints 2025",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 117
+          },
+          {
+            "query": "data center optical transceiver market growth forecast",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1042
+          },
+          {
+            "query": "LITE Indium phosphide shortage driven by China’s export controls threatens AI infras… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 6210
+          },
+          {
+            "query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1367
+          },
+          {
+            "query": "LITE Global Optical Transceiver Market to Reach $34.4 Billion by (8-K OR 10-Q OR \"press release\" OR investor)",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1838
+          },
+          {
+            "query": "Coherent Corp datacom laser demand outlook",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1646
+          }
+        ],
+        "hit_count": 40,
+        "usable_count": 40,
+        "high_quality_count": 3,
+        "full_text_count": 40,
+        "dated_count": 34,
+        "error": null
+      },
       "tavily": {
         "provider": "tavily",
         "status": "ok",
         "queries": [
           {
-            "query": "Lumentum Holdings latest news and announcements",
+            "query": "Lumentum Holdings news last 30 days",
             "query_type": "company_news",
             "hit_count": 5,
             "usable_count": 5,
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 34
+            "latency_ms": 2705
           },
           {
             "query": "LITE news",
@@ -487,7 +445,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 49
+            "latency_ms": 29
           }
         ],
         "hit_count": 10,
@@ -495,118 +453,6 @@
         "high_quality_count": 0,
         "full_text_count": 10,
         "dated_count": 0,
-        "error": null
-      },
-      "exa": {
-        "provider": "exa",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Lumentum investor relations earnings presentations",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1238
-          },
-          {
-            "query": "Lumentum 10-K 10-Q SEC filings",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 7676
-          },
-          {
-            "query": "optical transceiver market trends 2026",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1777
-          },
-          {
-            "query": "Lumentum datacom laser shipments manufacturing utilization gross margin",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1177
-          },
-          {
-            "query": "Lumentum sequential revenue growth FY2026 datacom demand",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1528
-          },
-          {
-            "query": "Lumentum FY2027 Q1 revenue guidance $1.225 billion $1.275 billion",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1223
-          },
-          {
-            "query": "Coherent Corp datacom laser demand earnings commentary",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1757
-          },
-          {
-            "query": "Fabrinet datacom optical manufacturing capacity utilization",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1111
-          },
-          {
-            "query": "NVIDIA datacenter networking optical component demand",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 3523
-          },
-          {
-            "query": "Broadcom AI networking optical component demand",
-            "query_type": "related_entity",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 1269
-          }
-        ],
-        "hit_count": 50,
-        "usable_count": 50,
-        "high_quality_count": 1,
-        "full_text_count": 50,
-        "dated_count": 44,
         "error": null
       },
       "alpha_vantage": {
@@ -621,7 +467,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 212
+            "latency_ms": 46
           },
           {
             "query": "OVERVIEW LITE",
@@ -669,7 +515,7 @@
       "exa_status": "ok",
       "tavily": {
         "hit_count": 8,
-        "dated_recent": 6,
+        "dated_recent": 5,
         "full_text": 8,
         "tier1_2": 0,
         "news": 8,
@@ -678,47 +524,48 @@
         "unique_domains": [
           "247wallst.com",
           "finance.yahoo.com",
+          "indmoney.com",
+          "kavout.com",
+          "marketbeat.com",
           "quiverquant.com",
-          "seekingalpha.com",
           "simplywall.st",
-          "stockstotrade.com",
-          "stocktitan.net"
+          "stockstotrade.com"
         ],
-        "avg_full_text_chars": 13751
+        "avg_full_text_chars": 17273
       },
       "exa": {
-        "hit_count": 42,
-        "dated_recent": 31,
-        "full_text": 42,
-        "tier1_2": 1,
-        "news": 5,
-        "industry": 24,
-        "customer_supplier": 19,
+        "hit_count": 25,
+        "dated_recent": 18,
+        "full_text": 25,
+        "tier1_2": 2,
+        "news": 10,
+        "industry": 15,
+        "customer_supplier": 5,
         "unique_domains": [
-          "247wallst.com",
-          "404kresearch.substack.com",
           "allmind.ai",
           "bingx.com",
-          "convergedigest.com",
+          "briefasia.com",
+          "datainsightsmarket.com",
           "en.sedaily.com",
+          "everyticker.com",
           "fool.com",
-          "frontier.eninvs.com",
-          "gaetanoresearch.substack.com",
-          "gate.com",
           "globenewswire.com",
           "gminsights.com",
+          "grandresearchstore.com",
           "investor.lumentum.com",
-          "lifestyle.kotaradio.com",
-          "lightwaveonline.com",
+          "iqep.com",
+          "kviitv.marketminute.com",
           "lumentum.com",
-          "marketbeat.com",
           "metatrader.com",
-          "nextplatform.com",
-          "poseidon-partner.com"
+          "noah-news.com",
+          "recatools.com",
+          "seekingalpha.com",
+          "stocktitan.net",
+          "techtimes.com"
         ],
-        "avg_full_text_chars": 9430
+        "avg_full_text_chars": 9168
       },
-      "better_for_news": "tavily",
+      "better_for_news": "exa",
       "better_for_industry": "exa",
       "better_for_customer_supplier": "exa",
       "better_for_full_text": "tavily",
@@ -732,11 +579,12 @@
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 9,
+    "evidence_extracted": 6,
     "window_days": 30,
     "valuable_domains": [
       "fred.stlouisfed.org",
       "investor.lumentum.com",
+      "iqep.com",
       "sec.gov"
     ],
     "provider_roles": {
@@ -757,27 +605,27 @@
       "optical ecosystem"
     ],
     "date_recovered_count": 0,
-    "discovered_docs": 85,
-    "retained_for_reasoning": 14,
-    "archived_docs": 71,
+    "discovered_docs": 63,
+    "retained_for_reasoning": 13,
+    "archived_docs": 50,
     "tier_distribution_before": {
-      "tier1": 17,
+      "tier1": 13,
       "tier2": 0,
       "tier3": 0,
-      "tier4": 65,
-      "tier5": 3
+      "tier4": 49,
+      "tier5": 1
     },
     "tier_distribution_after": {
-      "tier1": 14,
+      "tier1": 13,
       "tier2": 0,
       "tier3": 0,
       "tier4": 0,
       "tier5": 0
     },
-    "primary_source_count": 14,
+    "primary_source_count": 13,
     "independent_source_count": 0,
     "industry_source_count": 0,
-    "tier45_filtered_count": 68,
+    "tier45_filtered_count": 50,
     "top_10_facts": [
       {
         "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
@@ -786,81 +634,338 @@
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "revenue",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+        "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
         "source_time": "2026-08-11",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "guidance",
+        "fiscal_period": "2027Q1",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+        "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
         "source_time": "2026-08-11",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-      },
-      {
-        "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum reported fiscal Q3 2026 GAAP diluted net income per share of $1.50 and non-GAAP diluted net income per share of $2.37.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum filed an 8-K with the SEC dated August 11, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
-        "source_time": "2026-08-11",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_0fc24d3ac45d4ee59768477713c5b053"
-      },
-      {
-        "fact": "Lumentum filed an 8-K with the SEC dated May 29, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526249535/d112771d8k.htm",
-        "source_time": "2026-06-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_78a58f5fa85d420794758c32caae120e"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
+    "coverage_matrix": [
+      {
+        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Sequential revenue acceleration through FY2026",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.65,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.56,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        }
+      ]
+    },
+    "research_leads": [
+      {
+        "title": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence",
+        "url": "https://noah-news.com/indium-phosphide-shortage-driven-by-chinas-export-controls-threatens-ai-infrastr/",
+        "source_tier": 4,
+        "source_domain": "noah-news.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence Indium phosphide shortage driven by China’s export controls t…",
+        "verification_query": "LITE Indium phosphide shortage driven by China’s export controls threatens AI infras… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling",
+        "url": "https://www.techtimes.com/articles/325423/20260825/gaas-quantum-dot-laser-ships-ai-labs-chinas-inp-export-controls-expose-supply-ceiling.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply C…",
+        "verification_query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 1
+      },
+      {
+        "title": "Global Optical Transceiver Market to Reach $34.4 Billion by",
+        "url": "https://www.globenewswire.com/news-release/2026/08/31/3353143/0/en/global-optical-transceiver-market-to-reach-34-4-billion-by-2031-driven-by-ai-workload-and-hyperscale-data-center-expansion.html",
+        "source_tier": 4,
+        "source_domain": "globenewswire.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Global Optical Transceiver Market to Reach $34.4 Billion by Global Optical Transceiver Market to Reach $34.4 Billion by # Global Optical Transceiver Market to Reach $34.4 Billion…",
+        "verification_query": "LITE Global Optical Transceiver Market to Reach $34.4 Billion by (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum",
+        "url": "https://xenospectrum.com/en/data-center-optical-interconnect-2030/",
+        "source_tier": 4,
+        "source_domain": "xenospectrum.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconne…",
+        "verification_query": "LITE Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "independent_validation": "Missing",
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.65,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.56,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
     "reasoning_context": {
       "top_primary_facts": [
         {
@@ -870,52 +975,43 @@
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
           "source_time": "2026-08-11",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
         },
         {
-          "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
           "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
           "source_time": "2026-08-11",
           "source_tier": 1,
           "claim_title": null,
           "source": "sec",
-          "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-        },
-        {
-          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-          "source_time": "2026-05-05",
-          "source_tier": 1,
-          "claim_title": null,
-          "source": "sec",
-          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-        },
-        {
-          "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-          "source_time": "2026-05-05",
-          "source_tier": 1,
-          "claim_title": null,
-          "source": "sec",
-          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-        },
-        {
-          "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
-          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-          "source_time": "2026-05-05",
-          "source_tier": 1,
-          "claim_title": null,
-          "source": "sec",
-          "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
         }
       ],
       "top_independent_evidence": [],
@@ -923,12 +1019,14 @@
       "top_counter_evidence": [],
       "top_community_signals": [],
       "open_gaps": [
-        "No Tier-2 independent facts in the reasoning set."
+        "Independent validation: Missing",
+        "Industry / related-entity evidence missing.",
+        "Counter evidence missing."
       ],
       "per_claim": [
         {
-          "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-          "support": [
+          "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
+          "primary": [
             {
               "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
@@ -936,42 +1034,124 @@
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             },
             {
-              "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+              "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
               "source_time": "2026-08-11",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2027Q1",
+              "role": "current"
             },
             {
-              "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
-              "source_time": "2026-08-11",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-            },
-            {
-              "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
+              "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
               "source_time": "2026-05-05",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+              "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+              "fiscal_period": "2026Q3",
+              "role": "historical"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
+        },
+        {
+          "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+          "primary": [
+            {
+              "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+              "source_time": "2026-08-11",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2026Q4",
+              "role": "current"
+            },
+            {
+              "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+              "source_time": "2026-08-11",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2027Q1",
+              "role": "current"
+            },
+            {
+              "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+              "source_time": "2026-05-05",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+              "fiscal_period": "2026Q3",
+              "role": "historical"
+            },
+            {
+              "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+              "source_time": "2026-05-05",
+              "source_tier": 1,
+              "claim_title": null,
+              "source": "sec",
+              "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+              "fiscal_period": "2026Q3",
+              "role": "historical"
+            }
+          ],
+          "independent": [],
+          "industry": [],
+          "counter": [],
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
         },
         {
           "claim_title": "Sequential revenue acceleration through FY2026",
-          "support": [
+          "primary": [
             {
               "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
@@ -979,107 +1159,124 @@
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2026Q4",
+              "role": "current"
             },
             {
-              "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+              "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
               "source_time": "2026-08-11",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+              "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+              "fiscal_period": "2027Q1",
+              "role": "current"
             },
             {
-              "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
-              "source_time": "2026-08-11",
+              "fact": "IQE announced a purchase agreement with Quintessent Inc. for supply of Quantum Dot Laser (QDL) epitaxy, supplying 6-inch Gallium Arsenide epiwafers through its foundry-ready service.",
+              "source_url": "https://www.iqep.com/media/press-releases/2026/iqe-announces-purchase-agreement-with-quintessent-as-quantum-dot-laser-technology-moves-to-customer-sampling/",
+              "source_time": "2026-09-03",
               "source_tier": 1,
               "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+              "source": "iqep.com",
+              "document_id": "xdoc_83f345f09ab045e9ba1d6e041bd0277d",
+              "fiscal_period": null,
+              "role": "current"
             },
             {
-              "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
+              "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
               "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
               "source_time": "2026-05-05",
               "source_tier": 1,
               "claim_title": null,
               "source": "sec",
-              "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
+              "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+              "fiscal_period": "2026Q3",
+              "role": "historical"
             }
           ],
+          "independent": [],
+          "industry": [],
           "counter": [],
-          "gaps": []
-        },
+          "missing_evidence_class": [
+            "Independent Evidence",
+            "Industry / related-entity Evidence",
+            "Counter Evidence"
+          ],
+          "coverage": {
+            "primary": "Good",
+            "independent": "Missing",
+            "industry": "Missing",
+            "counter": "Missing",
+            "freshness": "Good",
+            "data_quality": "Partial"
+          },
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed",
+          "independent_validation": "Missing"
+        }
+      ],
+      "coverage_matrix": [
         {
           "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-          "support": [
-            {
-              "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
-              "source_time": "2026-08-11",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-            },
-            {
-              "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
-              "source_time": "2026-08-11",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-            },
-            {
-              "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
-              "source_time": "2026-08-11",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-            },
-            {
-              "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
-              "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-              "source_time": "2026-05-05",
-              "source_tier": 1,
-              "claim_title": null,
-              "source": "sec",
-              "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-            }
-          ],
-          "counter": [],
-          "gaps": []
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
+        },
+        {
+          "claim_title": "Sequential revenue acceleration through FY2026",
+          "primary": "Good",
+          "independent": "Missing",
+          "industry": "Missing",
+          "counter": "Missing",
+          "freshness": "Good",
+          "data_quality": "Partial",
+          "evidence_confidence": "medium",
+          "independence_gap": "issuer-supported but independently unconfirmed"
         }
       ]
     }
   },
   "quality": {
-    "discovered_docs": 85,
-    "retained_for_reasoning": 14,
-    "archived_docs": 71,
+    "discovered_docs": 63,
+    "retained_for_reasoning": 13,
+    "archived_docs": 50,
     "tier_distribution_before": {
-      "tier1": 17,
+      "tier1": 13,
       "tier2": 0,
       "tier3": 0,
-      "tier4": 65,
-      "tier5": 3
+      "tier4": 49,
+      "tier5": 1
     },
     "tier_distribution_after": {
-      "tier1": 14,
+      "tier1": 13,
       "tier2": 0,
       "tier3": 0,
       "tier4": 0,
       "tier5": 0
     },
-    "primary_source_count": 14,
+    "primary_source_count": 13,
     "independent_source_count": 0,
     "industry_source_count": 0,
-    "tier45_filtered_count": 68,
+    "tier45_filtered_count": 50,
     "important_relationship_types": [
       "hyperscaler/customer",
       "peer",
@@ -1096,83 +1293,49 @@
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "revenue",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+        "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
         "source_time": "2026-08-11",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "guidance",
+        "fiscal_period": "2027Q1",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
       },
       {
-        "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+        "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
         "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
         "source_time": "2026-08-11",
         "source_tier": 1,
         "claim_title": null,
         "source": "sec",
-        "document_id": "xdoc_d9c3cd1b4224474cab270e41de0f7553"
-      },
-      {
-        "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum reported fiscal Q3 2026 GAAP diluted net income per share of $1.50 and non-GAAP diluted net income per share of $2.37.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-        "source_time": "2026-05-05",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_381a30e983954c06841c4ed00c629e30"
-      },
-      {
-        "fact": "Lumentum filed an 8-K with the SEC dated August 11, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
-        "source_time": "2026-08-11",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_0fc24d3ac45d4ee59768477713c5b053"
-      },
-      {
-        "fact": "Lumentum filed an 8-K with the SEC dated May 29, 2026.",
-        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526249535/d112771d8k.htm",
-        "source_time": "2026-06-01",
-        "source_tier": 1,
-        "claim_title": null,
-        "source": "sec",
-        "document_id": "xdoc_78a58f5fa85d420794758c32caae120e"
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
       }
     ],
     "coverage_gaps": [
-      "No Tier-2 independent facts in the reasoning set.",
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing.",
       "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
     ],
     "date_recovered_count": 0,
@@ -1194,11 +1357,27 @@
     "capacity",
     "optical ecosystem"
   ],
-  "duplicates_removed": 10,
-  "raw_count": 95,
-  "evidence_extracted": 9,
-  "news_hits": 0,
-  "sample_documents": [],
+  "duplicates_removed": 13,
+  "raw_count": 75,
+  "evidence_extracted": 6,
+  "news_hits": 1,
+  "sample_documents": [
+    {
+      "provider": "exa",
+      "source_type": "official",
+      "source_family": "iqep.com",
+      "source_tier": 1,
+      "title": "IQE announces purchase agreement with Quintessent as Quantum Dot Laser technology moves to customer sampling | IQE Corporate",
+      "url": "https://www.iqep.com/media/press-releases/2026/iqe-announces-purchase-agreement-with-quintessent-as-quantum-dot-laser-technology-moves-to-customer-sampling/",
+      "source_domain": "iqep.com",
+      "published_at": "2026-09-03",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+      "query_type": "company_official",
+      "text_chars": 3940
+    }
+  ],
   "sample_facts": [
     {
       "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
@@ -1207,51 +1386,398 @@
       "source_tier": 1
     },
     {
-      "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+      "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum cited OCS solutions, cloud module business with 1.6T adoption, ultra-high-power CPO lasers, and an initial order for ELS modules as growth drivers.",
+      "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, GAAP gross margin of 44.2%, non-GAAP gross margin of 47.9%, GAAP operating margin of 21.6%, and non-GAAP operating margin of 32.2%.",
+      "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
       "source_time": "2026-05-05",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum's fiscal Q3 2026 revenue grew 90% year over year to a record $808 million, with gross margin up 540 basis points sequentially and operating margin up 700 basis points.",
+      "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
       "source_time": "2026-05-05",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum attributed fiscal Q3 2026 margin improvement to operational rigor, pricing discipline, product mix, strength in laser chips, and 'scale-across' components.",
+      "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
       "source_time": "2026-05-05",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum reported fiscal Q3 2026 GAAP diluted net income per share of $1.50 and non-GAAP diluted net income per share of $2.37.",
-      "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
-      "source_time": "2026-05-05",
+      "fact": "IQE announced a purchase agreement with Quintessent Inc. for supply of Quantum Dot Laser (QDL) epitaxy, supplying 6-inch Gallium Arsenide epiwafers through its foundry-ready service.",
+      "source_url": "https://www.iqep.com/media/press-releases/2026/iqe-announces-purchase-agreement-with-quintessent-as-quantum-dot-laser-technology-moves-to-customer-sampling/",
+      "source_time": "2026-09-03",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum filed an 8-K with the SEC dated August 11, 2026.",
-      "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
-      "source_time": "2026-08-11",
+      "fact": "IQE's agreement extends a relationship that began with an initial strategic announcement and purchase order in January 2025, supporting Quintessent's customer sampling toward commercial deployment.",
+      "source_url": "https://www.iqep.com/media/press-releases/2026/iqe-announces-purchase-agreement-with-quintessent-as-quantum-dot-laser-technology-moves-to-customer-sampling/",
+      "source_time": "2026-09-03",
       "source_tier": 1
     }
   ],
   "warnings": [],
   "budget_remaining": {
     "tavily": 8,
-    "exa": 0
+    "exa": 2
+  },
+  "evidence_set": {
+    "top_facts": [
+      {
+        "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "revenue",
+        "fiscal_period": "2026Q4",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "guidance",
+        "fiscal_period": "2027Q1",
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.8,
+        "signal_only": null
+      },
+      {
+        "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source_time": "2026-08-11",
+        "source_tier": 1,
+        "claim_title": null,
+        "source": "sec",
+        "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+        "metric": "product",
+        "fiscal_period": null,
+        "role": "current",
+        "evidence_class": "primary",
+        "priority": 0.315,
+        "signal_only": null
+      }
+    ],
+    "coverage_matrix": [
+      {
+        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      },
+      {
+        "claim_title": "Sequential revenue acceleration through FY2026",
+        "primary": "Good",
+        "independent": "Missing",
+        "industry": "Missing",
+        "counter": "Missing",
+        "freshness": "Good",
+        "data_quality": "Partial",
+        "evidence_confidence": "medium",
+        "independence_gap": "issuer-supported but independently unconfirmed"
+      }
+    ],
+    "current_vs_historical": {
+      "current": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "historical": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.65,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.56,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        }
+      ]
+    },
+    "independent_validation": "Missing",
+    "research_leads": [
+      {
+        "title": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence",
+        "url": "https://noah-news.com/indium-phosphide-shortage-driven-by-chinas-export-controls-threatens-ai-infrastr/",
+        "source_tier": 4,
+        "source_domain": "noah-news.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Indium phosphide shortage driven by China’s export controls threatens AI infrastructure expansion | Noah Intelligence Indium phosphide shortage driven by China’s export controls t…",
+        "verification_query": "LITE Indium phosphide shortage driven by China’s export controls threatens AI infras… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling",
+        "url": "https://www.techtimes.com/articles/325423/20260825/gaas-quantum-dot-laser-ships-ai-labs-chinas-inp-export-controls-expose-supply-ceiling.htm",
+        "source_tier": 4,
+        "source_domain": "techtimes.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply Ceiling GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose Supply C…",
+        "verification_query": "LITE GaAs Quantum-Dot Laser Ships to AI Labs as China's InP Export Controls Expose S… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 1
+      },
+      {
+        "title": "Global Optical Transceiver Market to Reach $34.4 Billion by",
+        "url": "https://www.globenewswire.com/news-release/2026/08/31/3353143/0/en/global-optical-transceiver-market-to-reach-34-4-billion-by-2031-driven-by-ai-workload-and-hyperscale-data-center-expansion.html",
+        "source_tier": 4,
+        "source_domain": "globenewswire.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Global Optical Transceiver Market to Reach $34.4 Billion by Global Optical Transceiver Market to Reach $34.4 Billion by # Global Optical Transceiver Market to Reach $34.4 Billion…",
+        "verification_query": "LITE Global Optical Transceiver Market to Reach $34.4 Billion by (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification",
+        "verification_ran": true,
+        "verification_status": "ok",
+        "verification_hit_count": 5,
+        "verified_quality_hits": 0
+      },
+      {
+        "title": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum",
+        "url": "https://xenospectrum.com/en/data-center-optical-interconnect-2030/",
+        "source_tier": 4,
+        "source_domain": "xenospectrum.com",
+        "why": "high-novelty/material clue from aggregator or community; not Evidence",
+        "snippet": "Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect Forecast | XenoSpectrum Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconne…",
+        "verification_query": "LITE Not All CPO: Breaking Down the $144.4 Billion Data Center Optical Interconnect… (8-K OR 10-Q OR \"press release\" OR investor)",
+        "status": "pending_verification"
+      }
+    ],
+    "tier45_leads_triggered": 3,
+    "brain_context": {
+      "current_operating_facts": [
+        {
+          "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "revenue",
+          "fiscal_period": "2026Q4",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum guided fiscal Q1 2027 revenue to $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "guidance",
+          "fiscal_period": "2027Q1",
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.8,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum cited growth drivers including OCS solutions, cloud module business advancing 1.6T adoption, increasing demand for ultra-high-power CPO lasers, and an initial order for ELS modules.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_time": "2026-08-11",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_7497584877cc41fd8ba0a1528bd23297",
+          "metric": "product",
+          "fiscal_period": null,
+          "role": "current",
+          "evidence_class": "primary",
+          "priority": 0.315,
+          "signal_only": null
+        }
+      ],
+      "independent_confirmation": [],
+      "industry_related": [],
+      "counter_evidence": [],
+      "community_signals": [],
+      "historical_trend_facts": [
+        {
+          "fact": "Lumentum's fiscal Q3 2026 GAAP diluted EPS was $1.50 and non-GAAP diluted EPS was $2.37.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "eps",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.65,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum's fiscal Q3 2026 gross margin improved 540 basis points sequentially and operating margin improved 700 basis points, aided by strength in laser chips and 'scale-across' components.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "margin",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.56,
+          "signal_only": null
+        },
+        {
+          "fact": "Lumentum reported fiscal Q3 2026 net revenue of $808.4 million, up 90% year over year, with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_time": "2026-05-05",
+          "source_tier": 1,
+          "claim_title": null,
+          "source": "sec",
+          "document_id": "xdoc_2b9a830a678748d093cf3b1c9786c813",
+          "metric": "revenue",
+          "fiscal_period": "2026Q3",
+          "role": "historical",
+          "evidence_class": "primary",
+          "priority": 0.36,
+          "signal_only": null
+        }
+      ],
+      "missing_classes": [
+        "independent",
+        "industry",
+        "counter"
+      ],
+      "independent_validation": "Missing"
+    },
+    "open_gaps": [
+      "Independent validation: Missing",
+      "Industry / related-entity evidence missing.",
+      "Counter evidence missing."
+    ]
   }
 }

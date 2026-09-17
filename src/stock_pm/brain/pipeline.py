@@ -115,6 +115,84 @@ def _recent_evidence(
     return picked
 
 
+def _brain_evidence(evidence: list[dict[str, Any]], intel: dict[str, Any] | None, *, limit: int) -> list[dict[str, Any]]:
+    """Prefer Evidence Set facts over a raw high-tier filing dump."""
+    ctx = ((intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}).get("brain_context") or {}
+    urls: list[str] = []
+    for key in ("current_operating_facts", "independent_confirmation", "industry_related", "counter_evidence"):
+        for row in ctx.get(key) or []:
+            url = str(row.get("source_url") or "")
+            if url and url not in urls:
+                urls.append(url)
+    if not urls:
+        return evidence[:limit]
+    by_url: dict[str, dict[str, Any]] = {}
+    for row in evidence:
+        url = str(row.get("source_url") or "")
+        if url and url not in by_url:
+            by_url[url] = row
+    ordered = [by_url[url] for url in urls if url in by_url]
+    seen = {str(row.get("id") or "") for row in ordered}
+    for row in evidence:
+        key = str(row.get("id") or "")
+        if key and key not in seen:
+            ordered.append(row)
+            seen.add(key)
+        if len(ordered) >= limit:
+            break
+    return ordered[:limit]
+
+
+def _cap_claims_with_evidence_set(claims: list[dict[str, Any]], intel: dict[str, Any] | None) -> list[dict[str, Any]]:
+    from stock_pm.external.evidence_set import apply_independence_to_claims
+
+    payload = (intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}
+    return apply_independence_to_claims(
+        claims,
+        list(payload.get("coverage_matrix") or []),
+        ticker_independent=payload.get("independent_validation"),
+    )
+
+
+def _brain_evidence(evidence: list[dict[str, Any]], intel: dict[str, Any] | None, *, limit: int) -> list[dict[str, Any]]:
+    """Prefer Evidence Set facts over a raw high-tier filing dump."""
+    ctx = ((intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}).get("brain_context") or {}
+    urls: list[str] = []
+    for key in ("current_operating_facts", "independent_confirmation", "industry_related", "counter_evidence"):
+        for row in ctx.get(key) or []:
+            url = str(row.get("source_url") or "")
+            if url and url not in urls:
+                urls.append(url)
+    if not urls:
+        return evidence[:limit]
+    by_url: dict[str, dict[str, Any]] = {}
+    for row in evidence:
+        url = str(row.get("source_url") or "")
+        if url and url not in by_url:
+            by_url[url] = row
+    ordered = [by_url[url] for url in urls if url in by_url]
+    seen = {str(row.get("id") or "") for row in ordered}
+    for row in evidence:
+        key = str(row.get("id") or "")
+        if key and key not in seen:
+            ordered.append(row)
+            seen.add(key)
+        if len(ordered) >= limit:
+            break
+    return ordered[:limit]
+
+
+def _cap_claims_with_evidence_set(claims: list[dict[str, Any]], intel: dict[str, Any] | None) -> list[dict[str, Any]]:
+    from stock_pm.external.evidence_set import apply_independence_to_claims
+
+    payload = (intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}
+    return apply_independence_to_claims(
+        claims,
+        list(payload.get("coverage_matrix") or []),
+        ticker_independent=payload.get("independent_validation"),
+    )
+
+
 def _pack_evidence_bodies(ticker: str, pack: dict[str, Any], *, retrieved_at: str) -> list[dict[str, Any]]:
     symbol = ticker.upper()
     bodies: list[dict[str, Any]] = []
@@ -443,6 +521,7 @@ def run_brain(
     created_pack = _persist_pack_evidence(research, symbol, pack, actor=actor)
     evidence = list(research.store.list_evidence(symbol) or [])
     llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
+    llm_evidence = _brain_evidence(llm_evidence, intel_base, limit=24)
     allowed = _allowed(llm_evidence) | _allowed(created_news) | _allowed(news_evidence) | _allowed(created_pack)
     if not allowed:
         allowed = _allowed(evidence[:LLM_EVIDENCE_LIMIT])
@@ -455,7 +534,7 @@ def run_brain(
             "ticker": symbol,
             "reported_financials": header,
             "research_pack": compact_pack(pack),
-            "evidence": compact_evidence_rows(llm_evidence, limit=LLM_EVIDENCE_LIMIT),
+            "evidence": compact_evidence_rows(llm_evidence, limit=24),
             "snapshot_id": snapshot_id,
             "rules": ["Do not invent numbers.", "Cite evidence_id only.", "Mark unavailable when missing."],
         },
@@ -532,7 +611,7 @@ def run_brain(
                 "ticker": symbol,
                 "reported_financials": header,
                 "states": [row for row in brain.list_states(symbol, run_id=run_id)],
-                "evidence": compact_evidence_rows(llm_evidence, limit=LLM_EVIDENCE_LIMIT),
+                "evidence": compact_evidence_rows(llm_evidence, limit=24),
                 "company_understanding": understanding or {"missing": True},
                 "snapshot_id": snapshot_id,
             },
@@ -559,6 +638,16 @@ def run_brain(
             capped.append(item)
         core = capped
         warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Data coverage is insufficient for high-confidence Core Claims."})
+
+    core = _cap_claims_with_evidence_set(core, intel_base)
+    if any(item.get("independence_gap") for item in core):
+        warnings.append(
+            {
+                "code": "BRAIN QUALITY WARNING",
+                "axis": "Data Coverage",
+                "reason": "Independent validation: Missing. issuer-supported but independently unconfirmed",
+            }
+        )
 
     persisted_claims: list[dict[str, Any]] = []
     claim_ids: set[str] = set()
@@ -601,6 +690,10 @@ def run_brain(
         for eid in item["opposing_evidence_ids"]:
             brain.insert_link({"claim_id": claim["claim_id"], "evidence_id": eid, "direction": "oppose", "strength": "medium", "run_id": run_id})
         persisted_claims.append(claim)
+        claim["independence_gap"] = item.get("independence_gap")
+        claim["evidence_confidence"] = item.get("evidence_confidence")
+        claim["independent_validation"] = item.get("independent_validation")
+        claim["evidence_coverage"] = item.get("evidence_coverage")
         claim_ids.add(claim["claim_id"])
 
     intel_claims: dict[str, Any] | None = None
@@ -632,7 +725,21 @@ def run_brain(
         hits = _merge_news_hits(hits, intel_claims.get("news_hits") or [])
         evidence = list(research.store.list_evidence(symbol) or [])
         llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
+        llm_evidence = _brain_evidence(llm_evidence, intel_claims, limit=24)
         allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
+        recapped = _cap_claims_with_evidence_set(persisted_claims, intel_claims)
+        for old, new in zip(persisted_claims, recapped):
+            old["independence_gap"] = new.get("independence_gap")
+            old["evidence_confidence"] = new.get("evidence_confidence")
+            old["independent_validation"] = new.get("independent_validation")
+            old["evidence_coverage"] = new.get("evidence_coverage")
+            if new.get("confidence") != old.get("confidence") or new.get("status") != old.get("status"):
+                brain.update_claim_pointer(
+                    old["claim_id"],
+                    {"status": new.get("status"), "confidence": new.get("confidence"), "statement": old.get("statement")},
+                )
+                old["confidence"] = new.get("confidence")
+                old["status"] = new.get("status")
 
     news_payload = []
     for idx, hit in enumerate(hits[:24]):
@@ -768,11 +875,20 @@ def run_brain(
     for claim in list(persisted_claims):
         links = brain.list_links(claim_id=claim["claim_id"])
         related = [row for row in evidence if str(row.get("id")) in {str(link.get("evidence_id")) for link in links} or str(row.get("id")) in allowed]
+        related = _brain_evidence(related or llm_evidence, intel_claims or intel_base, limit=24)
+        coverage = None
+        for row in ((intel_claims or intel_base or {}).get("evidence_set") or {}).get("coverage_matrix") or ((intel_claims or intel_base or {}).get("reasoning_context") or {}).get("coverage_matrix") or []:
+            if str(row.get("claim_title") or "") == str(claim.get("title") or ""):
+                coverage = row
+                break
         payload_d, audit_d = claim_reasoning(
             model_completer,
             {
                 "claim": claim,
                 "evidence": compact_evidence_rows(related or llm_evidence, limit=24),
+                "evidence_coverage": coverage,
+                "independence_gap": claim.get("independence_gap"),
+                "brain_context": ((intel_claims or intel_base or {}).get("evidence_set") or {}).get("brain_context"),
                 "snapshot_id": snapshot_id,
             },
             allowed_ids=allowed,
@@ -874,6 +990,10 @@ def run_brain(
         "integrity": integrity,
         "llm_invoked": llm_ok,
         "external_intelligence_report": (intel or {}).get("report") or {},
+        "evidence_coverage_matrix": ((intel or {}).get("evidence_set") or {}).get("coverage_matrix") or ((intel or {}).get("report") or {}).get("coverage_matrix") or [],
+        "independent_validation": ((intel or {}).get("evidence_set") or {}).get("independent_validation"),
+        "brain_context": ((intel or {}).get("evidence_set") or {}).get("brain_context"),
+        "research_leads": ((intel or {}).get("evidence_set") or {}).get("research_leads") or [],
         "external_providers": (intel or {}).get("providers") or {},
         "tavily_vs_exa": ((intel or {}).get("report") or {}).get("tavily_vs_exa") or {},
         "related_entities": (intel or {}).get("related_entities") or [],
