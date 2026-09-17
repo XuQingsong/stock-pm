@@ -1,0 +1,518 @@
+{
+  "ticker": "LITE",
+  "generated_at": "2026-09-17T19:30:42+00:00",
+  "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65",
+  "status": "partial",
+  "prompt_version": "brain-integrity-v1",
+  "evidence_set_id": "bes_ecf4c8a980c34976a107b37d05c7d12c",
+  "core_claims": [
+    {
+      "claim_key": "bck_3ddcd13384d55fe39b5a",
+      "claim_id": "bclm_62f60604dccd4ba2bea78cac8da9bc1c",
+      "title": "Revenue growth durability",
+      "statement": "Lumentum's revenue grew from $808.4 million in Q3 FY2026 to $1.01 billion in Q4 FY2026, and Q1 FY2027 guidance is $1.225B–$1.275B. This suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified",
+      "proposed_status": "partially_supported",
+      "final_status": "partially_supported",
+      "confidence": "medium",
+      "lifecycle": "core",
+      "claim_subject": "lumentum_holdings_inc",
+      "claim_dimension": "growth_duration",
+      "financial_driver": "demand",
+      "why_core": "Revenue trajectory is the primary driver of earnings power and the key input to any forward valuation.",
+      "unverified_detail": "533.8m could not be verified; 1.0063b could not be verified",
+      "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+      "match_action": "update_existing",
+      "support_evidence": [
+        {
+          "id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+          "excerpt": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "reason": "Primary issuer filing confirms Q4 FY2026 net revenue of $1.01 billion and provides Q1 FY2027 guidance context, directly supporting the revenue acceleration and guidance portion of the claim.",
+          "proves": "Lumentum reported Q4 FY2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, and issued Q1 FY2027 guidance.",
+          "does_not_prove": "It does not prove that the growth is structural rather than cyclical, does not provide segment-level breakdown, does not disclose customer concentration, and does not verify the Q1 FY2026 starting revenue figure.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_2746bf86784647779c9bdfad10215893",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+          "excerpt": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "reason": "Primary issuer filing confirms Q3 FY2026 net revenue of $808.4 million, establishing the sequential baseline from which Q4 FY2026 grew to $1.01 billion.",
+          "proves": "Lumentum reported Q3 FY2026 net revenue of $808.4 million with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "does_not_prove": "It does not prove the durability of the growth trajectory, does not provide segment-level or customer-level detail, and does not verify the Q1 FY2026 revenue figure referenced in the claim.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_b73775b41c704fe08b4739a701c6627d",
+          "source": "cnn.com",
+          "source_url": "https://www.cnn.com/markets/stocks/LITE",
+          "source_relationship": "unknown",
+          "source_tier": null,
+          "fact": "LITE total revenue increased 83.22% since last year and increased 24.48% since last quarter.",
+          "excerpt": "Total Revenue increased 83.22% since last year and increased 24.48% since last quarter.",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "reason": "Secondary source reports total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter, which is directionally consistent with the acceleration narrative but is stale (2023) and from a low-tier source.",
+          "proves": "At some point in 2023, LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter.",
+          "does_not_prove": "It does not prove anything about FY2026 revenue acceleration, does not address structural versus cyclical demand, and the 2023 timeframe makes it irrelevant to the current claim period.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Q1 FY2026 revenue figure to establish the full acceleration arc referenced in the claim",
+        "Segment-level revenue breakdown (Cloud and Networking vs. Industrial Tech) for Q3 and Q4 FY2026",
+        "Customer concentration data (top 10 customers as percentage of revenue)",
+        "Backlog composition and book-to-bill ratio for Q1 FY2027 guidance",
+        "Independent third-party corroboration of optical demand trends (e.g., datacom/cloud capex indicators from hyperscalers)",
+        "Counter-evidence search results — the counter_search found no opposing evidence, but this may reflect search limitations rather than absence of counter-evidence",
+        "Peer comparison data (Coherent, Fabrinet) to assess whether growth is company-specific or industry-wide",
+        "Inventory levels at Lumentum and its customers to assess channel stuffing risk"
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Primary issuer filing confirms Q4 FY2026 net revenue of $1.01 billion and provides Q1 FY2027 guidance context, directly supporting the revenue acceleration and guidance portion of the claim.",
+          "proves": "Lumentum reported Q4 FY2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, and issued Q1 FY2027 guidance.",
+          "does_not_prove": "It does not prove that the growth is structural rather than cyclical, does not provide segment-level breakdown, does not disclose customer concentration, and does not verify the Q1 FY2026 starting revenue figure."
+        },
+        {
+          "evidence_id": "rev_2746bf86784647779c9bdfad10215893",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Primary issuer filing confirms Q3 FY2026 net revenue of $808.4 million, establishing the sequential baseline from which Q4 FY2026 grew to $1.01 billion.",
+          "proves": "Lumentum reported Q3 FY2026 net revenue of $808.4 million with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+          "does_not_prove": "It does not prove the durability of the growth trajectory, does not provide segment-level or customer-level detail, and does not verify the Q1 FY2026 revenue figure referenced in the claim."
+        },
+        {
+          "evidence_id": "rev_b73775b41c704fe08b4739a701c6627d",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Secondary source reports total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter, which is directionally consistent with the acceleration narrative but is stale (2023) and from a low-tier source.",
+          "proves": "At some point in 2023, LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter.",
+          "does_not_prove": "It does not prove anything about FY2026 revenue acceleration, does not address structural versus cyclical demand, and the 2023 timeframe makes it irrelevant to the current claim period."
+        },
+        {
+          "evidence_id": "rev_bb8b4f1312ef4bc1bf988aa05181a69e",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "aggregator",
+          "reason": "Provides background on Lumentum's business scope as an optical and photonic hardware manufacturer, which is relevant context for understanding the demand drivers but does not address revenue durability.",
+          "proves": "Lumentum manufactures optical and photonic hardware for communications networks across multiple geographies.",
+          "does_not_prove": "It does not prove anything about revenue growth, growth durability, segment mix, or customer concentration."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "LITE optical inventory build OR pricing pressure",
+          "LITE peer capacity expansion OR CPO displacement OR Coherent OR Fabrinet",
+          "What portion of the Q1 FY2027 guidance is already booked versus forecast, and what is the customer concentration in that backlog?",
+          "Are there independent datacom/cloud capex indicators that corroborate or contradict the sustainability of this revenue ramp?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+            "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+            "query": "pack.major_events",
+            "snippet": "The S&P 500 Index ($SPX ) (SPY ) closed down by -0.45% on Wednesday, the Dow Jones Industrial Average ($DOWI ) (DIA ) closed down by -1.21%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) closed up +0.02%.…"
+          },
+          {
+            "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+            "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+            "query": "pack.major_events",
+            "snippet": "Forgent Power Solutions beats fiscal Q4 estimates as data center demand drives Powertrain Solutions growth, while bookings and backlog reach record levels."
+          },
+          {
+            "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+            "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+            "query": "pack.major_events",
+            "snippet": "AXTI's surging sales in Europe and Asia-Pacific are broadening its revenue base beyond China as InP demand and export approvals improve."
+          },
+          {
+            "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+            "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+            "query": "pack.major_events",
+            "snippet": "Looking today at week-over-week shares outstanding changes among the universe of ETFs covered at ETF Channel, one standout is the iShares U.S. Telecommunications ETF (Symbol: IYZ) where we have detec…"
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "The company's revenue growth is driven by a demand cycle in optical communications components that may not persist at the current rate, making the durability of growth a key decision variable",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "The company's revenue growth is driven by a demand cycle in optical communications components that may not persist at the current rate, making the durability of growth a key decision variable",
+          "new_statement": "The company's revenue growth is currently driven by demand in optical communications components, and the durability of that growth is a key decision variable",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+        },
+        {
+          "version": 3,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "The company's revenue growth is currently driven by demand in optical communications components, and the durability of that growth is a key decision variable",
+          "new_statement": "Lumentum's revenue growth is driven by a demand cycle that may be structural rather than a one-time surge, but the evidence only shows a single fiscal year of acceleration and management guidance for one more quarter, so the duration of the growth is unverified",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_082a037610bc475aa8d66719fb071e6a"
+        },
+        {
+          "version": 4,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "Lumentum's revenue growth is driven by a demand cycle that may be structural rather than a one-time surge, but the evidence only shows a single fiscal year of acceleration and management guidance for one more quarter, so the duration of the growth is unverified",
+          "new_statement": "Lumentum's revenue grew from $808.4 million in Q3 FY2026 to $1.01 billion in Q4 FY2026, and Q1 FY2027 guidance is $1.225B–$1.275B. This suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_d9397b0c54e9d7fd24fc",
+      "claim_id": "bclm_a9274cffe24f43f7a3cf4f09d57fe2ef",
+      "title": "Margin quality and sustainability",
+      "statement": "Gross margin expanded from 44.2% GAAP (47.9% non-GAAP) in Q3 FY2026 to 47.4% GAAP (50.4% non-GAAP) in Q4 FY2026. This expansion may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical",
+      "proposed_status": "partially_supported",
+      "final_status": "partially_supported",
+      "confidence": "medium",
+      "lifecycle": "core",
+      "claim_subject": "lumentum_holdings_inc",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "why_core": "Margin expansion is the largest swing factor in profitability and is central to assessing normalized earnings.",
+      "unverified_detail": "16.64 could not be verified; 47.43 could not be verified",
+      "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+      "match_action": "update_existing",
+      "support_evidence": [
+        {
+          "id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+          "excerpt": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "reason": "Primary issuer filing confirms Q4 FY2026 GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, directly supporting the ending margin levels in the claim.",
+          "proves": "Q4 FY2026 GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%.",
+          "does_not_prove": "It does not prove the starting margin in Q4 FY2024, nor does it provide segment-level margin detail or explain the drivers of the margin expansion.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_2746bf86784647779c9bdfad10215893",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+          "excerpt": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "reason": "Primary issuer filing confirms Q3 FY2026 GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%, providing a sequential comparison point that supports the margin expansion narrative.",
+          "proves": "Q3 FY2026 GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%.",
+          "does_not_prove": "It does not prove the Q4 FY2024 starting margin, nor does it provide segment-level margin detail or establish the durability of the expansion.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Q4 FY2024 gross margin figures (GAAP and non-GAAP) to verify the starting point of the claimed expansion.",
+        "Segment-level gross margin data for Datacom/Cloud vs. Telecom vs. Commercial Lasers over the last four quarters.",
+        "Management commentary or disclosure on the drivers of margin expansion (mix, pricing, cost reductions, one-time items).",
+        "Independent third-party analysis or industry data on optical component pricing and demand trends.",
+        "Counter-evidence on potential margin headwinds such as inventory build, pricing pressure, or capacity expansion by peers."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Primary issuer filing confirms Q4 FY2026 GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, directly supporting the ending margin levels in the claim.",
+          "proves": "Q4 FY2026 GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%.",
+          "does_not_prove": "It does not prove the starting margin in Q4 FY2024, nor does it provide segment-level margin detail or explain the drivers of the margin expansion."
+        },
+        {
+          "evidence_id": "rev_2746bf86784647779c9bdfad10215893",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Primary issuer filing confirms Q3 FY2026 GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%, providing a sequential comparison point that supports the margin expansion narrative.",
+          "proves": "Q3 FY2026 GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%.",
+          "does_not_prove": "It does not prove the Q4 FY2024 starting margin, nor does it provide segment-level margin detail or establish the durability of the expansion."
+        },
+        {
+          "evidence_id": "rev_b73775b41c704fe08b4739a701c6627d",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Secondary source reports total revenue growth, which is background context for margin analysis but does not directly address margin quality or sustainability.",
+          "proves": "LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter at some point in time.",
+          "does_not_prove": "It does not prove anything about gross margin levels, segment mix, or the durability of margin expansion."
+        },
+        {
+          "evidence_id": "rev_bb8b4f1312ef4bc1bf988aa05181a69e",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "aggregator",
+          "reason": "Provides general company description, useful for understanding the business but not relevant to margin quality or sustainability.",
+          "proves": "Lumentum manufactures optical and photonic hardware for communications networks globally.",
+          "does_not_prove": "It does not prove anything about gross margin levels, segment mix, or margin durability."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "LITE optical inventory build OR pricing pressure",
+          "LITE peer capacity expansion OR CPO displacement OR Coherent OR Fabrinet",
+          "What is the gross margin by segment (Datacom vs. Telecom vs. Commercial Lasers) and how has it trended over the last four quarters?",
+          "What portion of the margin expansion is attributable to one-time factors such as favorable product mix or temporary pricing, and what is the normalized margin…"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+            "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+            "query": "pack.major_events",
+            "snippet": "The S&P 500 Index ($SPX ) (SPY ) closed down by -0.45% on Wednesday, the Dow Jones Industrial Average ($DOWI ) (DIA ) closed down by -1.21%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) closed up +0.02%.…"
+          },
+          {
+            "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+            "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+            "query": "pack.major_events",
+            "snippet": "Forgent Power Solutions beats fiscal Q4 estimates as data center demand drives Powertrain Solutions growth, while bookings and backlog reach record levels."
+          },
+          {
+            "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+            "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+            "query": "pack.major_events",
+            "snippet": "AXTI's surging sales in Europe and Asia-Pacific are broadening its revenue base beyond China as InP demand and export approvals improve."
+          },
+          {
+            "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+            "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+            "query": "pack.major_events",
+            "snippet": "Looking today at week-over-week shares outstanding changes among the universe of ETFs covered at ETF Channel, one standout is the iShares U.S. Telecommunications ETF (Symbol: IYZ) where we have detec…"
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "The significant margin expansion may be driven by temporary factors such as favorable product mix or cost reductions, and its sustainability is a key decision variable",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "The significant margin expansion may be driven by temporary factors such as favorable product mix or cost reductions, and its sustainability is a key decision variable",
+          "new_statement": "Lumentum's significant margin expansion (non-GAAP operating margin rising from 32.2% in Q3 FY2026 to 36.6% in Q4 FY2026, with Q1 FY2027 guidance of 39.5–40.5%) may be driven by temporary factors, and its sustainability is a key decision variable. The specific drivers—whether favorable product mix, cost reductions, or other factors—are not identified in the available evidence",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+        },
+        {
+          "version": 3,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "Lumentum's significant margin expansion (non-GAAP operating margin rising from 32.2% in Q3 FY2026 to 36.6% in Q4 FY2026, with Q1 FY2027 guidance of 39.5–40.5%) may be driven by temporary factors, and its sustainability is a key decision variable. The specific drivers—whether favorable product mix, cost reductions, or other factors—are not identified in the available evidence",
+          "new_statement": "Lumentum's gross and operating margins expanded significantly in the most recent fiscal quarters (Q3 and Q4 FY2026), but the evidence does not establish whether this expansion is structural (driven by product mix and operating leverage) or cyclical/temporary, and historical margin data is not present in the evidence set",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_082a037610bc475aa8d66719fb071e6a"
+        },
+        {
+          "version": 4,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "Lumentum's gross and operating margins expanded significantly in the most recent fiscal quarters (Q3 and Q4 FY2026), but the evidence does not establish whether this expansion is structural (driven by product mix and operating leverage) or cyclical/temporary, and historical margin data is not present in the evidence set",
+          "new_statement": "Gross margin expanded from 44.2% GAAP (47.9% non-GAAP) in Q3 FY2026 to 47.4% GAAP (50.4% non-GAAP) in Q4 FY2026. This expansion may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Revenue growth durability",
+      "statement": "Lumentum's revenue acceleration from $533.8M in Q1 FY2026 to $1.0063B in Q4 FY2026, with Q1 FY2027 guidance of $1.225B–$1.275B, suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified.",
+      "selected_as_core": true,
+      "why_core": "Revenue trajectory is the primary driver of earnings power and the key input to any forward valuation.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Margin quality and sustainability",
+      "statement": "The sharp gross margin expansion from 16.64% in Q4 FY2024 to 47.43% GAAP (50.4% non-GAAP) in Q4 FY2026 may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical.",
+      "selected_as_core": true,
+      "why_core": "Margin expansion is the largest swing factor in profitability and is central to assessing normalized earnings.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Earnings estimate volatility and predictability",
+      "statement": "Lumentum's recent history of missing EPS estimates (Q1 FY2026 and Q3 FY2026) followed by a Q4 FY2026 beat suggests earnings predictability is low, which may increase the risk premium applied to forward estimates.",
+      "selected_as_core": false,
+      "why_core": "Earnings volatility directly impacts the reliability of forward estimates and the appropriate discount rate.",
+      "why_not_core": "The evidence for this claim is not directly linked to any evidence_id in the provided evidence set; the state referencing EPS misses has no supporting evidence_ids, so it cannot be verified from the current pack.",
+      "claim_id": null
+    },
+    {
+      "title": "Valuation sensitivity to growth and margin assumptions",
+      "statement": "With all valuation multiples unavailable, the stock's valuation sensitivity to changes in growth duration and margin sustainability cannot be assessed, but the high revenue growth and margin expansion imply that any deceleration could lead to significant multiple compression.",
+      "selected_as_core": false,
+      "why_core": "Valuation is a key decision variable, and the lack of multiples is a critical gap that prevents a full assessment.",
+      "why_not_core": "No valuation evidence is available, so this claim is unverifiable and cannot be a core decision variable without supporting data.",
+      "claim_id": null
+    },
+    {
+      "title": "Customer concentration risk",
+      "statement": "The absence of customer concentration data leaves open the possibility that a significant portion of Lumentum's revenue growth is dependent on a small number of large cloud/datacom customers, which could pose a risk if those customers reduce orders or shift suppliers.",
+      "selected_as_core": false,
+      "why_core": "Customer concentration is a structural risk that can affect the persistence of growth and margins, but without evidence it remains a hypothesis.",
+      "why_not_core": "No evidence on customer concentration is provided, making this claim purely speculative and not supported by any evidence_id.",
+      "claim_id": null
+    }
+  ],
+  "pm_consistency": {
+    "passed": false,
+    "status": "inconsistent",
+    "reasons": [
+      "PM cited unbound number 533.8m"
+    ]
+  },
+  "pm_status": "inconsistent",
+  "pm_view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 533.8m",
+  "integrity_violations": [
+    {
+      "code": "unsupported_factual_assertion",
+      "claim_title": "Revenue growth durability",
+      "tokens": [
+        "533.8m",
+        "1.0063b"
+      ]
+    },
+    {
+      "code": "unsupported_factual_assertion",
+      "claim_title": "Margin quality and sustainability",
+      "tokens": [
+        "16.64",
+        "47.43"
+      ]
+    },
+    {
+      "code": "pm_inconsistency_blocked",
+      "reasons": [
+        "PM cited unbound number 533.8m"
+      ]
+    }
+  ],
+  "quality": {
+    "axes": {
+      "data_coverage": "Poor",
+      "news_coverage": "Partial",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Price, TTM, or latest-quarter fields are incomplete."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "financial_input_incomplete"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Company pack coverage is incomplete; per-claim evidence strength is assessed separately."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM consistency check failed: PM cited unbound number 533.8m"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "当前 LITE 数据覆盖不足。"
+      }
+    ],
+    "poor_axes": [
+      "data_coverage"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "claim_versions_changed": 2
+}

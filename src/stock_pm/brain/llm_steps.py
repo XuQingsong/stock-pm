@@ -107,17 +107,11 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
     title = compact_text(raw.get("title") or statement, 120)
     if not statement:
         return None
-    support = _filter_ids(raw.get("supporting_evidence_ids") or raw.get("evidence_ids"), allowed_ids)
-    oppose = _filter_ids(raw.get("opposing_evidence_ids"), allowed_ids)
+    support, rejected_support = _split_ids(raw.get("supporting_evidence_ids") or raw.get("evidence_ids"), allowed_ids)
+    oppose, rejected_oppose = _split_ids(raw.get("opposing_evidence_ids"), allowed_ids)
     if core and not support:
         return None
     if core and not compact_text(raw.get("why_it_matters") or "", 400):
-        return None
-    statement_l = statement.lower()
-    if core and re.search(
-        r"\b(revenue|eps|earnings|sales|profit)\b.{0,24}\b(is|are|was|were)\b.{0,16}\b(growing|up|down|increasing|strong|higher|lower)\b",
-        statement_l,
-    ):
         return None
     if core and not compact_text(raw.get("uncertainty") or (raw.get("scores") or {}).get("uncertainty") or "", 40):
         return None
@@ -126,9 +120,9 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
     claim_type = str(raw.get("claim_type") or "operating")
     if claim_type not in CLAIM_TYPES:
         claim_type = "operating"
-    status = str(raw.get("status") or ("partially_supported" if support else "unverified"))
-    if status not in CLAIM_STATUSES:
-        status = "emerging"
+    proposed = str(raw.get("proposed_status") or raw.get("status") or ("partially_supported" if support else "unverified"))
+    if proposed not in CLAIM_STATUSES:
+        proposed = "emerging"
     importance = str(raw.get("importance") or "medium")
     if importance not in IMPORTANCE:
         importance = "medium"
@@ -138,21 +132,29 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
     horizon = raw.get("time_horizon")
     if horizon not in HORIZONS:
         horizon = None
+    questions = [compact_text(item, 160) for item in (raw.get("counter_research_questions") or []) if str(item).strip()][:4]
     return {
         "title": title,
         "statement": statement,
         "claim_type": claim_type,
-        "status": status,
+        "status": proposed,
+        "proposed_status": proposed,
         "importance": importance,
         "confidence": confidence,
         "time_horizon": horizon,
         "why_it_matters": compact_text(raw.get("why_it_matters") or "", 400),
         "financial_driver": compact_text(raw.get("financial_driver") or "", 80) or None,
+        "claim_subject": compact_text(raw.get("claim_subject") or "", 80) or None,
+        "claim_dimension": compact_text(raw.get("claim_dimension") or "", 80) or None,
+        "claim_key": compact_text(raw.get("claim_key") or "", 80) or None,
         "why_core": compact_text(raw.get("why_core") or "", 240),
+        "why_not_core": compact_text(raw.get("why_not_core") or "", 240),
         "evidence_boundary": compact_text(raw.get("evidence_boundary") or "", 400) or None,
         "supporting_evidence_ids": support,
         "opposing_evidence_ids": oppose,
+        "rejected_evidence_ids": rejected_support + rejected_oppose,
         "missing_evidence": [compact_text(item, 160) for item in (raw.get("missing_evidence") or []) if str(item).strip()][:6],
+        "counter_research_questions": questions,
         "is_core": core,
         "scores": {
             "value_impact": raw.get("value_impact"),
@@ -162,6 +164,21 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
             "testability": raw.get("testability"),
         },
     }
+
+
+def _split_ids(values: Any, allowed: set[str]) -> tuple[list[str], list[str]]:
+    kept: list[str] = []
+    rejected: list[str] = []
+    for item in values or []:
+        key = str(item or "").strip()
+        if not key:
+            continue
+        if key in allowed:
+            if key not in kept:
+                kept.append(key)
+        elif key not in rejected:
+            rejected.append(key)
+    return kept, rejected
 
 
 def normalize_news_item(raw: dict[str, Any], *, allowed_ids: set[str], claim_ids: set[str]) -> dict[str, Any]:
@@ -210,4 +227,6 @@ def compact_evidence_rows(rows: list[dict[str, Any]], *, limit: int = 40) -> lis
             continue
         item["source_time"] = raw.get("source_time")
         item["excerpt"] = compact_text(raw.get("excerpt") or raw.get("fact"), 240)
+        item["source_relationship"] = raw.get("source_relationship")
+        item["source_tier"] = raw.get("source_tier")
     return base

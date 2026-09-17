@@ -1,0 +1,88 @@
+{
+  "AAPL": {
+    "shared_claim_keys": [
+      "bck_48581a538f893271b995",
+      "bck_ad99cd0993115361a1d1"
+    ],
+    "same_claim_id": true,
+    "pairs": [
+      {
+        "claim_key": "bck_48581a538f893271b995",
+        "run1_claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "run2_claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "same_id": true,
+        "run1_versions": 2,
+        "run2_versions": 3,
+        "run2_versions_changed": 4
+      },
+      {
+        "claim_key": "bck_ad99cd0993115361a1d1",
+        "run1_claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+        "run2_claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+        "same_id": true,
+        "run1_versions": 3,
+        "run2_versions": 4,
+        "run2_versions_changed": 4
+      }
+    ],
+    "run1_new_ids": [
+      "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+      "bclm_8474e0d929e044059ceed6e15f169d51"
+    ],
+    "run2_ids": [
+      "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+      "bclm_206dcfe484184314a710333afcf22562",
+      "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "bclm_8474e0d929e044059ceed6e15f169d51"
+    ]
+  },
+  "AVGO": {
+    "shared_claim_keys": [
+      "bck_46a71db5c7889f8c835c",
+      "bck_b264901d7b1367ba32d3"
+    ],
+    "same_claim_id": true,
+    "pairs": [
+      {
+        "claim_key": "bck_46a71db5c7889f8c835c",
+        "run1_claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+        "run2_claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+        "same_id": true,
+        "run1_versions": 5,
+        "run2_versions": 6,
+        "run2_versions_changed": 3
+      },
+      {
+        "claim_key": "bck_b264901d7b1367ba32d3",
+        "run1_claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+        "run2_claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+        "same_id": true,
+        "run1_versions": 2,
+        "run2_versions": 3,
+        "run2_versions_changed": 3
+      }
+    ],
+    "run1_new_ids": [
+      "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+      "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+    ],
+    "run2_ids": [
+      "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+      "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+    ]
+  },
+  "LITE": {
+    "shared_claim_keys": [],
+    "same_claim_id": false,
+    "pairs": [],
+    "run1_new_ids": [
+      "bclm_986de26cac724ea7969121478348b2d7",
+      "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+    ],
+    "run2_ids": [
+      "bclm_62f60604dccd4ba2bea78cac8da9bc1c",
+      "bclm_a9274cffe24f43f7a3cf4f09d57fe2ef"
+    ]
+  }
+}

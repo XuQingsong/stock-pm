@@ -95,10 +95,14 @@ class FakeBrainCompleter:
                         "title": "Demand duration",
                         "statement": "Near-term demand remains the binding earnings variable.",
                         "claim_type": "operating",
+                        "claim_subject": "demand_duration",
+                        "claim_dimension": "growth_duration",
                         "why_it_matters": "It changes the 1-3y earnings path.",
+                        "financial_driver": "revenue",
                         "supporting_evidence_ids": [eid] if eid else [],
                         "opposing_evidence_ids": [],
                         "missing_evidence": ["independent customer confirmation"],
+                        "counter_research_questions": ["ZZZT hyperscaler capex slowdown", "ZZZT customer concentration"],
                         "value_impact": "high",
                         "uncertainty": "high",
                         "valuation_relevance": "high",
@@ -111,17 +115,22 @@ class FakeBrainCompleter:
                         "title": "Demand duration",
                         "statement": "Near-term demand remains the binding earnings variable.",
                         "claim_type": "operating",
+                        "claim_subject": "demand_duration",
+                        "claim_dimension": "growth_duration",
+                        "proposed_status": "partially_supported",
                         "status": "partially_supported",
                         "importance": "high",
                         "confidence": "medium",
                         "time_horizon": "medium",
                         "why_it_matters": "It changes the 1-3y earnings path.",
+                        "financial_driver": "revenue",
                         "why_core": "Highest value impact times uncertainty.",
                         "uncertainty": "high",
                         "valuation_relevance": "high",
                         "supporting_evidence_ids": [eid] if eid else [],
                         "opposing_evidence_ids": [],
                         "missing_evidence": ["independent customer confirmation"],
+                        "counter_research_questions": ["ZZZT hyperscaler capex slowdown", "ZZZT customer concentration"],
                     }
                 ],
                 "rejected": [{"title": "headline noise", "why_not_core": "not persistent"}],
@@ -153,15 +162,36 @@ class FakeBrainCompleter:
         elif "STEP_ID: claim_reasoning" in system:
             claim = payload.get("claim") or {}
             eids = [str(row.get("id")) for row in (payload.get("evidence") or []) if row.get("id")]
+            support_id = (claim.get("supporting_evidence_ids") or eids or [None])[0]
             body = {
                 "claim_id": claim.get("claim_id"),
                 "current_conclusion": claim.get("statement"),
                 "why_important": "It binds earnings power.",
-                "strongest_support_evidence_ids": eids[:1],
+                "statement_revision": claim.get("statement"),
+                "unsupported_assertions": [],
+                "strongest_support_evidence_ids": [support_id] if support_id else [],
                 "strongest_opposing_evidence_ids": [],
+                "evidence_links": [
+                    {
+                        "evidence_id": support_id,
+                        "direction": "support",
+                        "strength": "medium",
+                        "relevance": "direct",
+                        "reason": "Issuer filing describes demand.",
+                        "proves": "Management described demand as remaining strong.",
+                        "does_not_prove": "That demand is independent of a pull-forward or a named customer contract.",
+                    }
+                ] if support_id else [],
                 "evidence_boundary": {"proves": "sourced demand language exists", "does_not_prove": "a named incremental contract"},
                 "competing_hypotheses": [{"statement": "The print was a pull-forward", "status": "speculative", "evidence_ids": []}],
                 "missing_evidence": ["independent customer confirmation"],
+                "counter_effect": {
+                    "direct": False,
+                    "affects_magnitude": False,
+                    "affects_duration": True,
+                    "undermines_claim": False,
+                    "suggested_status": "partially_supported",
+                },
                 "what_strengthens": ["customer 10-Q naming the issuer"],
                 "what_weakens": ["guidance cut"],
                 "what_invalidates": ["contract cancellation"],
@@ -268,9 +298,10 @@ def test_brain_run_calls_llm_and_grounds_claims(monkeypatch) -> None:
     assert news
     assert news[0]["layer"] == "material"
     versions = store.list_versions(claim["claim_id"])
-    assert len(versions) >= 2
-    assert news[0]["claim_version_changed"] is True
+    assert len(versions) >= 1
+    assert claim.get("counter_search", {}).get("counter_search_performed") is True
     assert result["pm_synthesis"]["current_view"]
+    assert result["pm_synthesis"].get("status") in {"completed", "inconsistent"}
     assert result["quality"]["axes"]["llm_reasoning"] in {"Good", "Partial"}
 
 

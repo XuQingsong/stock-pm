@@ -1,0 +1,878 @@
+{
+  "ticker": "AAPL",
+  "generated_at": "2026-09-17T19:23:18+00:00",
+  "run_id": "brun_be4878bdfcaf427485a20f72746fb18a",
+  "status": "partial",
+  "prompt_version": "brain-integrity-v1",
+  "evidence_set_id": "bes_85203a7967914b318ebe1ac4271292d6",
+  "core_claims": [
+    {
+      "claim_key": "bck_8a8fdd505aeb5d50253e",
+      "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "title": "Services mix shift supports structural margin expansion",
+      "statement": "Apple's Services revenue has reached new record highs in recent quarters, and Services is widely understood to carry higher gross margin than Products, but the available evidence does not quantify the revenue mix shift or the gross margin differential, so the claim that the margin trajectory is more structural than cyclical remains unverified",
+      "proposed_status": "partially_supported",
+      "final_status": "unverified",
+      "confidence": "low",
+      "lifecycle": "core",
+      "claim_subject": "apple_inc",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "why_core": "Margin quality is a key decision variable for Apple's valuation, and the evidence shows Services revenue reaching all-time records with high gross margin.",
+      "unverified_detail": "",
+      "reconciliation_reason": "core assertion or number is not bound to evidence",
+      "match_action": "merge_into_existing",
+      "support_evidence": [
+        {
+          "id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+          "excerpt": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "reason": "Apple's Q3 FY2026 earnings release states that Services revenue set a new June quarter record, confirming Services growth momentum.",
+          "proves": "Services revenue reached a new record in the June 2026 quarter.",
+          "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_f380aa032a3041bea9ca174726be3187",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\na8-kex991q2202603282026.htm\nEX-99.1\nExhibit 99.1 Apple reports second quarter results March quarter records for total company revenue, iPhone revenue, and EPS Services revenue reaches new all-time high CUPERTINO, CALIFORNIA — Appl",
+          "excerpt": "EX-99.1\n2\na8-kex991q2202603282026.htm\nEX-99.1\nExhibit 99.1 Apple reports second quarter results March quarter records for total company revenue, iPhone revenue, and EPS Services revenue reaches new all-time high CUPERTINO, CALIFORNIA — Appl",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "reason": "Apple's Q2 FY2026 earnings release states that Services revenue reached a new all-time high, confirming Services growth momentum.",
+          "proves": "Services revenue reached a new all-time high in the March 2026 quarter.",
+          "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Gross margin by segment (Products vs Services) for recent quarters",
+        "Revenue mix percentages (Services as % of total revenue) over time",
+        "Trend in overall gross margin and decomposition into mix versus rate effects",
+        "Regulatory or competitive developments affecting Services margin"
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "Apple's Q3 FY2026 earnings release states that Services revenue set a new June quarter record, confirming Services growth momentum.",
+          "proves": "Services revenue reached a new record in the June 2026 quarter.",
+          "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical."
+        },
+        {
+          "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "Apple's Q2 FY2026 earnings release states that Services revenue reached a new all-time high, confirming Services growth momentum.",
+          "proves": "Services revenue reached a new all-time high in the March 2026 quarter.",
+          "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical."
+        },
+        {
+          "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "aggregator",
+          "reason": "Secondary source reports Q3 FY2026 EPS and revenue beats, indicating overall financial performance but not segment mix or margin quality.",
+          "proves": "Apple reported Q3 FY2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+          "does_not_prove": "It does not break down revenue or gross margin by segment, nor address the structural versus cyclical nature of margins."
+        },
+        {
+          "evidence_id": "rev_a813d9313b8f4332a30429331fd2a01e",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "Announcement of Siri AI release is a product event that could support Services growth but does not directly address margin mix.",
+          "proves": "Apple released next-generation Apple Intelligence powering Siri AI on September 14, 2026.",
+          "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+        },
+        {
+          "evidence_id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "independent_media",
+          "reason": "Launch of folding iPhone is a product event that may affect product mix but does not address Services margin.",
+          "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+          "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+        },
+        {
+          "evidence_id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "Product specification announcement for iPhone Duo is not relevant to Services margin mix.",
+          "proves": "Apple introduced iPhone Duo with a 7.6-inch inner display and 5.4-inch outer display.",
+          "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+        },
+        {
+          "evidence_id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "Software rollout announcement is not relevant to Services margin mix.",
+          "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026.",
+          "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AAPL App Store regulation OR DMA OR services growth slowdown",
+          "AAPL services margin compression",
+          "What is the actual revenue and gross margin split between Products and Services, and how has it changed over the past 8 quarters?",
+          "Is the Services gross margin sustainable, or does it face regulatory or competitive pressure?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+            "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+          },
+          {
+            "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+            "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+            "query": "pack.major_events",
+            "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+          },
+          {
+            "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+            "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+            "query": "pack.major_events",
+            "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+          },
+          {
+            "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+            "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+            "query": "pack.major_events",
+            "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "strongly_supported",
+          "old_statement": null,
+          "new_statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2"
+        },
+        {
+          "version": 2,
+          "old_status": "strongly_supported",
+          "new_status": "unverified",
+          "old_statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+          "new_statement": "Apple's Services revenue reached new record highs in Q2 and Q3 fiscal 2026, but the available evidence does not establish the gross margin of Services, its share of total revenue, or that this mix shift structurally supports gross margin durability",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+        },
+        {
+          "version": 3,
+          "old_status": "unverified",
+          "new_status": "unverified",
+          "old_statement": "Apple's Services revenue reached new record highs in Q2 and Q3 fiscal 2026, but the available evidence does not establish the gross margin of Services, its share of total revenue, or that this mix shift structurally supports gross margin durability",
+          "new_statement": "Apple's Services revenue has reached record highs in recent quarters, and if Services carries a structurally higher gross margin than Products, this mix shift could make consolidated margin less dependent on hardware unit cycles. However, the evidence does not yet confirm the gross margin differential or the degree of margin insulation",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_d79ca93534ff4008a47bf8eb4a4c1e30"
+        },
+        {
+          "version": 4,
+          "old_status": "unverified",
+          "new_status": "unverified",
+          "old_statement": "Apple's Services revenue has reached record highs in recent quarters, and if Services carries a structurally higher gross margin than Products, this mix shift could make consolidated margin less dependent on hardware unit cycles. However, the evidence does not yet confirm the gross margin differential or the degree of margin insulation",
+          "new_statement": "Apple's Services revenue has reached new record highs in recent quarters, and Services is widely understood to carry higher gross margin than Products, but the available evidence does not quantify the revenue mix shift or the gross margin differential, so the claim that the margin trajectory is more structural than cyclical remains unverified",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_ad99cd0993115361a1d1",
+      "claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+      "title": "Reported gross margin is inflated by one-time tariff refund",
+      "statement": "The latest quarter's gross margin includes a favorable one-time tariff refund benefit, implying underlying gross margin is lower and the reported margin overstates structural profitability",
+      "proposed_status": "partially_supported",
+      "final_status": "unverified",
+      "confidence": "low",
+      "lifecycle": "core",
+      "claim_subject": "apple_inc",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "why_core": "Margin quality is a key decision variable, and the evidence explicitly flags a one-time benefit that distorts the reported margin.",
+      "unverified_detail": "50.06 could not be verified",
+      "reconciliation_reason": "no supporting evidence in the current evidence set",
+      "match_action": "update_existing",
+      "support_evidence": [],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Apple's Q3 FY2026 earnings release or 10-Q with detailed gross margin discussion.",
+        "Management commentary on gross margin drivers during the Q3 FY2026 earnings call.",
+        "Any mention of tariff refunds or one-time benefits in Apple's financial disclosures.",
+        "Analyst reports or news articles discussing Apple's gross margin composition for Q3 FY2026.",
+        "Historical gross margin data to assess whether the reported margin is anomalous."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "This is Apple's Q3 FY2026 earnings release, the quarter referenced in the claim. However, the excerpt provided does not mention gross margin, tariff refunds, or any one-time benefit. It only confirms the existence of the earnings release.",
+          "proves": "Apple reported Q3 FY2026 results on July 30, 2026.",
+          "does_not_prove": "It does not prove that gross margin was inflated by a tariff refund, nor does it provide any gross margin figure or mention of a tariff refund."
+        },
+        {
+          "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "aggregator",
+          "reason": "This evidence confirms Q3 2026 EPS and revenue beats but provides no information on gross margin or tariff refunds.",
+          "proves": "Apple reported Q3 2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+          "does_not_prove": "It does not prove anything about gross margin composition or tariff refunds."
+        },
+        {
+          "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is Apple's Q2 FY2026 earnings release, which could provide a baseline for margin comparison, but the excerpt does not include gross margin data.",
+          "proves": "Apple reported Q2 FY2026 results on April 30, 2026.",
+          "does_not_prove": "It does not prove any details about Q3 gross margin or tariff refunds."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AAPL margin dilution OR mix pressure OR cost inflation",
+          "AAPL pricing pressure OR gross margin cut",
+          "What was the exact dollar amount of the tariff refund benefit in Q3 FY2026?",
+          "Did management guide to a reversal or continuation of tariff-related benefits in future quarters?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+            "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+          },
+          {
+            "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+            "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+            "query": "pack.major_events",
+            "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+          },
+          {
+            "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+            "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+            "query": "pack.major_events",
+            "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+          },
+          {
+            "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+            "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+            "query": "pack.major_events",
+            "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "The reported Q3 FY2026 gross margin of 50.1% includes a ~2 percentage point benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "unverified",
+          "old_statement": "The reported Q3 FY2026 gross margin of 50.1% includes a ~2 percentage point benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+          "new_statement": "The reported Q3 FY2026 gross margin includes a benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+          "reason_for_change": "status changed; confidence changed; statement materially changed",
+          "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+        },
+        {
+          "version": 3,
+          "old_status": "unverified",
+          "new_status": "contradicted",
+          "old_statement": "The reported Q3 FY2026 gross margin includes a benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+          "new_statement": "The June 2026 gross margin expansion may have been partly driven by a non-recurring tariff refund, raising questions about the sustainability of the current margin level",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+        },
+        {
+          "version": 4,
+          "old_status": "contradicted",
+          "new_status": "unverified",
+          "old_statement": "The June 2026 gross margin expansion may have been partly driven by a non-recurring tariff refund, raising questions about the sustainability of the current margin level",
+          "new_statement": "The latest quarter's gross margin includes a favorable one-time tariff refund benefit, implying underlying gross margin is lower and the reported margin overstates structural profitability",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_48581a538f893271b995",
+      "claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+      "title": "Product cycle catalysts may extend revenue growth durability",
+      "statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate",
+      "proposed_status": "emerging",
+      "final_status": "strongly_supported",
+      "confidence": "high",
+      "lifecycle": "core",
+      "claim_subject": "hardware_demand",
+      "claim_dimension": "growth_duration",
+      "financial_driver": "demand",
+      "why_core": "Growth durability is a key decision variable, and the evidence shows concrete new product and software launches that could influence future demand.",
+      "unverified_detail": "",
+      "reconciliation_reason": "direct complete support with required source relationship",
+      "match_action": "update_existing",
+      "support_evidence": [
+        {
+          "id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+          "source": "apple.com",
+          "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "excerpt": "Apple today introduced iPhone Duo, the first foldable iPhone. Opened, it is the thinnest iPhone ever, with a 7.6-inch inner display",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "Confirms the introduction of the foldable iPhone Duo, a key product cycle catalyst mentioned in the claim.",
+          "proves": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "does_not_prove": "It does not prove that the Duo will sustain or accelerate revenue growth; no sales or demand data is provided.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+          "source": "high_quality_news",
+          "source_url": "https://www.reuters.com/business/retail-consumer/apple-expected-unveil-first-folding-phone-with-new-ceo-ternus-command-2026-09-09/",
+          "source_relationship": "independent_media",
+          "source_tier": null,
+          "fact": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+          "excerpt": "Apple (AAPL.O), opens new tab on Wednesday redefined its flagship smartphone with the launch of the Duo, a folding $1,999 iPhone",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "Confirms the launch of the foldable iPhone Duo at a specific price point, reinforcing the product cycle catalyst.",
+          "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+          "does_not_prove": "It does not prove revenue growth impact; pricing and launch alone do not guarantee demand or revenue acceleration.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_a813d9313b8f4332a30429331fd2a01e",
+          "source": "apple.com",
+          "source_url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+          "excerpt": "Apple today released the next generation of Apple Intelligence, powering Siri AI, an entirely new version of Siri",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "Confirms the release of Siri AI, a key software catalyst mentioned in the claim.",
+          "proves": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+          "does_not_prove": "It does not prove that Siri AI will sustain or accelerate revenue growth; no adoption or monetization data is provided.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+          "source": "apple.com",
+          "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "excerpt": "Siri AI, the next generation of Apple Intelligence, powerful parental controls, and an expansive set of software improvements start rolling out today across iOS 27, iPadOS 27, macOS 27, and other Apple platforms",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "Confirms the rollout of Siri AI across platforms, supporting the claim of a broad software catalyst.",
+          "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "does_not_prove": "It does not prove that the rollout will lead to sustained or accelerated revenue growth; no user engagement or revenue impact data is provided.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Pre-order or early sales data for the foldable iPhone Duo.",
+        "Adoption metrics or user engagement data for Siri AI post-launch.",
+        "Analyst or industry forecasts on the revenue impact of these products.",
+        "Historical TTM revenue growth rate for comparison.",
+        "Counter-evidence on potential cannibalization or demand softness."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Confirms the introduction of the foldable iPhone Duo, a key product cycle catalyst mentioned in the claim.",
+          "proves": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+          "does_not_prove": "It does not prove that the Duo will sustain or accelerate revenue growth; no sales or demand data is provided."
+        },
+        {
+          "evidence_id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "independent_media",
+          "reason": "Confirms the launch of the foldable iPhone Duo at a specific price point, reinforcing the product cycle catalyst.",
+          "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+          "does_not_prove": "It does not prove revenue growth impact; pricing and launch alone do not guarantee demand or revenue acceleration."
+        },
+        {
+          "evidence_id": "rev_a813d9313b8f4332a30429331fd2a01e",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Confirms the release of Siri AI, a key software catalyst mentioned in the claim.",
+          "proves": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+          "does_not_prove": "It does not prove that Siri AI will sustain or accelerate revenue growth; no adoption or monetization data is provided."
+        },
+        {
+          "evidence_id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Confirms the rollout of Siri AI across platforms, supporting the claim of a broad software catalyst.",
+          "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+          "does_not_prove": "It does not prove that the rollout will lead to sustained or accelerated revenue growth; no user engagement or revenue impact data is provided."
+        },
+        {
+          "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "Provides recent quarterly earnings that beat estimates, indicating a healthy baseline, but does not directly link to the new product catalysts.",
+          "proves": "Apple reported Q3 2026 earnings on July 30, 2026, with EPS of $2.02 beating estimates of $1.89 and revenue of $109.4B beating estimates of $109.0B.",
+          "does_not_prove": "It does not prove that the new product catalysts will extend growth durability; the earnings are from before the September launches."
+        },
+        {
+          "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "Shows record June quarter revenue and EPS, providing context for the current growth trajectory, but not directly tied to the new catalysts.",
+          "proves": "Apple reported third quarter results with June quarter records for total company revenue and EPS, and iPhone, Mac and Services revenue set new June quarter records.",
+          "does_not_prove": "It does not prove that the new product cycle catalysts will sustain or accelerate growth; it reflects past performance."
+        },
+        {
+          "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "Shows March quarter records, indicating a pattern of strong performance, but not directly related to the new catalysts.",
+          "proves": "Apple reported second quarter results with March quarter records for total company revenue, iPhone revenue, and EPS, and Services revenue reached a new all-time high.",
+          "does_not_prove": "It does not prove that the new product cycle catalysts will extend growth durability; it is historical data."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AAPL hyperscaler capex slowdown OR order pushout",
+          "AAPL customer concentration OR share loss OR custom silicon",
+          "What are the early pre-order or sales trends for the foldable iPhone Duo?",
+          "Has Siri AI adoption met, exceeded, or fallen short of expectations in the first weeks post-launch?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+            "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+          },
+          {
+            "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+            "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+            "query": "pack.major_events",
+            "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+          },
+          {
+            "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+            "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+            "query": "pack.major_events",
+            "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+          },
+          {
+            "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+            "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+            "query": "pack.major_events",
+            "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "emerging",
+          "old_statement": null,
+          "new_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may extend the iPhone upgrade cycle and support product revenue growth into FY2027",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+        },
+        {
+          "version": 2,
+          "old_status": "emerging",
+          "new_status": "strongly_supported",
+          "old_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may extend the iPhone upgrade cycle and support product revenue growth into FY2027",
+          "new_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may support product revenue growth into FY2027, but evidence for upgrade cycle extension is missing",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+        },
+        {
+          "version": 3,
+          "old_status": "strongly_supported",
+          "new_status": "strongly_supported",
+          "old_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may support product revenue growth into FY2027, but evidence for upgrade cycle extension is missing",
+          "new_statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate",
+          "reason_for_change": "statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_f9536fbfb50deb8ecc13",
+      "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+      "title": "Valuation multiple is sensitive to margin normalization",
+      "statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple",
+      "proposed_status": "partially_supported",
+      "final_status": "unverified",
+      "confidence": "low",
+      "lifecycle": "core",
+      "claim_subject": "valuation",
+      "claim_dimension": "valuation_sensitivity",
+      "financial_driver": "margin",
+      "why_core": "Valuation sensitivity to margin quality is a key decision variable, and the evidence provides both the PE and the margin distortion.",
+      "unverified_detail": "37.95 could not be verified",
+      "reconciliation_reason": "core assertion or number is not bound to evidence",
+      "match_action": "merge_into_existing",
+      "support_evidence": [
+        {
+          "id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+          "excerpt": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "reason": "This is Apple's Q3 2026 earnings release, which provides the most recent quarterly financial data. It is the only evidence cited in the claim and is necessary context for any margin analysis, but it does not mention tariff refunds, gross margin normalization, or valuation multiples.",
+          "proves": "Apple reported Q3 2026 financial results, including record June quarter revenue and EPS.",
+          "does_not_prove": "It does not prove that a tariff refund benefit exists, that it is non-recurring, that it affects gross margin, or that the TTM PE is sensitive to its normalization.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Apple's actual TTM PE ratio (the number 37.95 is unverified).",
+        "Any mention of a tariff refund in Apple's financial statements or earnings calls.",
+        "Gross margin figures for the relevant periods to assess normalization impact.",
+        "Analyst estimates or consensus forward PE that adjust for non-recurring items.",
+        "Quantification of the EPS impact if the tariff refund benefit is not repeated."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "issuer_primary",
+          "reason": "This is Apple's Q3 2026 earnings release, which provides the most recent quarterly financial data. It is the only evidence cited in the claim and is necessary context for any margin analysis, but it does not mention tariff refunds, gross margin normalization, or valuation multiples.",
+          "proves": "Apple reported Q3 2026 financial results, including record June quarter revenue and EPS.",
+          "does_not_prove": "It does not prove that a tariff refund benefit exists, that it is non-recurring, that it affects gross margin, or that the TTM PE is sensitive to its normalization."
+        },
+        {
+          "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "aggregator",
+          "reason": "Provides Q3 2026 EPS and revenue figures, confirming recent earnings strength, but does not address margin composition or valuation multiples.",
+          "proves": "Apple reported Q3 2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+          "does_not_prove": "It does not prove anything about tariff refunds, gross margin normalization, or PE sensitivity."
+        },
+        {
+          "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "Provides Q2 2026 earnings context, showing a pattern of record results, but does not address the specific claim.",
+          "proves": "Apple reported Q2 2026 results with record March quarter revenue, iPhone revenue, and EPS.",
+          "does_not_prove": "It does not prove anything about tariff refunds, gross margin normalization, or PE sensitivity."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AAPL margin dilution OR mix pressure OR cost inflation",
+          "AAPL pricing pressure OR gross margin cut",
+          "What is the consensus forward PE for Apple, and does it adjust for the tariff refund?",
+          "How much would EPS decline if the tariff refund benefit is not repeated?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+            "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+          },
+          {
+            "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+            "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+            "query": "pack.major_events",
+            "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+          },
+          {
+            "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+            "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+            "query": "pack.major_events",
+            "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+          },
+          {
+            "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+            "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+            "query": "pack.major_events",
+            "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "Apple's PE TTM of embeds expectations of sustained high margins and growth; if the % gross margin proves partly cyclical due to one-time tariff refunds, the valuation multiple could be vulnerable to compression",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_95e25a386e8a42dc8f99851461cb89bc"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "unverified",
+          "old_statement": "Apple's PE TTM of embeds expectations of sustained high margins and growth; if the % gross margin proves partly cyclical due to one-time tariff refunds, the valuation multiple could be vulnerable to compression",
+          "new_statement": "Apple's valuation multiple may be sensitive to the sustainability of its gross margin; if the gross margin proves partly cyclical due to one-time tariff refunds, the multiple could be vulnerable to compression",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_95e25a386e8a42dc8f99851461cb89bc"
+        },
+        {
+          "version": 3,
+          "old_status": "unverified",
+          "new_status": "unverified",
+          "old_statement": "Apple's valuation multiple may be sensitive to the sustainability of its gross margin; if the gross margin proves partly cyclical due to one-time tariff refunds, the multiple could be vulnerable to compression",
+          "new_statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple",
+          "reason_for_change": "statement materially changed; decisive evidence changed",
+          "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "title": "Services mix shift supports structural margin expansion",
+      "statement": "Apple's revenue growth is increasingly driven by Services, which carries materially higher gross margin than Products, making the margin trajectory more structural than cyclical.",
+      "selected_as_core": true,
+      "why_core": "Margin quality is a key decision variable for Apple's valuation, and the evidence shows Services revenue reaching all-time records with high gross margin.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Reported gross margin is inflated by one-time tariff refund",
+      "statement": "The latest quarter's gross margin of 50.06% includes a favorable one-time tariff refund benefit of approximately 2 percentage points, implying underlying gross margin is lower and the reported margin overstates structural profitability.",
+      "selected_as_core": true,
+      "why_core": "Margin quality is a key decision variable, and the evidence explicitly flags a one-time benefit that distorts the reported margin.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Product cycle catalysts may extend revenue growth durability",
+      "statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate.",
+      "selected_as_core": true,
+      "why_core": "Growth durability is a key decision variable, and the evidence shows concrete new product and software launches that could influence future demand.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Valuation multiple is sensitive to margin normalization",
+      "statement": "Apple's TTM PE of 37.95 may be sensitive to any normalization of gross margin if the tariff refund benefit is non-recurring, potentially compressing earnings and the multiple.",
+      "selected_as_core": true,
+      "why_core": "Valuation sensitivity to margin quality is a key decision variable, and the evidence provides both the PE and the margin distortion.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Supply constraints pose near-term revenue risk",
+      "statement": "Guidance_history references supply constraints on iPhone and Mac, which may limit near-term revenue and cap upside to growth estimates.",
+      "selected_as_core": false,
+      "why_core": "Supply constraints are a direct risk to near-term revenue growth durability, a key decision variable.",
+      "why_not_core": "Not selected into the Top Core Claims for this run.",
+      "claim_id": null
+    },
+    {
+      "title": "Post-earnings sell-off signals market skepticism on growth quality",
+      "statement": "Despite reporting record revenue and EPS, Apple's stock fell 7.35% on the day following Q3 FY2026 earnings, underperforming major indices, suggesting the market questions the quality or sustainability of the beat.",
+      "selected_as_core": false,
+      "why_core": "Valuation sensitivity is a key decision variable, and the evidence shows a significant negative market reaction despite strong reported results.",
+      "why_not_core": "reclassify_as_fact_or_state",
+      "claim_id": null
+    },
+    {
+      "title": "Customer concentration in iPhone remains a structural risk",
+      "statement": "Apple's revenue remains heavily dependent on iPhone, as evidenced by the product cycle focus and record iPhone revenue, creating concentration risk if demand falters.",
+      "selected_as_core": false,
+      "why_core": "Customer/product concentration is a key decision variable, but the evidence does not provide segment revenue breakdowns to quantify the concentration.",
+      "why_not_core": "The evidence does not provide segment-level revenue data to substantiate the degree of concentration; it only mentions iPhone records and new product launches.",
+      "claim_id": null
+    },
+    {
+      "title": "Services growth is broad-based across geographies",
+      "statement": "Services revenue grew double digits in both developed and emerging markets, indicating broad-based demand that may be more durable than a single-region driver.",
+      "selected_as_core": false,
+      "why_core": "Growth durability is a key decision variable, and the evidence shows broad-based Services growth.",
+      "why_not_core": "The evidence is limited to a single quarter's commentary and does not provide specific growth rates or trends to assess durability.",
+      "claim_id": null
+    }
+  ],
+  "pm_consistency": {
+    "passed": false,
+    "status": "inconsistent",
+    "reasons": [
+      "PM cited unbound number 14.24"
+    ]
+  },
+  "pm_status": "inconsistent",
+  "pm_view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 14.24",
+  "integrity_violations": [
+    {
+      "code": "unsupported_factual_assertion",
+      "claim_title": "Reported gross margin is inflated by one-time tariff refund",
+      "tokens": [
+        "50.06"
+      ]
+    },
+    {
+      "code": "unsupported_factual_assertion",
+      "claim_title": "Valuation multiple is sensitive to margin normalization",
+      "tokens": [
+        "37.95"
+      ]
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "core assertion or number is not bound to evidence"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "no supporting evidence in the current evidence set"
+    },
+    {
+      "code": "status_reconciled",
+      "claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+      "from": "emerging",
+      "to": "strongly_supported",
+      "reason": "direct complete support with required source relationship"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "core assertion or number is not bound to evidence"
+    },
+    {
+      "code": "pm_inconsistency_blocked",
+      "reasons": [
+        "PM cited unbound number 14.24"
+      ]
+    }
+  ],
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM consistency check failed: PM cited unbound number 14.24"
+      }
+    ],
+    "poor_axes": [],
+    "headline": "Brain quality"
+  },
+  "claim_versions_changed": 4
+}

@@ -10,6 +10,21 @@ from stock_pm.research.agents.base import SettingsCompleter
 from stock_pm.research.backfill import ResearchDataBackfill, can_live_backfill, pack_needs_research_data
 from stock_pm.research.llm_reason import compact_pack, compact_text
 
+from .claim_integrity import (
+    COUNTER_MARKERS,
+    check_pm_consistency,
+    default_counter_queries,
+    derive_claim_identity,
+    freeze_evidence_set,
+    is_fact_restatement,
+    is_material_change,
+    links_from_reasoning,
+    match_existing_claim,
+    news_is_duplicate,
+    reconcile_status,
+    score_candidate,
+    strip_unbound_facts,
+)
 from .header import company_header
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -115,82 +130,9 @@ def _recent_evidence(
     return picked
 
 
-def _brain_evidence(evidence: list[dict[str, Any]], intel: dict[str, Any] | None, *, limit: int) -> list[dict[str, Any]]:
-    """Prefer Evidence Set facts over a raw high-tier filing dump."""
-    ctx = ((intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}).get("brain_context") or {}
-    urls: list[str] = []
-    for key in ("current_operating_facts", "independent_confirmation", "industry_related", "counter_evidence"):
-        for row in ctx.get(key) or []:
-            url = str(row.get("source_url") or "")
-            if url and url not in urls:
-                urls.append(url)
-    if not urls:
-        return evidence[:limit]
-    by_url: dict[str, dict[str, Any]] = {}
-    for row in evidence:
-        url = str(row.get("source_url") or "")
-        if url and url not in by_url:
-            by_url[url] = row
-    ordered = [by_url[url] for url in urls if url in by_url]
-    seen = {str(row.get("id") or "") for row in ordered}
-    for row in evidence:
-        key = str(row.get("id") or "")
-        if key and key not in seen:
-            ordered.append(row)
-            seen.add(key)
-        if len(ordered) >= limit:
-            break
-    return ordered[:limit]
-
-
-def _cap_claims_with_evidence_set(claims: list[dict[str, Any]], intel: dict[str, Any] | None) -> list[dict[str, Any]]:
-    from stock_pm.external.evidence_set import apply_independence_to_claims
-
-    payload = (intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}
-    return apply_independence_to_claims(
-        claims,
-        list(payload.get("coverage_matrix") or []),
-        ticker_independent=payload.get("independent_validation"),
-    )
-
-
-def _brain_evidence(evidence: list[dict[str, Any]], intel: dict[str, Any] | None, *, limit: int) -> list[dict[str, Any]]:
-    """Prefer Evidence Set facts over a raw high-tier filing dump."""
-    ctx = ((intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}).get("brain_context") or {}
-    urls: list[str] = []
-    for key in ("current_operating_facts", "independent_confirmation", "industry_related", "counter_evidence"):
-        for row in ctx.get(key) or []:
-            url = str(row.get("source_url") or "")
-            if url and url not in urls:
-                urls.append(url)
-    if not urls:
-        return evidence[:limit]
-    by_url: dict[str, dict[str, Any]] = {}
-    for row in evidence:
-        url = str(row.get("source_url") or "")
-        if url and url not in by_url:
-            by_url[url] = row
-    ordered = [by_url[url] for url in urls if url in by_url]
-    seen = {str(row.get("id") or "") for row in ordered}
-    for row in evidence:
-        key = str(row.get("id") or "")
-        if key and key not in seen:
-            ordered.append(row)
-            seen.add(key)
-        if len(ordered) >= limit:
-            break
-    return ordered[:limit]
-
-
-def _cap_claims_with_evidence_set(claims: list[dict[str, Any]], intel: dict[str, Any] | None) -> list[dict[str, Any]]:
-    from stock_pm.external.evidence_set import apply_independence_to_claims
-
-    payload = (intel or {}).get("evidence_set") or (intel or {}).get("reasoning_context") or {}
-    return apply_independence_to_claims(
-        claims,
-        list(payload.get("coverage_matrix") or []),
-        ticker_independent=payload.get("independent_validation"),
-    )
+def _brain_evidence_rows(frozen: dict[str, Any] | None, *, limit: int) -> list[dict[str, Any]]:
+    rows = list((frozen or {}).get("reasoning_rows") or [])
+    return rows[:limit]
 
 
 def _pack_evidence_bodies(ticker: str, pack: dict[str, Any], *, retrieved_at: str) -> list[dict[str, Any]]:
@@ -358,12 +300,18 @@ def _evidence_id_for_hit(hit: dict[str, Any], rows: list[dict[str, Any]]) -> str
     return None
 
 
-def _select_core(candidates: list[dict[str, Any]], core_raw: list[dict[str, Any]], *, allowed: set[str]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None]:
-    fallback_ids = [eid for eid in allowed if str(eid).startswith("rev_")] or list(allowed)
-    candidate_by_statement: dict[str, dict[str, Any]] = {}
-    for raw in candidates:
-        if isinstance(raw, dict) and raw.get("statement"):
-            candidate_by_statement[str(raw.get("statement") or "").strip().lower()] = raw
+def _select_core(
+    candidates: list[dict[str, Any]],
+    core_raw: list[dict[str, Any]],
+    rejected_raw: list[dict[str, Any]] | None,
+    *,
+    allowed: set[str],
+    ticker: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    why_not = {}
+    for raw in rejected_raw or []:
+        if isinstance(raw, dict) and raw.get("title"):
+            why_not[str(raw.get("title") or "").strip().lower()] = compact_text(raw.get("why_not_core") or "", 240)
 
     def _prepare(raw: dict[str, Any]) -> dict[str, Any]:
         item = dict(raw)
@@ -371,45 +319,204 @@ def _select_core(candidates: list[dict[str, Any]], core_raw: list[dict[str, Any]
             item["uncertainty"] = "medium"
         if not compact_text(item.get("valuation_relevance") or (item.get("scores") or {}).get("valuation_relevance") or "", 40):
             item["valuation_relevance"] = "medium"
-        ids = list(item.get("supporting_evidence_ids") or item.get("evidence_ids") or [])
-        if not ids:
-            sibling = candidate_by_statement.get(str(item.get("statement") or "").strip().lower())
-            if sibling:
-                ids = list(sibling.get("supporting_evidence_ids") or sibling.get("evidence_ids") or [])
-            if ids:
-                item["supporting_evidence_ids"] = ids
-            elif fallback_ids:
-                item["supporting_evidence_ids"] = fallback_ids[:2]
+        identity = derive_claim_identity(item, ticker=ticker)
+        item.update(identity)
         return item
 
     normalized_core: list[dict[str, Any]] = []
+    demoted: list[dict[str, Any]] = []
     seen_statements: set[str] = set()
+    seen_keys: set[str] = set()
+    rejected_ids: list[str] = []
     for raw in core_raw:
         if not isinstance(raw, dict):
             continue
         item = normalize_claim(_prepare(raw), allowed_ids=allowed, core=True)
         if not item:
+            if raw.get("supporting_evidence_ids"):
+                rejected_ids.extend([str(eid) for eid in raw.get("supporting_evidence_ids") or [] if str(eid) not in allowed])
+            continue
+        item.update(derive_claim_identity(item, ticker=ticker))
+        rejected_ids.extend(item.get("rejected_evidence_ids") or [])
+        if is_fact_restatement(item["statement"]):
+            item["selected_as_core"] = False
+            item["why_not_core"] = item.get("why_not_core") or "reclassify_as_fact_or_state: reported fact, not a decision variable"
+            item["is_core"] = False
+            demoted.append(item)
             continue
         key = item["statement"].lower()
-        if key in seen_statements:
+        if key in seen_statements or item.get("claim_key") in seen_keys:
             continue
         seen_statements.add(key)
+        seen_keys.add(str(item.get("claim_key") or ""))
+        item["selected_as_core"] = True
         normalized_core.append(item)
-        if len(normalized_core) >= 5:
-            break
+    normalized_core.sort(key=score_candidate, reverse=True)
+    normalized_core = normalized_core[:5]
     normalized_candidates = []
+    core_keys = {str(row.get("claim_key")) for row in normalized_core}
+    core_statements = {row["statement"].lower() for row in normalized_core}
     for raw in candidates:
         if not isinstance(raw, dict):
             continue
         item = normalize_claim(_prepare(raw), allowed_ids=allowed, core=False)
-        if item:
-            normalized_candidates.append(item)
+        if not item:
+            continue
+        item.update(derive_claim_identity(item, ticker=ticker))
+        selected = item["statement"].lower() in core_statements or item.get("claim_key") in core_keys
+        item["selected_as_core"] = selected
+        if selected and not item.get("why_core"):
+            match = next((row for row in normalized_core if row["statement"].lower() == item["statement"].lower()), None)
+            item["why_core"] = (match or {}).get("why_core") or "Highest value impact × uncertainty × decision relevance among grounded candidates."
+        if not selected:
+            item["why_not_core"] = (
+                item.get("why_not_core")
+                or why_not.get(item["title"].lower())
+                or ("reclassify_as_fact_or_state" if is_fact_restatement(item["statement"]) else "Not selected into the Top Core Claims for this run.")
+            )
+        normalized_candidates.append(item)
         if len(normalized_candidates) >= 8:
             break
+    for row in demoted:
+        if row["statement"].lower() not in {item["statement"].lower() for item in normalized_candidates}:
+            normalized_candidates.append(row)
     reason = None
     if not normalized_core:
-        reason = "No Core Claim had grounded supporting evidence_id values."
-    return normalized_candidates, normalized_core, reason
+        reason = "No Core Claim had grounded supporting evidence_id values inside the current Evidence Set."
+    return normalized_candidates, normalized_core, [{"evidence_id": eid, "reason": "not in current evidence_set"} for eid in dict.fromkeys(rejected_ids)], reason
+
+
+def _counter_hits_to_bodies(ticker: str, hits: list[dict[str, Any]], *, retrieved_at: str) -> list[dict[str, Any]]:
+    bodies: list[dict[str, Any]] = []
+    for row in hits or []:
+        url = str(row.get("url") or "")
+        title = str(row.get("title") or "").strip()
+        snippet = str(row.get("snippet") or row.get("excerpt") or "").strip()
+        fact = snippet or title
+        if not url or len(fact) < 24:
+            continue
+        bodies.append(
+            {
+                "ticker": ticker.upper(),
+                "evidence_type": "news",
+                "fact": fact[:800],
+                "excerpt": fact[:600],
+                "source": row.get("source") or "web_search",
+                "source_url": url,
+                "source_time": row.get("published_at") or retrieved_at,
+                "retrieved_at": retrieved_at,
+                "source_type": "web_search",
+                "importance": "medium",
+                "raw_reference": {
+                    "query": row.get("query"),
+                    "query_type": "counter",
+                    "title": title,
+                    "counter_search": True,
+                },
+            }
+        )
+    return bodies
+
+
+def _pm_claim_view(claim: dict[str, Any], links: list[dict[str, Any]], versions: list[dict[str, Any]]) -> dict[str, Any]:
+    reasoning = claim.get("reasoning") if isinstance(claim.get("reasoning"), dict) else {}
+    return {
+        "claim_id": claim.get("claim_id"),
+        "title": claim.get("title"),
+        "statement": claim.get("statement"),
+        "final_status": claim.get("final_status") or claim.get("status"),
+        "confidence": claim.get("confidence"),
+        "lifecycle": claim.get("lifecycle"),
+        "why_core": claim.get("why_core"),
+        "unverified_detail": claim.get("unverified_detail"),
+        "counter_search": claim.get("counter_search") or {},
+        "evidence_links": [
+            {
+                "evidence_id": row.get("evidence_id"),
+                "direction": row.get("direction"),
+                "strength": row.get("strength"),
+                "relevance": row.get("relevance"),
+                "source_relationship": row.get("source_relationship"),
+                "reason": row.get("reason"),
+                "proves": row.get("proves"),
+                "does_not_prove": row.get("does_not_prove"),
+            }
+            for row in links
+        ],
+        "history": [
+            {
+                "version": row.get("version"),
+                "status": row.get("new_status") or row.get("status"),
+                "reason_for_change": row.get("reason_for_change"),
+            }
+            for row in versions
+        ],
+        "evidence_coverage": reasoning.get("evidence_boundary"),
+        "unsupported_assertions": reasoning.get("unsupported_assertions") or [],
+    }
+
+
+def _apply_claim_version(
+    brain: BrainStore,
+    claim: dict[str, Any],
+    new_fields: dict[str, Any],
+    *,
+    snapshot_id: str | None,
+    run_id: str,
+) -> bool:
+    prior = claim.get("prior_version") or {
+        "statement": claim.get("statement"),
+        "status": claim.get("status"),
+        "confidence": claim.get("confidence"),
+        "supporting_evidence_ids": claim.get("supporting_evidence_ids") or [],
+        "opposing_evidence_ids": claim.get("opposing_evidence_ids") or [],
+        "current_version_id": claim.get("current_version_id"),
+    }
+    check = is_material_change(prior, new_fields)
+    pointer = {
+        **{key: value for key, value in new_fields.items() if key not in {"supporting_evidence_ids", "opposing_evidence_ids"}},
+        "last_reviewed_at": _now(),
+    }
+    if not check["material"]:
+        pointer["current_version_id"] = claim.get("current_version_id") or prior.get("current_version_id")
+        brain.update_claim_pointer(claim["claim_id"], pointer)
+        claim["version_change"] = "no_version_change"
+        claim["version_reason"] = check["reason"]
+        return False
+    versions = brain.list_versions(claim["claim_id"])
+    next_n = max([int(row.get("version") or 0) for row in versions] or [0]) + 1
+    old_e = set(prior.get("supporting_evidence_ids") or [])
+    new_e = set(new_fields.get("supporting_evidence_ids") or [])
+    old_c = set(prior.get("opposing_evidence_ids") or [])
+    new_c = set(new_fields.get("opposing_evidence_ids") or [])
+    version = brain.insert_version(
+        {
+            "claim_id": claim["claim_id"],
+            "version": next_n,
+            "statement": new_fields.get("statement"),
+            "status": new_fields.get("status"),
+            "confidence": new_fields.get("confidence"),
+            "old_statement": prior.get("statement"),
+            "new_statement": new_fields.get("statement"),
+            "old_status": prior.get("status"),
+            "new_status": new_fields.get("status"),
+            "old_confidence": prior.get("confidence"),
+            "new_confidence": new_fields.get("confidence"),
+            "reason_for_change": check["reason"],
+            "added_evidence_ids": sorted(new_e - old_e),
+            "removed_evidence_ids": sorted(old_e - new_e),
+            "counter_evidence_ids": sorted(new_c),
+            "added_counter_evidence_ids": sorted(new_c - old_c),
+            "snapshot_id": snapshot_id,
+            "run_id": run_id,
+        }
+    )
+    pointer["current_version_id"] = version["claim_version_id"]
+    brain.update_claim_pointer(claim["claim_id"], pointer)
+    claim["current_version_id"] = version["claim_version_id"]
+    claim["version_change"] = "new_version"
+    claim["version_reason"] = check["reason"]
+    return True
 
 
 def _pack_print_stale(pack: dict[str, Any] | None) -> bool:
@@ -520,12 +627,20 @@ def run_brain(
     )
     created_pack = _persist_pack_evidence(research, symbol, pack, actor=actor)
     evidence = list(research.store.list_evidence(symbol) or [])
-    llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
-    llm_evidence = _brain_evidence(llm_evidence, intel_base, limit=24)
-    allowed = _allowed(llm_evidence) | _allowed(created_news) | _allowed(news_evidence) | _allowed(created_pack)
+    related_entities = list((intel_base or {}).get("related_entities") or [])
+    frozen = freeze_evidence_set(
+        ticker=symbol,
+        intel=intel_base,
+        store_evidence=evidence,
+        related_entities=related_entities,
+        extra_rows=created_news + news_evidence + created_pack,
+    )
+    brain.insert_evidence_set({"evidence_set_id": frozen["evidence_set_id"], "run_id": run_id, "ticker": symbol, "payload": frozen})
+    llm_evidence = _brain_evidence_rows(frozen, limit=24)
+    allowed = set(frozen.get("reasoning_allowed_ids") or [])
+    integrity_violations: list[dict[str, Any]] = []
     if not allowed:
-        allowed = _allowed(evidence[:LLM_EVIDENCE_LIMIT])
-        llm_evidence = evidence[:LLM_EVIDENCE_LIMIT]
+        integrity_violations.append({"code": "empty_evidence_set", "reason": "No Evidence Set rows were eligible for reasoning."})
 
     understanding = None
     payload_a, audit_a = company_understanding(
@@ -535,8 +650,9 @@ def run_brain(
             "reported_financials": header,
             "research_pack": compact_pack(pack),
             "evidence": compact_evidence_rows(llm_evidence, limit=24),
+            "evidence_set_id": frozen.get("evidence_set_id"),
             "snapshot_id": snapshot_id,
-            "rules": ["Do not invent numbers.", "Cite evidence_id only.", "Mark unavailable when missing."],
+            "rules": ["Do not invent numbers.", "Cite evidence_id only from the current Evidence Set.", "Mark unavailable when missing."],
         },
         allowed_ids=allowed,
     )
@@ -556,8 +672,15 @@ def run_brain(
             more = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days)
             hits = _merge_news_hits(hits, more)
             evidence = list(research.store.list_evidence(symbol) or [])
-            llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
-            allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
+            frozen = freeze_evidence_set(
+                ticker=symbol,
+                intel=intel_base,
+                store_evidence=evidence,
+                related_entities=related_entities,
+                extra_rows=created_news + news_evidence + created_pack,
+            )
+            llm_evidence = _brain_evidence_rows(frozen, limit=24)
+            allowed = set(frozen.get("reasoning_allowed_ids") or [])
         for state in payload_a.get("states") or []:
             if not isinstance(state, dict) or not state.get("name"):
                 continue
@@ -596,6 +719,7 @@ def run_brain(
     core: list[dict[str, Any]] = []
     insufficient = None
     payload_b = None
+    rejected_ids: list[dict[str, Any]] = []
     audit_b = {"step": "core_claims", "llm_called": False, "llm_status": "skipped"}
     if integrity.get("block_core_claims"):
         fallbacks.append("core_claims")
@@ -612,6 +736,7 @@ def run_brain(
                 "reported_financials": header,
                 "states": [row for row in brain.list_states(symbol, run_id=run_id)],
                 "evidence": compact_evidence_rows(llm_evidence, limit=24),
+                "evidence_set_id": frozen.get("evidence_set_id"),
                 "company_understanding": understanding or {"missing": True},
                 "snapshot_id": snapshot_id,
             },
@@ -619,82 +744,153 @@ def run_brain(
         )
         llm_calls.append(audit_b)
         if payload_b:
-            candidates, core, insufficient = _select_core(
+            candidates, core, rejected_ids, insufficient = _select_core(
                 list(payload_b.get("candidates") or []),
                 list(payload_b.get("core") or []),
+                list(payload_b.get("rejected") or []),
                 allowed=allowed,
+                ticker=symbol,
             )
             insufficient = insufficient or payload_b.get("insufficient_reason")
+            integrity_violations.extend(rejected_ids)
         else:
             fallbacks.append("core_claims")
             insufficient = audit_b.get("error") or "Core claim LLM call failed; no template claims were generated."
             warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": str(insufficient)})
     if integrity.get("data_poor"):
-        capped: list[dict[str, Any]] = []
-        for item in core:
-            item["confidence"] = "low"
-            if item.get("status") in {"strongly_supported"}:
-                item["status"] = "unverified"
-            capped.append(item)
-        core = capped
-        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Data coverage is insufficient for high-confidence Core Claims."})
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Company pack coverage is incomplete; per-claim evidence strength is assessed separately."})
 
-    core = _cap_claims_with_evidence_set(core, intel_base)
-    if any(item.get("independence_gap") for item in core):
-        warnings.append(
-            {
-                "code": "BRAIN QUALITY WARNING",
-                "axis": "Data Coverage",
-                "reason": "Independent validation: Missing. issuer-supported but independently unconfirmed",
-            }
-        )
-
+    evidence_by_id = {str(row.get("id")): row for row in (frozen.get("rows") or []) if row.get("id")}
     persisted_claims: list[dict[str, Any]] = []
     claim_ids: set[str] = set()
+    selected_ids: set[str] = set()
+    existing_active = brain.list_active_claims(symbol)
     for item in core:
-        claim = brain.insert_claim(
-            {
-                "ticker": symbol,
-                "title": item["title"],
-                "statement": item["statement"],
-                "claim_type": item["claim_type"],
-                "status": item["status"],
-                "importance": item["importance"],
-                "confidence": item["confidence"],
-                "time_horizon": item["time_horizon"],
-                "why_it_matters": item["why_it_matters"],
-                "financial_driver": item["financial_driver"],
-                "is_core": True,
-                "run_id": run_id,
-                "snapshot_id": snapshot_id,
+        match = match_existing_claim(item, existing_active)
+        action = match.get("action") or "create_new"
+        prior = match.get("claim")
+        by_key = brain.get_claim_by_key(symbol, str(item.get("claim_key") or ""))
+        if by_key:
+            action = "update_existing"
+            prior = by_key
+        bound = [evidence_by_id.get(eid) for eid in item.get("supporting_evidence_ids") or [] if evidence_by_id.get(eid)]
+        stripped = strip_unbound_facts(item["statement"], [row for row in bound if row])
+        if stripped.get("unsupported_tokens"):
+            integrity_violations.append(
+                {
+                    "code": "unsupported_factual_assertion",
+                    "claim_title": item.get("title"),
+                    "tokens": stripped.get("unsupported_tokens"),
+                }
+            )
+        item["statement"] = stripped["statement"]
+        item["unverified_detail"] = stripped.get("unverified_detail") or ""
+        item["unsupported_tokens"] = stripped.get("unsupported_tokens") or []
+        payload = {
+            "ticker": symbol,
+            "title": item["title"],
+            "statement": item["statement"],
+            "claim_type": item["claim_type"],
+            "status": item.get("proposed_status") or item["status"],
+            "proposed_status": item.get("proposed_status") or item["status"],
+            "importance": item["importance"],
+            "confidence": item["confidence"],
+            "time_horizon": item["time_horizon"],
+            "why_it_matters": item["why_it_matters"],
+            "financial_driver": item.get("financial_driver"),
+            "claim_key": item.get("claim_key"),
+            "claim_subject": item.get("claim_subject"),
+            "claim_dimension": item.get("claim_dimension"),
+            "why_core": item.get("why_core") or "",
+            "is_core": True,
+            "lifecycle": "core",
+            "evidence_set_id": frozen.get("evidence_set_id"),
+            "unverified_detail": item.get("unverified_detail") or "",
+            "match_action": action,
+            "run_id": run_id,
+            "snapshot_id": snapshot_id,
+            "last_reviewed_at": _now(),
+        }
+        if action in {"update_existing", "merge_into_existing"} and prior:
+            payload["claim_key"] = prior.get("claim_key") or payload.get("claim_key")
+            payload["claim_subject"] = prior.get("claim_subject") or payload.get("claim_subject")
+            payload["claim_dimension"] = prior.get("claim_dimension") or payload.get("claim_dimension")
+            item["claim_key"] = payload["claim_key"]
+            claim = brain.update_claim_pointer(prior["claim_id"], payload) or prior
+            claim.update({k: payload[k] for k in payload if k not in {"ticker"}})
+            claim["claim_id"] = prior["claim_id"]
+            claim["prior_version"] = {
+                "statement": prior.get("statement"),
+                "status": prior.get("status") or prior.get("final_status"),
+                "confidence": prior.get("confidence"),
+                "supporting_evidence_ids": [
+                    str(link.get("evidence_id"))
+                    for link in brain.list_links(claim_id=prior["claim_id"])
+                    if link.get("direction") == "support"
+                ],
+                "opposing_evidence_ids": [
+                    str(link.get("evidence_id"))
+                    for link in brain.list_links(claim_id=prior["claim_id"])
+                    if link.get("direction") == "oppose"
+                ],
+                "current_version_id": prior.get("current_version_id"),
             }
-        )
-        version = brain.insert_version(
-            {
-                "claim_id": claim["claim_id"],
-                "version": 1,
+        else:
+            claim = brain.insert_claim(payload)
+            version = brain.insert_version(
+                {
+                    "claim_id": claim["claim_id"],
+                    "version": 1,
+                    "statement": item["statement"],
+                    "status": item.get("proposed_status") or item["status"],
+                    "confidence": item["confidence"],
+                    "new_statement": item["statement"],
+                    "new_status": item.get("proposed_status") or item["status"],
+                    "new_confidence": item["confidence"],
+                    "reason_for_change": "initial core claim",
+                    "added_evidence_ids": item["supporting_evidence_ids"],
+                    "counter_evidence_ids": item["opposing_evidence_ids"],
+                    "snapshot_id": snapshot_id,
+                    "run_id": run_id,
+                }
+            )
+            brain.update_claim_pointer(claim["claim_id"], {"current_version_id": version["claim_version_id"]})
+            claim["current_version_id"] = version["claim_version_id"]
+            claim["prior_version"] = {
                 "statement": item["statement"],
-                "status": item["status"],
+                "status": item.get("proposed_status") or item["status"],
                 "confidence": item["confidence"],
-                "reason_for_change": "initial core claim",
-                "added_evidence_ids": item["supporting_evidence_ids"],
-                "counter_evidence_ids": item["opposing_evidence_ids"],
-                "snapshot_id": snapshot_id,
-                "run_id": run_id,
+                "supporting_evidence_ids": list(item.get("supporting_evidence_ids") or []),
+                "opposing_evidence_ids": list(item.get("opposing_evidence_ids") or []),
+                "current_version_id": version["claim_version_id"],
             }
-        )
-        brain.update_claim_pointer(claim["claim_id"], {"current_version_id": version["claim_version_id"], "statement": item["statement"], "status": item["status"], "confidence": item["confidence"]})
-        claim["current_version_id"] = version["claim_version_id"]
-        for eid in item["supporting_evidence_ids"]:
-            brain.insert_link({"claim_id": claim["claim_id"], "evidence_id": eid, "direction": "support", "strength": "strong", "run_id": run_id})
-        for eid in item["opposing_evidence_ids"]:
-            brain.insert_link({"claim_id": claim["claim_id"], "evidence_id": eid, "direction": "oppose", "strength": "medium", "run_id": run_id})
+        claim.update(item)
+        claim["match_action"] = action
         persisted_claims.append(claim)
-        claim["independence_gap"] = item.get("independence_gap")
-        claim["evidence_confidence"] = item.get("evidence_confidence")
-        claim["independent_validation"] = item.get("independent_validation")
-        claim["evidence_coverage"] = item.get("evidence_coverage")
+        selected_ids.add(claim["claim_id"])
         claim_ids.add(claim["claim_id"])
+        existing_active = [row for row in existing_active if row.get("claim_id") != claim.get("claim_id")] + [claim]
+    for item in candidates:
+        matched = next((row for row in persisted_claims if row.get("statement") == item.get("statement")), None)
+        brain.insert_candidate(
+            {
+                "run_id": run_id,
+                "ticker": symbol,
+                "title": item.get("title"),
+                "statement": item.get("statement"),
+                "selected_as_core": bool(item.get("selected_as_core")),
+                "why_core": item.get("why_core") or "",
+                "why_not_core": item.get("why_not_core") or "",
+                "scores": item.get("scores") or {},
+                "supporting_evidence_ids": item.get("supporting_evidence_ids") or [],
+                "opposing_evidence_ids": item.get("opposing_evidence_ids") or [],
+                "missing_evidence": item.get("missing_evidence") or [],
+                "claim_id": (matched or {}).get("claim_id"),
+            }
+        )
+    for prior in brain.list_active_claims(symbol):
+        if prior.get("is_core") and prior.get("claim_id") not in selected_ids and prior.get("run_id") != run_id:
+            brain.update_claim_pointer(prior["claim_id"], {"is_core": False, "lifecycle": "background", "last_reviewed_at": _now()})
 
     intel_claims: dict[str, Any] | None = None
     if fetch_live and persisted_claims:
@@ -724,22 +920,18 @@ def run_brain(
         news_evidence.extend(more_matched)
         hits = _merge_news_hits(hits, intel_claims.get("news_hits") or [])
         evidence = list(research.store.list_evidence(symbol) or [])
-        llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
-        llm_evidence = _brain_evidence(llm_evidence, intel_claims, limit=24)
-        allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
-        recapped = _cap_claims_with_evidence_set(persisted_claims, intel_claims)
-        for old, new in zip(persisted_claims, recapped):
-            old["independence_gap"] = new.get("independence_gap")
-            old["evidence_confidence"] = new.get("evidence_confidence")
-            old["independent_validation"] = new.get("independent_validation")
-            old["evidence_coverage"] = new.get("evidence_coverage")
-            if new.get("confidence") != old.get("confidence") or new.get("status") != old.get("status"):
-                brain.update_claim_pointer(
-                    old["claim_id"],
-                    {"status": new.get("status"), "confidence": new.get("confidence"), "statement": old.get("statement")},
-                )
-                old["confidence"] = new.get("confidence")
-                old["status"] = new.get("status")
+        related_entities = list((intel_claims or {}).get("related_entities") or related_entities)
+        frozen = freeze_evidence_set(
+            ticker=symbol,
+            intel=intel_claims,
+            store_evidence=evidence,
+            related_entities=related_entities,
+            extra_rows=created_news + news_evidence + created_pack,
+            research_leads=(intel_claims.get("evidence_set") or {}).get("research_leads"),
+        )
+        llm_evidence = _brain_evidence_rows(frozen, limit=24)
+        allowed = set(frozen.get("reasoning_allowed_ids") or [])
+        evidence_by_id = {str(row.get("id")): row for row in (frozen.get("rows") or []) if row.get("id")}
 
     news_payload = []
     for idx, hit in enumerate(hits[:24]):
@@ -782,43 +974,23 @@ def run_brain(
             item = normalize_news_item(raw, allowed_ids=news_allowed, claim_ids=claim_ids)
             evidence_id = item.get("evidence_id") or news_payload[idx].get("evidence_id")
             changed = False
-            if item.get("changes_claim_status") and item.get("affected_claim_id") and item.get("layer") == "material":
-                claim = brain.get_claim(item["affected_claim_id"])
-                if claim:
-                    versions = brain.list_versions(claim["claim_id"])
-                    nxt = (max((int(row.get("version") or 1) for row in versions), default=1) + 1)
-                    new_status = "challenged" if item.get("impact") == "oppose" else claim.get("status")
-                    if item.get("impact") == "support" and claim.get("status") in {"emerging", "unverified", "partially_supported"}:
-                        new_status = "strongly_supported" if claim.get("status") == "partially_supported" else "partially_supported"
-                    version = brain.insert_version(
-                        {
-                            "claim_id": claim["claim_id"],
-                            "version": nxt,
-                            "statement": claim.get("statement"),
-                            "status": new_status,
-                            "confidence": claim.get("confidence"),
-                            "reason_for_change": item.get("reason") or "material news",
-                            "added_evidence_ids": [evidence_id] if evidence_id else [],
-                            "snapshot_id": snapshot_id,
-                            "run_id": run_id,
-                        }
-                    )
-                    brain.update_claim_pointer(
-                        claim["claim_id"],
-                        {"current_version_id": version["claim_version_id"], "status": new_status, "statement": claim.get("statement")},
-                    )
-                    if evidence_id:
-                        brain.insert_link(
-                            {
-                                "claim_id": claim["claim_id"],
-                                "evidence_id": evidence_id,
-                                "direction": "support" if item.get("impact") == "support" else "oppose" if item.get("impact") == "oppose" else "contextual",
-                                "reason": item.get("reason") or "",
-                                "run_id": run_id,
-                            }
-                        )
-                    changed = True
-                    versions_changed += 1
+            facts = [str(row.get("fact") or "") for row in (frozen.get("rows") or [])]
+            duplicate = news_is_duplicate(hit, facts + [str(item.get("new_fact") or "")])
+            if (
+                item.get("layer") == "material"
+                and item.get("affected_claim_id")
+                and evidence_id
+                and evidence_id in allowed
+                and not duplicate
+            ):
+                target = next((row for row in persisted_claims if row.get("claim_id") == item.get("affected_claim_id")), None)
+                if target is not None:
+                    direction = "support" if item.get("impact") == "support" else "oppose" if item.get("impact") == "oppose" else "contextual"
+                    ids_key = "opposing_evidence_ids" if direction == "oppose" else "supporting_evidence_ids"
+                    current_ids = list(target.get(ids_key) or [])
+                    if evidence_id not in current_ids:
+                        current_ids.append(evidence_id)
+                        target[ids_key] = current_ids
             if item.get("new_research_question"):
                 brain.insert_question(
                     {
@@ -872,10 +1044,68 @@ def run_brain(
                 )
             )
 
+    counter_created: list[dict[str, Any]] = []
     for claim in list(persisted_claims):
-        links = brain.list_links(claim_id=claim["claim_id"])
-        related = [row for row in evidence if str(row.get("id")) in {str(link.get("evidence_id")) for link in links} or str(row.get("id")) in allowed]
-        related = _brain_evidence(related or llm_evidence, intel_claims or intel_base, limit=24)
+        queries = default_counter_queries(claim, symbol)
+        if len(queries) < 2:
+            queries.extend(
+                [
+                    f"{symbol} demand slowdown OR capex cut OR order delay",
+                    f"{symbol} customer concentration OR margin pressure OR lawsuit",
+                ]
+            )
+        queries = queries[:4]
+        hits_c = search_recent_news(symbol, pack=pack, extra_queries=queries, days=days)
+        bodies = _counter_hits_to_bodies(symbol, hits_c, retrieved_at=_now().isoformat())
+        created_c, matched_c = _persist_extracted_evidence(research, symbol, bodies, actor=actor)
+        counter_created.extend(created_c)
+        found_ids: list[str] = []
+        for row in created_c + matched_c:
+            blob = f"{row.get('fact') or ''} {row.get('excerpt') or ''}"
+            if row.get("id") and COUNTER_MARKERS.search(blob):
+                found_ids.append(str(row["id"]))
+        claim["counter_search"] = {
+            "counter_search_performed": True,
+            "counter_queries": queries,
+            "counter_evidence_found": bool(found_ids),
+            "counter_evidence_ids": found_ids,
+            "results": [
+                {
+                    "title": hit.get("title"),
+                    "url": hit.get("url"),
+                    "query": hit.get("query"),
+                    "snippet": compact_text(hit.get("snippet") or "", 200),
+                }
+                for hit in hits_c[:8]
+            ],
+        }
+        if found_ids:
+            oppose = list(claim.get("opposing_evidence_ids") or [])
+            for eid in found_ids:
+                if eid not in oppose:
+                    oppose.append(eid)
+            claim["opposing_evidence_ids"] = oppose
+
+    if counter_created:
+        created_news.extend(counter_created)
+        evidence = list(research.store.list_evidence(symbol) or [])
+        frozen = freeze_evidence_set(
+            ticker=symbol,
+            intel=intel_claims or intel_base,
+            store_evidence=evidence,
+            related_entities=related_entities,
+            extra_rows=created_news + news_evidence + created_pack + counter_created,
+            research_leads=((intel_claims or intel_base or {}).get("evidence_set") or {}).get("research_leads"),
+        )
+        brain.insert_evidence_set({"evidence_set_id": frozen["evidence_set_id"], "run_id": run_id, "ticker": symbol, "payload": frozen})
+        llm_evidence = _brain_evidence_rows(frozen, limit=24)
+        allowed = set(frozen.get("reasoning_allowed_ids") or [])
+        evidence_by_id = {str(row.get("id")): row for row in (frozen.get("rows") or []) if row.get("id")}
+
+    for claim in list(persisted_claims):
+        bound_ids = set(claim.get("supporting_evidence_ids") or []) | set(claim.get("opposing_evidence_ids") or [])
+        related = [row for row in (frozen.get("reasoning_rows") or llm_evidence) if str(row.get("id")) in bound_ids or str(row.get("id")) in allowed]
+        related = related or llm_evidence
         coverage = None
         for row in ((intel_claims or intel_base or {}).get("evidence_set") or {}).get("coverage_matrix") or ((intel_claims or intel_base or {}).get("reasoning_context") or {}).get("coverage_matrix") or []:
             if str(row.get("claim_title") or "") == str(claim.get("title") or ""):
@@ -884,18 +1114,32 @@ def run_brain(
         payload_d, audit_d = claim_reasoning(
             model_completer,
             {
-                "claim": claim,
-                "evidence": compact_evidence_rows(related or llm_evidence, limit=24),
+                "claim": {
+                    "claim_id": claim.get("claim_id"),
+                    "title": claim.get("title"),
+                    "statement": claim.get("statement"),
+                    "proposed_status": claim.get("proposed_status"),
+                    "claim_subject": claim.get("claim_subject"),
+                    "claim_dimension": claim.get("claim_dimension"),
+                    "financial_driver": claim.get("financial_driver"),
+                    "time_horizon": claim.get("time_horizon"),
+                    "supporting_evidence_ids": claim.get("supporting_evidence_ids") or [],
+                    "opposing_evidence_ids": claim.get("opposing_evidence_ids") or [],
+                    "unverified_detail": claim.get("unverified_detail"),
+                    "counter_search": claim.get("counter_search") or {},
+                },
+                "evidence": compact_evidence_rows(related, limit=24),
                 "evidence_coverage": coverage,
                 "independence_gap": claim.get("independence_gap"),
                 "brain_context": ((intel_claims or intel_base or {}).get("evidence_set") or {}).get("brain_context"),
                 "snapshot_id": snapshot_id,
+                "evidence_set_id": frozen.get("evidence_set_id"),
             },
             allowed_ids=allowed,
         )
         llm_calls.append(audit_d)
+        reasoning = payload_d or {}
         if payload_d:
-            brain.update_claim_pointer(claim["claim_id"], {"reasoning": payload_d})
             claim["reasoning"] = payload_d
             if payload_d.get("next_research_question"):
                 brain.insert_question(
@@ -910,15 +1154,135 @@ def run_brain(
                 )
         else:
             fallbacks.append(f"claim_reasoning:{claim['claim_id']}")
+            integrity_violations.append({"code": "claim_reasoning_failed", "claim_id": claim.get("claim_id")})
 
-    persisted_claims = [brain.get_claim(row["claim_id"]) or row for row in persisted_claims]
+        version_id = claim.get("current_version_id") or (claim.get("prior_version") or {}).get("current_version_id")
+        links, rejected_link_ids = links_from_reasoning(
+            reasoning,
+            claim=claim,
+            evidence_by_id=evidence_by_id,
+            allowed=allowed,
+            ticker=symbol,
+            related_entities=related_entities,
+            run_id=run_id,
+            claim_version_id=version_id,
+        )
+        for eid in rejected_link_ids:
+            integrity_violations.append({"code": "invalid_evidence_id_rejected", "claim_id": claim.get("claim_id"), "evidence_id": eid})
+        statement = compact_text(reasoning.get("statement_revision") or claim.get("statement") or "", 600) or claim.get("statement")
+        bound_rows = [evidence_by_id.get(str(row.get("evidence_id"))) for row in links if evidence_by_id.get(str(row.get("evidence_id")))]
+        stripped = strip_unbound_facts(statement, [row for row in bound_rows if row])
+        if stripped.get("unsupported_tokens"):
+            integrity_violations.append(
+                {
+                    "code": "unsupported_factual_assertion",
+                    "claim_id": claim.get("claim_id"),
+                    "tokens": stripped.get("unsupported_tokens"),
+                    "action": "stripped_from_statement",
+                }
+            )
+        claim["statement"] = stripped["statement"]
+        claim["unverified_detail"] = stripped.get("unverified_detail") or claim.get("unverified_detail") or ""
+        claim["unsupported_tokens"] = stripped.get("unsupported_tokens") or []
+        recon = reconcile_status(
+            claim=claim,
+            links=links,
+            evidence_by_id=evidence_by_id,
+            unsupported_tokens=claim.get("unsupported_tokens"),
+            counter_search=claim.get("counter_search"),
+            reasoning=reasoning,
+        )
+        if recon.get("proposed_status") and recon.get("final_status") and recon["proposed_status"] != recon["final_status"]:
+            integrity_violations.append(
+                {
+                    "code": "status_downgrade" if recon["final_status"] != "strongly_supported" else "status_reconciled",
+                    "claim_id": claim.get("claim_id"),
+                    "from": recon["proposed_status"],
+                    "to": recon["final_status"],
+                    "reason": recon.get("reconciliation_reason"),
+                }
+            )
+        lifecycle = "core"
+        if recon["final_status"] in {"challenged", "contradicted"}:
+            lifecycle = "challenged"
+        elif recon["final_status"] == "closed":
+            lifecycle = "closed"
+        counter = dict(claim.get("counter_search") or {})
+        oppose_ids = [str(row.get("evidence_id")) for row in links if row.get("direction") == "oppose"]
+        support_ids = [str(row.get("evidence_id")) for row in links if row.get("direction") == "support"]
+        if oppose_ids:
+            counter["counter_evidence_found"] = True
+            counter["counter_evidence_ids"] = sorted(set((counter.get("counter_evidence_ids") or []) + oppose_ids))
+        counter["counter_search_performed"] = True
+        claim["counter_search"] = counter
+        claim["supporting_evidence_ids"] = support_ids
+        claim["opposing_evidence_ids"] = oppose_ids
+        claim["proposed_status"] = recon.get("proposed_status") or claim.get("proposed_status")
+        claim["final_status"] = recon["final_status"]
+        claim["status"] = recon["final_status"]
+        claim["confidence"] = recon["confidence"]
+        claim["reconciliation_reason"] = recon.get("reconciliation_reason")
+        claim["lifecycle"] = lifecycle
+        new_fields = {
+            "statement": claim["statement"],
+            "status": recon["final_status"],
+            "proposed_status": claim.get("proposed_status"),
+            "confidence": recon["confidence"],
+            "lifecycle": lifecycle,
+            "unverified_detail": claim.get("unverified_detail") or "",
+            "counter_search": counter,
+            "reasoning": reasoning,
+            "evidence_set_id": frozen.get("evidence_set_id"),
+            "run_id": run_id,
+            "snapshot_id": snapshot_id,
+            "supporting_evidence_ids": support_ids,
+            "opposing_evidence_ids": oppose_ids,
+        }
+        if _apply_claim_version(brain, claim, new_fields, snapshot_id=snapshot_id, run_id=run_id):
+            versions_changed += 1
+            version_id = claim.get("current_version_id") or version_id
+            for row in links:
+                row["claim_version_id"] = version_id
+        persisted_links = []
+        for row in links:
+            row["claim_version_id"] = claim.get("current_version_id") or version_id
+            stored_link = brain.insert_link(row)
+            persisted_links.append(stored_link)
+        claim["evidence_links"] = persisted_links
+
+    pm_claims = []
+    for row in persisted_claims:
+        stored = brain.get_claim(row["claim_id"]) or {}
+        merged = dict(stored)
+        merged.update(
+            {
+                "final_status": row.get("final_status") or stored.get("status"),
+                "proposed_status": row.get("proposed_status") or stored.get("proposed_status"),
+                "counter_search": row.get("counter_search") or stored.get("counter_search") or {},
+                "reasoning": row.get("reasoning") or stored.get("reasoning") or {},
+                "supporting_evidence_ids": row.get("supporting_evidence_ids") or [],
+                "opposing_evidence_ids": row.get("opposing_evidence_ids") or [],
+                "evidence_links": row.get("evidence_links") or [],
+                "unverified_detail": row.get("unverified_detail") or stored.get("unverified_detail"),
+                "reconciliation_reason": row.get("reconciliation_reason"),
+                "version_change": row.get("version_change"),
+                "claim_key": row.get("claim_key") or stored.get("claim_key"),
+                "why_core": row.get("why_core") or stored.get("why_core"),
+            }
+        )
+        pm_claims.append(merged)
+    persisted_claims = pm_claims
+    pm_payload_claims = [
+        _pm_claim_view(row, row.get("evidence_links") or brain.list_links(claim_id=row["claim_id"]), brain.list_versions(row["claim_id"]))
+        for row in persisted_claims
+    ]
     payload_e, audit_e = pm_synthesis(
         model_completer,
         {
             "ticker": symbol,
             "header": header,
             "states": brain.list_states(symbol, run_id=run_id),
-            "core_claims": persisted_claims,
+            "core_claims": pm_payload_claims,
             "material_news": [row for row in interpreted if row.get("layer") == "material"],
             "valuation_snapshot": {
                 "pe_ttm": ((header.get("valuation") or {}).get("pe_ttm") or {}),
@@ -927,6 +1291,7 @@ def run_brain(
                 "price": header.get("price"),
             },
             "snapshot_id": snapshot_id,
+            "evidence_set_id": frozen.get("evidence_set_id"),
         },
         allowed_ids=allowed | claim_ids,
     )
@@ -938,7 +1303,19 @@ def run_brain(
         synthesis = {
             "current_view": "LLM PM synthesis unavailable. Do not treat the page as a completed Brain view.",
             "cannot_conclude": ["pm_synthesis_failed"],
+            "status": "inconsistent",
         }
+        pm_check = {"passed": False, "status": "inconsistent", "reasons": ["pm_synthesis_failed"]}
+    else:
+        pm_check = check_pm_consistency(synthesis, persisted_claims, evidence_by_id=evidence_by_id)
+        if not pm_check.get("passed"):
+            synthesis["status"] = "inconsistent"
+            integrity_violations.append({"code": "pm_inconsistency_blocked", "reasons": pm_check.get("reasons") or []})
+            warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": "PM consistency check failed: " + "; ".join(pm_check.get("reasons") or [])})
+            synthesis["current_view"] = "PM consistency check failed. Do not treat this as a completed PM view. " + "; ".join(pm_check.get("reasons") or [])
+        else:
+            synthesis["status"] = "completed"
+    synthesis["pm_consistency"] = pm_check
 
     intel = merge_intelligence(intel_base, intel_claims) if intel_claims else intel_base
     news_stats = classify_news_hits(hits, days=days)
@@ -965,11 +1342,14 @@ def run_brain(
     status = "success" if llm_ok and persisted_claims else ("partial" if header.get("price") or evidence else "failed")
     if quality["axes"]["llm_reasoning"] == "Poor" and not persisted_claims:
         status = "partial" if (hits or evidence or (header.get("growth") or {}).get("revenue_ttm", {}).get("value") is not None) else "failed"
+    if synthesis.get("status") == "inconsistent":
+        status = "partial"
 
     audit = {
         "ticker": symbol,
         "run_id": run_id,
         "snapshot_id": snapshot_id,
+        "evidence_set_id": frozen.get("evidence_set_id"),
         "model": models[-1] if models else None,
         "prompt_version": PROMPT_VERSION,
         "llm_calls": llm_calls,
@@ -988,6 +1368,8 @@ def run_brain(
         "high_quality_news": sum(1 for row in hits if is_high_quality(row.get("url"), row.get("source"))),
         "news_coverage_stats": news_stats,
         "integrity": integrity,
+        "integrity_violations": integrity_violations,
+        "pm_consistency": pm_check,
         "llm_invoked": llm_ok,
         "external_intelligence_report": (intel or {}).get("report") or {},
         "evidence_coverage_matrix": ((intel or {}).get("evidence_set") or {}).get("coverage_matrix") or ((intel or {}).get("report") or {}).get("coverage_matrix") or [],
@@ -1041,5 +1423,8 @@ def run_brain(
         "audit": audit,
         "pack": pack,
         "integrity": integrity,
+        "integrity_violations": integrity_violations,
+        "pm_consistency": pm_check,
+        "evidence_set_id": frozen.get("evidence_set_id"),
         "external_intelligence": intel or {},
     }

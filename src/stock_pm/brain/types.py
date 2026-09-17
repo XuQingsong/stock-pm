@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-PROMPT_VERSION = "brain-phase1-v1.2"
+PROMPT_VERSION = "brain-integrity-v1"
 GOLDEN_TICKERS = ("AVGO", "AAPL", "LITE")
 NEWS_WINDOW_DAYS = 30
 FINANCIAL_EVIDENCE_DAYS = 370
@@ -29,6 +29,42 @@ LINK_RELEVANCE = ("direct", "indirect", "background")
 NEWS_LAYERS = ("material", "contextual", "noise", "uninterpreted")
 QUALITY_BANDS = ("Good", "Partial", "Poor")
 NUMBER_ORIGINS = ("reported", "consensus", "system_estimate", "unavailable")
+SOURCE_RELATIONSHIPS = (
+    "issuer_primary",
+    "related_entity_primary",
+    "independent_media",
+    "industry_peer",
+    "aggregator",
+    "community",
+    "unknown",
+)
+EXTERNAL_VALIDATION_RELATIONSHIPS = (
+    "related_entity_primary",
+    "independent_media",
+    "industry_peer",
+)
+WEAK_RELATIONSHIPS = ("aggregator", "community", "unknown")
+STRONG_LINK_QUALITY = ("strong", "medium")
+LIFECYCLES = ("core", "challenged", "background", "closed")
+MATCH_ACTIONS = ("update_existing", "create_new", "merge_into_existing", "split_from_existing")
+CLAIM_SUBJECTS = (
+    "ai_custom_silicon",
+    "services_mix",
+    "hardware_demand",
+    "optical_demand",
+    "margin_quality",
+    "demand_duration",
+    "valuation",
+    "customer_concentration",
+)
+CLAIM_DIMENSIONS = (
+    "growth_duration",
+    "structural_vs_cyclical",
+    "customer_concentration",
+    "margin_quality",
+    "valuation_sensitivity",
+    "decision_variable",
+)
 
 HIGH_QUALITY_NEWS_HOSTS = (
     "reuters.com",

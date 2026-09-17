@@ -1,0 +1,2273 @@
+{
+  "generated_at": "2026-09-17T19:30:42+00:00",
+  "prompt_version": "brain-integrity-v1",
+  "core_claims": {
+    "AAPL": [
+      {
+        "claim_key": "bck_8a8fdd505aeb5d50253e",
+        "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+        "title": "Services mix shift supports structural margin expansion",
+        "statement": "Apple's Services revenue has reached new record highs in recent quarters, and Services is widely understood to carry higher gross margin than Products, but the available evidence does not quantify the revenue mix shift or the gross margin differential, so the claim that the margin trajectory is more structural than cyclical remains unverified",
+        "proposed_status": "partially_supported",
+        "final_status": "unverified",
+        "confidence": "low",
+        "lifecycle": "core",
+        "claim_subject": "apple_inc",
+        "claim_dimension": "margin_quality",
+        "financial_driver": "margin",
+        "why_core": "Margin quality is a key decision variable for Apple's valuation, and the evidence shows Services revenue reaching all-time records with high gross margin.",
+        "unverified_detail": "",
+        "reconciliation_reason": "core assertion or number is not bound to evidence",
+        "match_action": "merge_into_existing",
+        "support_evidence": [
+          {
+            "id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+            "excerpt": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "reason": "Apple's Q3 FY2026 earnings release states that Services revenue set a new June quarter record, confirming Services growth momentum.",
+            "proves": "Services revenue reached a new record in the June 2026 quarter.",
+            "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_f380aa032a3041bea9ca174726be3187",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\na8-kex991q2202603282026.htm\nEX-99.1\nExhibit 99.1 Apple reports second quarter results March quarter records for total company revenue, iPhone revenue, and EPS Services revenue reaches new all-time high CUPERTINO, CALIFORNIA — Appl",
+            "excerpt": "EX-99.1\n2\na8-kex991q2202603282026.htm\nEX-99.1\nExhibit 99.1 Apple reports second quarter results March quarter records for total company revenue, iPhone revenue, and EPS Services revenue reaches new all-time high CUPERTINO, CALIFORNIA — Appl",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "reason": "Apple's Q2 FY2026 earnings release states that Services revenue reached a new all-time high, confirming Services growth momentum.",
+            "proves": "Services revenue reached a new all-time high in the March 2026 quarter.",
+            "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Gross margin by segment (Products vs Services) for recent quarters",
+          "Revenue mix percentages (Services as % of total revenue) over time",
+          "Trend in overall gross margin and decomposition into mix versus rate effects",
+          "Regulatory or competitive developments affecting Services margin"
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "Apple's Q3 FY2026 earnings release states that Services revenue set a new June quarter record, confirming Services growth momentum.",
+            "proves": "Services revenue reached a new record in the June 2026 quarter.",
+            "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical."
+          },
+          {
+            "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "Apple's Q2 FY2026 earnings release states that Services revenue reached a new all-time high, confirming Services growth momentum.",
+            "proves": "Services revenue reached a new all-time high in the March 2026 quarter.",
+            "does_not_prove": "It does not provide the gross margin for Services versus Products, nor the revenue mix percentage, nor that the margin trajectory is structural rather than cyclical."
+          },
+          {
+            "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "aggregator",
+            "reason": "Secondary source reports Q3 FY2026 EPS and revenue beats, indicating overall financial performance but not segment mix or margin quality.",
+            "proves": "Apple reported Q3 FY2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+            "does_not_prove": "It does not break down revenue or gross margin by segment, nor address the structural versus cyclical nature of margins."
+          },
+          {
+            "evidence_id": "rev_a813d9313b8f4332a30429331fd2a01e",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "Announcement of Siri AI release is a product event that could support Services growth but does not directly address margin mix.",
+            "proves": "Apple released next-generation Apple Intelligence powering Siri AI on September 14, 2026.",
+            "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+          },
+          {
+            "evidence_id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "independent_media",
+            "reason": "Launch of folding iPhone is a product event that may affect product mix but does not address Services margin.",
+            "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+            "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+          },
+          {
+            "evidence_id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "Product specification announcement for iPhone Duo is not relevant to Services margin mix.",
+            "proves": "Apple introduced iPhone Duo with a 7.6-inch inner display and 5.4-inch outer display.",
+            "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+          },
+          {
+            "evidence_id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "Software rollout announcement is not relevant to Services margin mix.",
+            "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026.",
+            "does_not_prove": "It does not provide any financial data on Services revenue, gross margin, or mix shift."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AAPL App Store regulation OR DMA OR services growth slowdown",
+            "AAPL services margin compression",
+            "What is the actual revenue and gross margin split between Products and Services, and how has it changed over the past 8 quarters?",
+            "Is the Services gross margin sustainable, or does it face regulatory or competitive pressure?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+              "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+            },
+            {
+              "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+              "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+              "query": "pack.major_events",
+              "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+            },
+            {
+              "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+              "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+              "query": "pack.major_events",
+              "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+            },
+            {
+              "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+              "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+              "query": "pack.major_events",
+              "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "strongly_supported",
+            "old_statement": null,
+            "new_statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2"
+          },
+          {
+            "version": 2,
+            "old_status": "strongly_supported",
+            "new_status": "unverified",
+            "old_statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+            "new_statement": "Apple's Services revenue reached new record highs in Q2 and Q3 fiscal 2026, but the available evidence does not establish the gross margin of Services, its share of total revenue, or that this mix shift structurally supports gross margin durability",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+          },
+          {
+            "version": 3,
+            "old_status": "unverified",
+            "new_status": "unverified",
+            "old_statement": "Apple's Services revenue reached new record highs in Q2 and Q3 fiscal 2026, but the available evidence does not establish the gross margin of Services, its share of total revenue, or that this mix shift structurally supports gross margin durability",
+            "new_statement": "Apple's Services revenue has reached record highs in recent quarters, and if Services carries a structurally higher gross margin than Products, this mix shift could make consolidated margin less dependent on hardware unit cycles. However, the evidence does not yet confirm the gross margin differential or the degree of margin insulation",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_d79ca93534ff4008a47bf8eb4a4c1e30"
+          },
+          {
+            "version": 4,
+            "old_status": "unverified",
+            "new_status": "unverified",
+            "old_statement": "Apple's Services revenue has reached record highs in recent quarters, and if Services carries a structurally higher gross margin than Products, this mix shift could make consolidated margin less dependent on hardware unit cycles. However, the evidence does not yet confirm the gross margin differential or the degree of margin insulation",
+            "new_statement": "Apple's Services revenue has reached new record highs in recent quarters, and Services is widely understood to carry higher gross margin than Products, but the available evidence does not quantify the revenue mix shift or the gross margin differential, so the claim that the margin trajectory is more structural than cyclical remains unverified",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_ad99cd0993115361a1d1",
+        "claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+        "title": "Reported gross margin is inflated by one-time tariff refund",
+        "statement": "The latest quarter's gross margin includes a favorable one-time tariff refund benefit, implying underlying gross margin is lower and the reported margin overstates structural profitability",
+        "proposed_status": "partially_supported",
+        "final_status": "unverified",
+        "confidence": "low",
+        "lifecycle": "core",
+        "claim_subject": "apple_inc",
+        "claim_dimension": "margin_quality",
+        "financial_driver": "margin",
+        "why_core": "Margin quality is a key decision variable, and the evidence explicitly flags a one-time benefit that distorts the reported margin.",
+        "unverified_detail": "50.06 could not be verified",
+        "reconciliation_reason": "no supporting evidence in the current evidence set",
+        "match_action": "update_existing",
+        "support_evidence": [],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Apple's Q3 FY2026 earnings release or 10-Q with detailed gross margin discussion.",
+          "Management commentary on gross margin drivers during the Q3 FY2026 earnings call.",
+          "Any mention of tariff refunds or one-time benefits in Apple's financial disclosures.",
+          "Analyst reports or news articles discussing Apple's gross margin composition for Q3 FY2026.",
+          "Historical gross margin data to assess whether the reported margin is anomalous."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "This is Apple's Q3 FY2026 earnings release, the quarter referenced in the claim. However, the excerpt provided does not mention gross margin, tariff refunds, or any one-time benefit. It only confirms the existence of the earnings release.",
+            "proves": "Apple reported Q3 FY2026 results on July 30, 2026.",
+            "does_not_prove": "It does not prove that gross margin was inflated by a tariff refund, nor does it provide any gross margin figure or mention of a tariff refund."
+          },
+          {
+            "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "aggregator",
+            "reason": "This evidence confirms Q3 2026 EPS and revenue beats but provides no information on gross margin or tariff refunds.",
+            "proves": "Apple reported Q3 2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+            "does_not_prove": "It does not prove anything about gross margin composition or tariff refunds."
+          },
+          {
+            "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is Apple's Q2 FY2026 earnings release, which could provide a baseline for margin comparison, but the excerpt does not include gross margin data.",
+            "proves": "Apple reported Q2 FY2026 results on April 30, 2026.",
+            "does_not_prove": "It does not prove any details about Q3 gross margin or tariff refunds."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AAPL margin dilution OR mix pressure OR cost inflation",
+            "AAPL pricing pressure OR gross margin cut",
+            "What was the exact dollar amount of the tariff refund benefit in Q3 FY2026?",
+            "Did management guide to a reversal or continuation of tariff-related benefits in future quarters?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+              "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+            },
+            {
+              "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+              "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+              "query": "pack.major_events",
+              "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+            },
+            {
+              "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+              "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+              "query": "pack.major_events",
+              "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+            },
+            {
+              "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+              "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+              "query": "pack.major_events",
+              "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "The reported Q3 FY2026 gross margin of 50.1% includes a ~2 percentage point benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "unverified",
+            "old_statement": "The reported Q3 FY2026 gross margin of 50.1% includes a ~2 percentage point benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+            "new_statement": "The reported Q3 FY2026 gross margin includes a benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+            "reason_for_change": "status changed; confidence changed; statement materially changed",
+            "run_id": "brun_e792d29ed3274045ae180cd036cfd6e1"
+          },
+          {
+            "version": 3,
+            "old_status": "unverified",
+            "new_status": "contradicted",
+            "old_statement": "The reported Q3 FY2026 gross margin includes a benefit from tariff refunds; excluding this one-time item, underlying gross margin is lower and its trajectory is less clear, making margin quality a key uncertainty",
+            "new_statement": "The June 2026 gross margin expansion may have been partly driven by a non-recurring tariff refund, raising questions about the sustainability of the current margin level",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+          },
+          {
+            "version": 4,
+            "old_status": "contradicted",
+            "new_status": "unverified",
+            "old_statement": "The June 2026 gross margin expansion may have been partly driven by a non-recurring tariff refund, raising questions about the sustainability of the current margin level",
+            "new_statement": "The latest quarter's gross margin includes a favorable one-time tariff refund benefit, implying underlying gross margin is lower and the reported margin overstates structural profitability",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_48581a538f893271b995",
+        "claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "title": "Product cycle catalysts may extend revenue growth durability",
+        "statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate",
+        "proposed_status": "emerging",
+        "final_status": "strongly_supported",
+        "confidence": "high",
+        "lifecycle": "core",
+        "claim_subject": "hardware_demand",
+        "claim_dimension": "growth_duration",
+        "financial_driver": "demand",
+        "why_core": "Growth durability is a key decision variable, and the evidence shows concrete new product and software launches that could influence future demand.",
+        "unverified_detail": "",
+        "reconciliation_reason": "direct complete support with required source relationship",
+        "match_action": "update_existing",
+        "support_evidence": [
+          {
+            "id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+            "source": "apple.com",
+            "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+            "excerpt": "Apple today introduced iPhone Duo, the first foldable iPhone. Opened, it is the thinnest iPhone ever, with a 7.6-inch inner display",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "Confirms the introduction of the foldable iPhone Duo, a key product cycle catalyst mentioned in the claim.",
+            "proves": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+            "does_not_prove": "It does not prove that the Duo will sustain or accelerate revenue growth; no sales or demand data is provided.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+            "source": "high_quality_news",
+            "source_url": "https://www.reuters.com/business/retail-consumer/apple-expected-unveil-first-folding-phone-with-new-ceo-ternus-command-2026-09-09/",
+            "source_relationship": "independent_media",
+            "source_tier": null,
+            "fact": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+            "excerpt": "Apple (AAPL.O), opens new tab on Wednesday redefined its flagship smartphone with the launch of the Duo, a folding $1,999 iPhone",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "Confirms the launch of the foldable iPhone Duo at a specific price point, reinforcing the product cycle catalyst.",
+            "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+            "does_not_prove": "It does not prove revenue growth impact; pricing and launch alone do not guarantee demand or revenue acceleration.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_a813d9313b8f4332a30429331fd2a01e",
+            "source": "apple.com",
+            "source_url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+            "excerpt": "Apple today released the next generation of Apple Intelligence, powering Siri AI, an entirely new version of Siri",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "Confirms the release of Siri AI, a key software catalyst mentioned in the claim.",
+            "proves": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+            "does_not_prove": "It does not prove that Siri AI will sustain or accelerate revenue growth; no adoption or monetization data is provided.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+            "source": "apple.com",
+            "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+            "excerpt": "Siri AI, the next generation of Apple Intelligence, powerful parental controls, and an expansive set of software improvements start rolling out today across iOS 27, iPadOS 27, macOS 27, and other Apple platforms",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "Confirms the rollout of Siri AI across platforms, supporting the claim of a broad software catalyst.",
+            "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+            "does_not_prove": "It does not prove that the rollout will lead to sustained or accelerated revenue growth; no user engagement or revenue impact data is provided.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Pre-order or early sales data for the foldable iPhone Duo.",
+          "Adoption metrics or user engagement data for Siri AI post-launch.",
+          "Analyst or industry forecasts on the revenue impact of these products.",
+          "Historical TTM revenue growth rate for comparison.",
+          "Counter-evidence on potential cannibalization or demand softness."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Confirms the introduction of the foldable iPhone Duo, a key product cycle catalyst mentioned in the claim.",
+            "proves": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and a 5.4-inch outer display.",
+            "does_not_prove": "It does not prove that the Duo will sustain or accelerate revenue growth; no sales or demand data is provided."
+          },
+          {
+            "evidence_id": "rev_a3c4cc7a310b4406b3cc579c876cac42",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "independent_media",
+            "reason": "Confirms the launch of the foldable iPhone Duo at a specific price point, reinforcing the product cycle catalyst.",
+            "proves": "Apple launched the Duo, a folding iPhone priced at $1,999, on September 9, 2026.",
+            "does_not_prove": "It does not prove revenue growth impact; pricing and launch alone do not guarantee demand or revenue acceleration."
+          },
+          {
+            "evidence_id": "rev_a813d9313b8f4332a30429331fd2a01e",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Confirms the release of Siri AI, a key software catalyst mentioned in the claim.",
+            "proves": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026.",
+            "does_not_prove": "It does not prove that Siri AI will sustain or accelerate revenue growth; no adoption or monetization data is provided."
+          },
+          {
+            "evidence_id": "rev_87d6a241e2a94930a4cfa4c3560d5c62",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Confirms the rollout of Siri AI across platforms, supporting the claim of a broad software catalyst.",
+            "proves": "Apple's software updates including Siri AI started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+            "does_not_prove": "It does not prove that the rollout will lead to sustained or accelerated revenue growth; no user engagement or revenue impact data is provided."
+          },
+          {
+            "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "Provides recent quarterly earnings that beat estimates, indicating a healthy baseline, but does not directly link to the new product catalysts.",
+            "proves": "Apple reported Q3 2026 earnings on July 30, 2026, with EPS of $2.02 beating estimates of $1.89 and revenue of $109.4B beating estimates of $109.0B.",
+            "does_not_prove": "It does not prove that the new product catalysts will extend growth durability; the earnings are from before the September launches."
+          },
+          {
+            "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "Shows record June quarter revenue and EPS, providing context for the current growth trajectory, but not directly tied to the new catalysts.",
+            "proves": "Apple reported third quarter results with June quarter records for total company revenue and EPS, and iPhone, Mac and Services revenue set new June quarter records.",
+            "does_not_prove": "It does not prove that the new product cycle catalysts will sustain or accelerate growth; it reflects past performance."
+          },
+          {
+            "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "Shows March quarter records, indicating a pattern of strong performance, but not directly related to the new catalysts.",
+            "proves": "Apple reported second quarter results with March quarter records for total company revenue, iPhone revenue, and EPS, and Services revenue reached a new all-time high.",
+            "does_not_prove": "It does not prove that the new product cycle catalysts will extend growth durability; it is historical data."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AAPL hyperscaler capex slowdown OR order pushout",
+            "AAPL customer concentration OR share loss OR custom silicon",
+            "What are the early pre-order or sales trends for the foldable iPhone Duo?",
+            "Has Siri AI adoption met, exceeded, or fallen short of expectations in the first weeks post-launch?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+              "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+            },
+            {
+              "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+              "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+              "query": "pack.major_events",
+              "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+            },
+            {
+              "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+              "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+              "query": "pack.major_events",
+              "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+            },
+            {
+              "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+              "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+              "query": "pack.major_events",
+              "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "emerging",
+            "old_statement": null,
+            "new_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may extend the iPhone upgrade cycle and support product revenue growth into FY2027",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+          },
+          {
+            "version": 2,
+            "old_status": "emerging",
+            "new_status": "strongly_supported",
+            "old_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may extend the iPhone upgrade cycle and support product revenue growth into FY2027",
+            "new_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may support product revenue growth into FY2027, but evidence for upgrade cycle extension is missing",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_6d8a6b43e14848528ca9f20e97134bb2"
+          },
+          {
+            "version": 3,
+            "old_status": "strongly_supported",
+            "new_status": "strongly_supported",
+            "old_statement": "The introduction of the foldable iPhone Duo and Siri AI rollout may support product revenue growth into FY2027, but evidence for upgrade cycle extension is missing",
+            "new_statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate",
+            "reason_for_change": "statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_f9536fbfb50deb8ecc13",
+        "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+        "title": "Valuation multiple is sensitive to margin normalization",
+        "statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple",
+        "proposed_status": "partially_supported",
+        "final_status": "unverified",
+        "confidence": "low",
+        "lifecycle": "core",
+        "claim_subject": "valuation",
+        "claim_dimension": "valuation_sensitivity",
+        "financial_driver": "margin",
+        "why_core": "Valuation sensitivity to margin quality is a key decision variable, and the evidence provides both the PE and the margin distortion.",
+        "unverified_detail": "37.95 could not be verified",
+        "reconciliation_reason": "core assertion or number is not bound to evidence",
+        "match_action": "merge_into_existing",
+        "support_evidence": [
+          {
+            "id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+            "excerpt": "EX-99.1\n2\na8-kex991q3202606272026.htm\nEX-99.1\nExhibit 99.1 Apple reports third quarter results June quarter records for total company revenue and EPS iPhone, Mac and Services revenue set new June quarter records CUPERTINO, CALIFORNIA — Appl",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "reason": "This is Apple's Q3 2026 earnings release, which provides the most recent quarterly financial data. It is the only evidence cited in the claim and is necessary context for any margin analysis, but it does not mention tariff refunds, gross margin normalization, or valuation multiples.",
+            "proves": "Apple reported Q3 2026 financial results, including record June quarter revenue and EPS.",
+            "does_not_prove": "It does not prove that a tariff refund benefit exists, that it is non-recurring, that it affects gross margin, or that the TTM PE is sensitive to its normalization.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Apple's actual TTM PE ratio (the number 37.95 is unverified).",
+          "Any mention of a tariff refund in Apple's financial statements or earnings calls.",
+          "Gross margin figures for the relevant periods to assess normalization impact.",
+          "Analyst estimates or consensus forward PE that adjust for non-recurring items.",
+          "Quantification of the EPS impact if the tariff refund benefit is not repeated."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_f680a2738ac040b7a37c1e15345b143a",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "issuer_primary",
+            "reason": "This is Apple's Q3 2026 earnings release, which provides the most recent quarterly financial data. It is the only evidence cited in the claim and is necessary context for any margin analysis, but it does not mention tariff refunds, gross margin normalization, or valuation multiples.",
+            "proves": "Apple reported Q3 2026 financial results, including record June quarter revenue and EPS.",
+            "does_not_prove": "It does not prove that a tariff refund benefit exists, that it is non-recurring, that it affects gross margin, or that the TTM PE is sensitive to its normalization."
+          },
+          {
+            "evidence_id": "rev_aa726322aff84a918795833cfe164bd7",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "aggregator",
+            "reason": "Provides Q3 2026 EPS and revenue figures, confirming recent earnings strength, but does not address margin composition or valuation multiples.",
+            "proves": "Apple reported Q3 2026 EPS of $2.02 and revenue of $109.4B, beating estimates.",
+            "does_not_prove": "It does not prove anything about tariff refunds, gross margin normalization, or PE sensitivity."
+          },
+          {
+            "evidence_id": "rev_f380aa032a3041bea9ca174726be3187",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "Provides Q2 2026 earnings context, showing a pattern of record results, but does not address the specific claim.",
+            "proves": "Apple reported Q2 2026 results with record March quarter revenue, iPhone revenue, and EPS.",
+            "does_not_prove": "It does not prove anything about tariff refunds, gross margin normalization, or PE sensitivity."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AAPL margin dilution OR mix pressure OR cost inflation",
+            "AAPL pricing pressure OR gross margin cut",
+            "What is the consensus forward PE for Apple, and does it adjust for the tariff refund?",
+            "How much would EPS decline if the tariff refund benefit is not repeated?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+              "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBerkshire Hathaway's investment portfolio is valued at more than $350 billion."
+            },
+            {
+              "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+              "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+              "query": "pack.major_events",
+              "snippet": "Apple, Taiwan and Alphabet's have been highlighted in this Investment Ideas article."
+            },
+            {
+              "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+              "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+              "query": "pack.major_events",
+              "snippet": "Key PointsApple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server."
+            },
+            {
+              "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+              "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+              "query": "pack.major_events",
+              "snippet": "Key PointsAlphabet has put substantial amounts of its cash hoard to work in AI in recent months."
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "Apple's PE TTM of embeds expectations of sustained high margins and growth; if the % gross margin proves partly cyclical due to one-time tariff refunds, the valuation multiple could be vulnerable to compression",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_95e25a386e8a42dc8f99851461cb89bc"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "unverified",
+            "old_statement": "Apple's PE TTM of embeds expectations of sustained high margins and growth; if the % gross margin proves partly cyclical due to one-time tariff refunds, the valuation multiple could be vulnerable to compression",
+            "new_statement": "Apple's valuation multiple may be sensitive to the sustainability of its gross margin; if the gross margin proves partly cyclical due to one-time tariff refunds, the multiple could be vulnerable to compression",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_95e25a386e8a42dc8f99851461cb89bc"
+          },
+          {
+            "version": 3,
+            "old_status": "unverified",
+            "new_status": "unverified",
+            "old_statement": "Apple's valuation multiple may be sensitive to the sustainability of its gross margin; if the gross margin proves partly cyclical due to one-time tariff refunds, the multiple could be vulnerable to compression",
+            "new_statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_be4878bdfcaf427485a20f72746fb18a"
+          }
+        ]
+      }
+    ],
+    "AVGO": [
+      {
+        "claim_key": "bck_46a71db5c7889f8c835c",
+        "claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+        "title": "AI semiconductor revenue acceleration is the dominant growth driver",
+        "statement": "The company's growth trajectory is substantially dependent on AI semiconductor revenue, which management expects to accelerate, making the durability of this demand a key decision variable for the investment case",
+        "proposed_status": "partially_supported",
+        "final_status": "partially_supported",
+        "confidence": "medium",
+        "lifecycle": "core",
+        "claim_subject": "ai_semiconductor_revenue",
+        "claim_dimension": "growth_duration",
+        "financial_driver": "demand",
+        "why_core": "This is the only explicit growth driver named in the evidence and is central to the company's forward narrative.",
+        "unverified_detail": "",
+        "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+        "match_action": "merge_into_existing",
+        "support_evidence": [
+          {
+            "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": "Primary issuer guidance explicitly states AI accelerators and networking continues to be very strong, and references Q3 AI semiconductor revenue. This is the most direct primary evidence that AI semiconductor revenue is a significant and growing driver.",
+            "proves": "That Broadcom's AI semiconductor revenue is very strong and is a material component of the business as of Q3 fiscal 2026.",
+            "does_not_prove": "The specific magnitude of AI semiconductor revenue, its proportion of total revenue, the expected acceleration rate, or the durability of demand beyond the current period.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_007a2aa2666948a19da502edd9048345",
+            "source": "seekingalpha.com",
+            "source_url": "https://seekingalpha.com/article/4945835-broadcom-buckle-up-for-whats-coming",
+            "source_relationship": "aggregator",
+            "source_tier": null,
+            "fact": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand.",
+            "excerpt": "AVGO has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major d",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "Third-party analysis states Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand. This directly supports the acceleration and durability thesis, though from a lower-tier source.",
+            "proves": "That at least one third-party analyst believes Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with named customers driving demand.",
+            "does_not_prove": "That the supply secured will actually be utilized, that customer demand will materialize as expected, or that the doubling will occur. It is an analyst assertion, not confirmed guidance or actual results.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [
+          {
+            "id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+            "source": "theregister.com",
+            "source_url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+            "source_relationship": "unknown",
+            "source_tier": null,
+            "fact": "Marvell announced in an SEC filing that Google tapped it to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators, storage controllers, and network interface controllers.",
+            "excerpt": "the Chocolate Factory had tapped the IP house to develop custom silicon for the search and advertising giant",
+            "direction": "oppose",
+            "strength": "medium",
+            "relevance": "indirect",
+            "reason": "Google tapped Marvell to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators. This is competitive evidence suggesting Broadcom may face share loss or reduced growth in custom AI silicon, potentially undermining the durability of AI semiconductor revenue acceleration.",
+            "proves": "That Google is engaging Marvell as a custom silicon partner for AI inference accelerators and related components, indicating multi-vendor sourcing.",
+            "does_not_prove": "That Broadcom's AI semiconductor revenue will decline or that Google is reducing its Broadcom relationship. It does not quantify the impact on Broadcom's revenue."
+          },
+          {
+            "id": "rev_e22d16f0ce824d4894bbf565734563c0",
+            "source": "high_quality_news",
+            "source_url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
+            "source_relationship": "independent_media",
+            "source_tier": null,
+            "fact": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year.",
+            "excerpt": "Meta Platforms Inc. plans to begin deploying a new in-house artificial intelligence chip in data centers during the first half of next year",
+            "direction": "oppose",
+            "strength": "medium",
+            "relevance": "indirect",
+            "reason": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year. This shows a major hyperscaler developing in-house AI silicon, which could reduce demand for Broadcom's custom AI accelerators over time.",
+            "proves": "That Meta is developing and deploying in-house AI chips, reducing reliance on external custom silicon vendors for some workloads.",
+            "does_not_prove": "That Meta will stop purchasing Broadcom's AI semiconductors or that Broadcom's AI revenue will be negatively affected. It does not quantify the volume or timing of any substitution."
+          },
+          {
+            "id": "rev_628a989752a54df8b46aae0b3ba2548a",
+            "source": "theregister.com",
+            "source_url": "https://www.theregister.com/systems/2026/08/26/metas-new-mtia-400-chip-has-a-split-personality-training-ai-and-serving-ads/5292727",
+            "source_relationship": "unknown",
+            "source_tier": null,
+            "fact": "Meta detailed its MTIA 400 generative AI accelerator at the Hot Chips conference, aimed at LLM training.",
+            "excerpt": "Its first proper generative AI accelerator, the MTIA 400 — short for Meta Training and Inference Accelerator — is aimed squarely at LLM training.",
+            "direction": "oppose",
+            "strength": "weak",
+            "relevance": "indirect",
+            "reason": "Meta detailed its MTIA 400 generative AI accelerator aimed at LLM training. This is additional evidence of hyperscaler in-house silicon development, reinforcing the competitive threat to Broadcom's custom AI accelerator business.",
+            "proves": "That Meta has developed a generative AI accelerator for LLM training, demonstrating in-house capability.",
+            "does_not_prove": "That this chip will replace Broadcom's products or that Broadcom's AI revenue will be impacted. It is a product announcement, not a demand signal."
+          }
+        ],
+        "missing_evidence": [
+          "Specific AI semiconductor revenue figures for Q3 fiscal 2026 and prior periods.",
+          "Management's exact guidance for AI semiconductor revenue acceleration (e.g., dollar amounts, growth rates, timeframes).",
+          "The proportion of total revenue and operating income attributable to AI semiconductors versus other segments.",
+          "Independent third-party confirmation of AI demand durability (e.g., customer order data, backlog analysis, independent market research).",
+          "Quantification of competitive threats from Marvell, Meta in-house chips, or other hyperscaler in-house silicon initiatives.",
+          "Evidence on whether AI demand is being pulled forward or double-ordered, which would indicate a cyclical peak."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Primary issuer guidance explicitly states AI accelerators and networking continues to be very strong, and references Q3 AI semiconductor revenue. This is the most direct primary evidence that AI semiconductor revenue is a significant and growing driver.",
+            "proves": "That Broadcom's AI semiconductor revenue is very strong and is a material component of the business as of Q3 fiscal 2026.",
+            "does_not_prove": "The specific magnitude of AI semiconductor revenue, its proportion of total revenue, the expected acceleration rate, or the durability of demand beyond the current period."
+          },
+          {
+            "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "aggregator",
+            "reason": "Third-party analysis states Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand. This directly supports the acceleration and durability thesis, though from a lower-tier source.",
+            "proves": "That at least one third-party analyst believes Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with named customers driving demand.",
+            "does_not_prove": "That the supply secured will actually be utilized, that customer demand will materialize as expected, or that the doubling will occur. It is an analyst assertion, not confirmed guidance or actual results."
+          },
+          {
+            "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+            "direction": "contextual",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "This evidence describes the VMware infrastructure software segment's high margins (93% gross, 79% operating). It is relevant context because it shows a highly profitable non-AI segment, which could challenge the claim that AI semiconductor revenue is the 'dominant' growth driver if software is also a major profit contributor.",
+            "proves": "That Broadcom's infrastructure software segment (VMware) generates very high margins and is a significant profit contributor.",
+            "does_not_prove": "That AI semiconductor revenue is or is not the dominant growth driver. It does not provide AI revenue figures or growth rates for comparison."
+          },
+          {
+            "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+            "direction": "oppose",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Google tapped Marvell to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators. This is competitive evidence suggesting Broadcom may face share loss or reduced growth in custom AI silicon, potentially undermining the durability of AI semiconductor revenue acceleration.",
+            "proves": "That Google is engaging Marvell as a custom silicon partner for AI inference accelerators and related components, indicating multi-vendor sourcing.",
+            "does_not_prove": "That Broadcom's AI semiconductor revenue will decline or that Google is reducing its Broadcom relationship. It does not quantify the impact on Broadcom's revenue."
+          },
+          {
+            "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+            "direction": "oppose",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "independent_media",
+            "reason": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year. This shows a major hyperscaler developing in-house AI silicon, which could reduce demand for Broadcom's custom AI accelerators over time.",
+            "proves": "That Meta is developing and deploying in-house AI chips, reducing reliance on external custom silicon vendors for some workloads.",
+            "does_not_prove": "That Meta will stop purchasing Broadcom's AI semiconductors or that Broadcom's AI revenue will be negatively affected. It does not quantify the volume or timing of any substitution."
+          },
+          {
+            "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+            "direction": "oppose",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Meta detailed its MTIA 400 generative AI accelerator aimed at LLM training. This is additional evidence of hyperscaler in-house silicon development, reinforcing the competitive threat to Broadcom's custom AI accelerator business.",
+            "proves": "That Meta has developed a generative AI accelerator for LLM training, demonstrating in-house capability.",
+            "does_not_prove": "That this chip will replace Broadcom's products or that Broadcom's AI revenue will be impacted. It is a product announcement, not a demand signal."
+          },
+          {
+            "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "unknown",
+            "reason": "This evidence describes Broadcom using private credit SPVs and vertical integration to de-risk custom AI accelerator growth. It is contextual because it shows management is taking steps to manage risks in the AI business, which is relevant to the durability thesis but does not directly prove or disprove the claim.",
+            "proves": "That Broadcom is employing financial and operational strategies to de-risk its AI accelerator growth and manage credit exposure.",
+            "does_not_prove": "That these strategies are effective or that AI demand is durable. It does not provide revenue figures or demand forecasts."
+          },
+          {
+            "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is a truncated news release headline for Broadcom's Q3 fiscal 2026 results. It confirms the reporting date and context but provides no substantive data on AI revenue or guidance.",
+            "proves": "That Broadcom reported Q3 fiscal 2026 financial results on September 2, 2026.",
+            "does_not_prove": "Any specific financial figures, AI revenue details, or guidance."
+          },
+          {
+            "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is a debt tender offer announcement, unrelated to AI semiconductor revenue or growth drivers. It is included for completeness but has no bearing on the claim.",
+            "proves": "That Broadcom announced pricing terms for debt tender offers in June 2026.",
+            "does_not_prove": "Anything about AI semiconductor revenue, growth drivers, or demand durability."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AVGO valuation multiple compression OR growth deceleration",
+            "AVGO forward earnings miss OR guidance cut",
+            "What portion of total revenue is AI semiconductor revenue, and how does the guided figure compare to the current run-rate?",
+            "Are there signs of demand pull-forward or double-ordering from AI customers that could indicate a cyclical peak?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "8-K",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+              "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+              "query": "pack.major_events",
+              "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+            },
+            {
+              "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+              "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+              "query": "pack.major_events",
+              "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+            },
+            {
+              "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+              "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+            },
+            {
+              "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+              "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+            },
+            {
+              "title": "Exhibit 99.1",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "query": "pack.official_documents",
+              "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+            },
+            {
+              "title": "EDGAR Entity Landing Page - SEC.gov",
+              "url": "https://www.sec.gov/edgar/browse/?CIK=0001730168",
+              "query": "site:sec.gov AVGO 10-Q OR 10-K OR 8-K after:2026-08-18",
+              "snippet": "September 10 , 2026 - S-4: Registration of securities, business combinations Open documentClick to Open document Filing Open filingClick to Open filing September 10 , 2026 - 10-Q : Quarterly report f…"
+            }
+          ],
+          "counter_evidence_found": true,
+          "counter_evidence_ids": [
+            "rev_628a989752a54df8b46aae0b3ba2548a",
+            "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+            "rev_e22d16f0ce824d4894bbf565734563c0"
+          ]
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "Management guides AI semiconductor revenue to accelerate to $21.7 billion, up 236%, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_c78efedb7bec43529c5ce4fbc4ffcec8"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "unverified",
+            "old_statement": "Management guides AI semiconductor revenue to accelerate to $21.7 billion, up 236%, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+            "new_statement": "Management guides AI semiconductor revenue to accelerate, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_c78efedb7bec43529c5ce4fbc4ffcec8"
+          },
+          {
+            "version": 3,
+            "old_status": "unverified",
+            "new_status": "partially_supported",
+            "old_statement": "Management guides AI semiconductor revenue to accelerate, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+            "new_statement": "Broadcom's growth is increasingly dependent on AI semiconductor revenue, and management describes AI accelerators and networking as very strong; the durability of this trajectory is a key decision variable for the investment case",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_56523184e1f048ed87a2cd208835cc2f"
+          },
+          {
+            "version": 4,
+            "old_status": "partially_supported",
+            "new_status": "unverified",
+            "old_statement": "Broadcom's growth is increasingly dependent on AI semiconductor revenue, and management describes AI accelerators and networking as very strong; the durability of this trajectory is a key decision variable for the investment case",
+            "new_statement": "Broadcom's growth is increasingly concentrated in AI semiconductor revenue, which management expects to accelerate, making the durability of this single driver a primary determinant of the company's growth trajectory",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_5db2ad925afe4540bf5ad5df093b1865"
+          },
+          {
+            "version": 5,
+            "old_status": "unverified",
+            "new_status": "partially_supported",
+            "old_statement": "Broadcom's growth is increasingly concentrated in AI semiconductor revenue, which management expects to accelerate, making the durability of this single driver a primary determinant of the company's growth trajectory",
+            "new_statement": "Broadcom's revenue growth is significantly influenced by AI semiconductor demand, with management indicating that AI semiconductor revenue is very strong and expected to accelerate, making the durability of AI demand a major factor in future growth",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+          },
+          {
+            "version": 6,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "Broadcom's revenue growth is significantly influenced by AI semiconductor demand, with management indicating that AI semiconductor revenue is very strong and expected to accelerate, making the durability of AI demand a major factor in future growth",
+            "new_statement": "The company's growth trajectory is substantially dependent on AI semiconductor revenue, which management expects to accelerate, making the durability of this demand a key decision variable for the investment case",
+            "reason_for_change": "statement materially changed; decisive evidence changed; counter evidence changed",
+            "run_id": "brun_4266dc50c87949ac91184d983e209959"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_cecd43e85838bd335515",
+        "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "title": "Revenue growth is accelerating but earnings execution is inconsistent",
+        "statement": "Despite strong revenue growth, the company's earnings execution is inconsistent, suggesting a potential disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists",
+        "proposed_status": "partially_supported",
+        "final_status": "partially_supported",
+        "confidence": "medium",
+        "lifecycle": "core",
+        "claim_subject": "valuation",
+        "claim_dimension": "margin_quality",
+        "financial_driver": "margin",
+        "why_core": "This is a key risk to the investment case, as it directly affects earnings quality and market reaction.",
+        "unverified_detail": "",
+        "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+        "match_action": "merge_into_existing",
+        "support_evidence": [
+          {
+            "id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+            "source": "issuer_ir",
+            "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "PALO ALTO, Calif., Sept. 2, 2026 /PRNewswire/ -- Broadcom Inc. (Nasdaq: AVGO), a global technology leader that designs, develops and supplies semiconductor and infrastructure software solutions, today reported financial results for its thir",
+            "excerpt": "PALO ALTO, Calif., Sept. 2, 2026 /PRNewswire/ -- Broadcom Inc. (Nasdaq: AVGO), a global technology leader that designs, develops and supplies semiconductor and infrastructure software solutions, today reported financial results for its thir",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "This is the issuer's Q3 FY2026 earnings release, which would contain revenue and EPS figures. It supports the revenue growth part of the claim but does not provide the specific EPS miss data.",
+            "proves": "Broadcom reported Q3 FY2026 financial results, which likely include revenue growth.",
+            "does_not_prove": "It does not prove that EPS estimates were missed, nor does it provide the magnitude of any miss.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "This excerpt from the earnings release states that AI accelerators and networking continue to be very strong, supporting the revenue growth acceleration part of the claim.",
+            "proves": "AI semiconductor revenue is strong, contributing to revenue growth.",
+            "does_not_prove": "It does not address EPS or earnings execution.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_007a2aa2666948a19da502edd9048345",
+            "source": "seekingalpha.com",
+            "source_url": "https://seekingalpha.com/article/4945835-broadcom-buckle-up-for-whats-coming",
+            "source_relationship": "aggregator",
+            "source_tier": null,
+            "fact": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand.",
+            "excerpt": "AVGO has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major d",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "reason": "This evidence suggests strong future AI revenue growth, supporting the revenue acceleration part of the claim, but it is from a secondary source and does not address EPS.",
+            "proves": "Broadcom has secured supply to double AI semiconductor revenue in the next two years.",
+            "does_not_prove": "It does not prove anything about EPS execution or misses.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Actual EPS figures for recent quarters (e.g., Q2 and Q3 FY2026) and consensus estimates to confirm if there was a miss.",
+          "Management discussion on earnings performance and any reasons for EPS misses.",
+          "Independent analysis of Broadcom's margin trends and earnings quality."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "This evidence is about a competitor (Marvell) winning a Google deal, which could impact Broadcom's future revenue but does not directly address the claim about current revenue growth or EPS misses.",
+            "proves": "Google tapped Marvell for custom silicon, indicating competitive pressure.",
+            "does_not_prove": "It does not prove anything about Broadcom's revenue growth or EPS execution."
+          },
+          {
+            "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "This is the issuer's Q3 FY2026 earnings release, which would contain revenue and EPS figures. It supports the revenue growth part of the claim but does not provide the specific EPS miss data.",
+            "proves": "Broadcom reported Q3 FY2026 financial results, which likely include revenue growth.",
+            "does_not_prove": "It does not prove that EPS estimates were missed, nor does it provide the magnitude of any miss."
+          },
+          {
+            "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "This excerpt from the earnings release states that AI accelerators and networking continue to be very strong, supporting the revenue growth acceleration part of the claim.",
+            "proves": "AI semiconductor revenue is strong, contributing to revenue growth.",
+            "does_not_prove": "It does not address EPS or earnings execution."
+          },
+          {
+            "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "independent_media",
+            "reason": "Meta's in-house AI chip deployment could reduce demand for Broadcom's custom chips, but it is not directly related to the claim about revenue growth and EPS misses.",
+            "proves": "Meta plans to deploy its own AI chip, potentially reducing reliance on Broadcom.",
+            "does_not_prove": "It does not prove anything about Broadcom's current revenue growth or EPS execution."
+          },
+          {
+            "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Meta's MTIA 400 chip is another example of in-house AI chip development, which could affect Broadcom's future revenue but not the current claim.",
+            "proves": "Meta is developing its own AI accelerator, indicating a trend away from merchant silicon.",
+            "does_not_prove": "It does not prove anything about Broadcom's revenue growth or EPS execution."
+          },
+          {
+            "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "This evidence discusses Broadcom's de-risking strategies, which could support revenue growth but does not address EPS misses.",
+            "proves": "Broadcom is using private credit SPVs and vertical integration to support AI growth.",
+            "does_not_prove": "It does not prove anything about EPS execution or misses."
+          },
+          {
+            "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "This evidence suggests strong future AI revenue growth, supporting the revenue acceleration part of the claim, but it is from a secondary source and does not address EPS.",
+            "proves": "Broadcom has secured supply to double AI semiconductor revenue in the next two years.",
+            "does_not_prove": "It does not prove anything about EPS execution or misses."
+          },
+          {
+            "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "This evidence highlights high margins in the software segment, which could support earnings, but it does not address the claim about EPS misses.",
+            "proves": "VMware segment has high gross and operating margins.",
+            "does_not_prove": "It does not prove anything about overall EPS execution or misses."
+          },
+          {
+            "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is about debt tender offers, unrelated to revenue growth or EPS execution.",
+            "proves": "Broadcom is managing its debt.",
+            "does_not_prove": "It does not prove anything about revenue growth or EPS execution."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AVGO margin dilution OR mix pressure OR cost inflation",
+            "AVGO pricing pressure OR gross margin cut",
+            "What were the specific factors that caused the EPS misses in Q2 and Q3 FY2026?",
+            "Is the EPS miss due to temporary factors such as integration costs or stock-based compensation, or is it a sign of structural margin pressure?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "8-K",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+              "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+              "query": "pack.major_events",
+              "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+            },
+            {
+              "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+              "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+              "query": "pack.major_events",
+              "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+            },
+            {
+              "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+              "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+            },
+            {
+              "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+              "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+            },
+            {
+              "title": "Exhibit 99.1",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "query": "pack.official_documents",
+              "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "strongly_supported",
+            "old_statement": null,
+            "new_statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62"
+          },
+          {
+            "version": 2,
+            "old_status": "strongly_supported",
+            "new_status": "partially_supported",
+            "old_statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+            "new_statement": "Despite strong revenue growth, the company's earnings execution is inconsistent, suggesting a potential disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists",
+            "reason_for_change": "status changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_4266dc50c87949ac91184d983e209959"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_b264901d7b1367ba32d3",
+        "claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+        "title": "Margin profile is stable but sustainability depends on AI mix",
+        "statement": "The company maintains high gross and operating margins, and AI semiconductor revenue is a significant and growing portion of the business. However, the provided evidence does not establish the margin characteristics of AI semiconductor revenue relative to the broader business, so the claim that margin sustainability depends on AI mix remains unverified",
+        "proposed_status": "partially_supported",
+        "final_status": "partially_supported",
+        "confidence": "medium",
+        "lifecycle": "core",
+        "claim_subject": "ai_custom_silicon",
+        "claim_dimension": "margin_quality",
+        "financial_driver": "margin",
+        "why_core": "Margin quality is a key driver of valuation and cash flow generation, and the shift toward AI may alter the margin structure.",
+        "unverified_detail": "",
+        "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+        "match_action": "update_existing",
+        "support_evidence": [
+          {
+            "id": "rev_d326c462bab24bba8156cb855878405a",
+            "source": "everyticker.com",
+            "source_url": "https://everyticker.com/quote/AVGO/news/broadcom-secures-longterm-ai-chip-deal-with-google-through-2031",
+            "source_relationship": "aggregator",
+            "source_tier": null,
+            "fact": "Broadcom's VMware infrastructure software segment generated 93% gross margins and 79% operating margins.",
+            "excerpt": "VMware's integration has created a financial foundation, generating 93% gross margins and 79% operating margins in the infrastructure software segment",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "reason": "This evidence shows that Broadcom's infrastructure software segment (VMware) generates 93% gross margins and 79% operating margins. This supports the idea that the company has a high-margin segment, and by contrast, implies that AI semiconductor revenue may have different (likely lower) margin characteristics, which is the core of the claim's dependency argument.",
+            "proves": "Broadcom's infrastructure software segment has very high margins (93% gross, 79% operating).",
+            "does_not_prove": "It does not provide the gross or operating margin of the AI semiconductor segment, nor does it prove that AI semiconductor margins are lower or that they are declining.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "reason": "This evidence confirms that AI accelerators and networking (AI semiconductor revenue) is very strong and growing. This supports the premise that AI revenue mix is becoming more significant, which is a necessary condition for the claim that margin sustainability depends on AI mix.",
+            "proves": "AI semiconductor revenue is a strong and growing part of Broadcom's business.",
+            "does_not_prove": "It does not provide any margin data for AI semiconductor revenue or compare it to other segments.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Gross margin and operating margin percentages for the AI semiconductor segment.",
+          "Comparison of AI semiconductor margins to the company average or to the infrastructure software segment.",
+          "Trend of AI semiconductor margins over time.",
+          "Consolidated gross margin and operating margin percentages for recent quarters.",
+          "Independent analyst or industry reports on Broadcom's AI semiconductor margin profile.",
+          "Evidence on pricing dynamics and cost structure for custom AI accelerators."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "This evidence shows that Broadcom's infrastructure software segment (VMware) generates 93% gross margins and 79% operating margins. This supports the idea that the company has a high-margin segment, and by contrast, implies that AI semiconductor revenue may have different (likely lower) margin characteristics, which is the core of the claim's dependency argument.",
+            "proves": "Broadcom's infrastructure software segment has very high margins (93% gross, 79% operating).",
+            "does_not_prove": "It does not provide the gross or operating margin of the AI semiconductor segment, nor does it prove that AI semiconductor margins are lower or that they are declining."
+          },
+          {
+            "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+            "direction": "support",
+            "strength": "medium",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "This evidence confirms that AI accelerators and networking (AI semiconductor revenue) is very strong and growing. This supports the premise that AI revenue mix is becoming more significant, which is a necessary condition for the claim that margin sustainability depends on AI mix.",
+            "proves": "AI semiconductor revenue is a strong and growing part of Broadcom's business.",
+            "does_not_prove": "It does not provide any margin data for AI semiconductor revenue or compare it to other segments."
+          },
+          {
+            "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is a press release announcing Q3 FY2026 financial results. It provides context that the company reported financial results, but the excerpt does not contain specific margin figures or AI mix details.",
+            "proves": "Broadcom reported Q3 FY2026 financial results.",
+            "does_not_prove": "It does not provide specific margin data or AI revenue mix details in the excerpt."
+          },
+          {
+            "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "This evidence shows Google tapping Marvell for custom silicon, indicating competitive pressure in the custom AI chip space. This is relevant to the sustainability of Broadcom's AI revenue and potentially its pricing/margins, but it does not directly address margin characteristics.",
+            "proves": "Google is working with Marvell on custom silicon, indicating competition in the custom AI chip market.",
+            "does_not_prove": "It does not prove that Broadcom's AI margins are under pressure or that its margin profile is unsustainable."
+          },
+          {
+            "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "independent_media",
+            "reason": "Meta's in-house AI chip deployment shows that large customers are developing their own silicon, which could reduce demand for Broadcom's custom AI chips or affect pricing. This is relevant to the sustainability of AI revenue and margins, but does not directly address margin characteristics.",
+            "proves": "Meta plans to deploy its own AI chip, indicating a trend of large customers developing in-house silicon.",
+            "does_not_prove": "It does not prove that Broadcom's AI margins are declining or that its overall margin profile is unsustainable."
+          },
+          {
+            "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Meta detailing its MTIA 400 chip further supports the trend of customers developing in-house AI accelerators, which is a competitive factor for Broadcom's AI semiconductor business. However, it does not provide margin data.",
+            "proves": "Meta is developing its own generative AI accelerator, indicating competition in the AI chip space.",
+            "does_not_prove": "It does not prove anything about Broadcom's margins or the sustainability of its margin profile."
+          },
+          {
+            "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "This evidence discusses Broadcom's efforts to de-risk AI growth through private credit SPVs and vertical integration. This could affect margins (e.g., vertical integration into substrates might improve margins or reduce costs), but the evidence does not provide margin data or directly address the claim.",
+            "proves": "Broadcom is taking steps to de-risk its AI semiconductor growth, including vertical integration into advanced packaging substrates.",
+            "does_not_prove": "It does not prove that these efforts affect margins or that AI margins are different from the broader business."
+          },
+          {
+            "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "aggregator",
+            "reason": "This evidence states Broadcom has secured supply to double AI semiconductor revenue, indicating strong growth. This supports the premise that AI revenue mix is increasing, but does not address margins.",
+            "proves": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years.",
+            "does_not_prove": "It does not provide any margin information for AI semiconductor revenue."
+          },
+          {
+            "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "issuer_primary",
+            "reason": "This is a debt tender offer announcement, unrelated to margins or AI mix. It provides no relevant information for the claim.",
+            "proves": "Broadcom announced pricing terms for debt tender offers.",
+            "does_not_prove": "It does not prove anything about margins or AI revenue mix."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "AVGO margin dilution OR mix pressure OR cost inflation",
+            "AVGO pricing pressure OR gross margin cut",
+            "What is the gross margin profile of AI semiconductor revenue compared to the company average?",
+            "How much additional R&D investment is required to sustain AI semiconductor growth, and how might that affect operating margins?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "10-Q",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "8-K",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+              "query": "pack.major_events",
+              "snippet": ""
+            },
+            {
+              "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+              "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+              "query": "pack.major_events",
+              "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+            },
+            {
+              "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+              "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+              "query": "pack.major_events",
+              "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+            },
+            {
+              "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+              "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+            },
+            {
+              "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+              "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+              "query": "pack.major_events",
+              "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+            },
+            {
+              "title": "Exhibit 99.1",
+              "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+              "query": "pack.official_documents",
+              "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+            },
+            {
+              "title": "EDGAR Entity Landing Page - SEC.gov",
+              "url": "https://www.sec.gov/edgar/browse/?CIK=0001730168",
+              "query": "site:sec.gov AVGO 10-Q OR 10-K OR 8-K after:2026-08-18",
+              "snippet": "September 10 , 2026 - S-4: Registration of securities, business combinations Open documentClick to Open document Filing Open filingClick to Open filing September 10 , 2026 - 10-Q : Quarterly report f…"
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "unverified",
+            "old_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+            "new_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+            "reason_for_change": "status changed; confidence changed; decisive evidence changed",
+            "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+          },
+          {
+            "version": 3,
+            "old_status": "unverified",
+            "new_status": "partially_supported",
+            "old_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+            "new_statement": "The company maintains high gross and operating margins, and AI semiconductor revenue is a significant and growing portion of the business. However, the provided evidence does not establish the margin characteristics of AI semiconductor revenue relative to the broader business, so the claim that margin sustainability depends on AI mix remains unverified",
+            "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+            "run_id": "brun_4266dc50c87949ac91184d983e209959"
+          }
+        ]
+      }
+    ],
+    "LITE": [
+      {
+        "claim_key": "bck_3ddcd13384d55fe39b5a",
+        "claim_id": "bclm_62f60604dccd4ba2bea78cac8da9bc1c",
+        "title": "Revenue growth durability",
+        "statement": "Lumentum's revenue grew from $808.4 million in Q3 FY2026 to $1.01 billion in Q4 FY2026, and Q1 FY2027 guidance is $1.225B–$1.275B. This suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified",
+        "proposed_status": "partially_supported",
+        "final_status": "partially_supported",
+        "confidence": "medium",
+        "lifecycle": "core",
+        "claim_subject": "lumentum_holdings_inc",
+        "claim_dimension": "growth_duration",
+        "financial_driver": "demand",
+        "why_core": "Revenue trajectory is the primary driver of earnings power and the key input to any forward valuation.",
+        "unverified_detail": "533.8m could not be verified; 1.0063b could not be verified",
+        "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+        "match_action": "update_existing",
+        "support_evidence": [
+          {
+            "id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+            "excerpt": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": "Primary issuer filing confirms Q4 FY2026 net revenue of $1.01 billion and provides Q1 FY2027 guidance context, directly supporting the revenue acceleration and guidance portion of the claim.",
+            "proves": "Lumentum reported Q4 FY2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, and issued Q1 FY2027 guidance.",
+            "does_not_prove": "It does not prove that the growth is structural rather than cyclical, does not provide segment-level breakdown, does not disclose customer concentration, and does not verify the Q1 FY2026 starting revenue figure.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_2746bf86784647779c9bdfad10215893",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+            "excerpt": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": "Primary issuer filing confirms Q3 FY2026 net revenue of $808.4 million, establishing the sequential baseline from which Q4 FY2026 grew to $1.01 billion.",
+            "proves": "Lumentum reported Q3 FY2026 net revenue of $808.4 million with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+            "does_not_prove": "It does not prove the durability of the growth trajectory, does not provide segment-level or customer-level detail, and does not verify the Q1 FY2026 revenue figure referenced in the claim.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_b73775b41c704fe08b4739a701c6627d",
+            "source": "cnn.com",
+            "source_url": "https://www.cnn.com/markets/stocks/LITE",
+            "source_relationship": "unknown",
+            "source_tier": null,
+            "fact": "LITE total revenue increased 83.22% since last year and increased 24.48% since last quarter.",
+            "excerpt": "Total Revenue increased 83.22% since last year and increased 24.48% since last quarter.",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "reason": "Secondary source reports total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter, which is directionally consistent with the acceleration narrative but is stale (2023) and from a low-tier source.",
+            "proves": "At some point in 2023, LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter.",
+            "does_not_prove": "It does not prove anything about FY2026 revenue acceleration, does not address structural versus cyclical demand, and the 2023 timeframe makes it irrelevant to the current claim period.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Q1 FY2026 revenue figure to establish the full acceleration arc referenced in the claim",
+          "Segment-level revenue breakdown (Cloud and Networking vs. Industrial Tech) for Q3 and Q4 FY2026",
+          "Customer concentration data (top 10 customers as percentage of revenue)",
+          "Backlog composition and book-to-bill ratio for Q1 FY2027 guidance",
+          "Independent third-party corroboration of optical demand trends (e.g., datacom/cloud capex indicators from hyperscalers)",
+          "Counter-evidence search results — the counter_search found no opposing evidence, but this may reflect search limitations rather than absence of counter-evidence",
+          "Peer comparison data (Coherent, Fabrinet) to assess whether growth is company-specific or industry-wide",
+          "Inventory levels at Lumentum and its customers to assess channel stuffing risk"
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Primary issuer filing confirms Q4 FY2026 net revenue of $1.01 billion and provides Q1 FY2027 guidance context, directly supporting the revenue acceleration and guidance portion of the claim.",
+            "proves": "Lumentum reported Q4 FY2026 net revenue of $1.01 billion with GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, and issued Q1 FY2027 guidance.",
+            "does_not_prove": "It does not prove that the growth is structural rather than cyclical, does not provide segment-level breakdown, does not disclose customer concentration, and does not verify the Q1 FY2026 starting revenue figure."
+          },
+          {
+            "evidence_id": "rev_2746bf86784647779c9bdfad10215893",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Primary issuer filing confirms Q3 FY2026 net revenue of $808.4 million, establishing the sequential baseline from which Q4 FY2026 grew to $1.01 billion.",
+            "proves": "Lumentum reported Q3 FY2026 net revenue of $808.4 million with GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%.",
+            "does_not_prove": "It does not prove the durability of the growth trajectory, does not provide segment-level or customer-level detail, and does not verify the Q1 FY2026 revenue figure referenced in the claim."
+          },
+          {
+            "evidence_id": "rev_b73775b41c704fe08b4739a701c6627d",
+            "direction": "support",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Secondary source reports total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter, which is directionally consistent with the acceleration narrative but is stale (2023) and from a low-tier source.",
+            "proves": "At some point in 2023, LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter.",
+            "does_not_prove": "It does not prove anything about FY2026 revenue acceleration, does not address structural versus cyclical demand, and the 2023 timeframe makes it irrelevant to the current claim period."
+          },
+          {
+            "evidence_id": "rev_bb8b4f1312ef4bc1bf988aa05181a69e",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "aggregator",
+            "reason": "Provides background on Lumentum's business scope as an optical and photonic hardware manufacturer, which is relevant context for understanding the demand drivers but does not address revenue durability.",
+            "proves": "Lumentum manufactures optical and photonic hardware for communications networks across multiple geographies.",
+            "does_not_prove": "It does not prove anything about revenue growth, growth durability, segment mix, or customer concentration."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "LITE optical inventory build OR pricing pressure",
+            "LITE peer capacity expansion OR CPO displacement OR Coherent OR Fabrinet",
+            "What portion of the Q1 FY2027 guidance is already booked versus forecast, and what is the customer concentration in that backlog?",
+            "Are there independent datacom/cloud capex indicators that corroborate or contradict the sustainability of this revenue ramp?"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+              "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+              "query": "pack.major_events",
+              "snippet": "The S&P 500 Index ($SPX ) (SPY ) closed down by -0.45% on Wednesday, the Dow Jones Industrial Average ($DOWI ) (DIA ) closed down by -1.21%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) closed up +0.02%.…"
+            },
+            {
+              "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+              "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+              "query": "pack.major_events",
+              "snippet": "Forgent Power Solutions beats fiscal Q4 estimates as data center demand drives Powertrain Solutions growth, while bookings and backlog reach record levels."
+            },
+            {
+              "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+              "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+              "query": "pack.major_events",
+              "snippet": "AXTI's surging sales in Europe and Asia-Pacific are broadening its revenue base beyond China as InP demand and export approvals improve."
+            },
+            {
+              "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+              "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+              "query": "pack.major_events",
+              "snippet": "Looking today at week-over-week shares outstanding changes among the universe of ETFs covered at ETF Channel, one standout is the iShares U.S. Telecommunications ETF (Symbol: IYZ) where we have detec…"
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "The company's revenue growth is driven by a demand cycle in optical communications components that may not persist at the current rate, making the durability of growth a key decision variable",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "The company's revenue growth is driven by a demand cycle in optical communications components that may not persist at the current rate, making the durability of growth a key decision variable",
+            "new_statement": "The company's revenue growth is currently driven by demand in optical communications components, and the durability of that growth is a key decision variable",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+          },
+          {
+            "version": 3,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "The company's revenue growth is currently driven by demand in optical communications components, and the durability of that growth is a key decision variable",
+            "new_statement": "Lumentum's revenue growth is driven by a demand cycle that may be structural rather than a one-time surge, but the evidence only shows a single fiscal year of acceleration and management guidance for one more quarter, so the duration of the growth is unverified",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_082a037610bc475aa8d66719fb071e6a"
+          },
+          {
+            "version": 4,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "Lumentum's revenue growth is driven by a demand cycle that may be structural rather than a one-time surge, but the evidence only shows a single fiscal year of acceleration and management guidance for one more quarter, so the duration of the growth is unverified",
+            "new_statement": "Lumentum's revenue grew from $808.4 million in Q3 FY2026 to $1.01 billion in Q4 FY2026, and Q1 FY2027 guidance is $1.225B–$1.275B. This suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65"
+          }
+        ]
+      },
+      {
+        "claim_key": "bck_d9397b0c54e9d7fd24fc",
+        "claim_id": "bclm_a9274cffe24f43f7a3cf4f09d57fe2ef",
+        "title": "Margin quality and sustainability",
+        "statement": "Gross margin expanded from 44.2% GAAP (47.9% non-GAAP) in Q3 FY2026 to 47.4% GAAP (50.4% non-GAAP) in Q4 FY2026. This expansion may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical",
+        "proposed_status": "partially_supported",
+        "final_status": "partially_supported",
+        "confidence": "medium",
+        "lifecycle": "core",
+        "claim_subject": "lumentum_holdings_inc",
+        "claim_dimension": "margin_quality",
+        "financial_driver": "margin",
+        "why_core": "Margin expansion is the largest swing factor in profitability and is central to assessing normalized earnings.",
+        "unverified_detail": "16.64 could not be verified; 47.43 could not be verified",
+        "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+        "match_action": "update_existing",
+        "support_evidence": [
+          {
+            "id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+            "excerpt": "EX-99.1\n2\nlite_ex991xq4fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES FOURTH QUARTER AND FULL FISCAL YEAR 2026 RESULTS Fiscal Fourth Quarter Highlights: • Net revenue of $1.01 billion • GAAP gross margin of 47.4%; Non-GAAP gross margin of",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": "Primary issuer filing confirms Q4 FY2026 GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, directly supporting the ending margin levels in the claim.",
+            "proves": "Q4 FY2026 GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%.",
+            "does_not_prove": "It does not prove the starting margin in Q4 FY2024, nor does it provide segment-level margin detail or explain the drivers of the margin expansion.",
+            "incomplete": false
+          },
+          {
+            "id": "rev_2746bf86784647779c9bdfad10215893",
+            "source": "sec.exhibit",
+            "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+            "source_relationship": "issuer_primary",
+            "source_tier": null,
+            "fact": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+            "excerpt": "EX-99.1\n2\nlite_ex991xq3fy26.htm\nEX-99.1\nNEWS RELEASE LUMENTUM ANNOUNCES THIRD QUARTER OF FISCAL YEAR 2026 FINANCIAL RESULTS • Net revenue of $808.4 million • GAAP gross margin of 44.2%; Non-GAAP gross margin of 47.9% • GAAP operating margin",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "reason": "Primary issuer filing confirms Q3 FY2026 GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%, providing a sequential comparison point that supports the margin expansion narrative.",
+            "proves": "Q3 FY2026 GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%.",
+            "does_not_prove": "It does not prove the Q4 FY2024 starting margin, nor does it provide segment-level margin detail or establish the durability of the expansion.",
+            "incomplete": false
+          }
+        ],
+        "counter_evidence": [],
+        "missing_evidence": [
+          "Q4 FY2024 gross margin figures (GAAP and non-GAAP) to verify the starting point of the claimed expansion.",
+          "Segment-level gross margin data for Datacom/Cloud vs. Telecom vs. Commercial Lasers over the last four quarters.",
+          "Management commentary or disclosure on the drivers of margin expansion (mix, pricing, cost reductions, one-time items).",
+          "Independent third-party analysis or industry data on optical component pricing and demand trends.",
+          "Counter-evidence on potential margin headwinds such as inventory build, pricing pressure, or capacity expansion by peers."
+        ],
+        "evidence_links": [
+          {
+            "evidence_id": "rev_ab1965f3cdb44c1bb501d023787a61b1",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Primary issuer filing confirms Q4 FY2026 GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%, directly supporting the ending margin levels in the claim.",
+            "proves": "Q4 FY2026 GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%.",
+            "does_not_prove": "It does not prove the starting margin in Q4 FY2024, nor does it provide segment-level margin detail or explain the drivers of the margin expansion."
+          },
+          {
+            "evidence_id": "rev_2746bf86784647779c9bdfad10215893",
+            "direction": "support",
+            "strength": "strong",
+            "relevance": "direct",
+            "source_relationship": "issuer_primary",
+            "reason": "Primary issuer filing confirms Q3 FY2026 GAAP gross margin of 44.2% and non-GAAP gross margin of 47.9%, providing a sequential comparison point that supports the margin expansion narrative.",
+            "proves": "Q3 FY2026 GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%.",
+            "does_not_prove": "It does not prove the Q4 FY2024 starting margin, nor does it provide segment-level margin detail or establish the durability of the expansion."
+          },
+          {
+            "evidence_id": "rev_b73775b41c704fe08b4739a701c6627d",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "indirect",
+            "source_relationship": "unknown",
+            "reason": "Secondary source reports total revenue growth, which is background context for margin analysis but does not directly address margin quality or sustainability.",
+            "proves": "LITE total revenue increased 83.22% year-over-year and 24.48% quarter-over-quarter at some point in time.",
+            "does_not_prove": "It does not prove anything about gross margin levels, segment mix, or the durability of margin expansion."
+          },
+          {
+            "evidence_id": "rev_bb8b4f1312ef4bc1bf988aa05181a69e",
+            "direction": "contextual",
+            "strength": "weak",
+            "relevance": "background",
+            "source_relationship": "aggregator",
+            "reason": "Provides general company description, useful for understanding the business but not relevant to margin quality or sustainability.",
+            "proves": "Lumentum manufactures optical and photonic hardware for communications networks globally.",
+            "does_not_prove": "It does not prove anything about gross margin levels, segment mix, or margin durability."
+          }
+        ],
+        "counter_search": {
+          "queries": [
+            "LITE optical inventory build OR pricing pressure",
+            "LITE peer capacity expansion OR CPO displacement OR Coherent OR Fabrinet",
+            "What is the gross margin by segment (Datacom vs. Telecom vs. Commercial Lasers) and how has it trended over the last four quarters?",
+            "What portion of the margin expansion is attributable to one-time factors such as favorable product mix or temporary pricing, and what is the normalized margin…"
+          ],
+          "performed": true,
+          "results": [
+            {
+              "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+              "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+              "query": "pack.major_events",
+              "snippet": "The S&P 500 Index ($SPX ) (SPY ) closed down by -0.45% on Wednesday, the Dow Jones Industrial Average ($DOWI ) (DIA ) closed down by -1.21%, and the Nasdaq 100 Index ($IUXX ) (QQQ ) closed up +0.02%.…"
+            },
+            {
+              "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+              "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+              "query": "pack.major_events",
+              "snippet": "Forgent Power Solutions beats fiscal Q4 estimates as data center demand drives Powertrain Solutions growth, while bookings and backlog reach record levels."
+            },
+            {
+              "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+              "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+              "query": "pack.major_events",
+              "snippet": "AXTI's surging sales in Europe and Asia-Pacific are broadening its revenue base beyond China as InP demand and export approvals improve."
+            },
+            {
+              "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+              "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+              "query": "pack.major_events",
+              "snippet": "Looking today at week-over-week shares outstanding changes among the universe of ETFs covered at ETF Channel, one standout is the iShares U.S. Telecommunications ETF (Symbol: IYZ) where we have detec…"
+            }
+          ],
+          "counter_evidence_found": false,
+          "counter_evidence_ids": []
+        },
+        "versions": [
+          {
+            "version": 1,
+            "old_status": null,
+            "new_status": "partially_supported",
+            "old_statement": null,
+            "new_statement": "The significant margin expansion may be driven by temporary factors such as favorable product mix or cost reductions, and its sustainability is a key decision variable",
+            "reason_for_change": "initial core claim",
+            "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+          },
+          {
+            "version": 2,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "The significant margin expansion may be driven by temporary factors such as favorable product mix or cost reductions, and its sustainability is a key decision variable",
+            "new_statement": "Lumentum's significant margin expansion (non-GAAP operating margin rising from 32.2% in Q3 FY2026 to 36.6% in Q4 FY2026, with Q1 FY2027 guidance of 39.5–40.5%) may be driven by temporary factors, and its sustainability is a key decision variable. The specific drivers—whether favorable product mix, cost reductions, or other factors—are not identified in the available evidence",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_2cb235476b144a008b0e80b66a75d7f3"
+          },
+          {
+            "version": 3,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "Lumentum's significant margin expansion (non-GAAP operating margin rising from 32.2% in Q3 FY2026 to 36.6% in Q4 FY2026, with Q1 FY2027 guidance of 39.5–40.5%) may be driven by temporary factors, and its sustainability is a key decision variable. The specific drivers—whether favorable product mix, cost reductions, or other factors—are not identified in the available evidence",
+            "new_statement": "Lumentum's gross and operating margins expanded significantly in the most recent fiscal quarters (Q3 and Q4 FY2026), but the evidence does not establish whether this expansion is structural (driven by product mix and operating leverage) or cyclical/temporary, and historical margin data is not present in the evidence set",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_082a037610bc475aa8d66719fb071e6a"
+          },
+          {
+            "version": 4,
+            "old_status": "partially_supported",
+            "new_status": "partially_supported",
+            "old_statement": "Lumentum's gross and operating margins expanded significantly in the most recent fiscal quarters (Q3 and Q4 FY2026), but the evidence does not establish whether this expansion is structural (driven by product mix and operating leverage) or cyclical/temporary, and historical margin data is not present in the evidence set",
+            "new_statement": "Gross margin expanded from 44.2% GAAP (47.9% non-GAAP) in Q3 FY2026 to 47.4% GAAP (50.4% non-GAAP) in Q4 FY2026. This expansion may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical",
+            "reason_for_change": "statement materially changed; decisive evidence changed",
+            "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65"
+          }
+        ]
+      }
+    ]
+  },
+  "candidates": {
+    "AAPL": [
+      {
+        "title": "Services mix shift supports structural margin expansion",
+        "statement": "Apple's revenue growth is increasingly driven by Services, which carries materially higher gross margin than Products, making the margin trajectory more structural than cyclical.",
+        "selected_as_core": true,
+        "why_core": "Margin quality is a key decision variable for Apple's valuation, and the evidence shows Services revenue reaching all-time records with high gross margin.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Reported gross margin is inflated by one-time tariff refund",
+        "statement": "The latest quarter's gross margin of 50.06% includes a favorable one-time tariff refund benefit of approximately 2 percentage points, implying underlying gross margin is lower and the reported margin overstates structural profitability.",
+        "selected_as_core": true,
+        "why_core": "Margin quality is a key decision variable, and the evidence explicitly flags a one-time benefit that distorts the reported margin.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Product cycle catalysts may extend revenue growth durability",
+        "statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate.",
+        "selected_as_core": true,
+        "why_core": "Growth durability is a key decision variable, and the evidence shows concrete new product and software launches that could influence future demand.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Valuation multiple is sensitive to margin normalization",
+        "statement": "Apple's TTM PE of 37.95 may be sensitive to any normalization of gross margin if the tariff refund benefit is non-recurring, potentially compressing earnings and the multiple.",
+        "selected_as_core": true,
+        "why_core": "Valuation sensitivity to margin quality is a key decision variable, and the evidence provides both the PE and the margin distortion.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Supply constraints pose near-term revenue risk",
+        "statement": "Guidance_history references supply constraints on iPhone and Mac, which may limit near-term revenue and cap upside to growth estimates.",
+        "selected_as_core": false,
+        "why_core": "Supply constraints are a direct risk to near-term revenue growth durability, a key decision variable.",
+        "why_not_core": "Not selected into the Top Core Claims for this run.",
+        "claim_id": null
+      },
+      {
+        "title": "Post-earnings sell-off signals market skepticism on growth quality",
+        "statement": "Despite reporting record revenue and EPS, Apple's stock fell 7.35% on the day following Q3 FY2026 earnings, underperforming major indices, suggesting the market questions the quality or sustainability of the beat.",
+        "selected_as_core": false,
+        "why_core": "Valuation sensitivity is a key decision variable, and the evidence shows a significant negative market reaction despite strong reported results.",
+        "why_not_core": "reclassify_as_fact_or_state",
+        "claim_id": null
+      },
+      {
+        "title": "Customer concentration in iPhone remains a structural risk",
+        "statement": "Apple's revenue remains heavily dependent on iPhone, as evidenced by the product cycle focus and record iPhone revenue, creating concentration risk if demand falters.",
+        "selected_as_core": false,
+        "why_core": "Customer/product concentration is a key decision variable, but the evidence does not provide segment revenue breakdowns to quantify the concentration.",
+        "why_not_core": "The evidence does not provide segment-level revenue data to substantiate the degree of concentration; it only mentions iPhone records and new product launches.",
+        "claim_id": null
+      },
+      {
+        "title": "Services growth is broad-based across geographies",
+        "statement": "Services revenue grew double digits in both developed and emerging markets, indicating broad-based demand that may be more durable than a single-region driver.",
+        "selected_as_core": false,
+        "why_core": "Growth durability is a key decision variable, and the evidence shows broad-based Services growth.",
+        "why_not_core": "The evidence is limited to a single quarter's commentary and does not provide specific growth rates or trends to assess durability.",
+        "claim_id": null
+      }
+    ],
+    "AVGO": [
+      {
+        "title": "AI semiconductor revenue acceleration is the dominant growth driver",
+        "statement": "The company's growth trajectory is primarily dependent on AI semiconductor revenue, which management expects to accelerate substantially, making the durability of this demand the key decision variable for the investment case.",
+        "selected_as_core": true,
+        "why_core": "This is the only explicit growth driver named in the evidence and is central to the company's forward narrative.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Revenue growth is accelerating but earnings execution is inconsistent",
+        "statement": "Despite strong revenue growth, the company has recently missed EPS estimates, suggesting a disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists.",
+        "selected_as_core": true,
+        "why_core": "This is a key risk to the investment case, as it directly affects earnings quality and market reaction.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Margin profile is stable but sustainability depends on AI mix",
+        "statement": "The company maintains high gross and operating margins, but the sustainability of these margins depends on the mix of AI semiconductor revenue, which may carry different margin characteristics than the broader business.",
+        "selected_as_core": true,
+        "why_core": "Margin quality is a key driver of valuation and cash flow generation, and the shift toward AI may alter the margin structure.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Valuation is sensitive to growth durability and earnings delivery",
+        "statement": "The current valuation multiple reflects high growth expectations, making the stock sensitive to any evidence of slowing AI demand or continued earnings misses.",
+        "selected_as_core": false,
+        "why_core": "Valuation sensitivity is a critical decision variable for investors, especially given the recent negative price reactions to earnings.",
+        "why_not_core": "The evidence for valuation is limited to PE TTM and lacks forward multiples or peer comparisons, making it insufficient to form a robust core claim.",
+        "claim_id": null
+      },
+      {
+        "title": "Post-earnings price reactions indicate high market sensitivity to guidance",
+        "statement": "Significant negative price reactions following recent earnings reports suggest that the market is highly sensitive to earnings and guidance, which may increase volatility and affect cost of capital.",
+        "selected_as_core": false,
+        "why_core": "This is a key consideration for near-term trading and risk management, though less relevant for long-term fundamental value.",
+        "why_not_core": "This is an event-driven observation with limited persistence and is not a fundamental driver of long-term value.",
+        "claim_id": null
+      }
+    ],
+    "LITE": [
+      {
+        "title": "Revenue growth durability",
+        "statement": "Lumentum's revenue acceleration from $533.8M in Q1 FY2026 to $1.0063B in Q4 FY2026, with Q1 FY2027 guidance of $1.225B–$1.275B, suggests the growth trajectory may be structural rather than a one-time cyclical spike, but the absence of segment-level data and customer concentration evidence leaves the durability unverified.",
+        "selected_as_core": true,
+        "why_core": "Revenue trajectory is the primary driver of earnings power and the key input to any forward valuation.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Margin quality and sustainability",
+        "statement": "The sharp gross margin expansion from 16.64% in Q4 FY2024 to 47.43% GAAP (50.4% non-GAAP) in Q4 FY2026 may reflect a structural mix shift toward higher-value Datacom/Cloud products, but the lack of segment margin detail and the history of earnings volatility make it unclear how much is durable versus cyclical.",
+        "selected_as_core": true,
+        "why_core": "Margin expansion is the largest swing factor in profitability and is central to assessing normalized earnings.",
+        "why_not_core": "",
+        "claim_id": null
+      },
+      {
+        "title": "Earnings estimate volatility and predictability",
+        "statement": "Lumentum's recent history of missing EPS estimates (Q1 FY2026 and Q3 FY2026) followed by a Q4 FY2026 beat suggests earnings predictability is low, which may increase the risk premium applied to forward estimates.",
+        "selected_as_core": false,
+        "why_core": "Earnings volatility directly impacts the reliability of forward estimates and the appropriate discount rate.",
+        "why_not_core": "The evidence for this claim is not directly linked to any evidence_id in the provided evidence set; the state referencing EPS misses has no supporting evidence_ids, so it cannot be verified from the current pack.",
+        "claim_id": null
+      },
+      {
+        "title": "Valuation sensitivity to growth and margin assumptions",
+        "statement": "With all valuation multiples unavailable, the stock's valuation sensitivity to changes in growth duration and margin sustainability cannot be assessed, but the high revenue growth and margin expansion imply that any deceleration could lead to significant multiple compression.",
+        "selected_as_core": false,
+        "why_core": "Valuation is a key decision variable, and the lack of multiples is a critical gap that prevents a full assessment.",
+        "why_not_core": "No valuation evidence is available, so this claim is unverifiable and cannot be a core decision variable without supporting data.",
+        "claim_id": null
+      },
+      {
+        "title": "Customer concentration risk",
+        "statement": "The absence of customer concentration data leaves open the possibility that a significant portion of Lumentum's revenue growth is dependent on a small number of large cloud/datacom customers, which could pose a risk if those customers reduce orders or shift suppliers.",
+        "selected_as_core": false,
+        "why_core": "Customer concentration is a structural risk that can affect the persistence of growth and margins, but without evidence it remains a hypothesis.",
+        "why_not_core": "No evidence on customer concentration is provided, making this claim purely speculative and not supported by any evidence_id.",
+        "claim_id": null
+      }
+    ]
+  },
+  "pm_consistency": {
+    "AAPL": {
+      "passed": false,
+      "status": "inconsistent",
+      "reasons": [
+        "PM cited unbound number 14.24"
+      ],
+      "view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 14.24"
+    },
+    "AVGO": {
+      "passed": false,
+      "status": "inconsistent",
+      "reasons": [
+        "PM cited unbound number 48.69"
+      ],
+      "view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 48.69"
+    },
+    "LITE": {
+      "passed": false,
+      "status": "inconsistent",
+      "reasons": [
+        "PM cited unbound number 533.8m"
+      ],
+      "view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 533.8m"
+    }
+  },
+  "integrity_violations": {
+    "AAPL": [
+      {
+        "code": "unsupported_factual_assertion",
+        "claim_title": "Reported gross margin is inflated by one-time tariff refund",
+        "tokens": [
+          "50.06"
+        ]
+      },
+      {
+        "code": "unsupported_factual_assertion",
+        "claim_title": "Valuation multiple is sensitive to margin normalization",
+        "tokens": [
+          "37.95"
+        ]
+      },
+      {
+        "code": "status_downgrade",
+        "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+        "from": "partially_supported",
+        "to": "unverified",
+        "reason": "core assertion or number is not bound to evidence"
+      },
+      {
+        "code": "status_downgrade",
+        "claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+        "from": "partially_supported",
+        "to": "unverified",
+        "reason": "no supporting evidence in the current evidence set"
+      },
+      {
+        "code": "status_reconciled",
+        "claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "from": "emerging",
+        "to": "strongly_supported",
+        "reason": "direct complete support with required source relationship"
+      },
+      {
+        "code": "status_downgrade",
+        "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+        "from": "partially_supported",
+        "to": "unverified",
+        "reason": "core assertion or number is not bound to evidence"
+      },
+      {
+        "code": "pm_inconsistency_blocked",
+        "reasons": [
+          "PM cited unbound number 14.24"
+        ]
+      }
+    ],
+    "AVGO": [
+      {
+        "code": "pm_inconsistency_blocked",
+        "reasons": [
+          "PM cited unbound number 48.69"
+        ]
+      }
+    ],
+    "LITE": [
+      {
+        "code": "unsupported_factual_assertion",
+        "claim_title": "Revenue growth durability",
+        "tokens": [
+          "533.8m",
+          "1.0063b"
+        ]
+      },
+      {
+        "code": "unsupported_factual_assertion",
+        "claim_title": "Margin quality and sustainability",
+        "tokens": [
+          "16.64",
+          "47.43"
+        ]
+      },
+      {
+        "code": "pm_inconsistency_blocked",
+        "reasons": [
+          "PM cited unbound number 533.8m"
+        ]
+      }
+    ]
+  },
+  "claim_version_demo": {
+    "AAPL": {
+      "shared_claim_keys": [
+        "bck_48581a538f893271b995",
+        "bck_ad99cd0993115361a1d1"
+      ],
+      "same_claim_id": true,
+      "pairs": [
+        {
+          "claim_key": "bck_48581a538f893271b995",
+          "run1_claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+          "run2_claim_id": "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+          "same_id": true,
+          "run1_versions": 2,
+          "run2_versions": 3,
+          "run2_versions_changed": 4
+        },
+        {
+          "claim_key": "bck_ad99cd0993115361a1d1",
+          "run1_claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+          "run2_claim_id": "bclm_8474e0d929e044059ceed6e15f169d51",
+          "same_id": true,
+          "run1_versions": 3,
+          "run2_versions": 4,
+          "run2_versions_changed": 4
+        }
+      ],
+      "run1_new_ids": [
+        "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "bclm_8474e0d929e044059ceed6e15f169d51"
+      ],
+      "run2_ids": [
+        "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+        "bclm_206dcfe484184314a710333afcf22562",
+        "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+        "bclm_8474e0d929e044059ceed6e15f169d51"
+      ]
+    },
+    "AVGO": {
+      "shared_claim_keys": [
+        "bck_46a71db5c7889f8c835c",
+        "bck_b264901d7b1367ba32d3"
+      ],
+      "same_claim_id": true,
+      "pairs": [
+        {
+          "claim_key": "bck_46a71db5c7889f8c835c",
+          "run1_claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+          "run2_claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+          "same_id": true,
+          "run1_versions": 5,
+          "run2_versions": 6,
+          "run2_versions_changed": 3
+        },
+        {
+          "claim_key": "bck_b264901d7b1367ba32d3",
+          "run1_claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+          "run2_claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+          "same_id": true,
+          "run1_versions": 2,
+          "run2_versions": 3,
+          "run2_versions_changed": 3
+        }
+      ],
+      "run1_new_ids": [
+        "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+        "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+      ],
+      "run2_ids": [
+        "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+        "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+        "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+      ]
+    },
+    "LITE": {
+      "shared_claim_keys": [],
+      "same_claim_id": false,
+      "pairs": [],
+      "run1_new_ids": [
+        "bclm_986de26cac724ea7969121478348b2d7",
+        "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+      ],
+      "run2_ids": [
+        "bclm_62f60604dccd4ba2bea78cac8da9bc1c",
+        "bclm_a9274cffe24f43f7a3cf4f09d57fe2ef"
+      ]
+    }
+  },
+  "run1_ids": {
+    "AAPL": [
+      "bclm_8474e0d929e044059ceed6e15f169d51",
+      "bclm_087f3ff4f69b4a119284456e6d2d9e64"
+    ],
+    "AVGO": [
+      "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+      "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+    ],
+    "LITE": [
+      "bclm_986de26cac724ea7969121478348b2d7",
+      "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+    ]
+  },
+  "run2_ids": {
+    "AAPL": [
+      "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "bclm_8474e0d929e044059ceed6e15f169d51",
+      "bclm_087f3ff4f69b4a119284456e6d2d9e64",
+      "bclm_206dcfe484184314a710333afcf22562"
+    ],
+    "AVGO": [
+      "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+      "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "bclm_f86636c7e1ce4834b5d9f63ac4b933e1"
+    ],
+    "LITE": [
+      "bclm_62f60604dccd4ba2bea78cac8da9bc1c",
+      "bclm_a9274cffe24f43f7a3cf4f09d57fe2ef"
+    ]
+  }
+}

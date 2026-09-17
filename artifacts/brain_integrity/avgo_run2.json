@@ -1,0 +1,905 @@
+{
+  "ticker": "AVGO",
+  "generated_at": "2026-09-17T19:27:15+00:00",
+  "run_id": "brun_4266dc50c87949ac91184d983e209959",
+  "status": "partial",
+  "prompt_version": "brain-integrity-v1",
+  "evidence_set_id": "bes_af0a2ec7d17c4304bf61e00ce1db1074",
+  "core_claims": [
+    {
+      "claim_key": "bck_46a71db5c7889f8c835c",
+      "claim_id": "bclm_7f0115350b6a4400b904a836a9fe8e7b",
+      "title": "AI semiconductor revenue acceleration is the dominant growth driver",
+      "statement": "The company's growth trajectory is substantially dependent on AI semiconductor revenue, which management expects to accelerate, making the durability of this demand a key decision variable for the investment case",
+      "proposed_status": "partially_supported",
+      "final_status": "partially_supported",
+      "confidence": "medium",
+      "lifecycle": "core",
+      "claim_subject": "ai_semiconductor_revenue",
+      "claim_dimension": "growth_duration",
+      "financial_driver": "demand",
+      "why_core": "This is the only explicit growth driver named in the evidence and is central to the company's forward narrative.",
+      "unverified_detail": "",
+      "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+      "match_action": "merge_into_existing",
+      "support_evidence": [
+        {
+          "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "reason": "Primary issuer guidance explicitly states AI accelerators and networking continues to be very strong, and references Q3 AI semiconductor revenue. This is the most direct primary evidence that AI semiconductor revenue is a significant and growing driver.",
+          "proves": "That Broadcom's AI semiconductor revenue is very strong and is a material component of the business as of Q3 fiscal 2026.",
+          "does_not_prove": "The specific magnitude of AI semiconductor revenue, its proportion of total revenue, the expected acceleration rate, or the durability of demand beyond the current period.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_007a2aa2666948a19da502edd9048345",
+          "source": "seekingalpha.com",
+          "source_url": "https://seekingalpha.com/article/4945835-broadcom-buckle-up-for-whats-coming",
+          "source_relationship": "aggregator",
+          "source_tier": null,
+          "fact": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand.",
+          "excerpt": "AVGO has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major d",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "Third-party analysis states Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand. This directly supports the acceleration and durability thesis, though from a lower-tier source.",
+          "proves": "That at least one third-party analyst believes Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with named customers driving demand.",
+          "does_not_prove": "That the supply secured will actually be utilized, that customer demand will materialize as expected, or that the doubling will occur. It is an analyst assertion, not confirmed guidance or actual results.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [
+        {
+          "id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+          "source": "theregister.com",
+          "source_url": "https://www.theregister.com/off-prem/2026/08/19/google-pits-marvell-against-broadcom-as-it-chases-ai-crown/5289902",
+          "source_relationship": "unknown",
+          "source_tier": null,
+          "fact": "Marvell announced in an SEC filing that Google tapped it to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators, storage controllers, and network interface controllers.",
+          "excerpt": "the Chocolate Factory had tapped the IP house to develop custom silicon for the search and advertising giant",
+          "direction": "oppose",
+          "strength": "medium",
+          "relevance": "indirect",
+          "reason": "Google tapped Marvell to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators. This is competitive evidence suggesting Broadcom may face share loss or reduced growth in custom AI silicon, potentially undermining the durability of AI semiconductor revenue acceleration.",
+          "proves": "That Google is engaging Marvell as a custom silicon partner for AI inference accelerators and related components, indicating multi-vendor sourcing.",
+          "does_not_prove": "That Broadcom's AI semiconductor revenue will decline or that Google is reducing its Broadcom relationship. It does not quantify the impact on Broadcom's revenue."
+        },
+        {
+          "id": "rev_e22d16f0ce824d4894bbf565734563c0",
+          "source": "high_quality_news",
+          "source_url": "https://www.bloomberg.com/news/articles/2026-09-15/meta-touts-the-cost-saving-benefits-of-latest-in-house-ai-chips",
+          "source_relationship": "independent_media",
+          "source_tier": null,
+          "fact": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year.",
+          "excerpt": "Meta Platforms Inc. plans to begin deploying a new in-house artificial intelligence chip in data centers during the first half of next year",
+          "direction": "oppose",
+          "strength": "medium",
+          "relevance": "indirect",
+          "reason": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year. This shows a major hyperscaler developing in-house AI silicon, which could reduce demand for Broadcom's custom AI accelerators over time.",
+          "proves": "That Meta is developing and deploying in-house AI chips, reducing reliance on external custom silicon vendors for some workloads.",
+          "does_not_prove": "That Meta will stop purchasing Broadcom's AI semiconductors or that Broadcom's AI revenue will be negatively affected. It does not quantify the volume or timing of any substitution."
+        },
+        {
+          "id": "rev_628a989752a54df8b46aae0b3ba2548a",
+          "source": "theregister.com",
+          "source_url": "https://www.theregister.com/systems/2026/08/26/metas-new-mtia-400-chip-has-a-split-personality-training-ai-and-serving-ads/5292727",
+          "source_relationship": "unknown",
+          "source_tier": null,
+          "fact": "Meta detailed its MTIA 400 generative AI accelerator at the Hot Chips conference, aimed at LLM training.",
+          "excerpt": "Its first proper generative AI accelerator, the MTIA 400 — short for Meta Training and Inference Accelerator — is aimed squarely at LLM training.",
+          "direction": "oppose",
+          "strength": "weak",
+          "relevance": "indirect",
+          "reason": "Meta detailed its MTIA 400 generative AI accelerator aimed at LLM training. This is additional evidence of hyperscaler in-house silicon development, reinforcing the competitive threat to Broadcom's custom AI accelerator business.",
+          "proves": "That Meta has developed a generative AI accelerator for LLM training, demonstrating in-house capability.",
+          "does_not_prove": "That this chip will replace Broadcom's products or that Broadcom's AI revenue will be impacted. It is a product announcement, not a demand signal."
+        }
+      ],
+      "missing_evidence": [
+        "Specific AI semiconductor revenue figures for Q3 fiscal 2026 and prior periods.",
+        "Management's exact guidance for AI semiconductor revenue acceleration (e.g., dollar amounts, growth rates, timeframes).",
+        "The proportion of total revenue and operating income attributable to AI semiconductors versus other segments.",
+        "Independent third-party confirmation of AI demand durability (e.g., customer order data, backlog analysis, independent market research).",
+        "Quantification of competitive threats from Marvell, Meta in-house chips, or other hyperscaler in-house silicon initiatives.",
+        "Evidence on whether AI demand is being pulled forward or double-ordered, which would indicate a cyclical peak."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "direction": "support",
+          "strength": "strong",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "Primary issuer guidance explicitly states AI accelerators and networking continues to be very strong, and references Q3 AI semiconductor revenue. This is the most direct primary evidence that AI semiconductor revenue is a significant and growing driver.",
+          "proves": "That Broadcom's AI semiconductor revenue is very strong and is a material component of the business as of Q3 fiscal 2026.",
+          "does_not_prove": "The specific magnitude of AI semiconductor revenue, its proportion of total revenue, the expected acceleration rate, or the durability of demand beyond the current period."
+        },
+        {
+          "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "aggregator",
+          "reason": "Third-party analysis states Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand. This directly supports the acceleration and durability thesis, though from a lower-tier source.",
+          "proves": "That at least one third-party analyst believes Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with named customers driving demand.",
+          "does_not_prove": "That the supply secured will actually be utilized, that customer demand will materialize as expected, or that the doubling will occur. It is an analyst assertion, not confirmed guidance or actual results."
+        },
+        {
+          "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+          "direction": "contextual",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "This evidence describes the VMware infrastructure software segment's high margins (93% gross, 79% operating). It is relevant context because it shows a highly profitable non-AI segment, which could challenge the claim that AI semiconductor revenue is the 'dominant' growth driver if software is also a major profit contributor.",
+          "proves": "That Broadcom's infrastructure software segment (VMware) generates very high margins and is a significant profit contributor.",
+          "does_not_prove": "That AI semiconductor revenue is or is not the dominant growth driver. It does not provide AI revenue figures or growth rates for comparison."
+        },
+        {
+          "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+          "direction": "oppose",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Google tapped Marvell to develop custom silicon attaching to the TPU ecosystem, including AI inference accelerators. This is competitive evidence suggesting Broadcom may face share loss or reduced growth in custom AI silicon, potentially undermining the durability of AI semiconductor revenue acceleration.",
+          "proves": "That Google is engaging Marvell as a custom silicon partner for AI inference accelerators and related components, indicating multi-vendor sourcing.",
+          "does_not_prove": "That Broadcom's AI semiconductor revenue will decline or that Google is reducing its Broadcom relationship. It does not quantify the impact on Broadcom's revenue."
+        },
+        {
+          "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+          "direction": "oppose",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "independent_media",
+          "reason": "Meta plans to deploy its third-generation in-house AI chip, MTIA 450 (Arke), in data centers in the first half of next year. This shows a major hyperscaler developing in-house AI silicon, which could reduce demand for Broadcom's custom AI accelerators over time.",
+          "proves": "That Meta is developing and deploying in-house AI chips, reducing reliance on external custom silicon vendors for some workloads.",
+          "does_not_prove": "That Meta will stop purchasing Broadcom's AI semiconductors or that Broadcom's AI revenue will be negatively affected. It does not quantify the volume or timing of any substitution."
+        },
+        {
+          "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+          "direction": "oppose",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Meta detailed its MTIA 400 generative AI accelerator aimed at LLM training. This is additional evidence of hyperscaler in-house silicon development, reinforcing the competitive threat to Broadcom's custom AI accelerator business.",
+          "proves": "That Meta has developed a generative AI accelerator for LLM training, demonstrating in-house capability.",
+          "does_not_prove": "That this chip will replace Broadcom's products or that Broadcom's AI revenue will be impacted. It is a product announcement, not a demand signal."
+        },
+        {
+          "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "unknown",
+          "reason": "This evidence describes Broadcom using private credit SPVs and vertical integration to de-risk custom AI accelerator growth. It is contextual because it shows management is taking steps to manage risks in the AI business, which is relevant to the durability thesis but does not directly prove or disprove the claim.",
+          "proves": "That Broadcom is employing financial and operational strategies to de-risk its AI accelerator growth and manage credit exposure.",
+          "does_not_prove": "That these strategies are effective or that AI demand is durable. It does not provide revenue figures or demand forecasts."
+        },
+        {
+          "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is a truncated news release headline for Broadcom's Q3 fiscal 2026 results. It confirms the reporting date and context but provides no substantive data on AI revenue or guidance.",
+          "proves": "That Broadcom reported Q3 fiscal 2026 financial results on September 2, 2026.",
+          "does_not_prove": "Any specific financial figures, AI revenue details, or guidance."
+        },
+        {
+          "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is a debt tender offer announcement, unrelated to AI semiconductor revenue or growth drivers. It is included for completeness but has no bearing on the claim.",
+          "proves": "That Broadcom announced pricing terms for debt tender offers in June 2026.",
+          "does_not_prove": "Anything about AI semiconductor revenue, growth drivers, or demand durability."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AVGO valuation multiple compression OR growth deceleration",
+          "AVGO forward earnings miss OR guidance cut",
+          "What portion of total revenue is AI semiconductor revenue, and how does the guided figure compare to the current run-rate?",
+          "Are there signs of demand pull-forward or double-ordering from AI customers that could indicate a cyclical peak?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "10-Q",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "8-K",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+            "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+            "query": "pack.major_events",
+            "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+          },
+          {
+            "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+            "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+            "query": "pack.major_events",
+            "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+          },
+          {
+            "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+            "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+          },
+          {
+            "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+            "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+          },
+          {
+            "title": "Exhibit 99.1",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "query": "pack.official_documents",
+            "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+          },
+          {
+            "title": "EDGAR Entity Landing Page - SEC.gov",
+            "url": "https://www.sec.gov/edgar/browse/?CIK=0001730168",
+            "query": "site:sec.gov AVGO 10-Q OR 10-K OR 8-K after:2026-08-18",
+            "snippet": "September 10 , 2026 - S-4: Registration of securities, business combinations Open documentClick to Open document Filing Open filingClick to Open filing September 10 , 2026 - 10-Q : Quarterly report f…"
+          }
+        ],
+        "counter_evidence_found": true,
+        "counter_evidence_ids": [
+          "rev_628a989752a54df8b46aae0b3ba2548a",
+          "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+          "rev_e22d16f0ce824d4894bbf565734563c0"
+        ]
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "Management guides AI semiconductor revenue to accelerate to $21.7 billion, up 236%, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_c78efedb7bec43529c5ce4fbc4ffcec8"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "unverified",
+          "old_statement": "Management guides AI semiconductor revenue to accelerate to $21.7 billion, up 236%, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+          "new_statement": "Management guides AI semiconductor revenue to accelerate, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_c78efedb7bec43529c5ce4fbc4ffcec8"
+        },
+        {
+          "version": 3,
+          "old_status": "unverified",
+          "new_status": "partially_supported",
+          "old_statement": "Management guides AI semiconductor revenue to accelerate, but the pack lacks segment-level actuals, backlog, or customer data to verify the durability of this trajectory",
+          "new_statement": "Broadcom's growth is increasingly dependent on AI semiconductor revenue, and management describes AI accelerators and networking as very strong; the durability of this trajectory is a key decision variable for the investment case",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_56523184e1f048ed87a2cd208835cc2f"
+        },
+        {
+          "version": 4,
+          "old_status": "partially_supported",
+          "new_status": "unverified",
+          "old_statement": "Broadcom's growth is increasingly dependent on AI semiconductor revenue, and management describes AI accelerators and networking as very strong; the durability of this trajectory is a key decision variable for the investment case",
+          "new_statement": "Broadcom's growth is increasingly concentrated in AI semiconductor revenue, which management expects to accelerate, making the durability of this single driver a primary determinant of the company's growth trajectory",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_5db2ad925afe4540bf5ad5df093b1865"
+        },
+        {
+          "version": 5,
+          "old_status": "unverified",
+          "new_status": "partially_supported",
+          "old_statement": "Broadcom's growth is increasingly concentrated in AI semiconductor revenue, which management expects to accelerate, making the durability of this single driver a primary determinant of the company's growth trajectory",
+          "new_statement": "Broadcom's revenue growth is significantly influenced by AI semiconductor demand, with management indicating that AI semiconductor revenue is very strong and expected to accelerate, making the durability of AI demand a major factor in future growth",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+        },
+        {
+          "version": 6,
+          "old_status": "partially_supported",
+          "new_status": "partially_supported",
+          "old_statement": "Broadcom's revenue growth is significantly influenced by AI semiconductor demand, with management indicating that AI semiconductor revenue is very strong and expected to accelerate, making the durability of AI demand a major factor in future growth",
+          "new_statement": "The company's growth trajectory is substantially dependent on AI semiconductor revenue, which management expects to accelerate, making the durability of this demand a key decision variable for the investment case",
+          "reason_for_change": "statement materially changed; decisive evidence changed; counter evidence changed",
+          "run_id": "brun_4266dc50c87949ac91184d983e209959"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_cecd43e85838bd335515",
+      "claim_id": "bclm_7bcf716cc87c41149ddfa27ccf8140e2",
+      "title": "Revenue growth is accelerating but earnings execution is inconsistent",
+      "statement": "Despite strong revenue growth, the company's earnings execution is inconsistent, suggesting a potential disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists",
+      "proposed_status": "partially_supported",
+      "final_status": "partially_supported",
+      "confidence": "medium",
+      "lifecycle": "core",
+      "claim_subject": "valuation",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "why_core": "This is a key risk to the investment case, as it directly affects earnings quality and market reaction.",
+      "unverified_detail": "",
+      "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+      "match_action": "merge_into_existing",
+      "support_evidence": [
+        {
+          "id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+          "source": "issuer_ir",
+          "source_url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "PALO ALTO, Calif., Sept. 2, 2026 /PRNewswire/ -- Broadcom Inc. (Nasdaq: AVGO), a global technology leader that designs, develops and supplies semiconductor and infrastructure software solutions, today reported financial results for its thir",
+          "excerpt": "PALO ALTO, Calif., Sept. 2, 2026 /PRNewswire/ -- Broadcom Inc. (Nasdaq: AVGO), a global technology leader that designs, develops and supplies semiconductor and infrastructure software solutions, today reported financial results for its thir",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "This is the issuer's Q3 FY2026 earnings release, which would contain revenue and EPS figures. It supports the revenue growth part of the claim but does not provide the specific EPS miss data.",
+          "proves": "Broadcom reported Q3 FY2026 financial results, which likely include revenue growth.",
+          "does_not_prove": "It does not prove that EPS estimates were missed, nor does it provide the magnitude of any miss.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "This excerpt from the earnings release states that AI accelerators and networking continue to be very strong, supporting the revenue growth acceleration part of the claim.",
+          "proves": "AI semiconductor revenue is strong, contributing to revenue growth.",
+          "does_not_prove": "It does not address EPS or earnings execution.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_007a2aa2666948a19da502edd9048345",
+          "source": "seekingalpha.com",
+          "source_url": "https://seekingalpha.com/article/4945835-broadcom-buckle-up-for-whats-coming",
+          "source_relationship": "aggregator",
+          "source_tier": null,
+          "fact": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major demand.",
+          "excerpt": "AVGO has secured supply to double AI semiconductor revenue in each of the next two years, with Anthropic and OpenAI driving major d",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "reason": "This evidence suggests strong future AI revenue growth, supporting the revenue acceleration part of the claim, but it is from a secondary source and does not address EPS.",
+          "proves": "Broadcom has secured supply to double AI semiconductor revenue in the next two years.",
+          "does_not_prove": "It does not prove anything about EPS execution or misses.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Actual EPS figures for recent quarters (e.g., Q2 and Q3 FY2026) and consensus estimates to confirm if there was a miss.",
+        "Management discussion on earnings performance and any reasons for EPS misses.",
+        "Independent analysis of Broadcom's margin trends and earnings quality."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "This evidence is about a competitor (Marvell) winning a Google deal, which could impact Broadcom's future revenue but does not directly address the claim about current revenue growth or EPS misses.",
+          "proves": "Google tapped Marvell for custom silicon, indicating competitive pressure.",
+          "does_not_prove": "It does not prove anything about Broadcom's revenue growth or EPS execution."
+        },
+        {
+          "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "This is the issuer's Q3 FY2026 earnings release, which would contain revenue and EPS figures. It supports the revenue growth part of the claim but does not provide the specific EPS miss data.",
+          "proves": "Broadcom reported Q3 FY2026 financial results, which likely include revenue growth.",
+          "does_not_prove": "It does not prove that EPS estimates were missed, nor does it provide the magnitude of any miss."
+        },
+        {
+          "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "This excerpt from the earnings release states that AI accelerators and networking continue to be very strong, supporting the revenue growth acceleration part of the claim.",
+          "proves": "AI semiconductor revenue is strong, contributing to revenue growth.",
+          "does_not_prove": "It does not address EPS or earnings execution."
+        },
+        {
+          "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "independent_media",
+          "reason": "Meta's in-house AI chip deployment could reduce demand for Broadcom's custom chips, but it is not directly related to the claim about revenue growth and EPS misses.",
+          "proves": "Meta plans to deploy its own AI chip, potentially reducing reliance on Broadcom.",
+          "does_not_prove": "It does not prove anything about Broadcom's current revenue growth or EPS execution."
+        },
+        {
+          "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Meta's MTIA 400 chip is another example of in-house AI chip development, which could affect Broadcom's future revenue but not the current claim.",
+          "proves": "Meta is developing its own AI accelerator, indicating a trend away from merchant silicon.",
+          "does_not_prove": "It does not prove anything about Broadcom's revenue growth or EPS execution."
+        },
+        {
+          "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "This evidence discusses Broadcom's de-risking strategies, which could support revenue growth but does not address EPS misses.",
+          "proves": "Broadcom is using private credit SPVs and vertical integration to support AI growth.",
+          "does_not_prove": "It does not prove anything about EPS execution or misses."
+        },
+        {
+          "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+          "direction": "support",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "This evidence suggests strong future AI revenue growth, supporting the revenue acceleration part of the claim, but it is from a secondary source and does not address EPS.",
+          "proves": "Broadcom has secured supply to double AI semiconductor revenue in the next two years.",
+          "does_not_prove": "It does not prove anything about EPS execution or misses."
+        },
+        {
+          "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "This evidence highlights high margins in the software segment, which could support earnings, but it does not address the claim about EPS misses.",
+          "proves": "VMware segment has high gross and operating margins.",
+          "does_not_prove": "It does not prove anything about overall EPS execution or misses."
+        },
+        {
+          "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is about debt tender offers, unrelated to revenue growth or EPS execution.",
+          "proves": "Broadcom is managing its debt.",
+          "does_not_prove": "It does not prove anything about revenue growth or EPS execution."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AVGO margin dilution OR mix pressure OR cost inflation",
+          "AVGO pricing pressure OR gross margin cut",
+          "What were the specific factors that caused the EPS misses in Q2 and Q3 FY2026?",
+          "Is the EPS miss due to temporary factors such as integration costs or stock-based compensation, or is it a sign of structural margin pressure?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "10-Q",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "8-K",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+            "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+            "query": "pack.major_events",
+            "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+          },
+          {
+            "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+            "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+            "query": "pack.major_events",
+            "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+          },
+          {
+            "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+            "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+          },
+          {
+            "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+            "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+          },
+          {
+            "title": "Exhibit 99.1",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "query": "pack.official_documents",
+            "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "strongly_supported",
+          "old_statement": null,
+          "new_statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_afe922686e0e40b9bedad14f70cd1b62"
+        },
+        {
+          "version": 2,
+          "old_status": "strongly_supported",
+          "new_status": "partially_supported",
+          "old_statement": "TTM revenue growth is 48.69% YoY and latest quarter revenue growth is 85.5% YoY, yet Q3 FY2026 EPS of $2.68 missed the $2.83 estimate and the stock fell 2.74% on the report date, underperforming QQQ by 3.93% and SPY by 3.79%.",
+          "new_statement": "Despite strong revenue growth, the company's earnings execution is inconsistent, suggesting a potential disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists",
+          "reason_for_change": "status changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_4266dc50c87949ac91184d983e209959"
+        }
+      ]
+    },
+    {
+      "claim_key": "bck_b264901d7b1367ba32d3",
+      "claim_id": "bclm_f86636c7e1ce4834b5d9f63ac4b933e1",
+      "title": "Margin profile is stable but sustainability depends on AI mix",
+      "statement": "The company maintains high gross and operating margins, and AI semiconductor revenue is a significant and growing portion of the business. However, the provided evidence does not establish the margin characteristics of AI semiconductor revenue relative to the broader business, so the claim that margin sustainability depends on AI mix remains unverified",
+      "proposed_status": "partially_supported",
+      "final_status": "partially_supported",
+      "confidence": "medium",
+      "lifecycle": "core",
+      "claim_subject": "ai_custom_silicon",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "why_core": "Margin quality is a key driver of valuation and cash flow generation, and the shift toward AI may alter the margin structure.",
+      "unverified_detail": "",
+      "reconciliation_reason": "direction is evidenced but links are incomplete or issuer-only",
+      "match_action": "update_existing",
+      "support_evidence": [
+        {
+          "id": "rev_d326c462bab24bba8156cb855878405a",
+          "source": "everyticker.com",
+          "source_url": "https://everyticker.com/quote/AVGO/news/broadcom-secures-longterm-ai-chip-deal-with-google-through-2031",
+          "source_relationship": "aggregator",
+          "source_tier": null,
+          "fact": "Broadcom's VMware infrastructure software segment generated 93% gross margins and 79% operating margins.",
+          "excerpt": "VMware's integration has created a financial foundation, generating 93% gross margins and 79% operating margins in the infrastructure software segment",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "reason": "This evidence shows that Broadcom's infrastructure software segment (VMware) generates 93% gross margins and 79% operating margins. This supports the idea that the company has a high-margin segment, and by contrast, implies that AI semiconductor revenue may have different (likely lower) margin characteristics, which is the core of the claim's dependency argument.",
+          "proves": "Broadcom's infrastructure software segment has very high margins (93% gross, 79% operating).",
+          "does_not_prove": "It does not provide the gross or operating margin of the AI semiconductor segment, nor does it prove that AI semiconductor margins are lower or that they are declining.",
+          "incomplete": false
+        },
+        {
+          "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "source": "sec.exhibit",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+          "source_relationship": "issuer_primary",
+          "source_tier": null,
+          "fact": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "excerpt": "AI accelerators and networking continues to be very strong. Q3 AI semiconductor revenue",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "reason": "This evidence confirms that AI accelerators and networking (AI semiconductor revenue) is very strong and growing. This supports the premise that AI revenue mix is becoming more significant, which is a necessary condition for the claim that margin sustainability depends on AI mix.",
+          "proves": "AI semiconductor revenue is a strong and growing part of Broadcom's business.",
+          "does_not_prove": "It does not provide any margin data for AI semiconductor revenue or compare it to other segments.",
+          "incomplete": false
+        }
+      ],
+      "counter_evidence": [],
+      "missing_evidence": [
+        "Gross margin and operating margin percentages for the AI semiconductor segment.",
+        "Comparison of AI semiconductor margins to the company average or to the infrastructure software segment.",
+        "Trend of AI semiconductor margins over time.",
+        "Consolidated gross margin and operating margin percentages for recent quarters.",
+        "Independent analyst or industry reports on Broadcom's AI semiconductor margin profile.",
+        "Evidence on pricing dynamics and cost structure for custom AI accelerators."
+      ],
+      "evidence_links": [
+        {
+          "evidence_id": "rev_d326c462bab24bba8156cb855878405a",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "This evidence shows that Broadcom's infrastructure software segment (VMware) generates 93% gross margins and 79% operating margins. This supports the idea that the company has a high-margin segment, and by contrast, implies that AI semiconductor revenue may have different (likely lower) margin characteristics, which is the core of the claim's dependency argument.",
+          "proves": "Broadcom's infrastructure software segment has very high margins (93% gross, 79% operating).",
+          "does_not_prove": "It does not provide the gross or operating margin of the AI semiconductor segment, nor does it prove that AI semiconductor margins are lower or that they are declining."
+        },
+        {
+          "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+          "direction": "support",
+          "strength": "medium",
+          "relevance": "direct",
+          "source_relationship": "issuer_primary",
+          "reason": "This evidence confirms that AI accelerators and networking (AI semiconductor revenue) is very strong and growing. This supports the premise that AI revenue mix is becoming more significant, which is a necessary condition for the claim that margin sustainability depends on AI mix.",
+          "proves": "AI semiconductor revenue is a strong and growing part of Broadcom's business.",
+          "does_not_prove": "It does not provide any margin data for AI semiconductor revenue or compare it to other segments."
+        },
+        {
+          "evidence_id": "rev_d6d3ddbff8eb450784c4939611a77a09",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is a press release announcing Q3 FY2026 financial results. It provides context that the company reported financial results, but the excerpt does not contain specific margin figures or AI mix details.",
+          "proves": "Broadcom reported Q3 FY2026 financial results.",
+          "does_not_prove": "It does not provide specific margin data or AI revenue mix details in the excerpt."
+        },
+        {
+          "evidence_id": "rev_7cd9d4b96c354550a1f5be1ed8bb87ae",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "This evidence shows Google tapping Marvell for custom silicon, indicating competitive pressure in the custom AI chip space. This is relevant to the sustainability of Broadcom's AI revenue and potentially its pricing/margins, but it does not directly address margin characteristics.",
+          "proves": "Google is working with Marvell on custom silicon, indicating competition in the custom AI chip market.",
+          "does_not_prove": "It does not prove that Broadcom's AI margins are under pressure or that its margin profile is unsustainable."
+        },
+        {
+          "evidence_id": "rev_e22d16f0ce824d4894bbf565734563c0",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "independent_media",
+          "reason": "Meta's in-house AI chip deployment shows that large customers are developing their own silicon, which could reduce demand for Broadcom's custom AI chips or affect pricing. This is relevant to the sustainability of AI revenue and margins, but does not directly address margin characteristics.",
+          "proves": "Meta plans to deploy its own AI chip, indicating a trend of large customers developing in-house silicon.",
+          "does_not_prove": "It does not prove that Broadcom's AI margins are declining or that its overall margin profile is unsustainable."
+        },
+        {
+          "evidence_id": "rev_628a989752a54df8b46aae0b3ba2548a",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "Meta detailing its MTIA 400 chip further supports the trend of customers developing in-house AI accelerators, which is a competitive factor for Broadcom's AI semiconductor business. However, it does not provide margin data.",
+          "proves": "Meta is developing its own generative AI accelerator, indicating competition in the AI chip space.",
+          "does_not_prove": "It does not prove anything about Broadcom's margins or the sustainability of its margin profile."
+        },
+        {
+          "evidence_id": "rev_08468ce7891041cf86244ee0bbb459e4",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "unknown",
+          "reason": "This evidence discusses Broadcom's efforts to de-risk AI growth through private credit SPVs and vertical integration. This could affect margins (e.g., vertical integration into substrates might improve margins or reduce costs), but the evidence does not provide margin data or directly address the claim.",
+          "proves": "Broadcom is taking steps to de-risk its AI semiconductor growth, including vertical integration into advanced packaging substrates.",
+          "does_not_prove": "It does not prove that these efforts affect margins or that AI margins are different from the broader business."
+        },
+        {
+          "evidence_id": "rev_007a2aa2666948a19da502edd9048345",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "indirect",
+          "source_relationship": "aggregator",
+          "reason": "This evidence states Broadcom has secured supply to double AI semiconductor revenue, indicating strong growth. This supports the premise that AI revenue mix is increasing, but does not address margins.",
+          "proves": "Broadcom has secured supply to double AI semiconductor revenue in each of the next two years.",
+          "does_not_prove": "It does not provide any margin information for AI semiconductor revenue."
+        },
+        {
+          "evidence_id": "rev_843a1ee827964a139673007f7c44e957",
+          "direction": "contextual",
+          "strength": "weak",
+          "relevance": "background",
+          "source_relationship": "issuer_primary",
+          "reason": "This is a debt tender offer announcement, unrelated to margins or AI mix. It provides no relevant information for the claim.",
+          "proves": "Broadcom announced pricing terms for debt tender offers.",
+          "does_not_prove": "It does not prove anything about margins or AI revenue mix."
+        }
+      ],
+      "counter_search": {
+        "queries": [
+          "AVGO margin dilution OR mix pressure OR cost inflation",
+          "AVGO pricing pressure OR gross margin cut",
+          "What is the gross margin profile of AI semiconductor revenue compared to the company average?",
+          "How much additional R&D investment is required to sustain AI semiconductor growth, and how might that affect operating margins?"
+        ],
+        "performed": true,
+        "results": [
+          {
+            "title": "10-Q",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "8-K",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+            "query": "pack.major_events",
+            "snippet": ""
+          },
+          {
+            "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+            "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+            "query": "pack.major_events",
+            "snippet": "Key PointsQuarterly-filed Form 13Fs allow investors to easily track which stocks Wall Street’s savviest money managers are buying and selling."
+          },
+          {
+            "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+            "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+            "query": "pack.major_events",
+            "snippet": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day"
+          },
+          {
+            "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+            "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom expects $230 billion in AI semiconductor revenue by 2028."
+          },
+          {
+            "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+            "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+            "query": "pack.major_events",
+            "snippet": "Key PointsBroadcom is guiding for monster growth through 2028."
+          },
+          {
+            "title": "Exhibit 99.1",
+            "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+            "query": "pack.official_documents",
+            "snippet": "EX-99.1\n2\navgo-08022026x8kxex99.htm\nEX-99.1\nExhibit 99.1 Broadcom Inc. Announces Third Quarter Fiscal Year 2026 Financial Results and Quarterly Dividend • Revenue of $29.6 billion for the third quart…"
+          },
+          {
+            "title": "EDGAR Entity Landing Page - SEC.gov",
+            "url": "https://www.sec.gov/edgar/browse/?CIK=0001730168",
+            "query": "site:sec.gov AVGO 10-Q OR 10-K OR 8-K after:2026-08-18",
+            "snippet": "September 10 , 2026 - S-4: Registration of securities, business combinations Open documentClick to Open document Filing Open filingClick to Open filing September 10 , 2026 - 10-Q : Quarterly report f…"
+          }
+        ],
+        "counter_evidence_found": false,
+        "counter_evidence_ids": []
+      },
+      "versions": [
+        {
+          "version": 1,
+          "old_status": null,
+          "new_status": "partially_supported",
+          "old_statement": null,
+          "new_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+          "reason_for_change": "initial core claim",
+          "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+        },
+        {
+          "version": 2,
+          "old_status": "partially_supported",
+          "new_status": "unverified",
+          "old_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+          "new_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+          "reason_for_change": "status changed; confidence changed; decisive evidence changed",
+          "run_id": "brun_52f3897b90e54ec58b9f207448b1b8d0"
+        },
+        {
+          "version": 3,
+          "old_status": "unverified",
+          "new_status": "partially_supported",
+          "old_statement": "Broadcom's gross margin has remained roughly flat to slightly down sequentially despite rapid AI semiconductor revenue growth, suggesting the AI mix is not materially dilutive to gross margin at current levels",
+          "new_statement": "The company maintains high gross and operating margins, and AI semiconductor revenue is a significant and growing portion of the business. However, the provided evidence does not establish the margin characteristics of AI semiconductor revenue relative to the broader business, so the claim that margin sustainability depends on AI mix remains unverified",
+          "reason_for_change": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+          "run_id": "brun_4266dc50c87949ac91184d983e209959"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "title": "AI semiconductor revenue acceleration is the dominant growth driver",
+      "statement": "The company's growth trajectory is primarily dependent on AI semiconductor revenue, which management expects to accelerate substantially, making the durability of this demand the key decision variable for the investment case.",
+      "selected_as_core": true,
+      "why_core": "This is the only explicit growth driver named in the evidence and is central to the company's forward narrative.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Revenue growth is accelerating but earnings execution is inconsistent",
+      "statement": "Despite strong revenue growth, the company has recently missed EPS estimates, suggesting a disconnect between top-line momentum and bottom-line delivery that could pressure valuation if it persists.",
+      "selected_as_core": true,
+      "why_core": "This is a key risk to the investment case, as it directly affects earnings quality and market reaction.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Margin profile is stable but sustainability depends on AI mix",
+      "statement": "The company maintains high gross and operating margins, but the sustainability of these margins depends on the mix of AI semiconductor revenue, which may carry different margin characteristics than the broader business.",
+      "selected_as_core": true,
+      "why_core": "Margin quality is a key driver of valuation and cash flow generation, and the shift toward AI may alter the margin structure.",
+      "why_not_core": "",
+      "claim_id": null
+    },
+    {
+      "title": "Valuation is sensitive to growth durability and earnings delivery",
+      "statement": "The current valuation multiple reflects high growth expectations, making the stock sensitive to any evidence of slowing AI demand or continued earnings misses.",
+      "selected_as_core": false,
+      "why_core": "Valuation sensitivity is a critical decision variable for investors, especially given the recent negative price reactions to earnings.",
+      "why_not_core": "The evidence for valuation is limited to PE TTM and lacks forward multiples or peer comparisons, making it insufficient to form a robust core claim.",
+      "claim_id": null
+    },
+    {
+      "title": "Post-earnings price reactions indicate high market sensitivity to guidance",
+      "statement": "Significant negative price reactions following recent earnings reports suggest that the market is highly sensitive to earnings and guidance, which may increase volatility and affect cost of capital.",
+      "selected_as_core": false,
+      "why_core": "This is a key consideration for near-term trading and risk management, though less relevant for long-term fundamental value.",
+      "why_not_core": "This is an event-driven observation with limited persistence and is not a fundamental driver of long-term value.",
+      "claim_id": null
+    }
+  ],
+  "pm_consistency": {
+    "passed": false,
+    "status": "inconsistent",
+    "reasons": [
+      "PM cited unbound number 48.69"
+    ]
+  },
+  "pm_status": "inconsistent",
+  "pm_view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 48.69",
+  "integrity_violations": [
+    {
+      "code": "pm_inconsistency_blocked",
+      "reasons": [
+        "PM cited unbound number 48.69"
+      ]
+    }
+  ],
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM consistency check failed: PM cited unbound number 48.69"
+      }
+    ],
+    "poor_axes": [],
+    "headline": "Brain quality"
+  },
+  "claim_versions_changed": 3
+}

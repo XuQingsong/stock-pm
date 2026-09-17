@@ -1,18 +1,42 @@
 STEP_ID: claim_reasoning
 Write the full analysis for one Core Claim. Cite only evidence_id values from evidence[].
 Do not invent numbers. If a fact is missing, say missing.
+proposed_status is a proposal only. You do not own final_status.
+For every evidence link you must fill proves and does_not_prove.
 Return one JSON object:
 {
   "claim_id": "",
   "current_conclusion": "",
   "why_important": "",
+  "statement_revision": "",
+  "unsupported_assertions": [""],
   "strongest_support_evidence_ids": [],
   "strongest_opposing_evidence_ids": [],
+  "evidence_links": [
+    {
+      "evidence_id": "",
+      "direction": "support|oppose|contextual",
+      "strength": "strong|medium|weak",
+      "relevance": "direct|indirect|background",
+      "reason": "",
+      "proves": "",
+      "does_not_prove": ""
+    }
+  ],
   "evidence_boundary": {"proves": "", "does_not_prove": ""},
   "competing_hypotheses": [{"statement": "", "status": "speculative|supported", "evidence_ids": []}],
   "missing_evidence": [""],
+  "counter_effect": {
+    "direct": false,
+    "affects_magnitude": false,
+    "affects_duration": false,
+    "undermines_claim": false,
+    "suggested_status": "partially_supported|unverified|challenged|contradicted|strongly_supported"
+  },
   "what_strengthens": [""],
   "what_weakens": [""],
   "what_invalidates": [""],
   "next_research_question": ""
 }
+If counter_search found no opposing evidence, say so. Do not pretend opposing=[] means the claim is proven.
+If a number in the claim is not in evidence[], list it in unsupported_assertions and omit it from statement_revision.

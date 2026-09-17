@@ -76,6 +76,9 @@ def build_brain_view(
     cards = []
     for claim in core:
         links = store.list_links(claim_id=claim["claim_id"])
+        current_vid = claim.get("current_version_id")
+        if current_vid and any(link.get("claim_version_id") == current_vid for link in links):
+            links = [link for link in links if link.get("claim_version_id") == current_vid]
         support = [link for link in links if link.get("direction") == "support"]
         oppose = [link for link in links if link.get("direction") == "oppose"]
         support_ev = [_brief_evidence(evidence_index.get(str(link.get("evidence_id")))) for link in support[:3]]
@@ -85,20 +88,26 @@ def build_brain_view(
         cards.append(
             {
                 "claim_id": claim.get("claim_id"),
+                "claim_key": claim.get("claim_key"),
                 "title": claim.get("title"),
                 "statement": claim.get("statement"),
-                "status": claim.get("status"),
+                "status": claim.get("final_status") or claim.get("status"),
+                "proposed_status": claim.get("proposed_status"),
+                "final_status": claim.get("final_status") or claim.get("status"),
                 "confidence": claim.get("confidence"),
                 "importance": claim.get("importance"),
                 "time_horizon": claim.get("time_horizon"),
                 "why_it_matters": claim.get("why_it_matters"),
                 "financial_driver": claim.get("financial_driver"),
+                "why_core": claim.get("why_core"),
+                "lifecycle": claim.get("lifecycle"),
                 "conclusion": (reasoning.get("current_conclusion") if isinstance(reasoning, dict) else None) or claim.get("statement"),
                 "support_evidence": [item for item in support_ev if item],
                 "opposing_evidence": [item for item in oppose_ev if item],
                 "missing_evidence": (reasoning.get("missing_evidence") if isinstance(reasoning, dict) else None) or [],
                 "changed": len(versions) > 1,
                 "version_count": len(versions),
+                "counter_search": claim.get("counter_search") or {},
             }
         )
     news = store.list_news(symbol, run_id=run_id)
@@ -133,6 +142,8 @@ def build_brain_view(
         "company_understanding": latest.get("company_understanding") or {},
         "pm": {
             "current_view": pm.get("current_view"),
+            "status": pm.get("status") or latest.get("status"),
+            "pm_consistency": pm.get("pm_consistency") or (latest.get("audit") or {}).get("pm_consistency"),
             "decisive_variables": (pm.get("decisive_variables") or [])[:3],
             "strongest_claim_id": pm.get("strongest_claim_id"),
             "weakest_claim_id": pm.get("weakest_claim_id"),
@@ -173,6 +184,7 @@ def build_claim_detail(store: Any, research: Any, ticker: str, claim_id: str) ->
                 "direction": link.get("direction"),
                 "strength": link.get("strength"),
                 "relevance": link.get("relevance"),
+                "source_relationship": link.get("source_relationship"),
                 "reason": link.get("reason"),
                 "proves": link.get("proves"),
                 "does_not_prove": link.get("does_not_prove"),

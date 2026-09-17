@@ -2,6 +2,9 @@ STEP_ID: core_claims
 You propose Candidate Claims then compress them into Core Claims.
 Use only evidence_id values from evidence[]. Do not invent facts or numbers.
 If evidence is too thin, return fewer claims or an empty core list and explain the gap.
+A Core Claim is a decision variable, not a restatement of a reported number.
+Prefer: growth durability, structural vs cyclical margins, demand continuation, customer concentration, valuation sensitivity.
+Facts such as "revenue grew X%" or "margin expanded to Y%" belong in Evidence, not Core Claims.
 Return one JSON object:
 {
   "candidates": [
@@ -9,6 +12,8 @@ Return one JSON object:
       "title": "",
       "statement": "",
       "claim_type": "structural|operating|valuation|event",
+      "claim_subject": "",
+      "claim_dimension": "growth_duration|structural_vs_cyclical|customer_concentration|margin_quality|valuation_sensitivity|decision_variable",
       "why_it_matters": "",
       "financial_driver": "",
       "time_horizon": "short|medium|long",
@@ -17,10 +22,13 @@ Return one JSON object:
       "valuation_relevance": "high|medium|low",
       "persistence": "high|medium|low",
       "testability": "high|medium|low",
+      "why_core": "",
+      "why_not_core": "",
       "evidence_boundary": "what the cited evidence shows, and what it does not show",
       "supporting_evidence_ids": [],
       "opposing_evidence_ids": [],
-      "missing_evidence": [""]
+      "missing_evidence": [""],
+      "counter_research_questions": ["", ""]
     }
   ],
   "core": [
@@ -28,7 +36,9 @@ Return one JSON object:
       "title": "",
       "statement": "",
       "claim_type": "structural|operating|valuation|event",
-      "status": "emerging|strongly_supported|partially_supported|unverified|challenged",
+      "claim_subject": "",
+      "claim_dimension": "growth_duration|structural_vs_cyclical|customer_concentration|margin_quality|valuation_sensitivity|decision_variable",
+      "proposed_status": "emerging|partially_supported|unverified|challenged",
       "importance": "high|medium|low",
       "confidence": "high|medium|low",
       "time_horizon": "short|medium|long",
@@ -38,14 +48,15 @@ Return one JSON object:
       "evidence_boundary": "what the cited evidence shows, and what it does not show",
       "supporting_evidence_ids": [],
       "opposing_evidence_ids": [],
-      "missing_evidence": [""]
+      "missing_evidence": [""],
+      "counter_research_questions": ["", ""]
     }
   ],
-  "rejected": [{"title": "", "why_not_core": ""}],
+  "rejected": [{"title": "", "statement": "", "why_not_core": ""}],
   "insufficient_reason": null
 }
-Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id.
-Do not write ticker-specific canned claims. Derive from the evidence and financials provided.
-A Core Claim is not a restatement of a reported number. It must have why_it_matters, uncertainty, valuation_relevance, and an evidence boundary (what the evidence proves and does not prove).
-Use the last ~year of 10-Q / 10-K / earnings-release evidence when forming claims. Cite those evidence_id values.
+Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id from evidence[].
+Do not write ticker-specific canned claims. Derive from the evidence provided.
+Do not put unverified numbers in the statement. If a number is not in evidence[], omit it.
+Every core claim needs at least two counter_research_questions that could falsify it.
 If you cannot form a credible core claim, core=[] and insufficient_reason must be a plain sentence.
