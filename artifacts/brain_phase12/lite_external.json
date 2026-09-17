@@ -1,9 +1,9 @@
 {
   "ticker": "LITE",
   "keys_present": {
-    "tavily": false,
-    "exa": false,
-    "fred": false,
+    "tavily": true,
+    "exa": true,
+    "fred": true,
     "alpha_vantage": true,
     "llm": true,
     "benzinga": false
@@ -16,114 +16,161 @@
   ],
   "claim_queries": [
     {
-      "query": "optical component supply chain constraints indium phosphide 2026",
+      "query": "Coherent Innolight Eoptolink datacom transceiver demand outlook",
+      "query_type": "customer",
+      "providers": [
+        "exa"
+      ],
+      "claim_title": "Sequential revenue acceleration through FY2026",
+      "entity": "Datacom transceiver module makers"
+    },
+    {
+      "query": "laser chip supply chain constraints photonics 2026",
       "query_type": "supplier",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-      "entity": null
+      "entity": "Semiconductor laser chip suppliers and foundries"
     },
     {
-      "query": "Lumentum customer orders datacom transceiver 2026",
+      "query": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink) LITE customer demand OR capex OR supply",
       "query_type": "customer",
       "providers": [
-        "duckduckgo"
-      ],
-      "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-      "entity": null
-    },
-    {
-      "query": "Datacom hyperscaler customers (e.g., cloud service providers) LITE customer demand OR capex OR supply",
-      "query_type": "customer",
-      "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": null,
-      "entity": "Datacom hyperscaler customers (e.g., cloud service providers)"
+      "entity": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink)"
     },
     {
-      "query": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.) LITE customer demand OR capex OR supply",
-      "query_type": "customer",
+      "query": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta) LITE market demand OR capex OR supply",
+      "query_type": "related_entity",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": null,
-      "entity": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.)"
+      "entity": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta)"
     },
     {
-      "query": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei) LITE customer demand OR capex OR supply",
-      "query_type": "customer",
+      "query": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell) LITE technology demand OR capex OR supply",
+      "query_type": "related_entity",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": null,
-      "entity": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei)"
+      "entity": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell)"
+    },
+    {
+      "query": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE) LITE customer demand OR capex OR supply",
+      "query_type": "customer",
+      "providers": [
+        "exa"
+      ],
+      "claim_title": null,
+      "entity": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE)"
+    },
+    {
+      "query": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink) LITE competitor demand OR capex OR supply",
+      "query_type": "related_entity",
+      "providers": [
+        "tavily"
+      ],
+      "claim_title": null,
+      "entity": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink)"
+    },
+    {
+      "query": "Semiconductor laser chip suppliers and foundries LITE supplier demand OR capex OR supply",
+      "query_type": "supplier",
+      "providers": [
+        "tavily"
+      ],
+      "claim_title": null,
+      "entity": "Semiconductor laser chip suppliers and foundries"
     }
   ],
   "related_entities": [
     {
       "name": "Hyperscale cloud providers (e.g., Amazon, Microsoft, Google, Meta)",
       "relation": "customer",
-      "why": "Their datacenter capex and optical transceiver demand directly drive Lumentum's revenue; changes in their spending plans could alter growth claims."
+      "why": "Their datacenter capex and optical transceiver demand directly drive Lumentum's optical communications revenue."
     },
     {
       "name": "Coherent Corp. (II-VI)",
       "relation": "competitor",
-      "why": "A major competitor in optical components and lasers; their capacity, pricing, and technology moves could impact Lumentum's market share and margins."
+      "why": "Competes in optical components and transceivers; their capacity, pricing, and technology shifts can affect Lumentum's market share."
     },
     {
-      "name": "Cisco Systems (Acacia Communications)",
-      "relation": "competitor",
-      "why": "Competes in coherent optical modules and components; their product cycles and wins could affect Lumentum's positioning."
+      "name": "Fabrinet",
+      "relation": "supplier",
+      "why": "Major contract manufacturer for optical modules; their utilization and lead times can impact Lumentum's product delivery and margins."
     },
     {
       "name": "NVIDIA",
       "relation": "technology",
-      "why": "GPU and AI networking demand influences optical interconnect requirements; NVIDIA's roadmap could shift demand for Lumentum's products."
+      "why": "Their GPU and networking roadmaps influence datacenter interconnect speeds and optical transceiver demand."
     },
     {
       "name": "Broadcom",
-      "relation": "supplier",
-      "why": "Supplies switch chips and optical components; their technology transitions (e.g., 800G/1.6T) could affect Lumentum's product mix and demand."
+      "relation": "technology",
+      "why": "Their switch silicon and optical PHY technologies set the pace for datacenter optical interconnect requirements."
     },
     {
-      "name": "Telecom equipment makers (e.g., Nokia, Ericsson, Ciena)",
+      "name": "Cisco Systems",
       "relation": "customer",
-      "why": "They purchase optical components for network infrastructure; their spending and technology adoption impact Lumentum's telecom segment."
+      "why": "A major networking equipment vendor that integrates optical components; their demand and inventory cycles affect Lumentum."
     },
     {
-      "name": "Indium phosphide and gallium arsenide wafer suppliers",
-      "relation": "supplier",
-      "why": "Key raw materials for laser and photonic chips; supply constraints or price changes could affect Lumentum's production and costs."
+      "name": "Ciena",
+      "relation": "customer",
+      "why": "Optical networking systems vendor that purchases components; their sales and deployment trends signal demand."
     },
     {
-      "name": "AI/ML datacenter buildout",
+      "name": "Telecom carriers (e.g., AT&T, Verizon, China Mobile)",
+      "relation": "customer",
+      "why": "Their 5G and fiber buildouts drive demand for Lumentum's telecom optical products."
+    },
+    {
+      "name": "Apple",
+      "relation": "customer",
+      "why": "Lumentum supplies 3D sensing lasers for consumer devices; Apple's product cycles and design changes can significantly impact revenue."
+    },
+    {
+      "name": "ams OSRAM",
+      "relation": "competitor",
+      "why": "Competes in 3D sensing and laser components; their wins or losses can shift Lumentum's market position."
+    },
+    {
+      "name": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink)",
+      "relation": "customer",
+      "why": "They buy datacom lasers and components; their shipment volumes and inventory levels directly affect Lumentum's datacom laser ramp and margin mix."
+    },
+    {
+      "name": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta)",
       "relation": "market",
-      "why": "The surge in AI training and inference drives demand for high-speed optical interconnects; shifts in AI investment could change Lumentum's growth trajectory."
-    },
-    {
-      "name": "U.S. export controls on optical components",
-      "relation": "market",
-      "why": "Regulatory changes could restrict sales to certain customers or regions, impacting revenue and supply chain."
-    },
-    {
-      "name": "3D sensing market (e.g., Apple)",
-      "relation": "customer",
-      "why": "Lumentum supplies VCSELs for 3D sensing; demand from consumer electronics could affect the photonics segment."
-    },
-    {
-      "name": "Datacom hyperscaler customers (e.g., cloud service providers)",
-      "relation": "customer",
-      "why": "Their AI/cloud infrastructure capex and datacom transceiver demand directly drive Lumentum's Datacom laser shipments, which underpin the revenue ramp and margi…"
-    },
-    {
-      "name": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.)",
-      "relation": "customer",
-      "why": "They purchase Lumentum's lasers and components; their order trends and inventory levels can signal the durability of the Datacom ramp."
+      "why": "Hyperscaler AI/cloud capex drives datacom optical component demand; changes in capex plans could alter the durability of Lumentum's revenue acceleration."
     }
   ],
   "providers": {
+    "tavily": {
+      "status": "ok",
+      "hit_count": 33,
+      "usable_count": 33,
+      "high_quality_count": 7,
+      "full_text_count": 33,
+      "dated_count": 0,
+      "error": null,
+      "query_count": 7
+    },
+    "exa": {
+      "status": "ok",
+      "hit_count": 48,
+      "usable_count": 48,
+      "high_quality_count": 0,
+      "full_text_count": 48,
+      "dated_count": 48,
+      "error": null,
+      "query_count": 10
+    },
     "alpha_vantage": {
       "status": "partial",
       "hit_count": 20,
@@ -135,207 +182,193 @@
       "query_count": 2
     },
     "fred": {
-      "status": "partial",
+      "status": "ok",
       "hit_count": 11,
       "usable_count": 11,
       "high_quality_count": 11,
       "full_text_count": 11,
       "dated_count": 11,
-      "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
-      "query_count": 1
-    },
-    "duckduckgo": {
-      "status": "ok",
-      "hit_count": 35,
-      "usable_count": 35,
-      "high_quality_count": 4,
-      "full_text_count": 0,
-      "dated_count": 0,
       "error": null,
-      "query_count": 10
-    },
-    "tavily": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "TAVILY_API_KEY missing",
-      "query_count": 0
-    },
-    "exa": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "EXA_API_KEY missing",
-      "query_count": 0
+      "query_count": 1
     }
   },
   "report": {
     "official_documents": 19,
     "independent_news": 0,
-    "industry_sources": 17,
-    "customer_sources": 4,
-    "supplier_sources": 5,
-    "dated_recent_items": 21,
-    "undated_or_background_items": 42,
-    "full_text_items": 19,
+    "industry_sources": 56,
+    "customer_sources": 10,
+    "supplier_sources": 10,
+    "dated_recent_items": 58,
+    "undated_or_background_items": 43,
+    "full_text_items": 83,
     "tier1_count": 19,
     "tier2_count": 0,
-    "tier3_count": 0,
-    "tier4_count": 42,
-    "tier5_count": 2,
+    "tier3_count": 1,
+    "tier4_count": 74,
+    "tier5_count": 7,
     "related_entities": [
       {
         "name": "Hyperscale cloud providers (e.g., Amazon, Microsoft, Google, Meta)",
         "relation": "customer",
-        "why": "Their datacenter capex and optical transceiver demand directly drive Lumentum's revenue; changes in their spending plans could alter growth claims."
+        "why": "Their datacenter capex and optical transceiver demand directly drive Lumentum's optical communications revenue."
       },
       {
         "name": "Coherent Corp. (II-VI)",
         "relation": "competitor",
-        "why": "A major competitor in optical components and lasers; their capacity, pricing, and technology moves could impact Lumentum's market share and margins."
+        "why": "Competes in optical components and transceivers; their capacity, pricing, and technology shifts can affect Lumentum's market share."
       },
       {
-        "name": "Cisco Systems (Acacia Communications)",
-        "relation": "competitor",
-        "why": "Competes in coherent optical modules and components; their product cycles and wins could affect Lumentum's positioning."
+        "name": "Fabrinet",
+        "relation": "supplier",
+        "why": "Major contract manufacturer for optical modules; their utilization and lead times can impact Lumentum's product delivery and margins."
       },
       {
         "name": "NVIDIA",
         "relation": "technology",
-        "why": "GPU and AI networking demand influences optical interconnect requirements; NVIDIA's roadmap could shift demand for Lumentum's products."
+        "why": "Their GPU and networking roadmaps influence datacenter interconnect speeds and optical transceiver demand."
       },
       {
         "name": "Broadcom",
-        "relation": "supplier",
-        "why": "Supplies switch chips and optical components; their technology transitions (e.g., 800G/1.6T) could affect Lumentum's product mix and demand."
+        "relation": "technology",
+        "why": "Their switch silicon and optical PHY technologies set the pace for datacenter optical interconnect requirements."
       },
       {
-        "name": "Telecom equipment makers (e.g., Nokia, Ericsson, Ciena)",
+        "name": "Cisco Systems",
         "relation": "customer",
-        "why": "They purchase optical components for network infrastructure; their spending and technology adoption impact Lumentum's telecom segment."
+        "why": "A major networking equipment vendor that integrates optical components; their demand and inventory cycles affect Lumentum."
       },
       {
-        "name": "Indium phosphide and gallium arsenide wafer suppliers",
-        "relation": "supplier",
-        "why": "Key raw materials for laser and photonic chips; supply constraints or price changes could affect Lumentum's production and costs."
+        "name": "Ciena",
+        "relation": "customer",
+        "why": "Optical networking systems vendor that purchases components; their sales and deployment trends signal demand."
       },
       {
-        "name": "AI/ML datacenter buildout",
+        "name": "Telecom carriers (e.g., AT&T, Verizon, China Mobile)",
+        "relation": "customer",
+        "why": "Their 5G and fiber buildouts drive demand for Lumentum's telecom optical products."
+      },
+      {
+        "name": "Apple",
+        "relation": "customer",
+        "why": "Lumentum supplies 3D sensing lasers for consumer devices; Apple's product cycles and design changes can significantly impact revenue."
+      },
+      {
+        "name": "ams OSRAM",
+        "relation": "competitor",
+        "why": "Competes in 3D sensing and laser components; their wins or losses can shift Lumentum's market position."
+      },
+      {
+        "name": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink)",
+        "relation": "customer",
+        "why": "They buy datacom lasers and components; their shipment volumes and inventory levels directly affect Lumentum's datacom laser ramp and margin mix."
+      },
+      {
+        "name": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta)",
         "relation": "market",
-        "why": "The surge in AI training and inference drives demand for high-speed optical interconnects; shifts in AI investment could change Lumentum's growth trajectory."
-      },
-      {
-        "name": "U.S. export controls on optical components",
-        "relation": "market",
-        "why": "Regulatory changes could restrict sales to certain customers or regions, impacting revenue and supply chain."
-      },
-      {
-        "name": "3D sensing market (e.g., Apple)",
-        "relation": "customer",
-        "why": "Lumentum supplies VCSELs for 3D sensing; demand from consumer electronics could affect the photonics segment."
-      },
-      {
-        "name": "Datacom hyperscaler customers (e.g., cloud service providers)",
-        "relation": "customer",
-        "why": "Their AI/cloud infrastructure capex and datacom transceiver demand directly drive Lumentum's Datacom laser shipments, which underpin the revenue ramp and margi…"
-      },
-      {
-        "name": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.)",
-        "relation": "customer",
-        "why": "They purchase Lumentum's lasers and components; their order trends and inventory levels can signal the durability of the Datacom ramp."
+        "why": "Hyperscaler AI/cloud capex drives datacom optical component demand; changes in capex plans could alter the durability of Lumentum's revenue acceleration."
       }
     ],
     "claim_queries": [
       {
-        "query": "optical component supply chain constraints indium phosphide 2026",
+        "query": "Coherent Innolight Eoptolink datacom transceiver demand outlook",
+        "query_type": "customer",
+        "providers": [
+          "exa"
+        ],
+        "claim_title": "Sequential revenue acceleration through FY2026",
+        "entity": "Datacom transceiver module makers"
+      },
+      {
+        "query": "laser chip supply chain constraints photonics 2026",
         "query_type": "supplier",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-        "entity": null
+        "entity": "Semiconductor laser chip suppliers and foundries"
       },
       {
-        "query": "Lumentum customer orders datacom transceiver 2026",
+        "query": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink) LITE customer demand OR capex OR supply",
         "query_type": "customer",
         "providers": [
-          "duckduckgo"
-        ],
-        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-        "entity": null
-      },
-      {
-        "query": "Datacom hyperscaler customers (e.g., cloud service providers) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
-        "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": null,
-        "entity": "Datacom hyperscaler customers (e.g., cloud service providers)"
+        "entity": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink)"
       },
       {
-        "query": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
+        "query": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta) LITE market demand OR capex OR supply",
+        "query_type": "related_entity",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": null,
-        "entity": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.)"
+        "entity": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta)"
       },
       {
-        "query": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
+        "query": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell) LITE technology demand OR capex OR supply",
+        "query_type": "related_entity",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": null,
-        "entity": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei)"
+        "entity": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell)"
+      },
+      {
+        "query": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE) LITE customer demand OR capex OR supply",
+        "query_type": "customer",
+        "providers": [
+          "exa"
+        ],
+        "claim_title": null,
+        "entity": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE)"
+      },
+      {
+        "query": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink) LITE competitor demand OR capex OR supply",
+        "query_type": "related_entity",
+        "providers": [
+          "tavily"
+        ],
+        "claim_title": null,
+        "entity": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink)"
+      },
+      {
+        "query": "Semiconductor laser chip suppliers and foundries LITE supplier demand OR capex OR supply",
+        "query_type": "supplier",
+        "providers": [
+          "tavily"
+        ],
+        "claim_title": null,
+        "entity": "Semiconductor laser chip suppliers and foundries"
       }
     ],
     "query_results": [
       {
-        "query": "Lumentum Holdings latest news",
-        "query_type": "company_news",
-        "provider": "duckduckgo",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 1,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Lumentum earnings call transcript",
+        "query": "Lumentum latest earnings call transcript",
         "query_type": "company_earnings",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": null
-      },
-      {
-        "query": "Lumentum investor relations press releases",
-        "query_type": "company_official",
-        "provider": "duckduckgo",
-        "hit_count": 5,
-        "usable_count": 2,
         "high_quality_count": 2,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "optical transceiver market trends 2025",
-        "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "query": "Lumentum investor relations news",
+        "query_type": "company_official",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 4,
+        "high_quality_count": 4,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Lumentum recent news",
+        "query_type": "company_news",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -344,9 +377,31 @@
         "entity": null
       },
       {
-        "query": "hyperscaler datacenter capex 2025 optical components",
+        "query": "Lumentum recent news",
+        "query_type": "company_news",
+        "provider": "exa",
+        "hit_count": 3,
+        "usable_count": 3,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "optical communications industry trends 2025",
         "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "provider": "tavily",
+        "hit_count": 3,
+        "usable_count": 3,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "optical communications industry trends 2025",
+        "query_type": "industry_news",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -355,67 +410,327 @@
         "entity": null
       },
       {
-        "query": "optical component supply chain constraints indium phosphide 2026",
+        "query": "NVIDIA networking roadmap optical interconnects",
+        "query_type": "industry_news",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "NVIDIA"
+      },
+      {
+        "query": "NVIDIA networking roadmap optical interconnects",
+        "query_type": "industry_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "NVIDIA"
+      },
+      {
+        "query": "Broadcom optical PHY datacenter switch 2025",
+        "query_type": "industry_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Broadcom"
+      },
+      {
+        "query": "Coherent Innolight Eoptolink datacom transceiver demand outlook",
+        "query_type": "customer",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Sequential revenue acceleration through FY2026",
+        "entity": "Datacom transceiver module makers"
+      },
+      {
+        "query": "laser chip supply chain constraints photonics 2026",
         "query_type": "supplier",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": "Margin recovery driven by Datacom laser mix and utilization",
-        "entity": null
+        "entity": "Semiconductor laser chip suppliers and foundries"
       },
       {
-        "query": "Lumentum customer orders datacom transceiver 2026",
+        "query": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink) LITE customer demand OR capex OR supply",
         "query_type": "customer",
-        "provider": "duckduckgo",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 2,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink)"
+      },
+      {
+        "query": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta) LITE market demand OR capex OR supply",
+        "query_type": "related_entity",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta)"
+      },
+      {
+        "query": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell) LITE technology demand OR capex OR supply",
+        "query_type": "related_entity",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell)"
+      },
+      {
+        "query": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE) LITE customer demand OR capex OR supply",
+        "query_type": "customer",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 4,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE)"
+      },
+      {
+        "query": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink) LITE competitor demand OR capex OR supply",
+        "query_type": "related_entity",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink)"
+      },
+      {
+        "query": "Semiconductor laser chip suppliers and foundries LITE supplier demand OR capex OR supply",
+        "query_type": "supplier",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
         "high_quality_count": 1,
         "status": "ok",
-        "claim_title": "FY2027 Q1 guidance implies continued sequential growth",
-        "entity": null
-      },
-      {
-        "query": "Datacom hyperscaler customers (e.g., cloud service providers) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
-        "provider": "duckduckgo",
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "status": "ok",
         "claim_title": null,
-        "entity": "Datacom hyperscaler customers (e.g., cloud service providers)"
-      },
-      {
-        "query": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
-        "provider": "duckduckgo",
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.)"
-      },
-      {
-        "query": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei) LITE customer demand OR capex OR supply",
-        "query_type": "customer",
-        "provider": "duckduckgo",
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": null,
-        "entity": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei)"
+        "entity": "Semiconductor laser chip suppliers and foundries"
       }
     ],
-    "duplicates_removed": 10,
-    "raw_count_before_dedupe": 73,
+    "duplicates_removed": 17,
+    "raw_count_before_dedupe": 118,
     "coverage_gaps": [
       "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
     ],
     "providers": {
+      "tavily": {
+        "provider": "tavily",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Lumentum latest earnings call transcript",
+            "query_type": "company_earnings",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 2,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1229
+          },
+          {
+            "query": "Lumentum investor relations news",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 4,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 3362
+          },
+          {
+            "query": "Lumentum recent news",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1262
+          },
+          {
+            "query": "optical communications industry trends 2025",
+            "query_type": "industry_news",
+            "hit_count": 3,
+            "usable_count": 3,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 888
+          },
+          {
+            "query": "NVIDIA networking roadmap optical interconnects",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 687
+          },
+          {
+            "query": "Optical component competitors (II-VI/Coherent, Fabrinet, Accelink) LITE competitor demand OR capex OR supply",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1733
+          },
+          {
+            "query": "Semiconductor laser chip suppliers and foundries LITE supplier demand OR capex OR supply",
+            "query_type": "supplier",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2867
+          }
+        ],
+        "hit_count": 33,
+        "usable_count": 33,
+        "high_quality_count": 7,
+        "full_text_count": 33,
+        "dated_count": 0,
+        "error": null
+      },
+      "exa": {
+        "provider": "exa",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Lumentum recent news",
+            "query_type": "company_news",
+            "hit_count": 3,
+            "usable_count": 3,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2511
+          },
+          {
+            "query": "optical communications industry trends 2025",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1690
+          },
+          {
+            "query": "NVIDIA networking roadmap optical interconnects",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1931
+          },
+          {
+            "query": "Broadcom optical PHY datacenter switch 2025",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 4167
+          },
+          {
+            "query": "Coherent Innolight Eoptolink datacom transceiver demand outlook",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1283
+          },
+          {
+            "query": "laser chip supply chain constraints photonics 2026",
+            "query_type": "supplier",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1233
+          },
+          {
+            "query": "Datacom transceiver module makers (e.g., Coherent, Innolight, Eoptolink) LITE customer demand OR capex OR supply",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 881
+          },
+          {
+            "query": "Hyperscale cloud capex (Microsoft, Amazon, Google, Meta) LITE market demand OR capex OR supply",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1465
+          },
+          {
+            "query": "AI accelerator and networking silicon vendors (NVIDIA, Broadcom, Marvell) LITE technology demand OR capex OR supply",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1306
+          },
+          {
+            "query": "Telecom equipment vendors (Ciena, Nokia, Huawei, ZTE) LITE customer demand OR capex OR supply",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1262
+          }
+        ],
+        "hit_count": 48,
+        "usable_count": 48,
+        "high_quality_count": 0,
+        "full_text_count": 48,
+        "dated_count": 48,
+        "error": null
+      },
       "alpha_vantage": {
         "provider": "alpha_vantage",
         "status": "partial",
@@ -450,7 +765,7 @@
       },
       "fred": {
         "provider": "fred",
-        "status": "partial",
+        "status": "ok",
         "queries": [
           {
             "query": "macro_series",
@@ -458,8 +773,8 @@
             "hit_count": 11,
             "usable_count": 11,
             "high_quality_count": 11,
-            "status": "partial",
-            "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
+            "status": "ok",
+            "error": null,
             "latency_ms": null
           }
         ],
@@ -468,425 +783,335 @@
         "high_quality_count": 11,
         "full_text_count": 11,
         "dated_count": 11,
-        "error": "FRED_API_KEY missing; used keyless CSV fallback where possible"
-      },
-      "duckduckgo": {
-        "provider": "duckduckgo",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Lumentum Holdings latest news",
-            "query_type": "company_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 512
-          },
-          {
-            "query": "Lumentum earnings call transcript",
-            "query_type": "company_earnings",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 541
-          },
-          {
-            "query": "Lumentum investor relations press releases",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 2,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 616
-          },
-          {
-            "query": "optical transceiver market trends 2025",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 634
-          },
-          {
-            "query": "hyperscaler datacenter capex 2025 optical components",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 586
-          },
-          {
-            "query": "optical component supply chain constraints indium phosphide 2026",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 802
-          },
-          {
-            "query": "Lumentum customer orders datacom transceiver 2026",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 612
-          },
-          {
-            "query": "Datacom hyperscaler customers (e.g., cloud service providers) LITE customer demand OR capex OR supply",
-            "query_type": "customer",
-            "hit_count": 0,
-            "usable_count": 0,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 39
-          },
-          {
-            "query": "Datacom transceiver module suppliers (e.g., Innolight, Coherent, etc.) LITE customer demand OR capex OR supply",
-            "query_type": "customer",
-            "hit_count": 0,
-            "usable_count": 0,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 41
-          },
-          {
-            "query": "Telecom equipment vendors (e.g., Ciena, Nokia, Huawei) LITE customer demand OR capex OR supply",
-            "query_type": "customer",
-            "hit_count": 0,
-            "usable_count": 0,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 41
-          }
-        ],
-        "hit_count": 35,
-        "usable_count": 35,
-        "high_quality_count": 4,
-        "full_text_count": 0,
-        "dated_count": 0,
         "error": null
-      },
-      "tavily": {
-        "provider": "tavily",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "TAVILY_API_KEY missing"
-      },
-      "exa": {
-        "provider": "exa",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "EXA_API_KEY missing"
       }
     },
     "tavily_vs_exa": {
-      "tavily_status": "not_configured",
-      "exa_status": "not_configured",
+      "tavily_status": "ok",
+      "exa_status": "ok",
       "tavily": {
-        "hit_count": 0,
+        "hit_count": 27,
         "dated_recent": 0,
-        "full_text": 0,
-        "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
-        "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "full_text": 27,
+        "tier1_2": 3,
+        "news": 11,
+        "industry": 16,
+        "customer_supplier": 10,
+        "unique_domains": [
+          "247wallst.com",
+          "acquisition.gov",
+          "artificialintelligenceact.eu",
+          "brookings.edu",
+          "congress.gov",
+          "crn.com",
+          "fibre-systems.com",
+          "finance.yahoo.com",
+          "fool.com",
+          "fortunebusinessinsights.com",
+          "gminsights.com",
+          "grandviewresearch.com",
+          "hoover.org",
+          "investing.com",
+          "investor.lumentum.com",
+          "medium.com",
+          "precedenceresearch.com",
+          "quiverquant.com",
+          "simplywall.st",
+          "stocktitan.net"
+        ],
+        "avg_full_text_chars": 18950
       },
       "exa": {
-        "hit_count": 0,
-        "dated_recent": 0,
-        "full_text": 0,
+        "hit_count": 42,
+        "dated_recent": 40,
+        "full_text": 42,
         "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
-        "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "news": 17,
+        "industry": 40,
+        "customer_supplier": 25,
+        "unique_domains": [
+          "247wallst.com",
+          "404kresearch.substack.com",
+          "ainvest.com",
+          "americanbankingnews.com",
+          "asiatimes.com",
+          "bingx.com",
+          "c-light.com",
+          "cnbizinsight.com",
+          "convergedigest.com",
+          "developer.nvidia.com",
+          "druckfin.com",
+          "eastasiabrief.com",
+          "edgewisely.com",
+          "en.sedaily.com",
+          "evidinvest.com",
+          "fool.com",
+          "globenewswire.com",
+          "gminsights.com",
+          "invezz.com",
+          "lightreading.com"
+        ],
+        "avg_full_text_chars": 12881
       },
-      "better_for_news": "none",
-      "better_for_industry": "none",
-      "better_for_customer_supplier": "none",
-      "better_for_full_text": "none",
+      "better_for_news": "exa",
+      "better_for_industry": "exa",
+      "better_for_customer_supplier": "exa",
+      "better_for_full_text": "tavily",
       "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
     },
     "alphavantage_overview": {
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 7,
+    "evidence_extracted": 24,
     "window_days": 30,
     "valuable_domains": [
+      "congress.gov",
       "fred.stlouisfed.org",
       "investor.lumentum.com",
+      "lightreading.com",
       "sec.gov"
     ]
   },
-  "duplicates_removed": 10,
-  "raw_count": 73,
-  "evidence_extracted": 7,
-  "news_hits": 19,
+  "duplicates_removed": 17,
+  "raw_count": 118,
+  "evidence_extracted": 24,
+  "news_hits": 56,
   "sample_documents": [
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "sg.finance.yahoo.com",
+      "source_family": "invezz.com",
       "source_tier": 4,
-      "title": "What Does Lumentum Holdings (LITE) Mean For Investors After The LITEON Token Launch?",
-      "url": "https://sg.finance.yahoo.com/news/does-lumentum-holdings-lite-mean-043012564.html",
-      "source_domain": "sg.finance.yahoo.com",
-      "published_at": "2026-09-15",
+      "title": "Lumentum stock rises as Wall Street bets on AI optical networks",
+      "url": "https://invezz.com/news/2026/09/16/lumentum-stock-rises-as-wall-street-bets-on-ai-optical-networks/",
+      "source_domain": "invezz.com",
+      "published_at": "2026-09-16",
       "is_dated": true,
       "is_full_text": true,
-      "query": "LITE news",
+      "query": "Lumentum recent news",
       "query_type": "company_news",
-      "text_chars": 3675
+      "text_chars": 4777
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "gurufocus.com",
+      "source_family": "americanbankingnews.com",
       "source_tier": 4,
-      "title": "Lumentum Holdings Inc (LITE) Shares Fall 9.9% -- GF Value Says Still Overvalued",
-      "url": "https://www.gurufocus.com/news/9080218/lumentum-holdings-inc-lite-shares-fall-99-gf-value-says-still-overvalued",
-      "source_domain": "gurufocus.com",
-      "published_at": "2026-09-15",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "investing.com",
-      "source_tier": 4,
-      "title": "Lumentum at Citi’s 2026 Global TMT Conference: ai demand lifts outlook",
-      "url": "https://www.investing.com/news/transcripts/lumentum-at-citis-2026-global-tmt-conference-ai-demand-lifts-outlook-93CH-4894771",
-      "source_domain": "investing.com",
-      "published_at": "2026-09-10",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
-      "source_tier": 4,
-      "title": "Lumentum President Sells 1,500 Shares",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/lumentum-president-sells-1-500-131901228.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-09-09",
+      "title": "Corient Private Wealth LP Raises Stock Holdings in Lumentum Holdings Inc. $LITE - American Market News",
+      "url": "https://www.americanbankingnews.com/2026/09/17/corient-private-wealth-lp-raises-stock-holdings-in-lumentum-holdings-inc-lite.html",
+      "source_domain": "americanbankingnews.com",
+      "published_at": "2026-09-17",
       "is_dated": true,
       "is_full_text": true,
-      "query": "LITE news",
+      "query": "Lumentum recent news",
       "query_type": "company_news",
-      "text_chars": 4872
+      "text_chars": 7866
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "gminsights.com",
       "source_tier": 4,
-      "title": "Stewart Asset Management: AI Infrastructure Drives Lumentum Holdings’ (LITE) Potential",
-      "url": "https://finance.yahoo.com/technology/ai/articles/stewart-asset-management-ai-infrastructure-135551486.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-09-08",
+      "title": "Optical Communication and Networking Market, 2035 Report",
+      "url": "https://www.gminsights.com/industry-analysis/optical-communication-and-networking-market",
+      "source_domain": "gminsights.com",
+      "published_at": "2026-09-01",
       "is_dated": true,
       "is_full_text": true,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 3708
+      "query": "optical communications industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 24000
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "gurufocus.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "thebusinessresearchcompany.com",
       "source_tier": 4,
-      "title": "Lumentum Holdings Inc (LITE) Insider Sells 1,500 Shares as Stock Trades at 5.2x GF Value",
-      "url": "https://www.gurufocus.com/news/9069371/lumentum-holdings-inc-lite-insider-sells-1500-shares-as-stock-trades-at-52x-gf-value",
-      "source_domain": "gurufocus.com",
-      "published_at": "2026-09-06",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "investing.com",
-      "source_tier": 4,
-      "title": "Lumentum president Yuen sells $1.37m in Lumentum stock",
-      "url": "https://www.investing.com/news/insider-trading-news/lumentum-president-yuen-sells-137m-in-lumentum-stock-93CH-4885289",
-      "source_domain": "investing.com",
-      "published_at": "2026-09-02",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
-      "source_tier": 4,
-      "title": "Lumentum Climbs 4% as the AI Optics Trade Extends a Second Session, Coherent and Applied Optoelectronics Drift",
-      "url": "https://finance.yahoo.com/markets/stocks/articles/lumentum-climbs-4-ai-optics-163400583.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-08-29",
+      "title": "Optical Networking Market Growth Forecast Report 2026-2030",
+      "url": "https://www.thebusinessresearchcompany.com/report/optical-networking-global-market-report",
+      "source_domain": "thebusinessresearchcompany.com",
+      "published_at": "2026-09-19",
       "is_dated": true,
       "is_full_text": true,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 4333
+      "query": "optical communications industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 22894
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "investing.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "globenewswire.com",
       "source_tier": 4,
-      "title": "Lumentum Holdings president Wupen Yuen sells $479,330 in shares",
-      "url": "https://www.investing.com/news/insider-trading-news/lumentum-holdings-president-wupen-yuen-sells-479330-in-shares-93CH-4880459",
-      "source_domain": "investing.com",
-      "published_at": "2026-08-28",
+      "title": "Global Optical Transceiver Market to Reach $34.4 Billion by",
+      "url": "https://www.globenewswire.com/news-release/2026/08/31/3353143/0/en/global-optical-transceiver-market-to-reach-34-4-billion-by-2031-driven-by-ai-workload-and-hyperscale-data-center-expansion.html",
+      "source_domain": "globenewswire.com",
+      "published_at": "2026-08-31",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
+      "is_full_text": true,
+      "query": "optical communications industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 6645
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "qz.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "c-light.com",
       "source_tier": 4,
-      "title": "Lumentum Holdings Inc. (LITE) Hit a 52 Week High, Can the Run Continue?",
-      "url": "https://qz.com/lumentum-holdings-inc-lite-hit-a-52-week-high-can-the-run-continue",
-      "source_domain": "qz.com",
-      "published_at": "2026-08-25",
+      "title": "Data Center Optical Components Market丨C-LIGHT",
+      "url": "https://www.c-light.com/news/details/Data_Center_Optical_Components_Market.html",
+      "source_domain": "c-light.com",
+      "published_at": "2026-09-13",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
+      "is_full_text": true,
+      "query": "optical communications industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 14837
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "stocktitan.net",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "developer.nvidia.com",
       "source_tier": 4,
-      "title": "Lumentum (NASDAQ: LITE) officer plans new stock sale after $2.8M trades",
-      "url": "https://www.stocktitan.net/sec-filings/LITE/144-lumentum-holdings-inc-sec-filing-a0eea4e3f409.html",
-      "source_domain": "stocktitan.net",
-      "published_at": "2026-08-25",
+      "title": "Giga-Scale AI and the Ethernet Evolution: How Spectrum-X Ethernet Rewrites the Rules | NVIDIA Technical Blog",
+      "url": "https://developer.nvidia.com/blog/giga-scale-ai-ethernet-evolution-spectrum-x-ethernet-rewrites-rules/",
+      "source_domain": "developer.nvidia.com",
+      "published_at": "2026-08-24",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
+      "is_full_text": true,
+      "query": "NVIDIA networking roadmap optical interconnects",
+      "query_type": "industry_news",
+      "text_chars": 19075
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "tradingkey.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "developer.nvidia.com",
       "source_tier": 4,
-      "title": "Lumentum Holdings Inc Stock (LITE) Moved Up by 5.22% on Aug 25: Facts Behind the Movement",
-      "url": "https://www.tradingkey.com/news/market-movers/262131113-market-movers-lite-20260825",
-      "source_domain": "tradingkey.com",
-      "published_at": "2026-08-25",
+      "title": "NVIDIA BlueField-4 Powers New Scale-In Network Infrastructure for Agentic AI Factories | NVIDIA Technical Blog",
+      "url": "https://developer.nvidia.com/blog/nvidia-bluefield-4-powers-new-scale-in-network-infrastructure-for-agentic-ai-factories/",
+      "source_domain": "developer.nvidia.com",
+      "published_at": "2026-08-24",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "LITE news",
-      "query_type": "company_news",
-      "text_chars": 0
+      "is_full_text": true,
+      "query": "NVIDIA networking roadmap optical interconnects",
+      "query_type": "industry_news",
+      "text_chars": 18523
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "convergedigest.com",
+      "source_tier": 4,
+      "title": "Hot Interconnects: NVIDIA’s Gilad Shainer Maps AI Network Architecture - Converge Digest",
+      "url": "https://convergedigest.com/hot-interconnects-nvidia-gilad-shainer-gigascale-ai-factory-network-architecture/",
+      "source_domain": "convergedigest.com",
+      "published_at": "2026-08-20",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "NVIDIA networking roadmap optical interconnects",
+      "query_type": "industry_news",
+      "text_chars": 12863
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "poseidon-partner.com",
+      "source_tier": 4,
+      "title": "Poseidon Partner - Foresights - Why NVIDIA Is Becoming More Optical: The Second Growth Curve of AI Infrastructure",
+      "url": "https://www.poseidon-partner.com/market-views/why-nvidia-is-becoming-more-optical-the-second-growth-curve-of-ai-infrastructure",
+      "source_domain": "poseidon-partner.com",
+      "published_at": "2026-09-04",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "NVIDIA networking roadmap optical interconnects",
+      "query_type": "industry_news",
+      "text_chars": 16039
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "mrj-laserclean.com",
+      "source_tier": 4,
+      "title": "NVIDIA Announces Full-Scale Mass Production Of CPO Switches, Expected To Further Boost Silicon Photonics Penetration - News - MRJLaser",
+      "url": "https://www.mrj-laserclean.com/news/nvidia-announces-full-scale-mass-production-of-85626797.html",
+      "source_domain": "mrj-laserclean.com",
+      "published_at": "2026-08-30",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "NVIDIA networking roadmap optical interconnects",
+      "query_type": "industry_news",
+      "text_chars": 2126
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "linkedin.com",
+      "source_tier": 4,
+      "title": "Henry Wu",
+      "url": "https://www.linkedin.com/in/henry-wu-8b695b46",
+      "source_domain": "linkedin.com",
+      "published_at": "2026-08-22",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Broadcom optical PHY datacenter switch 2025",
+      "query_type": "industry_news",
+      "text_chars": 10339
     }
   ],
   "sample_facts": [
     {
-      "fact": "Lumentum reported fiscal Q4 2026 net revenue of $1.01 billion.",
+      "fact": "Lumentum reported fiscal fourth quarter fiscal 2026 net revenue of $1.01 billion.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum reported fiscal Q4 2026 GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4%.",
+      "fact": "Lumentum reported GAAP gross margin of 47.4% and non-GAAP gross margin of 50.4% for its fiscal fourth quarter 2026.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum reported fiscal Q4 2026 GAAP operating margin of 27.8% and non-GAAP operating margin of 36.6%.",
+      "fact": "Lumentum reported GAAP operating margin of 27.8% and non-GAAP operating margin of 36.6% for its fiscal fourth quarter 2026.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum guided fiscal Q1 2027 revenue of $1.225 billion to $1.275 billion.",
+      "fact": "Lumentum guided first quarter fiscal 2027 revenue of $1.225 billion to $1.275 billion.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum guided fiscal Q1 2027 non-GAAP operating margin of 39.5% to 40.5% and non-GAAP diluted EPS of $4.05 to $4.35.",
+      "fact": "Lumentum guided first quarter fiscal 2027 non-GAAP operating margin of 39.5% to 40.5%.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum said it received an initial order for ELS modules and cited growing demand for ultra-high-power CPO lasers.",
+      "fact": "Lumentum guided first quarter fiscal 2027 non-GAAP diluted net income per share of $4.05 to $4.35.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum said it is advancing 1.6T adoption in its cloud module business and that OCS solutions and cloud modules are beginning to layer in as growth drivers.",
+      "fact": "Lumentum stated it is advancing 1.6T adoption in its cloud module business.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
       "source_time": "2026-08-11",
       "source_tier": 1
     },
     {
-      "fact": "Lumentum CEO Michael Hurlston warned that the InP supply-demand gap has surpassed that of DRAM and NAND, making it a critical constraint on AI data center optical interconnect expansion.",
-      "source_url": "https://www.trendforce.com/news/2026/08/06/news-inp-shortage-emerges-as-ai-optical-interconnect-bottleneck/",
-      "source_time": null,
-      "source_tier": 4
+      "fact": "Lumentum cited increasing demand for ultra-high-power CPO lasers and an initial order for ELS modules.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+      "source_time": "2026-08-11",
+      "source_tier": 1
     }
   ],
   "warnings": [],
   "budget_remaining": {
-    "tavily": 0,
+    "tavily": 3,
     "exa": 0
   }
 }

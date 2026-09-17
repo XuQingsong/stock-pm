@@ -1,9 +1,9 @@
 {
   "ticker": "AVGO",
   "keys_present": {
-    "tavily": false,
-    "exa": false,
-    "fred": false,
+    "tavily": true,
+    "exa": true,
+    "fred": true,
     "alpha_vantage": true,
     "llm": true,
     "benzinga": false
@@ -18,114 +18,163 @@
   ],
   "claim_queries": [
     {
-      "query": "Google TPU AI accelerator 2026",
+      "query": "Google TPU AI chip development 2025",
       "query_type": "customer",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": "AI revenue is concentrated in a few very large XPU customers",
       "entity": "Google"
     },
     {
-      "query": "Meta custom AI chip 2026",
+      "query": "Meta custom AI chip MTIA 2025",
       "query_type": "customer",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": "AI revenue is concentrated in a few very large XPU customers",
       "entity": "Meta"
     },
     {
-      "query": "Microsoft AI chip development 2026",
+      "query": "Microsoft AI chip Maia 2025",
       "query_type": "customer",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": "AI revenue is concentrated in a few very large XPU customers",
       "entity": "Microsoft"
     },
     {
-      "query": "Amazon AWS custom AI chip 2026",
+      "query": "Amazon AWS Trainium Inferentia 2025",
       "query_type": "customer",
       "providers": [
-        "duckduckgo"
+        "exa"
       ],
       "claim_title": "AI revenue is concentrated in a few very large XPU customers",
       "entity": "Amazon"
     },
     {
-      "query": "TSMC advanced packaging capacity 2026",
+      "query": "TSMC CoWoS capacity advanced packaging 2025",
       "query_type": "supplier",
       "providers": [
-        "duckduckgo"
+        "tavily",
+        "exa"
       ],
       "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
       "entity": "TSMC"
+    },
+    {
+      "query": "NVIDIA AI accelerator roadmap 2025 competition",
+      "query_type": "related_entity",
+      "providers": [
+        "tavily",
+        "exa"
+      ],
+      "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+      "entity": "NVIDIA"
+    },
+    {
+      "query": "Marvell custom AI silicon design wins 2025",
+      "query_type": "related_entity",
+      "providers": [
+        "tavily"
+      ],
+      "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+      "entity": "Marvell Technology"
+    },
+    {
+      "query": "Google AVGO customer demand OR capex OR supply",
+      "query_type": "customer",
+      "providers": [
+        "tavily"
+      ],
+      "claim_title": null,
+      "entity": "Google"
     }
   ],
   "related_entities": [
     {
-      "name": "Hyperscaler customers (e.g., Google, Meta, Microsoft, Amazon)",
-      "relation": "customer",
-      "why": "Their AI infrastructure spending and custom chip demand directly drive Broadcom's semiconductor solutions revenue."
-    },
-    {
-      "name": "TSMC",
-      "relation": "supplier",
-      "why": "As a key foundry partner, TSMC's capacity and pricing affect Broadcom's product costs and supply."
-    },
-    {
       "name": "NVIDIA",
       "relation": "competitor",
-      "why": "Competes in AI networking and custom silicon; their product cycles and pricing influence Broadcom's market share."
+      "why": "Competes in AI networking and custom silicon; product cycles and pricing can shift Broadcom's semiconductor demand."
     },
     {
       "name": "Marvell Technology",
       "relation": "competitor",
-      "why": "Direct competitor in custom ASICs and networking; their wins/losses signal shifts in Broadcom's competitive position."
+      "why": "Direct competitor in custom ASIC and networking; wins/losses can alter Broadcom's growth trajectory."
+    },
+    {
+      "name": "TSMC",
+      "relation": "supplier",
+      "why": "Sole foundry for Broadcom's advanced chips; capacity, pricing, and node transitions affect margins and supply."
+    },
+    {
+      "name": "Hyperscaler capex (e.g., Microsoft, Google, Amazon, Meta)",
+      "relation": "customer",
+      "why": "Cloud providers are key customers for custom AI chips and networking; capex shifts directly impact Broadcom's revenue."
     },
     {
       "name": "AI networking technology (e.g., Ethernet vs. InfiniBand)",
       "relation": "technology",
-      "why": "Adoption of Ethernet for AI back-end networks could expand Broadcom's addressable market."
+      "why": "Adoption of Ethernet for AI backends could expand Broadcom's addressable market in switching and routing."
     },
     {
-      "name": "U.S. export controls on semiconductors",
+      "name": "Semiconductor export regulations",
       "relation": "market",
-      "why": "Regulations affecting chip sales to China could impact Broadcom's revenue and supply chain."
-    },
-    {
-      "name": "VMware",
-      "relation": "technology",
-      "why": "Broadcom's acquisition of VMware and its integration affects software revenue and customer retention."
+      "why": "US-China export controls can restrict Broadcom's sales to certain customers and disrupt supply chains."
     },
     {
       "name": "Apple",
       "relation": "customer",
-      "why": "A major customer for wireless components; their product cycles and insourcing decisions impact Broadcom's revenue."
+      "why": "Broadcom supplies wireless components; Apple's product cycles and insourcing efforts affect Broadcom's wireless segment."
+    },
+    {
+      "name": "VMware",
+      "relation": "customer",
+      "why": "Broadcom's acquisition of VMware drives software revenue; customer adoption and pricing changes are key value drivers."
+    },
+    {
+      "name": "AI chip demand from cloud and enterprise",
+      "relation": "market",
+      "why": "Overall AI infrastructure spending influences demand for Broadcom's custom AI accelerators and networking solutions."
+    },
+    {
+      "name": "Advanced packaging capacity (e.g., CoWoS)",
+      "relation": "supplier",
+      "why": "Packaging bottlenecks can constrain AI chip shipments, impacting Broadcom's ability to meet customer demand."
     },
     {
       "name": "Google",
       "relation": "customer",
-      "why": "Google is a known hyperscaler developing custom AI accelerators (TPUs) and is a potential Broadcom XPU customer; their AI capex and chip strategy could affect…"
+      "why": "Google is a major hyperscaler that designs custom AI accelerators (TPUs) and could be a Broadcom XPU customer; their AI capex and chip strategy directly affect…"
     },
     {
       "name": "Meta",
       "relation": "customer",
-      "why": "Meta is investing heavily in AI infrastructure and custom silicon; their decisions on accelerator sourcing could impact Broadcom's XPU demand."
-    },
-    {
-      "name": "Microsoft",
-      "relation": "customer",
-      "why": "Microsoft is a major cloud provider with custom AI chip initiatives; their AI capex and chip partnerships could influence Broadcom's AI semiconductor revenue."
-    },
-    {
-      "name": "Amazon",
-      "relation": "customer",
-      "why": "Amazon's AWS designs custom AI chips (Trainium/Inferentia) and is a large cloud capex spender; their strategy could affect Broadcom's custom accelerator busine…"
+      "why": "Meta is investing heavily in AI infrastructure and custom silicon; they could be a Broadcom XPU customer, and their AI capex plans impact demand for custom acc…"
     }
   ],
   "providers": {
+    "tavily": {
+      "status": "ok",
+      "hit_count": 46,
+      "usable_count": 46,
+      "high_quality_count": 0,
+      "full_text_count": 46,
+      "dated_count": 0,
+      "error": null,
+      "query_count": 10
+    },
+    "exa": {
+      "status": "ok",
+      "hit_count": 50,
+      "usable_count": 50,
+      "high_quality_count": 2,
+      "full_text_count": 50,
+      "dated_count": 49,
+      "error": null,
+      "query_count": 10
+    },
     "alpha_vantage": {
       "status": "partial",
       "hit_count": 20,
@@ -137,174 +186,173 @@
       "query_count": 2
     },
     "fred": {
-      "status": "partial",
+      "status": "ok",
       "hit_count": 11,
       "usable_count": 11,
       "high_quality_count": 11,
       "full_text_count": 11,
       "dated_count": 11,
-      "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
-      "query_count": 1
-    },
-    "duckduckgo": {
-      "status": "ok",
-      "hit_count": 50,
-      "usable_count": 50,
-      "high_quality_count": 2,
-      "full_text_count": 0,
-      "dated_count": 2,
       "error": null,
-      "query_count": 10
-    },
-    "tavily": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "TAVILY_API_KEY missing",
-      "query_count": 0
-    },
-    "exa": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "EXA_API_KEY missing",
-      "query_count": 0
+      "query_count": 1
     }
   },
   "report": {
     "official_documents": 18,
     "independent_news": 2,
-    "industry_sources": 33,
-    "customer_sources": 20,
-    "supplier_sources": 5,
-    "dated_recent_items": 27,
-    "undated_or_background_items": 57,
-    "full_text_items": 22,
+    "industry_sources": 69,
+    "customer_sources": 24,
+    "supplier_sources": 10,
+    "dated_recent_items": 69,
+    "undated_or_background_items": 56,
+    "full_text_items": 105,
     "tier1_count": 18,
     "tier2_count": 2,
-    "tier3_count": 0,
-    "tier4_count": 64,
-    "tier5_count": 0,
+    "tier3_count": 3,
+    "tier4_count": 95,
+    "tier5_count": 7,
     "related_entities": [
-      {
-        "name": "Hyperscaler customers (e.g., Google, Meta, Microsoft, Amazon)",
-        "relation": "customer",
-        "why": "Their AI infrastructure spending and custom chip demand directly drive Broadcom's semiconductor solutions revenue."
-      },
-      {
-        "name": "TSMC",
-        "relation": "supplier",
-        "why": "As a key foundry partner, TSMC's capacity and pricing affect Broadcom's product costs and supply."
-      },
       {
         "name": "NVIDIA",
         "relation": "competitor",
-        "why": "Competes in AI networking and custom silicon; their product cycles and pricing influence Broadcom's market share."
+        "why": "Competes in AI networking and custom silicon; product cycles and pricing can shift Broadcom's semiconductor demand."
       },
       {
         "name": "Marvell Technology",
         "relation": "competitor",
-        "why": "Direct competitor in custom ASICs and networking; their wins/losses signal shifts in Broadcom's competitive position."
+        "why": "Direct competitor in custom ASIC and networking; wins/losses can alter Broadcom's growth trajectory."
+      },
+      {
+        "name": "TSMC",
+        "relation": "supplier",
+        "why": "Sole foundry for Broadcom's advanced chips; capacity, pricing, and node transitions affect margins and supply."
+      },
+      {
+        "name": "Hyperscaler capex (e.g., Microsoft, Google, Amazon, Meta)",
+        "relation": "customer",
+        "why": "Cloud providers are key customers for custom AI chips and networking; capex shifts directly impact Broadcom's revenue."
       },
       {
         "name": "AI networking technology (e.g., Ethernet vs. InfiniBand)",
         "relation": "technology",
-        "why": "Adoption of Ethernet for AI back-end networks could expand Broadcom's addressable market."
+        "why": "Adoption of Ethernet for AI backends could expand Broadcom's addressable market in switching and routing."
       },
       {
-        "name": "U.S. export controls on semiconductors",
+        "name": "Semiconductor export regulations",
         "relation": "market",
-        "why": "Regulations affecting chip sales to China could impact Broadcom's revenue and supply chain."
-      },
-      {
-        "name": "VMware",
-        "relation": "technology",
-        "why": "Broadcom's acquisition of VMware and its integration affects software revenue and customer retention."
+        "why": "US-China export controls can restrict Broadcom's sales to certain customers and disrupt supply chains."
       },
       {
         "name": "Apple",
         "relation": "customer",
-        "why": "A major customer for wireless components; their product cycles and insourcing decisions impact Broadcom's revenue."
+        "why": "Broadcom supplies wireless components; Apple's product cycles and insourcing efforts affect Broadcom's wireless segment."
+      },
+      {
+        "name": "VMware",
+        "relation": "customer",
+        "why": "Broadcom's acquisition of VMware drives software revenue; customer adoption and pricing changes are key value drivers."
+      },
+      {
+        "name": "AI chip demand from cloud and enterprise",
+        "relation": "market",
+        "why": "Overall AI infrastructure spending influences demand for Broadcom's custom AI accelerators and networking solutions."
+      },
+      {
+        "name": "Advanced packaging capacity (e.g., CoWoS)",
+        "relation": "supplier",
+        "why": "Packaging bottlenecks can constrain AI chip shipments, impacting Broadcom's ability to meet customer demand."
       },
       {
         "name": "Google",
         "relation": "customer",
-        "why": "Google is a known hyperscaler developing custom AI accelerators (TPUs) and is a potential Broadcom XPU customer; their AI capex and chip strategy could affect…"
+        "why": "Google is a major hyperscaler that designs custom AI accelerators (TPUs) and could be a Broadcom XPU customer; their AI capex and chip strategy directly affect…"
       },
       {
         "name": "Meta",
         "relation": "customer",
-        "why": "Meta is investing heavily in AI infrastructure and custom silicon; their decisions on accelerator sourcing could impact Broadcom's XPU demand."
-      },
-      {
-        "name": "Microsoft",
-        "relation": "customer",
-        "why": "Microsoft is a major cloud provider with custom AI chip initiatives; their AI capex and chip partnerships could influence Broadcom's AI semiconductor revenue."
-      },
-      {
-        "name": "Amazon",
-        "relation": "customer",
-        "why": "Amazon's AWS designs custom AI chips (Trainium/Inferentia) and is a large cloud capex spender; their strategy could affect Broadcom's custom accelerator busine…"
+        "why": "Meta is investing heavily in AI infrastructure and custom silicon; they could be a Broadcom XPU customer, and their AI capex plans impact demand for custom acc…"
       }
     ],
     "claim_queries": [
       {
-        "query": "Google TPU AI accelerator 2026",
+        "query": "Google TPU AI chip development 2025",
         "query_type": "customer",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": "Google"
       },
       {
-        "query": "Meta custom AI chip 2026",
+        "query": "Meta custom AI chip MTIA 2025",
         "query_type": "customer",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": "Meta"
       },
       {
-        "query": "Microsoft AI chip development 2026",
+        "query": "Microsoft AI chip Maia 2025",
         "query_type": "customer",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": "Microsoft"
       },
       {
-        "query": "Amazon AWS custom AI chip 2026",
+        "query": "Amazon AWS Trainium Inferentia 2025",
         "query_type": "customer",
         "providers": [
-          "duckduckgo"
+          "exa"
         ],
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": "Amazon"
       },
       {
-        "query": "TSMC advanced packaging capacity 2026",
+        "query": "TSMC CoWoS capacity advanced packaging 2025",
         "query_type": "supplier",
         "providers": [
-          "duckduckgo"
+          "tavily",
+          "exa"
         ],
         "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
         "entity": "TSMC"
+      },
+      {
+        "query": "NVIDIA AI accelerator roadmap 2025 competition",
+        "query_type": "related_entity",
+        "providers": [
+          "tavily",
+          "exa"
+        ],
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "entity": "NVIDIA"
+      },
+      {
+        "query": "Marvell custom AI silicon design wins 2025",
+        "query_type": "related_entity",
+        "providers": [
+          "tavily"
+        ],
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "entity": "Marvell Technology"
+      },
+      {
+        "query": "Google AVGO customer demand OR capex OR supply",
+        "query_type": "customer",
+        "providers": [
+          "tavily"
+        ],
+        "claim_title": null,
+        "entity": "Google"
       }
     ],
     "query_results": [
       {
-        "query": "Broadcom latest earnings report",
-        "query_type": "company_earnings",
-        "provider": "duckduckgo",
+        "query": "Broadcom latest news AI semiconductor",
+        "query_type": "company_news",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -313,9 +361,53 @@
         "entity": null
       },
       {
-        "query": "Broadcom official press releases",
+        "query": "Broadcom latest news AI semiconductor",
+        "query_type": "company_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 1,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Broadcom earnings report AI revenue growth",
+        "query_type": "company_earnings",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Broadcom official press releases AI networking",
         "query_type": "company_official",
-        "provider": "duckduckgo",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "hyperscaler capex 2025 AI infrastructure spending",
+        "query_type": "industry_news",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "hyperscaler capex 2025 AI infrastructure spending",
+        "query_type": "industry_news",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 4,
         "high_quality_count": 0,
@@ -324,20 +416,20 @@
         "entity": null
       },
       {
-        "query": "Broadcom news last 30 days",
-        "query_type": "company_news",
-        "provider": "duckduckgo",
+        "query": "custom AI chip market growth Broadcom Marvell",
+        "query_type": "industry_news",
+        "provider": "tavily",
         "hit_count": 5,
-        "usable_count": 3,
+        "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
         "entity": null
       },
       {
-        "query": "semiconductor industry AI demand trends",
+        "query": "custom AI chip market growth Broadcom Marvell",
         "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -348,7 +440,7 @@
       {
         "query": "Ethernet vs InfiniBand AI networking adoption",
         "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -357,9 +449,20 @@
         "entity": null
       },
       {
-        "query": "Google TPU AI accelerator 2026",
+        "query": "semiconductor export controls China impact Broadcom",
+        "query_type": "industry_news",
+        "provider": "tavily",
+        "hit_count": 1,
+        "usable_count": 1,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Google TPU AI chip development 2025",
         "query_type": "customer",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -368,9 +471,9 @@
         "entity": "Google"
       },
       {
-        "query": "Meta custom AI chip 2026",
+        "query": "Meta custom AI chip MTIA 2025",
         "query_type": "customer",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 1,
@@ -379,9 +482,9 @@
         "entity": "Meta"
       },
       {
-        "query": "Microsoft AI chip development 2026",
+        "query": "Microsoft AI chip Maia 2025",
         "query_type": "customer",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -390,34 +493,311 @@
         "entity": "Microsoft"
       },
       {
-        "query": "Amazon AWS custom AI chip 2026",
+        "query": "Amazon AWS Trainium Inferentia 2025",
         "query_type": "customer",
-        "provider": "duckduckgo",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
-        "high_quality_count": 1,
+        "high_quality_count": 0,
         "status": "ok",
         "claim_title": "AI revenue is concentrated in a few very large XPU customers",
         "entity": "Amazon"
       },
       {
-        "query": "TSMC advanced packaging capacity 2026",
+        "query": "TSMC CoWoS capacity advanced packaging 2025",
         "query_type": "supplier",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
         "entity": "TSMC"
+      },
+      {
+        "query": "TSMC CoWoS capacity advanced packaging 2025",
+        "query_type": "supplier",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Management guides AI semiconductor revenue to accelerate sharply",
+        "entity": "TSMC"
+      },
+      {
+        "query": "NVIDIA AI accelerator roadmap 2025 competition",
+        "query_type": "related_entity",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "entity": "NVIDIA"
+      },
+      {
+        "query": "NVIDIA AI accelerator roadmap 2025 competition",
+        "query_type": "related_entity",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "AI semiconductor revenue is now the majority of total revenue",
+        "entity": "NVIDIA"
+      },
+      {
+        "query": "Marvell custom AI silicon design wins 2025",
+        "query_type": "related_entity",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "AI revenue is concentrated in a few very large XPU customers",
+        "entity": "Marvell Technology"
+      },
+      {
+        "query": "Google AVGO customer demand OR capex OR supply",
+        "query_type": "customer",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Google"
       }
     ],
-    "duplicates_removed": 8,
-    "raw_count_before_dedupe": 92,
-    "coverage_gaps": [
-      "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
-    ],
+    "duplicates_removed": 15,
+    "raw_count_before_dedupe": 140,
+    "coverage_gaps": [],
     "providers": {
+      "tavily": {
+        "provider": "tavily",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Broadcom latest news AI semiconductor",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 810
+          },
+          {
+            "query": "Broadcom earnings report AI revenue growth",
+            "query_type": "company_earnings",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 701
+          },
+          {
+            "query": "Broadcom official press releases AI networking",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1061
+          },
+          {
+            "query": "hyperscaler capex 2025 AI infrastructure spending",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2286
+          },
+          {
+            "query": "custom AI chip market growth Broadcom Marvell",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 940
+          },
+          {
+            "query": "semiconductor export controls China impact Broadcom",
+            "query_type": "industry_news",
+            "hit_count": 1,
+            "usable_count": 1,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 927
+          },
+          {
+            "query": "TSMC CoWoS capacity advanced packaging 2025",
+            "query_type": "supplier",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1112
+          },
+          {
+            "query": "NVIDIA AI accelerator roadmap 2025 competition",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1570
+          },
+          {
+            "query": "Marvell custom AI silicon design wins 2025",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2122
+          },
+          {
+            "query": "Google AVGO customer demand OR capex OR supply",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 740
+          }
+        ],
+        "hit_count": 46,
+        "usable_count": 46,
+        "high_quality_count": 0,
+        "full_text_count": 46,
+        "dated_count": 0,
+        "error": null
+      },
+      "exa": {
+        "provider": "exa",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Broadcom latest news AI semiconductor",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2211
+          },
+          {
+            "query": "hyperscaler capex 2025 AI infrastructure spending",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1333
+          },
+          {
+            "query": "custom AI chip market growth Broadcom Marvell",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1197
+          },
+          {
+            "query": "Ethernet vs InfiniBand AI networking adoption",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1593
+          },
+          {
+            "query": "Google TPU AI chip development 2025",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1432
+          },
+          {
+            "query": "Meta custom AI chip MTIA 2025",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 963
+          },
+          {
+            "query": "Microsoft AI chip Maia 2025",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1330
+          },
+          {
+            "query": "Amazon AWS Trainium Inferentia 2025",
+            "query_type": "customer",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 956
+          },
+          {
+            "query": "TSMC CoWoS capacity advanced packaging 2025",
+            "query_type": "supplier",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 5504
+          },
+          {
+            "query": "NVIDIA AI accelerator roadmap 2025 competition",
+            "query_type": "related_entity",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1188
+          }
+        ],
+        "hit_count": 50,
+        "usable_count": 50,
+        "high_quality_count": 2,
+        "full_text_count": 50,
+        "dated_count": 49,
+        "error": null
+      },
       "alpha_vantage": {
         "provider": "alpha_vantage",
         "status": "partial",
@@ -430,7 +810,7 @@
             "high_quality_count": 0,
             "status": "ok",
             "error": null,
-            "latency_ms": 47
+            "latency_ms": 41
           },
           {
             "query": "OVERVIEW AVGO",
@@ -452,7 +832,7 @@
       },
       "fred": {
         "provider": "fred",
-        "status": "partial",
+        "status": "ok",
         "queries": [
           {
             "query": "macro_series",
@@ -460,8 +840,8 @@
             "hit_count": 11,
             "usable_count": 11,
             "high_quality_count": 11,
-            "status": "partial",
-            "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
+            "status": "ok",
+            "error": null,
             "latency_ms": null
           }
         ],
@@ -470,191 +850,102 @@
         "high_quality_count": 11,
         "full_text_count": 11,
         "dated_count": 11,
-        "error": "FRED_API_KEY missing; used keyless CSV fallback where possible"
-      },
-      "duckduckgo": {
-        "provider": "duckduckgo",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Broadcom latest earnings report",
-            "query_type": "company_earnings",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 613
-          },
-          {
-            "query": "Broadcom official press releases",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 772
-          },
-          {
-            "query": "Broadcom news last 30 days",
-            "query_type": "company_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 544
-          },
-          {
-            "query": "semiconductor industry AI demand trends",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 706
-          },
-          {
-            "query": "Ethernet vs InfiniBand AI networking adoption",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 561
-          },
-          {
-            "query": "Google TPU AI accelerator 2026",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 667
-          },
-          {
-            "query": "Meta custom AI chip 2026",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 588
-          },
-          {
-            "query": "Microsoft AI chip development 2026",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 602
-          },
-          {
-            "query": "Amazon AWS custom AI chip 2026",
-            "query_type": "customer",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 560
-          },
-          {
-            "query": "TSMC advanced packaging capacity 2026",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 711
-          }
-        ],
-        "hit_count": 50,
-        "usable_count": 50,
-        "high_quality_count": 2,
-        "full_text_count": 0,
-        "dated_count": 2,
         "error": null
-      },
-      "tavily": {
-        "provider": "tavily",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "TAVILY_API_KEY missing"
-      },
-      "exa": {
-        "provider": "exa",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "EXA_API_KEY missing"
       }
     },
     "tavily_vs_exa": {
-      "tavily_status": "not_configured",
-      "exa_status": "not_configured",
+      "tavily_status": "ok",
+      "exa_status": "ok",
       "tavily": {
-        "hit_count": 0,
+        "hit_count": 40,
         "dated_recent": 0,
-        "full_text": 0,
+        "full_text": 40,
         "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
-        "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "news": 13,
+        "industry": 26,
+        "customer_supplier": 18,
+        "unique_domains": [
+          "247wallst.com",
+          "allpcb.com",
+          "barchart.com",
+          "broadcom.com",
+          "cryptobriefing.com",
+          "digitimes.com",
+          "facebook.com",
+          "futurumgroup.com",
+          "introl.com",
+          "investors.broadcom.com",
+          "investors.com",
+          "linkedin.com",
+          "marketbeat.com",
+          "michaelparekh.substack.com",
+          "moomoo.com",
+          "networkworld.com",
+          "nextplatform.com",
+          "nomadsemi.com",
+          "pwc.com",
+          "qz.com"
+        ],
+        "avg_full_text_chars": 15298
       },
       "exa": {
-        "hit_count": 0,
-        "dated_recent": 0,
-        "full_text": 0,
-        "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
-        "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "hit_count": 49,
+        "dated_recent": 46,
+        "full_text": 49,
+        "tier1_2": 2,
+        "news": 20,
+        "industry": 43,
+        "customer_supplier": 30,
+        "unique_domains": [
+          "247wallst.com",
+          "ainvest.com",
+          "arxiv.org",
+          "ascentoptics.com",
+          "aws-news.com",
+          "aws.amazon.com",
+          "bloomberg.com",
+          "cheemaomer.substack.com",
+          "cnbc.com",
+          "cryptobriefing.com",
+          "datacenterdynamics.com",
+          "developer.nvidia.com",
+          "engineering.fb.com",
+          "enterprisetimes.in",
+          "fool.com",
+          "fourweekmba.com",
+          "gate.com",
+          "globemarketresearch.com",
+          "insights.trendforce.com",
+          "itpro.com"
+        ],
+        "avg_full_text_chars": 9717
       },
-      "better_for_news": "none",
-      "better_for_industry": "none",
-      "better_for_customer_supplier": "none",
-      "better_for_full_text": "none",
+      "better_for_news": "exa",
+      "better_for_industry": "exa",
+      "better_for_customer_supplier": "exa",
+      "better_for_full_text": "tavily",
       "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
     },
     "alphavantage_overview": {
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 7,
+    "evidence_extracted": 19,
     "window_days": 30,
     "valuable_domains": [
+      "bloomberg.com",
       "cnbc.com",
+      "digitimes.com",
       "fred.stlouisfed.org",
-      "reuters.com",
-      "sec.gov"
+      "sec.gov",
+      "spglobal.com",
+      "theregister.com"
     ]
   },
-  "duplicates_removed": 8,
-  "raw_count": 92,
-  "evidence_extracted": 7,
-  "news_hits": 25,
+  "duplicates_removed": 15,
+  "raw_count": 140,
+  "evidence_extracted": 19,
+  "news_hits": 67,
   "sample_documents": [
     {
       "provider": "sec",
@@ -702,64 +993,79 @@
       "text_chars": 23151
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "ca.investing.com",
-      "source_tier": 4,
-      "title": "Titan America stock hits 52-week low at 13.89 USD By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/titan-america-stock-hits-52week-low-at-1389-usd-93CH-4842248",
-      "source_domain": "ca.investing.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "marketbeat.com",
-      "source_tier": 4,
-      "title": "Stock Traders Buy High Volume of Put Options on Apollo Global Management (NYSE:APO)",
-      "url": "https://www.marketbeat.com/instant-alerts/options-stock-traders-buy-high-volume-of-put-options-on-apollo-global-management-nyse-apo-2026-09-16/",
-      "source_domain": "marketbeat.com",
-      "published_at": "2026-09-16",
+      "provider": "exa",
+      "source_type": "independent_news",
+      "source_family": "high_quality_news",
+      "source_tier": 2,
+      "title": "Broadcom CEO on Anthropic's slowdown push: AI revenue targets haven't changed",
+      "url": "https://www.cnbc.com/2026/09/14/broadcom-ceo-on-anthropics-slowdown-push-ai-revenue-targets-havent-changed.html",
+      "source_domain": "cnbc.com",
+      "published_at": "2026-09-14",
       "is_dated": true,
       "is_full_text": true,
-      "query": "AVGO news",
+      "query": "Broadcom latest news AI semiconductor",
       "query_type": "company_news",
-      "text_chars": 10485
+      "text_chars": 3928
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "kalkinemedia.com",
+      "source_family": "sdxcentral.com",
       "source_tier": 4,
-      "title": "Aviva Increases Stake in Trainline PLC to 5.34% Following Voting Rights Threshold Breach on 15 September 2026",
-      "url": "https://kalkinemedia.com/uk/news/announcements/aviva-increases-stake-in-trainline-plc-to-534-following-voting-rights-threshold-breach-on-15-september-2026",
-      "source_domain": "kalkinemedia.com",
-      "published_at": "2026-09-16",
+      "title": "Broadcom slams AI silicon-fueled Q3, promises double-double on the way - SDxCentral",
+      "url": "https://www.sdxcentral.com/news/broadcom-slams-ai-silicon-fueled-q3-promises-double-double-on-the-way/",
+      "source_domain": "sdxcentral.com",
+      "published_at": "2026-09-03",
       "is_dated": true,
       "is_full_text": true,
-      "query": "AVGO news",
+      "query": "Broadcom latest news AI semiconductor",
       "query_type": "company_news",
-      "text_chars": 5594
+      "text_chars": 5282
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "benzinga.com",
+      "source_family": "trendforce.com",
       "source_tier": 4,
-      "title": "Super Micro Rebounds 3% After This Week's AI Infrastructure Selloff",
-      "url": "https://www.benzinga.com/markets/tech/26/09/61820795/super-micro-rebounds-3-after-this-weeks-ai-infrastructure-selloff",
-      "source_domain": "benzinga.com",
-      "published_at": "2026-09-16",
+      "title": "[News] Broadcom Targets $115B AI Revenue in FY27, Nearly 2X FY26; Singapore Fab to Ease Key Substrate Bottleneck",
+      "url": "https://www.trendforce.com/news/2026/09/03/news-broadcom-targets-115b-ai-revenue-in-fy27-nearly-2x-fy26-singapore-fab-to-ease-key-substrate-bottleneck/",
+      "source_domain": "trendforce.com",
+      "published_at": "2026-09-03",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "AVGO news",
+      "is_full_text": true,
+      "query": "Broadcom latest news AI semiconductor",
       "query_type": "company_news",
-      "text_chars": 0
+      "text_chars": 4366
+    },
+    {
+      "provider": "exa",
+      "source_type": "aggregator",
+      "source_family": "fool.com",
+      "source_tier": 4,
+      "title": "Broadcom Just Named Its Next Customer to Pass Google: Anthropic. Here's Why That Matters More Than the Earnings Beat. | The Motley Fool",
+      "url": "https://www.fool.com/investing/2026/09/14/broadcom-just-named-its-next-customer-to-pass-goog/",
+      "source_domain": "fool.com",
+      "published_at": "2026-09-14",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Broadcom latest news AI semiconductor",
+      "query_type": "company_news",
+      "text_chars": 5348
+    },
+    {
+      "provider": "exa",
+      "source_type": "aggregator",
+      "source_family": "techtimes.com",
+      "source_tier": 4,
+      "title": "Broadcom AI Revenue Tripled to $16.7B as Demand Outstrips Its Own $230B Roadmap",
+      "url": "https://www.techtimes.com/articles/326472/20260903/broadcom-ai-revenue-tripled-167b-demand-outstrips-its-own-230b-roadmap.htm",
+      "source_domain": "techtimes.com",
+      "published_at": "2026-09-03",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Broadcom latest news AI semiconductor",
+      "query_type": "company_news",
+      "text_chars": 21036
     },
     {
       "provider": "alpha_vantage",
@@ -774,67 +1080,52 @@
       "is_full_text": true,
       "query": "AVGO news",
       "query_type": "company_news",
-      "text_chars": 15278
+      "text_chars": 24000
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "ca.investing.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "datacenterdynamics.com",
       "source_tier": 4,
-      "title": "Form 8K HIVE Digital Technologies Ltd For: 16 September By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/form-8k-hive-digital-technologies-ltd-for-16-september-93CH-4841398",
-      "source_domain": "ca.investing.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "foreignpolicyjournal.com",
-      "source_tier": 4,
-      "title": "Qualcomm (NASDAQ: QCOM) Hits Two-Month High As Amazon AI Chip Deal Reshapes Growth Outlook",
-      "url": "https://www.foreignpolicyjournal.com/2026/09/16/qualcomm-nasdaq-qcom-hits-two-month-high-as-amazon-ai-chip-deal-reshapes-growth-outlook/",
-      "source_domain": "foreignpolicyjournal.com",
-      "published_at": "2026-09-16",
+      "title": "Moody’s: Hyperscaler capex forecasts marked up by $85bn, to close in on $1trn by 2027 - DCD",
+      "url": "https://www.datacenterdynamics.com/en/news/moodys-hyperscaler-capex-forecasts-marked-up-by-85bn-to-close-in-on-1trn-by-2027/",
+      "source_domain": "datacenterdynamics.com",
+      "published_at": "2026-08-19",
       "is_dated": true,
       "is_full_text": true,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 2883
+      "query": "hyperscaler capex 2025 AI infrastructure spending",
+      "query_type": "industry_news",
+      "text_chars": 3153
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "slicast.com",
       "source_tier": 4,
-      "title": "Blackstone Sees Earnings Boom Fueling AI, Infrastructure and Fundraising Growth",
-      "url": "https://finance.yahoo.com/technology/ai/articles/blackstone-sees-earnings-boom-fueling-020231672.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-09-16",
+      "title": "Hyperscalers' combined AI capex in 2026 is approximately $725 billion, with industry-wide IT capacity under construction exceeding 23 GW.",
+      "url": "https://slicast.com/article/prs5zu",
+      "source_domain": "slicast.com",
+      "published_at": "2026-09-09",
       "is_dated": true,
       "is_full_text": true,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 9226
+      "query": "hyperscaler capex 2025 AI infrastructure spending",
+      "query_type": "industry_news",
+      "text_chars": 8586
     },
     {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "iconnect007.com",
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "247wallst.com",
       "source_tier": 4,
-      "title": "Infineon, SolarEdge Extend 800 VDC AI Data Center Collaboration",
-      "url": "https://iconnect007.com/article/151601/infineon-solaredge-extend-800-vdc-ai-data-center-collaboration/151598/pcb",
-      "source_domain": "iconnect007.com",
-      "published_at": "2026-09-16",
+      "title": "AI's Absurd Spending Boom? Hyperscalers Are Spending 102% of Cloud Revenue on Capex - 24/7 Wall St.",
+      "url": "https://247wallst.com/investing/2026/08/22/ais-absurd-spending-boom-hyperscalers-are-spending-102-of-cloud-revenue-on-capex/",
+      "source_domain": "247wallst.com",
+      "published_at": "2026-08-22",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "AVGO news",
-      "query_type": "company_news",
-      "text_chars": 0
+      "is_full_text": true,
+      "query": "hyperscaler capex 2025 AI infrastructure spending",
+      "query_type": "industry_news",
+      "text_chars": 16887
     }
   ],
   "sample_facts": [
@@ -857,7 +1148,7 @@
       "source_tier": 1
     },
     {
-      "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter, with capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
+      "fact": "Broadcom generated cash from operations of $14.2 billion in the third quarter of fiscal 2026, with capital expenditures of $0.5 billion, resulting in $13.7 billion of free cash flow, or 46 percent of revenue.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
       "source_time": "2026-09-02",
       "source_tier": 1
@@ -881,9 +1172,9 @@
       "source_tier": 1
     },
     {
-      "fact": "Google reported second-quarter cloud-computing revenue of $24.77 billion, up 82% year over year, beating estimates of $22.46 billion.",
-      "source_url": "https://techblog.comsoc.org/2026/09/08/googles-tpu-business-outpaces-rivals-as-hyperscalers-accelerate-custom-ai-silicon-strategies/",
-      "source_time": null,
+      "fact": "Google unveiled its eighth-generation TPUs, consisting of two chips: the TPU 8t for training and the TPU 8i for inference.",
+      "source_url": "https://www.datacenterdynamics.com/en/news/google-unveils-eighth-generation-tpus-two-dedicated-training-and-inference-chips/",
+      "source_time": "2026-08-19",
       "source_tier": 4
     }
   ],

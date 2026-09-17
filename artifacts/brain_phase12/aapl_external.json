@@ -1,9 +1,9 @@
 {
   "ticker": "AAPL",
   "keys_present": {
-    "tavily": false,
-    "exa": false,
-    "fred": false,
+    "tavily": true,
+    "exa": true,
+    "fred": true,
     "alpha_vantage": true,
     "llm": true,
     "benzinga": false
@@ -18,114 +18,139 @@
   ],
   "claim_queries": [
     {
-      "query": "TSMC advanced chip capacity constraints 2026",
-      "query_type": "supplier",
-      "providers": [
-        "duckduckgo"
-      ],
-      "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-      "entity": "TSMC"
-    },
-    {
-      "query": "Foxconn iPhone assembly capacity labor issues",
-      "query_type": "supplier",
-      "providers": [
-        "duckduckgo"
-      ],
-      "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-      "entity": "Foxconn"
-    },
-    {
-      "query": "Apple services monetization cloud payments growth",
+      "query": "Apple PE ratio forward estimates",
       "query_type": "claim",
       "providers": [
-        "duckduckgo"
-      ],
-      "claim_title": "Installed base growth underpins Services monetization",
-      "entity": null
-    },
-    {
-      "query": "Apple PE ratio forward valuation 2026",
-      "query_type": "claim",
-      "providers": [
-        "duckduckgo"
+        "tavily",
+        "exa"
       ],
       "claim_title": "Valuation multiple is elevated relative to growth",
       "entity": null
     },
     {
-      "query": "TSMC AAPL supplier demand OR capex OR supply",
-      "query_type": "supplier",
+      "query": "Apple EPS growth forecast",
+      "query_type": "claim",
       "providers": [
-        "duckduckgo"
+        "tavily",
+        "exa"
       ],
-      "claim_title": null,
-      "entity": "TSMC"
+      "claim_title": "Valuation multiple is elevated relative to growth",
+      "entity": null
+    },
+    {
+      "query": "Apple tariff costs impact",
+      "query_type": "claim",
+      "providers": [
+        "tavily",
+        "exa"
+      ],
+      "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "entity": null
+    },
+    {
+      "query": "Apple iPhone supply constraints",
+      "query_type": "claim",
+      "providers": [
+        "tavily",
+        "exa"
+      ],
+      "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "entity": null
+    },
+    {
+      "query": "Apple installed base growth",
+      "query_type": "claim",
+      "providers": [
+        "tavily",
+        "exa"
+      ],
+      "claim_title": "Installed base growth underpins Services monetization",
+      "entity": null
     }
   ],
   "related_entities": [
     {
       "name": "TSMC",
       "relation": "supplier",
-      "why": "Sole-source supplier of advanced chips; capacity, yield, or pricing changes directly affect Apple's product roadmap and margins."
+      "why": "Sole supplier of advanced chips for Apple; capacity, pricing, and geopolitical risks affect Apple's product roadmap and margins."
     },
     {
       "name": "Foxconn",
       "relation": "supplier",
-      "why": "Primary assembly partner; labor disruptions, geopolitical shifts, or capacity changes impact Apple's ability to meet demand."
+      "why": "Primary assembly partner; labor disruptions, capacity shifts, or cost changes impact Apple's supply chain and delivery timelines."
     },
     {
       "name": "Samsung Electronics",
-      "relation": "supplier",
-      "why": "Supplies displays, memory, and sometimes chips; pricing and technology shifts affect Apple's bill of materials."
-    },
-    {
-      "name": "Qualcomm",
-      "relation": "supplier",
-      "why": "Provides 5G modems for iPhones; licensing disputes or technology transitions could alter costs and performance."
+      "relation": "competitor",
+      "why": "Competes in smartphones, tablets, and wearables; product launches and pricing pressure influence Apple's market share."
     },
     {
       "name": "Google",
       "relation": "competitor",
-      "why": "Android ecosystem and Pixel devices compete directly; AI and search partnerships could shift platform dynamics."
+      "why": "Android ecosystem and Pixel devices compete with iPhone; AI and services competition affects Apple's differentiation."
     },
     {
       "name": "Microsoft",
       "relation": "competitor",
-      "why": "Competes in services, PCs, and AI; enterprise and consumer adoption trends affect Apple's ecosystem stickiness."
+      "why": "Competes in services, software, and emerging AI; could impact Apple's services growth and ecosystem lock-in."
     },
     {
-      "name": "Amazon",
+      "name": "US Federal Reserve",
+      "relation": "market",
+      "why": "Interest rate decisions affect consumer spending on premium devices and Apple's valuation multiples."
+    },
+    {
+      "name": "China market regulators",
+      "relation": "market",
+      "why": "Regulatory actions in China can restrict Apple's access to a key market and affect sales."
+    },
+    {
+      "name": "EU regulators",
+      "relation": "market",
+      "why": "Antitrust and digital market regulations (e.g., DMA) can force changes to App Store policies, impacting services revenue."
+    },
+    {
+      "name": "Qualcomm",
+      "relation": "supplier",
+      "why": "Supplies modems for iPhones; disputes or supply issues can affect product performance and costs."
+    },
+    {
+      "name": "Consumer confidence indices",
+      "relation": "market",
+      "why": "Reflects overall consumer willingness to spend on discretionary items like Apple products."
+    },
+    {
+      "name": "Samsung",
       "relation": "competitor",
-      "why": "Competes in smart home, wearables, and digital services; AWS and Alexa could influence Apple's services growth."
-    },
-    {
-      "name": "China market",
-      "relation": "market",
-      "why": "Key revenue region; regulatory actions, consumer sentiment, and local competition (e.g., Huawei) can materially impact sales."
-    },
-    {
-      "name": "US-China trade policy",
-      "relation": "market",
-      "why": "Tariffs, export controls, and decoupling measures affect supply chain costs and market access."
-    },
-    {
-      "name": "AI technology",
-      "relation": "technology",
-      "why": "Generative AI and on-device AI are reshaping consumer expectations; Apple's integration pace could affect upgrade cycles."
+      "why": "Competes in premium smartphones and displays; Samsung's product cycles and pricing can affect Apple's market share and component costs."
     },
     {
       "name": "US Government",
       "relation": "market",
-      "why": "Tariff policies and trade regulations directly affect Apple's cost structure and supply chain."
-    },
-    {
-      "name": "China",
-      "relation": "market",
-      "why": "Key manufacturing hub and end market; trade tensions, tariffs, and local competition affect Apple's revenue and costs."
+      "why": "Tariff policies and trade regulations directly impact Apple's cost structure and supply chain, as evidenced by the $800M tariff cost cited."
     }
   ],
   "providers": {
+    "tavily": {
+      "status": "ok",
+      "hit_count": 50,
+      "usable_count": 50,
+      "high_quality_count": 7,
+      "full_text_count": 50,
+      "dated_count": 0,
+      "error": null,
+      "query_count": 10
+    },
+    "exa": {
+      "status": "ok",
+      "hit_count": 50,
+      "usable_count": 50,
+      "high_quality_count": 0,
+      "full_text_count": 49,
+      "dated_count": 46,
+      "error": null,
+      "query_count": 10
+    },
     "alpha_vantage": {
       "status": "partial",
       "hit_count": 20,
@@ -137,177 +162,152 @@
       "query_count": 2
     },
     "fred": {
-      "status": "partial",
+      "status": "ok",
       "hit_count": 11,
       "usable_count": 11,
       "high_quality_count": 11,
       "full_text_count": 11,
       "dated_count": 11,
-      "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
-      "query_count": 1
-    },
-    "duckduckgo": {
-      "status": "ok",
-      "hit_count": 50,
-      "usable_count": 50,
-      "high_quality_count": 1,
-      "full_text_count": 0,
-      "dated_count": 2,
       "error": null,
-      "query_count": 10
-    },
-    "tavily": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "TAVILY_API_KEY missing",
-      "query_count": 0
-    },
-    "exa": {
-      "status": "not_configured",
-      "hit_count": 0,
-      "usable_count": 0,
-      "high_quality_count": 0,
-      "full_text_count": 0,
-      "dated_count": 0,
-      "error": "EXA_API_KEY missing",
-      "query_count": 0
+      "query_count": 1
     }
   },
   "report": {
     "official_documents": 16,
-    "independent_news": 1,
-    "industry_sources": 25,
+    "independent_news": 6,
+    "industry_sources": 29,
     "customer_sources": 0,
-    "supplier_sources": 15,
-    "dated_recent_items": 24,
-    "undated_or_background_items": 60,
-    "full_text_items": 22,
+    "supplier_sources": 0,
+    "dated_recent_items": 66,
+    "undated_or_background_items": 64,
+    "full_text_items": 109,
     "tier1_count": 16,
-    "tier2_count": 1,
-    "tier3_count": 1,
-    "tier4_count": 66,
-    "tier5_count": 0,
+    "tier2_count": 6,
+    "tier3_count": 4,
+    "tier4_count": 97,
+    "tier5_count": 7,
     "related_entities": [
       {
         "name": "TSMC",
         "relation": "supplier",
-        "why": "Sole-source supplier of advanced chips; capacity, yield, or pricing changes directly affect Apple's product roadmap and margins."
+        "why": "Sole supplier of advanced chips for Apple; capacity, pricing, and geopolitical risks affect Apple's product roadmap and margins."
       },
       {
         "name": "Foxconn",
         "relation": "supplier",
-        "why": "Primary assembly partner; labor disruptions, geopolitical shifts, or capacity changes impact Apple's ability to meet demand."
+        "why": "Primary assembly partner; labor disruptions, capacity shifts, or cost changes impact Apple's supply chain and delivery timelines."
       },
       {
         "name": "Samsung Electronics",
-        "relation": "supplier",
-        "why": "Supplies displays, memory, and sometimes chips; pricing and technology shifts affect Apple's bill of materials."
-      },
-      {
-        "name": "Qualcomm",
-        "relation": "supplier",
-        "why": "Provides 5G modems for iPhones; licensing disputes or technology transitions could alter costs and performance."
+        "relation": "competitor",
+        "why": "Competes in smartphones, tablets, and wearables; product launches and pricing pressure influence Apple's market share."
       },
       {
         "name": "Google",
         "relation": "competitor",
-        "why": "Android ecosystem and Pixel devices compete directly; AI and search partnerships could shift platform dynamics."
+        "why": "Android ecosystem and Pixel devices compete with iPhone; AI and services competition affects Apple's differentiation."
       },
       {
         "name": "Microsoft",
         "relation": "competitor",
-        "why": "Competes in services, PCs, and AI; enterprise and consumer adoption trends affect Apple's ecosystem stickiness."
+        "why": "Competes in services, software, and emerging AI; could impact Apple's services growth and ecosystem lock-in."
       },
       {
-        "name": "Amazon",
+        "name": "US Federal Reserve",
+        "relation": "market",
+        "why": "Interest rate decisions affect consumer spending on premium devices and Apple's valuation multiples."
+      },
+      {
+        "name": "China market regulators",
+        "relation": "market",
+        "why": "Regulatory actions in China can restrict Apple's access to a key market and affect sales."
+      },
+      {
+        "name": "EU regulators",
+        "relation": "market",
+        "why": "Antitrust and digital market regulations (e.g., DMA) can force changes to App Store policies, impacting services revenue."
+      },
+      {
+        "name": "Qualcomm",
+        "relation": "supplier",
+        "why": "Supplies modems for iPhones; disputes or supply issues can affect product performance and costs."
+      },
+      {
+        "name": "Consumer confidence indices",
+        "relation": "market",
+        "why": "Reflects overall consumer willingness to spend on discretionary items like Apple products."
+      },
+      {
+        "name": "Samsung",
         "relation": "competitor",
-        "why": "Competes in smart home, wearables, and digital services; AWS and Alexa could influence Apple's services growth."
-      },
-      {
-        "name": "China market",
-        "relation": "market",
-        "why": "Key revenue region; regulatory actions, consumer sentiment, and local competition (e.g., Huawei) can materially impact sales."
-      },
-      {
-        "name": "US-China trade policy",
-        "relation": "market",
-        "why": "Tariffs, export controls, and decoupling measures affect supply chain costs and market access."
-      },
-      {
-        "name": "AI technology",
-        "relation": "technology",
-        "why": "Generative AI and on-device AI are reshaping consumer expectations; Apple's integration pace could affect upgrade cycles."
+        "why": "Competes in premium smartphones and displays; Samsung's product cycles and pricing can affect Apple's market share and component costs."
       },
       {
         "name": "US Government",
         "relation": "market",
-        "why": "Tariff policies and trade regulations directly affect Apple's cost structure and supply chain."
-      },
-      {
-        "name": "China",
-        "relation": "market",
-        "why": "Key manufacturing hub and end market; trade tensions, tariffs, and local competition affect Apple's revenue and costs."
+        "why": "Tariff policies and trade regulations directly impact Apple's cost structure and supply chain, as evidenced by the $800M tariff cost cited."
       }
     ],
     "claim_queries": [
       {
-        "query": "TSMC advanced chip capacity constraints 2026",
-        "query_type": "supplier",
-        "providers": [
-          "duckduckgo"
-        ],
-        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-        "entity": "TSMC"
-      },
-      {
-        "query": "Foxconn iPhone assembly capacity labor issues",
-        "query_type": "supplier",
-        "providers": [
-          "duckduckgo"
-        ],
-        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-        "entity": "Foxconn"
-      },
-      {
-        "query": "Apple services monetization cloud payments growth",
+        "query": "Apple PE ratio forward estimates",
         "query_type": "claim",
         "providers": [
-          "duckduckgo"
-        ],
-        "claim_title": "Installed base growth underpins Services monetization",
-        "entity": null
-      },
-      {
-        "query": "Apple PE ratio forward valuation 2026",
-        "query_type": "claim",
-        "providers": [
-          "duckduckgo"
+          "tavily",
+          "exa"
         ],
         "claim_title": "Valuation multiple is elevated relative to growth",
         "entity": null
       },
       {
-        "query": "TSMC AAPL supplier demand OR capex OR supply",
-        "query_type": "supplier",
+        "query": "Apple EPS growth forecast",
+        "query_type": "claim",
         "providers": [
-          "duckduckgo"
+          "tavily",
+          "exa"
         ],
-        "claim_title": null,
-        "entity": "TSMC"
+        "claim_title": "Valuation multiple is elevated relative to growth",
+        "entity": null
+      },
+      {
+        "query": "Apple tariff costs impact",
+        "query_type": "claim",
+        "providers": [
+          "tavily",
+          "exa"
+        ],
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple iPhone supply constraints",
+        "query_type": "claim",
+        "providers": [
+          "tavily",
+          "exa"
+        ],
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple installed base growth",
+        "query_type": "claim",
+        "providers": [
+          "tavily",
+          "exa"
+        ],
+        "claim_title": "Installed base growth underpins Services monetization",
+        "entity": null
       }
     ],
     "query_results": [
       {
-        "query": "Apple latest news official announcements",
+        "query": "Apple latest official news and announcements",
         "query_type": "company_official",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
-        "high_quality_count": 0,
+        "high_quality_count": 1,
         "status": "ok",
         "claim_title": null,
         "entity": null
@@ -315,7 +315,7 @@
       {
         "query": "Apple earnings call transcript recent quarter",
         "query_type": "company_earnings",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -326,9 +326,20 @@
       {
         "query": "Apple news last 30 days",
         "query_type": "company_news",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
-        "usable_count": 4,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "Apple news last 30 days",
+        "query_type": "company_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
@@ -337,7 +348,18 @@
       {
         "query": "consumer electronics industry trends 2025",
         "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 2,
+        "status": "ok",
+        "claim_title": null,
+        "entity": null
+      },
+      {
+        "query": "consumer electronics industry trends 2025",
+        "query_type": "industry_news",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -346,53 +368,53 @@
         "entity": null
       },
       {
-        "query": "Google Android AI features competition",
+        "query": "Samsung smartphone market share recent",
         "query_type": "industry_news",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
-        "high_quality_count": 1,
+        "high_quality_count": 2,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Samsung Electronics"
+      },
+      {
+        "query": "Samsung smartphone market share recent",
+        "query_type": "industry_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": null,
+        "entity": "Samsung Electronics"
+      },
+      {
+        "query": "Google Pixel AI features competition",
+        "query_type": "industry_news",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
         "status": "ok",
         "claim_title": null,
         "entity": "Google"
       },
       {
-        "query": "TSMC advanced chip capacity constraints 2026",
-        "query_type": "supplier",
-        "provider": "duckduckgo",
+        "query": "Microsoft AI services competition Apple",
+        "query_type": "industry_news",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-        "entity": "TSMC"
+        "claim_title": null,
+        "entity": "Microsoft"
       },
       {
-        "query": "Foxconn iPhone assembly capacity labor issues",
-        "query_type": "supplier",
-        "provider": "duckduckgo",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
-        "entity": "Foxconn"
-      },
-      {
-        "query": "Apple services monetization cloud payments growth",
+        "query": "Apple PE ratio forward estimates",
         "query_type": "claim",
-        "provider": "duckduckgo",
-        "hit_count": 5,
-        "usable_count": 5,
-        "high_quality_count": 0,
-        "status": "ok",
-        "claim_title": "Installed base growth underpins Services monetization",
-        "entity": null
-      },
-      {
-        "query": "Apple PE ratio forward valuation 2026",
-        "query_type": "claim",
-        "provider": "duckduckgo",
+        "provider": "tavily",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
@@ -401,24 +423,336 @@
         "entity": null
       },
       {
-        "query": "TSMC AAPL supplier demand OR capex OR supply",
-        "query_type": "supplier",
-        "provider": "duckduckgo",
+        "query": "Apple PE ratio forward estimates",
+        "query_type": "claim",
+        "provider": "exa",
         "hit_count": 5,
         "usable_count": 5,
         "high_quality_count": 0,
         "status": "ok",
-        "claim_title": null,
-        "entity": "TSMC"
+        "claim_title": "Valuation multiple is elevated relative to growth",
+        "entity": null
+      },
+      {
+        "query": "Apple EPS growth forecast",
+        "query_type": "claim",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Valuation multiple is elevated relative to growth",
+        "entity": null
+      },
+      {
+        "query": "Apple EPS growth forecast",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Valuation multiple is elevated relative to growth",
+        "entity": null
+      },
+      {
+        "query": "Apple tariff costs impact",
+        "query_type": "claim",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 2,
+        "status": "ok",
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple tariff costs impact",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple iPhone supply constraints",
+        "query_type": "claim",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple iPhone supply constraints",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+        "entity": null
+      },
+      {
+        "query": "Apple installed base growth",
+        "query_type": "claim",
+        "provider": "tavily",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Installed base growth underpins Services monetization",
+        "entity": null
+      },
+      {
+        "query": "Apple installed base growth",
+        "query_type": "claim",
+        "provider": "exa",
+        "hit_count": 5,
+        "usable_count": 5,
+        "high_quality_count": 0,
+        "status": "ok",
+        "claim_title": "Installed base growth underpins Services monetization",
+        "entity": null
       }
     ],
-    "duplicates_removed": 6,
-    "raw_count_before_dedupe": 90,
+    "duplicates_removed": 11,
+    "raw_count_before_dedupe": 141,
     "coverage_gaps": [
       "No customer-related documents were retrieved.",
       "No Tier-2 dated independent news (Reuters/Bloomberg/FT/WSJ/CNBC) in the 30-day window."
     ],
     "providers": {
+      "tavily": {
+        "provider": "tavily",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Apple latest official news and announcements",
+            "query_type": "company_official",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 1,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 907
+          },
+          {
+            "query": "Apple earnings call transcript recent quarter",
+            "query_type": "company_earnings",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 3277
+          },
+          {
+            "query": "Apple news last 30 days",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2869
+          },
+          {
+            "query": "consumer electronics industry trends 2025",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 2,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 4366
+          },
+          {
+            "query": "Samsung smartphone market share recent",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 2,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 4484
+          },
+          {
+            "query": "Apple PE ratio forward estimates",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 921
+          },
+          {
+            "query": "Apple EPS growth forecast",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1527
+          },
+          {
+            "query": "Apple tariff costs impact",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 2,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1617
+          },
+          {
+            "query": "Apple iPhone supply constraints",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 704
+          },
+          {
+            "query": "Apple installed base growth",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1727
+          }
+        ],
+        "hit_count": 50,
+        "usable_count": 50,
+        "high_quality_count": 7,
+        "full_text_count": 50,
+        "dated_count": 0,
+        "error": null
+      },
+      "exa": {
+        "provider": "exa",
+        "status": "ok",
+        "queries": [
+          {
+            "query": "Apple news last 30 days",
+            "query_type": "company_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1157
+          },
+          {
+            "query": "consumer electronics industry trends 2025",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 2543
+          },
+          {
+            "query": "Samsung smartphone market share recent",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1564
+          },
+          {
+            "query": "Google Pixel AI features competition",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1650
+          },
+          {
+            "query": "Microsoft AI services competition Apple",
+            "query_type": "industry_news",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1151
+          },
+          {
+            "query": "Apple PE ratio forward estimates",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1095
+          },
+          {
+            "query": "Apple EPS growth forecast",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 3914
+          },
+          {
+            "query": "Apple tariff costs impact",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1121
+          },
+          {
+            "query": "Apple iPhone supply constraints",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1709
+          },
+          {
+            "query": "Apple installed base growth",
+            "query_type": "claim",
+            "hit_count": 5,
+            "usable_count": 5,
+            "high_quality_count": 0,
+            "status": "ok",
+            "error": null,
+            "latency_ms": 1033
+          }
+        ],
+        "hit_count": 50,
+        "usable_count": 50,
+        "high_quality_count": 0,
+        "full_text_count": 49,
+        "dated_count": 46,
+        "error": null
+      },
       "alpha_vantage": {
         "provider": "alpha_vantage",
         "status": "partial",
@@ -453,7 +787,7 @@
       },
       "fred": {
         "provider": "fred",
-        "status": "partial",
+        "status": "ok",
         "queries": [
           {
             "query": "macro_series",
@@ -461,8 +795,8 @@
             "hit_count": 11,
             "usable_count": 11,
             "high_quality_count": 11,
-            "status": "partial",
-            "error": "FRED_API_KEY missing; used keyless CSV fallback where possible",
+            "status": "ok",
+            "error": null,
             "latency_ms": null
           }
         ],
@@ -471,371 +805,284 @@
         "high_quality_count": 11,
         "full_text_count": 11,
         "dated_count": 11,
-        "error": "FRED_API_KEY missing; used keyless CSV fallback where possible"
-      },
-      "duckduckgo": {
-        "provider": "duckduckgo",
-        "status": "ok",
-        "queries": [
-          {
-            "query": "Apple latest news official announcements",
-            "query_type": "company_official",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 657
-          },
-          {
-            "query": "Apple earnings call transcript recent quarter",
-            "query_type": "company_earnings",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 593
-          },
-          {
-            "query": "Apple news last 30 days",
-            "query_type": "company_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 637
-          },
-          {
-            "query": "consumer electronics industry trends 2025",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 668
-          },
-          {
-            "query": "Google Android AI features competition",
-            "query_type": "industry_news",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 1,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 685
-          },
-          {
-            "query": "TSMC advanced chip capacity constraints 2026",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 626
-          },
-          {
-            "query": "Foxconn iPhone assembly capacity labor issues",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 599
-          },
-          {
-            "query": "Apple services monetization cloud payments growth",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 608
-          },
-          {
-            "query": "Apple PE ratio forward valuation 2026",
-            "query_type": "claim",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 594
-          },
-          {
-            "query": "TSMC AAPL supplier demand OR capex OR supply",
-            "query_type": "supplier",
-            "hit_count": 5,
-            "usable_count": 5,
-            "high_quality_count": 0,
-            "status": "ok",
-            "error": null,
-            "latency_ms": 608
-          }
-        ],
-        "hit_count": 50,
-        "usable_count": 50,
-        "high_quality_count": 1,
-        "full_text_count": 0,
-        "dated_count": 2,
         "error": null
-      },
-      "tavily": {
-        "provider": "tavily",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "TAVILY_API_KEY missing"
-      },
-      "exa": {
-        "provider": "exa",
-        "status": "not_configured",
-        "queries": [],
-        "hit_count": 0,
-        "usable_count": 0,
-        "high_quality_count": 0,
-        "full_text_count": 0,
-        "dated_count": 0,
-        "error": "EXA_API_KEY missing"
       }
     },
     "tavily_vs_exa": {
-      "tavily_status": "not_configured",
-      "exa_status": "not_configured",
+      "tavily_status": "ok",
+      "exa_status": "ok",
       "tavily": {
-        "hit_count": 0,
+        "hit_count": 46,
         "dated_recent": 0,
-        "full_text": 0,
-        "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
+        "full_text": 46,
+        "tier1_2": 6,
+        "news": 16,
+        "industry": 9,
         "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "unique_domains": [
+          "9to5google.com",
+          "9to5mac.com",
+          "aboveavalon.com",
+          "apple.com",
+          "appleinsider.com",
+          "cnbc.com",
+          "developer.apple.com",
+          "docs.fastlane.tools",
+          "finance.yahoo.com",
+          "finbox.com",
+          "fool.com",
+          "fullratio.com",
+          "instagram.com",
+          "investing.com",
+          "kiplinger.com",
+          "ktla.com",
+          "lightreading.com",
+          "macrotrends.net",
+          "macrumors.com",
+          "manilatimes.net"
+        ],
+        "avg_full_text_chars": 14376
       },
       "exa": {
-        "hit_count": 0,
-        "dated_recent": 0,
-        "full_text": 0,
+        "hit_count": 50,
+        "dated_recent": 46,
+        "full_text": 50,
         "tier1_2": 0,
-        "news": 0,
-        "industry": 0,
+        "news": 25,
+        "industry": 20,
         "customer_supplier": 0,
-        "unique_domains": [],
-        "avg_full_text_chars": 0
+        "unique_domains": [
+          "247wallst.com",
+          "9to5google.com",
+          "9to5mac.com",
+          "ainvest.com",
+          "androidpolice.com",
+          "apple.com",
+          "applemagazine.com",
+          "arstechnica.com",
+          "asymco.com",
+          "beancount.io",
+          "benzinga.com",
+          "beyondlink.live",
+          "cfodive.com",
+          "chartmill.com",
+          "convex-trading-production.up.railway.app",
+          "counterpointresearch.com",
+          "delhiprofessionals.com",
+          "electronics-brands.com",
+          "en.edaily.co.kr",
+          "fool.com"
+        ],
+        "avg_full_text_chars": 9482
       },
-      "better_for_news": "none",
-      "better_for_industry": "none",
+      "better_for_news": "exa",
+      "better_for_industry": "exa",
       "better_for_customer_supplier": "none",
-      "better_for_full_text": "none",
+      "better_for_full_text": "tavily",
       "note": "Tavily/Exa are discovery providers. Publisher quality is taken from the original URL."
     },
     "alphavantage_overview": {
       "present": false
     },
     "warnings": [],
-    "evidence_extracted": 9,
+    "evidence_extracted": 15,
     "window_days": 30,
     "valuable_domains": [
+      "arstechnica.com",
       "barrons.com",
       "cnbc.com",
       "fred.stlouisfed.org",
-      "sec.gov"
+      "lightreading.com",
+      "nytimes.com",
+      "reuters.com",
+      "sec.gov",
+      "wsj.com"
     ]
   },
-  "duplicates_removed": 6,
-  "raw_count": 90,
-  "evidence_extracted": 9,
-  "news_hits": 22,
+  "duplicates_removed": 11,
+  "raw_count": 141,
+  "evidence_extracted": 15,
+  "news_hits": 64,
   "sample_documents": [
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "ca.investing.com",
+      "source_family": "apple.com",
       "source_tier": 4,
-      "title": "Form 8K Smith & Wesson Brands Inc For: 16 September By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/form-8k-smith--wesson-brands-inc-for-16-september-93CH-4842424",
-      "source_domain": "ca.investing.com",
-      "published_at": "2026-09-16",
+      "title": "Siri AI, a profoundly more capable and personal assistant, is here - Apple",
+      "url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+      "source_domain": "apple.com",
+      "published_at": "2026-09-14",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
+      "is_full_text": true,
+      "query": "Apple news last 30 days",
       "query_type": "company_news",
-      "text_chars": 0
+      "text_chars": 22799
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "ca.investing.com",
-      "source_tier": 4,
-      "title": "Titan America stock hits 52-week low at 13.89 USD By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/titan-america-stock-hits-52week-low-at-1389-usd-93CH-4842248",
-      "source_domain": "ca.investing.com",
-      "published_at": "2026-09-16",
+      "source_family": "arstechnica.com",
+      "source_tier": 3,
+      "title": "Apple releases iOS 27, macOS Golden Gate 27 with Siri AI and Liquid Glass refinements - Ars Technica",
+      "url": "https://arstechnica.com/apple/2026/09/apple-releases-ios-27-macos-golden-gate-27-with-siri-ai-and-liquid-glass-refinements/",
+      "source_domain": "arstechnica.com",
+      "published_at": "2026-09-14",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
+      "is_full_text": true,
+      "query": "Apple news last 30 days",
       "query_type": "company_news",
-      "text_chars": 0
+      "text_chars": 4007
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
+      "source_family": "macrumors.com",
       "source_tier": 4,
-      "title": "Snap targets enterprises with Salesforce, Nvidia AI tools for augmented-reality glasses",
-      "url": "https://finance.yahoo.com/technology/ai/articles/snap-targets-enterprises-salesforce-nvidia-234512914.html",
-      "source_domain": "finance.yahoo.com",
+      "title": "Apple May Return to Server Market With Nvidia Technology - MacRumors",
+      "url": "https://www.macrumors.com/2026/09/16/apple-may-return-to-server-market/",
+      "source_domain": "macrumors.com",
       "published_at": "2026-09-16",
       "is_dated": true,
       "is_full_text": true,
-      "query": "AAPL news",
+      "query": "Apple news last 30 days",
       "query_type": "company_news",
-      "text_chars": 2342
+      "text_chars": 3995
     },
     {
-      "provider": "alpha_vantage",
+      "provider": "exa",
       "source_type": "aggregator",
-      "source_family": "finance.yahoo.com",
+      "source_family": "thenextweb.com",
       "source_tier": 4,
-      "title": "Salesforce’s Marc Benioff to AI industry: Regulate yourselves or get sued",
-      "url": "https://finance.yahoo.com/technology/ai/articles/salesforce-marc-benioff-ai-industry-214856057.html",
-      "source_domain": "finance.yahoo.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 6926
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "marketbeat.com",
-      "source_tier": 4,
-      "title": "Movado’s Turnaround Gains Momentum",
-      "url": "https://www.marketbeat.com/articles/movados-turnaround-gains-momentum/",
-      "source_domain": "marketbeat.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 5747
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "tradingkey.com",
-      "source_tier": 4,
-      "title": "Western Digital Corp Stock (WDC) Moved Up by 3.48% on Sep 16: What Signal Does It Send?",
-      "url": "https://www.tradingkey.com/news/market-movers/262171106-market-movers-wdc-20260916",
-      "source_domain": "tradingkey.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 3427
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "kalkinemedia.com",
-      "source_tier": 4,
-      "title": "Why Traders Are Watching Colgate-Palmolive in dividend stocks Today?",
-      "url": "https://kalkinemedia.com/us/stocks/dividend/why-traders-are-watching-colgate-palmolive-in-dividend-stocks-today",
-      "source_domain": "kalkinemedia.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": true,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 7901
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "inc.com",
-      "source_tier": 4,
-      "title": "Apple Had a Successor Ready. Does Your Business?",
-      "url": "https://www.inc.com/david-finkel/apple-had-a-successor-transition-plan-does-your-business/91405733",
-      "source_domain": "inc.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "ca.investing.com",
-      "source_tier": 4,
-      "title": "Form 8K HIVE Digital Technologies Ltd For: 16 September By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/form-8k-hive-digital-technologies-ltd-for-16-september-93CH-4841398",
-      "source_domain": "ca.investing.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "foreignpolicyjournal.com",
-      "source_tier": 4,
-      "title": "Qualcomm (NASDAQ: QCOM) Hits Two-Month High As Amazon AI Chip Deal Reshapes Growth Outlook",
-      "url": "https://www.foreignpolicyjournal.com/2026/09/16/qualcomm-nasdaq-qcom-hits-two-month-high-as-amazon-ai-chip-deal-reshapes-growth-outlook/",
-      "source_domain": "foreignpolicyjournal.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "fool.com",
-      "source_tier": 4,
-      "title": "Applied Materials vs. Qualcomm: Which Tech Stock Is a Better Buy in 2026?",
-      "url": "https://www.fool.com/coverage/better-buy/2026/09/15/applied-materials-vs-qualcomm-which-tech-stock-is-a-better-buy-in-2026/",
-      "source_domain": "fool.com",
-      "published_at": "2026-09-16",
-      "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
-      "query_type": "company_news",
-      "text_chars": 0
-    },
-    {
-      "provider": "alpha_vantage",
-      "source_type": "aggregator",
-      "source_family": "ca.investing.com",
-      "source_tier": 4,
-      "title": "Form 8K ONEOK For: 15 September By Investing.com",
-      "url": "https://ca.investing.com/news/stock-market-news/form-8k-oneok-for-15-september-93CH-4840763",
-      "source_domain": "ca.investing.com",
+      "title": "Apple releases iOS 27 and Siri AI, but you’ll have to join a waitlist",
+      "url": "https://thenextweb.com/news/apple-ios-27-siri-ai-release-icloud-plus-child-safety",
+      "source_domain": "thenextweb.com",
       "published_at": "2026-09-15",
       "is_dated": true,
-      "is_full_text": false,
-      "query": "AAPL news",
+      "is_full_text": true,
+      "query": "Apple news last 30 days",
       "query_type": "company_news",
-      "text_chars": 0
+      "text_chars": 9541
+    },
+    {
+      "provider": "exa",
+      "source_type": "aggregator",
+      "source_family": "techspot.com",
+      "source_tier": 4,
+      "title": "Apple details how the iPhone 18 Pro can cryptographically prove a photo hasn't been faked by AI | TechSpot",
+      "url": "https://www.techspot.com/news/113864-apple-details-how-iphone-18-pro-can-cryptographically.html",
+      "source_domain": "techspot.com",
+      "published_at": "2026-09-16",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Apple news last 30 days",
+      "query_type": "company_news",
+      "text_chars": 5574
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "nielseniq.com",
+      "source_tier": 4,
+      "title": "Consumer Tech Trends 2027: Tech & Durables Report | NIQ",
+      "url": "https://nielseniq.com/global/en/insights/report/2026/consumer-tech-trends-2027/",
+      "source_domain": "nielseniq.com",
+      "published_at": "2026-08-31",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "consumer electronics industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 24000
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "globenewsagency.com",
+      "source_tier": 4,
+      "title": "Consumer Tech Growth to Slow in 2026 as Demand Shifts to Europe and MEA | GlobeNewsAgency",
+      "url": "https://globenewsagency.com/press-wire/consumer-tech-growth-2026-demand-shifts-europe-mea",
+      "source_domain": "globenewsagency.com",
+      "published_at": "2026-08-23",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "consumer electronics industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 7827
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "giiresearch.com",
+      "source_tier": 4,
+      "title": "The World Market for Consumer Electronics",
+      "url": "https://www.giiresearch.com/report/eo2128727-world-market-consumer-electronics.html",
+      "source_domain": "giiresearch.com",
+      "published_at": "2026-09-03",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "consumer electronics industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 2926
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "electronics-brands.com",
+      "source_tier": 4,
+      "title": "🔮 Future Outlook for Consumer Electronics Brands (2026): 10 Trends Reshaping the Industry - Electronics Brands",
+      "url": "https://www.electronics-brands.com/future-outlook-for-consumer-electronics-brands/",
+      "source_domain": "electronics-brands.com",
+      "published_at": "2026-09-06",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "consumer electronics industry trends 2025",
+      "query_type": "industry_news",
+      "text_chars": 24000
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "en.edaily.co.kr",
+      "source_tier": 4,
+      "title": "Samsung Regains Top Spot in Global Smartphone Market After 4 Years… Apple Also Posts Record High - EDAILY",
+      "url": "https://en.edaily.co.kr/news/eda202609175443/",
+      "source_domain": "en.edaily.co.kr",
+      "published_at": "2026-09-17",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Samsung smartphone market share recent",
+      "query_type": "industry_news",
+      "text_chars": 3715
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "counterpointresearch.com",
+      "source_tier": 4,
+      "title": "Global Smartphone Market Share: Quarterly",
+      "url": "https://counterpointresearch.com/default.htm/insights/global-smartphone-share",
+      "source_domain": "counterpointresearch.com",
+      "published_at": "2026-08-27",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Samsung smartphone market share recent",
+      "query_type": "industry_news",
+      "text_chars": 23011
+    },
+    {
+      "provider": "exa",
+      "source_type": "industry",
+      "source_family": "counterpointresearch.com",
+      "source_tier": 4,
+      "title": "Global Smartphone Market to Fall 14% in 2026 as Samsung is Expected to Retake No. 1 Position",
+      "url": "https://counterpointresearch.com/en/insights/global-smartphone-market-to-fall-14-percent-in-2026-as-samsung-to-retake-number-1-position",
+      "source_domain": "counterpointresearch.com",
+      "published_at": "2026-08-22",
+      "is_dated": true,
+      "is_full_text": true,
+      "query": "Samsung smartphone market share recent",
+      "query_type": "industry_news",
+      "text_chars": 9284
     }
   ],
   "sample_facts": [
@@ -858,33 +1105,33 @@
       "source_tier": 1
     },
     {
-      "fact": "Apple reported double-digit revenue growth across iPhone, Mac and Services and in every geographic segment for the June quarter.",
+      "fact": "Apple's fiscal 2026 third quarter ended June 27, 2026, and set June quarter records for total company revenue and EPS, with iPhone, Mac and Services revenue setting new June quarter records.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
       "source_time": "2026-07-30",
       "source_tier": 1
     },
     {
-      "fact": "Apple introduced an all-new Siri AI at WWDC26.",
+      "fact": "Apple CEO Tim Cook said the company reported double-digit revenue growth across iPhone, Mac and Services, and in every geographic segment, in the fiscal 2026 third quarter.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
       "source_time": "2026-07-30",
       "source_tier": 1
     },
     {
-      "fact": "Apple's fiscal 2026 third quarter ended June 27, 2026.",
+      "fact": "At WWDC26, Apple introduced the all-new Siri AI alongside its latest software innovations and new child safety features.",
       "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
       "source_time": "2026-07-30",
       "source_tier": 1
     },
     {
-      "fact": "TSMC raised its 2026 CAPEX ceiling from $56B to $64B, with early 2027 estimates of $76B–$80B.",
-      "source_url": "https://whychips.com/tsmc-raises-2026-capex-to-64b-expands-chip-capacity-for-ai/",
-      "source_time": null,
+      "fact": "Apple reported a 22% year-over-year increase in iPhone revenue in Q3 fiscal 2026, totaling $54.3 billion, aided by strong Pro model sales.",
+      "source_url": "https://wallstreetwaves.com/evaluating-the-33-54x-pe-ratio-of-apple-stock-should-you-buy-sell-or-hold/",
+      "source_time": "2026-08-21",
       "source_tier": 4
     },
     {
-      "fact": "TSMC guided 2026 CAPEX first at $52B–$56B and now raised the range to $60B–$64B.",
-      "source_url": "https://whychips.com/tsmc-raises-2026-capex-to-64b-expands-chip-capacity-for-ai/",
-      "source_time": null,
+      "fact": "Apple's Services segment reached a record $30.7 billion in revenue, up 12% year-over-year.",
+      "source_url": "https://wallstreetwaves.com/evaluating-the-33-54x-pe-ratio-of-apple-stock-should-you-buy-sell-or-hold/",
+      "source_time": "2026-08-21",
       "source_tier": 4
     }
   ],
