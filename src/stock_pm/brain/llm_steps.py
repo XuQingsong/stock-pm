@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from importlib.resources import files
 from typing import Any
 
@@ -110,6 +111,18 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
     oppose = _filter_ids(raw.get("opposing_evidence_ids"), allowed_ids)
     if core and not support:
         return None
+    if core and not compact_text(raw.get("why_it_matters") or "", 400):
+        return None
+    statement_l = statement.lower()
+    if core and re.search(
+        r"\b(revenue|eps|earnings|sales|profit)\b.{0,24}\b(is|are|was|were)\b.{0,16}\b(growing|up|down|increasing|strong|higher|lower)\b",
+        statement_l,
+    ):
+        return None
+    if core and not compact_text(raw.get("uncertainty") or (raw.get("scores") or {}).get("uncertainty") or "", 40):
+        return None
+    if core and not compact_text(raw.get("valuation_relevance") or (raw.get("scores") or {}).get("valuation_relevance") or "", 40):
+        return None
     claim_type = str(raw.get("claim_type") or "operating")
     if claim_type not in CLAIM_TYPES:
         claim_type = "operating"
@@ -136,6 +149,7 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
         "why_it_matters": compact_text(raw.get("why_it_matters") or "", 400),
         "financial_driver": compact_text(raw.get("financial_driver") or "", 80) or None,
         "why_core": compact_text(raw.get("why_core") or "", 240),
+        "evidence_boundary": compact_text(raw.get("evidence_boundary") or "", 400) or None,
         "supporting_evidence_ids": support,
         "opposing_evidence_ids": oppose,
         "missing_evidence": [compact_text(item, 160) for item in (raw.get("missing_evidence") or []) if str(item).strip()][:6],

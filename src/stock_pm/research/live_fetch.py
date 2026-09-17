@@ -175,7 +175,7 @@ class LiveResearchFetchers:
         out["submissions"] = payload
         return out
 
-    def sec_company_facts(self, cik: str | None) -> dict[str, Any]:
+    def sec_company_facts(self, cik: str | None, *, fiscal_year_end_month: int | None = None) -> dict[str, Any]:
         ua = self.sec_user_agent()
         if not ua or not cik:
             return {"quarters": [], "error": "sec_user_agent_not_configured" if not ua else "missing_cik"}
@@ -191,7 +191,11 @@ class LiveResearchFetchers:
         except FetchError as exc:
             return {"quarters": [], "error": exc.reason_code}
         payload = result.payload if isinstance(result.payload, dict) else {}
-        return {"quarters": _quarters_from_companyfacts(payload), "error": None, "source": "sec.companyfacts"}
+        return {
+            "quarters": _quarters_from_companyfacts(payload, fiscal_year_end_month=fiscal_year_end_month),
+            "error": None,
+            "source": "sec.companyfacts",
+        }
 
     def earnings_bundle(self, symbol: str) -> dict[str, Any]:
         captured = _now()
@@ -224,9 +228,12 @@ class LiveResearchFetchers:
             error = None
         except Exception as exc:
             earnings, fundamentals, news, source, error = [], None, [], None, str(exc)[:300]
-        from stock_pm.research.issuer import cik_for
+        from stock_pm.research.issuer import cik_for, fiscal_year_end_month_for
 
-        facts = self.sec_company_facts(cik_for(symbol) or None)
+        ident = self.sec_identity(symbol) if not cik_for(symbol) else {}
+        cik = cik_for(symbol) or (ident.get("cik") if isinstance(ident, dict) else None)
+        fye = fiscal_year_end_month_for(symbol) or (ident.get("fiscal_year_end_month") if isinstance(ident, dict) else None)
+        facts = self.sec_company_facts(cik or None, fiscal_year_end_month=fye)
         if facts.get("quarters"):
             earnings = merge_facts_into_earnings(symbol, earnings, facts["quarters"])
             fundamentals = enrich_fundamentals_from_facts(fundamentals, facts)
@@ -727,23 +734,48 @@ def _duration_days(row: dict[str, Any]) -> int | None:
         return None
 
 
+def _is_quarterly_duration(row: dict[str, Any]) -> bool:
+    days = _duration_days(row)
+    return days is not None and 60 <= days <= 120
+
+
+def _is_annual_duration(row: dict[str, Any]) -> bool:
+    days = _duration_days(row)
+    return days is not None and 330 <= days <= 400
+
+
 def _collapse_points(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    best: dict[tuple[str, str], dict[str, Any]] = {}
+    """One fact per period-end. Prefer 60–120 day quarterly duration over YTD/FY."""
+    best: dict[str, dict[str, Any]] = {}
     for row in points:
-        key = (str(row.get("end") or ""), str(row.get("fp") or ""))
+        key = str(row.get("end") or "")[:10]
+        if not key:
+            continue
         prev = best.get(key)
         if prev is None:
             best[key] = row
             continue
-        d_new = _duration_days(row)
-        d_old = _duration_days(prev)
-        new_q = d_new is not None and 60 <= d_new <= 120
-        old_q = d_old is not None and 60 <= d_old <= 120
+        new_q = _is_quarterly_duration(row)
+        old_q = _is_quarterly_duration(prev)
         if new_q != old_q:
             if new_q:
                 best[key] = row
             continue
-        if str(row.get("filed") or "") >= str(prev.get("filed") or ""):
+        if str(row.get("filed") or "") > str(prev.get("filed") or ""):
+            best[key] = row
+    return list(best.values())
+
+
+def _collapse_annual_points(points: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    best: dict[str, dict[str, Any]] = {}
+    for row in points:
+        if not _is_annual_duration(row):
+            continue
+        key = str(row.get("end") or "")[:10]
+        if not key:
+            continue
+        prev = best.get(key)
+        if prev is None or str(row.get("filed") or "") > str(prev.get("filed") or ""):
             best[key] = row
     return list(best.values())
 
@@ -786,10 +818,10 @@ def _share_points(payload: dict[str, Any]) -> list[dict[str, Any]]:
                             "filed": row.get("filed"),
                         }
                     )
-    return _collapse_points(points)
+    return [row for row in _collapse_points(points) if _is_quarterly_duration(row)]
 
 
-def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[str, Any]]:
+def _raw_fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[str, Any]]:
     taxonomies = (payload.get("facts") or {})
     trees = [taxonomies.get("us-gaap") or {}, taxonomies.get("ifrs-full") or {}]
     points: list[dict[str, Any]] = []
@@ -810,7 +842,7 @@ def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[s
                     fp = str(row.get("fp") or "").upper()
                     if form not in {"10-Q", "10-K", "10-Q/A", "10-K/A", "20-F", "6-K"}:
                         continue
-                    if fp not in {"Q1", "Q2", "Q3", "Q4"}:
+                    if fp not in {"Q1", "Q2", "Q3", "Q4", "FY"}:
                         continue
                     end = str(row.get("end") or "")[:10]
                     val = _number(row.get("val"))
@@ -827,44 +859,145 @@ def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[s
                             "filed": row.get("filed"),
                         }
                     )
-    return _collapse_points(points)
+    return points
 
 
-def _quarters_from_companyfacts(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    revenue = _fact_points(
-        payload,
-        (
-            "RevenueFromContractWithCustomerExcludingAssessedTax",
-            "Revenues",
-            "SalesRevenueNet",
-            "RevenueFromContractWithCustomerIncludingAssessedTax",
-            "SalesRevenueGoodsNet",
-            "RevenueFromContractsWithCustomers",
-        ),
+def _fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[str, Any]]:
+    return [row for row in _collapse_points(_raw_fact_points(payload, names)) if _is_quarterly_duration(row)]
+
+
+def _annual_fact_points(payload: dict[str, Any], names: tuple[str, ...]) -> list[dict[str, Any]]:
+    return _collapse_annual_points(_raw_fact_points(payload, names))
+
+
+def _derive_q4_from_annual(
+    quarterly: list[dict[str, Any]],
+    annuals: list[dict[str, Any]],
+    *,
+    fiscal_year_end_month: int | None,
+) -> list[dict[str, Any]]:
+    """10-K often files FY duration only. Q4 = FY − Q1 − Q2 − Q3 for that fiscal year."""
+    from stock_pm.research.issuer import fiscal_label_from_period_end
+
+    by_end = {str(row.get("end") or "")[:10]: row for row in quarterly if row.get("end")}
+    by_fy_fp: dict[tuple[int, str], dict[str, Any]] = {}
+    for row in quarterly:
+        fy, fp = fiscal_label_from_period_end(row.get("end"), fiscal_year_end_month)
+        if fy and fp:
+            by_fy_fp[(int(fy), str(fp))] = row
+    for row in annuals:
+        end = str(row.get("end") or "")[:10]
+        if not end or end in by_end:
+            continue
+        fy, fp = fiscal_label_from_period_end(end, fiscal_year_end_month)
+        if not fy or fp != "Q4":
+            continue
+        q1 = by_fy_fp.get((int(fy), "Q1"))
+        q2 = by_fy_fp.get((int(fy), "Q2"))
+        q3 = by_fy_fp.get((int(fy), "Q3"))
+        if not (q1 and q2 and q3):
+            continue
+        parts = [q1.get("val"), q2.get("val"), q3.get("val"), row.get("val")]
+        if any(item is None for item in parts):
+            continue
+        derived = float(row["val"]) - float(q1["val"]) - float(q2["val"]) - float(q3["val"])
+        annual_val = float(row["val"])
+        if annual_val > 0 and (derived <= 0 or derived > annual_val * 0.75):
+            continue
+        scale = max(abs(float(q1["val"])), abs(float(q2["val"])), abs(float(q3["val"])), 1e-9)
+        if abs(derived) > 8.0 * scale:
+            continue
+        if abs(annual_val) < 1000:
+            derived = round(derived, 4)
+        by_end[end] = {
+            "end": end,
+            "start": str(q3.get("end") or "")[:10],
+            "val": derived,
+            "form": row.get("form") or "10-K",
+            "fp": "Q4",
+            "fy": fy,
+            "filed": row.get("filed"),
+            "derived_q4": True,
+        }
+    return list(by_end.values())
+
+
+def _parse_day(value: Any) -> date | None:
+    text = str(value or "")[:10]
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+REVENUE_CONCEPTS = (
+    "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "Revenues",
+    "SalesRevenueNet",
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+    "SalesRevenueGoodsNet",
+    "RevenueFromContractsWithCustomers",
+)
+NET_INCOME_CONCEPTS = (
+    "ProfitLoss",
+    "NetIncomeLoss",
+    "NetIncomeLossAvailableToCommonStockholdersBasic",
+    "NetIncomeLossAvailableToCommonStockholdersDiluted",
+)
+EPS_CONCEPTS = ("EarningsPerShareDiluted", "EarningsPerShareBasic")
+
+
+def _quarters_from_companyfacts(payload: dict[str, Any], *, fiscal_year_end_month: int | None = None) -> list[dict[str, Any]]:
+    from stock_pm.research.issuer import fiscal_label_from_period_end
+
+    revenue = _derive_q4_from_annual(
+        _fact_points(payload, REVENUE_CONCEPTS),
+        _annual_fact_points(payload, REVENUE_CONCEPTS),
+        fiscal_year_end_month=fiscal_year_end_month,
     )
-    net_income = _fact_points(
-        payload,
-        (
-            "ProfitLoss",
-            "NetIncomeLoss",
-            "NetIncomeLossAvailableToCommonStockholdersBasic",
-            "NetIncomeLossAvailableToCommonStockholdersDiluted",
-        ),
+    net_income = _derive_q4_from_annual(
+        _fact_points(payload, NET_INCOME_CONCEPTS),
+        _annual_fact_points(payload, NET_INCOME_CONCEPTS),
+        fiscal_year_end_month=fiscal_year_end_month,
     )
-    eps = _fact_points(payload, ("EarningsPerShareDiluted", "EarningsPerShareBasic"))
-    gross = _fact_points(payload, ("GrossProfit",))
-    operating = _fact_points(payload, ("OperatingIncomeLoss",))
+    eps = _derive_q4_from_annual(
+        _fact_points(payload, EPS_CONCEPTS),
+        _annual_fact_points(payload, EPS_CONCEPTS),
+        fiscal_year_end_month=fiscal_year_end_month,
+    )
+    gross = _derive_q4_from_annual(
+        _fact_points(payload, ("GrossProfit",)),
+        _annual_fact_points(payload, ("GrossProfit",)),
+        fiscal_year_end_month=fiscal_year_end_month,
+    )
+    operating = _derive_q4_from_annual(
+        _fact_points(payload, ("OperatingIncomeLoss",)),
+        _annual_fact_points(payload, ("OperatingIncomeLoss",)),
+        fiscal_year_end_month=fiscal_year_end_month,
+    )
     shares = _share_points(payload)
     by_end: dict[str, dict[str, Any]] = {}
     for row in revenue:
-        by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy"), "form": row.get("form"), "filed": row.get("filed")})
+        fy, fp = fiscal_label_from_period_end(row["end"], fiscal_year_end_month)
+        by_end.setdefault(
+            row["end"],
+            {
+                "period_end": row["end"],
+                "fiscal_period": fp or row["fp"],
+                "fiscal_year": fy or row.get("fy"),
+                "form": row.get("form"),
+                "filed": row.get("filed"),
+            },
+        )
         by_end[row["end"]]["revenue_actual"] = row["val"]
     for row in net_income:
-        by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy")})
-        by_end[row["end"]]["net_income_actual"] = row["val"]
+        item = by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy")})
+        item["net_income_actual"] = row["val"]
     for row in eps:
-        by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy")})
-        by_end[row["end"]]["eps_actual"] = row["val"]
+        item = by_end.setdefault(row["end"], {"period_end": row["end"], "fiscal_period": row["fp"], "fiscal_year": row.get("fy")})
+        item["eps_actual"] = row["val"]
     for row in gross:
         item = by_end.get(row["end"])
         if item and item.get("revenue_actual"):
@@ -878,70 +1011,102 @@ def _quarters_from_companyfacts(payload: dict[str, Any]) -> list[dict[str, Any]]
         if item:
             item.setdefault("provider_fields", {})["diluted_shares"] = row["val"]
     for item in by_end.values():
+        fy, fp = fiscal_label_from_period_end(item.get("period_end"), fiscal_year_end_month)
+        if fy:
+            item["fiscal_year"] = fy
+        if fp:
+            item["fiscal_period"] = fp
+        item.setdefault("provider_fields", {})["companyfacts_revenue"] = item.get("revenue_actual")
+        item["provider_fields"]["companyfacts_eps"] = item.get("eps_actual")
+        if any(row.get("derived_q4") and row.get("end") == item.get("period_end") for row in revenue):
+            item["provider_fields"]["q4_derived_from_10k"] = True
         if item.get("net_income_actual") is None:
-            eps = item.get("eps_actual")
+            eps_val = item.get("eps_actual")
             sh = (item.get("provider_fields") or {}).get("diluted_shares")
-            if eps is not None and sh not in (None, 0):
-                item["net_income_actual"] = float(eps) * float(sh)
+            if eps_val is not None and sh not in (None, 0):
+                item["net_income_actual"] = float(eps_val) * float(sh)
         rev = item.get("revenue_actual")
         ni = item.get("net_income_actual")
         if rev and ni is not None:
             item.setdefault("provider_fields", {})["net_margin_pct"] = round(100.0 * ni / rev, 1)
-    rows = sorted(by_end.values(), key=lambda item: str(item.get("period_end")), reverse=True)
+    rows = sorted(by_end.values(), key=lambda item: str(item.get("period_end") or ""), reverse=True)
     return rows[:12]
 
 
 def merge_facts_into_earnings(symbol: str, earnings: list[dict[str, Any]], facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not facts:
         return earnings
-    used = set()
+    facts_by_end = {str(fact.get("period_end") or "")[:10]: fact for fact in facts if fact.get("period_end")}
+    used: set[str] = set()
     out: list[dict[str, Any]] = []
+
+    def _near(end: date, target: date, days: int) -> bool:
+        return abs((end - target).days) <= days
+
     for row in earnings:
         item = dict(row)
         matched = None
-        report = str(item.get("period_end") or item.get("report_date") or "")[:10]
-        try:
-            report_day = date.fromisoformat(report) if report else None
-        except ValueError:
-            report_day = None
-        for fact in facts:
-            key = str(fact.get("period_end"))
-            if key in used:
-                continue
-            try:
-                end = date.fromisoformat(key)
-            except ValueError:
-                continue
-            if report_day and abs((end - report_day).days) <= 45:
-                matched = fact
-                used.add(key)
-                break
+        period = _parse_day(item.get("period_end"))
+        report = _parse_day(item.get("report_date"))
+        if period:
+            for key, fact in facts_by_end.items():
+                end = _parse_day(key)
+                if end and _near(end, period, 10):
+                    matched = fact
+                    break
+        if matched is None and report:
+            candidates: list[tuple[date, dict[str, Any]]] = []
+            for key, fact in facts_by_end.items():
+                end = _parse_day(key)
+                if end and end <= report and (report - end).days <= 95:
+                    candidates.append((end, fact))
+            if candidates:
+                matched = max(candidates, key=lambda pair: pair[0])[1]
         if matched:
-            if item.get("revenue_actual") is None:
-                item["revenue_actual"] = matched.get("revenue_actual")
-            if item.get("net_income_actual") is None:
-                item["net_income_actual"] = matched.get("net_income_actual")
-            if item.get("eps_actual") is None:
-                item["eps_actual"] = matched.get("eps_actual")
-            if not item.get("period_end"):
-                item["period_end"] = matched.get("period_end")
+            key = str(matched.get("period_end") or "")[:10]
+            used.add(key)
             fields = dict(item.get("provider_fields") or {})
+            if item.get("revenue_actual") is not None:
+                fields["nasdaq_revenue"] = item.get("revenue_actual")
+            if item.get("eps_actual") is not None:
+                fields["nasdaq_eps"] = item.get("eps_actual")
             fields.update(matched.get("provider_fields") or {})
+            if matched.get("revenue_actual") is not None:
+                item["revenue_actual"] = matched.get("revenue_actual")
+            if matched.get("net_income_actual") is not None:
+                item["net_income_actual"] = matched.get("net_income_actual")
+            if matched.get("eps_actual") is not None:
+                item["eps_actual"] = matched.get("eps_actual")
+            if matched.get("period_end"):
+                item["period_end"] = matched.get("period_end")
+            if matched.get("fiscal_year"):
+                item["fiscal_year"] = matched.get("fiscal_year")
+            if matched.get("fiscal_period"):
+                item["fiscal_period"] = matched.get("fiscal_period")
             item["provider_fields"] = fields
             item["source"] = ((item.get("source") or "nasdaq") + "+sec.companyfacts")
         out.append(item)
     for fact in facts:
-        if str(fact.get("period_end")) in used:
+        key = str(fact.get("period_end") or "")[:10]
+        if not key or key in used:
             continue
-        end = str(fact.get("period_end"))
+        end = _parse_day(key)
+        already = False
+        for row in out:
+            other = _parse_day(row.get("period_end"))
+            if end and other and abs((end - other).days) <= 10:
+                already = True
+                break
+        if already:
+            continue
         out.append(
             {
                 "symbol": symbol,
-                "report_date": str(fact.get("filed") or end)[:10],
+                "report_date": str(fact.get("filed") or key)[:10],
                 "report_timing": "unknown",
                 "fiscal_period": fact.get("fiscal_period") or "Quarter",
                 "fiscal_year": fact.get("fiscal_year"),
-                "period_end": end,
+                "period_end": key,
                 "currency": "USD",
                 "eps_actual": fact.get("eps_actual"),
                 "revenue_actual": fact.get("revenue_actual"),
@@ -950,38 +1115,151 @@ def merge_facts_into_earnings(symbol: str, earnings: list[dict[str, Any]], facts
                 "source": "sec.companyfacts",
             }
         )
-        if len(out) >= 12:
+        used.add(key)
+        if len([row for row in out if row.get("period_end")]) >= 16:
             break
-    out.sort(key=lambda row: str(row.get("report_date") or row.get("period_end") or ""), reverse=True)
-    return out[:12]
+    dated = [row for row in out if row.get("period_end")]
+    dated.sort(key=lambda row: str(row.get("period_end") or ""), reverse=True)
+    return dated[:16]
+
+
+def _print_score(row: dict[str, Any]) -> int:
+    fields = row.get("provider_fields") if isinstance(row.get("provider_fields"), dict) else {}
+    score = 0
+    if row.get("period_end"):
+        score += 8
+    if fields.get("companyfacts_revenue") is not None or "companyfacts" in str(row.get("source") or ""):
+        score += 4
+    if row.get("revenue_actual") is not None or row.get("revenue") is not None:
+        score += 2
+    if str(row.get("fiscal_period") or "") in {"Q1", "Q2", "Q3", "Q4"}:
+        score += 1
+    return score
+
+
+def _absorb_print_fields(winner: dict[str, Any], loser: dict[str, Any]) -> dict[str, Any]:
+    out = dict(winner)
+    fields = dict(out.get("provider_fields") or {})
+    other = loser.get("provider_fields") if isinstance(loser.get("provider_fields"), dict) else {}
+    if fields.get("nasdaq_revenue") is None:
+        fields["nasdaq_revenue"] = other.get("nasdaq_revenue") or loser.get("revenue_actual") or loser.get("revenue")
+    if fields.get("nasdaq_eps") is None:
+        fields["nasdaq_eps"] = other.get("nasdaq_eps") or loser.get("eps_actual") or loser.get("eps")
+    if fields.get("companyfacts_revenue") is None:
+        fields["companyfacts_revenue"] = other.get("companyfacts_revenue")
+    if fields.get("companyfacts_eps") is None:
+        fields["companyfacts_eps"] = other.get("companyfacts_eps")
+    out["provider_fields"] = fields
+    return out
+
+
+def dedupe_earnings_prints(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """One print per period_end. Prefer companyfacts + Q1–Q4 labels over Nasdaq month labels."""
+    by_end: dict[str, dict[str, Any]] = {}
+    leftover: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        end = str(row.get("period_end") or "")[:10]
+        if not end:
+            leftover.append(row)
+            continue
+        prev = by_end.get(end)
+        if prev is None:
+            by_end[end] = row
+        elif _print_score(row) > _print_score(prev):
+            by_end[end] = _absorb_print_fields(row, prev)
+        else:
+            by_end[end] = _absorb_print_fields(prev, row)
+    kept = list(by_end.values())
+    unused: list[dict[str, Any]] = []
+    for row in leftover:
+        report = _parse_day(row.get("report_date"))
+        absorbed = False
+        if report:
+            for idx, item in enumerate(kept):
+                end = _parse_day(item.get("period_end"))
+                if end and end <= report and (report - end).days <= 95:
+                    kept[idx] = _absorb_print_fields(item, row)
+                    absorbed = True
+                    break
+        if not absorbed:
+            unused.append(row)
+    dated = sorted(kept, key=lambda row: str(row.get("period_end") or ""), reverse=True)
+    return dated + unused
+
+
+def _contiguous_quarters(rows: list[dict[str, Any]], *, count: int = 4) -> list[dict[str, Any]]:
+    """Trailing prints must be adjacent fiscal quarters. Do not fill a missing Q4 with the prior-year Q3."""
+    picked: list[dict[str, Any]] = []
+    for row in rows:
+        if row.get("revenue_actual") is None:
+            continue
+        end = _parse_day(row.get("period_end"))
+        if end is None:
+            continue
+        if picked:
+            prev = _parse_day(picked[-1].get("period_end"))
+            if prev is None:
+                break
+            gap = (prev - end).days
+            if gap < 50:
+                continue
+            if gap > 140:
+                break
+        picked.append(row)
+        if len(picked) >= count:
+            break
+    return picked if len(picked) == count else []
 
 
 def enrich_fundamentals_from_facts(snapshot: dict[str, Any] | None, facts: dict[str, Any]) -> dict[str, Any] | None:
-    quarters = list(facts.get("quarters") or [])
-    trailing = [row.get("revenue_actual") for row in quarters[:4]]
-    revenue_ttm = sum(item for item in trailing if item is not None) if trailing and all(item is not None for item in trailing) else None
-    eps_trail = [row.get("eps_actual") for row in quarters[:4]]
-    eps_ttm = sum(item for item in eps_trail if item is not None) if eps_trail and all(item is not None for item in eps_trail) else None
+    seen: set[str] = set()
+    quarters: list[dict[str, Any]] = []
+    for row in list(facts.get("quarters") or []):
+        key = str(row.get("period_end") or "")[:10]
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        quarters.append(row)
+    quarters.sort(key=lambda item: str(item.get("period_end") or ""), reverse=True)
+    trailing_rows = _contiguous_quarters(quarters, count=4)
+    leftover = [row for row in quarters if str(row.get("period_end") or "")[:10] not in {str(item.get("period_end") or "")[:10] for item in trailing_rows}]
+    prior_rows = _contiguous_quarters(leftover, count=4) if trailing_rows else []
+    trailing = [row.get("revenue_actual") for row in trailing_rows]
+    revenue_ttm = sum(item for item in trailing if item is not None) if trailing and len(trailing) == 4 and all(item is not None for item in trailing) else None
+    prior = [row.get("revenue_actual") for row in prior_rows]
+    prior_ttm = sum(item for item in prior if item is not None) if prior and all(item is not None for item in prior) and len(prior) == 4 else None
+    eps_trail = [row.get("eps_actual") for row in trailing_rows]
+    eps_ttm = sum(item for item in eps_trail if item is not None) if eps_trail and all(item is not None for item in eps_trail) and len(eps_trail) == 4 else None
     yoy = None
-    if len(quarters) >= 5 and quarters[0].get("revenue_actual") and quarters[4].get("revenue_actual"):
-        yoy = round(100.0 * (quarters[0]["revenue_actual"] / quarters[4]["revenue_actual"] - 1.0), 2)
+    if revenue_ttm and prior_ttm:
+        yoy = round(100.0 * (revenue_ttm / prior_ttm - 1.0), 2)
     if snapshot is None and not quarters:
         return None
     out = dict(snapshot or {"source": "sec.companyfacts", "captured_at": _now(), "currency": "USD"})
-    if out.get("revenue_ttm") is None and revenue_ttm is not None:
+    if revenue_ttm is not None:
         out["revenue_ttm"] = revenue_ttm
-    if out.get("eps_ttm") is None and eps_ttm is not None:
+    if eps_ttm is not None:
         out["eps_ttm"] = eps_ttm
-    if out.get("revenue_growth_yoy_pct") is None and yoy is not None:
+    if yoy is not None:
         out["revenue_growth_yoy_pct"] = yoy
     margins = (quarters[0].get("provider_fields") or {}) if quarters else {}
-    nis = [row.get("net_income_actual") for row in quarters[:4]]
+    nis = [row.get("net_income_actual") for row in trailing_rows]
     net_income_ttm = sum(item for item in nis if item is not None) if nis and all(item is not None for item in nis) and len(nis) == 4 else None
+    if trailing_rows:
+        out["revenue_ttm"] = revenue_ttm
+        out["eps_ttm"] = eps_ttm
+        out["net_income_ttm"] = net_income_ttm if net_income_ttm is not None else out.get("net_income_ttm")
+    elif quarters:
+        out["revenue_ttm"] = None
+        out["eps_ttm"] = None
+        out.setdefault("provider_fields_notes", "ttm_requires_four_contiguous_quarters")
     if out.get("net_income_ttm") is None and net_income_ttm is not None:
         out["net_income_ttm"] = net_income_ttm
-    if out.get("gross_margin_pct") is None:
+    if margins.get("gross_margin_pct") is not None:
         out["gross_margin_pct"] = margins.get("gross_margin_pct")
-    if out.get("operating_margin_pct") is None:
+    if margins.get("operating_margin_pct") is not None:
         out["operating_margin_pct"] = margins.get("operating_margin_pct")
     if out.get("net_margin_pct") is None:
         out["net_margin_pct"] = margins.get("net_margin_pct")

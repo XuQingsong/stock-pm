@@ -27,6 +27,24 @@ def cik_for(ticker: str) -> str:
     return str(directory_entry(ticker).get("cik") or "").strip()
 
 
+def fiscal_label_from_period_end(period_end: Any, fye_month: int | None) -> tuple[int | None, str | None]:
+    """Map a period-end date onto issuer fiscal year + Q1–Q4. XBRL fy/fp are not trusted."""
+    from datetime import date as date_cls
+
+    end = period_end
+    if isinstance(end, str):
+        try:
+            end = date_cls.fromisoformat(end[:10])
+        except ValueError:
+            return None, None
+    if not isinstance(end, date_cls):
+        return None, None
+    month = int(fye_month) if fye_month and 1 <= int(fye_month) <= 12 else 12
+    fy = end.year + 1 if end.month > month else end.year
+    quarter = ((end.month - month - 1) % 12) // 3 + 1
+    return fy, f"Q{quarter}"
+
+
 def fiscal_year_end_month_for(ticker: str, row: dict[str, Any] | None = None) -> int | None:
     if row and row.get("fiscal_year_end_month") not in (None, ""):
         try:

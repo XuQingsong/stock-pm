@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .integrity import assess_financial_integrity
 from .quality import assess_brain_quality
 
 
@@ -109,6 +110,7 @@ def build_brain_view(
         claims=core,
         llm_calls=(latest.get("audit") or {}).get("llm_calls") or latest.get("llm_calls") or [],
         pack=pack,
+        integrity=assess_financial_integrity(pack, latest.get("header") or {}),
     )
     stored_quality = latest.get("quality") or {}
     if stored_quality.get("warnings"):

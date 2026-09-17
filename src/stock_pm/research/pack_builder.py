@@ -6,7 +6,8 @@ import re
 from typing import Any
 
 from .classify import classify_from_issuer, classify_template
-from .extract import extract_guidance_mentions, first_present, nested_get, net_margin, to_number, yoy_from_quarters
+from .extract import extract_guidance_mentions, first_present, is_operating_guidance, nested_get, net_margin, to_number, yoy_from_quarters
+from .live_fetch import dedupe_earnings_prints
 from .issuer import merge_identity
 from .prices import index_closes, index_volumes, price_reaction_for_print
 from .snapshot import source_is_fixture
@@ -139,7 +140,7 @@ class PackBuilder:
         source = self.source
         listed = (source.issuer(symbol) if source else None) or issuer or merge_identity(symbol)
         fundamentals = source.fundamentals(symbol) if source else None
-        earnings_rows = source.earnings(symbol, limit=12) if source else []
+        earnings_rows = source.earnings(symbol, limit=24) if source else []
         transcripts = source.transcripts(symbol) if source else []
         guidance_rows = list(source.guidance(symbol) if source else [])
         news = source.news(symbol) if source else []
@@ -163,7 +164,11 @@ class PackBuilder:
             sector_px = index_closes(list(source.closes(benchmark_etf)))
         volumes = index_volumes(stock_rows)
 
-        earnings_history = [_earnings_item(row, fundamentals=fundamentals) for row in earnings_rows]
+        earnings_history = [_earnings_item(row, fundamentals=fundamentals) for row in dedupe_earnings_prints(earnings_rows)]
+        earnings_history.sort(
+            key=lambda row: str(row.get("period_end") or row.get("report_date") or ""),
+            reverse=True,
+        )
         if transcripts and earnings_history:
             by_quarter = {str(item.get("quarter") or item.get("fiscal_period") or ""): item for item in transcripts}
             for row in earnings_history:
@@ -214,11 +219,21 @@ class PackBuilder:
         unique_guidance: list[dict[str, Any]] = []
         seen_guidance: set[str] = set()
         for row in guidance_rows:
-            key = re.sub(r"\s+", " ", str(row.get("text") or row.get("quote") or "")).strip().lower()[:200]
+            text = str(row.get("text") or row.get("quote") or row.get("excerpt") or "")
+            source_type = str(row.get("source_type") or row.get("doc_type") or row.get("source") or "")
+            if not is_operating_guidance(text, source_type=source_type):
+                continue
+            key = re.sub(r"\s+", " ", text).strip().lower()[:200]
             if not key or key in seen_guidance:
                 continue
             seen_guidance.add(key)
             unique_guidance.append(row)
+        unique_guidance.sort(
+            key=lambda row: (
+                0 if any(item in str(row.get("source_type") or row.get("doc_type") or row.get("source") or "").lower() for item in ("earnings_release", "exhibit", "transcript", "investor_presentation", "8-k", "8k")) else 1,
+                str(row.get("source_time") or row.get("published_at") or ""),
+            )
+        )
         guidance_rows = unique_guidance
 
         price_reaction = []

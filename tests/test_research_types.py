@@ -14,7 +14,7 @@ def test_classify_uses_sector_and_themes_not_ticker() -> None:
 
 def test_issuer_directory_is_data_lookup() -> None:
     assert cik_for("aapl") == "0000320193"
-    assert fiscal_year_end_month_for("AVGO") == 10
+    assert fiscal_year_end_month_for("AVGO") == 11
     assert ticker_for_cik("0001045810") == "NVDA"
     unknown = merge_identity("ZZZY", legal_name="Unknown Co", source="test")
     assert unknown["ticker"] == "ZZZY"

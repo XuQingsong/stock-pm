@@ -17,6 +17,7 @@ Return one JSON object:
       "valuation_relevance": "high|medium|low",
       "persistence": "high|medium|low",
       "testability": "high|medium|low",
+      "evidence_boundary": "what the cited evidence shows, and what it does not show",
       "supporting_evidence_ids": [],
       "opposing_evidence_ids": [],
       "missing_evidence": [""]
@@ -34,6 +35,7 @@ Return one JSON object:
       "why_it_matters": "",
       "financial_driver": "",
       "why_core": "",
+      "evidence_boundary": "what the cited evidence shows, and what it does not show",
       "supporting_evidence_ids": [],
       "opposing_evidence_ids": [],
       "missing_evidence": [""]
@@ -44,4 +46,5 @@ Return one JSON object:
 }
 Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id.
 Do not write ticker-specific canned claims. Derive from the evidence and financials provided.
+A Core Claim is not a restatement of a reported number. It must have why_it_matters, uncertainty, valuation_relevance, and an evidence boundary (what the evidence proves and does not prove).
 If you cannot form a credible core claim, core=[] and insufficient_reason must be a plain sentence.

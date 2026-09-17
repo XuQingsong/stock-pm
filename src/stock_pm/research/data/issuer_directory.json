@@ -65,7 +65,7 @@
   "AVGO": {
     "legal_name": "Broadcom Inc",
     "cik": "0001730168",
-    "fiscal_year_end_month": 10,
+    "fiscal_year_end_month": 11,
     "sector": "半导体",
     "primary_exchange": "NASDAQ",
     "asset_class": "stocks",
@@ -88,5 +88,14 @@
     "primary_exchange": "NYSE",
     "asset_class": "stocks",
     "aliases": ["coherent", "光通信"]
+  },
+  "LITE": {
+    "legal_name": "Lumentum Holdings Inc.",
+    "cik": "0001633978",
+    "fiscal_year_end_month": 6,
+    "sector": "光通信",
+    "primary_exchange": "NASDAQ",
+    "asset_class": "stocks",
+    "aliases": ["lumentum"]
   }
 }

@@ -1,0 +1,139 @@
+{
+  "AAPL": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Poor",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No last-7-day dated news or filings were retrieved."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      }
+    ],
+    "poor_axes": [
+      "news_coverage",
+      "llm_reasoning"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "AVGO": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Poor",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No last-7-day dated news or filings were retrieved."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      }
+    ],
+    "poor_axes": [
+      "news_coverage",
+      "llm_reasoning"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "LITE": {
+    "axes": {
+      "data_coverage": "Poor",
+      "news_coverage": "Poor",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Price, TTM, or latest-quarter fields are incomplete."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "financial_input_incomplete"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No last-7-day dated news or filings were retrieved."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      }
+    ],
+    "poor_axes": [
+      "data_coverage",
+      "news_coverage",
+      "llm_reasoning"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  }
+}

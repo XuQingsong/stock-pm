@@ -1,0 +1,706 @@
+{
+  "generated_at": "2026-09-17T07:13:18+00:00",
+  "tickers": {
+    "AAPL": {
+      "ticker": "AAPL",
+      "period_end": "2026-06-27",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q3",
+      "block_core_claims": false,
+      "data_poor": false,
+      "reason": null,
+      "warnings": [],
+      "management_guidance": {
+        "value": null,
+        "source": null,
+        "source_date": null,
+        "cross_checked": false,
+        "status": "unavailable",
+        "reason": "operating guidance only; risk-factor language is excluded"
+      },
+      "fields": {
+        "latest_quarter_revenue": {
+          "value": 109417000000.0,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_revenue: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_eps": {
+          "value": 2.02,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_revenue_yoy": {
+          "value": 16.36,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_eps_yoy": {
+          "value": 28.66,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_gross_margin": {
+          "value": 50.06,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Gross profit / quarterly revenue from companyfacts"
+        },
+        "latest_quarter_operating_margin": {
+          "value": 32.62,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Operating income / quarterly revenue from companyfacts"
+        },
+        "ttm_revenue": {
+          "value": 466823000000.0,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:11:34+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+        },
+        "ttm_eps": {
+          "value": 8.71,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:11:34+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM EPS is the sum of the same four contiguous quarters"
+        },
+        "price": {
+          "value": 332.410003662109,
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Python-owned last close"
+        },
+        "price_timestamp": {
+          "value": "2026-09-16",
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Session date of last close"
+        },
+        "pe_ttm": {
+          "value": 38.16,
+          "source": "calculated: last_close / eps_ttm",
+          "source_date": "2026-09-16",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+          "inputs": {
+            "price": 332.410003662109,
+            "eps_ttm": 8.71
+          }
+        }
+      },
+      "header_latest_quarter": {
+        "report_date": "2026-07-30",
+        "period_end": "2026-06-27",
+        "fiscal_period": "Q3",
+        "fiscal_year": 2026,
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": 109417000000.0,
+          "origin": "reported",
+          "display": 109417000000.0
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": 16.36,
+          "origin": "reported",
+          "display": 16.36
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 2.02,
+          "origin": "reported",
+          "display": 2.02
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": 28.66,
+          "origin": "reported",
+          "display": 28.66
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": 50.06,
+          "origin": "reported",
+          "display": 50.06
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": 32.62,
+          "origin": "reported",
+          "display": 32.62
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "Nasdaq earnings surprise+sec.companyfacts"
+      },
+      "header_growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": 466823000000.0,
+          "origin": "reported",
+          "display": 466823000000.0
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": 14.24,
+          "origin": "reported",
+          "display": 14.24
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": 8.71,
+          "origin": "reported",
+          "display": 8.71
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": 28.66,
+          "origin": "reported",
+          "display": 28.66
+        }
+      },
+      "header_price": {
+        "field": "price",
+        "value": 332.410003662109,
+        "origin": "reported",
+        "display": 332.410003662109
+      },
+      "header_valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": 38.16,
+          "origin": "reported",
+          "display": 38.16
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "missing_fields": [
+        "guidance_history",
+        "fcf",
+        "segment_growth"
+      ]
+    },
+    "AVGO": {
+      "ticker": "AVGO",
+      "period_end": "2026-08-02",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q3",
+      "block_core_claims": false,
+      "data_poor": false,
+      "reason": null,
+      "warnings": [
+        {
+          "code": "eps_gaap_vs_nongaap",
+          "reason": "GAAP companyfacts EPS vs Nasdaq print (often non-GAAP) differ; companyfacts GAAP is the Brain number. This does not block Core Claims."
+        }
+      ],
+      "management_guidance": {
+        "value": "expect to maintain our non-GAAP operating margin at 66%, flat from a year ago",
+        "source": "sec.exhibit",
+        "source_date": null,
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "operating guidance only; risk-factor language is excluded"
+      },
+      "fields": {
+        "latest_quarter_revenue": {
+          "value": 29591000000.0,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_revenue: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_eps": {
+          "value": 2.68,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "warning",
+          "reason": "GAAP companyfacts EPS vs Nasdaq print (often non-GAAP) differ; companyfacts GAAP is the Brain number. This does not block Core Claims.",
+          "secondary_value": 3.03,
+          "gap_pct": 13.1
+        },
+        "latest_quarter_revenue_yoy": {
+          "value": 85.5,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_eps_yoy": {
+          "value": 215.29,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_gross_margin": {
+          "value": 69.13,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Gross profit / quarterly revenue from companyfacts"
+        },
+        "latest_quarter_operating_margin": {
+          "value": 53.92,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-08-02",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Operating income / quarterly revenue from companyfacts"
+        },
+        "ttm_revenue": {
+          "value": 89104000000.0,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:11:34+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+        },
+        "ttm_eps": {
+          "value": 7.84,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:11:34+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM EPS is the sum of the same four contiguous quarters"
+        },
+        "price": {
+          "value": 339.510009765625,
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Python-owned last close"
+        },
+        "price_timestamp": {
+          "value": "2026-09-16",
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Session date of last close"
+        },
+        "pe_ttm": {
+          "value": 43.3,
+          "source": "calculated: last_close / eps_ttm",
+          "source_date": "2026-09-16",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+          "inputs": {
+            "price": 339.510009765625,
+            "eps_ttm": 7.84
+          }
+        }
+      },
+      "header_latest_quarter": {
+        "report_date": "2026-09-02",
+        "period_end": "2026-08-02",
+        "fiscal_period": "Q3",
+        "fiscal_year": 2026,
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": 29591000000.0,
+          "origin": "reported",
+          "display": 29591000000.0
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": 85.5,
+          "origin": "reported",
+          "display": 85.5
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 2.68,
+          "origin": "reported",
+          "display": 2.68
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": 215.29,
+          "origin": "reported",
+          "display": 215.29
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": 69.13,
+          "origin": "reported",
+          "display": 69.13
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": 53.92,
+          "origin": "reported",
+          "display": 53.92
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "Nasdaq earnings surprise+sec.companyfacts"
+      },
+      "header_growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": 89104000000.0,
+          "origin": "reported",
+          "display": 89104000000.0
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": 48.69,
+          "origin": "reported",
+          "display": 48.69
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": 7.84,
+          "origin": "reported",
+          "display": 7.84
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": 215.29,
+          "origin": "reported",
+          "display": 215.29
+        }
+      },
+      "header_price": {
+        "field": "price",
+        "value": 339.510009765625,
+        "origin": "reported",
+        "display": 339.510009765625
+      },
+      "header_valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": 43.3,
+          "origin": "reported",
+          "display": 43.3
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "missing_fields": [
+        "fcf",
+        "segment_growth"
+      ]
+    },
+    "LITE": {
+      "ticker": "LITE",
+      "period_end": "2026-06-27",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q4",
+      "block_core_claims": false,
+      "data_poor": true,
+      "reason": "financial_input_incomplete",
+      "warnings": [
+        {
+          "code": "financial_input_incomplete",
+          "reason": "TTM or latest-quarter revenue is missing."
+        }
+      ],
+      "management_guidance": {
+        "value": "expects the following for the first quarter of fiscal year 2027: • Net revenue in the range of $1.225 billion to $1.275",
+        "source": "sec.exhibit",
+        "source_date": null,
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "operating guidance only; risk-factor language is excluded"
+      },
+      "fields": {
+        "latest_quarter_revenue": {
+          "value": 1006300000.0,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": false,
+          "status": "single_source",
+          "reason": "only one trusted source is present"
+        },
+        "latest_quarter_eps": {
+          "value": 2.64,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_revenue_yoy": {
+          "value": 109.34,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_eps_yoy": {
+          "value": null,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_gross_margin": {
+          "value": 47.43,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Gross profit / quarterly revenue from companyfacts"
+        },
+        "latest_quarter_operating_margin": {
+          "value": 27.76,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Operating income / quarterly revenue from companyfacts"
+        },
+        "ttm_revenue": {
+          "value": 3014000000.0,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:13:18+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+        },
+        "ttm_eps": {
+          "value": null,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T07:13:18+00:00",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "TTM EPS is the sum of the same four contiguous quarters"
+        },
+        "price": {
+          "value": 919.400024414062,
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Python-owned last close"
+        },
+        "price_timestamp": {
+          "value": "2026-09-16",
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Session date of last close"
+        },
+        "pe_ttm": {
+          "value": null,
+          "source": "fundamentals",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+          "inputs": {
+            "price": 919.400024414062,
+            "eps_ttm": null
+          }
+        }
+      },
+      "header_latest_quarter": {
+        "report_date": "2026-08-11",
+        "period_end": "2026-06-27",
+        "fiscal_period": "Q4",
+        "fiscal_year": 2026,
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": 1006300000.0,
+          "origin": "reported",
+          "display": 1006300000.0
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": 109.34,
+          "origin": "reported",
+          "display": 109.34
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 2.64,
+          "origin": "reported",
+          "display": 2.64
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": 47.43,
+          "origin": "reported",
+          "display": 47.43
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": 27.76,
+          "origin": "reported",
+          "display": 27.76
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "Nasdaq earnings surprise+sec.companyfacts"
+      },
+      "header_growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": 3014000000.0,
+          "origin": "reported",
+          "display": 3014000000.0
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": 83.22,
+          "origin": "reported",
+          "display": 83.22
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "header_price": {
+        "field": "price",
+        "value": 919.400024414062,
+        "origin": "reported",
+        "display": 919.400024414062
+      },
+      "header_valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "missing_fields": [
+        "transcripts",
+        "fcf",
+        "segment_growth"
+      ]
+    }
+  }
+}

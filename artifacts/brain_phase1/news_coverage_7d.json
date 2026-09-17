@@ -1,0 +1,38 @@
+{
+  "AAPL": {
+    "official_sec": 0,
+    "high_quality_independent": 0,
+    "aggregator": 0,
+    "headline_only": 0,
+    "dated": 0,
+    "undated": 0,
+    "full_text_available": 0,
+    "in_window": 0,
+    "count": 0,
+    "sample": []
+  },
+  "AVGO": {
+    "official_sec": 0,
+    "high_quality_independent": 0,
+    "aggregator": 0,
+    "headline_only": 0,
+    "dated": 0,
+    "undated": 0,
+    "full_text_available": 0,
+    "in_window": 0,
+    "count": 0,
+    "sample": []
+  },
+  "LITE": {
+    "official_sec": 0,
+    "high_quality_independent": 0,
+    "aggregator": 0,
+    "headline_only": 0,
+    "dated": 0,
+    "undated": 0,
+    "full_text_available": 0,
+    "in_window": 0,
+    "count": 0,
+    "sample": []
+  }
+}

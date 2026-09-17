@@ -1,0 +1,79 @@
+{
+  "phase": "1.1",
+  "generated_at": "2026-09-17T07:20:00+00:00",
+  "llm_live": false,
+  "pass_gate": {
+    "A_aapl_not_prior_year": true,
+    "B_guidance_not_risk_factor": true,
+    "C_cross_check": true,
+    "D_deepseek_live": false,
+    "E_core_claims_from_llm": false,
+    "F_claims_cite_evidence": false,
+    "G_news_window_real": true,
+    "H_news_fail_loud": true,
+    "I_lite_not_forced_high_quality": true
+  },
+  "headline": "Phase 1.1 Input Integrity PASS for A/B/C/G/H/I. Live LLM activation STOPPED: LLM_API_KEY missing.",
+  "reason": "LLM_API_KEY is not set in this environment. DeepSeek URL/model defaults are wired (https://api.deepseek.com/v1, deepseek-chat) but no production key was available. Brain live reasoning was not run.",
+  "aapl_latest_quarter": {
+    "period_end": "2026-06-27",
+    "fiscal_year": 2026,
+    "fiscal_period": "Q3",
+    "revenue": 109417000000.0,
+    "revenue_yoy_pct": 16.36,
+    "eps": 2.02,
+    "eps_yoy_pct": 28.66,
+    "gross_margin_pct": 50.06,
+    "operating_margin_pct": 32.62,
+    "source": "sec.companyfacts",
+    "management_guidance": "unavailable"
+  },
+  "avgo_latest_quarter": {
+    "period_end": "2026-08-02",
+    "fiscal_year": 2026,
+    "fiscal_period": "Q3",
+    "revenue": 29591000000.0,
+    "revenue_yoy_pct": 85.5,
+    "eps_gaap": 2.68,
+    "eps_nasdaq": 3.03,
+    "eps_status": "warning",
+    "gross_margin_pct": 69.13,
+    "operating_margin_pct": 53.92,
+    "management_guidance": "expect to maintain our non-GAAP operating margin at 66%, flat from a year ago"
+  },
+  "lite_latest_quarter": {
+    "period_end": "2026-06-27",
+    "fiscal_year": 2026,
+    "fiscal_period": "Q4",
+    "revenue": 1006300000.0,
+    "revenue_yoy_pct": 109.34,
+    "eps": 2.64,
+    "eps_source": "nasdaq (companyfacts Q4 EPS could not be derived sanely from 10-K annual EPS)",
+    "eps_yoy_pct": null,
+    "gross_margin_pct": 47.43,
+    "operating_margin_pct": 27.76,
+    "ttm_revenue": 3014000000.0,
+    "ttm_eps": null,
+    "data_poor": true,
+    "management_guidance": "expects net revenue in the range of $1.225 billion to $1.275 billion for Q1 FY2027"
+  },
+  "news_coverage_7d": {
+    "AAPL": "Poor — 0 dated in-window items after dropping undated/historical SEC hits",
+    "AVGO": "Poor — 0 dated in-window items",
+    "LITE": "Poor — 0 dated in-window items"
+  },
+  "llm_audit": {
+    "llm_called": false,
+    "model": "deepseek-chat",
+    "status": "skipped",
+    "base_url": "https://api.deepseek.com/v1",
+    "error": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+  },
+  "stopped_live_validation": true,
+  "artifacts": {
+    "input_integrity_report": "artifacts/brain_phase1/input_integrity_report.json",
+    "news_coverage_7d": "artifacts/brain_phase1/news_coverage_7d.json",
+    "llm_smoke_aapl": "artifacts/brain_phase1/llm_smoke_aapl.json",
+    "quality_report": "artifacts/brain_phase1/quality_report_phase11.json"
+  }
+}

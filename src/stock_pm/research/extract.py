@@ -6,6 +6,7 @@ Patterns are about document language, never a specific issuer.
 from __future__ import annotations
 
 import re
+from datetime import date as date_cls
 from typing import Any
 
 
@@ -111,6 +112,35 @@ BOILERPLATE_SKIP = re.compile(
     re.I,
 )
 
+RISK_FACTOR_LANGUAGE = re.compile(
+    r"(risk factors?|cautionary statement|forward[- ]looking statements?|"
+    r"could cause actual results|these trends to intensify|"
+    r"may (?:materially )?(?:adversely|negatively) (?:impact|affect)|"
+    r"materially negatively impact|no assurance that|"
+    r"uncertaint(?:y|ies) inherent|cannot be predicted|"
+    r"deferred revenue|unearned revenue|contract liabilit)",
+    re.I,
+)
+
+OPERATING_GUIDANCE_MARKERS = re.compile(
+    r"\b(guidance|outlook|guide[ds]?|guided|"
+    r"(?:net )?revenue.{0,40}(?:range|between|to be)|"
+    r"eps|gross margin|operating margin|operating income|"
+    r"opex|operating expense|tax rate|capex|capital expend|"
+    r"product.{0,20}outlook|segment.{0,20}outlook)\b",
+    re.I,
+)
+
+GUIDANCE_SOURCE_PRIORITY = (
+    "earnings_release",
+    "exhibit",
+    "transcript",
+    "investor_presentation",
+    "press_release",
+    "8-k",
+    "8k",
+)
+
 CONCLUSION_MARKERS = re.compile(
     r"\b(buy|sell|overweight|underweight|price target|fair value|undervalued|overvalued|accumulate|priced[_\s-]*in)\b",
     re.I,
@@ -200,9 +230,38 @@ def pct_change(new: float | None, old: float | None) -> float | None:
 
 
 def yoy_from_quarters(rows: list[dict[str, Any]], field: str) -> float | None:
-    if len(rows) < 5:
+    latest = next((row for row in rows if to_number(row.get(field)) is not None), None)
+    if not latest:
         return None
-    return pct_change(to_number(rows[0].get(field)), to_number(rows[4].get(field)))
+    latest_end = str(latest.get("period_end") or "")[:10]
+    try:
+        latest_day = date_cls.fromisoformat(latest_end) if latest_end else None
+    except ValueError:
+        latest_day = None
+    if latest_day:
+        for row in rows:
+            if row is latest:
+                continue
+            end = str(row.get("period_end") or "")[:10]
+            try:
+                other = date_cls.fromisoformat(end) if end else None
+            except ValueError:
+                other = None
+            if other and 340 <= (latest_day - other).days <= 390:
+                yoy = pct_change(to_number(latest.get(field)), to_number(row.get(field)))
+                if yoy is not None:
+                    return yoy
+    fy = latest.get("fiscal_year")
+    fp = str(latest.get("fiscal_period") or "")
+    if fy and fp:
+        for row in rows:
+            if row is latest:
+                continue
+            if row.get("fiscal_year") == fy - 1 and str(row.get("fiscal_period") or "") == fp:
+                yoy = pct_change(to_number(latest.get(field)), to_number(row.get(field)))
+                if yoy is not None:
+                    return yoy
+    return None
 
 
 def beat_label(actual: float | None, estimate: float | None) -> str | None:
@@ -240,19 +299,38 @@ def extract_commitments(text: str) -> list[dict[str, str]]:
     return _scan(COMMITMENT_PATTERNS, text, kind="management_commitment")
 
 
+def is_operating_guidance(text: str, *, source_type: str | None = None) -> bool:
+    quote = str(text or "").strip()
+    if len(quote) < 28:
+        return False
+    if RISK_FACTOR_LANGUAGE.search(quote) or BOILERPLATE_SKIP.search(quote):
+        return False
+    if not OPERATING_GUIDANCE_MARKERS.search(quote):
+        return False
+    blob = f"{source_type or ''} {quote}".lower()
+    if "risk factor" in blob:
+        return False
+    return True
+
+
 def extract_guidance_mentions(text: str) -> list[dict[str, str]]:
     items = _scan(GUIDANCE_PATTERNS, text, kind="guidance")
+    kept: list[dict[str, str]] = []
     for item in items:
-        quote = item["quote"].lower()
-        if re.search(r"raise|increas|lifted|upward", quote):
+        quote = item["quote"]
+        if not is_operating_guidance(quote):
+            continue
+        lowered = quote.lower()
+        if re.search(r"raise|increas|lifted|upward", lowered):
             item["move"] = "raised"
-        elif re.search(r"lower|cut|reduc|downward", quote):
+        elif re.search(r"lower|cut|reduc|downward", lowered):
             item["move"] = "lowered"
-        elif re.search(r"unchanged|maintain|reaffirm", quote):
+        elif re.search(r"unchanged|maintain|reaffirm", lowered):
             item["move"] = "maintained"
         else:
             item["move"] = "stated"
-    return items
+        kept.append(item)
+    return kept
 
 
 def extract_guidance_from_official_text(text: str) -> list[dict[str, str]]:

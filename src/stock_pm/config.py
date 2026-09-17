@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
+load_dotenv(".env.server")
 
 # Documented local-dev default only. Production must set DATABASE_URL from env
 # or a gitignored file. Never commit real passwords.
@@ -93,8 +94,8 @@ class Settings:
     alpha_vantage_api_key: str = field(default_factory=lambda: os.getenv("ALPHA_VANTAGE_API_KEY", ""))
     llm_api_key: str = field(default_factory=lambda: os.getenv("LLM_API_KEY", ""))
     llm_provider: str = field(default_factory=lambda: os.getenv("LLM_PROVIDER", "openai"))
-    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", ""))
-    llm_base_url: str = field(default_factory=lambda: os.getenv("LLM_BASE_URL", ""))
+    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "deepseek-chat"))
+    llm_base_url: str = field(default_factory=lambda: os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"))
     large_trade_notional: float = field(default_factory=lambda: float(os.getenv("LARGE_TRADE_NOTIONAL", "200000")))
     app_env: str = field(default_factory=lambda: (os.getenv("APP_ENV") or "").strip().lower())
     enable_decision_preview: bool = field(

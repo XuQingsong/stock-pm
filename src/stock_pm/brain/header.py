@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from stock_pm.research.extract import pct_change, to_number, yoy_from_quarters
+from stock_pm.research.extract import is_operating_guidance, pct_change, to_number, yoy_from_quarters
+from stock_pm.research.live_fetch import dedupe_earnings_prints
 
 
 def _metric(value: Any, origin: str, *, field: str) -> dict[str, Any]:
@@ -16,6 +17,7 @@ def _metric(value: Any, origin: str, *, field: str) -> dict[str, Any]:
 
 def _latest_print(pack: dict[str, Any]) -> dict[str, Any]:
     rows = [row for row in (pack.get("earnings_history") or []) if isinstance(row, dict)]
+    rows = dedupe_earnings_prints(rows)
     return rows[0] if rows else {}
 
 
@@ -23,7 +25,6 @@ def company_header(pack: dict[str, Any] | None, *, issuer: dict[str, Any] | None
     payload = pack or {}
     profile = dict(payload.get("company_profile") or {})
     issuer = issuer or {}
-    latest = _latest_print(payload)
     closes = list(profile.get("recent_closes") or [])
     last_close = to_number(profile.get("last_close"))
     price_ts = None
@@ -32,19 +33,32 @@ def company_header(pack: dict[str, Any] | None, *, issuer: dict[str, Any] | None
         price_ts = last.get("session_date") or last.get("date")
         if last_close is None:
             last_close = to_number(last.get("close") or last.get("close_price"))
-    earnings = list(payload.get("earnings_history") or [])
+    earnings = dedupe_earnings_prints(
+        [row for row in (payload.get("earnings_history") or []) if isinstance(row, dict)]
+    )
+    latest = earnings[0] if earnings else {}
     guidance = list(payload.get("guidance_history") or [])
     missing = [str(item) for item in (payload.get("missing_fields") or [])]
     rev_growth = to_number(profile.get("revenue_growth_yoy_pct")) or yoy_from_quarters(earnings, "revenue")
     eps_growth = to_number(profile.get("eps_growth_yoy_pct")) or yoy_from_quarters(earnings, "eps")
-    q_rev_yoy = pct_change(to_number(latest.get("revenue")), to_number(earnings[4].get("revenue")) if len(earnings) > 4 else None)
-    q_eps_yoy = pct_change(to_number(latest.get("eps")), to_number(earnings[4].get("eps")) if len(earnings) > 4 else None)
+    q_rev_yoy = yoy_from_quarters(earnings, "revenue")
+    q_eps_yoy = yoy_from_quarters(earnings, "eps")
+    latest_guidance = next(
+        (
+            row
+            for row in guidance
+            if is_operating_guidance(
+                str(row.get("text") or row.get("excerpt") or row.get("quote") or ""),
+                source_type=str(row.get("source_type") or row.get("source") or ""),
+            )
+        ),
+        None,
+    )
     fcf = to_number(profile.get("fcf") or latest.get("fcf"))
     market_cap = to_number(profile.get("market_cap"))
     fcf_yield = None
     if fcf not in (None, 0) and market_cap not in (None, 0):
         fcf_yield = round(100.0 * float(fcf) / float(market_cap), 2)
-    latest_guidance = guidance[0] if guidance else {}
     return {
         "ticker": payload.get("ticker") or issuer.get("ticker"),
         "company_name": profile.get("legal_name") or issuer.get("legal_name"),
@@ -69,21 +83,27 @@ def company_header(pack: dict[str, Any] | None, *, issuer: dict[str, Any] | None
         },
         "latest_quarter": {
             "report_date": latest.get("report_date") or latest.get("period_end"),
+            "period_end": latest.get("period_end"),
             "fiscal_period": latest.get("fiscal_period"),
+            "fiscal_year": latest.get("fiscal_year"),
             "revenue": _metric(latest.get("revenue"), "reported", field="quarter_revenue"),
             "revenue_yoy": _metric(q_rev_yoy, "reported", field="quarter_revenue_yoy"),
             "eps": _metric(latest.get("eps"), "reported", field="quarter_eps"),
             "eps_yoy": _metric(q_eps_yoy, "reported", field="quarter_eps_yoy"),
-            "gross_margin": _metric(latest.get("gross_margin_pct") or profile.get("gross_margin_pct"), "reported", field="gross_margin"),
-            "operating_margin": _metric(latest.get("operating_margin_pct") or profile.get("operating_margin_pct"), "reported", field="operating_margin"),
+            "gross_margin": _metric(latest.get("gross_margin_pct"), "reported", field="gross_margin"),
+            "operating_margin": _metric(latest.get("operating_margin_pct"), "reported", field="operating_margin"),
             "fcf": _metric(latest.get("fcf") or profile.get("fcf"), "reported", field="quarter_fcf"),
             "source": latest.get("source") or "earnings_history",
         },
         "forward": {
             "management_guidance": {
                 "origin": "reported" if latest_guidance else "unavailable",
-                "text": (latest_guidance.get("text") or latest_guidance.get("excerpt") or latest_guidance.get("quote") or None),
-                "source": latest_guidance.get("source"),
+                "text": (
+                    (latest_guidance.get("text") or latest_guidance.get("excerpt") or latest_guidance.get("quote"))
+                    if latest_guidance
+                    else None
+                ),
+                "source": (latest_guidance.get("source") if latest_guidance else None),
                 "count": len(guidance),
             },
             "consensus": {

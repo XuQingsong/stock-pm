@@ -11,6 +11,7 @@ from stock_pm.research.ids import new_id
 from stock_pm.research.llm_reason import compact_pack, compact_text
 
 from .header import company_header
+from .integrity import assess_financial_integrity
 from .llm_steps import (
     claim_reasoning,
     company_understanding,
@@ -21,7 +22,7 @@ from .llm_steps import (
     normalize_news_item,
     pm_synthesis,
 )
-from .news import hits_to_evidence_bodies, is_high_quality, search_recent_news
+from .news import classify_news_hits, hits_to_evidence_bodies, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
 from .store import BrainStore
 from .types import PROMPT_VERSION
@@ -139,6 +140,19 @@ def _select_core(candidates: list[dict[str, Any]], core_raw: list[dict[str, Any]
     return normalized_candidates, normalized_core, reason
 
 
+def _pack_print_stale(pack: dict[str, Any] | None) -> bool:
+    rows = [row for row in ((pack or {}).get("earnings_history") or []) if isinstance(row, dict)]
+    if not rows:
+        return True
+    by_end = max(rows, key=lambda row: str(row.get("period_end") or ""))
+    by_report = max(rows, key=lambda row: str(row.get("report_date") or ""))
+    if str(by_end.get("period_end") or "") and str(by_report.get("period_end") or "") and str(by_end.get("period_end")) != str(by_report.get("period_end")):
+        return True
+    if not by_end.get("revenue") and not by_end.get("revenue_actual"):
+        return True
+    return False
+
+
 def run_brain(
     research: Any,
     ticker: str,
@@ -163,7 +177,11 @@ def run_brain(
     pack = research.get_pack(symbol) or {}
     backfill_row = None
     profile = pack.get("company_profile") or {}
-    needs_data = pack_needs_research_data(pack) or not (profile.get("revenue_ttm") or profile.get("last_close"))
+    needs_data = (
+        pack_needs_research_data(pack)
+        or not (profile.get("revenue_ttm") or profile.get("last_close"))
+        or _pack_print_stale(pack)
+    )
     if fetch_live and can_live_backfill(research) and needs_data:
         try:
             backfill_row = ResearchDataBackfill(research).run(symbol, workflow_run_id=None)
@@ -178,6 +196,11 @@ def run_brain(
         except Exception as exc:
             errors.append(f"pack rebuild failed: {exc}")
     header = company_header(pack, issuer=research.get_issuer(symbol))
+    integrity = assess_financial_integrity(pack, header)
+    if integrity.get("inconsistent"):
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "financial_input_inconsistent"})
+    if integrity.get("data_poor"):
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": integrity.get("reason") or "financial_input_incomplete"})
     snapshot = None
     try:
         snapshot = research.freeze_research_snapshot(symbol)
@@ -240,37 +263,69 @@ def run_brain(
                     "run_id": run_id,
                 }
             )
+        for question in payload_a.get("candidate_questions") or []:
+            text = compact_text(question, 240)
+            if not text:
+                continue
+            brain.insert_question(
+                {
+                    "ticker": symbol,
+                    "question": text,
+                    "why_it_matters": "company understanding coverage gap",
+                    "priority": "high" if integrity.get("data_poor") else "medium",
+                    "run_id": run_id,
+                }
+            )
     else:
         fallbacks.append("company_understanding")
         warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": audit_a.get("error") or "Company understanding LLM call did not return JSON."})
 
-    payload_b, audit_b = core_claims(
-        model_completer,
-        {
-            "ticker": symbol,
-            "reported_financials": header,
-            "states": [row for row in brain.list_states(symbol, run_id=run_id)],
-            "evidence": compact_evidence_rows(llm_evidence),
-            "company_understanding": understanding or {"missing": True},
-            "snapshot_id": snapshot_id,
-        },
-        allowed_ids=allowed,
-    )
-    llm_calls.append(audit_b)
     candidates: list[dict[str, Any]] = []
     core: list[dict[str, Any]] = []
     insufficient = None
-    if payload_b:
-        candidates, core, insufficient = _select_core(
-            list(payload_b.get("candidates") or []),
-            list(payload_b.get("core") or []),
-            allowed=allowed,
-        )
-        insufficient = insufficient or payload_b.get("insufficient_reason")
-    else:
+    payload_b = None
+    audit_b = {"step": "core_claims", "llm_called": False, "llm_status": "skipped"}
+    if integrity.get("block_core_claims"):
         fallbacks.append("core_claims")
-        insufficient = audit_b.get("error") or "Core claim LLM call failed; no template claims were generated."
-        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": str(insufficient)})
+        insufficient = "financial_input_inconsistent"
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Core Claim Generation blocked: financial_input_inconsistent"})
+        audit_b["error"] = "financial_input_inconsistent"
+        audit_b["fallback_used"] = True
+        llm_calls.append(audit_b)
+    else:
+        payload_b, audit_b = core_claims(
+            model_completer,
+            {
+                "ticker": symbol,
+                "reported_financials": header,
+                "states": [row for row in brain.list_states(symbol, run_id=run_id)],
+                "evidence": compact_evidence_rows(llm_evidence),
+                "company_understanding": understanding or {"missing": True},
+                "snapshot_id": snapshot_id,
+            },
+            allowed_ids=allowed,
+        )
+        llm_calls.append(audit_b)
+        if payload_b:
+            candidates, core, insufficient = _select_core(
+                list(payload_b.get("candidates") or []),
+                list(payload_b.get("core") or []),
+                allowed=allowed,
+            )
+            insufficient = insufficient or payload_b.get("insufficient_reason")
+        else:
+            fallbacks.append("core_claims")
+            insufficient = audit_b.get("error") or "Core claim LLM call failed; no template claims were generated."
+            warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": str(insufficient)})
+    if integrity.get("data_poor"):
+        capped: list[dict[str, Any]] = []
+        for item in core:
+            item["confidence"] = "low"
+            if item.get("status") in {"strongly_supported"}:
+                item["status"] = "unverified"
+            capped.append(item)
+        core = capped
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Data coverage is insufficient for high-confidence Core Claims."})
 
     persisted_claims: list[dict[str, Any]] = []
     claim_ids: set[str] = set()
@@ -505,6 +560,7 @@ def run_brain(
             "cannot_conclude": ["pm_synthesis_failed"],
         }
 
+    news_stats = classify_news_hits(hits, days=days)
     quality = assess_brain_quality(
         header=header,
         evidence=evidence,
@@ -512,6 +568,7 @@ def run_brain(
         claims=persisted_claims,
         llm_calls=llm_calls,
         pack=pack,
+        integrity=integrity,
     )
     quality["warnings"] = list(quality.get("warnings") or []) + [row for row in warnings if row not in (quality.get("warnings") or [])]
     if insufficient:
@@ -548,6 +605,8 @@ def run_brain(
         "fallbacks": fallbacks,
         "backfill_id": (backfill_row or {}).get("id") if isinstance(backfill_row, dict) else None,
         "high_quality_news": sum(1 for row in hits if is_high_quality(row.get("url"), row.get("source"))),
+        "news_coverage_stats": news_stats,
+        "integrity": integrity,
         "llm_invoked": llm_ok,
     }
     completed = brain.complete_run(
@@ -590,4 +649,5 @@ def run_brain(
         "company_understanding": understanding or {},
         "audit": audit,
         "pack": pack,
+        "integrity": integrity,
     }

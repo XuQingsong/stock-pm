@@ -188,8 +188,8 @@ def _chat_openai_compatible(
     max_tokens: int | None = None,
     json_object: bool = False,
 ) -> tuple[str, str, dict[str, Any]]:
-    base = (settings.llm_base_url or "https://api.openai.com/v1").rstrip("/")
-    model = settings.llm_model or "gpt-4o-mini"
+    base = (settings.llm_base_url or "https://api.deepseek.com/v1").rstrip("/")
+    model = settings.llm_model or "deepseek-chat"
     body: dict[str, Any] = {
         "model": model,
         "temperature": 0.2,

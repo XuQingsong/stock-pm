@@ -1,0 +1,10 @@
+{
+  "llm_called": false,
+  "model": "deepseek-chat",
+  "status": "skipped",
+  "latency": null,
+  "tokens": null,
+  "error": "LLM_API_KEY is not set in this environment; production SSH to 43.166.2.31 timed out so the key was not copied.",
+  "base_url": "https://api.deepseek.com/v1",
+  "stopped_live_validation": true
+}

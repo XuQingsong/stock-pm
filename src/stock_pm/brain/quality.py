@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .news import is_high_quality, source_family
+from .news import classify_news_hits, source_family
 from .types import QUALITY_BANDS
 
 
@@ -24,6 +24,7 @@ def assess_brain_quality(
     claims: list[dict[str, Any]],
     llm_calls: list[dict[str, Any]],
     pack: dict[str, Any] | None = None,
+    integrity: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     warnings: list[dict[str, str]] = []
     profile = (pack or {}).get("company_profile") or {}
@@ -42,6 +43,12 @@ def assess_brain_quality(
     else:
         data = "Poor"
         warnings.append(_warning("Data Coverage", "Company fundamentals are missing; Brain cannot form a financial view."))
+    if integrity and integrity.get("inconsistent"):
+        data = "Poor"
+        warnings.append(_warning("Data Coverage", "financial_input_inconsistent: companyfacts and earnings-release numbers disagree beyond tolerance."))
+    if integrity and integrity.get("data_poor"):
+        data = "Poor"
+        warnings.append(_warning("Data Coverage", integrity.get("reason") or "financial_input_incomplete"))
     if "fcf" in missing or (latest.get("fcf") or {}).get("value") is None:
         if data == "Good":
             data = "Partial"
@@ -53,42 +60,38 @@ def assess_brain_quality(
     if (header.get("forward") or {}).get("consensus", {}).get("origin") == "unavailable":
         warnings.append(_warning("Data Coverage", "No trusted consensus source is wired; consensus stays unavailable."))
 
-    high = [row for row in news if is_high_quality(row.get("url"), row.get("source"))]
-    independent = [
+    stats = classify_news_hits(news)
+    independent_news = [
         row
         for row in news
         if source_family(row.get("url"), row.get("source")) in {"high_quality_news", "issuer_ir"}
+        and (row.get("published_at") or row.get("source_time"))
     ]
     bodies = [
         row
         for row in news
         if str(row.get("snippet") or row.get("new_fact") or row.get("excerpt") or row.get("fact") or "").strip()
         and str(row.get("title") or "").strip() not in {"8-K", "10-Q", "10-K", "6-K", "20-F"}
+        and (row.get("published_at") or row.get("source_time"))
     ]
-    dated = [row for row in news if row.get("published_at")]
-    if independent and bodies:
-        news_band = "Good" if len(independent) >= 2 and bodies else "Partial"
-        if not dated:
-            news_band = "Partial"
-            warnings.append(_warning("News Coverage", "Independent URLs were found but none have a last-7-day published date."))
-    elif news:
+    if stats["in_window"] >= 3 and stats["high_quality_independent"] >= 1 and stats["full_text_available"] >= 1:
+        news_band = "Good"
+    elif stats["in_window"] or independent_news or bodies:
         news_band = "Partial"
-        if not independent:
+        if stats["high_quality_independent"] < 1:
             warnings.append(
                 _warning(
                     "News Coverage",
-                    "No Reuters / Bloomberg / FT / WSJ / IR last-7-day coverage. SEC index hits and aggregators are not a substitute.",
+                    "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-7-day date.",
                 )
             )
-        if not high:
-            warnings.append(_warning("News Coverage", "No high-quality independent sources (Reuters / Bloomberg / SEC / IR) found in the last 7 days."))
-        if len(bodies) < len(news):
-            warnings.append(_warning("News Coverage", "Some news items are headline-only with no body/excerpt."))
-        if not dated:
-            warnings.append(_warning("News Coverage", "Retrieved items lack published dates, so last-7-day freshness is unverified."))
+        if stats["undated"]:
+            warnings.append(_warning("News Coverage", "Undated search hits are not counted as last-7-day news."))
+        if stats["full_text_available"] < 1:
+            warnings.append(_warning("News Coverage", "Last-7-day items lack parseable body text."))
     else:
         news_band = "Poor"
-        warnings.append(_warning("News Coverage", "No last-7-day news or filings were retrieved."))
+        warnings.append(_warning("News Coverage", "No last-7-day dated news or filings were retrieved."))
 
     sourced = [row for row in evidence if row.get("source") and (row.get("source_url") or row.get("excerpt") or row.get("fact"))]
     if len(sourced) >= 8:

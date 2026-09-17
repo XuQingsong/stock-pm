@@ -49,23 +49,24 @@ def default_queries(ticker: str, name: str | None = None) -> list[str]:
     after = (_now() - timedelta(days=7)).date().isoformat()
     return [
         f'{symbol} OR "{legal}" news after:{after}',
-        f'{symbol} earnings OR guidance OR outlook OR 10-Q OR 8-K',
-        f'site:sec.gov {symbol}',
-        f'site:reuters.com "{legal}"',
-        f'site:bloomberg.com "{legal}"',
-        f'"{legal}" investor relations press release',
-        f'{symbol} customer OR supplier OR demand',
+        f'site:reuters.com "{legal}" after:{after}',
+        f'site:bloomberg.com "{legal}" after:{after}',
+        f'"{legal}" investor relations press release after:{after}',
+        f'{symbol} customer OR supplier OR demand after:{after}',
     ]
 
 
 def _within_days(value: Any, days: int) -> bool:
     if not value:
-        return True
+        return False
     text = str(value)
     try:
         stamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
-        return True
+        try:
+            stamp = datetime.strptime(text[:10], "%Y-%m-%d")
+        except ValueError:
+            return False
     if stamp.tzinfo is None:
         stamp = stamp.replace(tzinfo=timezone.utc)
     return stamp >= _now() - timedelta(days=days)
@@ -87,6 +88,22 @@ def _from_pack(pack: dict[str, Any], *, days: int) -> list[dict[str, Any]]:
                 "source": row.get("source") or "news_articles",
                 "published_at": published,
                 "query": "pack.major_events",
+            }
+        )
+    for row in pack.get("official_documents") or []:
+        if not isinstance(row, dict):
+            continue
+        published = row.get("published_at") or row.get("source_time") or (row.get("metadata") or {}).get("filing_date")
+        if not _within_days(published, days):
+            continue
+        out.append(
+            {
+                "title": row.get("title") or row.get("form") or "official",
+                "url": row.get("url") or row.get("source_url"),
+                "snippet": row.get("excerpt") or row.get("body") or "",
+                "source": row.get("source_provider") or source_family(row.get("url")),
+                "published_at": published,
+                "query": "pack.official_documents",
             }
         )
     return out
@@ -134,6 +151,9 @@ def search_recent_news(
             key = url or title
             if not key or key in seen:
                 continue
+            published = row.get("published_at") or row.get("date")
+            if not _within_days(published, days):
+                continue
             seen.add(key)
             hits.append(
                 {
@@ -141,11 +161,54 @@ def search_recent_news(
                     "url": url,
                     "snippet": row.get("snippet") or row.get("summary") or "",
                     "source": source_family(url),
-                    "published_at": row.get("published_at") or row.get("date"),
+                    "published_at": published,
                     "query": query,
                 }
             )
     return hits
+
+
+def classify_news_hits(hits: list[dict[str, Any]], *, days: int = 7) -> dict[str, Any]:
+    official = 0
+    independent = 0
+    aggregator = 0
+    headline_only = 0
+    dated = 0
+    undated = 0
+    full_text = 0
+    in_window = 0
+    for row in hits:
+        family = source_family(row.get("url"), row.get("source"))
+        published = row.get("published_at")
+        body = str(row.get("snippet") or row.get("new_fact") or row.get("excerpt") or "").strip()
+        title = str(row.get("title") or "").strip()
+        if published:
+            dated += 1
+        else:
+            undated += 1
+        if _within_days(published, days):
+            in_window += 1
+        if family in {"sec", "official", "issuer_ir"}:
+            official += 1
+        elif family == "high_quality_news":
+            independent += 1
+        else:
+            aggregator += 1
+        if len(body) >= 80 and title not in {"8-K", "10-Q", "10-K", "6-K", "20-F"}:
+            full_text += 1
+        elif len(body) < 40 or title in {"8-K", "10-Q", "10-K"}:
+            headline_only += 1
+    return {
+        "official_sec": official,
+        "high_quality_independent": independent,
+        "aggregator": aggregator,
+        "headline_only": headline_only,
+        "dated": dated,
+        "undated": undated,
+        "full_text_available": full_text,
+        "in_window": in_window,
+        "count": len(hits),
+    }
 
 
 def hits_to_evidence_bodies(ticker: str, hits: list[dict[str, Any]], *, retrieved_at: str) -> list[dict[str, Any]]:

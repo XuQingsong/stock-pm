@@ -117,6 +117,8 @@ class FakeBrainCompleter:
                         "time_horizon": "medium",
                         "why_it_matters": "It changes the 1-3y earnings path.",
                         "why_core": "Highest value impact times uncertainty.",
+                        "uncertainty": "high",
+                        "valuation_relevance": "high",
                         "supporting_evidence_ids": [eid] if eid else [],
                         "opposing_evidence_ids": [],
                         "missing_evidence": ["independent customer confirmation"],
@@ -323,8 +325,8 @@ def test_quality_partial_when_only_undated_sec_index() -> None:
         llm_calls=[],
         pack=_pack(),
     )
-    assert quality["axes"]["news_coverage"] == "Partial"
-    assert any("Reuters" in str(item.get("reason")) for item in quality["warnings"])
+    assert quality["axes"]["news_coverage"] == "Poor"
+    assert any("Reuters" in str(item.get("reason")) or "last-7-day" in str(item.get("reason")) for item in quality["warnings"])
 
 
 def test_uninterpreted_news_keeps_evidence_id(monkeypatch) -> None:

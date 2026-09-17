@@ -232,7 +232,8 @@ class DatabasePackSource:
                 ORDER BY bar_time ASC OFFSET 4 LIMIT 1
             ) after_5 ON TRUE
             WHERE e.symbol = %s
-            ORDER BY e.report_date DESC
+            ORDER BY (e.period_end IS NULL), COALESCE(e.period_end, e.report_date) DESC,
+                     CASE WHEN COALESCE(e.source, '') LIKE '%%companyfacts%%' THEN 0 ELSE 1 END
             LIMIT %s
         """
         return self._fetch(sql, (ticker.upper(), limit))
