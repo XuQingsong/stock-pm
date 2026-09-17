@@ -1,0 +1,9 @@
+{
+  "live_llm": false,
+  "reason": "LLM_API_KEY is not set in this environment. Live runs stored news as uninterpreted and created zero Core Claims. No live News → Claim Version update exists.",
+  "tests": "tests/test_brain_phase1.py::test_brain_run_calls_llm_and_grounds_claims creates a Reuters hit, persists evidence_id, LLM marks it material, and inserts BrainClaimVersion 2.",
+  "required_to_complete_live_demo": [
+    "Set LLM_API_KEY (DeepSeek: LLM_BASE_URL=https://api.deepseek.com/v1, LLM_MODEL=deepseek-chat)",
+    "Re-run scripts/run_brain_phase1.py"
+  ]
+}

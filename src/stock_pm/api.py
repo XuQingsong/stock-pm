@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .database import Database
 from .errors import DatabaseError
+from .brain.api import router as brain_router
 from .research.api import router as research_router
 from .review import retry_reviews_for_llm
 
@@ -96,6 +97,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(research_router)
+app.include_router(brain_router)
 
 
 def _http_error(exc: Exception) -> HTTPException:
@@ -214,6 +216,29 @@ def research_index() -> RedirectResponse:
 def research_review_page(symbol: str) -> str:
     del symbol
     return _page("research_review.html")
+
+
+@app.get("/brain", include_in_schema=False)
+def brain_index() -> RedirectResponse:
+    return RedirectResponse("/brain/AVGO", status_code=307)
+
+
+@app.get("/brain/{symbol}", response_class=HTMLResponse, include_in_schema=False)
+def brain_page(symbol: str) -> str:
+    del symbol
+    return _page("brain.html")
+
+
+@app.get("/brain/{symbol}/claims/{claim_id}", response_class=HTMLResponse, include_in_schema=False)
+def brain_claim_page(symbol: str, claim_id: str) -> str:
+    del symbol, claim_id
+    return _page("brain.html")
+
+
+@app.get("/brain/{symbol}/evidence/{evidence_id}", response_class=HTMLResponse, include_in_schema=False)
+def brain_evidence_page(symbol: str, evidence_id: str) -> str:
+    del symbol, evidence_id
+    return _page("brain.html")
 
 
 @app.get("/events", response_class=HTMLResponse, include_in_schema=False)

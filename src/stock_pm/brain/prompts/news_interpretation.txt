@@ -1,0 +1,28 @@
+STEP_ID: news_interpretation
+Interpret each last-7-day news item. This is not a summary task.
+Use only news[] and claims[]. Do not invent facts, prices, or contracts.
+Return one JSON object:
+{
+  "items": [
+    {
+      "news_index": 0,
+      "evidence_id": "",
+      "layer": "material|contextual|noise",
+      "new_fact": "",
+      "source_credibility": "high|medium|low|unknown",
+      "novelty": "new|repeat|unknown",
+      "affected_state": "",
+      "affected_claim_id": "",
+      "impact": "support|oppose|contextual|none",
+      "changes_claim_status": false,
+      "new_research_question": "",
+      "financial_impact": "qualitative_positive|qualitative_negative|unavailable|none",
+      "quantifiable": false,
+      "quantifiable_reason": "",
+      "reason": ""
+    }
+  ]
+}
+If you cannot tell whether a number should change, financial_impact=unavailable and quantifiable=false.
+Headline-only items with no body cannot be material unless the headline itself is an official filing title.
+industry demand is not an issuer-specific contract.

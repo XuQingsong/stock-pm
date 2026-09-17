@@ -1,0 +1,716 @@
+{
+  "ticker": "AAPL",
+  "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+  "snapshot_id": "rsnap_7dae1bd27a3f457f8ea2aa3b6283588b",
+  "status": "partial",
+  "header": {
+    "ticker": "AAPL",
+    "company_name": "Apple Inc",
+    "sector": "消费电子",
+    "industry": null,
+    "template_id": "generic_company",
+    "price": {
+      "field": "price",
+      "value": 332.410003662109,
+      "origin": "reported",
+      "display": 332.410003662109
+    },
+    "price_timestamp": "2026-09-16",
+    "market_cap": {
+      "field": "market_cap",
+      "value": 4851251373800.0,
+      "origin": "reported",
+      "display": 4851251373800.0
+    },
+    "valuation": {
+      "pe_ttm": {
+        "field": "pe_ttm",
+        "value": 38.61,
+        "origin": "reported",
+        "display": 38.61
+      },
+      "pe_forward": {
+        "field": "pe_forward",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ps": {
+        "field": "ps",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ev_ebitda": {
+        "field": "ev_ebitda",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "fcf_yield": {
+        "field": "fcf_yield",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      }
+    },
+    "growth": {
+      "revenue_ttm": {
+        "field": "revenue_ttm",
+        "value": 458393000000.0,
+        "origin": "reported",
+        "display": 458393000000.0
+      },
+      "revenue_growth_yoy": {
+        "field": "revenue_growth_yoy",
+        "value": 14.74,
+        "origin": "reported",
+        "display": 14.74
+      },
+      "eps_ttm": {
+        "field": "eps_ttm",
+        "value": 8.61,
+        "origin": "reported",
+        "display": 8.61
+      },
+      "eps_growth_yoy": {
+        "field": "eps_growth_yoy",
+        "value": -34.85,
+        "origin": "reported",
+        "display": -34.85
+      }
+    },
+    "latest_quarter": {
+      "report_date": "2026-07-31",
+      "fiscal_period": "Q3",
+      "revenue": {
+        "field": "quarter_revenue",
+        "value": 94036000000.0,
+        "origin": "reported",
+        "display": 94036000000.0
+      },
+      "revenue_yoy": {
+        "field": "quarter_revenue_yoy",
+        "value": -24.35,
+        "origin": "reported",
+        "display": -24.35
+      },
+      "eps": {
+        "field": "quarter_eps",
+        "value": 1.57,
+        "origin": "reported",
+        "display": 1.57
+      },
+      "eps_yoy": {
+        "field": "quarter_eps_yoy",
+        "value": -34.85,
+        "origin": "reported",
+        "display": -34.85
+      },
+      "gross_margin": {
+        "field": "gross_margin",
+        "value": 46.49,
+        "origin": "reported",
+        "display": 46.49
+      },
+      "operating_margin": {
+        "field": "operating_margin",
+        "value": 29.99,
+        "origin": "reported",
+        "display": 29.99
+      },
+      "fcf": {
+        "field": "quarter_fcf",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "source": "sec.companyfacts"
+    },
+    "forward": {
+      "management_guidance": {
+        "origin": "reported",
+        "text": "The Company expects these trends to intensify, which may materially negatively impact the Company’s revenue, costs, gross margin, results of operations and financial condition",
+        "source": "sec",
+        "count": 9
+      },
+      "consensus": {
+        "origin": "unavailable",
+        "reason": "no trusted consensus source is wired for Brain Phase 1"
+      },
+      "system_forecast": {
+        "origin": "unavailable",
+        "reason": "Phase 1 does not run a system forecast"
+      }
+    },
+    "missing_fields": [
+      "transcripts",
+      "fcf",
+      "segment_growth"
+    ],
+    "pack_updated_at": "2026-09-17T06:03:28+00:00",
+    "is_fixture": false,
+    "source": "production"
+  },
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM synthesis LLM call failed; no template PM view was written."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      }
+    ],
+    "poor_axes": [
+      "llm_reasoning"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "company_understanding": {},
+  "pm_synthesis": {
+    "current_view": "LLM PM synthesis unavailable. Do not treat the page as a completed Brain view.",
+    "cannot_conclude": [
+      "pm_synthesis_failed"
+    ]
+  },
+  "core_claims": [],
+  "news": [
+    {
+      "news_id": "bnws_a534bb95872440cd98f90e2aec068c12",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_6241519cc84148baa7ecb42f9ad0b94f",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/aapl-20260730.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_4900f549f95844c09056657aa36189b9",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/aapl-20260328.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_6b885b52980e41c29c7e4b42a09390a0",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/aapl-20260430.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_7c15cf2afd5d42b3b3acf2a859922a61",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/ef20071035_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_429ecec7e91848f390a78382bb0de307",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/ef20060722_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_9d682e34fd0940f7ab560b57c8b7dec5",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/aapl-20251227.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_73d09c1dd5be430391f08d2a341f893d",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/aapl-20260129.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_ffbb5938ce8a494587792d93e74c8a9c",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/ef20060722_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_4aa74c6cc5634094b29acad00020a594",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/ef20060722_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_f6bbcbedc3af4a678ad6eda965e7b015",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_599c21fd6fe54aa1827fa7248bf3d58f",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/aapl-20251030.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_a9198d56032944a8adf8885e1645d536",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000073/aapl-20250628.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_7969a79d144a42418460547c31889817",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/aapl-20250731.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_479a42a60b7c481eb6129f7e5832796a",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125027340/ef20052355_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_30edc094086340d3ba5d200305188bba",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125025275/ef20051741_8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_e26c7eb3514e4018b0f04b58233c1282",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "State Street SPDR Portfolio S&P 500 Growth ETF Experiences Big Inflow",
+      "source": "BNK Invest",
+      "url": "https://www.nasdaq.com/articles/state-street-spdr-portfolio-sp-500-growth-etf-experiences-big-inflow",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_2b3b3f3001c94582af48e83e639726ba",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Tim Cook's Most Defining Move at Apple Has Nothing to Do With AI",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/tim-cooks-most-defining-move-apple-has-nothing-do-ai",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_3b69e89834734ed1b0f7c6639bd02db1",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Is It Too Late to Buy Nvidia Stock?",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/it-too-late-buy-nvidia-stock-0",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    },
+    {
+      "news_id": "bnws_0a0c0061782044c08ce85d38c3ddfee5",
+      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "ticker": "AAPL",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:07:44+00:00"
+    }
+  ],
+  "states": [],
+  "questions": [],
+  "audit": {
+    "ticker": "AAPL",
+    "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+    "snapshot_id": "rsnap_7dae1bd27a3f457f8ea2aa3b6283588b",
+    "model": null,
+    "prompt_version": "brain-phase1-v1",
+    "llm_calls": [
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "5f158c40d1f1d9acdefdfec238dd75cbc026087af4a1c3797e319b769e6d7add",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "company_understanding"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "10c2ebe1b62e49464389e3551566503fc8a4c1c8a9f4a08485fe19c3e50ebd3f",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "core_claims"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "1654c9a53b815ab346b6b382a94b8d23b6829d26a6758f57d6c30d3f2c9c0324",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "news_interpretation"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "dd6d5f1fbcc82fb7dd0a0266d7dc3ac027cb80833767aea20a17a07f2c5976a7",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "pm_synthesis"
+      }
+    ],
+    "input_tokens": null,
+    "output_tokens": null,
+    "latency_ms": null,
+    "news_searched": 20,
+    "sources_fetched": 20,
+    "evidence_created": 20,
+    "candidate_claim_count": 0,
+    "core_claim_count": 0,
+    "claim_versions_changed": 0,
+    "errors": [],
+    "fallbacks": [
+      "company_understanding",
+      "core_claims",
+      "news_interpretation",
+      "pm_synthesis"
+    ],
+    "backfill_id": "rbfl_e12bf553940a47c9b1edafc9e96e5875",
+    "high_quality_news": 16,
+    "llm_invoked": false
+  }
+}

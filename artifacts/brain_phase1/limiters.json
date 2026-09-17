@@ -1,0 +1,46 @@
+{
+  "blockers": [
+    {
+      "missing": "LLM_API_KEY",
+      "affects": "Core Claims, news interpretation, PM view, LLM Reasoning quality",
+      "fix": "Set LLM_API_KEY + LLM_BASE_URL=https://api.deepseek.com/v1 + LLM_MODEL=deepseek-chat in .env.server"
+    },
+    {
+      "missing": "ALPACA / FMP / Alpha Vantage / Google CSE",
+      "affects": "live prices, consensus, paid news, CSE discovery",
+      "fix": "Optional; Yahoo/SEC/DuckDuckGo still run keyless"
+    },
+    {
+      "missing": "Reuters/Bloomberg API",
+      "affects": "reliable last-7-day high-quality news body text",
+      "fix": "DuckDuckGo may surface reuters.com URLs but often headline/snippet only; paid feed would raise News Coverage"
+    }
+  ],
+  "severe": [
+    {
+      "issue": "LLM_API_KEY missing",
+      "affects": "Steps A–E, Core Claims, news interpretation, PM view, claim versions, claim/evidence analysis UI",
+      "fix": "Configure DeepSeek key and re-run Brain. Do not template-fill claims."
+    },
+    {
+      "issue": "No Reuters/Bloomberg/IR feed; DuckDuckGo often returns SEC index titles (8-K/10-Q) and Nasdaq/Zacks aggregators without published dates or article bodies",
+      "affects": "Last-7-day material news, News Coverage honesty, customer/supplier/industry events",
+      "fix": "Paid news API or IR crawl with full text + timestamps; keep fail-loud if still missing"
+    },
+    {
+      "issue": "LITE TTM revenue / quarter revenue / margins unavailable from current SEC/Nasdaq merge",
+      "affects": "LITE financial header completeness; Core Claims would be under-grounded even with LLM",
+      "fix": "Parse LITE 10-K/10-Q companyfacts more completely or add a trusted fundamentals vendor"
+    },
+    {
+      "issue": "Consensus / forward PE / FCF / segment mix unavailable",
+      "affects": "Valuation header, growth vs PE tension, segment claims",
+      "fix": "Wire one trusted consensus source; parse cash flow statements for FCF; keep origin labels"
+    },
+    {
+      "issue": "DDG after: filter is weak; undated SEC filings leak into the 7-day list",
+      "affects": "Freshness of news processing",
+      "fix": "Require published_at or EDGAR filing date before counting as last-7-day"
+    }
+  ]
+}

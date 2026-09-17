@@ -1,0 +1,578 @@
+{
+  "AVGO": {
+    "header": {
+      "ticker": "AVGO",
+      "company_name": "Broadcom Inc",
+      "sector": "半导体",
+      "industry": null,
+      "template_id": "semiconductor",
+      "price": {
+        "field": "price",
+        "value": 344.820007324219,
+        "origin": "reported",
+        "display": 344.820007324219
+      },
+      "price_timestamp": "2026-09-15",
+      "market_cap": {
+        "field": "market_cap",
+        "value": 1645517950764.0,
+        "origin": "reported",
+        "display": 1645517950764.0
+      },
+      "valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": 40.24,
+          "origin": "reported",
+          "display": 40.24
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": 87041000000.0,
+          "origin": "reported",
+          "display": 87041000000.0
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": 97.22,
+          "origin": "reported",
+          "display": 97.22
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": 8.57,
+          "origin": "reported",
+          "display": 8.57
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": -24.79,
+          "origin": "reported",
+          "display": -24.79
+        }
+      },
+      "latest_quarter": {
+        "report_date": "2026-09-10",
+        "fiscal_period": "Q3",
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": 15952000000.0,
+          "origin": "reported",
+          "display": 15952000000.0
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": 6.95,
+          "origin": "reported",
+          "display": 6.95
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 0.88,
+          "origin": "reported",
+          "display": 0.88
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": -24.79,
+          "origin": "reported",
+          "display": -24.79
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": 67.1,
+          "origin": "reported",
+          "display": 67.1
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": 36.9,
+          "origin": "reported",
+          "display": 36.9
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "sec.companyfacts"
+      },
+      "forward": {
+        "management_guidance": {
+          "origin": "reported",
+          "text": "expect Q4 AI revenue to be $21.7 billion, up 236",
+          "source": "web_search",
+          "count": 19
+        },
+        "consensus": {
+          "origin": "unavailable",
+          "reason": "no trusted consensus source is wired for Brain Phase 1"
+        },
+        "system_forecast": {
+          "origin": "unavailable",
+          "reason": "Phase 1 does not run a system forecast"
+        }
+      },
+      "missing_fields": [
+        "fcf",
+        "segment_growth"
+      ],
+      "pack_updated_at": "2026-09-15T13:36:34+00:00",
+      "is_fixture": false,
+      "source": "production"
+    },
+    "missing_fields": [
+      "fcf",
+      "segment_growth"
+    ],
+    "price": {
+      "field": "price",
+      "value": 344.820007324219,
+      "origin": "reported",
+      "display": 344.820007324219
+    },
+    "price_timestamp": "2026-09-15",
+    "pe_ttm": {
+      "field": "pe_ttm",
+      "value": 40.24,
+      "origin": "reported",
+      "display": 40.24
+    },
+    "forward_pe": {
+      "field": "pe_forward",
+      "value": null,
+      "origin": "unavailable",
+      "display": "unavailable"
+    },
+    "consensus": {
+      "origin": "unavailable",
+      "reason": "no trusted consensus source is wired for Brain Phase 1"
+    },
+    "guidance": {
+      "origin": "reported",
+      "text": "expect Q4 AI revenue to be $21.7 billion, up 236",
+      "source": "web_search",
+      "count": 19
+    },
+    "news_sources": [
+      "Barchart",
+      "NASDAQ.com",
+      "Zacks",
+      "sec"
+    ]
+  },
+  "AAPL": {
+    "header": {
+      "ticker": "AAPL",
+      "company_name": "Apple Inc",
+      "sector": "消费电子",
+      "industry": null,
+      "template_id": "generic_company",
+      "price": {
+        "field": "price",
+        "value": 332.410003662109,
+        "origin": "reported",
+        "display": 332.410003662109
+      },
+      "price_timestamp": "2026-09-16",
+      "market_cap": {
+        "field": "market_cap",
+        "value": 4851251373800.0,
+        "origin": "reported",
+        "display": 4851251373800.0
+      },
+      "valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": 38.61,
+          "origin": "reported",
+          "display": 38.61
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": 458393000000.0,
+          "origin": "reported",
+          "display": 458393000000.0
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": 14.74,
+          "origin": "reported",
+          "display": 14.74
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": 8.61,
+          "origin": "reported",
+          "display": 8.61
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": -34.85,
+          "origin": "reported",
+          "display": -34.85
+        }
+      },
+      "latest_quarter": {
+        "report_date": "2026-07-31",
+        "fiscal_period": "Q3",
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": 94036000000.0,
+          "origin": "reported",
+          "display": 94036000000.0
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": -24.35,
+          "origin": "reported",
+          "display": -24.35
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 1.57,
+          "origin": "reported",
+          "display": 1.57
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": -34.85,
+          "origin": "reported",
+          "display": -34.85
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": 46.49,
+          "origin": "reported",
+          "display": 46.49
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": 29.99,
+          "origin": "reported",
+          "display": 29.99
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "sec.companyfacts"
+      },
+      "forward": {
+        "management_guidance": {
+          "origin": "reported",
+          "text": "The Company expects these trends to intensify, which may materially negatively impact the Company’s revenue, costs, gross margin, results of operations and financial condition",
+          "source": "sec",
+          "count": 9
+        },
+        "consensus": {
+          "origin": "unavailable",
+          "reason": "no trusted consensus source is wired for Brain Phase 1"
+        },
+        "system_forecast": {
+          "origin": "unavailable",
+          "reason": "Phase 1 does not run a system forecast"
+        }
+      },
+      "missing_fields": [
+        "transcripts",
+        "fcf",
+        "segment_growth"
+      ],
+      "pack_updated_at": "2026-09-17T06:03:28+00:00",
+      "is_fixture": false,
+      "source": "production"
+    },
+    "missing_fields": [
+      "transcripts",
+      "fcf",
+      "segment_growth"
+    ],
+    "price": {
+      "field": "price",
+      "value": 332.410003662109,
+      "origin": "reported",
+      "display": 332.410003662109
+    },
+    "price_timestamp": "2026-09-16",
+    "pe_ttm": {
+      "field": "pe_ttm",
+      "value": 38.61,
+      "origin": "reported",
+      "display": 38.61
+    },
+    "forward_pe": {
+      "field": "pe_forward",
+      "value": null,
+      "origin": "unavailable",
+      "display": "unavailable"
+    },
+    "consensus": {
+      "origin": "unavailable",
+      "reason": "no trusted consensus source is wired for Brain Phase 1"
+    },
+    "guidance": {
+      "origin": "reported",
+      "text": "The Company expects these trends to intensify, which may materially negatively impact the Company’s revenue, costs, gross margin, results of operations and financial condition",
+      "source": "sec",
+      "count": 9
+    },
+    "news_sources": [
+      "BNK Invest",
+      "The Motley Fool",
+      "Zacks",
+      "sec"
+    ]
+  },
+  "LITE": {
+    "header": {
+      "ticker": "LITE",
+      "company_name": "Lumentum Holdings Inc.",
+      "sector": null,
+      "industry": null,
+      "template_id": "generic_company",
+      "price": {
+        "field": "price",
+        "value": 919.400024414062,
+        "origin": "reported",
+        "display": 919.400024414062
+      },
+      "price_timestamp": "2026-09-16",
+      "market_cap": {
+        "field": "market_cap",
+        "value": 82470180000.0,
+        "origin": "reported",
+        "display": 82470180000.0
+      },
+      "valuation": {
+        "pe_ttm": {
+          "field": "pe_ttm",
+          "value": 144.56,
+          "origin": "reported",
+          "display": 144.56
+        },
+        "pe_forward": {
+          "field": "pe_forward",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ps": {
+          "field": "ps",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "ev_ebitda": {
+          "field": "ev_ebitda",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf_yield": {
+          "field": "fcf_yield",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "growth": {
+        "revenue_ttm": {
+          "field": "revenue_ttm",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "revenue_growth_yoy": {
+          "field": "revenue_growth_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "eps_ttm": {
+          "field": "eps_ttm",
+          "value": 6.36,
+          "origin": "reported",
+          "display": 6.36
+        },
+        "eps_growth_yoy": {
+          "field": "eps_growth_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        }
+      },
+      "latest_quarter": {
+        "report_date": "2026-08-11",
+        "fiscal_period": "Jun 2026",
+        "revenue": {
+          "field": "quarter_revenue",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "revenue_yoy": {
+          "field": "quarter_revenue_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "eps": {
+          "field": "quarter_eps",
+          "value": 2.64,
+          "origin": "reported",
+          "display": 2.64
+        },
+        "eps_yoy": {
+          "field": "quarter_eps_yoy",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "gross_margin": {
+          "field": "gross_margin",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "operating_margin": {
+          "field": "operating_margin",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "fcf": {
+          "field": "quarter_fcf",
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
+        },
+        "source": "Nasdaq earnings surprise"
+      },
+      "forward": {
+        "management_guidance": {
+          "origin": "reported",
+          "text": "expects the following for the first quarter of fiscal year 2027: • Net revenue in the range of $1.225 billion to $1.275",
+          "source": "sec.exhibit",
+          "count": 2
+        },
+        "consensus": {
+          "origin": "unavailable",
+          "reason": "no trusted consensus source is wired for Brain Phase 1"
+        },
+        "system_forecast": {
+          "origin": "unavailable",
+          "reason": "Phase 1 does not run a system forecast"
+        }
+      },
+      "missing_fields": [
+        "transcripts",
+        "fcf",
+        "segment_growth",
+        "net_margin",
+        "diluted_shares"
+      ],
+      "pack_updated_at": "2026-09-17T06:10:40+00:00",
+      "is_fixture": false,
+      "source": "production"
+    },
+    "missing_fields": [
+      "transcripts",
+      "fcf",
+      "segment_growth",
+      "net_margin",
+      "diluted_shares"
+    ],
+    "price": {
+      "field": "price",
+      "value": 919.400024414062,
+      "origin": "reported",
+      "display": 919.400024414062
+    },
+    "price_timestamp": "2026-09-16",
+    "pe_ttm": {
+      "field": "pe_ttm",
+      "value": 144.56,
+      "origin": "reported",
+      "display": 144.56
+    },
+    "forward_pe": {
+      "field": "pe_forward",
+      "value": null,
+      "origin": "unavailable",
+      "display": "unavailable"
+    },
+    "consensus": {
+      "origin": "unavailable",
+      "reason": "no trusted consensus source is wired for Brain Phase 1"
+    },
+    "guidance": {
+      "origin": "reported",
+      "text": "expects the following for the first quarter of fiscal year 2027: • Net revenue in the range of $1.225 billion to $1.275",
+      "source": "sec.exhibit",
+      "count": 2
+    },
+    "news_sources": [
+      "BNK Invest",
+      "Barchart",
+      "Zacks",
+      "sec",
+      "web_search"
+    ]
+  }
+}

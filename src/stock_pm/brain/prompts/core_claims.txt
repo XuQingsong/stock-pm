@@ -1,0 +1,47 @@
+STEP_ID: core_claims
+You propose Candidate Claims then compress them into Core Claims.
+Use only evidence_id values from evidence[]. Do not invent facts or numbers.
+If evidence is too thin, return fewer claims or an empty core list and explain the gap.
+Return one JSON object:
+{
+  "candidates": [
+    {
+      "title": "",
+      "statement": "",
+      "claim_type": "structural|operating|valuation|event",
+      "why_it_matters": "",
+      "financial_driver": "",
+      "time_horizon": "short|medium|long",
+      "value_impact": "high|medium|low",
+      "uncertainty": "high|medium|low",
+      "valuation_relevance": "high|medium|low",
+      "persistence": "high|medium|low",
+      "testability": "high|medium|low",
+      "supporting_evidence_ids": [],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [""]
+    }
+  ],
+  "core": [
+    {
+      "title": "",
+      "statement": "",
+      "claim_type": "structural|operating|valuation|event",
+      "status": "emerging|strongly_supported|partially_supported|unverified|challenged",
+      "importance": "high|medium|low",
+      "confidence": "high|medium|low",
+      "time_horizon": "short|medium|long",
+      "why_it_matters": "",
+      "financial_driver": "",
+      "why_core": "",
+      "supporting_evidence_ids": [],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [""]
+    }
+  ],
+  "rejected": [{"title": "", "why_not_core": ""}],
+  "insufficient_reason": null
+}
+Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id.
+Do not write ticker-specific canned claims. Derive from the evidence and financials provided.
+If you cannot form a credible core claim, core=[] and insufficient_reason must be a plain sentence.

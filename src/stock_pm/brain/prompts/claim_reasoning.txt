@@ -1,0 +1,18 @@
+STEP_ID: claim_reasoning
+Write the full analysis for one Core Claim. Cite only evidence_id values from evidence[].
+Do not invent numbers. If a fact is missing, say missing.
+Return one JSON object:
+{
+  "claim_id": "",
+  "current_conclusion": "",
+  "why_important": "",
+  "strongest_support_evidence_ids": [],
+  "strongest_opposing_evidence_ids": [],
+  "evidence_boundary": {"proves": "", "does_not_prove": ""},
+  "competing_hypotheses": [{"statement": "", "status": "speculative|supported", "evidence_ids": []}],
+  "missing_evidence": [""],
+  "what_strengthens": [""],
+  "what_weakens": [""],
+  "what_invalidates": [""],
+  "next_research_question": ""
+}

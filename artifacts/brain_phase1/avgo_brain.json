@@ -1,0 +1,715 @@
+{
+  "ticker": "AVGO",
+  "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+  "snapshot_id": "rsnap_fcc7820e9a9942358006d12fd21a258b",
+  "status": "partial",
+  "header": {
+    "ticker": "AVGO",
+    "company_name": "Broadcom Inc",
+    "sector": "半导体",
+    "industry": null,
+    "template_id": "semiconductor",
+    "price": {
+      "field": "price",
+      "value": 344.820007324219,
+      "origin": "reported",
+      "display": 344.820007324219
+    },
+    "price_timestamp": "2026-09-15",
+    "market_cap": {
+      "field": "market_cap",
+      "value": 1645517950764.0,
+      "origin": "reported",
+      "display": 1645517950764.0
+    },
+    "valuation": {
+      "pe_ttm": {
+        "field": "pe_ttm",
+        "value": 40.24,
+        "origin": "reported",
+        "display": 40.24
+      },
+      "pe_forward": {
+        "field": "pe_forward",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ps": {
+        "field": "ps",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ev_ebitda": {
+        "field": "ev_ebitda",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "fcf_yield": {
+        "field": "fcf_yield",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      }
+    },
+    "growth": {
+      "revenue_ttm": {
+        "field": "revenue_ttm",
+        "value": 87041000000.0,
+        "origin": "reported",
+        "display": 87041000000.0
+      },
+      "revenue_growth_yoy": {
+        "field": "revenue_growth_yoy",
+        "value": 97.22,
+        "origin": "reported",
+        "display": 97.22
+      },
+      "eps_ttm": {
+        "field": "eps_ttm",
+        "value": 8.57,
+        "origin": "reported",
+        "display": 8.57
+      },
+      "eps_growth_yoy": {
+        "field": "eps_growth_yoy",
+        "value": -24.79,
+        "origin": "reported",
+        "display": -24.79
+      }
+    },
+    "latest_quarter": {
+      "report_date": "2026-09-10",
+      "fiscal_period": "Q3",
+      "revenue": {
+        "field": "quarter_revenue",
+        "value": 15952000000.0,
+        "origin": "reported",
+        "display": 15952000000.0
+      },
+      "revenue_yoy": {
+        "field": "quarter_revenue_yoy",
+        "value": 6.95,
+        "origin": "reported",
+        "display": 6.95
+      },
+      "eps": {
+        "field": "quarter_eps",
+        "value": 0.88,
+        "origin": "reported",
+        "display": 0.88
+      },
+      "eps_yoy": {
+        "field": "quarter_eps_yoy",
+        "value": -24.79,
+        "origin": "reported",
+        "display": -24.79
+      },
+      "gross_margin": {
+        "field": "gross_margin",
+        "value": 67.1,
+        "origin": "reported",
+        "display": 67.1
+      },
+      "operating_margin": {
+        "field": "operating_margin",
+        "value": 36.9,
+        "origin": "reported",
+        "display": 36.9
+      },
+      "fcf": {
+        "field": "quarter_fcf",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "source": "sec.companyfacts"
+    },
+    "forward": {
+      "management_guidance": {
+        "origin": "reported",
+        "text": "expect Q4 AI revenue to be $21.7 billion, up 236",
+        "source": "web_search",
+        "count": 19
+      },
+      "consensus": {
+        "origin": "unavailable",
+        "reason": "no trusted consensus source is wired for Brain Phase 1"
+      },
+      "system_forecast": {
+        "origin": "unavailable",
+        "reason": "Phase 1 does not run a system forecast"
+      }
+    },
+    "missing_fields": [
+      "fcf",
+      "segment_growth"
+    ],
+    "pack_updated_at": "2026-09-15T13:36:34+00:00",
+    "is_fixture": false,
+    "source": "production"
+  },
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM synthesis LLM call failed; no template PM view was written."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      }
+    ],
+    "poor_axes": [
+      "llm_reasoning"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "company_understanding": {},
+  "pm_synthesis": {
+    "current_view": "LLM PM synthesis unavailable. Do not treat the page as a completed Brain view.",
+    "cannot_conclude": [
+      "pm_synthesis_failed"
+    ]
+  },
+  "core_claims": [],
+  "news": [
+    {
+      "news_id": "bnws_9df8b9c208054fb18aa5536a828682a6",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_0c9769b3f26e4bd3b691f6158ef84513",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_d8665c2dbc9246bab733adb04fc0d4c3",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526295589/d84378d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_168478cb4dea426d976e5e08f24ad896",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526275077/d149683d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_aa6468edb3a64242b1f23701cfc69eba",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526266777/d152717d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_c13ed08185c64af297c78f66e22cfb70",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000054/avgo-20260503.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_4fe830fe62b74074ba2b208c9bac3fd9",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000051/avgo-20260603.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_e2812633160b4c48aab4acd80a1119eb",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000039/avgo-20260420.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_466f3260f46a44eaac75472575409b29",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526144028/d87999d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_031c639b2a014abaa8fd0612d022d8ef",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526140574/d109450d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_49bd3931e238446d8c3ca2e393b5facc",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-Q",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000016/avgo-20260201.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_8609a7a136ef4096a5f9a0760a9ac22f",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000011/avgo-20260304.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_85b62ae4a1a847cba70a1dfaed3d447d",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526085656/d305325d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_d21ee57d934b45fda69be1eb2e91077e",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000119312526011731/d104560d8k.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_2ed98da81eb54bb695cea49f81281404",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "10-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016825000121/avgo-20251102.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_9814484f5ea14c4dbd8a03a1da10e8ee",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "8-K",
+      "source": "sec",
+      "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016825000116/avgo-20251211.htm",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_29d49c0dd83a46c2bba9cc2a381278f5",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Stocks Settle Lower as AI Slowdown Fears Weigh on Chipmakers",
+      "source": "Barchart",
+      "url": "https://www.nasdaq.com/articles/stocks-settle-lower-ai-slowdown-fears-weigh-chipmakers",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_055ddb4d3e244cec998dfdb67bcb037a",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Stocks Slump on AI Slowdown Fears and Rising Bond Yields and Crude Prices",
+      "source": "Barchart",
+      "url": "https://www.nasdaq.com/articles/stocks-slump-ai-slowdown-fears-and-rising-bond-yields-and-crude-prices",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_805bfe22b5344aaa9bfaa02b053f9757",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "After Hours Most Active for Sep 14, 2026 :  CMCSA, NVDA, AVGO, NOK, IOVA, CCC, NKE, PATH, JOBY, TSLL, ACHR, GIS",
+      "source": "NASDAQ.com",
+      "url": "https://www.nasdaq.com/articles/after-hours-most-active-sep-14-2026-cmcsa-nvda-avgo-nok-iova-ccc-nke-path-joby-tsll-achr",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    },
+    {
+      "news_id": "bnws_5206ee662ced49d5bae8636c071c17df",
+      "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+      "ticker": "AVGO",
+      "evidence_id": null,
+      "layer": "uninterpreted",
+      "title": "Vertiv vs. Broadcom: Which AI Infrastructure Stock Has More Upside?",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/vertiv-vs-broadcom-which-ai-infrastructure-stock-has-more-upside",
+      "published_at": null,
+      "new_fact": null,
+      "affected_claim_id": null,
+      "impact": null,
+      "reason": null,
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {},
+      "created_at": "2026-09-17T06:00:32+00:00"
+    }
+  ],
+  "states": [],
+  "questions": [],
+  "audit": {
+    "ticker": "AVGO",
+    "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+    "snapshot_id": "rsnap_fcc7820e9a9942358006d12fd21a258b",
+    "model": null,
+    "prompt_version": "brain-phase1-v1",
+    "llm_calls": [
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "299cdd1d9435fd963436e94ab721f7eee3e4b6a21c4f03d54e348a412332d5e8",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "company_understanding"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "e13a9ddae58b487857ef8c141f297bbecdee777642bd762a3af43c96d717e0d1",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "core_claims"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "d5e1e2aac18d7cb5ded54c197c741ee054d68e5b9d0a4029e697ca2e4a3a0ef0",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "news_interpretation"
+      },
+      {
+        "llm_called": false,
+        "llm_status": "skipped",
+        "provider": "openai",
+        "model": null,
+        "prompt_hash": "8af898d8354f13bda164aadc324db1aa65c1546b85f5d460ab8b2df198c17634",
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
+        "fallback_used": true,
+        "raw_status": "missing_key",
+        "step": "pm_synthesis"
+      }
+    ],
+    "input_tokens": null,
+    "output_tokens": null,
+    "latency_ms": null,
+    "news_searched": 20,
+    "sources_fetched": 20,
+    "evidence_created": 17,
+    "candidate_claim_count": 0,
+    "core_claim_count": 0,
+    "claim_versions_changed": 0,
+    "errors": [],
+    "fallbacks": [
+      "company_understanding",
+      "core_claims",
+      "news_interpretation",
+      "pm_synthesis"
+    ],
+    "backfill_id": null,
+    "high_quality_news": 16,
+    "llm_invoked": false
+  }
+}

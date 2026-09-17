@@ -1,0 +1,190 @@
+{
+  "AVGO": {
+    "run_id": "brun_8a0144e78c854e4a83bbd92bac3527f0",
+    "snapshot_id": "rsnap_fcc7820e9a9942358006d12fd21a258b",
+    "status": "partial",
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM synthesis LLM call failed; no template PM view was written."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      }
+    ],
+    "view_recompute_note": "API /brain pages re-score News Coverage on read. SEC-index-only hits without Reuters/Bloomberg/IR are Partial, not Good."
+  },
+  "AAPL": {
+    "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+    "snapshot_id": "rsnap_7dae1bd27a3f457f8ea2aa3b6283588b",
+    "status": "partial",
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM synthesis LLM call failed; no template PM view was written."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      }
+    ],
+    "view_recompute_note": "API /brain pages re-score News Coverage on read. SEC-index-only hits without Reuters/Bloomberg/IR are Partial, not Good."
+  },
+  "LITE": {
+    "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+    "snapshot_id": "rsnap_52d6dc6568f949aaa6fded65b00e969e",
+    "status": "partial",
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Good",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Poor",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Price, TTM, or latest-quarter fields are incomplete."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM synthesis LLM call failed; no template PM view was written."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+      }
+    ],
+    "view_recompute_note": "API /brain pages re-score News Coverage on read. SEC-index-only hits without Reuters/Bloomberg/IR are Partial, not Good."
+  }
+}
