@@ -1,7 +1,8 @@
-"""Last-7-day news / filing search. Reuses official.web_search, pack news, and SEC."""
+"""Last-30-day news / filing search. Reuses official.web_search, pack news, and SEC."""
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlparse
@@ -10,7 +11,48 @@ from stock_pm.events.policy import TIER1_HOSTS, TIER2_HOSTS
 from stock_pm.research.ids import new_id
 from stock_pm.research.official import web_search
 
-from .types import HIGH_QUALITY_NEWS_HOSTS
+from .types import HIGH_QUALITY_NEWS_HOSTS, NEWS_WINDOW_DAYS
+
+
+_MONTHS = {
+    "jan": 1,
+    "january": 1,
+    "feb": 2,
+    "february": 2,
+    "mar": 3,
+    "march": 3,
+    "apr": 4,
+    "april": 4,
+    "may": 5,
+    "jun": 6,
+    "june": 6,
+    "jul": 7,
+    "july": 7,
+    "aug": 8,
+    "august": 8,
+    "sep": 9,
+    "sept": 9,
+    "september": 9,
+    "oct": 10,
+    "october": 10,
+    "nov": 11,
+    "november": 11,
+    "dec": 12,
+    "december": 12,
+}
+_ISO_DATE = re.compile(r"\b(20\d{2}-\d{2}-\d{2})\b")
+_TEXT_DATE = re.compile(
+    r"\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|"
+    r"aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+    r"[.\s\-]+(\d{1,2})(?:st|nd|rd|th)?[,.\s\-]+(20\d{2})\b",
+    re.I,
+)
+_EU_DATE = re.compile(
+    r"\b(\d{1,2})\s+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+    r"[,\s]+(20\d{2})\b",
+    re.I,
+)
 
 
 def _now() -> datetime:
@@ -43,16 +85,43 @@ def is_high_quality(url: str | None, source: str | None = None) -> bool:
     return any(host.endswith(item) for item in HIGH_QUALITY_NEWS_HOSTS) or source_family(url, source) in {"sec", "official", "high_quality_news"}
 
 
-def default_queries(ticker: str, name: str | None = None) -> list[str]:
+def _extract_published_at(*parts: Any) -> str | None:
+    for value in parts:
+        if not value:
+            continue
+        text = str(value)
+        try:
+            stamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            return stamp.date().isoformat()
+        except ValueError:
+            pass
+        match = _ISO_DATE.search(text)
+        if match:
+            return match.group(1)
+        match = _TEXT_DATE.search(text)
+        if match:
+            month = _MONTHS.get(match.group(1).lower().rstrip("."))
+            if month:
+                return f"{match.group(3)}-{month:02d}-{int(match.group(2)):02d}"
+        match = _EU_DATE.search(text)
+        if match:
+            month = _MONTHS.get(match.group(2).lower().rstrip("."))
+            if month:
+                return f"{match.group(3)}-{month:02d}-{int(match.group(1)):02d}"
+    return None
+
+
+def default_queries(ticker: str, name: str | None = None, *, days: int = NEWS_WINDOW_DAYS) -> list[str]:
     symbol = ticker.upper()
     legal = (name or symbol).strip()
-    after = (_now() - timedelta(days=7)).date().isoformat()
+    after = (_now() - timedelta(days=days)).date().isoformat()
     return [
         f'{symbol} OR "{legal}" news after:{after}',
         f'site:reuters.com "{legal}" after:{after}',
         f'site:bloomberg.com "{legal}" after:{after}',
         f'"{legal}" investor relations press release after:{after}',
         f'{symbol} customer OR supplier OR demand after:{after}',
+        f'site:sec.gov {symbol} 10-Q OR 10-K OR 8-K after:{after}',
     ]
 
 
@@ -77,7 +146,12 @@ def _from_pack(pack: dict[str, Any], *, days: int) -> list[dict[str, Any]]:
     for row in pack.get("major_events") or []:
         if not isinstance(row, dict):
             continue
-        published = row.get("published_at") or row.get("source_time") or row.get("date")
+        published = _extract_published_at(
+            row.get("published_at"),
+            row.get("source_time"),
+            row.get("event_time"),
+            row.get("date"),
+        )
         if not _within_days(published, days):
             continue
         out.append(
@@ -93,7 +167,11 @@ def _from_pack(pack: dict[str, Any], *, days: int) -> list[dict[str, Any]]:
     for row in pack.get("official_documents") or []:
         if not isinstance(row, dict):
             continue
-        published = row.get("published_at") or row.get("source_time") or (row.get("metadata") or {}).get("filing_date")
+        published = _extract_published_at(
+            row.get("published_at"),
+            row.get("source_time"),
+            (row.get("metadata") or {}).get("filing_date"),
+        )
         if not _within_days(published, days):
             continue
         out.append(
@@ -115,13 +193,13 @@ def search_recent_news(
     pack: dict[str, Any] | None = None,
     extra_queries: list[str] | None = None,
     fetchers: Any | None = None,
-    days: int = 7,
+    days: int = NEWS_WINDOW_DAYS,
     limit_per_query: int = 5,
 ) -> list[dict[str, Any]]:
     symbol = ticker.upper()
     profile = (pack or {}).get("company_profile") or {}
     name = profile.get("legal_name") or symbol
-    queries = default_queries(symbol, name)
+    queries = default_queries(symbol, name, days=days)
     for item in extra_queries or []:
         text = str(item or "").strip()
         if text and text not in queries:
@@ -151,7 +229,12 @@ def search_recent_news(
             key = url or title
             if not key or key in seen:
                 continue
-            published = row.get("published_at") or row.get("date")
+            published = _extract_published_at(
+                row.get("published_at"),
+                row.get("date"),
+                title,
+                row.get("snippet") or row.get("summary"),
+            )
             if not _within_days(published, days):
                 continue
             seen.add(key)
@@ -168,7 +251,7 @@ def search_recent_news(
     return hits
 
 
-def classify_news_hits(hits: list[dict[str, Any]], *, days: int = 7) -> dict[str, Any]:
+def classify_news_hits(hits: list[dict[str, Any]], *, days: int = NEWS_WINDOW_DAYS) -> dict[str, Any]:
     official = 0
     independent = 0
     aggregator = 0
@@ -208,6 +291,7 @@ def classify_news_hits(hits: list[dict[str, Any]], *, days: int = 7) -> dict[str
         "full_text_available": full_text,
         "in_window": in_window,
         "count": len(hits),
+        "window_days": days,
     }
 
 

@@ -19,7 +19,7 @@ AUDIT = {
     ],
     "extend": [
         "BrainState / BrainClaim / BrainClaimVersion / ClaimEvidenceLink / BrainResearchQuestion / BrainRun (0014)",
-        "7-day news interpretation and MATERIAL/CONTEXTUAL/NOISE layering",
+        "30-day news interpretation and MATERIAL/CONTEXTUAL/NOISE layering",
         "LLM steps A–E dedicated to claims (not regex/template claims)",
         "/brain UI",
         "Brain quality FAIL-loud axes",
@@ -79,7 +79,7 @@ AUDIT = {
         },
         {
             "missing": "Reuters/Bloomberg API",
-            "affects": "reliable last-7-day high-quality news body text",
+            "affects": "reliable last-30-day high-quality news body text",
             "fix": "DuckDuckGo may surface reuters.com URLs but often headline/snippet only; paid feed would raise News Coverage",
         },
     ],

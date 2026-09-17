@@ -1,5 +1,5 @@
 STEP_ID: news_interpretation
-Interpret each last-7-day news item. This is not a summary task.
+Interpret each last-30-day news item. This is not a summary task.
 Use only news[] and claims[]. Do not invent facts, prices, or contracts.
 Return one JSON object:
 {

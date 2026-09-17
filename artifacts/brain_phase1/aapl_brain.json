@@ -1,8 +1,8 @@
 {
   "ticker": "AAPL",
-  "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-  "snapshot_id": "rsnap_7dae1bd27a3f457f8ea2aa3b6283588b",
-  "status": "partial",
+  "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+  "snapshot_id": "rsnap_78d008e45ca64459ad3f99d1fa59f795",
+  "status": "success",
   "header": {
     "ticker": "AAPL",
     "company_name": "Apple Inc",
@@ -18,16 +18,16 @@
     "price_timestamp": "2026-09-16",
     "market_cap": {
       "field": "market_cap",
-      "value": 4851251373800.0,
+      "value": 4882224007960.0,
       "origin": "reported",
-      "display": 4851251373800.0
+      "display": 4882224007960.0
     },
     "valuation": {
       "pe_ttm": {
         "field": "pe_ttm",
-        "value": 38.61,
+        "value": 37.9463470319635,
         "origin": "reported",
-        "display": 38.61
+        "display": 37.9463470319635
       },
       "pe_forward": {
         "field": "pe_forward",
@@ -57,67 +57,69 @@
     "growth": {
       "revenue_ttm": {
         "field": "revenue_ttm",
-        "value": 458393000000.0,
+        "value": 466823000000.0,
         "origin": "reported",
-        "display": 458393000000.0
+        "display": 466823000000.0
       },
       "revenue_growth_yoy": {
         "field": "revenue_growth_yoy",
-        "value": 14.74,
+        "value": 14.24,
         "origin": "reported",
-        "display": 14.74
+        "display": 14.24
       },
       "eps_ttm": {
         "field": "eps_ttm",
-        "value": 8.61,
+        "value": 8.71,
         "origin": "reported",
-        "display": 8.61
+        "display": 8.71
       },
       "eps_growth_yoy": {
         "field": "eps_growth_yoy",
-        "value": -34.85,
+        "value": 29.94,
         "origin": "reported",
-        "display": -34.85
+        "display": 29.94
       }
     },
     "latest_quarter": {
-      "report_date": "2026-07-31",
+      "report_date": "2026-07-30",
+      "period_end": "2026-06-27",
       "fiscal_period": "Q3",
+      "fiscal_year": 2026,
       "revenue": {
         "field": "quarter_revenue",
-        "value": 94036000000.0,
+        "value": 109417000000.0,
         "origin": "reported",
-        "display": 94036000000.0
+        "display": 109417000000.0
       },
       "revenue_yoy": {
         "field": "quarter_revenue_yoy",
-        "value": -24.35,
+        "value": 16.36,
         "origin": "reported",
-        "display": -24.35
+        "display": 16.36
       },
       "eps": {
         "field": "quarter_eps",
-        "value": 1.57,
+        "value": 2.02,
         "origin": "reported",
-        "display": 1.57
+        "display": 2.02
       },
       "eps_yoy": {
         "field": "quarter_eps_yoy",
-        "value": -34.85,
+        "value": 28.66,
         "origin": "reported",
-        "display": -34.85
+        "display": 28.66
       },
       "gross_margin": {
         "field": "gross_margin",
-        "value": 46.49,
+        "value": 50.06,
         "origin": "reported",
-        "display": 46.49
+        "display": 50.06
       },
       "operating_margin": {
         "field": "operating_margin",
-        "value": 29.99,
+        "value": 32.62,
         "origin": "reported",
-        "display": 29.99
+        "display": 32.62
       },
       "fcf": {
         "field": "quarter_fcf",
@@ -125,14 +127,14 @@
         "origin": "unavailable",
         "display": "unavailable"
       },
-      "source": "sec.companyfacts"
+      "source": "FMP earnings + income-statement+sec.companyfacts"
     },
     "forward": {
       "management_guidance": {
         "origin": "reported",
-        "text": "The Company expects these trends to intensify, which may materially negatively impact the Company’s revenue, costs, gross margin, results of operations and financial condition",
-        "source": "sec",
-        "count": 9
+        "text": "Thanks, Tim, and good afternoon, everyone. Our revenue of $94 billion was up 10% year-over-year and is a new June quarter record. We grew in every geographic segment and in the vast majority of the markets we track. Products revenue was $66.6 billion, up 8% year-over-year, driven by growth across iPhone and Mac. And thanks to our high levels of customer satisfaction and strong loyalty, our installed base of active devices reached another all-time high across all product categories and geographic segments. Services revenue was $27.4 billion, up 13% year-over-year and an all-time record. We saw strength across the world with double-digit growth in the majority of our markets. Company gross margin was 46.5% at the high end of our guidance range and down 60 basis points sequentially, primarily driven by approximately $800 million in tariff-related costs that Tim mentioned earlier. Products gross margin was 34.5%, down 140 basis points sequentially, driven by mix and tariff-related costs, partly offset by cost savings. Services gross margin was 75.6%, down 10 basis points sequentially. Operating expenses landed at $15.5 billion, up 8% year-over-year. This strong business performance led",
+        "source": "alpha_vantage",
+        "count": 33
       },
       "consensus": {
         "origin": "unavailable",
@@ -144,21 +146,125 @@
       }
     },
     "missing_fields": [
-      "transcripts",
       "fcf",
       "segment_growth"
     ],
-    "pack_updated_at": "2026-09-17T06:03:28+00:00",
+    "pack_updated_at": "2026-09-17T10:48:25+00:00",
     "is_fixture": false,
     "source": "production"
+  },
+  "integrity": {
+    "ticker": "AAPL",
+    "period_end": "2026-06-27",
+    "fiscal_year": 2026,
+    "fiscal_period": "Q3",
+    "inconsistent": false,
+    "block_core_claims": false,
+    "data_poor": false,
+    "warnings": [],
+    "fields": {
+      "latest_quarter_revenue": {
+        "value": 109417000000.0,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "quarter_revenue: companyfacts and earnings release/Nasdaq agree within tolerance"
+      },
+      "latest_quarter_eps": {
+        "value": 2.02,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+      },
+      "latest_quarter_revenue_yoy": {
+        "value": 16.36,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+      },
+      "latest_quarter_eps_yoy": {
+        "value": 28.66,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+      },
+      "latest_quarter_gross_margin": {
+        "value": 50.06,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "Gross profit / quarterly revenue from companyfacts"
+      },
+      "latest_quarter_operating_margin": {
+        "value": 32.62,
+        "source": "FMP earnings + income-statement+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "Operating income / quarterly revenue from companyfacts"
+      },
+      "ttm_revenue": {
+        "value": 466823000000.0,
+        "source": "fundamentals",
+        "source_date": "2026-09-17T10:48:25+00:00",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+      },
+      "ttm_eps": {
+        "value": 8.71,
+        "source": "fundamentals",
+        "source_date": "2026-09-17T10:48:25+00:00",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "TTM EPS is the sum of the same four contiguous quarters"
+      },
+      "price": {
+        "value": 332.410003662109,
+        "source": "price_bars",
+        "source_date": "2026-09-16",
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "Python-owned last close"
+      },
+      "price_timestamp": {
+        "value": "2026-09-16",
+        "source": "price_bars",
+        "source_date": "2026-09-16",
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "Session date of last close"
+      },
+      "pe_ttm": {
+        "value": 38.16,
+        "source": "calculated: last_close / eps_ttm",
+        "source_date": "2026-09-16",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+        "inputs": {
+          "price": 332.410003662109,
+          "eps_ttm": 8.71
+        }
+      }
+    },
+    "reason": null
   },
   "quality": {
     "axes": {
       "data_coverage": "Partial",
-      "news_coverage": "Good",
+      "news_coverage": "Partial",
       "evidence_quality": "Good",
       "independent_evidence": "Good",
-      "llm_reasoning": "Poor",
+      "llm_reasoning": "Good",
       "freshness": "Good"
     },
     "warnings": [
@@ -179,538 +285,1474 @@
       },
       {
         "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "PM synthesis LLM call failed; no template PM view was written."
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
       }
     ],
-    "poor_axes": [
-      "llm_reasoning"
-    ],
-    "headline": "BRAIN QUALITY WARNING"
+    "poor_axes": [],
+    "headline": "Brain quality"
   },
-  "company_understanding": {},
-  "pm_synthesis": {
-    "current_view": "LLM PM synthesis unavailable. Do not treat the page as a completed Brain view.",
+  "company_understanding": {
+    "how_company_makes_money": "Apple sells hardware (iPhone, Mac, iPad and other products) and monetizes an installed base of over 2.5 billion active devices through Services. In the latest reported quarter (FY2026 Q3, ended 2026-06-27), total revenue was $109.417B, with Products revenue of $78.7B (up 18% YoY, driven by double-digit growth in iPhone and Mac) and Services revenue of $30.7B (up 12% YoY, with records in every services category). Company gross margin was 50.1% and operating margin 32.62%. TTM revenue is $466.823B with 14.24% YoY growth and TTM EPS of $8.71 (up 29.94% YoY).",
+    "largest_growth_driver": "Services growth and continued iPhone/Mac product momentum. Management highlighted Services revenue of $30.7B, up 12% YoY, with all-time records in cloud services and payment services, and Products revenue up 18% YoY driven by double-digit iPhone and Mac growth. The installed base reached another all-time high across all major product categories and geographies.",
+    "largest_operating_risk": "Tariff-related costs and supply constraints pressuring gross margin and revenue timing. Management cited approximately $800 million in tariff-related costs in the June quarter, with Products gross margin down 140 bps sequentially, and noted supply constraints on iPhone and, to a lesser extent, Mac in the March quarter.",
+    "value_variables_1to3y": [
+      "Services revenue growth and mix (higher-margin Services at 75.6% gross margin vs Products at 34.5-40.1%)",
+      "iPhone and Mac unit demand and supply availability, including any supply constraints",
+      "Tariff-related costs and their impact on gross margin",
+      "Installed base growth and monetization across geographies",
+      "Valuation multiple (PE TTM 37.95) versus earnings growth trajectory"
+    ],
+    "candidate_questions": [
+      "How sustainable is the Services growth rate and what is the margin mix impact over the next 1-3 years?",
+      "What is the quantified impact of tariff-related costs on gross margin going forward?",
+      "How much of the recent iPhone and Mac growth is supply-constrained versus demand-driven?",
+      "What is the geographic revenue mix and growth by region, especially Greater China and emerging markets?",
+      "How does the current PE TTM of 37.95 compare to historical ranges and growth expectations?"
+    ],
+    "search_questions_last_30d": [
+      "Apple iPhone supply constraints 2026",
+      "Apple Services revenue growth 2026",
+      "Apple tariff impact gross margin 2026",
+      "Apple Q4 2026 guidance",
+      "Apple AI strategy 2026",
+      "Apple installed base active devices 2026",
+      "Apple Greater China revenue 2026",
+      "Apple Mac revenue growth 2026"
+    ],
+    "states": [
+      {
+        "name": "Revenue growth",
+        "statement": "TTM revenue growth is 14.24% YoY, with Q3 FY2026 revenue up 16.36% YoY to $109.417B.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_d14550396fc142e69c965ec968029790",
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Services momentum",
+        "statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category including cloud and payment services.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Products growth",
+        "statement": "Products revenue was $78.7B in Q3 FY2026, up 18% YoY, driven by double-digit growth in iPhone and Mac.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Gross margin pressure from tariffs",
+        "statement": "Company gross margin was 50.1% in Q3 FY2026, including a favorable tariff refund benefit of ~2 percentage points; excluding it, gross margin would have been at the midpoint of guidance. Prior quarter included ~$800M in tariff-related costs.",
+        "direction": "down",
+        "confidence": "medium",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_55f4dd45bc8941149aa47b269dcadf21",
+          "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed"
+        ]
+      },
+      {
+        "name": "Supply constraints",
+        "statement": "Management noted supply constraints on iPhone and, to a lesser extent, Mac in the March quarter, and supply constraints in the June quarter despite double-digit growth in every geographic segment.",
+        "direction": "down",
+        "confidence": "medium",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Installed base growth",
+        "statement": "Installed base of over 2.5 billion active devices reached another all-time high across all major product categories and geographic segments.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Valuation",
+        "statement": "PE TTM is 37.95; forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+        "direction": "neutral",
+        "confidence": "medium",
+        "state_type": "company",
+        "evidence_ids": []
+      }
+    ],
+    "coverage_gaps": [
+      "FCF and free cash flow yield are unavailable",
+      "Segment-level revenue growth breakdown (e.g., iPhone vs Mac vs Services) is not fully quantified in the provided data",
+      "Forward PE, PS, EV/EBITDA are unavailable",
+      "No trusted consensus estimates are wired",
+      "No system forecast is available"
+    ],
     "cannot_conclude": [
-      "pm_synthesis_failed"
+      "Cannot conclude on forward guidance or consensus expectations because no trusted consensus source is wired and no system forecast is available",
+      "Cannot conclude on free cash flow or FCF yield because the field is unavailable",
+      "Cannot conclude on segment-level profitability or unit economics beyond what management commentary provides",
+      "Cannot conclude on the precise quantitative impact of tariffs on future gross margins beyond management's commentary"
     ]
   },
-  "core_claims": [],
+  "pm_synthesis": {
+    "current_view": "AAPL shows strong reported operating momentum: TTM revenue $466.8B (+14.24% YoY), Q3 FY2026 revenue $109.4B (+16.36% YoY), TTM EPS $8.71 (+29.94% YoY), and Q3 gross margin 50.06% / operating margin 32.62%. The core thesis rests on broad-based revenue growth, a high-margin Services mix, and a growing installed base. However, evidence quality is mixed: the claim-level reasoning repeatedly flags that the specific figures cited in claims (e.g., $30.7B Services, 75.6% Services GM, 2.5B installed base, $800M tariff cost) are not directly verifiable from the provided evidence set, and several valuation inputs (forward PE, PS, EV/EBITDA, FCF yield) are unavailable. At PE TTM 37.95 on 14.24% revenue growth, the multiple embeds sustained high growth; the key risk is that growth or margins normalize while the multiple stays elevated. I cannot conclude on forward valuation or on the durability of the tariff/supply-constraint headwinds given missing data.",
+    "core_claim_ids": [
+      "bclm_73f66e41ff5a4adabb0b70800941e678",
+      "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "bclm_c39b3d8932a74aa48fe520aa46c4f9ce",
+      "bclm_4324d3599eef43bfa16a0a4b750a4527",
+      "bclm_22afd92876bd4de3bbff5ab1f721c3d9"
+    ],
+    "decisive_variables": [
+      {
+        "name": "Revenue growth durability",
+        "why": "TTM revenue growth of 14.24% and Q3 FY2026 growth of 16.36% YoY underpin the operating thesis; if growth decelerates toward single digits, the 37.95x PE is hard to defend. Claim reasoning notes the specific acceleration figures are not fully verified in the evidence set.",
+        "evidence_ids": [
+          "rev_d14550396fc142e69c965ec968029790",
+          "rev_55f4dd45bc8941149aa47b269dcadf21"
+        ]
+      },
+      {
+        "name": "Services mix and gross margin trajectory",
+        "why": "Services gross margin of 75.6% vs Products 34.5% is the structural margin lever; Q3 gross margin of 50.06% includes a favorable tariff refund of ~2pp, so underlying margin is closer to guidance midpoint. Mix shift determines whether consolidated margin expands or compresses.",
+        "evidence_ids": [
+          "rev_55f4dd45bc8941149aa47b269dcadf21",
+          "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed"
+        ]
+      },
+      {
+        "name": "Tariff and supply-constraint impact",
+        "why": "~$800M tariff-related costs and iPhone/Mac supply constraints are cited as near-term headwinds; their persistence or resolution directly affects near-term margin and revenue timing. Claim status is only partially_supported.",
+        "evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_171346ec4a5a41f28537cc94f3f395a8"
+        ]
+      }
+    ],
+    "strongest_claim_id": "bclm_73f66e41ff5a4adabb0b70800941e678",
+    "weakest_claim_id": "bclm_22afd92876bd4de3bbff5ab1f721c3d9",
+    "what_changed_last_30d": [
+      "Q3 FY2026 reported: revenue $109.417B (+16.36% YoY), EPS $2.02 (+28.66% YoY), gross margin 50.06%, operating margin 32.62%.",
+      "Gross margin included a favorable tariff refund benefit of ~2pp; excluding it, gross margin would have been at the midpoint of guidance.",
+      "Management commentary cited ~$800M tariff-related costs in the prior quarter and continued supply constraints on iPhone and, to a lesser extent, Mac."
+    ],
+    "most_likely_wrong": "The market may be extrapolating a tariff-refund-boosted gross margin (50.06%, including ~2pp benefit) as a sustainable run-rate. If the refund does not recur and tariff costs persist, underlying gross margin is closer to guidance midpoint, and the 37.95x PE on 14.24% revenue growth could compress. The claim-level reasoning also flags that several headline figures (Services $30.7B, 75.6% Services GM, 2.5B installed base) are not directly verifiable from the provided evidence, so the operating narrative may be less well-evidenced than it appears.",
+    "next_information_to_seek": "Forward valuation inputs (forward PE, PS, EV/EBITDA, FCF yield) and segment-level gross margin detail for Q3 FY2026 to confirm the Services/Products mix and quantify the tariff-refund benefit versus recurring tariff costs.",
+    "short_view": "Near-term operating momentum is strong (Q3 revenue +16.36% YoY, EPS +28.66% YoY), but gross margin quality is questionable given the ~2pp tariff refund benefit. Tariff costs (~$800M cited) and supply constraints are live headwinds. Watch for margin normalization in the next quarter.",
+    "mid_view": "The thesis depends on Services mix shift (75.6% GM vs 34.5% Products) continuing to lift consolidated margin while Products absorbs tariff and mix pressure. Revenue growth of 14.24% TTM supports the narrative, but the 37.95x PE requires sustained high-teens EPS growth to be justified.",
+    "long_view": "Structural installed-base growth (2.5B+ active devices) and Services monetization are the durable value drivers. However, without verified installed-base data, forward valuation multiples, or FCF yield, the long-term case cannot be fully underwritten from this evidence set.",
+    "cannot_conclude": [
+      "Whether the 37.95x PE TTM is justified without forward PE, PS, EV/EBITDA, or FCF yield.",
+      "Whether the ~$800M tariff cost and 140bps Products gross margin decline are accurately stated (claim status: partially_supported).",
+      "Whether the 2.5B installed base figure and all-time-high claim are directly evidenced (claim reasoning notes this is not proven by the evidence set).",
+      "Whether Services revenue of $30.7B and 75.6% Services gross margin are verifiable from the provided evidence (claim reasoning flags these as unconfirmed).",
+      "Whether the Q3 gross margin of 50.06% is sustainable ex the ~2pp tariff refund benefit."
+    ]
+  },
+  "candidates": [
+    {
+      "title": "Revenue growth is broad-based and accelerating",
+      "statement": "Apple's revenue growth accelerated from 10% YoY in the June 2025 quarter to 16% YoY in the June 2026 quarter, with double-digit growth in every geographic segment and TTM revenue growth of 14.24%.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "Accelerating top-line growth across all geographies suggests demand is robust and not dependent on a single market, which supports the durability of the revenue base and operating leverage.",
+      "financial_driver": "Revenue growth",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows reported revenue growth rates and management commentary on geographic breadth. It does not show unit volumes, pricing, or forward guidance, so the sustainability of this growth rate is not proven.",
+      "supporting_evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21",
+        "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed",
+        "rev_d14550396fc142e69c965ec968029790"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Unit volume data",
+        "Forward revenue guidance",
+        "Segment-level revenue breakdown"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "medium",
+        "valuation_relevance": "high",
+        "persistence": "medium",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Services mix shift supports margin structure",
+      "statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "long",
+      "why_it_matters": "A growing mix of high-margin Services revenue structurally lifts consolidated gross margin and earnings power, even if Products margins face tariff and mix pressure.",
+      "financial_driver": "Gross margin mix",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows Services revenue growth and the margin differential between Services and Products. It does not show the precise mix trajectory or whether Services growth can offset Products margin pressure over time.",
+      "supporting_evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21",
+        "rev_d14550396fc142e69c965ec968029790"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Services revenue by category",
+        "Long-term Services growth guidance",
+        "Mix impact quantification"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "medium",
+        "valuation_relevance": "high",
+        "persistence": "high",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "statement": "Management cited approximately $800 million in tariff-related costs in the June quarter and supply constraints on iPhone and Mac, with Products gross margin down 140 bps sequentially.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "short",
+      "why_it_matters": "These headwinds can compress margins and limit revenue upside in the near term, creating uncertainty around the sustainability of recent margin levels.",
+      "financial_driver": "Gross margin and revenue timing",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows management commentary on tariff costs and supply constraints. It does not quantify the forward impact or indicate whether these are one-time or recurring.",
+      "supporting_evidence_ids": [
+        "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed",
+        "rev_7e4c8e0f98f443539333381556a04753",
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Forward tariff cost estimates",
+        "Supply constraint resolution timeline",
+        "Gross margin guidance"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "medium",
+        "uncertainty": "high",
+        "valuation_relevance": "medium",
+        "persistence": "low",
+        "testability": "medium"
+      }
+    },
+    {
+      "title": "Installed base growth underpins Services monetization",
+      "statement": "Apple's installed base of over 2.5 billion active devices reached another all-time high across all major product categories and geographic segments.",
+      "claim_type": "structural",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "long",
+      "why_it_matters": "A growing installed base expands the addressable market for high-margin Services, providing a structural tailwind for recurring revenue and earnings durability.",
+      "financial_driver": "Services revenue and customer retention",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows management's statement of installed base reaching an all-time high. It does not provide device-level detail, monetization rates, or churn data.",
+      "supporting_evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Installed base by category",
+        "Services attach rates",
+        "Churn data"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "low",
+        "valuation_relevance": "high",
+        "persistence": "high",
+        "testability": "medium"
+      }
+    },
+    {
+      "title": "Valuation multiple is elevated relative to growth",
+      "statement": "PE TTM is 37.95 with TTM EPS growth of 29.94% and revenue growth of 14.24%, but forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+      "claim_type": "valuation",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "An elevated trailing multiple implies the market is pricing in sustained high growth; if growth decelerates or margins compress, the multiple could contract.",
+      "financial_driver": "Earnings multiple",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows the trailing PE and growth rates. It does not provide forward multiples, free cash flow yield, or peer comparisons, so relative valuation is not established.",
+      "supporting_evidence_ids": [
+        "rev_d14550396fc142e69c965ec968029790"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Forward PE",
+        "EV/EBITDA",
+        "FCF yield",
+        "Peer valuation multiples"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "high",
+        "valuation_relevance": "high",
+        "persistence": "medium",
+        "testability": "medium"
+      }
+    }
+  ],
+  "core_claims": [
+    {
+      "claim_id": "bclm_73f66e41ff5a4adabb0b70800941e678",
+      "title": "Revenue growth is broad-based and accelerating",
+      "statement": "Apple's revenue growth accelerated from 10% YoY in the June 2025 quarter to 16% YoY in the June 2026 quarter, with double-digit growth in every geographic segment and TTM revenue growth of 14.24%.",
+      "status": "strongly_supported",
+      "confidence": "high",
+      "why_it_matters": "Accelerating top-line growth across all geographies suggests demand is robust and not dependent on a single market, which supports the durability of the revenue base and operating leverage.",
+      "reasoning": {
+        "claim_id": "bclm_73f66e41ff5a4adabb0b70800941e678",
+        "what_weakens": [
+          "Evidence showing June 2026 revenue growth below 16% or not broad-based",
+          "Evidence showing June 2025 revenue growth different from 10%",
+          "Evidence showing TTM revenue growth different from 14.24%"
+        ],
+        "why_important": "If true, broad-based and accelerating revenue growth would indicate robust demand across all regions, supporting revenue durability and operating leverage. However, without verifiable data, the claim cannot be relied upon for investment decisions.",
+        "missing_evidence": [
+          "June 2025 quarterly revenue and YoY growth rate",
+          "June 2026 quarterly revenue and YoY growth rate",
+          "Geographic segment revenue breakdown for June 2025 and June 2026 quarters",
+          "TTM revenue growth calculation for the period ending June 2026",
+          "Exact revenue figures for the June 2026 quarter"
+        ],
+        "what_invalidates": [
+          "Official financial statements showing June 2026 revenue growth is not 16% YoY",
+          "Official financial statements showing June 2025 revenue growth is not 10% YoY",
+          "Official financial statements showing TTM revenue growth is not 14.24%",
+          "Evidence that geographic segments did not all grow double-digits in June 2026"
+        ],
+        "what_strengthens": [
+          "Official earnings release for the June 2026 quarter showing 16% YoY revenue growth",
+          "Geographic segment data showing double-digit growth in every region for June 2026",
+          "Calculation of TTM revenue growth confirming 14.24%"
+        ],
+        "evidence_boundary": {
+          "proves": "The evidence proves that in the March quarter, Apple reported revenue of $111.2 billion, up 17% YoY, with March revenue records in every geographic segment, and that iPhone revenue grew 22% YoY. It also shows a prior-year March quarter revenue of $95.4 billion, up 5% YoY.",
+          "does_not_prove": "The evidence does not prove the June 2025 or June 2026 quarterly revenue growth rates, the 10% to 16% acceleration, double-digit growth in every geographic segment for those specific quarters, or the TTM revenue growth of 14.24%."
+        },
+        "current_conclusion": "The claim is not supported by the provided evidence. The evidence contains no data for the June 2025 or June 2026 quarters, no geographic segment breakdowns, and no TTM revenue growth figure. The only primary revenue data point is for the March quarter, showing $111.2 billion, up 17% YoY, with March revenue records in every geographic segment. This does not confirm the specific acceleration from 10% to 16% YoY or the 14.24% TTM growth asserted in the claim.",
+        "competing_hypotheses": [
+          {
+            "status": "speculative",
+            "statement": "Apple's revenue growth is broad-based and accelerating, as claimed.",
+            "evidence_ids": [
+              "rev_7e4c8e0f98f443539333381556a04753",
+              "rev_171346ec4a5a41f28537cc94f3f395a8"
+            ]
+          },
+          {
+            "status": "supported",
+            "statement": "Apple's revenue growth is strong but may be driven by specific segments or regions, and the acceleration claim is unverified.",
+            "evidence_ids": [
+              "rev_7e4c8e0f98f443539333381556a04753",
+              "rev_171346ec4a5a41f28537cc94f3f395a8",
+              "rev_1b777438599c44709e66e808a09df6df"
+            ]
+          }
+        ],
+        "next_research_question": "What were Apple's actual revenue and YoY growth rates for the June 2025 and June 2026 quarters, and what was the TTM revenue growth as of June 2026?",
+        "strongest_support_evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_171346ec4a5a41f28537cc94f3f395a8"
+        ],
+        "strongest_opposing_evidence_ids": [
+          "rev_1b777438599c44709e66e808a09df6df"
+        ]
+      }
+    },
+    {
+      "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "title": "Services mix shift supports margin structure",
+      "statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category, and Services gross margin of 75.6% is substantially higher than Products gross margin of 34.5%.",
+      "status": "strongly_supported",
+      "confidence": "high",
+      "why_it_matters": "A growing mix of high-margin Services revenue structurally lifts consolidated gross margin and earnings power, even if Products margins face tariff and mix pressure.",
+      "reasoning": {
+        "claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+        "what_weakens": [
+          "Evidence showing Services growth decelerating or gross margin declining.",
+          "Products gross margin improving or Services mix not shifting.",
+          "Contradictory figures from reliable sources."
+        ],
+        "why_important": "If true, a growing high-margin Services mix would structurally improve Apple's consolidated gross margin and earnings power, making the company more resilient to Products margin pressure from tariffs and mix. This is a core driver of long-term profitability and valuation.",
+        "missing_evidence": [
+          "Apple's Q3 FY2026 earnings release or 10-Q with Services revenue, growth rate, and gross margin breakdown.",
+          "Historical Services and Products gross margin data to verify the 75.6% and 34.5% figures.",
+          "Segment revenue mix over time to confirm the mix shift trend.",
+          "Any primary source (e.g., Apple earnings call transcript for Q3 FY2026) that explicitly states the claimed metrics."
+        ],
+        "what_invalidates": [
+          "Apple's official financial statements showing different Services revenue, growth, or gross margin figures for Q3 FY2026.",
+          "Evidence that the claimed figures are from a different period or are fabricated."
+        ],
+        "what_strengthens": [
+          "Primary source documents (earnings release, 10-Q) for Q3 FY2026 showing Services revenue of $30.7B, 12% YoY growth, and gross margin of 75.6%.",
+          "Management commentary confirming records in every services category.",
+          "Consolidated gross margin expansion attributable to Services mix."
+        ],
+        "evidence_boundary": {
+          "proves": "Nothing about the specific claim metrics. The evidence includes generic SEC filings (8-K, 10-Q, 10-K) that may contain relevant data but excerpts are empty or just form types. Earnings call excerpts discuss a March quarter with total revenue of $111.2B and prior-year $95.4B, not the claimed Q3 FY2026 figures.",
+          "does_not_prove": "The claim's specific numbers: $30.7B Services revenue, 12% YoY growth, records in every services category, 75.6% Services gross margin, 34.5% Products gross margin. Also does not prove the mix shift trend or its impact on consolidated margin."
+        },
+        "current_conclusion": "The claim is not verifiable from the provided evidence. No evidence item contains the specific figures cited ($30.7B Services revenue, 12% YoY growth, records in every services category, 75.6% Services gross margin, 34.5% Products gross margin). The evidence set consists of generic SEC filing references, unrelated news snippets, and earnings call excerpts that discuss a different quarter (March) with different revenue figures ($111.2B total, $95.4B prior-year). Therefore, the claim's factual basis cannot be confirmed or refuted with the available evidence.",
+        "competing_hypotheses": [
+          {
+            "status": "speculative",
+            "statement": "The claim's figures are accurate and sourced from Apple's Q3 FY2026 earnings release, but the provided evidence set does not include that release.",
+            "evidence_ids": []
+          },
+          {
+            "status": "speculative",
+            "statement": "The claim's figures are inaccurate or misstated, as the available earnings call excerpts reference different revenue figures and quarters.",
+            "evidence_ids": [
+              "rev_7e4c8e0f98f443539333381556a04753",
+              "rev_1b777438599c44709e66e808a09df6df"
+            ]
+          }
+        ],
+        "next_research_question": "What are the actual Services revenue, YoY growth, and gross margin figures for Apple's Q3 FY2026 as reported in the official earnings release or 10-Q?",
+        "strongest_support_evidence_ids": [],
+        "strongest_opposing_evidence_ids": []
+      }
+    },
+    {
+      "claim_id": "bclm_c39b3d8932a74aa48fe520aa46c4f9ce",
+      "title": "Installed base growth underpins Services monetization",
+      "statement": "Apple's installed base of over 2.5 billion active devices reached another all-time high across all major product categories and geographic segments.",
+      "status": "strongly_supported",
+      "confidence": "high",
+      "why_it_matters": "A growing installed base expands the addressable market for high-margin Services, providing a structural tailwind for recurring revenue and earnings durability.",
+      "reasoning": {
+        "claim_id": "bclm_c39b3d8932a74aa48fe520aa46c4f9ce",
+        "what_weakens": [
+          "Evidence showing a decline in active devices in any major product category or geographic segment.",
+          "Reports indicating that installed base growth is slowing or has plateaued.",
+          "Data showing that Services revenue growth is not correlated with installed base growth.",
+          "Contradictory statements from Apple executives about the installed base."
+        ],
+        "why_important": "If true, a growing installed base would expand the addressable market for high-margin Services, providing a structural tailwind for recurring revenue and earnings durability. This is a core claim for Apple's long-term investment thesis.",
+        "missing_evidence": [
+          "Explicit statement from Apple or a reliable source confirming the installed base number (e.g., 'over 2.5 billion active devices').",
+          "Data showing installed base growth across all major product categories (iPhone, Mac, iPad, Wearables, etc.).",
+          "Data showing installed base growth across all geographic segments.",
+          "Historical installed base figures to confirm 'another all-time high'.",
+          "Direct evidence linking installed base growth to Services revenue growth or monetization."
+        ],
+        "what_invalidates": [
+          "Apple officially revising its installed base figure downward or stating it is no longer growing.",
+          "Credible evidence that the installed base is significantly below 2.5 billion or declining.",
+          "Proof that the installed base has not reached an all-time high in certain categories or regions."
+        ],
+        "what_strengthens": [
+          "Apple's official earnings reports or press releases stating the installed base figure and its growth.",
+          "Third-party analyst reports confirming the installed base size and growth trends.",
+          "Evidence showing increased Services revenue per device or higher attach rates.",
+          "Data indicating growth in active devices across all product categories and regions."
+        ],
+        "evidence_boundary": {
+          "proves": "The evidence proves that Apple reported strong revenue growth in a recent quarter, with records in every geographic segment, and that demand for iPhone and Mac outpaced supply. It also shows that Services revenue reached a record.",
+          "does_not_prove": "The evidence does not prove the size of the installed base, nor that it reached an all-time high across all product categories and geographic segments. It also does not directly link installed base growth to Services monetization."
+        },
+        "current_conclusion": "The claim that Apple's installed base of over 2.5 billion active devices reached another all-time high across all major product categories and geographic segments is not directly supported by the provided evidence. While some evidence indicates strong product demand and revenue growth, none explicitly states the installed base figure or confirms an all-time high across all categories and geographies.",
+        "competing_hypotheses": [
+          {
+            "status": "supported",
+            "statement": "Apple's installed base is growing due to strong product demand, as indicated by supply constraints and revenue records.",
+            "evidence_ids": [
+              "rev_7e4c8e0f98f443539333381556a04753",
+              "rev_171346ec4a5a41f28537cc94f3f395a8",
+              "rev_facd5c04078a4ab8865898092ea03101"
+            ]
+          },
+          {
+            "status": "speculative",
+            "statement": "The installed base figure of over 2.5 billion active devices is accurate and represents an all-time high.",
+            "evidence_ids": []
+          }
+        ],
+        "next_research_question": "What is the most recent official installed base figure disclosed by Apple, and how has it trended across product categories and geographic segments over the past several years?",
+        "strongest_support_evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_171346ec4a5a41f28537cc94f3f395a8",
+          "rev_facd5c04078a4ab8865898092ea03101"
+        ],
+        "strongest_opposing_evidence_ids": []
+      }
+    },
+    {
+      "claim_id": "bclm_4324d3599eef43bfa16a0a4b750a4527",
+      "title": "Tariffs and supply constraints are near-term margin and revenue headwinds",
+      "statement": "Management cited approximately $800 million in tariff-related costs in the June quarter and supply constraints on iPhone and Mac, with Products gross margin down 140 bps sequentially.",
+      "status": "partially_supported",
+      "confidence": "medium",
+      "why_it_matters": "These headwinds can compress margins and limit revenue upside in the near term, creating uncertainty around the sustainability of recent margin levels.",
+      "reasoning": {
+        "claim_id": "bclm_4324d3599eef43bfa16a0a4b750a4527",
+        "what_weakens": [
+          "Evidence showing Products gross margin expanded or was stable sequentially.",
+          "Management stating supply constraints are resolved or tariff costs are immaterial.",
+          "Revenue and margin beats driven by mix or pricing that offset these headwinds."
+        ],
+        "why_important": "If tariffs and supply constraints are materially compressing Products gross margin and limiting revenue timing, then near-term margin levels and revenue upside may be less sustainable than headline growth suggests, which matters for valuation and forward estimates.",
+        "missing_evidence": [
+          "The exact $800 million tariff-related cost figure and its source (earnings call, filing, or press release).",
+          "The 140 bps sequential decline in Products gross margin and the period it refers to.",
+          "Direct management attribution of gross margin decline to tariffs versus other factors such as product mix, foreign exchange, or component costs.",
+          "Quantified revenue impact from iPhone and Mac supply constraints.",
+          "Forward guidance or commentary on whether these headwinds are expected to persist or ease."
+        ],
+        "what_invalidates": [
+          "Primary-source correction showing no $800 million tariff cost and no 140 bps Products gross margin decline.",
+          "Management explicitly stating tariffs and supply constraints had no material impact on margins or revenue."
+        ],
+        "what_strengthens": [
+          "Primary-source earnings call or filing explicitly stating the $800 million tariff cost and the 140 bps Products gross margin decline.",
+          "Management directly linking tariff costs and supply constraints to margin compression.",
+          "Guidance indicating continued supply constraints or tariff costs in the next quarter."
+        ],
+        "evidence_boundary": {
+          "proves": "Management acknowledged supply constraints on iPhone and, to a lesser extent, Mac, and reported revenue above the high end of guidance despite those constraints. This supports the existence of supply constraints and their potential to limit revenue timing.",
+          "does_not_prove": "The evidence does not contain the specific $800 million tariff cost figure, the 140 bps sequential Products gross margin decline, or a direct causal attribution of margin compression to tariffs. It also does not quantify the revenue impact of supply constraints."
+        },
+        "current_conclusion": "partially_supported",
+        "competing_hypotheses": [
+          {
+            "status": "supported",
+            "statement": "Supply constraints are real but demand remains strong enough that revenue still exceeded guidance, so the net near-term impact may be limited.",
+            "evidence_ids": [
+              "rev_171346ec4a5a41f28537cc94f3f395a8",
+              "rev_7e4c8e0f98f443539333381556a04753"
+            ]
+          },
+          {
+            "status": "speculative",
+            "statement": "Tariff-related costs are a material near-term margin headwind of approximately $800 million in the June quarter.",
+            "evidence_ids": []
+          },
+          {
+            "status": "speculative",
+            "statement": "Products gross margin declined 140 bps sequentially due to tariffs and supply constraints.",
+            "evidence_ids": []
+          }
+        ],
+        "next_research_question": "What were the exact tariff-related costs and Products gross margin figures in the June quarter, and how did management quantify the revenue impact of iPhone and Mac supply constraints?",
+        "strongest_support_evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_171346ec4a5a41f28537cc94f3f395a8",
+          "rev_facd5c04078a4ab8865898092ea03101"
+        ],
+        "strongest_opposing_evidence_ids": [
+          "rev_1b777438599c44709e66e808a09df6df"
+        ]
+      }
+    },
+    {
+      "claim_id": "bclm_22afd92876bd4de3bbff5ab1f721c3d9",
+      "title": "Valuation multiple is elevated relative to growth",
+      "statement": "PE TTM is 37.95 with TTM EPS growth of 29.94% and revenue growth of 14.24%, but forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+      "status": "partially_supported",
+      "confidence": "medium",
+      "why_it_matters": "An elevated trailing multiple implies the market is pricing in sustained high growth; if growth decelerates or margins compress, the multiple could contract.",
+      "reasoning": {
+        "claim_id": "bclm_22afd92876bd4de3bbff5ab1f721c3d9",
+        "what_weakens": [
+          "Evidence of decelerating revenue or EPS growth.",
+          "Forward guidance below expectations.",
+          "Evidence that the multiple is in line with or below historical averages or peers.",
+          "Evidence of margin compression or declining cash flow."
+        ],
+        "why_important": "An elevated trailing multiple implies the market is pricing in sustained high growth; if growth decelerates or margins compress, the multiple could contract.",
+        "missing_evidence": [
+          "Actual PE TTM, TTM EPS growth, and revenue growth figures to verify the claim's numbers.",
+          "Forward PE, PS, EV/EBITDA, and FCF yield to assess valuation from multiple angles.",
+          "Historical valuation multiples for Apple to determine if the current multiple is elevated relative to its own history.",
+          "Peer valuation multiples to determine if the multiple is elevated relative to the industry.",
+          "Analyst estimates for future EPS and revenue growth to assess whether the multiple is justified by expected growth.",
+          "Margin trends and guidance to assess potential earnings quality and sustainability."
+        ],
+        "what_invalidates": [
+          "Accurate data showing that the PE TTM is not 37.95 or that TTM EPS growth is not 29.94% or revenue growth is not 14.24%.",
+          "Evidence that the multiple is actually low relative to growth (e.g., PEG ratio below 1) or relative to peers and history.",
+          "Evidence that the company's growth is accelerating, making the multiple reasonable."
+        ],
+        "what_strengthens": [
+          "Evidence of sustained high revenue and EPS growth in recent quarters.",
+          "Forward guidance indicating continued strong growth.",
+          "Evidence that the multiple is above historical averages and peer averages.",
+          "Evidence of expanding margins or strong cash flow generation."
+        ],
+        "evidence_boundary": {
+          "proves": "The evidence shows Apple reported strong revenue growth in a recent quarter (e.g., $111.2 billion, up 17% year over year, with iPhone revenue growing 22% year over year). This supports the narrative that growth has been strong, which could justify a high trailing multiple.",
+          "does_not_prove": "The evidence does not provide the actual PE TTM, TTM EPS growth, revenue growth, forward PE, PS, EV/EBITDA, or FCF yield figures. It also does not prove that the multiple is elevated relative to growth, nor does it provide any valuation multiples or comparisons to peers or historical averages."
+        },
+        "current_conclusion": "partially_supported",
+        "competing_hypotheses": [
+          {
+            "status": "speculative",
+            "statement": "The high trailing PE is justified by strong current growth and future growth prospects.",
+            "evidence_ids": [
+              "rev_7e4c8e0f98f443539333381556a04753",
+              "rev_171346ec4a5a41f28537cc94f3f395a8"
+            ]
+          },
+          {
+            "status": "speculative",
+            "statement": "The high trailing PE is not justified because growth is decelerating or margins are compressing.",
+            "evidence_ids": []
+          }
+        ],
+        "next_research_question": "What are Apple's forward PE, PS, EV/EBITDA, and FCF yield, and how do they compare to its historical averages and peer group?",
+        "strongest_support_evidence_ids": [
+          "rev_7e4c8e0f98f443539333381556a04753",
+          "rev_171346ec4a5a41f28537cc94f3f395a8"
+        ],
+        "strongest_opposing_evidence_ids": []
+      }
+    }
+  ],
   "news": [
     {
-      "news_id": "bnws_a534bb95872440cd98f90e2aec068c12",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "news_id": "bnws_23536d7e2a97491a977c13911e624bf4",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
       "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_6241519cc84148baa7ecb42f9ad0b94f",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/aapl-20260730.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_4900f549f95844c09056657aa36189b9",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/aapl-20260328.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_6b885b52980e41c29c7e4b42a09390a0",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/aapl-20260430.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_7c15cf2afd5d42b3b3acf2a859922a61",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/ef20071035_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_429ecec7e91848f390a78382bb0de307",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/ef20060722_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_9d682e34fd0940f7ab560b57c8b7dec5",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/aapl-20251227.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_73d09c1dd5be430391f08d2a341f893d",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/aapl-20260129.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_ffbb5938ce8a494587792d93e74c8a9c",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126000199/ef20060722_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_4aa74c6cc5634094b29acad00020a594",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125044561/ef20060722_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_f6bbcbedc3af4a678ad6eda965e7b015",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_599c21fd6fe54aa1827fa7248bf3d58f",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000077/aapl-20251030.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_a9198d56032944a8adf8885e1645d536",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000073/aapl-20250628.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_7969a79d144a42418460547c31889817",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000071/aapl-20250731.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_479a42a60b7c481eb6129f7e5832796a",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125027340/ef20052355_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_30edc094086340d3ba5d200305188bba",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036125025275/ef20051741_8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_e26c7eb3514e4018b0f04b58233c1282",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "State Street SPDR Portfolio S&P 500 Growth ETF Experiences Big Inflow",
-      "source": "BNK Invest",
-      "url": "https://www.nasdaq.com/articles/state-street-spdr-portfolio-sp-500-growth-etf-experiences-big-inflow",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_2b3b3f3001c94582af48e83e639726ba",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Tim Cook's Most Defining Move at Apple Has Nothing to Do With AI",
+      "evidence_id": "rev_484b168ef8fb42b796fbc02bc4bb47ce",
+      "layer": "noise",
+      "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
       "source": "The Motley Fool",
-      "url": "https://www.nasdaq.com/articles/tim-cooks-most-defining-move-apple-has-nothing-do-ai",
-      "published_at": null,
-      "new_fact": null,
+      "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+      "published_at": "2026-09-17T00:00:00+00:00",
+      "new_fact": "",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
+      "impact": "none",
+      "reason": "Article about Berkshire Hathaway's portfolio, not Apple-specific; no new material fact about Apple.",
+      "financial_impact": "none",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Article about Berkshire Hathaway's portfolio, not Apple-specific; no new material fact about Apple.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 0,
+        "evidence_id": "rev_484b168ef8fb42b796fbc02bc4bb47ce",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
     },
     {
-      "news_id": "bnws_3b69e89834734ed1b0f7c6639bd02db1",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
+      "news_id": "bnws_b86fd9c01a674d18add3c3bf379d2891",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
       "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Is It Too Late to Buy Nvidia Stock?",
-      "source": "The Motley Fool",
-      "url": "https://www.nasdaq.com/articles/it-too-late-buy-nvidia-stock-0",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
-    },
-    {
-      "news_id": "bnws_0a0c0061782044c08ce85d38c3ddfee5",
-      "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-      "ticker": "AAPL",
-      "evidence_id": null,
-      "layer": "uninterpreted",
+      "evidence_id": "rev_5c46dc3563f343ee86017f459aa53211",
+      "layer": "noise",
       "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
       "source": "Zacks",
       "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
-      "published_at": null,
-      "new_fact": null,
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
+      "impact": "none",
+      "reason": "Headline-only mention of Apple in a Zacks feature; no substantive new information.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Headline-only mention of Apple in a Zacks feature; no substantive new information.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 1,
+        "evidence_id": "rev_5c46dc3563f343ee86017f459aa53211",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_fe499b4ad76540d49543c75eefef13b1",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_efce2042c580438d9c74b7f12e70767f",
+      "layer": "contextual",
+      "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "Apple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server.",
+      "affected_claim_id": null,
+      "impact": "contextual",
+      "reason": "Report of early-stage discussions; no confirmed contract or financial impact.",
       "financial_impact": "unavailable",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:07:44+00:00"
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Report of early-stage discussions; no confirmed contract or financial impact.",
+        "novelty": "new",
+        "new_fact": "Apple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server.",
+        "news_index": 2,
+        "evidence_id": "rev_efce2042c580438d9c74b7f12e70767f",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No financial figures or contract details provided; early-stage report.",
+        "changes_claim_status": false,
+        "new_research_question": "Could Apple's potential server initiative with Nvidia affect its Services or AI strategy?"
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_bc7c313f9c0a4cc78f34efe26d54d806",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_06cd609cf4d14391850217a918694115",
+      "layer": "noise",
+      "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "",
+      "affected_claim_id": null,
+      "impact": "none",
+      "reason": "Article about Berkshire Hathaway's portfolio, not Apple-specific; no new material fact about Apple.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Article about Berkshire Hathaway's portfolio, not Apple-specific; no new material fact about Apple.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 3,
+        "evidence_id": "rev_06cd609cf4d14391850217a918694115",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_2738e938c2cb436fbcf2d1a9ea6dd896",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_484b168ef8fb42b796fbc02bc4bb47ce",
+      "layer": "noise",
+      "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+      "published_at": "2026-09-17T00:00:00+00:00",
+      "new_fact": "",
+      "affected_claim_id": null,
+      "impact": "none",
+      "reason": "Duplicate of news_index 0; no new information.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Duplicate of news_index 0; no new information.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 4,
+        "evidence_id": "rev_484b168ef8fb42b796fbc02bc4bb47ce",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_6b8b70baf95c4f5f9b500e92e3310993",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_5c46dc3563f343ee86017f459aa53211",
+      "layer": "noise",
+      "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "",
+      "affected_claim_id": null,
+      "impact": "none",
+      "reason": "Duplicate of news_index 1; no new information.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Duplicate of news_index 1; no new information.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 5,
+        "evidence_id": "rev_5c46dc3563f343ee86017f459aa53211",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_94ac75d529fb42bd8da564d6cb6beb0b",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_efce2042c580438d9c74b7f12e70767f",
+      "layer": "contextual",
+      "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "Apple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server.",
+      "affected_claim_id": null,
+      "impact": "contextual",
+      "reason": "Duplicate of news_index 2; no new information.",
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Duplicate of news_index 2; no new information.",
+        "novelty": "repeat",
+        "new_fact": "Apple and Nvidia are reportedly discussing using NVLink technology and Apple's custom silicon in a proposed Apple server.",
+        "news_index": 6,
+        "evidence_id": "rev_efce2042c580438d9c74b7f12e70767f",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No financial figures or contract details provided; early-stage report.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "news_id": "bnws_4a6103358f4b462eb2f0d552c5555195",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "ticker": "AAPL",
+      "evidence_id": "rev_06cd609cf4d14391850217a918694115",
+      "layer": "noise",
+      "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+      "source": "The Motley Fool",
+      "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "",
+      "affected_claim_id": null,
+      "impact": "none",
+      "reason": "Duplicate of news_index 3; no new information.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Duplicate of news_index 3; no new information.",
+        "novelty": "repeat",
+        "new_fact": "",
+        "news_index": 7,
+        "evidence_id": "rev_06cd609cf4d14391850217a918694115",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:51:02+00:00"
     }
   ],
-  "states": [],
-  "questions": [],
+  "states": [
+    {
+      "state_id": "bst_0b7f6bf8e48846d19cb284edb91de631",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Revenue growth",
+      "statement": "TTM revenue growth is 14.24% YoY, with Q3 FY2026 revenue up 16.36% YoY to $109.417B.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_d14550396fc142e69c965ec968029790",
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_9509eef1f1f14235a99e5160fca2105b",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Services momentum",
+      "statement": "Services revenue reached $30.7B in Q3 FY2026, up 12% YoY, with records in every services category including cloud and payment services.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_e29a53d42fd64e66a20502a22eb53dff",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Products growth",
+      "statement": "Products revenue was $78.7B in Q3 FY2026, up 18% YoY, driven by double-digit growth in iPhone and Mac.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_3f65734b648b442a9f0175abfeac1aa1",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Gross margin pressure from tariffs",
+      "statement": "Company gross margin was 50.1% in Q3 FY2026, including a favorable tariff refund benefit of ~2 percentage points; excluding it, gross margin would have been at the midpoint of guidance. Prior quarter included ~$800M in tariff-related costs.",
+      "direction": "down",
+      "confidence": "medium",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21",
+        "rev_2dc93d5f6bb84dbc9a9a4a3eebab85ed"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_75fc891678194790abdf44349f4d4d86",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Supply constraints",
+      "statement": "Management noted supply constraints on iPhone and, to a lesser extent, Mac in the March quarter, and supply constraints in the June quarter despite double-digit growth in every geographic segment.",
+      "direction": "down",
+      "confidence": "medium",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_7e4c8e0f98f443539333381556a04753",
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_e1f1ec084a4f4c21ad8924c2adace005",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Installed base growth",
+      "statement": "Installed base of over 2.5 billion active devices reached another all-time high across all major product categories and geographic segments.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_55f4dd45bc8941149aa47b269dcadf21"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "state_id": "bst_e206ced2817647b6b4b622a0f25263a8",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Valuation",
+      "statement": "PE TTM is 37.95; forward PE, PS, EV/EBITDA, and FCF yield are unavailable.",
+      "direction": "neutral",
+      "confidence": "medium",
+      "effective_at": "2026-09-17T10:50:45+00:00",
+      "expires_at": null,
+      "evidence_ids": [],
+      "source": "llm_company_understanding",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00",
+      "updated_at": "2026-09-17T10:50:45+00:00"
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "brq_6db4d75e6da74ed7b2a4e9228b9775b5",
+      "ticker": "AAPL",
+      "related_claim_id": "bclm_22afd92876bd4de3bbff5ab1f721c3d9",
+      "question": "What are Apple's forward PE, PS, EV/EBITDA, and FCF yield, and how do they compare to its historical averages and peer group?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:24+00:00"
+    },
+    {
+      "question_id": "brq_7ab2ac236d9b4c63bc189379b08e4b66",
+      "ticker": "AAPL",
+      "related_claim_id": "bclm_4324d3599eef43bfa16a0a4b750a4527",
+      "question": "What were the exact tariff-related costs and Products gross margin figures in the June quarter, and how did management quantify the revenue impact of iPhone and Mac supply constraints?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:20+00:00"
+    },
+    {
+      "question_id": "brq_f92cdb494c63436bb03de09181108987",
+      "ticker": "AAPL",
+      "related_claim_id": "bclm_c39b3d8932a74aa48fe520aa46c4f9ce",
+      "question": "What is the most recent official installed base figure disclosed by Apple, and how has it trended across product categories and geographic segments over the past several years?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:15+00:00"
+    },
+    {
+      "question_id": "brq_1f6dfb04fdb245a6820e0e3c717538e9",
+      "ticker": "AAPL",
+      "related_claim_id": "bclm_53de182bcd1e4237bc1a092b38d8d60f",
+      "question": "What are the actual Services revenue, YoY growth, and gross margin figures for Apple's Q3 FY2026 as reported in the official earnings release or 10-Q?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:11+00:00"
+    },
+    {
+      "question_id": "brq_9195ca8cafc640979e29847f4633b051",
+      "ticker": "AAPL",
+      "related_claim_id": "bclm_73f66e41ff5a4adabb0b70800941e678",
+      "question": "What were Apple's actual revenue and YoY growth rates for the June 2025 and June 2026 quarters, and what was the TTM revenue growth as of June 2026?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:06+00:00"
+    },
+    {
+      "question_id": "brq_2dfcbba0c4504b7ca24bccb3ac864a05",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "Could Apple's potential server initiative with Nvidia affect its Services or AI strategy?",
+      "why_it_matters": "material or unresolved news item",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:51:02+00:00"
+    },
+    {
+      "question_id": "brq_e8df3717982f4daca556bda94681aad4",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "How sustainable is the Services growth rate and what is the margin mix impact over the next 1-3 years?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "question_id": "brq_cbc7f86645364b8daa1895c8f4e950bd",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "What is the quantified impact of tariff-related costs on gross margin going forward?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "question_id": "brq_9cd6a6dd22694c169c3fe552732eb86e",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "How much of the recent iPhone and Mac growth is supply-constrained versus demand-driven?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "question_id": "brq_c1443199cca449c2ada310ac270993cf",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "What is the geographic revenue mix and growth by region, especially Greater China and emerging markets?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00"
+    },
+    {
+      "question_id": "brq_9d6f0fd5b3ee48e28f90bc6e13f9db0f",
+      "ticker": "AAPL",
+      "related_claim_id": null,
+      "question": "How does the current PE TTM of 37.95 compare to historical ranges and growth expectations?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "medium",
+      "status": "open",
+      "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+      "created_at": "2026-09-17T10:50:45+00:00"
+    }
+  ],
   "audit": {
     "ticker": "AAPL",
-    "run_id": "brun_d9d002caf13d4a5dab71a9b72b412b3a",
-    "snapshot_id": "rsnap_7dae1bd27a3f457f8ea2aa3b6283588b",
-    "model": null,
-    "prompt_version": "brain-phase1-v1",
+    "run_id": "brun_6a68f5f03aab406f8a91758f31d4a5e2",
+    "snapshot_id": "rsnap_78d008e45ca64459ad3f99d1fa59f795",
+    "model": "deepseek-flash",
+    "prompt_version": "brain-phase1-v1.1",
     "llm_calls": [
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "5f158c40d1f1d9acdefdfec238dd75cbc026087af4a1c3797e319b769e6d7add",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "e0bd1286ade72d8a06162850cf6f5a51854edfc15fb7fb320e538d880a960db7",
+        "latency_ms": 7325,
+        "input_tokens": 16523,
+        "output_tokens": 1576,
+        "total_tokens": 18099,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "company_understanding"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "10c2ebe1b62e49464389e3551566503fc8a4c1c8a9f4a08485fe19c3e50ebd3f",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "9bd4c5aa5023de505b98e11deae655984af5f1f0573de867e56ce2cb9f797117",
+        "latency_ms": 11771,
+        "input_tokens": 14507,
+        "output_tokens": 3180,
+        "total_tokens": 17687,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "core_claims"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "1654c9a53b815ab346b6b382a94b8d23b6829d26a6758f57d6c30d3f2c9c0324",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "42d574ff60ac43eb2dcdc3b742ee8854de89cc619e4986f51783d1ceed636821",
+        "latency_ms": 4730,
+        "input_tokens": 1900,
+        "output_tokens": 1326,
+        "total_tokens": 3226,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "news_interpretation"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "dd6d5f1fbcc82fb7dd0a0266d7dc3ac027cb80833767aea20a17a07f2c5976a7",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "5d2ba9dd000f7617abb599919467caf3eb79947716dbe5c2fdc7a56d85bfe4de",
+        "latency_ms": 4555,
+        "input_tokens": 4698,
+        "output_tokens": 999,
+        "total_tokens": 5697,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "25c5c418dd7fcc9ea53dcd9c03c29829582dffae6338c5c3887c0f4b2cc70b10",
+        "latency_ms": 4689,
+        "input_tokens": 4693,
+        "output_tokens": 875,
+        "total_tokens": 5568,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "156ba492004980431449241b7bfeac66f35bbac5ce502c5ac8aa0ab32a9e49d7",
+        "latency_ms": 4391,
+        "input_tokens": 4671,
+        "output_tokens": 893,
+        "total_tokens": 5564,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "7c9f1c41e37b5a40a328d194f4bb3d06c94f6336e4efdeef18d57f87c75cf676",
+        "latency_ms": 4475,
+        "input_tokens": 4682,
+        "output_tokens": 846,
+        "total_tokens": 5528,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "a2ca2289cbc82595991fea8bddfbce004a775b2fb2a30672ecbe2dc0bc22e9a5",
+        "latency_ms": 4299,
+        "input_tokens": 4688,
+        "output_tokens": 822,
+        "total_tokens": 5510,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "1312e9d8fd2559372fd16592af3e240a89d080b2c2a3836d720aa410eb212d80",
+        "latency_ms": 7565,
+        "input_tokens": 9121,
+        "output_tokens": 1501,
+        "total_tokens": 10622,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "pm_synthesis"
       }
     ],
-    "input_tokens": null,
-    "output_tokens": null,
-    "latency_ms": null,
-    "news_searched": 20,
-    "sources_fetched": 20,
-    "evidence_created": 20,
-    "candidate_claim_count": 0,
-    "core_claim_count": 0,
+    "input_tokens": 65483,
+    "output_tokens": 12018,
+    "latency_ms": 53800,
+    "news_searched": 8,
+    "sources_fetched": 4,
+    "evidence_created": 3,
+    "candidate_claim_count": 5,
+    "core_claim_count": 5,
     "claim_versions_changed": 0,
     "errors": [],
-    "fallbacks": [
-      "company_understanding",
-      "core_claims",
-      "news_interpretation",
-      "pm_synthesis"
-    ],
-    "backfill_id": "rbfl_e12bf553940a47c9b1edafc9e96e5875",
-    "high_quality_news": 16,
-    "llm_invoked": false
+    "fallbacks": [],
+    "backfill_id": null,
+    "high_quality_news": 0,
+    "news_coverage_stats": {
+      "official_sec": 0,
+      "high_quality_independent": 0,
+      "aggregator": 8,
+      "headline_only": 0,
+      "dated": 8,
+      "undated": 0,
+      "full_text_available": 8,
+      "in_window": 8,
+      "count": 8,
+      "window_days": 30
+    },
+    "integrity": {
+      "ticker": "AAPL",
+      "period_end": "2026-06-27",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q3",
+      "inconsistent": false,
+      "block_core_claims": false,
+      "data_poor": false,
+      "warnings": [],
+      "fields": {
+        "latest_quarter_revenue": {
+          "value": 109417000000.0,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_revenue: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_eps": {
+          "value": 2.02,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_revenue_yoy": {
+          "value": 16.36,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_eps_yoy": {
+          "value": 28.66,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_gross_margin": {
+          "value": 50.06,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Gross profit / quarterly revenue from companyfacts"
+        },
+        "latest_quarter_operating_margin": {
+          "value": 32.62,
+          "source": "FMP earnings + income-statement+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Operating income / quarterly revenue from companyfacts"
+        },
+        "ttm_revenue": {
+          "value": 466823000000.0,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T10:48:25+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+        },
+        "ttm_eps": {
+          "value": 8.71,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T10:48:25+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM EPS is the sum of the same four contiguous quarters"
+        },
+        "price": {
+          "value": 332.410003662109,
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Python-owned last close"
+        },
+        "price_timestamp": {
+          "value": "2026-09-16",
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Session date of last close"
+        },
+        "pe_ttm": {
+          "value": 38.16,
+          "source": "calculated: last_close / eps_ttm",
+          "source_date": "2026-09-16",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+          "inputs": {
+            "price": 332.410003662109,
+            "eps_ttm": 8.71
+          }
+        }
+      },
+      "reason": null
+    },
+    "llm_invoked": true
   }
 }

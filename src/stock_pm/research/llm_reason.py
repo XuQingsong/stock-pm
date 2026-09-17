@@ -179,18 +179,23 @@ def compact_pack(pack: dict[str, Any] | None) -> dict[str, Any]:
     profile = dict(raw.get("company_profile") or {})
     profile.pop("transcripts", None)
     earnings = []
-    for row in list(raw.get("earnings_history") or [])[:4]:
+    for row in list(raw.get("earnings_history") or [])[:8]:
         if not isinstance(row, dict):
             continue
         earnings.append(
             {
                 "fiscal_period": row.get("fiscal_period"),
+                "fiscal_year": row.get("fiscal_year"),
+                "period_end": row.get("period_end"),
                 "report_date": row.get("report_date"),
                 "revenue": row.get("revenue"),
                 "eps": row.get("eps"),
+                "gross_margin_pct": row.get("gross_margin_pct"),
+                "operating_margin_pct": row.get("operating_margin_pct"),
                 "revenue_estimate": row.get("revenue_estimate"),
                 "eps_estimate": row.get("eps_estimate"),
                 "post_1d_return_pct": row.get("post_1d_return_pct"),
+                "source": row.get("source"),
             }
         )
     return {
@@ -210,6 +215,22 @@ def compact_pack(pack: dict[str, Any] | None) -> dict[str, Any]:
             "net_margin_pct": profile.get("net_margin_pct"),
         },
         "earnings_history": earnings,
+        "guidance_history": [
+            {"text": row.get("text") or row.get("excerpt"), "source": row.get("source"), "source_time": row.get("source_time") or row.get("published_at")}
+            for row in list(raw.get("guidance_history") or [])[:6]
+            if isinstance(row, dict)
+        ],
+        "official_documents": [
+            {
+                "title": row.get("title") or row.get("form"),
+                "form": row.get("form"),
+                "published_at": row.get("published_at"),
+                "url": row.get("url"),
+                "excerpt": (row.get("excerpt") or row.get("text") or "")[:400],
+            }
+            for row in list(raw.get("official_documents") or [])[:8]
+            if isinstance(row, dict)
+        ],
         "missing_fields": list(raw.get("missing_fields") or [])[:12],
         "price_reaction_history": list(raw.get("price_reaction_history") or [])[:2],
     }

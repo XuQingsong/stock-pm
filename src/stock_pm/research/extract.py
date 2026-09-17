@@ -124,7 +124,8 @@ RISK_FACTOR_LANGUAGE = re.compile(
 
 OPERATING_GUIDANCE_MARKERS = re.compile(
     r"\b(guidance|outlook|guide[ds]?|guided|"
-    r"(?:net )?revenue.{0,40}(?:range|between|to be)|"
+    r"expect(?:s|ed)?.{0,80}(?:net )?revenue|"
+    r"(?:net )?revenue.{0,40}(?:range|between|to be|of\s+\$)|"
     r"eps|gross margin|operating margin|operating income|"
     r"opex|operating expense|tax rate|capex|capital expend|"
     r"product.{0,20}outlook|segment.{0,20}outlook)\b",
@@ -304,6 +305,10 @@ def is_operating_guidance(text: str, *, source_type: str | None = None) -> bool:
     if len(quote) < 28:
         return False
     if RISK_FACTOR_LANGUAGE.search(quote) or BOILERPLATE_SKIP.search(quote):
+        return False
+    if re.search(r"\b(high|low) end of (?:our |the )?guidance range\b", quote, re.I):
+        return False
+    if re.search(r"\bour revenue of .{0,80} was\b", quote, re.I):
         return False
     if not OPERATING_GUIDANCE_MARKERS.search(quote):
         return False

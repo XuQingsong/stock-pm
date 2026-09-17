@@ -136,7 +136,7 @@ def build_brain_view(
             "decisive_variables": (pm.get("decisive_variables") or [])[:3],
             "strongest_claim_id": pm.get("strongest_claim_id"),
             "weakest_claim_id": pm.get("weakest_claim_id"),
-            "what_changed_last_7d": pm.get("what_changed_last_7d") or [],
+            "what_changed_last_30d": pm.get("what_changed_last_30d") or pm.get("what_changed_last_7d") or [],
             "most_likely_wrong": pm.get("most_likely_wrong"),
             "next_information_to_seek": pm.get("next_information_to_seek"),
             "short_view": pm.get("short_view"),

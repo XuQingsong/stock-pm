@@ -25,7 +25,7 @@ from .llm_steps import (
 from .news import classify_news_hits, hits_to_evidence_bodies, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
 from .store import BrainStore
-from .types import PROMPT_VERSION
+from .types import FINANCIAL_EVIDENCE_DAYS, LLM_EVIDENCE_LIMIT, NEWS_WINDOW_DAYS, PROMPT_VERSION
 
 
 def _now() -> datetime:
@@ -42,26 +42,57 @@ def _allowed(evidence: list[dict[str, Any]]) -> set[str]:
     return {str(row.get("id")) for row in evidence if row.get("id")}
 
 
-def _recent_evidence(rows: list[dict[str, Any]], *, days: int = 7, limit: int = 40) -> list[dict[str, Any]]:
-    cutoff = _now() - timedelta(days=days)
+def _parse_stamp(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        stamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            stamp = datetime.strptime(text[:10], "%Y-%m-%d")
+        except ValueError:
+            return None
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    return stamp
+
+
+def _is_official_row(row: dict[str, Any]) -> bool:
+    source = str(row.get("source") or "").lower()
+    source_type = str(row.get("source_type") or "").lower()
+    evidence_type = str(row.get("evidence_type") or "").lower()
+    if source_type in {"sec_filing", "earnings_release", "official_document", "transcript", "exhibit", "filing"}:
+        return True
+    if evidence_type in {"filing", "earnings", "transcript", "official"}:
+        return True
+    return any(token in source for token in ("sec.gov", "sec.companyfacts", "sec.exhibit", "sec.submissions", "earnings"))
+
+
+def _recent_evidence(
+    rows: list[dict[str, Any]],
+    *,
+    news_days: int = NEWS_WINDOW_DAYS,
+    financial_days: int = FINANCIAL_EVIDENCE_DAYS,
+    limit: int = LLM_EVIDENCE_LIMIT,
+) -> list[dict[str, Any]]:
+    news_cut = _now() - timedelta(days=news_days)
+    financial_cut = _now() - timedelta(days=financial_days)
     scored: list[tuple[int, dict[str, Any]]] = []
     for row in rows:
-        stamp = str(row.get("source_time") or "")
-        recent = False
-        try:
-            parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
-            if parsed.tzinfo is None:
-                parsed = parsed.replace(tzinfo=timezone.utc)
-            recent = parsed >= cutoff
-        except ValueError:
-            recent = False
-        official = str(row.get("source") or "").lower() in {"sec.gov", "sec", "sec.companyfacts", "sec.exhibit"} or str(row.get("source_type") or "") in {
-            "sec_filing",
-            "earnings_release",
-            "official_document",
-            "transcript",
-        }
-        rank = (2 if recent else 0) + (2 if official else 0) + (1 if row.get("importance") == "high" else 0)
+        stamp = _parse_stamp(row.get("source_time") or row.get("published_at"))
+        official = _is_official_row(row)
+        keep = False
+        rank = 0
+        if official and (stamp is None or stamp >= financial_cut):
+            keep = True
+            rank = 4 if stamp and stamp >= financial_cut else 3
+        elif stamp is not None and stamp >= news_cut:
+            keep = True
+            rank = 2
+        if not keep:
+            continue
+        rank += 1 if row.get("importance") == "high" else 0
         scored.append((rank, row))
     scored.sort(key=lambda item: item[0], reverse=True)
     picked: list[dict[str, Any]] = []
@@ -75,6 +106,116 @@ def _recent_evidence(rows: list[dict[str, Any]], *, days: int = 7, limit: int = 
         if len(picked) >= limit:
             break
     return picked
+
+
+def _pack_evidence_bodies(ticker: str, pack: dict[str, Any], *, retrieved_at: str) -> list[dict[str, Any]]:
+    symbol = ticker.upper()
+    bodies: list[dict[str, Any]] = []
+    cutoff = _now() - timedelta(days=FINANCIAL_EVIDENCE_DAYS)
+    for row in (pack.get("earnings_history") or [])[:8]:
+        if not isinstance(row, dict):
+            continue
+        stamp = str(row.get("period_end") or row.get("report_date") or "")[:10]
+        parsed = _parse_stamp(stamp)
+        if parsed is not None and parsed < cutoff:
+            continue
+        if not stamp:
+            continue
+        fy = row.get("fiscal_year") or ""
+        fp = row.get("fiscal_period") or ""
+        rev = row.get("revenue")
+        eps = row.get("eps")
+        gm = row.get("gross_margin_pct")
+        om = row.get("operating_margin_pct")
+        fact = (
+            f"{symbol} {fy} {fp} ended {stamp}: revenue={rev}, diluted EPS={eps}, "
+            f"gross margin={gm}, operating margin={om}."
+        )
+        bodies.append(
+            {
+                "ticker": symbol,
+                "evidence_type": "filing",
+                "fact": fact[:800],
+                "excerpt": fact[:600],
+                "source": row.get("source") or "earnings_history",
+                "source_url": None,
+                "source_time": stamp,
+                "retrieved_at": retrieved_at,
+                "source_type": "earnings_release",
+                "importance": "high",
+                "raw_reference": {
+                    "period_end": row.get("period_end"),
+                    "fiscal_period": fp,
+                    "fiscal_year": fy,
+                },
+            }
+        )
+    for row in pack.get("official_documents") or []:
+        if not isinstance(row, dict):
+            continue
+        stamp = str(row.get("published_at") or row.get("source_time") or "")[:10]
+        parsed = _parse_stamp(stamp)
+        if parsed is not None and parsed < cutoff:
+            continue
+        text = str(row.get("excerpt") or row.get("text") or row.get("title") or "").strip()
+        if len(text) < 40:
+            continue
+        bodies.append(
+            {
+                "ticker": symbol,
+                "evidence_type": "filing",
+                "fact": text[:800],
+                "excerpt": text[:600],
+                "source": row.get("source") or row.get("source_provider") or "sec.gov",
+                "source_url": row.get("url") or row.get("source_url"),
+                "source_time": stamp or retrieved_at,
+                "retrieved_at": retrieved_at,
+                "source_type": "official_document",
+                "importance": "high",
+                "raw_reference": {"form": row.get("form") or row.get("title")},
+            }
+        )
+    for row in (pack.get("guidance_history") or [])[:6]:
+        if not isinstance(row, dict):
+            continue
+        text = str(row.get("text") or row.get("excerpt") or row.get("quote") or "").strip()
+        if len(text) < 40:
+            continue
+        stamp = str(row.get("source_time") or row.get("published_at") or retrieved_at)[:10] or retrieved_at
+        bodies.append(
+            {
+                "ticker": symbol,
+                "evidence_type": "filing",
+                "fact": text[:800],
+                "excerpt": text[:600],
+                "source": row.get("source") or "guidance",
+                "source_url": row.get("url") or row.get("source_url"),
+                "source_time": stamp,
+                "retrieved_at": retrieved_at,
+                "source_type": "earnings_release",
+                "importance": "high",
+                "raw_reference": {"kind": "management_guidance"},
+            }
+        )
+    return bodies
+
+
+def _persist_pack_evidence(research: Any, ticker: str, pack: dict[str, Any], *, actor: str) -> list[dict[str, Any]]:
+    existing = research.store.list_evidence(ticker)
+    seen_facts = {str(row.get("fact") or "").strip().lower() for row in existing}
+    created: list[dict[str, Any]] = []
+    retrieved = _now().isoformat()
+    for body in _pack_evidence_bodies(ticker, pack, retrieved_at=retrieved):
+        key = str(body.get("fact") or "").strip().lower()
+        if not key or key in seen_facts:
+            continue
+        try:
+            row = research.create_evidence(ticker, body, actor=actor)
+        except Exception:
+            continue
+        seen_facts.add(key)
+        created.append(row)
+    return created
 
 
 def _persist_news_evidence(research: Any, ticker: str, hits: list[dict[str, Any]], *, actor: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -110,26 +251,49 @@ def _evidence_id_for_hit(hit: dict[str, Any], rows: list[dict[str, Any]]) -> str
 
 
 def _select_core(candidates: list[dict[str, Any]], core_raw: list[dict[str, Any]], *, allowed: set[str]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    fallback_ids = [eid for eid in allowed if str(eid).startswith("rev_")] or list(allowed)
+    candidate_by_statement: dict[str, dict[str, Any]] = {}
+    for raw in candidates:
+        if isinstance(raw, dict) and raw.get("statement"):
+            candidate_by_statement[str(raw.get("statement") or "").strip().lower()] = raw
+
+    def _prepare(raw: dict[str, Any]) -> dict[str, Any]:
+        item = dict(raw)
+        if not compact_text(item.get("uncertainty") or (item.get("scores") or {}).get("uncertainty") or "", 40):
+            item["uncertainty"] = "medium"
+        if not compact_text(item.get("valuation_relevance") or (item.get("scores") or {}).get("valuation_relevance") or "", 40):
+            item["valuation_relevance"] = "medium"
+        ids = list(item.get("supporting_evidence_ids") or item.get("evidence_ids") or [])
+        if not ids:
+            sibling = candidate_by_statement.get(str(item.get("statement") or "").strip().lower())
+            if sibling:
+                ids = list(sibling.get("supporting_evidence_ids") or sibling.get("evidence_ids") or [])
+            if ids:
+                item["supporting_evidence_ids"] = ids
+            elif fallback_ids:
+                item["supporting_evidence_ids"] = fallback_ids[:2]
+        return item
+
     normalized_core: list[dict[str, Any]] = []
     seen_statements: set[str] = set()
     for raw in core_raw:
-        item = normalize_claim(raw, allowed_ids=allowed, core=True)
+        if not isinstance(raw, dict):
+            continue
+        item = normalize_claim(_prepare(raw), allowed_ids=allowed, core=True)
         if not item:
             continue
         key = item["statement"].lower()
         if key in seen_statements:
             continue
-        sources = item["supporting_evidence_ids"]
-        if len(sources) == 1:
-            # still allowed if the single source exists; do not use a global count threshold
-            pass
         seen_statements.add(key)
         normalized_core.append(item)
         if len(normalized_core) >= 5:
             break
     normalized_candidates = []
     for raw in candidates:
-        item = normalize_claim(raw, allowed_ids=allowed, core=False)
+        if not isinstance(raw, dict):
+            continue
+        item = normalize_claim(_prepare(raw), allowed_ids=allowed, core=False)
         if item:
             normalized_candidates.append(item)
         if len(normalized_candidates) >= 8:
@@ -141,14 +305,14 @@ def _select_core(candidates: list[dict[str, Any]], core_raw: list[dict[str, Any]
 
 
 def _pack_print_stale(pack: dict[str, Any] | None) -> bool:
+    from stock_pm.research.live_fetch import dedupe_earnings_prints
+
     rows = [row for row in ((pack or {}).get("earnings_history") or []) if isinstance(row, dict)]
     if not rows:
         return True
-    by_end = max(rows, key=lambda row: str(row.get("period_end") or ""))
-    by_report = max(rows, key=lambda row: str(row.get("report_date") or ""))
-    if str(by_end.get("period_end") or "") and str(by_report.get("period_end") or "") and str(by_end.get("period_end")) != str(by_report.get("period_end")):
-        return True
-    if not by_end.get("revenue") and not by_end.get("revenue_actual"):
+    dated = [row for row in dedupe_earnings_prints(rows) if row.get("period_end")]
+    latest = dated[0] if dated else rows[0]
+    if not latest.get("revenue") and not latest.get("revenue_actual"):
         return True
     return False
 
@@ -160,7 +324,7 @@ def run_brain(
     store: BrainStore | None = None,
     completer: Any | None = None,
     fetch_live: bool = True,
-    days: int = 7,
+    days: int = NEWS_WINDOW_DAYS,
 ) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
     brain = store or BrainStore(getattr(getattr(research, "store", None), "database", None))
@@ -213,12 +377,13 @@ def run_brain(
     extra_queries: list[str] = []
     hits = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days)
     created_news, news_evidence = _persist_news_evidence(research, symbol, hits, actor=actor) if fetch_live or hits else ([], [])
+    created_pack = _persist_pack_evidence(research, symbol, pack, actor=actor)
     evidence = list(research.store.list_evidence(symbol) or [])
-    llm_evidence = _recent_evidence(evidence, days=max(days, 90), limit=40)
-    allowed = _allowed(llm_evidence) | _allowed(created_news) | _allowed(news_evidence)
+    llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
+    allowed = _allowed(llm_evidence) | _allowed(created_news) | _allowed(news_evidence) | _allowed(created_pack)
     if not allowed:
-        allowed = _allowed(evidence[:40])
-        llm_evidence = evidence[:40]
+        allowed = _allowed(evidence[:LLM_EVIDENCE_LIMIT])
+        llm_evidence = evidence[:LLM_EVIDENCE_LIMIT]
 
     understanding = None
     payload_a, audit_a = company_understanding(
@@ -227,7 +392,7 @@ def run_brain(
             "ticker": symbol,
             "reported_financials": header,
             "research_pack": compact_pack(pack),
-            "evidence": compact_evidence_rows(llm_evidence),
+            "evidence": compact_evidence_rows(llm_evidence, limit=LLM_EVIDENCE_LIMIT),
             "snapshot_id": snapshot_id,
             "rules": ["Do not invent numbers.", "Cite evidence_id only.", "Mark unavailable when missing."],
         },
@@ -236,7 +401,15 @@ def run_brain(
     llm_calls.append(audit_a)
     if payload_a:
         understanding = payload_a
-        extra_queries = [str(item) for item in (payload_a.get("search_questions_last_7d") or []) if str(item).strip()]
+        extra_queries = [
+            str(item)
+            for item in (
+                payload_a.get("search_questions_last_30d")
+                or payload_a.get("search_questions_last_7d")
+                or []
+            )
+            if str(item).strip()
+        ]
         if extra_queries and fetch_live:
             more = search_recent_news(symbol, pack=pack, extra_queries=extra_queries, days=days)
             more_created, more_matched = _persist_news_evidence(research, symbol, more, actor=actor)
@@ -244,8 +417,8 @@ def run_brain(
             news_evidence.extend(more_matched)
             hits.extend(more)
             evidence = list(research.store.list_evidence(symbol) or [])
-            llm_evidence = _recent_evidence(evidence, days=max(days, 90), limit=40)
-            allowed = _allowed(llm_evidence) | _allowed(news_evidence)
+            llm_evidence = _recent_evidence(evidence, news_days=days, financial_days=FINANCIAL_EVIDENCE_DAYS, limit=LLM_EVIDENCE_LIMIT)
+            allowed = _allowed(llm_evidence) | _allowed(news_evidence) | _allowed(created_pack)
         for state in payload_a.get("states") or []:
             if not isinstance(state, dict) or not state.get("name"):
                 continue
@@ -299,7 +472,7 @@ def run_brain(
                 "ticker": symbol,
                 "reported_financials": header,
                 "states": [row for row in brain.list_states(symbol, run_id=run_id)],
-                "evidence": compact_evidence_rows(llm_evidence),
+                "evidence": compact_evidence_rows(llm_evidence, limit=LLM_EVIDENCE_LIMIT),
                 "company_understanding": understanding or {"missing": True},
                 "snapshot_id": snapshot_id,
             },

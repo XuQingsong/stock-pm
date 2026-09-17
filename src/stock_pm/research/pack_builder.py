@@ -164,11 +164,17 @@ class PackBuilder:
             sector_px = index_closes(list(source.closes(benchmark_etf)))
         volumes = index_volumes(stock_rows)
 
-        earnings_history = [_earnings_item(row, fundamentals=fundamentals) for row in dedupe_earnings_prints(earnings_rows)]
+        deduped_earnings = dedupe_earnings_prints(earnings_rows)
+        dated_earnings = [row for row in deduped_earnings if row.get("period_end")]
+        earnings_history = [
+            _earnings_item(row, fundamentals=fundamentals)
+            for row in (dated_earnings or deduped_earnings)
+        ]
         earnings_history.sort(
             key=lambda row: str(row.get("period_end") or row.get("report_date") or ""),
             reverse=True,
         )
+        earnings_history.sort(key=lambda row: 0 if row.get("period_end") else 1)
         if transcripts and earnings_history:
             by_quarter = {str(item.get("quarter") or item.get("fiscal_period") or ""): item for item in transcripts}
             for row in earnings_history:
@@ -229,10 +235,16 @@ class PackBuilder:
             seen_guidance.add(key)
             unique_guidance.append(row)
         unique_guidance.sort(
-            key=lambda row: (
-                0 if any(item in str(row.get("source_type") or row.get("doc_type") or row.get("source") or "").lower() for item in ("earnings_release", "exhibit", "transcript", "investor_presentation", "8-k", "8k")) else 1,
-                str(row.get("source_time") or row.get("published_at") or ""),
+            key=lambda row: str(row.get("source_time") or row.get("published_at") or ""),
+            reverse=True,
+        )
+        unique_guidance.sort(
+            key=lambda row: 0
+            if any(
+                item in str(row.get("source_type") or row.get("doc_type") or row.get("source") or "").lower()
+                for item in ("earnings_release", "exhibit", "transcript", "investor_presentation", "8-k", "8k")
             )
+            else 1
         )
         guidance_rows = unique_guidance
 
@@ -427,7 +439,7 @@ class PackBuilder:
             "industry_context": {},
             "competitive_context": {},
             "major_events": major_events[:20],
-            "official_documents": official_documents[:12],
+            "official_documents": official_documents[:24],
             "missing_fields": missing,
             "source_refs": refs,
             "workflow_run_id": workflow_run_id,

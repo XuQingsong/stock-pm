@@ -199,35 +199,39 @@ class LiveResearchFetchers:
 
     def earnings_bundle(self, symbol: str) -> dict[str, Any]:
         captured = _now()
+        earnings: list[dict[str, Any]] = []
+        fundamentals: dict[str, Any] | None = None
+        news: list[dict[str, Any]] = []
+        income: list[Any] = []
+        cashflow: list[Any] = []
+        segments: Any = None
+        source: str | None = None
+        error: str | None = None
         provider = self._fmp()
         if provider is not None:
             try:
                 fetched = provider.fetch(symbol, None, captured, "stocks")
             except Exception as exc:
-                fetched = {"error": str(exc)}
+                error = str(exc)[:300]
             else:
-                cash = self._fmp_try("cash-flow-statement", {"symbol": symbol, "period": "quarter"}) or []
-                segments = self._fmp_try("revenue-product-segmentation", {"symbol": symbol}) 
+                cashflow = self._fmp_try("cash-flow-statement", {"symbol": symbol, "period": "quarter"}) or []
+                segments = self._fmp_try("revenue-product-segmentation", {"symbol": symbol})
                 income = self._fmp_try("income-statement", {"symbol": symbol, "period": "quarter"}) or []
-                return {
-                    "source": "fmp",
-                    "earnings": list(fetched.get("earnings") or []),
-                    "fundamentals": fetched.get("fundamental"),
-                    "news": list(fetched.get("news") or []),
-                    "income": income if isinstance(income, list) else [],
-                    "cashflow": cash if isinstance(cash, list) else [],
-                    "segments": segments,
-                    "error": None,
-                }
-        try:
-            nasdaq = NasdaqProvider().fetch(symbol, None, captured, "stocks")
-            earnings = list(nasdaq.get("earnings") or [])
-            fundamentals = nasdaq.get("fundamental")
-            news = list(nasdaq.get("news") or [])
-            source = "nasdaq"
-            error = None
-        except Exception as exc:
-            earnings, fundamentals, news, source, error = [], None, [], None, str(exc)[:300]
+                earnings = list(fetched.get("earnings") or [])
+                fundamentals = fetched.get("fundamental")
+                news = list(fetched.get("news") or [])
+                source = "fmp"
+                error = None
+        if not earnings:
+            try:
+                nasdaq = NasdaqProvider().fetch(symbol, None, captured, "stocks")
+                earnings = list(nasdaq.get("earnings") or [])
+                fundamentals = nasdaq.get("fundamental") if fundamentals is None else fundamentals
+                news = list(nasdaq.get("news") or []) or news
+                source = "nasdaq" if source is None else f"{source}+nasdaq"
+                error = None if earnings else error
+            except Exception as exc:
+                error = error or str(exc)[:300]
         from stock_pm.research.issuer import cik_for, fiscal_year_end_month_for
 
         ident = self.sec_identity(symbol) if not cik_for(symbol) else {}
@@ -244,9 +248,9 @@ class LiveResearchFetchers:
             "earnings": earnings,
             "fundamentals": fundamentals,
             "news": news,
-            "income": [],
-            "cashflow": [],
-            "segments": None,
+            "income": income if isinstance(income, list) else [],
+            "cashflow": cashflow if isinstance(cashflow, list) else [],
+            "segments": segments,
             "error": error,
         }
 
@@ -452,7 +456,7 @@ class LiveResearchFetchers:
         from stock_pm.research.official import ingest_official_filings, search_official_materials, fetch_search_candidates
 
         ua = self.sec_user_agent() or None
-        docs = ingest_official_filings(list(filings or []), user_agent=ua, max_filings=4)
+        docs = ingest_official_filings(list(filings or []), user_agent=ua, max_filings=8)
         if any(len(str(item.get("text") or "")) > 400 for item in docs):
             return docs
         issuer: dict[str, Any] = {}
@@ -902,7 +906,8 @@ def _derive_q4_from_annual(
             continue
         derived = float(row["val"]) - float(q1["val"]) - float(q2["val"]) - float(q3["val"])
         annual_val = float(row["val"])
-        if annual_val > 0 and (derived <= 0 or derived > annual_val * 0.75):
+        # 0.75 cap is for revenue/income scale, not EPS (a seasonal Q4 can be most of annual EPS).
+        if abs(annual_val) >= 1000 and annual_val > 0 and (derived <= 0 or derived > annual_val * 0.75):
             continue
         scale = max(abs(float(q1["val"])), abs(float(q2["val"])), abs(float(q3["val"])), 1e-9)
         if abs(derived) > 8.0 * scale:
@@ -1017,7 +1022,6 @@ def _quarters_from_companyfacts(payload: dict[str, Any], *, fiscal_year_end_mont
         if fp:
             item["fiscal_period"] = fp
         item.setdefault("provider_fields", {})["companyfacts_revenue"] = item.get("revenue_actual")
-        item["provider_fields"]["companyfacts_eps"] = item.get("eps_actual")
         if any(row.get("derived_q4") and row.get("end") == item.get("period_end") for row in revenue):
             item["provider_fields"]["q4_derived_from_10k"] = True
         if item.get("net_income_actual") is None:
@@ -1025,12 +1029,19 @@ def _quarters_from_companyfacts(payload: dict[str, Any], *, fiscal_year_end_mont
             sh = (item.get("provider_fields") or {}).get("diluted_shares")
             if eps_val is not None and sh not in (None, 0):
                 item["net_income_actual"] = float(eps_val) * float(sh)
+        if item.get("eps_actual") is None:
+            ni = item.get("net_income_actual")
+            sh = (item.get("provider_fields") or {}).get("diluted_shares")
+            if ni is not None and sh not in (None, 0):
+                item["eps_actual"] = round(float(ni) / float(sh), 4)
+                item.setdefault("provider_fields", {})["eps_from_ni_shares"] = True
+        item["provider_fields"]["companyfacts_eps"] = item.get("eps_actual")
         rev = item.get("revenue_actual")
         ni = item.get("net_income_actual")
         if rev and ni is not None:
             item.setdefault("provider_fields", {})["net_margin_pct"] = round(100.0 * ni / rev, 1)
     rows = sorted(by_end.values(), key=lambda item: str(item.get("period_end") or ""), reverse=True)
-    return rows[:12]
+    return rows[:16]
 
 
 def merge_facts_into_earnings(symbol: str, earnings: list[dict[str, Any]], facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1120,7 +1131,7 @@ def merge_facts_into_earnings(symbol: str, earnings: list[dict[str, Any]], facts
             break
     dated = [row for row in out if row.get("period_end")]
     dated.sort(key=lambda row: str(row.get("period_end") or ""), reverse=True)
-    return dated[:16]
+    return dedupe_earnings_prints(dated)[:16]
 
 
 def _print_score(row: dict[str, Any]) -> int:
@@ -1130,15 +1141,25 @@ def _print_score(row: dict[str, Any]) -> int:
         score += 8
     if fields.get("companyfacts_revenue") is not None or "companyfacts" in str(row.get("source") or ""):
         score += 4
+    if fields.get("companyfacts_eps") is not None:
+        score += 2
     if row.get("revenue_actual") is not None or row.get("revenue") is not None:
         score += 2
     if str(row.get("fiscal_period") or "") in {"Q1", "Q2", "Q3", "Q4"}:
-        score += 1
+        score += 3
     return score
 
 
 def _absorb_print_fields(winner: dict[str, Any], loser: dict[str, Any]) -> dict[str, Any]:
     out = dict(winner)
+    winner_fp = str(out.get("fiscal_period") or "")
+    loser_fp = str(loser.get("fiscal_period") or "")
+    if loser_fp in {"Q1", "Q2", "Q3", "Q4"} and winner_fp not in {"Q1", "Q2", "Q3", "Q4"}:
+        out["fiscal_period"] = loser_fp
+        if loser.get("fiscal_year"):
+            out["fiscal_year"] = loser.get("fiscal_year")
+    if not out.get("period_end") and loser.get("period_end"):
+        out["period_end"] = loser.get("period_end")
     fields = dict(out.get("provider_fields") or {})
     other = loser.get("provider_fields") if isinstance(loser.get("provider_fields"), dict) else {}
     if fields.get("nasdaq_revenue") is None:
@@ -1148,7 +1169,25 @@ def _absorb_print_fields(winner: dict[str, Any], loser: dict[str, Any]) -> dict[
     if fields.get("companyfacts_revenue") is None:
         fields["companyfacts_revenue"] = other.get("companyfacts_revenue")
     if fields.get("companyfacts_eps") is None:
-        fields["companyfacts_eps"] = other.get("companyfacts_eps")
+        fields["companyfacts_eps"] = other.get("companyfacts_eps") or (
+            loser.get("eps_actual") if "companyfacts" in str(loser.get("source") or "") else None
+        )
+    for key in ("gross_margin_pct", "operating_margin_pct", "net_margin_pct", "diluted_shares", "q4_derived_from_10k"):
+        if fields.get(key) is None and other.get(key) is not None:
+            fields[key] = other.get(key)
+    for key in ("eps_estimate", "revenue_estimate", "eps_surprise_pct", "revenue_surprise_pct"):
+        if out.get(key) is None and loser.get(key) is not None:
+            out[key] = loser.get(key)
+    if fields.get("companyfacts_eps") is not None:
+        out["eps_actual"] = fields["companyfacts_eps"]
+        if "eps" in out or loser.get("eps") is not None:
+            out["eps"] = fields["companyfacts_eps"]
+    if fields.get("companyfacts_revenue") is not None:
+        out["revenue_actual"] = fields["companyfacts_revenue"]
+        if "revenue" in out or loser.get("revenue") is not None:
+            out["revenue"] = fields["companyfacts_revenue"]
+    if "companyfacts" in str(loser.get("source") or "") and "companyfacts" not in str(out.get("source") or ""):
+        out["source"] = ((out.get("source") or "nasdaq") + "+sec.companyfacts")
     out["provider_fields"] = fields
     return out
 
@@ -1251,6 +1290,11 @@ def enrich_fundamentals_from_facts(snapshot: dict[str, Any] | None, facts: dict[
         out["revenue_ttm"] = revenue_ttm
         out["eps_ttm"] = eps_ttm
         out["net_income_ttm"] = net_income_ttm if net_income_ttm is not None else out.get("net_income_ttm")
+        if out.get("eps_ttm") is None:
+            shares = out.get("diluted_shares")
+            ni_ttm = out.get("net_income_ttm")
+            if ni_ttm is not None and shares not in (None, 0):
+                out["eps_ttm"] = round(float(ni_ttm) / float(shares), 4)
     elif quarters:
         out["revenue_ttm"] = None
         out["eps_ttm"] = None

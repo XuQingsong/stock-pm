@@ -1,14 +1,14 @@
 {
   "ticker": "LITE",
-  "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-  "snapshot_id": "rsnap_52d6dc6568f949aaa6fded65b00e969e",
-  "status": "partial",
+  "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+  "snapshot_id": "rsnap_36ed3d5978eb4434abf5a05a9c5a685b",
+  "status": "success",
   "header": {
     "ticker": "LITE",
     "company_name": "Lumentum Holdings Inc.",
-    "sector": null,
+    "sector": "光通信",
     "industry": null,
-    "template_id": "generic_company",
+    "template_id": "semiconductor",
     "price": {
       "field": "price",
       "value": 919.400024414062,
@@ -18,16 +18,16 @@
     "price_timestamp": "2026-09-16",
     "market_cap": {
       "field": "market_cap",
-      "value": 82470180000.0,
+      "value": 71529320000.0,
       "origin": "reported",
-      "display": 82470180000.0
+      "display": 71529320000.0
     },
     "valuation": {
       "pe_ttm": {
         "field": "pe_ttm",
-        "value": 144.56,
-        "origin": "reported",
-        "display": 144.56
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
       },
       "pe_forward": {
         "field": "pe_forward",
@@ -57,21 +57,21 @@
     "growth": {
       "revenue_ttm": {
         "field": "revenue_ttm",
-        "value": null,
-        "origin": "unavailable",
-        "display": "unavailable"
+        "value": 3014000000.0,
+        "origin": "reported",
+        "display": 3014000000.0
       },
       "revenue_growth_yoy": {
         "field": "revenue_growth_yoy",
-        "value": null,
-        "origin": "unavailable",
-        "display": "unavailable"
+        "value": 83.22,
+        "origin": "reported",
+        "display": 83.22
       },
       "eps_ttm": {
         "field": "eps_ttm",
-        "value": 6.36,
-        "origin": "reported",
-        "display": 6.36
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
       },
       "eps_growth_yoy": {
         "field": "eps_growth_yoy",
@@ -82,12 +82,14 @@
     },
     "latest_quarter": {
       "report_date": "2026-08-11",
-      "fiscal_period": "Jun 2026",
+      "period_end": "2026-06-27",
+      "fiscal_period": "Q4",
+      "fiscal_year": 2026,
       "revenue": {
         "field": "quarter_revenue",
-        "value": null,
-        "origin": "unavailable",
-        "display": "unavailable"
+        "value": 1006300000.0,
+        "origin": "reported",
+        "display": 1006300000.0
       },
       "revenue_yoy": {
         "field": "quarter_revenue_yoy",
@@ -109,15 +111,15 @@
       },
       "gross_margin": {
         "field": "gross_margin",
-        "value": null,
-        "origin": "unavailable",
-        "display": "unavailable"
+        "value": 47.43,
+        "origin": "reported",
+        "display": 47.43
       },
       "operating_margin": {
         "field": "operating_margin",
-        "value": null,
-        "origin": "unavailable",
-        "display": "unavailable"
+        "value": 27.76,
+        "origin": "reported",
+        "display": 27.76
       },
       "fcf": {
         "field": "quarter_fcf",
@@ -125,14 +127,14 @@
         "origin": "unavailable",
         "display": "unavailable"
       },
-      "source": "Nasdaq earnings surprise"
+      "source": "Nasdaq earnings surprise+sec.companyfacts"
     },
     "forward": {
       "management_guidance": {
         "origin": "reported",
-        "text": "expects the following for the first quarter of fiscal year 2027: • Net revenue in the range of $1.225 billion to $1.275",
+        "text": "expect further increases in earnings power.” Fiscal Third Quarter Highlights: Net revenue for the third quarter of fiscal year 202",
         "source": "sec.exhibit",
-        "count": 2
+        "count": 42
       },
       "consensus": {
         "origin": "unavailable",
@@ -144,23 +146,130 @@
       }
     },
     "missing_fields": [
-      "transcripts",
       "fcf",
-      "segment_growth",
-      "net_margin",
-      "diluted_shares"
+      "segment_growth"
     ],
-    "pack_updated_at": "2026-09-17T06:10:40+00:00",
+    "pack_updated_at": "2026-09-17T10:50:17+00:00",
     "is_fixture": false,
     "source": "production"
   },
+  "integrity": {
+    "ticker": "LITE",
+    "period_end": "2026-06-27",
+    "fiscal_year": 2026,
+    "fiscal_period": "Q4",
+    "inconsistent": false,
+    "block_core_claims": false,
+    "data_poor": true,
+    "warnings": [
+      {
+        "code": "financial_input_incomplete",
+        "reason": "TTM or latest-quarter revenue is missing."
+      }
+    ],
+    "fields": {
+      "latest_quarter_revenue": {
+        "value": 1006300000.0,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": false,
+        "status": "single_source",
+        "reason": "only one trusted source is present"
+      },
+      "latest_quarter_eps": {
+        "value": 2.64,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+      },
+      "latest_quarter_revenue_yoy": {
+        "value": null,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": false,
+        "status": "missing",
+        "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+      },
+      "latest_quarter_eps_yoy": {
+        "value": null,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": false,
+        "status": "missing",
+        "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+      },
+      "latest_quarter_gross_margin": {
+        "value": 47.43,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "Gross profit / quarterly revenue from companyfacts"
+      },
+      "latest_quarter_operating_margin": {
+        "value": 27.76,
+        "source": "Nasdaq earnings surprise+sec.companyfacts",
+        "source_date": "2026-06-27",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "Operating income / quarterly revenue from companyfacts"
+      },
+      "ttm_revenue": {
+        "value": 3014000000.0,
+        "source": "fundamentals",
+        "source_date": "2026-09-17T10:50:17+00:00",
+        "cross_checked": true,
+        "status": "ok",
+        "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+      },
+      "ttm_eps": {
+        "value": null,
+        "source": "fundamentals",
+        "source_date": "2026-09-17T10:50:17+00:00",
+        "cross_checked": false,
+        "status": "missing",
+        "reason": "TTM EPS is the sum of the same four contiguous quarters"
+      },
+      "price": {
+        "value": 919.400024414062,
+        "source": "price_bars",
+        "source_date": "2026-09-16",
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "Python-owned last close"
+      },
+      "price_timestamp": {
+        "value": "2026-09-16",
+        "source": "price_bars",
+        "source_date": "2026-09-16",
+        "cross_checked": false,
+        "status": "ok",
+        "reason": "Session date of last close"
+      },
+      "pe_ttm": {
+        "value": null,
+        "source": "fundamentals",
+        "source_date": "2026-09-16",
+        "cross_checked": false,
+        "status": "missing",
+        "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+        "inputs": {
+          "price": 919.400024414062,
+          "eps_ttm": null
+        }
+      }
+    },
+    "reason": "financial_input_incomplete"
+  },
   "quality": {
     "axes": {
-      "data_coverage": "Partial",
-      "news_coverage": "Good",
+      "data_coverage": "Poor",
+      "news_coverage": "Partial",
       "evidence_quality": "Good",
       "independent_evidence": "Good",
-      "llm_reasoning": "Poor",
+      "llm_reasoning": "Good",
       "freshness": "Good"
     },
     "warnings": [
@@ -168,6 +277,11 @@
         "code": "BRAIN QUALITY WARNING",
         "axis": "Data Coverage",
         "reason": "Price, TTM, or latest-quarter fields are incomplete."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "financial_input_incomplete"
       },
       {
         "code": "BRAIN QUALITY WARNING",
@@ -186,618 +300,1336 @@
       },
       {
         "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "LLM was not invoked or failed; Core Claims were not generated. This is not a template fallback."
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
       },
       {
         "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+        "axis": "Data Coverage",
+        "reason": "Data coverage is insufficient for high-confidence Core Claims."
       },
       {
         "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "News interpretation LLM call failed; items stored as uninterpreted."
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "PM synthesis LLM call failed; no template PM view was written."
-      },
-      {
-        "code": "BRAIN QUALITY WARNING",
-        "axis": "LLM Reasoning",
-        "reason": "未配置 LLM_API_KEY，解释与明日看法未生成。"
+        "axis": "Data Coverage",
+        "reason": "当前 LITE 数据覆盖不足。"
       }
     ],
     "poor_axes": [
-      "llm_reasoning"
+      "data_coverage"
     ],
     "headline": "BRAIN QUALITY WARNING"
   },
-  "company_understanding": {},
-  "pm_synthesis": {
-    "current_view": "LLM PM synthesis unavailable. Do not treat the page as a completed Brain view.",
+  "company_understanding": {
+    "how_company_makes_money": "Lumentum is a photonics/optical communications component supplier (sector: 光通信). It sells optical components and subsystems into datacom/telecom and related markets. Revenue is reported at the consolidated level only in this pack; segment-level revenue and product-line breakdowns are not provided (missing_fields: segment_growth). The most recent reported quarter (FY2026 Q4, ended 2026-06-27) had revenue of $1,006.3M, GAAP gross margin 47.43%, GAAP operating margin 27.76%, and diluted EPS of $2.64 (rev_14bb0d25bc0a4d57996ac830e7042d86, rev_ab1965f3cdb44c1bb501d023787a61b1). TTM revenue is $3,014M with revenue growth YoY of 83.22% (reported_financials.growth).",
+    "largest_growth_driver": "The clearest reported growth driver is the ramp in Datacom laser shipments, which management cited as driving better manufacturing utilization and favorable product mix, lifting non-GAAP gross margin sequentially and year-over-year (rev_4d11fe1ba49b44dba7418de98c6e5f44). This is corroborated by the sequential revenue ramp through FY2026: Q1 $533.8M -> Q2 $665.5M -> Q3 $808.4M -> Q4 $1,006.3M (rev_2d9f6033e80e4f2db1e56112acdc10ed, rev_2e312f885e5f410b8fc1765017baf3d2, rev_6eea3ad92c9d43e490e77ea7c5999464, rev_14bb0d25bc0a4d57996ac830e7042d86), and by FY2027 Q1 guidance of $1.225B-$1.275B (rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c).",
+    "largest_operating_risk": "Margin/execution risk around the datacom ramp: the company's GAAP results have swung sharply (FY2025 quarters had negative operating margins down to -43.27% in FY2024 Q4), and the FY2026 improvement is attributed to manufacturing utilization and product mix (rev_4d11fe1ba49b44dba7418de98c6e5f44). If the datacom laser ramp slows or mix reverses, the margin recovery could prove cyclical. Additionally, the pack lacks segment-level revenue and FCF data (missing_fields: fcf, segment_growth), limiting visibility into the durability of the ramp. A secondary risk is the very large post-earnings price move (Q4 FY2026 +13.63% 1-day, +12.9% vs QQQ) implying elevated expectations embedded in the stock (price_reaction_history).",
+    "value_variables_1to3y": [
+      "Durability and slope of the Datacom laser shipment ramp and its effect on gross margin (rev_4d11fe1ba49b44dba7418de98c6e5f44)",
+      "Achievement of FY2027 Q1 revenue guidance of $1.225B-$1.275B and subsequent quarterly guidance (rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c)",
+      "Operating leverage: whether GAAP operating margin can be sustained near the 27.76% reported in FY2026 Q4 (rev_14bb0d25bc0a4d57996ac830e7042d86)",
+      "Product mix between Datacom and Telecom and any segment-level disclosure (currently unavailable; missing_fields: segment_growth)",
+      "Free cash flow generation and capex intensity (currently unavailable; missing_fields: fcf)",
+      "Valuation: PE/PS/EV-EBITDA/FCF yield are all unavailable in this pack, so valuation cannot be assessed from reported data"
+    ],
+    "candidate_questions": [
+      "What portion of Lumentum's revenue comes from Datacom vs Telecom, and how has that mix shifted over the last four quarters?",
+      "How sustainable is the non-GAAP gross margin expansion (37.8% in the referenced quarter) if Datacom laser shipment growth moderates?",
+      "What is the capacity/capex plan to support the FY2027 Q1 revenue guidance of $1.225B-$1.275B?",
+      "What are the customer concentration dynamics in the datacom laser business?",
+      "How much of the FY2026 revenue growth of 83.22% YoY was volume vs price/mix?",
+      "What is the free cash flow profile and cash conversion as revenue scales?",
+      "What is the current valuation multiple (PE, PS, EV/EBITDA) given the stock's large post-earnings move?"
+    ],
+    "search_questions_last_30d": [
+      "Lumentum datacom laser shipments demand outlook 2026",
+      "Lumentum FY2027 Q1 guidance $1.225 billion revenue",
+      "Lumentum gross margin expansion manufacturing utilization product mix",
+      "optical component datacom laser market demand AI data center 2026",
+      "Lumentum analyst price target upgrade September 2026",
+      "Lumentum 10-K fiscal 2026 segment revenue datacom telecom",
+      "Lumentum customer concentration datacom laser 2026",
+      "Lumentum capacity expansion capex photonics 2026"
+    ],
+    "states": [
+      {
+        "name": "Revenue acceleration",
+        "statement": "Lumentum's quarterly revenue accelerated from $533.8M in FY2026 Q1 to $1,006.3M in FY2026 Q4, with TTM revenue of $3,014M and YoY growth of 83.22%.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+          "rev_2e312f885e5f410b8fc1765017baf3d2",
+          "rev_6eea3ad92c9d43e490e77ea7c5999464",
+          "rev_14bb0d25bc0a4d57996ac830e7042d86"
+        ]
+      },
+      {
+        "name": "Margin recovery",
+        "statement": "GAAP gross margin rose from 34.0% in FY2026 Q1 to 47.43% in FY2026 Q4, and GAAP operating margin rose from 1.26% to 27.76% over the same period, attributed to better manufacturing utilization and favorable product mix from increased Datacom laser shipments.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+          "rev_14bb0d25bc0a4d57996ac830e7042d86",
+          "rev_4d11fe1ba49b44dba7418de98c6e5f44"
+        ]
+      },
+      {
+        "name": "Forward guidance",
+        "statement": "Management guided FY2027 Q1 net revenue to $1.225B-$1.275B, above the FY2026 Q4 actual of $1.006B.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": [
+          "rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c",
+          "rev_15b8a51a64b6417eb355974725fc6b1d"
+        ]
+      },
+      {
+        "name": "Positive earnings reaction",
+        "statement": "Following FY2026 Q4 results on 2026-08-11, the stock returned +13.63% on day 1, +12.9% vs QQQ, on volume 2.45x the 20-day average.",
+        "direction": "up",
+        "confidence": "high",
+        "state_type": "event",
+        "evidence_ids": [
+          "rev_14bb0d25bc0a4d57996ac830e7042d86"
+        ]
+      },
+      {
+        "name": "Valuation unavailable",
+        "statement": "PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable in the reported pack, so valuation cannot be assessed from provided data.",
+        "direction": "flat",
+        "confidence": "high",
+        "state_type": "company",
+        "evidence_ids": []
+      }
+    ],
+    "coverage_gaps": [
+      "No segment-level revenue or growth (missing_fields: segment_growth)",
+      "No free cash flow data (missing_fields: fcf)",
+      "No valuation multiples (PE TTM, PE forward, PS, EV/EBITDA, FCF yield all unavailable)",
+      "No consensus estimates wired (forward.consensus unavailable)",
+      "No system forecast (forward.system_forecast unavailable)",
+      "No EPS TTM or EPS growth YoY",
+      "No net margin",
+      "No customer concentration or backlog data",
+      "No R&D expense detail in the provided evidence"
+    ],
     "cannot_conclude": [
-      "pm_synthesis_failed"
+      "Cannot assess valuation attractiveness because PE, PS, EV/EBITDA, and FCF yield are unavailable",
+      "Cannot determine segment mix or which product lines drive the majority of revenue",
+      "Cannot assess free cash flow quality or cash conversion",
+      "Cannot verify the durability of the Datacom laser ramp beyond management commentary",
+      "Cannot compare against consensus expectations because no consensus source is wired",
+      "Cannot determine customer concentration risk from provided evidence"
     ]
   },
-  "core_claims": [],
+  "pm_synthesis": {
+    "current_view": "LITE shows a high-magnitude operating inflection in the reported pack: TTM revenue of $3,014M with 83.22% YoY growth, Q4 FY2026 revenue of $1,006.3M, GAAP gross margin of 47.43%, and GAAP operating margin of 27.76%. However, all three core claims are marked unverified with low confidence, and the evidence boundary explicitly states that the sequential quarterly revenue chain, the margin expansion path, and the FY2027 Q1 guidance range are not proven by the provided evidence. Valuation is entirely unavailable (PE TTM, PE forward, PS, EV/EBITDA, FCF yield all null), and FCF is missing. The stock reaction (+13.63% day 1, +12.9% vs QQQ, 2.45x volume) is the only high-confidence event state. I cannot form a valuation-anchored view; the operating narrative is directionally strong but evidentially thin.",
+    "core_claim_ids": [
+      "bclm_f6d4ab33e2b940a2b4449e1188e243cc",
+      "bclm_b638d2dbbd384045b57b93b9ef503274",
+      "bclm_973e774d375d4c9b9b0c730d153c6183"
+    ],
+    "decisive_variables": [
+      {
+        "name": "Sequential revenue ramp verification",
+        "why": "The entire bull case rests on whether revenue truly rose sequentially from $533.8M to $1,006.3M across FY2026. The claim is unverified and the evidence boundary flags a fiscal-quarter labeling conflict (rev_c87b898092a34fb7b60aadeb455ba9cb labels the $533.8M quarter as 'Fiscal Fourth Quarter 2026 Results'). If the ordering is wrong, the structural demand inflection thesis weakens materially.",
+        "evidence_ids": [
+          "rev_0f87d4b9a6464e48b4a2332c07783430",
+          "rev_c87b898092a34fb7b60aadeb455ba9cb",
+          "rev_35135fecb9424df790c30ecab390aaa7"
+        ]
+      },
+      {
+        "name": "Margin sustainability and driver attribution",
+        "why": "Gross margin at 47.43% and operating margin at 27.76% are the key swing factors for earnings power. The claim attributes expansion to Datacom laser mix and utilization, but the evidence boundary states nothing proves the margin figures or the causal attribution. If margins are one-time or mix-driven rather than structural, the earnings power thesis fails.",
+        "evidence_ids": [
+          "rev_c87b898092a34fb7b60aadeb455ba9cb"
+        ]
+      },
+      {
+        "name": "FY2027 Q1 guidance confirmation",
+        "why": "Guidance of $1.225B-$1.275B would confirm the ramp is not decelerating. The claim is unverified with no supporting evidence in the pack; the evidence boundary states no evidence contains the guidance figures. This is the nearest-term test of the thesis.",
+        "evidence_ids": []
+      }
+    ],
+    "strongest_claim_id": "bclm_f6d4ab33e2b940a2b4449e1188e243cc",
+    "weakest_claim_id": "bclm_973e774d375d4c9b9b0c730d153c6183",
+    "what_changed_last_30d": [
+      "FY2026 Q4 results reported 2026-08-11: revenue $1,006.3M, GAAP gross margin 47.43%, GAAP operating margin 27.76%, EPS $2.64.",
+      "Stock returned +13.63% on day 1 post-earnings, +12.9% vs QQQ, on volume 2.45x the 20-day average (rev_14bb0d25bc0a4d57996ac830e7042d86).",
+      "Management guidance text in the pack references 'expect further increases in earnings power' (sec.exhibit), but the specific FY2027 Q1 range is not confirmed in evidence."
+    ],
+    "most_likely_wrong": "The sequential revenue ramp and margin expansion may be misattributed to the wrong fiscal quarters. The evidence boundary for bclm_f6d4ab33e2b940a2b4449e1188e243cc explicitly flags that rev_c87b898092a34fb7b60aadeb455ba9cb labels the $533.8M quarter as 'Fiscal Fourth Quarter 2026 Results', which conflicts with the claim's assertion that it was Q1 FY2026. If the quarterly ordering is wrong, the magnitude and direction of the inflection could be overstated.",
+    "next_information_to_seek": "Primary-source 10-Q/10-K filings confirming exact quarterly revenues for FY2026 Q1, Q2, Q3, and Q4, plus the FY2027 Q1 guidance press release or 8-K. Also need FCF and segment-level Datacom laser revenue to validate the margin driver attribution.",
+    "short_view": "Near-term direction is supported only by the high-confidence positive earnings reaction (rev_14bb0d25bc0a4d57996ac830e7042d86) and the reported Q4 figures. The FY2027 Q1 guidance claim (bclm_973e774d375d4c9b9b0c730d153c6183) is unverified with zero supporting evidence, so the near-term growth continuation is not established. Valuation is unavailable, so no risk/reward can be computed.",
+    "mid_view": "If the sequential revenue ramp (bclm_f6d4ab33e2b940a2b4449e1188e243cc) and margin expansion (bclm_b638d2dbbd384045b57b93b9ef503274) are confirmed by primary filings, the operating leverage story is credible. But both claims are unverified with low confidence and conflicting fiscal-quarter labeling. Mid-term view is conditional on evidence that does not yet exist in the pack.",
+    "long_view": "Cannot form a long view. No valuation metrics (PE, PS, EV/EBITDA, FCF yield) are available, no FCF data, no segment growth, and no trusted consensus. The structural demand inflection thesis for Datacom lasers is plausible but unproven by the provided evidence. Long-term conclusion is not supported.",
+    "cannot_conclude": [
+      "Whether the sequential revenue ramp from $533.8M to $1,006.3M is correctly ordered across FY2026 quarters, due to conflicting fiscal-quarter labeling in rev_c87b898092a34fb7b60aadeb455ba9cb.",
+      "Whether margin expansion is driven by Datacom laser mix and utilization or by other factors, as no evidence directly attributes the cause.",
+      "Whether FY2027 Q1 guidance of $1.225B-$1.275B was actually issued, as no evidence in the pack contains these figures.",
+      "Valuation attractiveness or risk/reward, because PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable.",
+      "Free cash flow generation and quality of earnings, because FCF is missing from the pack.",
+      "Segment-level growth and Datacom laser revenue contribution, because segment_growth is a missing field."
+    ]
+  },
+  "candidates": [
+    {
+      "title": "Sequential revenue acceleration through FY2026",
+      "statement": "Lumentum's quarterly revenue rose sequentially from $533.8M in FY2026 Q1 to $665.5M in Q2, $808.4M in Q3, and $1,006.3M in Q4, with TTM revenue of $3,014M and YoY growth of 83.22%.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "The magnitude and consistency of the sequential ramp indicates a structural demand inflection rather than a one-quarter spike, which is the primary driver of operating leverage and earnings power.",
+      "financial_driver": "Revenue growth from Datacom laser shipments",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows reported quarterly revenue for FY2026 Q1-Q4 and TTM revenue with YoY growth. It does not show segment-level revenue, volume vs price decomposition, or customer concentration.",
+      "supporting_evidence_ids": [
+        "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+        "rev_2e312f885e5f410b8fc1765017baf3d2",
+        "rev_6eea3ad92c9d43e490e77ea7c5999464",
+        "rev_14bb0d25bc0a4d57996ac830e7042d86"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Segment-level revenue breakdown",
+        "Volume vs price/mix decomposition",
+        "Customer concentration data"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "medium",
+        "valuation_relevance": "high",
+        "persistence": "medium",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Margin recovery driven by Datacom laser mix and utilization",
+      "statement": "GAAP gross margin expanded from 34.0% in FY2026 Q1 to 47.43% in Q4, and GAAP operating margin rose from 1.26% to 27.76%, attributed to better manufacturing utilization and favorable product mix from increased Datacom laser shipments.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "The margin expansion is the key swing factor in earnings power; if sustained, it implies structurally higher profitability than the FY2024-FY2025 trough levels.",
+      "financial_driver": "Gross margin expansion and operating leverage",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows GAAP gross and operating margin progression across FY2026 quarters and management attribution to Datacom laser shipments and utilization. It does not quantify the margin contribution from each factor or provide a normalized margin baseline.",
+      "supporting_evidence_ids": [
+        "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+        "rev_14bb0d25bc0a4d57996ac830e7042d86",
+        "rev_4d11fe1ba49b44dba7418de98c6e5f44"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Quantified margin bridge by driver",
+        "Normalized/structural margin baseline",
+        "Segment-level margin data"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "medium",
+        "valuation_relevance": "high",
+        "persistence": "medium",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "FY2027 Q1 guidance implies continued sequential growth",
+      "statement": "Management guided FY2027 Q1 net revenue to $1.225B-$1.275B, above the FY2026 Q4 actual of $1,006.3M, implying continued sequential acceleration.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "short",
+      "why_it_matters": "Guidance above the prior quarter's record level signals management confidence in demand visibility and supports the thesis that the ramp is not decelerating.",
+      "financial_driver": "Revenue growth guidance",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows management's stated FY2027 Q1 revenue guidance range. It does not show the margin or EPS guidance associated with that revenue, nor the demand assumptions underpinning it.",
+      "supporting_evidence_ids": [
+        "rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c",
+        "rev_15b8a51a64b6417eb355974725fc6b1d"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Margin/EPS guidance detail",
+        "Demand assumptions behind guidance",
+        "Historical guidance accuracy"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "medium",
+        "valuation_relevance": "high",
+        "persistence": "medium",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Positive post-earnings market reaction",
+      "statement": "Following FY2026 Q4 results on 2026-08-11, the stock returned +13.63% on day 1, +12.9% vs QQQ, on volume 2.45x the 20-day average.",
+      "claim_type": "event",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "short",
+      "why_it_matters": "The outsized positive reaction suggests the market was positioned for weaker results and is now pricing in a higher growth trajectory, raising the bar for future execution.",
+      "financial_driver": "Market expectations and positioning",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows the one-day price reaction and relative performance vs QQQ. It does not show the pre-earnings consensus expectations or the sustainability of the price move.",
+      "supporting_evidence_ids": [
+        "rev_14bb0d25bc0a4d57996ac830e7042d86"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Pre-earnings consensus estimates",
+        "Post-earnings analyst estimate revisions"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "medium",
+        "uncertainty": "low",
+        "valuation_relevance": "medium",
+        "persistence": "low",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Valuation cannot be assessed from reported data",
+      "statement": "PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable in the reported pack, so valuation cannot be assessed from provided data.",
+      "claim_type": "valuation",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "Without valuation multiples, it is impossible to determine whether the market is pricing in the growth and margin recovery appropriately or excessively.",
+      "financial_driver": "N/A",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows that valuation fields are unavailable in the reported pack. It does not show what the actual multiples are or whether the stock is cheap or expensive.",
+      "supporting_evidence_ids": [
+        "rev_c87b898092a34fb7b60aadeb455ba9cb",
+        "rev_4acefd36875d4a88a64fce6d9fc06051"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "PE TTM",
+        "PE forward",
+        "PS",
+        "EV/EBITDA",
+        "FCF yield",
+        "Consensus estimates"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "high",
+        "uncertainty": "high",
+        "valuation_relevance": "high",
+        "persistence": "low",
+        "testability": "high"
+      }
+    },
+    {
+      "title": "Free cash flow profile is undisclosed",
+      "statement": "Free cash flow data is unavailable in the reported pack, limiting assessment of cash conversion and capital intensity as revenue scales.",
+      "claim_type": "operating",
+      "status": "partially_supported",
+      "importance": "medium",
+      "confidence": "low",
+      "time_horizon": "medium",
+      "why_it_matters": "Without FCF, it is impossible to assess whether the revenue ramp is translating into cash generation or requiring significant working capital and capex investment.",
+      "financial_driver": "Cash flow generation",
+      "why_core": "",
+      "evidence_boundary": "Evidence shows FCF is a missing field. It does not show any FCF figures or capex data.",
+      "supporting_evidence_ids": [
+        "rev_c87b898092a34fb7b60aadeb455ba9cb",
+        "rev_4acefd36875d4a88a64fce6d9fc06051"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Free cash flow",
+        "Capital expenditures",
+        "Working capital changes"
+      ],
+      "is_core": false,
+      "scores": {
+        "value_impact": "medium",
+        "uncertainty": "high",
+        "valuation_relevance": "high",
+        "persistence": "low",
+        "testability": "high"
+      }
+    }
+  ],
+  "core_claims": [
+    {
+      "claim_id": "bclm_f6d4ab33e2b940a2b4449e1188e243cc",
+      "title": "Sequential revenue acceleration through FY2026",
+      "statement": "Lumentum's quarterly revenue rose sequentially from $533.8M in FY2026 Q1 to $665.5M in Q2, $808.4M in Q3, and $1,006.3M in Q4, with TTM revenue of $3,014M and YoY growth of 83.22%.",
+      "status": "unverified",
+      "confidence": "low",
+      "why_it_matters": "The magnitude and consistency of the sequential ramp indicates a structural demand inflection rather than a one-quarter spike, which is the primary driver of operating leverage and earnings power.",
+      "reasoning": {
+        "claim_id": "bclm_f6d4ab33e2b940a2b4449e1188e243cc",
+        "what_weakens": [
+          "Evidence that the $533.8M quarter was not Q1 FY2026 but a different quarter, breaking the sequential chain.",
+          "Any restatement or correction of the revenue figures.",
+          "Evidence that the revenue increase was due to one-time items, acquisitions, or accounting changes rather than organic demand."
+        ],
+        "why_important": "If true, a consistent sequential revenue ramp from $533.8M to $1,006.3M over four quarters would indicate a structural demand inflection in Datacom laser shipments, driving operating leverage and earnings power. This is the primary basis for the bull case on LITE.",
+        "missing_evidence": [
+          "Direct press release or SEC filing (10-Q/10-K) stating Q1 FY2026 revenue of $533.8M, Q2 FY2026 revenue of $665.5M, and Q3 FY2026 revenue of $808.4M.",
+          "Official confirmation of TTM revenue of $3,014M.",
+          "Official confirmation of YoY growth of 83.22%.",
+          "Clarification of the fiscal quarter labeling for the $533.8M revenue figure, since rev_c87b898092a34fb7b60aadeb455ba9cb labels it 'Fiscal Fourth Quarter 2026 Results' while the claim asserts it was Q1 FY2026.",
+          "Segment-level revenue breakdown (e.g., Datacom laser shipments) to support the financial driver."
+        ],
+        "what_invalidates": [
+          "Official financial statements showing that quarterly revenue did not rise sequentially in the order claimed.",
+          "Confirmation that the $533.8M figure belongs to a different fiscal quarter than Q1 FY2026.",
+          "A material restatement of FY2026 revenue."
+        ],
+        "what_strengthens": [
+          "A direct Lumentum press release or 10-Q filing confirming the exact quarterly revenue figures for Q1, Q2, and Q3 FY2026.",
+          "Official confirmation of TTM revenue and YoY growth rate.",
+          "Management commentary explicitly attributing the sequential ramp to Datacom laser demand.",
+          "Consistent fiscal quarter labeling across sources."
+        ],
+        "evidence_boundary": {
+          "proves": "Evidence rev_0f87d4b9a6464e48b4a2332c07783430 confirms Q4 FY2026 net revenue was $1.01 billion. Evidence rev_c87b898092a34fb7b60aadeb455ba9cb confirms a quarter with net revenue of $533.8 million and gross margins of 34.0% GAAP / 39.4% non-GAAP. Evidence rev_35135fecb9424df790c30ecab390aaa7 confirms Q2 FY2026 results were reported for the period ended December 27, 2025.",
+          "does_not_prove": "The evidence does not prove the sequential ordering of the $533.8M quarter (it is labeled 'Fiscal Fourth Quarter 2026 Results' in rev_c87b898092a34fb7b60aadeb455ba9cb, which conflicts with the claim's assertion that $533.8M was Q1 FY2026). It does not prove the $665.5M Q2 or $808.4M Q3 figures, the TTM revenue of $3,014M, or the 83.22% YoY growth. No evidence directly states the sequential progression from Q1 to Q4 FY2026."
+        },
+        "current_conclusion": "The claim is partially supported by the available evidence but cannot be fully verified. Evidence confirms Lumentum's Q4 FY2026 revenue was $1.01 billion and that a quarter with revenue of $533.8 million occurred, but the evidence does not clearly establish the sequential progression across Q1–Q4 FY2026, the TTM revenue of $3,014M, or the 83.22% YoY growth figure. The claim remains unverified with low confidence.",
+        "competing_hypotheses": [
+          {
+            "status": "supported",
+            "statement": "Lumentum's revenue did ramp sequentially through FY2026, driven by Datacom laser demand, but the specific quarterly figures in the claim may be misattributed or partially inaccurate.",
+            "evidence_ids": [
+              "rev_0f87d4b9a6464e48b4a2332c07783430",
+              "rev_c87b898092a34fb7b60aadeb455ba9cb",
+              "rev_35135fecb9424df790c30ecab390aaa7"
+            ]
+          },
+          {
+            "status": "speculative",
+            "statement": "The $533.8M revenue quarter was actually Q4 FY2026 (as labeled in rev_c87b898092a34fb7b60aadeb455ba9cb), not Q1 FY2026, implying the claim's sequential ordering is incorrect and the ramp may have been from a different starting point or direction.",
+            "evidence_ids": [
+              "rev_c87b898092a34fb7b60aadeb455ba9cb"
+            ]
+          },
+          {
+            "status": "speculative",
+            "statement": "The revenue growth is a one-time spike or accounting artifact rather than a structural demand inflection.",
+            "evidence_ids": []
+          }
+        ],
+        "next_research_question": "What were Lumentum's exact quarterly revenues for Q1, Q2, and Q3 FY2026 as reported in its 10-Q filings, and how do they compare to the claimed figures of $533.8M, $665.5M, and $808.4M?",
+        "strongest_support_evidence_ids": [
+          "rev_0f87d4b9a6464e48b4a2332c07783430",
+          "rev_c87b898092a34fb7b60aadeb455ba9cb"
+        ],
+        "strongest_opposing_evidence_ids": []
+      }
+    },
+    {
+      "claim_id": "bclm_b638d2dbbd384045b57b93b9ef503274",
+      "title": "Margin recovery driven by Datacom laser mix and utilization",
+      "statement": "GAAP gross margin expanded from 34.0% in FY2026 Q1 to 47.43% in Q4, and GAAP operating margin rose from 1.26% to 27.76%, attributed to better manufacturing utilization and favorable product mix from increased Datacom laser shipments.",
+      "status": "unverified",
+      "confidence": "low",
+      "why_it_matters": "The margin expansion is the key swing factor in earnings power; if sustained, it implies structurally higher profitability than the FY2024-FY2025 trough levels.",
+      "reasoning": {
+        "claim_id": "bclm_b638d2dbbd384045b57b93b9ef503274",
+        "what_weakens": [
+          "Evidence showing margin changes driven by other factors.",
+          "Inconsistent or conflicting financial data across sources.",
+          "Lack of management attribution to the specified drivers."
+        ],
+        "why_important": "The margin expansion is the key swing factor in earnings power; if sustained, it implies structurally higher profitability than the FY2024-FY2025 trough levels.",
+        "missing_evidence": [
+          "Official financial statements or press releases showing GAAP gross margin and operating margin for FY2026 Q1 and Q4.",
+          "Management commentary explicitly linking margin changes to Datacom laser mix and manufacturing utilization.",
+          "Segment or product-level revenue and margin data for Datacom lasers.",
+          "Consistent fiscal period labeling to resolve the discrepancy between the claim's FY2026 Q1/Q4 and the evidence's Q4 FY2026 figures."
+        ],
+        "what_invalidates": [
+          "Official financial reports showing different margin figures for the relevant periods.",
+          "Management statements explicitly denying that Datacom laser mix or utilization were significant drivers."
+        ],
+        "what_strengthens": [
+          "Audited financial statements confirming the margin figures.",
+          "Earnings call transcripts where management attributes margin improvement to Datacom laser mix and utilization.",
+          "Analyst reports corroborating the causal link."
+        ],
+        "evidence_boundary": {
+          "proves": "Nothing about the claim's specific margin figures or causal attribution.",
+          "does_not_prove": "That GAAP gross margin expanded from 34.0% to 47.43%, that GAAP operating margin rose from 1.26% to 27.76%, or that these changes were driven by Datacom laser mix and utilization."
+        },
+        "current_conclusion": "Insufficient evidence to verify the claim. The provided evidence contains conflicting and incomplete margin data, and no evidence directly attributes margin expansion to Datacom laser mix or manufacturing utilization.",
+        "competing_hypotheses": [
+          {
+            "status": "speculative",
+            "statement": "The margin expansion is driven by factors other than Datacom laser mix and utilization, such as cost reductions, pricing, or one-time items.",
+            "evidence_ids": []
+          },
+          {
+            "status": "speculative",
+            "statement": "The margin figures cited in the claim are inaccurate or misattributed to the wrong fiscal periods.",
+            "evidence_ids": [
+              "rev_c87b898092a34fb7b60aadeb455ba9cb"
+            ]
+          }
+        ],
+        "next_research_question": "What were the exact GAAP gross and operating margins for Lumentum in FY2026 Q1 and Q4, and what did management cite as the primary drivers of margin changes?",
+        "strongest_support_evidence_ids": [],
+        "strongest_opposing_evidence_ids": [
+          "rev_c87b898092a34fb7b60aadeb455ba9cb"
+        ]
+      }
+    },
+    {
+      "claim_id": "bclm_973e774d375d4c9b9b0c730d153c6183",
+      "title": "FY2027 Q1 guidance implies continued sequential growth",
+      "statement": "Management guided FY2027 Q1 net revenue to $1.225B-$1.275B, above the FY2026 Q4 actual of $1,006.3M, implying continued sequential acceleration.",
+      "status": "unverified",
+      "confidence": "low",
+      "why_it_matters": "Guidance above the prior quarter's record level signals management confidence in demand visibility and supports the thesis that the ramp is not decelerating.",
+      "reasoning": {
+        "claim_id": "bclm_973e774d375d4c9b9b0c730d153c6183",
+        "what_weakens": [
+          "Evidence that FY2026 Q4 actual net revenue was materially different from $1,006.3M.",
+          "Guidance that is below the prior quarter's actual revenue, contradicting the sequential acceleration claim.",
+          "Management commentary indicating demand deceleration or reduced visibility."
+        ],
+        "why_important": "Guidance above the prior quarter's record level signals management confidence in demand visibility and supports the thesis that the ramp is not decelerating.",
+        "missing_evidence": [
+          "The actual FY2027 Q1 guidance press release or earnings call transcript containing the $1.225B-$1.275B range.",
+          "Confirmation of the FY2026 Q4 actual net revenue figure of $1,006.3M from a primary source.",
+          "Management commentary on demand visibility or sequential growth expectations for FY2027 Q1."
+        ],
+        "what_invalidates": [
+          "A primary-source document showing FY2027 Q1 guidance outside the $1.225B-$1.275B range.",
+          "A company statement retracting or revising the guidance.",
+          "Evidence that the guidance figure refers to a different metric or period."
+        ],
+        "what_strengthens": [
+          "A primary-source press release or 8-K explicitly stating FY2027 Q1 net revenue guidance of $1.225B-$1.275B.",
+          "Management commentary on the earnings call confirming sequential growth expectations.",
+          "Independent analyst reports corroborating the guidance range."
+        ],
+        "evidence_boundary": {
+          "proves": "Nothing directly; no evidence in the provided set contains the FY2027 Q1 guidance figures ($1.225B-$1.275B) or a management statement guiding to that range.",
+          "does_not_prove": "The claim's core assertion that management guided FY2027 Q1 net revenue to $1.225B-$1.275B, and that this implies continued sequential acceleration."
+        },
+        "current_conclusion": "unverified",
+        "competing_hypotheses": [
+          {
+            "status": "speculative",
+            "statement": "Management did provide FY2027 Q1 guidance in the stated range, but the relevant press release or earnings call transcript is not included in the provided evidence set.",
+            "evidence_ids": []
+          },
+          {
+            "status": "speculative",
+            "statement": "The claim misstates or misattributes the guidance figures, and actual FY2027 Q1 guidance differs from $1.225B-$1.275B.",
+            "evidence_ids": []
+          }
+        ],
+        "next_research_question": "What was Lumentum's actual FY2027 Q1 revenue guidance as stated in its FY2026 Q4 earnings release or call, and how does it compare to the $1.225B-$1.275B range claimed?",
+        "strongest_support_evidence_ids": [],
+        "strongest_opposing_evidence_ids": []
+      }
+    }
+  ],
   "news": [
     {
-      "news_id": "bnws_0fa3a48a7f0b4b6fb783af4f021a1670",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+      "news_id": "bnws_f4ef3055d0b34f3aa4bbe4762d01ede8",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
       "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026057358/lite-20260627.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_3850819aaa064c8fa635704fa8d9816f",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite-20260811.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_ba5410f14a2d47589cb604a949dad5b3",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026051078/lite-20260727.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_fb5ede0f89c54da38f609e9e838ca5aa",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526249535/d112771d8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_791b09ee71b146058f4ed1b5443c9bf9",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030777/lite-20260328.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_4001450fffd347ef810e943922bd1910",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite-20260505.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_2d828ee2f9734049980e695f0b392b24",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526146256/d13152d8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_d46a00c0b75c4b9fb0abbb1b3c44ac88",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526085412/d41019d8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_ff2ba344a0674c9a848d9e360bb439c6",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026005129/lite-20251227.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_f2b54101fd9144ba8192a2ade28b9146",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026005005/lite-20260203.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_04ae5a285284430d805924e3273732d6",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312526002602/d848121d8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_da2ae325d0964989bdf9e11d575135fe",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000119312525328691/d38670d8k.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_27d0f75ccae74f44965adf1336413049",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828025057025/lite-20251215.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_509a8b51c6e445fd88c7fb120662eeb4",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828025053795/lite-20251119.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_8130c68844fd4e9eb468eb8820023081",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "10-Q",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828025049073/lite-20250927.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_df92d3359b8a485ca3fbbe2fd5a36359",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "8-K",
-      "source": "sec",
-      "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828025048860/lite-20251104.htm",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_f62afc97f9cc490f890fb83019aedc2a",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
-      "source": "Zacks",
-      "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_73e202ebf5754f08b1fe744df62b4d80",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
-      "source": "Zacks",
-      "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_3f3a43f4c47a4caab9c4aa36d3ffa490",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
-      "source": "BNK Invest",
-      "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
-      "published_at": null,
-      "new_fact": null,
-      "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
-      "quantifiable": false,
-      "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
-    },
-    {
-      "news_id": "bnws_c4c4db3d96c64f0db6992013ca84237f",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-      "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
+      "evidence_id": "rev_9e0eb907e2d1437589091cf80458540a",
+      "layer": "contextual",
       "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
       "source": "Barchart",
       "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
-      "published_at": null,
-      "new_fact": null,
+      "published_at": "2026-09-17T00:00:00+00:00",
+      "new_fact": "Fed hikes interest rates and signals more to come; major indices mixed.",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
+      "impact": "contextual",
+      "reason": "Macro news affects broad market but not Lumentum-specific claims.",
       "financial_impact": "unavailable",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Macro news affects broad market but not Lumentum-specific claims.",
+        "novelty": "new",
+        "new_fact": "Fed hikes interest rates and signals more to come; major indices mixed.",
+        "news_index": 0,
+        "evidence_id": "rev_9e0eb907e2d1437589091cf80458540a",
+        "quantifiable": false,
+        "affected_state": "macroeconomic environment",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct issuer-specific financial impact.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
     },
     {
-      "news_id": "bnws_fa8e5c8e369d4498b027ca992bdcc363",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+      "news_id": "bnws_91d98ef68318463db239bb11b3bbacd9",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
       "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Lumentum Holdings Inc. (via Public) / Lumentum Announces Fiscal Fourth ...",
-      "source": "web_search",
-      "url": "https://ebs.publicnow.com/view/728D30C4AC49ADA89D12EA87778B4E9E6CD43F02",
-      "published_at": null,
-      "new_fact": null,
+      "evidence_id": "rev_4e4ebc83c5eb43b48d6591b96a3dff4e",
+      "layer": "contextual",
+      "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "Forgent Power Solutions beats fiscal Q4 estimates; data center demand drives Powertrain Solutions growth; record bookings and backlog.",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
+      "impact": "contextual",
+      "reason": "Industry demand signal but not issuer-specific contract or financials.",
       "financial_impact": "unavailable",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Industry demand signal but not issuer-specific contract or financials.",
+        "novelty": "new",
+        "new_fact": "Forgent Power Solutions beats fiscal Q4 estimates; data center demand drives Powertrain Solutions growth; record bookings and backlog.",
+        "news_index": 1,
+        "evidence_id": "rev_4e4ebc83c5eb43b48d6591b96a3dff4e",
+        "quantifiable": false,
+        "affected_state": "industry demand for data center power solutions",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct Lumentum financials.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
     },
     {
-      "news_id": "bnws_20c306c558374c23adc41ae2cd4ebb40",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+      "news_id": "bnws_a4690d92cd5c44f98093c3876ef5efdc",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
       "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Lumentum Holdings Inc. (LITE) Latest Press Releases | Seeking Alpha",
-      "source": "web_search",
-      "url": "https://seekingalpha.com/symbol/LITE/press-releases",
-      "published_at": null,
-      "new_fact": null,
+      "evidence_id": "rev_ab6049e8f6bb4507b7c957167d70ea3f",
+      "layer": "contextual",
+      "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "AXT's sales in Europe and Asia-Pacific broadening revenue base; InP demand and export approvals improve.",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
+      "impact": "contextual",
+      "reason": "Industry demand signal for InP, relevant to Lumentum's Datacom laser business, but not issuer-specific.",
       "financial_impact": "unavailable",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Industry demand signal for InP, relevant to Lumentum's Datacom laser business, but not issuer-specific.",
+        "novelty": "new",
+        "new_fact": "AXT's sales in Europe and Asia-Pacific broadening revenue base; InP demand and export approvals improve.",
+        "news_index": 2,
+        "evidence_id": "rev_ab6049e8f6bb4507b7c957167d70ea3f",
+        "quantifiable": false,
+        "affected_state": "InP demand and supply chain",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct Lumentum financials.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
     },
     {
-      "news_id": "bnws_f664ea28727c4e5b936dfc9b46aab9df",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+      "news_id": "bnws_b5675a0df5b14c24a971513d92439c43",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
       "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Lumentum Announces Reporting Date for Fourth Quarter and ... - Nasdaq",
-      "source": "web_search",
-      "url": "https://www.nasdaq.com/press-release/lumentum-announces-reporting-date-fourth-quarter-and-fiscal-year-2026-results-2026-07",
-      "published_at": null,
-      "new_fact": null,
+      "evidence_id": "rev_0b5726cd3c514305a684b046ff8a06c4",
+      "layer": "noise",
+      "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+      "source": "BNK Invest",
+      "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "ETF outflow alert mentioning LITE among others; IYZ saw $124.8M outflow.",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
-      "financial_impact": "unavailable",
+      "impact": "none",
+      "reason": "ETF outflow is not material to Lumentum's business or financials.",
+      "financial_impact": "none",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "ETF outflow is not material to Lumentum's business or financials.",
+        "novelty": "new",
+        "new_fact": "ETF outflow alert mentioning LITE among others; IYZ saw $124.8M outflow.",
+        "news_index": 3,
+        "evidence_id": "rev_0b5726cd3c514305a684b046ff8a06c4",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "low",
+        "quantifiable_reason": "ETF flow not directly tied to Lumentum fundamentals.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
     },
     {
-      "news_id": "bnws_cd41bd741fc4408a935825b52b5a093f",
-      "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
+      "news_id": "bnws_cb40474c33dc49afacc47ee286ef7233",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
       "ticker": "LITE",
-      "evidence_id": null,
-      "layer": "uninterpreted",
-      "title": "Lumentum Announces Fourth Quarter and Full Fiscal Year 2026 ... - Nasdaq",
-      "source": "web_search",
-      "url": "https://www.nasdaq.com/press-release/lumentum-announces-fourth-quarter-and-full-fiscal-year-2026-results-2026-08-11",
-      "published_at": null,
-      "new_fact": null,
+      "evidence_id": "rev_9e0eb907e2d1437589091cf80458540a",
+      "layer": "contextual",
+      "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+      "source": "Barchart",
+      "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+      "published_at": "2026-09-17T00:00:00+00:00",
+      "new_fact": "Fed hikes interest rates and signals more to come; major indices mixed.",
       "affected_claim_id": null,
-      "impact": null,
-      "reason": null,
+      "impact": "contextual",
+      "reason": "Duplicate of news_index 0.",
       "financial_impact": "unavailable",
       "quantifiable": false,
       "claim_version_changed": false,
-      "interpretation": {},
-      "created_at": "2026-09-17T06:15:23+00:00"
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Duplicate of news_index 0.",
+        "novelty": "repeat",
+        "new_fact": "Fed hikes interest rates and signals more to come; major indices mixed.",
+        "news_index": 4,
+        "evidence_id": "rev_9e0eb907e2d1437589091cf80458540a",
+        "quantifiable": false,
+        "affected_state": "macroeconomic environment",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct issuer-specific financial impact.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
+    },
+    {
+      "news_id": "bnws_bae3f86aa0e3470682dba7e91105ab28",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "ticker": "LITE",
+      "evidence_id": "rev_4e4ebc83c5eb43b48d6591b96a3dff4e",
+      "layer": "contextual",
+      "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "Forgent Power Solutions beats fiscal Q4 estimates; data center demand drives Powertrain Solutions growth; record bookings and backlog.",
+      "affected_claim_id": null,
+      "impact": "contextual",
+      "reason": "Duplicate of news_index 1.",
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Duplicate of news_index 1.",
+        "novelty": "repeat",
+        "new_fact": "Forgent Power Solutions beats fiscal Q4 estimates; data center demand drives Powertrain Solutions growth; record bookings and backlog.",
+        "news_index": 5,
+        "evidence_id": "rev_4e4ebc83c5eb43b48d6591b96a3dff4e",
+        "quantifiable": false,
+        "affected_state": "industry demand for data center power solutions",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct Lumentum financials.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
+    },
+    {
+      "news_id": "bnws_46c6068044cf4c2292ab67d626eff32b",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "ticker": "LITE",
+      "evidence_id": "rev_ab6049e8f6bb4507b7c957167d70ea3f",
+      "layer": "contextual",
+      "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+      "source": "Zacks",
+      "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "AXT's sales in Europe and Asia-Pacific broadening revenue base; InP demand and export approvals improve.",
+      "affected_claim_id": null,
+      "impact": "contextual",
+      "reason": "Duplicate of news_index 2.",
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Duplicate of news_index 2.",
+        "novelty": "repeat",
+        "new_fact": "AXT's sales in Europe and Asia-Pacific broadening revenue base; InP demand and export approvals improve.",
+        "news_index": 6,
+        "evidence_id": "rev_ab6049e8f6bb4507b7c957167d70ea3f",
+        "quantifiable": false,
+        "affected_state": "InP demand and supply chain",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "No direct Lumentum financials.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
+    },
+    {
+      "news_id": "bnws_adf525bf3a8b45088a3fcce3709d3d8f",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "ticker": "LITE",
+      "evidence_id": "rev_0b5726cd3c514305a684b046ff8a06c4",
+      "layer": "noise",
+      "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+      "source": "BNK Invest",
+      "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+      "published_at": "2026-09-16T00:00:00+00:00",
+      "new_fact": "ETF outflow alert mentioning LITE among others; IYZ saw $124.8M outflow.",
+      "affected_claim_id": null,
+      "impact": "none",
+      "reason": "Duplicate of news_index 3.",
+      "financial_impact": "none",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "noise",
+        "impact": "none",
+        "reason": "Duplicate of news_index 3.",
+        "novelty": "repeat",
+        "new_fact": "ETF outflow alert mentioning LITE among others; IYZ saw $124.8M outflow.",
+        "news_index": 7,
+        "evidence_id": "rev_0b5726cd3c514305a684b046ff8a06c4",
+        "quantifiable": false,
+        "affected_state": "",
+        "financial_impact": "none",
+        "affected_claim_id": null,
+        "source_credibility": "low",
+        "quantifiable_reason": "ETF flow not directly tied to Lumentum fundamentals.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
+    },
+    {
+      "news_id": "bnws_818b3e7453524ae09e00a64a2fe73f7f",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "ticker": "LITE",
+      "evidence_id": "rev_4a521091be4a47958d588b8b722252aa",
+      "layer": "contextual",
+      "title": "Rothschild & Co Redburn Adjusts Price Target on Lumentum to $1,294.85 ...",
+      "source": "web_search",
+      "url": "https://fiscal.ai/company/NasdaqGS-LITE/news/2026-09-11/rothschild-co-redburn-adjusts-price-target-on-lumentum-to-129485/",
+      "published_at": "2026-09-11T00:00:00+00:00",
+      "new_fact": "Rothschild & Co Redburn adjusted Lumentum price target to $1,294.85 from $1,270.27.",
+      "affected_claim_id": null,
+      "impact": "contextual",
+      "reason": "Analyst price target adjustment is not a fundamental change to Lumentum's business or financials.",
+      "financial_impact": "unavailable",
+      "quantifiable": false,
+      "claim_version_changed": false,
+      "interpretation": {
+        "layer": "contextual",
+        "impact": "contextual",
+        "reason": "Analyst price target adjustment is not a fundamental change to Lumentum's business or financials.",
+        "novelty": "new",
+        "new_fact": "Rothschild & Co Redburn adjusted Lumentum price target to $1,294.85 from $1,270.27.",
+        "news_index": 8,
+        "evidence_id": "rev_4a521091be4a47958d588b8b722252aa",
+        "quantifiable": false,
+        "affected_state": "analyst sentiment",
+        "financial_impact": "unavailable",
+        "affected_claim_id": null,
+        "source_credibility": "medium",
+        "quantifiable_reason": "Price target change does not directly affect company financials.",
+        "changes_claim_status": false,
+        "new_research_question": ""
+      },
+      "created_at": "2026-09-17T10:53:34+00:00"
     }
   ],
-  "states": [],
-  "questions": [],
+  "states": [
+    {
+      "state_id": "bst_d9fd0f3716064fcdb565f42d06130849",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "Valuation unavailable",
+      "statement": "PE TTM, PE forward, PS, EV/EBITDA, and FCF yield are all unavailable in the reported pack, so valuation cannot be assessed from provided data.",
+      "direction": "flat",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:53:16+00:00",
+      "expires_at": null,
+      "evidence_ids": [],
+      "source": "llm_company_understanding",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00",
+      "updated_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "state_id": "bst_f1d807ba26674052acb5064de0e808d2",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "Revenue acceleration",
+      "statement": "Lumentum's quarterly revenue accelerated from $533.8M in FY2026 Q1 to $1,006.3M in FY2026 Q4, with TTM revenue of $3,014M and YoY growth of 83.22%.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:53:16+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+        "rev_2e312f885e5f410b8fc1765017baf3d2",
+        "rev_6eea3ad92c9d43e490e77ea7c5999464",
+        "rev_14bb0d25bc0a4d57996ac830e7042d86"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00",
+      "updated_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "state_id": "bst_85ce30ec28be4319929eeda15d001c73",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "Margin recovery",
+      "statement": "GAAP gross margin rose from 34.0% in FY2026 Q1 to 47.43% in FY2026 Q4, and GAAP operating margin rose from 1.26% to 27.76% over the same period, attributed to better manufacturing utilization and favorable product mix from increased Datacom laser shipments.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:53:16+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_2d9f6033e80e4f2db1e56112acdc10ed",
+        "rev_14bb0d25bc0a4d57996ac830e7042d86",
+        "rev_4d11fe1ba49b44dba7418de98c6e5f44"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00",
+      "updated_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "state_id": "bst_71e6275c5b5c4cd2a47c97f6d85cabc9",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "Forward guidance",
+      "statement": "Management guided FY2027 Q1 net revenue to $1.225B-$1.275B, above the FY2026 Q4 actual of $1.006B.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:53:16+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_3b8246f3c0ae4ae8ba98afbd6d8eae1c",
+        "rev_15b8a51a64b6417eb355974725fc6b1d"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00",
+      "updated_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "state_id": "bst_58092c4d56944ef79467a01097293c96",
+      "ticker": "LITE",
+      "state_type": "event",
+      "name": "Positive earnings reaction",
+      "statement": "Following FY2026 Q4 results on 2026-08-11, the stock returned +13.63% on day 1, +12.9% vs QQQ, on volume 2.45x the 20-day average.",
+      "direction": "up",
+      "confidence": "high",
+      "effective_at": "2026-09-17T10:53:16+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_14bb0d25bc0a4d57996ac830e7042d86"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00",
+      "updated_at": "2026-09-17T10:53:16+00:00"
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "brq_8650a41cb6b1488b8daef83ebed7ea78",
+      "ticker": "LITE",
+      "related_claim_id": "bclm_973e774d375d4c9b9b0c730d153c6183",
+      "question": "What was Lumentum's actual FY2027 Q1 revenue guidance as stated in its FY2026 Q4 earnings release or call, and how does it compare to the $1.225B-$1.275B range claimed?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:47+00:00"
+    },
+    {
+      "question_id": "brq_8f3a37754e36420697c2461c37ed94a8",
+      "ticker": "LITE",
+      "related_claim_id": "bclm_b638d2dbbd384045b57b93b9ef503274",
+      "question": "What were the exact GAAP gross and operating margins for Lumentum in FY2026 Q1 and Q4, and what did management cite as the primary drivers of margin changes?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:43+00:00"
+    },
+    {
+      "question_id": "brq_de67edb75d934b84a32431c2401db56f",
+      "ticker": "LITE",
+      "related_claim_id": "bclm_f6d4ab33e2b940a2b4449e1188e243cc",
+      "question": "What were Lumentum's exact quarterly revenues for Q1, Q2, and Q3 FY2026 as reported in its 10-Q filings, and how do they compare to the claimed figures of $533.8M, $665.5M, and $808.4M?",
+      "why_it_matters": "claim reasoning gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:40+00:00"
+    },
+    {
+      "question_id": "brq_cf76d96e591c4230b4d3d94edfb19f44",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "What portion of Lumentum's revenue comes from Datacom vs Telecom, and how has that mix shifted over the last four quarters?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_6aa98b9571ad4443a9793f7f28820385",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "How sustainable is the non-GAAP gross margin expansion (37.8% in the referenced quarter) if Datacom laser shipment growth moderates?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_90e691d457fa412b8213c84c53d048c5",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "What is the capacity/capex plan to support the FY2027 Q1 revenue guidance of $1.225B-$1.275B?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_71e057c5b5f64562afde416361fddd72",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "What are the customer concentration dynamics in the datacom laser business?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_c9d392a2a2474c518a497b990717ddc5",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "How much of the FY2026 revenue growth of 83.22% YoY was volume vs price/mix?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_ce7b88d141134e768698597b228ca356",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "What is the free cash flow profile and cash conversion as revenue scales?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    },
+    {
+      "question_id": "brq_1873ce4115354777a38cbe501962ecf4",
+      "ticker": "LITE",
+      "related_claim_id": null,
+      "question": "What is the current valuation multiple (PE, PS, EV/EBITDA) given the stock's large post-earnings move?",
+      "why_it_matters": "company understanding coverage gap",
+      "priority": "high",
+      "status": "open",
+      "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+      "created_at": "2026-09-17T10:53:16+00:00"
+    }
+  ],
   "audit": {
     "ticker": "LITE",
-    "run_id": "brun_c6298fd5b05d4074bc88b03208504bdc",
-    "snapshot_id": "rsnap_52d6dc6568f949aaa6fded65b00e969e",
-    "model": null,
-    "prompt_version": "brain-phase1-v1",
+    "run_id": "brun_696a6cc878fe43c7ac8bbe8a62eb450c",
+    "snapshot_id": "rsnap_36ed3d5978eb4434abf5a05a9c5a685b",
+    "model": "deepseek-flash",
+    "prompt_version": "brain-phase1-v1.1",
     "llm_calls": [
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "eec1f327d20e12b6648f420fc0af0ac60b9066f2d8e0660564c42f60caa051f0",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "9ae931f465a1cff9e367ee5b0fa328021c6119c26e90e2bfa9e31e1d9afb5ced",
+        "latency_ms": 10064,
+        "input_tokens": 16211,
+        "output_tokens": 2226,
+        "total_tokens": 18437,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "company_understanding"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "1c1750eb02b61159eacbdee60dc8b1dbc0e27eed1a4fda8a25c23c1b9d6a70ce",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "677342d36e424d776da031a72dc6b220c7aae089bd51073af32342bfb63e9ddf",
+        "latency_ms": 11628,
+        "input_tokens": 15989,
+        "output_tokens": 3128,
+        "total_tokens": 19117,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "core_claims"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "d078449f194276453b7b9f4c88f1b44cbd61db6ab2229beba0a0118dafeba58b",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "ee14ca9e25291642b6d56bd96662cd6f9caf36f51b7dd8f26e495e159d2a4505",
+        "latency_ms": 5848,
+        "input_tokens": 2102,
+        "output_tokens": 1725,
+        "total_tokens": 3827,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "news_interpretation"
       },
       {
-        "llm_called": false,
-        "llm_status": "skipped",
+        "llm_called": true,
+        "llm_status": "ok",
         "provider": "openai",
-        "model": null,
-        "prompt_hash": "d7dfd09b199fc8d352310a5b99d3ffb8b50903a92e79786ee9324465628ca9c6",
-        "latency_ms": 0,
-        "input_tokens": null,
-        "output_tokens": null,
-        "total_tokens": null,
-        "error": "未配置 LLM_API_KEY，解释与明日看法未生成。",
-        "fallback_used": true,
-        "raw_status": "missing_key",
+        "model": "deepseek-flash",
+        "prompt_hash": "23dfdf722a7a43db3b3e7ec48eeb233d46a280d4d1141f91689b44320f079361",
+        "latency_ms": 5976,
+        "input_tokens": 4939,
+        "output_tokens": 1338,
+        "total_tokens": 6277,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "edfd3aae52fe24beacb05b7810c1375e88ce4cc883ea61d0e4da0250fd34240e",
+        "latency_ms": 3473,
+        "input_tokens": 4924,
+        "output_tokens": 662,
+        "total_tokens": 5586,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "e62cf12330d3beeea38763f3f9975b06b021225c2fbe35c33adfc46a24dd6eb2",
+        "latency_ms": 3418,
+        "input_tokens": 4902,
+        "output_tokens": 660,
+        "total_tokens": 5562,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "claim_reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "deepseek-flash",
+        "prompt_hash": "52a958d40980dcab72b68433a04214b44b7f53e11aeeb1b0ec5f1f27003f5eb7",
+        "latency_ms": 7466,
+        "input_tokens": 6277,
+        "output_tokens": 1652,
+        "total_tokens": 7929,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
         "step": "pm_synthesis"
       }
     ],
-    "input_tokens": null,
-    "output_tokens": null,
-    "latency_ms": null,
-    "news_searched": 25,
-    "sources_fetched": 25,
-    "evidence_created": 25,
-    "candidate_claim_count": 0,
-    "core_claim_count": 0,
+    "input_tokens": 55344,
+    "output_tokens": 11391,
+    "latency_ms": 47873,
+    "news_searched": 9,
+    "sources_fetched": 5,
+    "evidence_created": 1,
+    "candidate_claim_count": 6,
+    "core_claim_count": 3,
     "claim_versions_changed": 0,
     "errors": [],
-    "fallbacks": [
-      "company_understanding",
-      "core_claims",
-      "news_interpretation",
-      "pm_synthesis"
-    ],
-    "backfill_id": "rbfl_c769b93d8249474ba9cb1650883150bc",
-    "high_quality_news": 16,
-    "llm_invoked": false
+    "fallbacks": [],
+    "backfill_id": null,
+    "high_quality_news": 0,
+    "news_coverage_stats": {
+      "official_sec": 0,
+      "high_quality_independent": 0,
+      "aggregator": 9,
+      "headline_only": 0,
+      "dated": 9,
+      "undated": 0,
+      "full_text_available": 9,
+      "in_window": 9,
+      "count": 9,
+      "window_days": 30
+    },
+    "integrity": {
+      "ticker": "LITE",
+      "period_end": "2026-06-27",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q4",
+      "inconsistent": false,
+      "block_core_claims": false,
+      "data_poor": true,
+      "warnings": [
+        {
+          "code": "financial_input_incomplete",
+          "reason": "TTM or latest-quarter revenue is missing."
+        }
+      ],
+      "fields": {
+        "latest_quarter_revenue": {
+          "value": 1006300000.0,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": false,
+          "status": "single_source",
+          "reason": "only one trusted source is present"
+        },
+        "latest_quarter_eps": {
+          "value": 2.64,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
+        },
+        "latest_quarter_revenue_yoy": {
+          "value": null,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_eps_yoy": {
+          "value": null,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
+        },
+        "latest_quarter_gross_margin": {
+          "value": 47.43,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Gross profit / quarterly revenue from companyfacts"
+        },
+        "latest_quarter_operating_margin": {
+          "value": 27.76,
+          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source_date": "2026-06-27",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "Operating income / quarterly revenue from companyfacts"
+        },
+        "ttm_revenue": {
+          "value": 3014000000.0,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T10:50:17+00:00",
+          "cross_checked": true,
+          "status": "ok",
+          "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
+        },
+        "ttm_eps": {
+          "value": null,
+          "source": "fundamentals",
+          "source_date": "2026-09-17T10:50:17+00:00",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "TTM EPS is the sum of the same four contiguous quarters"
+        },
+        "price": {
+          "value": 919.400024414062,
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Python-owned last close"
+        },
+        "price_timestamp": {
+          "value": "2026-09-16",
+          "source": "price_bars",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "ok",
+          "reason": "Session date of last close"
+        },
+        "pe_ttm": {
+          "value": null,
+          "source": "fundamentals",
+          "source_date": "2026-09-16",
+          "cross_checked": false,
+          "status": "missing",
+          "reason": "PE = current price / TTM diluted EPS from companyfacts quarters",
+          "inputs": {
+            "price": 919.400024414062,
+            "eps_ttm": null
+          }
+        }
+      },
+      "reason": "financial_input_incomplete"
+    },
+    "llm_invoked": true
   }
 }

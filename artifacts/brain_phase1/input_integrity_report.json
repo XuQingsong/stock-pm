@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17T07:13:18+00:00",
+  "generated_at": "2026-09-17T10:50:17+00:00",
   "tickers": {
     "AAPL": {
       "ticker": "AAPL",
@@ -11,17 +11,17 @@
       "reason": null,
       "warnings": [],
       "management_guidance": {
-        "value": null,
-        "source": null,
+        "value": "Thanks, Tim, and good afternoon, everyone. Our revenue of $94 billion was up 10% year-over-year and is a new June quarter record. We grew in every geographic segment and in the vast majority of the markets we track. Products revenue was $66.6 billion, up 8% year-over-year, driven by growth across iPhone and Mac. And thanks to our high levels of customer satisfaction and strong loyalty, our installed base of active devices reached another all-time high across all product categories and geographic segments. Services revenue was $27.4 billion, up 13% year-over-year and an all-time record. We saw strength across the world with double-digit growth in the majority of our markets. Company gross margin was 46.5% at the high end of our guidance range and down 60 basis points sequentially, primarily driven by approximately $800 million in tariff-related costs that Tim mentioned earlier. Products gross margin was 34.5%, down 140 basis points sequentially, driven by mix and tariff-related costs, partly offset by cost savings. Services gross margin was 75.6%, down 10 basis points sequentially. Operating expenses landed at $15.5 billion, up 8% year-over-year. This strong business performance led",
+        "source": "alpha_vantage",
         "source_date": null,
         "cross_checked": false,
-        "status": "unavailable",
+        "status": "ok",
         "reason": "operating guidance only; risk-factor language is excluded"
       },
       "fields": {
         "latest_quarter_revenue": {
           "value": 109417000000.0,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -29,7 +29,7 @@
         },
         "latest_quarter_eps": {
           "value": 2.02,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -37,7 +37,7 @@
         },
         "latest_quarter_revenue_yoy": {
           "value": 16.36,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -45,7 +45,7 @@
         },
         "latest_quarter_eps_yoy": {
           "value": 28.66,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -53,7 +53,7 @@
         },
         "latest_quarter_gross_margin": {
           "value": 50.06,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -61,7 +61,7 @@
         },
         "latest_quarter_operating_margin": {
           "value": 32.62,
-          "source": "Nasdaq earnings surprise+sec.companyfacts",
+          "source": "FMP earnings + income-statement+sec.companyfacts",
           "source_date": "2026-06-27",
           "cross_checked": true,
           "status": "ok",
@@ -70,7 +70,7 @@
         "ttm_revenue": {
           "value": 466823000000.0,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:11:34+00:00",
+          "source_date": "2026-09-17T10:48:25+00:00",
           "cross_checked": true,
           "status": "ok",
           "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
@@ -78,7 +78,7 @@
         "ttm_eps": {
           "value": 8.71,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:11:34+00:00",
+          "source_date": "2026-09-17T10:48:25+00:00",
           "cross_checked": true,
           "status": "ok",
           "reason": "TTM EPS is the sum of the same four contiguous quarters"
@@ -159,7 +159,7 @@
           "origin": "unavailable",
           "display": "unavailable"
         },
-        "source": "Nasdaq earnings surprise+sec.companyfacts"
+        "source": "FMP earnings + income-statement+sec.companyfacts"
       },
       "header_growth": {
         "revenue_ttm": {
@@ -182,9 +182,9 @@
         },
         "eps_growth_yoy": {
           "field": "eps_growth_yoy",
-          "value": 28.66,
+          "value": 29.94,
           "origin": "reported",
-          "display": 28.66
+          "display": 29.94
         }
       },
       "header_price": {
@@ -196,9 +196,9 @@
       "header_valuation": {
         "pe_ttm": {
           "field": "pe_ttm",
-          "value": 38.16,
+          "value": 37.9463470319635,
           "origin": "reported",
-          "display": 38.16
+          "display": 37.9463470319635
         },
         "pe_forward": {
           "field": "pe_forward",
@@ -226,7 +226,6 @@
         }
       },
       "missing_fields": [
-        "guidance_history",
         "fcf",
         "segment_growth"
       ]
@@ -246,7 +245,7 @@
         }
       ],
       "management_guidance": {
-        "value": "expect to maintain our non-GAAP operating margin at 66%, flat from a year ago",
+        "value": "expect AI semiconductor revenue to accelerate to $21.7 billion, up 236",
         "source": "sec.exhibit",
         "source_date": null,
         "cross_checked": false,
@@ -307,7 +306,7 @@
         "ttm_revenue": {
           "value": 89104000000.0,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:11:34+00:00",
+          "source_date": "2026-09-17T10:49:21+00:00",
           "cross_checked": true,
           "status": "ok",
           "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
@@ -315,7 +314,7 @@
         "ttm_eps": {
           "value": 7.84,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:11:34+00:00",
+          "source_date": "2026-09-17T10:49:21+00:00",
           "cross_checked": true,
           "status": "ok",
           "reason": "TTM EPS is the sum of the same four contiguous quarters"
@@ -482,7 +481,7 @@
         }
       ],
       "management_guidance": {
-        "value": "expects the following for the first quarter of fiscal year 2027: • Net revenue in the range of $1.225 billion to $1.275",
+        "value": "expect further increases in earnings power.” Fiscal Third Quarter Highlights: Net revenue for the third quarter of fiscal year 202",
         "source": "sec.exhibit",
         "source_date": null,
         "cross_checked": false,
@@ -507,11 +506,11 @@
           "reason": "quarter_eps: companyfacts and earnings release/Nasdaq agree within tolerance"
         },
         "latest_quarter_revenue_yoy": {
-          "value": 109.34,
+          "value": null,
           "source": "Nasdaq earnings surprise+sec.companyfacts",
           "source_date": "2026-06-27",
-          "cross_checked": true,
-          "status": "ok",
+          "cross_checked": false,
+          "status": "missing",
           "reason": "YoY uses the same fiscal period in the prior year (period_end ± ~365d)"
         },
         "latest_quarter_eps_yoy": {
@@ -541,7 +540,7 @@
         "ttm_revenue": {
           "value": 3014000000.0,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:13:18+00:00",
+          "source_date": "2026-09-17T10:50:17+00:00",
           "cross_checked": true,
           "status": "ok",
           "reason": "TTM is the sum of four contiguous period_end quarters (missing Q4 is not filled with prior-year Q3)"
@@ -549,7 +548,7 @@
         "ttm_eps": {
           "value": null,
           "source": "fundamentals",
-          "source_date": "2026-09-17T07:13:18+00:00",
+          "source_date": "2026-09-17T10:50:17+00:00",
           "cross_checked": false,
           "status": "missing",
           "reason": "TTM EPS is the sum of the same four contiguous quarters"
@@ -596,9 +595,9 @@
         },
         "revenue_yoy": {
           "field": "quarter_revenue_yoy",
-          "value": 109.34,
-          "origin": "reported",
-          "display": 109.34
+          "value": null,
+          "origin": "unavailable",
+          "display": "unavailable"
         },
         "eps": {
           "field": "quarter_eps",
@@ -697,10 +696,26 @@
         }
       },
       "missing_fields": [
-        "transcripts",
         "fcf",
         "segment_growth"
       ]
+    }
+  },
+  "backfills": {
+    "AAPL": {
+      "id": "rbfl_49615acc11334f1c874755ec6dbf65bc",
+      "status": "partial",
+      "error": null
+    },
+    "AVGO": {
+      "id": "rbfl_eb5249e080a34be5a850d9197aa4354d",
+      "status": "partial",
+      "error": null
+    },
+    "LITE": {
+      "id": "rbfl_0c6539478f384d3e8c989fc2ffdd1bf8",
+      "status": "partial",
+      "error": null
     }
   }
 }

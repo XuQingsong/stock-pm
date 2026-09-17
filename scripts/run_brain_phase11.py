@@ -11,6 +11,7 @@ from stock_pm.brain.llm_steps import company_understanding
 from stock_pm.brain.news import classify_news_hits, search_recent_news
 from stock_pm.brain.pipeline import run_brain
 from stock_pm.brain.store import BrainStore
+from stock_pm.brain.types import NEWS_WINDOW_DAYS
 from stock_pm.config import Settings
 from stock_pm.database import Database
 from stock_pm.research.agents.base import SettingsCompleter
@@ -189,13 +190,37 @@ def main() -> None:
     news_coverage = {}
     for ticker in TICKERS:
         pack = research.get_pack(ticker) or {}
-        hits = search_recent_news(ticker, pack=pack, days=7)
-        news_coverage[ticker] = classify_news_hits(hits, days=7)
+        hits = search_recent_news(ticker, pack=pack, days=NEWS_WINDOW_DAYS)
+        news_coverage[ticker] = classify_news_hits(hits, days=NEWS_WINDOW_DAYS)
         news_coverage[ticker]["sample"] = [
             {"title": row.get("title"), "url": row.get("url"), "published_at": row.get("published_at"), "source": row.get("source")}
             for row in hits[:8]
         ]
-    _write("news_coverage_7d.json", news_coverage)
+    _write("news_coverage_30d.json", news_coverage)
+
+    def _still_missing(ticker: str) -> list[str]:
+        item = report["tickers"].get(ticker) or {}
+        fields = item.get("fields") or {}
+        missing = []
+        for name, row in fields.items():
+            if isinstance(row, dict) and row.get("status") in {"missing", "unavailable"}:
+                missing.append(name)
+        missing.extend(str(x) for x in (item.get("missing_fields") or []))
+        brain = results.get(ticker) or {}
+        quality = brain.get("quality") or {}
+        if (quality.get("axes") or {}).get("news_coverage") == "Poor":
+            missing.append("last_30d_dated_news")
+        if not (brain.get("core_claims") or []):
+            missing.append("core_claims")
+        guidance = item.get("management_guidance") or {}
+        if guidance.get("status") == "unavailable":
+            missing.append("management_guidance")
+        if not (settings.google_cse_api_key or "").strip():
+            missing.append("google_cse")
+        fred = (settings.fred_api_key or "").strip()
+        if len(fred) < 8:
+            missing.append("fred_api_key")
+        return sorted(set(missing))
 
     delivery = {
         "phase": "1.1",
@@ -203,9 +228,11 @@ def main() -> None:
         "llm_live": True,
         "model": settings.llm_model,
         "base_url": settings.llm_base_url,
+        "news_window_days": NEWS_WINDOW_DAYS,
         "smoke": smoke,
         "input_integrity_report": report,
-        "news_coverage_7d": news_coverage,
+        "news_coverage_30d": news_coverage,
+        "still_missing": {ticker: _still_missing(ticker) for ticker in TICKERS},
         "brains": {ticker: results.get(ticker) for ticker in TICKERS},
     }
     _write("phase11_delivery.json", delivery)

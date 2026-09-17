@@ -8,7 +8,7 @@ Return one JSON object:
   "decisive_variables": [{"name": "", "why": "", "evidence_ids": []}],
   "strongest_claim_id": "",
   "weakest_claim_id": "",
-  "what_changed_last_7d": [""],
+  "what_changed_last_30d": [""],
   "most_likely_wrong": "",
   "next_information_to_seek": "",
   "short_view": "",

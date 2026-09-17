@@ -197,13 +197,33 @@ def ingest_official_filings(
     filings: list[dict[str, Any]],
     *,
     user_agent: str | None,
-    max_filings: int = 4,
+    max_filings: int = 8,
 ) -> list[dict[str, Any]]:
-    """Fetch 8-K / 10-Q / 10-K bodies and Exhibit 99.1 when present."""
+    """Fetch ~1 year of 10-Q / 10-K bodies plus recent 8-K Exhibit 99.1 when present."""
     docs: list[dict[str, Any]] = []
     ua = (user_agent or "").strip() or None
+
+    def _form_rank(form: str) -> int:
+        if form in {"10-K", "20-F"}:
+            return 0
+        if form in {"10-Q"}:
+            return 1
+        if form in {"8-K", "6-K"}:
+            return 2
+        return 3
+
+    ordered = sorted(
+        [row for row in filings if isinstance(row, dict)],
+        key=lambda row: (
+            _form_rank(str(row.get("form") or row.get("title") or "").upper()),
+            0 if str(row.get("filing_date") or row.get("published_at") or "") else 1,
+            str(row.get("filing_date") or row.get("published_at") or ""),
+        ),
+        reverse=True,
+    )
+    ordered.sort(key=lambda row: _form_rank(str(row.get("form") or row.get("title") or "").upper()))
     count = 0
-    for row in filings:
+    for row in ordered:
         form = str(row.get("form") or row.get("title") or "").upper()
         url = str(row.get("url") or "").strip()
         if not url or form not in {"8-K", "10-Q", "10-K", "20-F", "6-K"}:

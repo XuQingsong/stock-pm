@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .news import classify_news_hits, source_family
-from .types import QUALITY_BANDS
+from .types import NEWS_WINDOW_DAYS, QUALITY_BANDS
 
 
 def _band(score: str) -> str:
@@ -60,7 +60,7 @@ def assess_brain_quality(
     if (header.get("forward") or {}).get("consensus", {}).get("origin") == "unavailable":
         warnings.append(_warning("Data Coverage", "No trusted consensus source is wired; consensus stays unavailable."))
 
-    stats = classify_news_hits(news)
+    stats = classify_news_hits(news, days=NEWS_WINDOW_DAYS)
     independent_news = [
         row
         for row in news
@@ -82,16 +82,16 @@ def assess_brain_quality(
             warnings.append(
                 _warning(
                     "News Coverage",
-                    "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-7-day date.",
+                    "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date.",
                 )
             )
         if stats["undated"]:
-            warnings.append(_warning("News Coverage", "Undated search hits are not counted as last-7-day news."))
+            warnings.append(_warning("News Coverage", "Undated search hits are not counted as last-30-day news."))
         if stats["full_text_available"] < 1:
-            warnings.append(_warning("News Coverage", "Last-7-day items lack parseable body text."))
+            warnings.append(_warning("News Coverage", "Last-30-day items lack parseable body text."))
     else:
         news_band = "Poor"
-        warnings.append(_warning("News Coverage", "No last-7-day dated news or filings were retrieved."))
+        warnings.append(_warning("News Coverage", "No last-30-day dated news or filings were retrieved."))
 
     sourced = [row for row in evidence if row.get("source") and (row.get("source_url") or row.get("excerpt") or row.get("fact"))]
     if len(sourced) >= 8:

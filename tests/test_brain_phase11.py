@@ -7,7 +7,7 @@ from stock_pm.brain.news import search_recent_news
 from stock_pm.brain.quality import assess_brain_quality
 from stock_pm.research.extract import extract_guidance_mentions, is_operating_guidance
 from stock_pm.research.issuer import fiscal_label_from_period_end
-from stock_pm.research.live_fetch import _quarters_from_companyfacts, merge_facts_into_earnings
+from stock_pm.research.live_fetch import _quarters_from_companyfacts, dedupe_earnings_prints, merge_facts_into_earnings
 
 
 def _point(end: str, start: str, val: float, fy: int, fp: str, filed: str) -> dict:
@@ -122,15 +122,17 @@ def test_risk_factor_is_not_guidance() -> None:
     real = "The Company expects net revenue in the range of $1.225 billion to $1.275 billion."
     assert is_operating_guidance(real) is True
     assert extract_guidance_mentions(real)
+    historical = "Our revenue of $94 billion was up 10% year-over-year and is a new June quarter record. Company gross margin was 46.5% at the high end of our guidance range"
+    assert is_operating_guidance(historical) is False
 
 
-def test_undated_search_hits_are_not_last_7_day_news() -> None:
+def test_undated_search_hits_are_not_last_30_day_news() -> None:
     hits = search_recent_news(
         "AAPL",
         pack={"major_events": [{"title": "10-Q", "url": "https://www.sec.gov/x", "source": "sec"}]},
         extra_queries=[],
         fetchers=type("F", (), {"web_search": staticmethod(lambda query, limit=5: [{"title": "10-Q", "url": "https://www.sec.gov/old", "snippet": ""}])})(),
-        days=7,
+        days=30,
     )
     assert hits == []
 
@@ -233,6 +235,41 @@ def test_duplicate_nasdaq_month_label_is_not_latest() -> None:
     integrity = assess_financial_integrity(pack, header)
     assert integrity["fields"]["latest_quarter_eps"]["value"] == 2.68
     assert integrity["block_core_claims"] is False
+
+
+def test_same_period_nasdaq_month_label_does_not_keep_nongaap_eps() -> None:
+    pack = {
+        "ticker": "AAPL",
+        "earnings_history": [
+            {
+                "report_date": "2026-07-30",
+                "fiscal_period": "Jun 2026",
+                "fiscal_year": 2026,
+                "period_end": "2026-06-27",
+                "revenue": 109_417_000_000,
+                "eps": 1.91,
+                "source": "Nasdaq earnings surprise",
+            },
+            {
+                "report_date": "2026-07-31",
+                "fiscal_period": "Q3",
+                "fiscal_year": 2026,
+                "period_end": "2026-06-27",
+                "revenue": 109_417_000_000,
+                "eps": 2.02,
+                "gross_margin_pct": 50.08,
+                "source": "sec.companyfacts",
+                "provider_fields": {"companyfacts_revenue": 109_417_000_000, "companyfacts_eps": 2.02},
+            },
+        ],
+        "company_profile": {"revenue_ttm": 466_823_000_000, "eps_ttm": 8.72, "last_close": 332.41},
+    }
+    rows = dedupe_earnings_prints(pack["earnings_history"])
+    assert rows[0]["fiscal_period"] == "Q3"
+    assert rows[0]["eps"] == 2.02
+    header = company_header(pack)
+    assert header["latest_quarter"]["fiscal_period"] == "Q3"
+    assert header["latest_quarter"]["eps"]["value"] == 2.02
 
 
 def test_eps_gaap_vs_nongaap_does_not_block_claims() -> None:

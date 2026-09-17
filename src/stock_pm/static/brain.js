@@ -120,7 +120,7 @@ function renderHome(data) {
           : `<p class="muted">No Core Claims. Brain will not invent them when LLM or evidence is insufficient.</p>`
       }
     </div>
-    <h2>Past 7 days · Material</h2>
+    <h2>Past 30 days · Material</h2>
     ${
       news.length
         ? news
@@ -176,7 +176,7 @@ function renderClaim(data, ticker) {
     <p>${r.next_research_question || ((data.questions || [])[0] && data.questions[0].question) || "none"}</p>
     <h2>Claim history</h2>
     ${(data.history || []).map((item) => `<div class="news">v${item.version} · ${item.status} · ${item.reason_for_change || ""} · ${item.created_at || ""}</div>`).join("") || `<p class="muted">v1 only</p>`}
-    <h2>Related last-7-day news</h2>
+    <h2>Related last-30-day news</h2>
     ${(data.news || []).map((item) => `<div class="news"><b>${item.title || ""}</b><div class="muted">${item.layer} · ${item.impact || ""}</div><div>${item.new_fact || item.reason || ""}</div></div>`).join("") || `<p class="muted">none</p>`}
   `;
 }

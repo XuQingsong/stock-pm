@@ -584,7 +584,9 @@ class ResearchDataBackfill:
             "captured_at": _now(),
         }
         if earnings:
-            payload["earnings"] = earnings
+            from stock_pm.research.live_fetch import dedupe_earnings_prints
+
+            payload["earnings"] = dedupe_earnings_prints(earnings)
         fundamentals = bundle.get("fundamentals")
         if fundamentals:
             payload["fundamentals"] = [fundamentals]

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-PROMPT_VERSION = "brain-phase1-v1"
+PROMPT_VERSION = "brain-phase1-v1.1"
 GOLDEN_TICKERS = ("AVGO", "AAPL", "LITE")
+NEWS_WINDOW_DAYS = 30
+FINANCIAL_EVIDENCE_DAYS = 370
+LLM_EVIDENCE_LIMIT = 80
 
 STATE_TYPES = ("company", "industry", "macro", "event")
 CLAIM_TYPES = ("structural", "operating", "valuation", "event")

@@ -1,0 +1,134 @@
+{
+  "AAPL": {
+    "official_sec": 0,
+    "high_quality_independent": 0,
+    "aggregator": 4,
+    "headline_only": 0,
+    "dated": 4,
+    "undated": 0,
+    "full_text_available": 4,
+    "in_window": 4,
+    "count": 4,
+    "window_days": 30,
+    "sample": [
+      {
+        "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+        "url": "https://www.nasdaq.com/articles/berkshire-hathaway-has-306-its-portfolio-these-2-magnificent-ai-stocks-heres-why-thats",
+        "published_at": "2026-09-17",
+        "source": "The Motley Fool"
+      },
+      {
+        "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+        "url": "https://www.nasdaq.com/articles/zacks-investment-ideas-feature-highlights-apple-taiwan-and-alphabets",
+        "published_at": "2026-09-16",
+        "source": "Zacks"
+      },
+      {
+        "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+        "url": "https://www.nasdaq.com/articles/apple-considering-something-it-hasnt-done-15-years-heres-what-investors-need-know",
+        "published_at": "2026-09-16",
+        "source": "The Motley Fool"
+      },
+      {
+        "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+        "url": "https://www.nasdaq.com/articles/31-berkshire-hathaways-portfolio-riding-these-2-ai-stocks-under-greg-abel",
+        "published_at": "2026-09-16",
+        "source": "The Motley Fool"
+      }
+    ]
+  },
+  "AVGO": {
+    "official_sec": 3,
+    "high_quality_independent": 0,
+    "aggregator": 4,
+    "headline_only": 2,
+    "dated": 7,
+    "undated": 0,
+    "full_text_available": 2,
+    "in_window": 7,
+    "count": 7,
+    "window_days": 30,
+    "sample": [
+      {
+        "title": "10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000080/avgo-20260802.htm",
+        "published_at": "2026-09-10",
+        "source": "sec"
+      },
+      {
+        "title": "8-K",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-20260902.htm",
+        "published_at": "2026-09-02",
+        "source": "sec"
+      },
+      {
+        "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+        "url": "https://www.nasdaq.com/articles/billionaire-stanley-druckenmiller-dumped-broadcom-and-11xd-his-funds-stake-trillion-dollar",
+        "published_at": "2026-09-17",
+        "source": "The Motley Fool"
+      },
+      {
+        "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+        "url": "https://www.nasdaq.com/articles/arista-networks-highlighted-zacks-bull-and-yum-brands-bear-day",
+        "published_at": "2026-09-16",
+        "source": "Zacks"
+      },
+      {
+        "title": "Prediction: This Is What a $5,000 Investment in Broadcom Will Be Worth by 2028",
+        "url": "https://www.nasdaq.com/articles/prediction-what-5000-investment-broadcom-will-be-worth-2028",
+        "published_at": "2026-09-16",
+        "source": "The Motley Fool"
+      },
+      {
+        "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+        "url": "https://www.nasdaq.com/articles/hock-tan-just-guided-broadcoms-ai-revenue-reach-230-billion-2028-should-you-believe-him",
+        "published_at": "2026-09-16",
+        "source": "The Motley Fool"
+      },
+      {
+        "title": "Exhibit 99.1",
+        "url": "https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm",
+        "published_at": "2026-09-02",
+        "source": "sec.exhibit"
+      }
+    ]
+  },
+  "LITE": {
+    "official_sec": 0,
+    "high_quality_independent": 0,
+    "aggregator": 4,
+    "headline_only": 0,
+    "dated": 4,
+    "undated": 0,
+    "full_text_available": 4,
+    "in_window": 4,
+    "count": 4,
+    "window_days": 30,
+    "sample": [
+      {
+        "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+        "url": "https://www.nasdaq.com/articles/stocks-tumble-fed-hikes-interest-rates-and-signals-more-come",
+        "published_at": "2026-09-17",
+        "source": "Barchart"
+      },
+      {
+        "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+        "url": "https://www.nasdaq.com/articles/fps-q4-earnings-beat-estimates-powertrain-solutions-growth",
+        "published_at": "2026-09-16",
+        "source": "Zacks"
+      },
+      {
+        "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+        "url": "https://www.nasdaq.com/articles/axts-geographic-reach-expands-can-it-drive-more-revenue-growth",
+        "published_at": "2026-09-16",
+        "source": "Zacks"
+      },
+      {
+        "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+        "url": "https://www.nasdaq.com/articles/iyz-chtr-msi-lite-etf-outflow-alert",
+        "published_at": "2026-09-16",
+        "source": "BNK Invest"
+      }
+    ]
+  }
+}

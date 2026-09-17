@@ -73,7 +73,7 @@ class FakeBrainCompleter:
                 "largest_operating_risk": "Mix and margin.",
                 "value_variables_1to3y": ["demand duration"],
                 "candidate_questions": ["Does demand persist?"],
-                "search_questions_last_7d": ["ZZZT demand"],
+                "search_questions_last_30d": ["ZZZT demand"],
                 "states": [
                     {
                         "name": "demand",
@@ -175,7 +175,7 @@ class FakeBrainCompleter:
                 "decisive_variables": [{"name": "demand duration", "why": "binds earnings", "evidence_ids": eids[:1]}],
                 "strongest_claim_id": ids[0] if ids else "",
                 "weakest_claim_id": ids[0] if ids else "",
-                "what_changed_last_7d": ["material demand update"],
+                "what_changed_last_30d": ["material demand update"],
                 "most_likely_wrong": "Treating industry demand as issuer-specific.",
                 "next_information_to_seek": "named customer confirmation",
                 "short_view": "next print vs outlook",
@@ -326,7 +326,7 @@ def test_quality_partial_when_only_undated_sec_index() -> None:
         pack=_pack(),
     )
     assert quality["axes"]["news_coverage"] == "Poor"
-    assert any("Reuters" in str(item.get("reason")) or "last-7-day" in str(item.get("reason")) for item in quality["warnings"])
+    assert any("Reuters" in str(item.get("reason")) or "last-30-day" in str(item.get("reason")) for item in quality["warnings"])
 
 
 def test_uninterpreted_news_keeps_evidence_id(monkeypatch) -> None:

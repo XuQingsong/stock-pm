@@ -47,4 +47,5 @@ Return one JSON object:
 Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id.
 Do not write ticker-specific canned claims. Derive from the evidence and financials provided.
 A Core Claim is not a restatement of a reported number. It must have why_it_matters, uncertainty, valuation_relevance, and an evidence boundary (what the evidence proves and does not prove).
+Use the last ~year of 10-Q / 10-K / earnings-release evidence when forming claims. Cite those evidence_id values.
 If you cannot form a credible core claim, core=[] and insufficient_reason must be a plain sentence.

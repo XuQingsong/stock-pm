@@ -11,9 +11,9 @@ Return one JSON object:
   "largest_operating_risk": "",
   "value_variables_1to3y": [""],
   "candidate_questions": [""],
-  "search_questions_last_7d": [""],
+  "search_questions_last_30d": [""],
   "states": [{"name": "", "statement": "", "direction": "", "confidence": "low|medium|high", "state_type": "company|industry|macro|event", "evidence_ids": []}],
   "coverage_gaps": [""],
   "cannot_conclude": [""]
 }
-search_questions_last_7d must be concrete search queries, not ticker-specific canned claims.
+search_questions_last_30d must be concrete search queries for the last 30 days, not ticker-specific canned claims.
