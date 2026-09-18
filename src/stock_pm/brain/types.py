@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 PROMPT_VERSION = "brain-v1"
+BRAIN_PHASE = "phase0"
 GOLDEN_TICKERS = ("AVGO", "AAPL", "LITE")
 NEWS_WINDOW_DAYS = 30
 FINANCIAL_EVIDENCE_DAYS = 370
@@ -161,3 +162,92 @@ HIGH_QUALITY_NEWS_HOSTS = (
     "sec.gov",
     "federalreserve.gov",
 )
+
+COGNITIVE_LAYERS = (
+    "observation",
+    "market",
+    "state",
+    "investment_reasoning",
+    "structural_knowledge",
+)
+OBJECT_LAYER = {
+    "observation": "observation",
+    "news": "observation",
+    "fact": "observation",
+    "event": "observation",
+    "signal": "observation",
+    "price": "observation",
+    "market_state": "market",
+    "market_driver": "market",
+    "expectation": "market",
+    "market_attention": "market",
+    "state": "state",
+    "company_state": "state",
+    "industry_state": "state",
+    "macro_state": "state",
+    "exposure": "state",
+    "shadow_state": "state",
+    "driver": "investment_reasoning",
+    "value_driver": "investment_reasoning",
+    "claim": "investment_reasoning",
+    "core_claim": "investment_reasoning",
+    "financial_impact": "investment_reasoning",
+    "scenario": "investment_reasoning",
+    "business_model": "structural_knowledge",
+    "industry_structure": "structural_knowledge",
+    "causal_edge": "structural_knowledge",
+    "causal_relationship": "structural_knowledge",
+}
+LAYER_RANK = {
+    "observation": 1,
+    "market": 2,
+    "state": 3,
+    "investment_reasoning": 4,
+    "structural_knowledge": 5,
+}
+PROPOSAL_DECISIONS = ("approve", "reject", "requires_review")
+SHADOW_STATUSES = ("open", "watching", "confirmed", "closed")
+CAUSAL_EDGE_STATUSES = (
+    "candidate",
+    "observed",
+    "supported",
+    "established",
+    "challenged",
+    "deprecated",
+)
+CONSTITUTION_RULES = (
+    "price_cannot_modify_fundamental_claim",
+    "news_cannot_modify_core_claim",
+    "low_confidence_cannot_modify_current_state",
+    "weak_signal_becomes_research_question",
+    "state_slower_than_event",
+    "driver_slower_than_state",
+    "claim_slower_than_driver",
+    "causal_slower_than_claim",
+    "unsupported_causal_cannot_transmit",
+    "unexplained_price_is_not_mispricing",
+    "abnormal_change_scope_requires_review",
+    "absence_is_not_counter_evidence",
+    "related_entity_cannot_prove_issuer",
+    "duplicate_news_cannot_version_claim",
+)
+CHANGE_BUDGET = {
+    "max_auto_claims": 1,
+    "max_auto_drivers": 1,
+    "max_auto_base": 0,
+    "max_auto_causal_edges": 1,
+}
+FUNDAMENTAL_CLAIM_TYPES = ("structural", "operating")
+LOW_RELIABILITY = ("rumor", "opinion", "signal")
+TRANSMITTABLE_EDGE_STATUSES = ("observed", "supported", "established")
+CLAIM_STATUS_RANK = {
+    "contradicted": 0,
+    "challenged": 1,
+    "unverified": 2,
+    "emerging": 2,
+    "background": 2,
+    "partially_supported": 3,
+    "strongly_supported": 4,
+    "confirmed": 4,
+    "closed": 2,
+}

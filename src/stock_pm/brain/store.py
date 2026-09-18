@@ -65,6 +65,9 @@ class BrainStore:
         self.history: dict[str, dict[str, Any]] = {}
         self.financial_impacts: dict[str, dict[str, Any]] = {}
         self.critic_issues: dict[str, dict[str, Any]] = {}
+        self.shadows: dict[str, dict[str, Any]] = {}
+        self.proposals: dict[str, dict[str, Any]] = {}
+        self.causal_edges: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -735,6 +738,7 @@ class BrainStore:
             "why_it_matters": row.get("why_it_matters") or "",
             "priority": row.get("priority") or "medium",
             "status": row.get("status") or "open",
+            "related_objects": list(row.get("related_objects") or []),
             "run_id": row.get("run_id"),
             "created_at": row.get("created_at") or _now(),
         }
@@ -745,10 +749,11 @@ class BrainStore:
             """
             INSERT INTO brain_research_questions (
                 question_id, ticker, related_claim_id, question, why_it_matters,
-                priority, status, run_id, created_at
+                priority, status, related_objects, run_id, created_at
             ) VALUES (
                 %(question_id)s, %(ticker)s, %(related_claim_id)s, %(question)s,
-                %(why_it_matters)s, %(priority)s, %(status)s, %(run_id)s, %(created_at)s
+                %(why_it_matters)s, %(priority)s, %(status)s, %(related_objects)s,
+                %(run_id)s, %(created_at)s
             ) RETURNING *
             """,
             stored,
@@ -1318,6 +1323,187 @@ class BrainStore:
         query += " ORDER BY created_at"
         return self._execute(query, params)
 
+    def upsert_shadow(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "shadow_id": row.get("shadow_id") or new_id("bshd"),
+            "ticker": str(row["ticker"]).upper(),
+            "name": row.get("name") or "unconfirmed_signal",
+            "statement": row.get("statement") or "",
+            "confidence": row.get("confidence") or "low",
+            "materiality_if_true": row.get("materiality_if_true") or "high",
+            "status": row.get("status") or "open",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "related_object_ids": list(row.get("related_object_ids") or []),
+            "source_kind": row.get("source_kind") or "signal",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            for existing in self.shadows.values():
+                if existing.get("ticker") == stored["ticker"] and existing.get("name") == stored["name"]:
+                    stored["shadow_id"] = existing["shadow_id"]
+                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                    self.shadows[stored["shadow_id"]] = stored
+                    return _copy(stored)
+            self.shadows[stored["shadow_id"]] = stored
+            return _copy(stored)
+        payload = {
+            **stored,
+            "evidence_ids": stored["evidence_ids"],
+            "related_object_ids": stored["related_object_ids"],
+        }
+        out = self._one(
+            """
+            INSERT INTO brain_shadow_states (
+                shadow_id, ticker, name, statement, confidence, materiality_if_true, status,
+                evidence_ids, related_object_ids, source_kind, run_id, created_at, updated_at
+            ) VALUES (
+                %(shadow_id)s, %(ticker)s, %(name)s, %(statement)s, %(confidence)s,
+                %(materiality_if_true)s, %(status)s, %(evidence_ids)s, %(related_object_ids)s,
+                %(source_kind)s, %(run_id)s, %(created_at)s, %(updated_at)s
+            )
+            ON CONFLICT (ticker, name) DO UPDATE SET
+                statement = EXCLUDED.statement,
+                confidence = EXCLUDED.confidence,
+                materiality_if_true = EXCLUDED.materiality_if_true,
+                status = EXCLUDED.status,
+                evidence_ids = EXCLUDED.evidence_ids,
+                related_object_ids = EXCLUDED.related_object_ids,
+                source_kind = EXCLUDED.source_kind,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
 
+    def list_shadows(self, ticker: str, *, status: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.shadows.values() if row.get("ticker") == symbol]
+            if status:
+                rows = [row for row in rows if row.get("status") == status]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_shadow_states WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if status:
+            query += " AND status = %(status)s"
+            params["status"] = status
+        query += " ORDER BY updated_at DESC"
+        return self._execute(query, params)
+
+    def insert_proposal(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "proposal_id": row.get("proposal_id") or new_id("bcpr"),
+            "ticker": str(row["ticker"]).upper(),
+            "object_type": row.get("object_type") or "",
+            "object_id": row.get("object_id") or "",
+            "from_payload": dict(row.get("from_payload") or {}),
+            "to_payload": dict(row.get("to_payload") or {}),
+            "reason": row.get("reason") or "",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "source_kind": row.get("source_kind") or "news",
+            "decision": row.get("decision") or "requires_review",
+            "rules": list(row.get("rules") or []),
+            "layer": row.get("layer") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.proposals[stored["proposal_id"]] = stored
+            return _copy(stored)
+        payload = {
+            **stored,
+            "from_payload": _jsonb(stored["from_payload"]),
+            "to_payload": _jsonb(stored["to_payload"]),
+            "rules": _jsonb(stored["rules"]),
+        }
+        out = self._one(
+            """
+            INSERT INTO brain_change_proposals (
+                proposal_id, ticker, object_type, object_id, from_payload, to_payload, reason,
+                evidence_ids, source_kind, decision, rules, layer, run_id, created_at
+            ) VALUES (
+                %(proposal_id)s, %(ticker)s, %(object_type)s, %(object_id)s, %(from_payload)s,
+                %(to_payload)s, %(reason)s, %(evidence_ids)s, %(source_kind)s, %(decision)s,
+                %(rules)s, %(layer)s, %(run_id)s, %(created_at)s
+            ) RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
+
+    def list_proposals(self, ticker: str, *, decision: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.proposals.values() if row.get("ticker") == symbol]
+            if decision:
+                rows = [row for row in rows if row.get("decision") == decision]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_change_proposals WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if decision:
+            query += " AND decision = %(decision)s"
+            params["decision"] = decision
+        query += " ORDER BY created_at DESC"
+        return self._execute(query, params)
+
+    def upsert_causal_edge(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "edge_id": row.get("edge_id") or new_id("bced"),
+            "ticker": str(row["ticker"]).upper(),
+            "from_node": row.get("from_node") or "",
+            "to_node": row.get("to_node") or "",
+            "statement": row.get("statement") or "",
+            "status": row.get("status") or "candidate",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            for existing in self.causal_edges.values():
+                if (
+                    existing.get("ticker") == stored["ticker"]
+                    and existing.get("from_node") == stored["from_node"]
+                    and existing.get("to_node") == stored["to_node"]
+                ):
+                    stored["edge_id"] = existing["edge_id"]
+                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                    self.causal_edges[stored["edge_id"]] = stored
+                    return _copy(stored)
+            self.causal_edges[stored["edge_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_causal_edges (
+                edge_id, ticker, from_node, to_node, statement, status, evidence_ids, run_id, created_at, updated_at
+            ) VALUES (
+                %(edge_id)s, %(ticker)s, %(from_node)s, %(to_node)s, %(statement)s, %(status)s,
+                %(evidence_ids)s, %(run_id)s, %(created_at)s, %(updated_at)s
+            )
+            ON CONFLICT (ticker, from_node, to_node) DO UPDATE SET
+                statement = EXCLUDED.statement,
+                status = EXCLUDED.status,
+                evidence_ids = EXCLUDED.evidence_ids,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def list_causal_edges(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            return [_copy(row) for row in self.causal_edges.values() if row.get("ticker") == symbol]
+        return self._execute(
+            "SELECT * FROM brain_causal_edges WHERE ticker = %(ticker)s ORDER BY created_at",
+            {"ticker": symbol},
+        )
 
 
