@@ -140,3 +140,81 @@ def test_round1_runner_binds_ids_and_does_not_search(monkeypatch) -> None:
     assert out["event"]["direction"] == "oppose"
     assert out["metrics"]["human_scores"]["overall"] is None
     assert ROUND1_EVENT["event_id"] == "avgo_custom_silicon"
+
+
+def test_round2_profiles_exclude_deepseek_and_qwen() -> None:
+    from stock_pm.brain.benchmark.mini import _round2_profiles
+
+    settings = Settings(
+        llm_api_key="k",
+        llm_model="deepseek-chat",
+        llm_base_url="https://api.deepseek.com/v1",
+        strong_model_provider="openai",
+        strong_model_api_key="dash-key",
+        strong_model_base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        strong_model_name="qwen3.8-max",
+        benchmark_models="glm-5.3,qwen3.8-max,kimi-k3",
+    )
+    rows = _round2_profiles(settings, ["glm53", "kimik3"])
+    labels = [row["file_label"] for row in rows]
+    assert labels == ["glm53", "kimik3"] or set(labels) == {"glm53", "kimik3"}
+    assert "deepseek" not in labels
+    assert "qwen38" not in labels
+
+
+def test_round2_event_completeness_and_counter() -> None:
+    from stock_pm.brain.benchmark.mini import ROUND2_EVENTS, _counter_quality, _event_completeness, _score_round2
+
+    pack = {
+        "allowed_evidence_ids": ["rev_1"],
+        "evidence": [{"id": "rev_1", "fact": "Management said AI accelerators remained strong."}],
+    }
+    events = {
+        "events": [
+            {
+                "event_id": "avgo_r2_e1",
+                "affected_drivers": ["AI demand"],
+                "affected_claims": ["duration"],
+                "direction": "support",
+                "strength": "medium",
+                "direct_or_indirect": "direct",
+                "transmission_chain": "Capex via custom silicon into revenue duration.",
+                "short_term_impact": "confirms demand",
+                "long_term_impact": "does not prove duration",
+                "financial_metrics_affected": ["revenue"],
+                "base_case_change": "no",
+                "scenario_only": "yes",
+                "confidence": "medium",
+                "evidence_needed_next": "customer 10-Q",
+            }
+        ]
+    }
+    counter = {
+        "counter": {
+            "claim": "duration",
+            "strongest_support": "issuer AI language",
+            "strongest_counter": "in-house silicon",
+            "competing_hypothesis": "pull-forward",
+            "most_likely_wrong": "treating one print as duration",
+            "what_would_invalidate": "guide cut",
+            "missing_evidence": "named customer capex",
+        }
+    }
+    scored = _score_round2(
+        pack,
+        {"value_drivers": [{"driver": "AI demand duration", "evidence_ids": ["rev_1"]}]},
+        {"core_claims": [{"claim": "AI demand duration is the binding variable.", "evidence_ids": ["rev_1"]}]},
+        events,
+        counter,
+        [{"llm_status": "ok", "input_tokens": 10, "output_tokens": 5, "latency_ms": 3}],
+        "glm-5.3",
+        ROUND2_EVENTS["AVGO"],
+    )
+    assert scored["metrics"]["driver_count"] == 1
+    assert scored["metrics"]["claim_count"] == 1
+    assert scored["metrics"]["human_scores"]["overall"] is None
+    assert scored["metrics"]["event_transmission_completeness"]["complete"] == 1
+    assert scored["metrics"]["counter_quality"]["filled_count"] == 6
+    stats = _event_completeness(scored["events"], ROUND2_EVENTS["AVGO"])
+    assert stats["expected"] == 3
+    assert _counter_quality(scored["counter_reasoning"])["score"] == 1.0

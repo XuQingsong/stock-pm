@@ -1,0 +1,7 @@
+STEP_ID: mini_r2_events
+Score every provided event against the frozen drivers and claims. Do not search. Short JSON only.
+Explain transmission, not just good/bad news. One row per input event_id.
+If evidence is missing, say unverified and do not invent facts.
+Return:
+{"events":[{"event_id":"","affected_drivers":[],"affected_claims":[],"direction":"support|oppose|mixed|none","strength":"strong|medium|weak","direct_or_indirect":"direct|indirect","transmission_chain":"","short_term_impact":"","long_term_impact":"","financial_metrics_affected":[],"base_case_change":"yes|no","scenario_only":"yes|no","confidence":"high|medium|low","evidence_needed_next":""}]}
+Each text field <= 24 words.

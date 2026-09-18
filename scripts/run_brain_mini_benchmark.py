@@ -18,7 +18,7 @@ from stock_pm.research.store import ResearchStore
 def main() -> None:
     parser = argparse.ArgumentParser(description="Brain Mini Benchmark")
     parser.add_argument("--round", dest="round_id", type=int, default=1, choices=(1, 2))
-    parser.add_argument("--models", default="", help="Round 2 only: comma-separated Top 2 file labels")
+    parser.add_argument("--models", default="glm53,kimik3", help="Round 2 file labels, default glm53,kimik3")
     parser.add_argument("--only", default="", help="Round 1: rerun a single file_label, keep other JSON")
     args = parser.parse_args()
     os.environ.setdefault("RESEARCH_BACKFILL_TIMEOUT_SECONDS", "60")
@@ -38,7 +38,13 @@ def main() -> None:
         run_round1(store=store, research=research, settings=settings, out_dir=out, only=(args.only.strip() or None))
     else:
         names = [item.strip() for item in args.models.split(",") if item.strip()]
-        run_round2(models=names, store=store, research=research, settings=settings, out_dir=out)
+        run_round2(
+            models=names,
+            store=store,
+            research=research,
+            settings=settings,
+            out_dir=Path("artifacts/brain_mini_benchmark_round2"),
+        )
     if db is not None:
         try:
             db.close()

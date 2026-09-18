@@ -1,0 +1,6 @@
+STEP_ID: mini_r2_counter
+Counter-reason only the single most important Core Claim. Do not search. Short JSON only.
+If evidence is missing, say unverified. Do not invent numbers, customers, contracts, or market share.
+Return:
+{"counter":{"claim":"","strongest_support":"","strongest_counter":"","competing_hypothesis":"","most_likely_wrong":"","what_would_invalidate":"","missing_evidence":""}}
+Each text field <= 24 words.

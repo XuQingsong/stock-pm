@@ -171,8 +171,8 @@ def mini_profiles(settings: Settings | None = None) -> list[dict[str, Any]]:
             timeout = 180
             max_tokens = 4096
         elif "glm-5.3" in model.lower():
-            timeout = 150
-            max_tokens = 3072
+            timeout = 180
+            max_tokens = 8192
         elif profile.get("role") == "baseline":
             timeout = 60
             max_tokens = 2048

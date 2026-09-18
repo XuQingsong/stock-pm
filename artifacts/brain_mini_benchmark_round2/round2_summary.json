@@ -1,0 +1,335 @@
+{
+  "generated_at": "2026-09-18T03:34:21+00:00",
+  "round": 2,
+  "tickers": [
+    "AVGO",
+    "LITE"
+  ],
+  "models": [
+    {
+      "file_label": "glm53",
+      "model": "glm-5.3"
+    },
+    {
+      "file_label": "kimik3",
+      "model": "kimi-k3"
+    }
+  ],
+  "same_input_per_ticker": {
+    "AVGO": {
+      "freeze_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "prompt_input_hash": "0e11c9fa4544e78ad22f8b3bd32d74459e52b55c355bea1be00c5603beb2bd92",
+      "snapshot_id": "rsnap_ce2cd5952b114840be23747e225d1089",
+      "evidence_set_id": "bes_2aee1c22c7294b68b9bf0c1fba279353",
+      "evidence_count": 3
+    },
+    "LITE": {
+      "freeze_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "prompt_input_hash": "620c17ff9495138928fccb6ddbd98ddc4b489681129c2c13399163391c3a347f",
+      "snapshot_id": "rsnap_c008a6217b864e3a9231c6574a60cc08",
+      "evidence_set_id": "bes_bc75fad0fe1545ff9c6b3557a0db9b50",
+      "evidence_count": 4
+    }
+  },
+  "searched": false,
+  "winner": null,
+  "note": "No automatic winner. Human scores remain null.",
+  "by_model": {
+    "glm53": [
+      {
+        "ticker": "AVGO",
+        "model": "glm-5.3",
+        "freeze_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "prompt_input_hash": "0e11c9fa4544e78ad22f8b3bd32d74459e52b55c355bea1be00c5603beb2bd92",
+        "metrics": {
+          "driver_count": 8,
+          "claim_count": 3,
+          "invalid_evidence_ids": [],
+          "invalid_evidence_id_count": 0,
+          "unsupported_assertions": [],
+          "unsupported_assertion_count": 0,
+          "counter_quality": {
+            "filled_fields": [
+              "strongest_support",
+              "strongest_counter",
+              "competing_hypothesis",
+              "most_likely_wrong",
+              "what_would_invalidate",
+              "missing_evidence"
+            ],
+            "filled_count": 6,
+            "expected": 6,
+            "score": 1.0
+          },
+          "event_transmission_completeness": {
+            "expected": 3,
+            "complete": 3,
+            "missing_or_thin": [],
+            "completeness": 1.0
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "core_claim_quality": null,
+            "event_transmission": null,
+            "counter_reasoning": null,
+            "evidence_discipline": null,
+            "unsupported_assertion_rate": null,
+            "overall": null
+          },
+          "consistency_failures": 0,
+          "latency_ms": 103791,
+          "input_tokens": 4381,
+          "output_tokens": 8403,
+          "estimated_cost": {
+            "amount": 0.151972,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          }
+        },
+        "drivers": [
+          "AI accelerator and networking R&D and supply allocation",
+          "Networking attach rate to AI accelerator deployments",
+          "Customer concentration among large AI buyers",
+          "Custom ASIC design win pipeline",
+          "Foundry capacity allocation at advanced nodes",
+          "Debt tender and refinancing decisions",
+          "Quarterly dividend payout policy",
+          "Software segment recurring revenue mix"
+        ],
+        "core_claims": [
+          "AI accelerator and networking demand strength will sustain semiconductor revenue growth over coming quarters.",
+          "Revenue depends heavily on a few large AI buyers, magnifying downside if their capex shifts.",
+          "Debt tender and refinancing decisions materially shape interest expense, leverage, and EPS."
+        ],
+        "event_directions": [
+          "support",
+          "mixed",
+          "oppose"
+        ],
+        "counter_claim": "AI accelerator and networking demand strength will sustain semiconductor revenue growth over coming quarters."
+      },
+      {
+        "ticker": "LITE",
+        "model": "glm-5.3",
+        "freeze_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "prompt_input_hash": "620c17ff9495138928fccb6ddbd98ddc4b489681129c2c13399163391c3a347f",
+        "metrics": {
+          "driver_count": 8,
+          "claim_count": 3,
+          "invalid_evidence_ids": [],
+          "invalid_evidence_id_count": 0,
+          "unsupported_assertions": [],
+          "unsupported_assertion_count": 0,
+          "counter_quality": {
+            "filled_fields": [
+              "strongest_support",
+              "strongest_counter",
+              "competing_hypothesis",
+              "most_likely_wrong",
+              "what_would_invalidate",
+              "missing_evidence"
+            ],
+            "filled_count": 6,
+            "expected": 6,
+            "score": 1.0
+          },
+          "event_transmission_completeness": {
+            "expected": 3,
+            "complete": 3,
+            "missing_or_thin": [],
+            "completeness": 1.0
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "core_claim_quality": null,
+            "event_transmission": null,
+            "counter_reasoning": null,
+            "evidence_discipline": null,
+            "unsupported_assertion_rate": null,
+            "overall": null
+          },
+          "consistency_failures": 0,
+          "latency_ms": 90168,
+          "input_tokens": 5264,
+          "output_tokens": 7796,
+          "estimated_cost": {
+            "amount": 0.145792,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          }
+        },
+        "drivers": [
+          "Datacom transceiver shipment volumes to hyperscale cloud customers",
+          "Execution against quarterly revenue guidance",
+          "Gross margin trajectory as production volumes scale",
+          "Manufacturing capacity expansion and fab utilization",
+          "Product mix shift toward higher-speed optical transceivers",
+          "Customer concentration among hyperscale cloud operators",
+          "Competitive positioning versus Coherent and InnoLight",
+          "Outsourced manufacturing strategy with contract manufacturers"
+        ],
+        "core_claims": [
+          "Hyperscale datacom transceiver demand ramp is the core engine of Lumentum's revenue acceleration.",
+          "Volume scaling is delivering operating leverage and gross margin expansion.",
+          "Revenue is concentrated among few hyperscale cloud buyers, creating structural volatility risk."
+        ],
+        "event_directions": [
+          "support",
+          "mixed",
+          "oppose"
+        ],
+        "counter_claim": "Hyperscale datacom transceiver demand ramp is the core engine of Lumentum's revenue acceleration."
+      }
+    ],
+    "kimik3": [
+      {
+        "ticker": "AVGO",
+        "model": "kimi-k3",
+        "freeze_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "prompt_input_hash": "0e11c9fa4544e78ad22f8b3bd32d74459e52b55c355bea1be00c5603beb2bd92",
+        "metrics": {
+          "driver_count": 4,
+          "claim_count": 3,
+          "invalid_evidence_ids": [],
+          "invalid_evidence_id_count": 0,
+          "unsupported_assertions": [],
+          "unsupported_assertion_count": 0,
+          "counter_quality": {
+            "filled_fields": [
+              "strongest_support",
+              "strongest_counter",
+              "competing_hypothesis",
+              "most_likely_wrong",
+              "what_would_invalidate",
+              "missing_evidence"
+            ],
+            "filled_count": 6,
+            "expected": 6,
+            "score": 1.0
+          },
+          "event_transmission_completeness": {
+            "expected": 3,
+            "complete": 3,
+            "missing_or_thin": [],
+            "completeness": 1.0
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "core_claim_quality": null,
+            "event_transmission": null,
+            "counter_reasoning": null,
+            "evidence_discipline": null,
+            "unsupported_assertion_rate": null,
+            "overall": null
+          },
+          "consistency_failures": 0,
+          "latency_ms": 181195,
+          "input_tokens": 4419,
+          "output_tokens": 4633,
+          "estimated_cost": {
+            "amount": 0.55168,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          }
+        },
+        "drivers": [
+          "Custom AI accelerator (XPU) program wins and expansion with hyperscaler customers",
+          "AI networking product attach rate and content per AI cluster deployment",
+          "Capital allocation between dividends, debt repayment, and buybacks",
+          "Revenue scale and mix shift toward higher-value AI semiconductors"
+        ],
+        "core_claims": [
+          "Custom XPU design wins, not current AI revenue, determine AVGO's medium-term volume and pricing durability",
+          "Debt tenders plus dividend signal an EPS-driven leverage-down path independent of revenue growth",
+          "Mix shift toward AI semis within a $29.6B quarterly base can raise margins without share gains"
+        ],
+        "event_directions": [
+          "support",
+          "mixed",
+          "oppose"
+        ],
+        "counter_claim": "Custom XPU design wins, not current AI revenue, determine AVGO's medium-term volume and pricing durability"
+      },
+      {
+        "ticker": "LITE",
+        "model": "kimi-k3",
+        "freeze_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "prompt_input_hash": "620c17ff9495138928fccb6ddbd98ddc4b489681129c2c13399163391c3a347f",
+        "metrics": {
+          "driver_count": 7,
+          "claim_count": 3,
+          "invalid_evidence_ids": [],
+          "invalid_evidence_id_count": 0,
+          "unsupported_assertions": [],
+          "unsupported_assertion_count": 0,
+          "counter_quality": {
+            "filled_fields": [
+              "strongest_support",
+              "strongest_counter",
+              "competing_hypothesis",
+              "most_likely_wrong",
+              "what_would_invalidate",
+              "missing_evidence"
+            ],
+            "filled_count": 6,
+            "expected": 6,
+            "score": 1.0
+          },
+          "event_transmission_completeness": {
+            "expected": 3,
+            "complete": 3,
+            "missing_or_thin": [],
+            "completeness": 1.0
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "core_claim_quality": null,
+            "event_transmission": null,
+            "counter_reasoning": null,
+            "evidence_discipline": null,
+            "unsupported_assertion_rate": null,
+            "overall": null
+          },
+          "consistency_failures": 0,
+          "latency_ms": 267835,
+          "input_tokens": 5631,
+          "output_tokens": 7282,
+          "estimated_cost": {
+            "amount": 0.84082,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          }
+        },
+        "drivers": [
+          "Ramp of AI/datacenter optical transceiver and component shipments",
+          "Cloud & Networking segment growth versus Telecom/Industrial stability",
+          "Gross margin execution through product mix, pricing, and yield",
+          "Operating expense discipline during revenue acceleration",
+          "Execution on fiscal 2027 Q1 guidance versus prior-quarter run-rate",
+          "Customer diversification beyond concentrated hyperscale buyers",
+          "Capital allocation between capacity expansion, R&D, and balance-sheet flexibility"
+        ],
+        "core_claims": [
+          "AI/datacenter demand is driving near-term revenue acceleration, but durability depends on unverified order conversion.",
+          "Cloud & Networking mix shift is central to both growth durability and margin trajectory.",
+          "Gross margin execution is the key lever converting AI volume into operating leverage."
+        ],
+        "event_directions": [
+          "support",
+          "mixed",
+          "oppose"
+        ],
+        "counter_claim": "AI/datacenter demand is driving near-term revenue acceleration, but durability depends on unverified order conversion."
+      }
+    ]
+  },
+  "human_scores": {
+    "driver_recall": null,
+    "core_claim_quality": null,
+    "event_transmission": null,
+    "counter_reasoning": null,
+    "evidence_discipline": null,
+    "unsupported_assertion_rate": null,
+    "overall": null
+  }
+}

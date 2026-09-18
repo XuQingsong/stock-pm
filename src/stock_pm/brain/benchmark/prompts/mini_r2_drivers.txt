@@ -1,0 +1,7 @@
+STEP_ID: mini_r2_drivers
+Discover value drivers. Do not write Core Claims. Do not search. Short JSON only.
+A driver is a decision variable, not a restated reported result such as "Revenue grew X%".
+Use only evidence[].id. If a fact is not in evidence[], write unsupported/unverified. Do not invent numbers, customers, contracts, or market share.
+Return:
+{"value_drivers":[{"driver":"","why_it_matters":"","financial_link":"revenue|margin|eps|fcf|multiple|share|other","time_horizon":"short|medium|long","uncertainty":"high|medium|low","evidence_ids":[],"missing_evidence":""}]}
+Max 8 drivers. Each text field <= 22 words.
