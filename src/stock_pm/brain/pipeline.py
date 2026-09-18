@@ -28,6 +28,7 @@ from .claim_integrity import (
 from .drivers import claims_require_drivers, select_driver_universe
 from .events import build_event
 from .exposure import infer_exposure, may_affect_company_claim
+from .financial_bridge import impacts_from_objects
 from .header import company_header
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -45,6 +46,7 @@ from .llm_steps import (
 from .news import classify_news_hits, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
 from .routing import resolve_brain_completers
+from .scenario import apply_scenario_policy, qualifies_for_base
 from .state_layer import match_existing_state, normalize_state
 from .store import BrainStore
 from .transmission import validate_transmission
@@ -1235,6 +1237,19 @@ def run_brain(
                 event["affected_states"] = checked.get("affected_states") or []
                 event["affected_drivers"] = checked.get("affected_drivers") or []
                 event["affected_claims"] = checked.get("affected_claims") or []
+        for idx, row in enumerate(transmissions):
+            event = next((item for item in material_events if str(item.get("event_id")) == str(row.get("event_id"))), {})
+            ev_ids = [eid for eid in (event.get("evidence_ids") or []) if evidence_by_id.get(eid)]
+            decision = qualifies_for_base(
+                ticker=symbol,
+                event=event,
+                transmission=row,
+                evidence_rows=[evidence_by_id[eid] for eid in ev_ids],
+                related_entities=related_entities,
+            )
+            transmissions[idx] = apply_scenario_policy(row, decision)
+            transmissions[idx]["scenario_policy"] = decision
+            event["transmission"] = transmissions[idx]
     elif persisted_events:
         llm_calls.append({"step": "event_transmission", "llm_called": False, "llm_status": "skipped"})
 
@@ -1444,6 +1459,15 @@ def run_brain(
             persisted_links.append(stored_link)
         claim["evidence_links"] = persisted_links
 
+    financial_impacts = []
+    for item in impacts_from_objects(
+        drivers=persisted_drivers,
+        claims=persisted_claims,
+        transmissions=transmissions,
+        allowed_ids=allowed,
+    ):
+        financial_impacts.append(brain.insert_financial_impact({**item, "ticker": symbol, "run_id": run_id}))
+
     pm_claims = []
     for row in persisted_claims:
         stored = brain.get_claim(row["claim_id"]) or {}
@@ -1629,5 +1653,6 @@ def run_brain(
         "events": persisted_events,
         "exposures": persisted_exposures,
         "transmissions": transmissions,
+        "financial_impacts": financial_impacts,
         "run_mode": run_mode,
     }

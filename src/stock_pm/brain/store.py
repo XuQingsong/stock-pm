@@ -1214,4 +1214,56 @@ class BrainStore:
         query += " ORDER BY created_at DESC"
         return self._execute(query, params)
 
+    def insert_financial_impact(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "impact_id": row.get("impact_id") or new_id("bfi"),
+            "ticker": str(row["ticker"]).upper(),
+            "object_type": row.get("object_type") or "driver",
+            "object_id": row.get("object_id") or "",
+            "metric": row.get("metric") or "",
+            "direction": row.get("direction"),
+            "magnitude_range": row.get("magnitude_range"),
+            "time_horizon": row.get("time_horizon"),
+            "confidence": row.get("confidence"),
+            "mechanism": row.get("mechanism") or "",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "direction_only": bool(row.get("direction_only", True)),
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.financial_impacts[stored["impact_id"]] = stored
+            return _copy(stored)
+        payload = {**stored, "magnitude_range": _jsonb(stored["magnitude_range"])}
+        out = self._one(
+            """
+            INSERT INTO brain_financial_impacts (
+                impact_id, ticker, object_type, object_id, metric, direction, magnitude_range,
+                time_horizon, confidence, mechanism, evidence_ids, direction_only, run_id, created_at
+            ) VALUES (
+                %(impact_id)s, %(ticker)s, %(object_type)s, %(object_id)s, %(metric)s, %(direction)s,
+                %(magnitude_range)s, %(time_horizon)s, %(confidence)s, %(mechanism)s, %(evidence_ids)s,
+                %(direction_only)s, %(run_id)s, %(created_at)s
+            ) RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
+
+    def list_financial_impacts(self, ticker: str, *, run_id: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.financial_impacts.values() if row.get("ticker") == symbol]
+            if run_id:
+                rows = [row for row in rows if row.get("run_id") == run_id]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_financial_impacts WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if run_id:
+            query += " AND run_id = %(run_id)s"
+            params["run_id"] = run_id
+        return self._execute(query, params)
+
+
 

@@ -20,6 +20,8 @@ from stock_pm.brain.events import build_event
 from stock_pm.brain.exposure import infer_exposure, may_affect_company_claim, related_entity_cannot_prove_issuer
 from stock_pm.brain.knowledge import classify_information
 from stock_pm.brain.state_layer import make_state_key, normalize_state
+from stock_pm.brain.financial_bridge import normalize_financial_impact
+from stock_pm.brain.scenario import apply_scenario_policy, qualifies_for_base
 from stock_pm.brain.transmission import validate_transmission
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
@@ -285,5 +287,59 @@ def test_unsupported_transmission_cannot_leap() -> None:
     )
     assert blocked["affected_claims"] == []
     assert blocked["scenario_only"] is True
+
+
+def test_one_event_defaults_to_scenario_only() -> None:
+    evidence = [{"id": "rev_news", "fact": "A reporter said demand was strong", "source_url": "https://www.reuters.com/a", "source_type": "web_search"}]
+    decision = qualifies_for_base(
+        ticker="AVGO",
+        event={"title": "Demand chatter"},
+        transmission={"base_case_change": True, "scenario_only": False},
+        evidence_rows=evidence,
+    )
+    assert decision["scenario_only"] is True
+    assert decision["base_update_allowed"] is False
+    applied = apply_scenario_policy({"base_case_change": True, "scenario_only": False}, decision)
+    assert applied["scenario_only"] is True
+    assert applied["base_case_change"] is False
+
+
+def test_persistent_evidence_can_update_base() -> None:
+    evidence = [
+        {"id": "rev_10q", "fact": "Management guidance reported continued AI semiconductor demand", "source_url": "https://www.sec.gov/avgo-10q", "source": "sec.gov", "source_type": "sec_filing"},
+        {"id": "rev_2", "fact": "Reported results followed through on prior guidance", "source_url": "https://www.reuters.com/avgo-results", "source_type": "web_search"},
+    ]
+    decision = qualifies_for_base(
+        ticker="AVGO",
+        event={"title": "Guidance and reported results"},
+        transmission={"base_case_change": True},
+        evidence_rows=evidence,
+    )
+    assert decision["persistence_confirmed"] is True
+    assert decision["base_update_allowed"] is True
+    applied = apply_scenario_policy({"base_case_change": True}, decision)
+    assert applied["base_case_change"] is True
+    assert applied["scenario_only"] is False
+
+
+def test_financial_impact_direction_without_magnitude() -> None:
+    item = normalize_financial_impact(
+        {"metric": "revenue", "direction": "up", "magnitude_range": {"low": 0.1, "high": 0.2}, "evidence_ids": []},
+        allowed_ids={"rev_1"},
+        object_type="driver",
+        object_id="bdrv_1",
+    )
+    assert item is not None
+    assert item["direction"] == "up"
+    assert item["magnitude_range"] is None
+    assert item["direction_only"] is True
+    grounded = normalize_financial_impact(
+        {"metric": "gross_margin", "direction": "up", "magnitude_range": "100-200bps", "evidence_ids": ["rev_1"]},
+        allowed_ids={"rev_1"},
+        object_type="driver",
+        object_id="bdrv_1",
+    )
+    assert grounded["direction_only"] is False
+    assert grounded["magnitude_range"] == "100-200bps"
 
 
