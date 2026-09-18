@@ -227,6 +227,13 @@ def test_case1_duplicate_news_stops_at_l0() -> None:
     assert result["glm53_called"] is False
     assert "event_extract" not in fake.calls
     assert "change_proposals" not in fake.calls
+    trace = result["trace"]
+    assert trace["duplicate"] is True
+    assert trace["glm53_called"] is False
+    assert trace["full_review_triggered"] is False
+    assert "latency_ms" in trace
+    assert "token_usage" in trace
+    assert "proposal_decisions" in trace
 
 
 def test_case2_non_material_news_skips_glm53() -> None:
@@ -347,3 +354,24 @@ def test_incremental_critic_does_not_reload_whole_brain() -> None:
     assert scoped["scope"] == "incremental"
     assert critic_should_expand(proposals=[{"object_type": "company_state"}]) is False
     assert critic_should_expand(proposals=[{"object_type": "core_claim"}, {"object_type": "core_claim"}]) is True
+
+
+def test_context_miss_records_related_objects_not_in_snapshot() -> None:
+    from stock_pm.brain.context_miss import find_context_misses
+
+    misses = find_context_misses(
+        event={"title": "Google custom ASIC order", "fact": "Google expanded a Broadcom ASIC order.", "entities": ["Google"]},
+        snapshot={"states": [], "drivers": [], "claims": [], "evidence": [], "history": [], "causal_edges": []},
+        brain={
+            "states": [{"state_id": "bst_google", "name": "Google customer exposure", "statement": "Google is an ASIC customer."}],
+            "drivers": [{"driver_id": "bdrv_conc", "canonical_key": "customer_concentration", "name": "Hyperscaler concentration"}],
+            "claims": [{"claim_id": "bclm_x", "title": "Tax rate", "statement": "Tax is not the debate."}],
+            "evidence": [{"id": "rev_google", "fact": "Google confirmed a Broadcom custom ASIC order."}],
+            "history": [],
+            "causal_edges": [],
+        },
+    )
+    kinds = {row["kind"] for row in misses}
+    assert "state" in kinds
+    assert "evidence" in kinds
+    assert all(row["kind"] != "claim" for row in misses)

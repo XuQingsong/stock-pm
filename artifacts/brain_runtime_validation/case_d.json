@@ -1,0 +1,945 @@
+{
+  "case_id": "D",
+  "name": "重要但未经确认的 rumor",
+  "historical_basis": "Markets have repeatedly priced unconfirmed Google in-house silicon / TPU order-cut rumors against Broadcom. The rumor is decision-relevant if true, but unconfirmed.",
+  "input": {
+    "kind": "news",
+    "event_id": "bev_val_case_d",
+    "event_key": "google_may_reduce_avgo_orders_rumor",
+    "title": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+    "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "url": "https://www.theinformation.com/articles/google-may-cut-broadcom-tpu-orders-2026",
+    "source": "The Information (unconfirmed)",
+    "published_at": "2026-09-11T18:05:00+00:00",
+    "event_type": "customer",
+    "entities": [
+      "Google",
+      "Broadcom"
+    ],
+    "confidence": "low",
+    "fact_reliability": "rumor",
+    "confirmed": false
+  },
+  "l0_why": "stop=False reason=pass duplicate=False",
+  "l0": {
+    "duplicate": null,
+    "stop": false,
+    "stop_reason": null,
+    "event_type": "customer",
+    "source_tier": 3,
+    "fingerprint": "bevfp_72cb7f4042bde970025a"
+  },
+  "glm52_extract": {
+    "called": true,
+    "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "event_type": "customer",
+    "novelty": "new",
+    "entities": [
+      "Google",
+      "Broadcom"
+    ],
+    "material": true,
+    "fact_reliability": "rumor",
+    "possible_affected": [
+      "Base Case",
+      "Core Claims",
+      "Exposure: AVGO Google ASIC revenue"
+    ],
+    "reason": "Unconfirmed rumor of potential reduction in Google TPU orders could materially affect AVGO's custom silicon revenue base case, though reliability is low and unconfirmed."
+  },
+  "materiality": {
+    "material": true,
+    "reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+    "layer": "material"
+  },
+  "affected_objects": {
+    "states": [
+      "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+      "bst_21b14d3978024a2b8a6e622e84d40fdc",
+      "bst_154e6e1ddc4f4970a61cdb2798b0fa51"
+    ],
+    "drivers": [
+      "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+      "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+      "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+      "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+    ],
+    "claims": [
+      "bclm_f4454cfe04e94211a79b23116bcf5de8",
+      "bclm_2f3b915b62064c8a98300c530fa331ff",
+      "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+      "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+      "bclm_426dd93ffbfa4167ab49970c97da681f"
+    ],
+    "exposures": []
+  },
+  "snapshot": {
+    "targeted": true,
+    "full_brain": false,
+    "states": [
+      {
+        "state_id": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "name": "Q3 FY2026 results",
+        "statement": "Broadcom's Q3 FY2026 (period ended 2026-08-02) revenue was $29.6 billion, up 86% YoY, with GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+        "confidence": "high"
+      },
+      {
+        "state_id": "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+        "name": "EPS estimate misses",
+        "statement": "Reported EPS came in below the estimate in each of the last three quarters (Q1 FY2026: 1.50 vs 1.67; Q2: 1.91 vs 2.02; Q3: 2.68 vs 2.83) despite strong revenue growth (from earnings history in reported financials; estim…",
+        "confidence": "medium"
+      },
+      {
+        "state_id": "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "name": "Negative post-earnings price reactions",
+        "statement": "Shares fell 12.59% the day after Q2 FY2026 earnings (2026-06-03, -12.11% vs QQQ, -10.49% vs sector) and 2.74% after Q3 (2026-09-02, -3.93% vs QQQ), with Q2 volume at 3.5x the 20-day average (from price reaction history…",
+        "confidence": "high"
+      },
+      {
+        "state_id": "bst_154e6e1ddc4f4970a61cdb2798b0fa51",
+        "name": "Valuation snapshot",
+        "statement": "At $339.51 (2026-09-16) and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with TTM revenue growth of 48.69% and EPS growth of 215.29%; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable (reported financials).",
+        "confidence": "high"
+      }
+    ],
+    "drivers": [
+      {
+        "driver_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "canonical_key": "hyperscaler_customer_concentration",
+        "name": "Hyperscaler customer concentration",
+        "current_state": "AI accelerator and networking demand is described as 'very strong', but customer-level revenue, order pipeline, and concentration ratios are not disclosed in the available evidence."
+      },
+      {
+        "driver_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "canonical_key": "valuation_multiple_ai_dependency",
+        "name": "Valuation multiple dependence on AI growth persistence",
+        "current_state": "At $339.51 and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with 48.69% TTM revenue growth; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable. Shares fell after each of the last two earnings reports despite…"
+      },
+      {
+        "driver_id": "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "canonical_key": "balance_sheet_leverage_deleveraging",
+        "name": "Balance sheet leverage and deleveraging path",
+        "current_state": "Broadcom priced cash tender offers for certain outstanding notes in June 2026, indicating active management of a leveraged balance sheet; total debt, leverage ratios, interest expense, and free cash flow are not quantif…"
+      },
+      {
+        "driver_id": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "canonical_key": "gaap_non_gaap_earnings_gap",
+        "name": "GAAP to non-GAAP earnings gap",
+        "current_state": "Q3 GAAP operating income of $16.0B versus non-GAAP $20.1B (~$4.1B gap); GAAP operating margin 53.92% versus 66% non-GAAP guided. Reported EPS has come in below estimates in each of the last three quarters despite 85%+ r…"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "title": "AI semiconductor demand durability sets the length of the growth ramp",
+        "status": "partially_supported",
+        "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,' and secondary repo…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+        "status": "partially_supported",
+        "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan to double AI semicon…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "title": "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle",
+        "status": "unverified",
+        "statement": "Broadcom's Q3 FY2026 earnings release (Exhibit 99.1, dated 2026-09-02) reports quarterly revenue of $29.6 billion, with management characterizing AI accelerator and networking demand as 'very strong'. The assertions tha…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "title": "The premium multiple is conditional on the AI ramp persisting",
+        "status": "unverified",
+        "statement": "Broadcom's Q3 FY2026 earnings release (primary) describes AI accelerator and networking demand as 'very strong' and references Q3 AI semiconductor revenue (the figure is truncated in the available excerpt), and the shar…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "title": "AI is approaching a majority of revenue, tying company economics to one cycle",
+        "status": "partially_supported",
+        "statement": "Broadcom discloses AI semiconductor revenue as a distinct metric, and management characterized AI accelerators and networking demand as 'very strong' in the Q3 FY2026 earnings release; third-party reporting indicates Br…",
+        "is_core": true
+      }
+    ],
+    "exposures": [],
+    "evidence": [],
+    "counter_evidence": [
+      {
+        "link_id": "bcel_f28a1ba132274cf6be129e70dcaa98f4",
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "evidence_id": "rev_marvell_hyperscaler_win_in_claim",
+        "direction": "oppose",
+        "reason": "The golden claim itself cites a hyperscaler awarding custom AI chip work to Marvell."
+      }
+    ],
+    "history": [
+      {
+        "history_id": "bhis_329f7a44c6bc40d3875e6209402a2a95",
+        "object_type": "event_impact",
+        "object_id": "bev_5cd26192f718459da0ef48f8de59f108",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_bb5181a74e5542e7a468c99242a58c51",
+        "object_type": "event_impact",
+        "object_id": "bev_6fb76dfe4d8746de8f036faf02795496",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_f0acd200ee404f3ea6635dc998d3b30d",
+        "object_type": "event_impact",
+        "object_id": "bev_eb255a9f880b424a993cb68e40b59ebf",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_2cadecea49824e098e4bc48945beb857",
+        "object_type": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "reason": "statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_4faaafa5350242deb1262d9679cac9fb",
+        "object_type": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_8db2c15fa44a4f5ab421fdee07767d4f",
+        "object_type": "claim",
+        "object_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_401290d704344c84810d82e831c4b0cf",
+        "object_type": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_3074f703ec394825a9071b0d5a618212",
+        "object_type": "claim",
+        "object_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "reason": "statement materially changed; decisive evidence changed"
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_4814164084bd473f848503ecbcac612c",
+        "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_bd415554a693416596a520f0576687b3",
+        "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_37c8c2f2dccb4ad8ab4c0296e8cabd22",
+        "from_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "statement": "AI revenue mix concentration informs core claim bclm_426dd93ffbfa4167ab49970c97da681f.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_a598992e321346439ae1414fd290d602",
+        "from_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "statement": "Non-AI semiconductor and subscription revenue durability informs core claim bclm_426dd93ffbfa4167ab49970c97da681f.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_877e7fe33d9b45009ee1d8e83d371c97",
+        "from_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "statement": "Non-GAAP operating margin sustainability informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_77a803c71b064954a61be00b8a87f80e",
+        "from_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "to_node": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "statement": "Valuation multiple dependence on AI growth persistence informs core claim bclm_a63762a2ab4f4410ad923ea9b1002c53.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_8da3e51b401547048afa40c4fd39d94e",
+        "from_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "statement": "GAAP to non-GAAP earnings gap informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24.",
+        "status": "supported"
+      }
+    ],
+    "shadows": [],
+    "counts": {
+      "states": 4,
+      "drivers": 4,
+      "claims": 5,
+      "exposures": 0,
+      "evidence": 0,
+      "counter_evidence": 1,
+      "history": 8,
+      "causal_edges": 7
+    }
+  },
+  "glm53_called": true,
+  "glm53_saw": {
+    "targeted": true,
+    "full_brain": false,
+    "states": [
+      {
+        "state_id": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "name": "Q3 FY2026 results",
+        "statement": "Broadcom's Q3 FY2026 (period ended 2026-08-02) revenue was $29.6 billion, up 86% YoY, with GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion.",
+        "confidence": "high"
+      },
+      {
+        "state_id": "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+        "name": "EPS estimate misses",
+        "statement": "Reported EPS came in below the estimate in each of the last three quarters (Q1 FY2026: 1.50 vs 1.67; Q2: 1.91 vs 2.02; Q3: 2.68 vs 2.83) despite strong revenue growth (from earnings history in reported financials; estim…",
+        "confidence": "medium"
+      },
+      {
+        "state_id": "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "name": "Negative post-earnings price reactions",
+        "statement": "Shares fell 12.59% the day after Q2 FY2026 earnings (2026-06-03, -12.11% vs QQQ, -10.49% vs sector) and 2.74% after Q3 (2026-09-02, -3.93% vs QQQ), with Q2 volume at 3.5x the 20-day average (from price reaction history…",
+        "confidence": "high"
+      },
+      {
+        "state_id": "bst_154e6e1ddc4f4970a61cdb2798b0fa51",
+        "name": "Valuation snapshot",
+        "statement": "At $339.51 (2026-09-16) and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with TTM revenue growth of 48.69% and EPS growth of 215.29%; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable (reported financials).",
+        "confidence": "high"
+      }
+    ],
+    "drivers": [
+      {
+        "driver_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "canonical_key": "hyperscaler_customer_concentration",
+        "name": "Hyperscaler customer concentration",
+        "current_state": "AI accelerator and networking demand is described as 'very strong', but customer-level revenue, order pipeline, and concentration ratios are not disclosed in the available evidence."
+      },
+      {
+        "driver_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "canonical_key": "valuation_multiple_ai_dependency",
+        "name": "Valuation multiple dependence on AI growth persistence",
+        "current_state": "At $339.51 and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with 48.69% TTM revenue growth; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable. Shares fell after each of the last two earnings reports despite…"
+      },
+      {
+        "driver_id": "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "canonical_key": "balance_sheet_leverage_deleveraging",
+        "name": "Balance sheet leverage and deleveraging path",
+        "current_state": "Broadcom priced cash tender offers for certain outstanding notes in June 2026, indicating active management of a leveraged balance sheet; total debt, leverage ratios, interest expense, and free cash flow are not quantif…"
+      },
+      {
+        "driver_id": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "canonical_key": "gaap_non_gaap_earnings_gap",
+        "name": "GAAP to non-GAAP earnings gap",
+        "current_state": "Q3 GAAP operating income of $16.0B versus non-GAAP $20.1B (~$4.1B gap); GAAP operating margin 53.92% versus 66% non-GAAP guided. Reported EPS has come in below estimates in each of the last three quarters despite 85%+ r…"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "title": "AI semiconductor demand durability sets the length of the growth ramp",
+        "status": "partially_supported",
+        "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,' and secondary repo…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+        "status": "partially_supported",
+        "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan to double AI semicon…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "title": "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle",
+        "status": "unverified",
+        "statement": "Broadcom's Q3 FY2026 earnings release (Exhibit 99.1, dated 2026-09-02) reports quarterly revenue of $29.6 billion, with management characterizing AI accelerator and networking demand as 'very strong'. The assertions tha…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "title": "The premium multiple is conditional on the AI ramp persisting",
+        "status": "unverified",
+        "statement": "Broadcom's Q3 FY2026 earnings release (primary) describes AI accelerator and networking demand as 'very strong' and references Q3 AI semiconductor revenue (the figure is truncated in the available excerpt), and the shar…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "title": "AI is approaching a majority of revenue, tying company economics to one cycle",
+        "status": "partially_supported",
+        "statement": "Broadcom discloses AI semiconductor revenue as a distinct metric, and management characterized AI accelerators and networking demand as 'very strong' in the Q3 FY2026 earnings release; third-party reporting indicates Br…",
+        "is_core": true
+      }
+    ],
+    "exposures": [],
+    "evidence": [],
+    "counter_evidence": [
+      {
+        "link_id": "bcel_f28a1ba132274cf6be129e70dcaa98f4",
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "evidence_id": "rev_marvell_hyperscaler_win_in_claim",
+        "direction": "oppose",
+        "reason": "The golden claim itself cites a hyperscaler awarding custom AI chip work to Marvell."
+      }
+    ],
+    "history": [
+      {
+        "history_id": "bhis_329f7a44c6bc40d3875e6209402a2a95",
+        "object_type": "event_impact",
+        "object_id": "bev_5cd26192f718459da0ef48f8de59f108",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_bb5181a74e5542e7a468c99242a58c51",
+        "object_type": "event_impact",
+        "object_id": "bev_6fb76dfe4d8746de8f036faf02795496",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_f0acd200ee404f3ea6635dc998d3b30d",
+        "object_type": "event_impact",
+        "object_id": "bev_eb255a9f880b424a993cb68e40b59ebf",
+        "reason": "event_transmission"
+      },
+      {
+        "history_id": "bhis_2cadecea49824e098e4bc48945beb857",
+        "object_type": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "reason": "statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_4faaafa5350242deb1262d9679cac9fb",
+        "object_type": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_8db2c15fa44a4f5ab421fdee07767d4f",
+        "object_type": "claim",
+        "object_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_401290d704344c84810d82e831c4b0cf",
+        "object_type": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_3074f703ec394825a9071b0d5a618212",
+        "object_type": "claim",
+        "object_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "reason": "statement materially changed; decisive evidence changed"
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_4814164084bd473f848503ecbcac612c",
+        "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_bd415554a693416596a520f0576687b3",
+        "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_37c8c2f2dccb4ad8ab4c0296e8cabd22",
+        "from_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "statement": "AI revenue mix concentration informs core claim bclm_426dd93ffbfa4167ab49970c97da681f.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_a598992e321346439ae1414fd290d602",
+        "from_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "statement": "Non-AI semiconductor and subscription revenue durability informs core claim bclm_426dd93ffbfa4167ab49970c97da681f.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_877e7fe33d9b45009ee1d8e83d371c97",
+        "from_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "statement": "Non-GAAP operating margin sustainability informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_77a803c71b064954a61be00b8a87f80e",
+        "from_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "to_node": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "statement": "Valuation multiple dependence on AI growth persistence informs core claim bclm_a63762a2ab4f4410ad923ea9b1002c53.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_8da3e51b401547048afa40c4fd39d94e",
+        "from_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "statement": "GAAP to non-GAAP earnings gap informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24.",
+        "status": "supported"
+      }
+    ],
+    "shadows": [],
+    "counts": {
+      "states": 4,
+      "drivers": 4,
+      "claims": 5,
+      "exposures": 0,
+      "evidence": 0,
+      "counter_evidence": 1,
+      "history": 8,
+      "causal_edges": 7
+    }
+  },
+  "proposals": [
+    {
+      "object_type": "shadow_state",
+      "object_id": "bshd_avgo_google_tpu_order_reduction_rumor",
+      "source_kind": "rumor",
+      "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, anonymous sources, tier-3 source), so per rules it must not modify Current State, Value Drivers, Core Claims, or the Base Case — the event's possible_affected lis…",
+      "to": {
+        "ticker": "AVGO",
+        "name": "Shadow: Google may reduce Broadcom custom TPU/ASIC orders",
+        "statement": "Unconfirmed report (The Information, 2026-09-11, anonymous sources, source_tier 3, unknown source relationship) that Google may reduce Broadcom custom ASIC/TPU orders as it expands in-house silicon. Neither Google nor Broadcom has confirmed; no order volumes, revenue exposure, or timeline are disclosed. The report postdates Q3 FY2026 earnings (2026-09-02), so reported results contain no signal on it. If confirmed, it would be direct negative evidence on the hyperscaler customer concentration driver — in-house silicon substitution by a major AI customer, the exact loss-of-buyer mechanism the Brain already flags as the key risk to the guided AI ramp.",
+        "direction": "negative",
+        "confidence": "low",
+        "status": "unconfirmed",
+        "source_url": "https://www.theinformation.com/articles/google-may-cut-broadcom-tpu-orders-2026",
+        "reported_at": "2026-09-11T18:05:00+00:00",
+        "linked_driver_ids": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+        ],
+        "linked_claim_ids": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        ],
+        "promotion_criteria": [
+          "Public confirmation from Google or Broadcom (statement, earnings commentary, or filing)",
+          "Corroboration by an independent higher-tier source with named sourcing or data",
+          "Order, allocation, or supply-chain data confirming reduced Google TPU volumes at Broadcom",
+          "Quantification of Google's share of AVGO AI semiconductor revenue"
+        ],
+        "demotion_criteria": [
+          "Explicit denial by either company",
+          "No corroboration within two quarters"
+        ]
+      }
+    },
+    {
+      "object_type": "research_question",
+      "object_id": "brq_avgo_google_asic_revenue_exposure",
+      "source_kind": "rumor",
+      "reason": "A rumor cannot advance to claims without verification and exposure sizing; this question defines the evidence required before any Base Case or Core Claim impact could even be considered.",
+      "to": {
+        "ticker": "AVGO",
+        "question": "What share of Broadcom's AI semiconductor revenue (and total revenue) is attributable to Google custom TPU/ASIC orders, and is there any confirmation, denial, or corroborating order/supply-chain evidence for the reported reduction?",
+        "priority": "high",
+        "related_driver_ids": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+        ],
+        "related_claim_ids": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff"
+        ],
+        "why_it_matters": "The rumor's materiality cannot be sized without the exposure number. Current evidence attributes the guided AI ramp (doubling AI semiconductor revenue in each of the next two years) to Anthropic and OpenAI; Google's role and customer-level revenue are undisclosed. Verification status also gates whether the shadow state can ever be promoted toward the concentration claim."
+      }
+    },
+    {
+      "object_type": "market_attention",
+      "object_id": "bmat_avgo_google_tpu_rumor_reaction",
+      "source_kind": "rumor",
+      "reason": "The rumor is unconfirmed, but the market's reaction is a low-cost credibility signal given documented sensitivity to hyperscaler customer news. Monitoring requires no modification to states, drivers, or claims.",
+      "to": {
+        "ticker": "AVGO",
+        "focus": "AVGO price and volume reaction to the unconfirmed Google TPU order reduction report (published 2026-09-11) and any follow-up reporting or company comments.",
+        "context": "AVGO has shown high sensitivity to AI-customer news: -3.9% on a hyperscaler awarding custom AI chip work to Marvell, and -12.6% / -2.7% after the last two earnings reports despite strong results, while trading at 43.3x TTM EPS.",
+        "watch_items": [
+          "Price/volume vs QQQ and sector on 2026-09-11 and subsequent sessions",
+          "Any Google or Broadcom public statement",
+          "Corroborating or contradicting reports from tier-1/tier-2 sources"
+        ]
+      }
+    }
+  ],
+  "phase0": {
+    "approve": [
+      "shadow_state:The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, anonymous sources, tier-3 source), so per rules it must not modify Current State, Value Drivers, Core Claims,…",
+      "research_question:A rumor cannot advance to claims without verification and exposure sizing; this question defines the evidence required before any Base Case or Core Claim impact could even be consid…",
+      "market_attention:The rumor is unconfirmed, but the market's reaction is a low-cost credibility signal given documented sensitivity to hyperscaler customer news. Monitoring requires no modification to…"
+    ],
+    "reject": [],
+    "requires_review": [],
+    "auto_commit_allowed": true,
+    "committed": [
+      {
+        "kind": "shadow",
+        "shadow_id": "bshd_377d312bb14b434e804e8b7c4ee66f32",
+        "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+      },
+      {
+        "kind": "question",
+        "question_id": "brq_e91d1c796fe04480a1398fcc7609a271"
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_6c29cc7f327948a9b3d62dd2ace7767a",
+        "object_id": "bshd_avgo_google_tpu_order_reduction_rumor",
+        "decision": "approve",
+        "reason_code": ""
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_8b1d9f0980924988b6928b5e40ecf56b",
+        "object_id": "brq_avgo_google_asic_revenue_exposure",
+        "decision": "approve",
+        "reason_code": ""
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_dc00f833080f4baf88a7ef7044fe943b",
+        "object_id": "bmat_avgo_google_tpu_rumor_reaction",
+        "decision": "approve",
+        "reason_code": ""
+      }
+    ],
+    "current_state_unchanged": true,
+    "core_claims_unchanged": true
+  },
+  "brain_changed": [
+    "shadow_state:bshd_avgo_google_tpu_order_reduction_rumor",
+    "research_question:brq_avgo_google_asic_revenue_exposure",
+    "market_attention:bmat_avgo_google_tpu_rumor_reaction",
+    "shadow:bshd_377d312bb14b434e804e8b7c4ee66f32",
+    "question:brq_e91d1c796fe04480a1398fcc7609a271"
+  ],
+  "proposal_decisions": {
+    "approve": 3,
+    "reject": 0,
+    "requires_review": 0,
+    "items": [
+      {
+        "proposal_id": "bcpr_6c29cc7f327948a9b3d62dd2ace7767a",
+        "object_type": "shadow_state",
+        "object_id": "bshd_avgo_google_tpu_order_reduction_rumor",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, anonymous sources, tier-3 source), so per rules it must not modify Current State, Value Drivers, Core Claims, or the Base…"
+      },
+      {
+        "proposal_id": "bcpr_8b1d9f0980924988b6928b5e40ecf56b",
+        "object_type": "research_question",
+        "object_id": "brq_avgo_google_asic_revenue_exposure",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "A rumor cannot advance to claims without verification and exposure sizing; this question defines the evidence required before any Base Case or Core Claim impact could even be considered."
+      },
+      {
+        "proposal_id": "bcpr_dc00f833080f4baf88a7ef7044fe943b",
+        "object_type": "market_attention",
+        "object_id": "bmat_avgo_google_tpu_rumor_reaction",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "The rumor is unconfirmed, but the market's reaction is a low-cost credibility signal given documented sensitivity to hyperscaler customer news. Monitoring requires no modification to states, drivers,…"
+      }
+    ]
+  },
+  "critic_scope": "incremental",
+  "full_review_triggered": false,
+  "full_review_reason": null,
+  "path": "incremental",
+  "trace": {
+    "event_id": "bev_val_case_d",
+    "ticker": "AVGO",
+    "path": "incremental",
+    "l0": {
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "fingerprint": "bevfp_72cb7f4042bde970025a",
+      "source_tier": 3,
+      "event_type": "customer"
+    },
+    "duplicate": false,
+    "l1_event_type": "customer",
+    "novelty": "new",
+    "materiality": true,
+    "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+    "affected_objects": {
+      "states": [
+        "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+        "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "bst_154e6e1ddc4f4970a61cdb2798b0fa51"
+      ],
+      "drivers": [
+        "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+      ],
+      "claims": [
+        "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "bclm_426dd93ffbfa4167ab49970c97da681f"
+      ],
+      "exposures": []
+    },
+    "snapshot_objects": {
+      "states": [
+        "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+        "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "bst_154e6e1ddc4f4970a61cdb2798b0fa51"
+      ],
+      "drivers": [
+        "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+      ],
+      "claims": [
+        "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "bclm_426dd93ffbfa4167ab49970c97da681f"
+      ],
+      "exposures": [],
+      "shadows": [],
+      "causal_edges": [
+        "bced_4814164084bd473f848503ecbcac612c",
+        "bced_bd415554a693416596a520f0576687b3",
+        "bced_37c8c2f2dccb4ad8ab4c0296e8cabd22",
+        "bced_a598992e321346439ae1414fd290d602",
+        "bced_877e7fe33d9b45009ee1d8e83d371c97",
+        "bced_77a803c71b064954a61be00b8a87f80e",
+        "bced_8da3e51b401547048afa40c4fd39d94e"
+      ]
+    },
+    "snapshot_evidence_count": 0,
+    "snapshot_counter_evidence_count": 1,
+    "snapshot_history_count": 8,
+    "snapshot_size": 29,
+    "full_brain_size": 47,
+    "snapshot_reduction": 0.383,
+    "glm53_called": true,
+    "glm52_called": true,
+    "proposal_count": 3,
+    "proposal_decisions": {
+      "approve": 3,
+      "reject": 0,
+      "requires_review": 0,
+      "items": [
+        {
+          "proposal_id": "bcpr_6c29cc7f327948a9b3d62dd2ace7767a",
+          "object_type": "shadow_state",
+          "object_id": "bshd_avgo_google_tpu_order_reduction_rumor",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, anonymous sources, tier-3 source), so per rules it must not modify Current State, Value Drivers, Core Claims, or the Base…"
+        },
+        {
+          "proposal_id": "bcpr_8b1d9f0980924988b6928b5e40ecf56b",
+          "object_type": "research_question",
+          "object_id": "brq_avgo_google_asic_revenue_exposure",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "A rumor cannot advance to claims without verification and exposure sizing; this question defines the evidence required before any Base Case or Core Claim impact could even be considered."
+        },
+        {
+          "proposal_id": "bcpr_dc00f833080f4baf88a7ef7044fe943b",
+          "object_type": "market_attention",
+          "object_id": "bmat_avgo_google_tpu_rumor_reaction",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "The rumor is unconfirmed, but the market's reaction is a low-cost credibility signal given documented sensitivity to hyperscaler customer news. Monitoring requires no modification to states, drivers,…"
+        }
+      ]
+    },
+    "changed_objects": [
+      "shadow_state:bshd_avgo_google_tpu_order_reduction_rumor",
+      "research_question:brq_avgo_google_asic_revenue_exposure",
+      "market_attention:bmat_avgo_google_tpu_rumor_reaction",
+      "shadow:bshd_377d312bb14b434e804e8b7c4ee66f32",
+      "question:brq_e91d1c796fe04480a1398fcc7609a271"
+    ],
+    "critic_scope": "incremental",
+    "full_review_triggered": false,
+    "full_review_reason": null,
+    "token_usage": {
+      "input_tokens": 14340,
+      "output_tokens": 21200,
+      "total_tokens": 35540,
+      "latency_ms": 210540,
+      "calls": [
+        {
+          "step": "event_extract",
+          "role": "mechanical",
+          "model": "glm-5.2",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 470,
+          "output_tokens": 569,
+          "latency_ms": 10217,
+          "error": null
+        },
+        {
+          "step": "change_proposals",
+          "role": "reasoning",
+          "model": "glm-5.3",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 11011,
+          "output_tokens": 10096,
+          "latency_ms": 86700,
+          "error": null
+        },
+        {
+          "step": "independent_critic",
+          "role": "critic",
+          "model": "glm-5.3",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 2859,
+          "output_tokens": 10535,
+          "latency_ms": 113623,
+          "error": null
+        }
+      ]
+    },
+    "latency_ms": 210547,
+    "current_state_unchanged": true,
+    "core_claims_unchanged": true,
+    "extract_fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "extract_entities": [
+      "Google",
+      "Broadcom"
+    ]
+  },
+  "context_miss": [
+    {
+      "kind": "evidence",
+      "object_id": "rev_843a1ee827964a139673007f7c44e957",
+      "label": "Broadcom priced cash tender offers for certain outstanding notes in June 2026.",
+      "why": "Related Brain object was not in the targeted snapshot.",
+      "score": 0.04,
+      "keyword_hits": [
+        "broadcom",
+        "broadcom",
+        "broadcom"
+      ]
+    }
+  ],
+  "anomalies": [
+    {
+      "code": "snapshot_missing_key_evidence",
+      "detail": "Targeted snapshot evidence list is empty while Brain evidence exists."
+    }
+  ],
+  "llm_calls": [
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.2",
+      "prompt_hash": "6fe92f05ea08266f28d34087c23b97fd6b9267a626073334e47e9e9a7196926a",
+      "latency_ms": 10217,
+      "input_tokens": 470,
+      "output_tokens": 569,
+      "total_tokens": 1039,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "event_extract",
+      "role": "mechanical"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.3",
+      "prompt_hash": "eb2792a1e9960e2b8d8667ea556a52a704ece338bf6022fe56564f56fb97a502",
+      "latency_ms": 86700,
+      "input_tokens": 11011,
+      "output_tokens": 10096,
+      "total_tokens": 21107,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "change_proposals",
+      "role": "reasoning"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.3",
+      "prompt_hash": "c2a89edacc8d3c374f9d577691a5029c1f8b3c1b23ff815ab158f572b34a6862",
+      "latency_ms": 113623,
+      "input_tokens": 2859,
+      "output_tokens": 10535,
+      "total_tokens": 13394,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "independent_critic",
+      "role": "critic"
+    }
+  ],
+  "elapsed_ms": 210547,
+  "claim_drift": [],
+  "state_drift": [],
+  "shadows_after": [
+    {
+      "shadow_id": "bshd_377d312bb14b434e804e8b7c4ee66f32",
+      "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+      "statement": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+      "status": "open"
+    },
+    {
+      "shadow_id": "bshd_c4806c24c89c4f2ebbcc6a7134cbdd24",
+      "name": "Shadow: Google may reduce Broadcom custom TPU/ASIC orders",
+      "statement": "Unconfirmed report (The Information, 2026-09-11, anonymous sources, source_tier 3, unknown source relationship) that Google may reduce Broadcom custom ASIC/TPU orders as it expands in-house silicon. Neither Google nor B…",
+      "status": "unconfirmed"
+    }
+  ],
+  "questions_after": [
+    {
+      "question_id": "brq_e91d1c796fe04480a1398fcc7609a271",
+      "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
+      "why_it_matters": "Weak signal is a research question, not a conclusion."
+    },
+    {
+      "question_id": "brq_8aa016d281164ca699d760be2f168f10",
+      "question": "What share of Broadcom's AI semiconductor revenue (and total revenue) is attributable to Google custom TPU/ASIC orders, and is there any confirmation, denial, or corroborating order/supply-chain evidence for the reporte…",
+      "why_it_matters": "A rumor cannot advance to claims without verification and exposure sizing; this question defines the evidence required before any Base Case or Core Claim impact could even be considered."
+    },
+    {
+      "question_id": "brq_26d61dc88f6d4a98857410be46ee59d7",
+      "question": "What share of Broadcom's AI semiconductor and total revenue is attributable to Google custom TPU/ASIC orders?",
+      "why_it_matters": "The rumor's materiality depends entirely on an exposure that is not quantified anywhere in the Brain; current evidence names Anthropic and OpenAI as AI demand drivers, not Google, and customer-level revenue is undisclos…"
+    },
+    {
+      "question_id": "brq_b5130d691af3496ab2b34251daf1674d",
+      "question": "Have Google or Broadcom confirmed, denied, or commented on the report, and is there corroborating order, supply-chain, or foundry allocation data?",
+      "why_it_matters": "The report is unconfirmed, uses anonymous sources, and the source relationship is unknown; verification status gates whether the shadow state can be promoted toward the concentration claim or the Base Case."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+ping GLM layers
+wrote artifacts/brain_runtime_validation/ping.json
+running Case A 完全重复的新闻
+wrote artifacts/brain_runtime_validation/case_a.json
+  path=l0_stop material=False glm53=False misses=0 anomalies=0
+running Case B 有新内容但投资意义很低的普通新闻
+wrote artifacts/brain_runtime_validation/case_b.json
+  path=observation_memory material=False glm53=False misses=0 anomalies=0
+running Case C 明确、重要、已确认的 customer / demand event
+wrote artifacts/brain_runtime_validation/case_c.json
+  path=incremental material=True glm53=True misses=2 anomalies=1
+running Case D 重要但未经确认的 rumor
+wrote artifacts/brain_runtime_validation/case_d.json
+  path=incremental material=True glm53=True misses=1 anomalies=1
+running Case E 与已有 Core Claim 明显相关的新反面证据
+wrote artifacts/brain_runtime_validation/case_e.json
+  path=incremental material=True glm53=True misses=2 anomalies=1
+running Case F Earnings / major guidance
+wrote artifacts/brain_runtime_validation/case_f.json
+  path=full_review material=True glm53=False misses=0 anomalies=0
+Traceback (most recent call last):
+  File "/workspace/scripts/validate_brain_runtime.py", line 1051, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scripts/validate_brain_runtime.py", line 1041, in main
+    payload.update(judge(payload))
+                   ^^^^^^^^^^^^^^
+  File "/workspace/scripts/validate_brain_runtime.py", line 916, in judge
+    if d and any(row.get("object_type") in {"shadow_state", "shadow"} or "shadow" in str(row) for row in d.get("brain_changed") or []) or (
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/validate_brain_runtime.py", line 916, in <genexpr>
+    if d and any(row.get("object_type") in {"shadow_state", "shadow"} or "shadow" in str(row) for row in d.get("brain_changed") or []) or (
+                 ^^^^^^^
+AttributeError: 'str' object has no attribute 'get'

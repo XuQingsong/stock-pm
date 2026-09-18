@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from .critic import critic_context, incremental_critic_context, reconcile_critic
@@ -14,6 +15,7 @@ from .routing import resolve_brain_completers
 from .shadow import current_states_only, should_enter_shadow
 from .snapshot import build_snapshot, locate_affected_objects
 from .store import BrainStore
+from .trace import build_runtime_trace
 from .types import DEFAULT_RUN_MODE
 
 
@@ -93,22 +95,46 @@ def run_brain_update(
     glm52_called = False
     glm53_called = False
     critic_called = False
+    started = time.perf_counter()
+    full_brain_size = (
+        len(context.get("states") or [])
+        + len(context.get("drivers") or [])
+        + len(context.get("claims") or [])
+        + len(context.get("events") or [])
+        + len(context.get("evidence") or [])
+        + len(context.get("history") or [])
+        + len(context.get("causal_edges") or [])
+    )
+
+    def _finish(payload: dict[str, Any]) -> dict[str, Any]:
+        elapsed_ms = int(round((time.perf_counter() - started) * 1000))
+        payload["event_id"] = item.get("event_id") or payload.get("event_id")
+        payload["trace"] = build_runtime_trace(
+            result=payload,
+            item=item,
+            elapsed_ms=elapsed_ms,
+            full_brain_size=full_brain_size,
+        )
+        payload["elapsed_ms"] = elapsed_ms
+        return payload
 
     full_reason = full_review_reason(trigger=trigger, event=item, mode=run_mode)
     if full_reason:
-        return {
-            "ticker": symbol,
-            "path": "full_review",
-            "run_mode": "full",
-            "full_review": True,
-            "full_review_reason": full_reason,
-            "glm52_called": False,
-            "glm53_called": False,
-            "critic_called": False,
-            "stopped": False,
-            "material": True,
-            "llm_calls": [],
-        }
+        return _finish(
+            {
+                "ticker": symbol,
+                "path": "full_review",
+                "run_mode": "full",
+                "full_review": True,
+                "full_review_reason": full_reason,
+                "glm52_called": False,
+                "glm53_called": False,
+                "critic_called": False,
+                "stopped": False,
+                "material": True,
+                "llm_calls": [],
+            }
+        )
 
     l0 = process_l0(
         item,
@@ -133,21 +159,23 @@ def run_brain_update(
                     "payload": {"l0": {"duplicate": True}},
                 }
             )
-        return {
-            "ticker": symbol,
-            "path": "l0_stop",
-            "run_mode": run_mode,
-            "full_review": False,
-            "stopped": True,
-            "stop_reason": l0["stop_reason"],
-            "duplicate": True,
-            "glm52_called": False,
-            "glm53_called": False,
-            "critic_called": False,
-            "material": False,
-            "l0": l0,
-            "llm_calls": [],
-        }
+        return _finish(
+            {
+                "ticker": symbol,
+                "path": "l0_stop",
+                "run_mode": run_mode,
+                "full_review": False,
+                "stopped": True,
+                "stop_reason": l0["stop_reason"],
+                "duplicate": True,
+                "glm52_called": False,
+                "glm53_called": False,
+                "critic_called": False,
+                "material": False,
+                "l0": l0,
+                "llm_calls": [],
+            }
+        )
 
     mech, reason = resolve_brain_completers(
         completer,
@@ -206,22 +234,24 @@ def run_brain_update(
                     "payload": {"extract": extract, "gate": gate},
                 }
             )
-        return {
-            "ticker": symbol,
-            "path": "observation_memory",
-            "run_mode": run_mode,
-            "full_review": False,
-            "stopped": True,
-            "stop_reason": "non_material",
-            "material": False,
-            "materiality": gate,
-            "glm52_called": glm52_called,
-            "glm53_called": False,
-            "critic_called": False,
-            "l0": l0,
-            "extract": extract,
-            "llm_calls": llm_calls,
-        }
+        return _finish(
+            {
+                "ticker": symbol,
+                "path": "observation_memory",
+                "run_mode": run_mode,
+                "full_review": False,
+                "stopped": True,
+                "stop_reason": "non_material",
+                "material": False,
+                "materiality": gate,
+                "glm52_called": glm52_called,
+                "glm53_called": False,
+                "critic_called": False,
+                "l0": l0,
+                "extract": extract,
+                "llm_calls": llm_calls,
+            }
+        )
 
     affected = locate_affected_objects(
         extract=extract,
@@ -334,30 +364,32 @@ def run_brain_update(
         critic_result = reconcile_critic(list((payload or {}).get("issues") or []), transmissions=[])
         critic_result["scope"] = "expanded" if expand else "incremental"
 
-    return {
-        "ticker": symbol,
-        "path": "incremental",
-        "run_mode": run_mode,
-        "full_review": False,
-        "stopped": False,
-        "material": True,
-        "materiality": gate,
-        "affected": {
-            "states": [row.get("state_id") or row.get("name") for row in affected.get("states") or []],
-            "drivers": [row.get("driver_id") or row.get("canonical_key") or row.get("name") for row in affected.get("drivers") or []],
-            "claims": [row.get("claim_id") or row.get("title") for row in affected.get("claims") or []],
-            "exposures": [row.get("exposure_id") or row.get("exposure_type") for row in affected.get("exposures") or []],
-        },
-        "snapshot": snapshot,
-        "proposals": proposals,
-        "gate": gate_result,
-        "glm52_called": glm52_called,
-        "glm53_called": glm53_called,
-        "critic_called": critic_called,
-        "critic": critic_result,
-        "l0": l0,
-        "extract": extract,
-        "llm_calls": llm_calls,
-        "current_state_unchanged": gate_result.get("current_state_unchanged"),
-        "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
-    }
+    return _finish(
+        {
+            "ticker": symbol,
+            "path": "incremental",
+            "run_mode": run_mode,
+            "full_review": False,
+            "stopped": False,
+            "material": True,
+            "materiality": gate,
+            "affected": {
+                "states": [row.get("state_id") or row.get("name") for row in affected.get("states") or []],
+                "drivers": [row.get("driver_id") or row.get("canonical_key") or row.get("name") for row in affected.get("drivers") or []],
+                "claims": [row.get("claim_id") or row.get("title") for row in affected.get("claims") or []],
+                "exposures": [row.get("exposure_id") or row.get("exposure_type") for row in affected.get("exposures") or []],
+            },
+            "snapshot": snapshot,
+            "proposals": proposals,
+            "gate": gate_result,
+            "glm52_called": glm52_called,
+            "glm53_called": glm53_called,
+            "critic_called": critic_called,
+            "critic": critic_result,
+            "l0": l0,
+            "extract": extract,
+            "llm_calls": llm_calls,
+            "current_state_unchanged": gate_result.get("current_state_unchanged"),
+            "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
+        }
+    )
