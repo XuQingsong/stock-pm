@@ -35,6 +35,7 @@ from .llm_steps import (
     company_understanding,
     compact_evidence_rows,
     core_claims,
+    event_transmission,
     news_interpretation,
     normalize_claim,
     normalize_news_item,
@@ -46,6 +47,7 @@ from .quality import assess_brain_quality
 from .routing import resolve_brain_completers
 from .state_layer import match_existing_state, normalize_state
 from .store import BrainStore
+from .transmission import validate_transmission
 from .types import (
     EXA_SEARCH_BUDGET,
     FINANCIAL_EVIDENCE_DAYS,
@@ -1189,6 +1191,53 @@ def run_brain(
                 )
             )
 
+    transmissions: list[dict[str, Any]] = []
+    material_events = [row for row in persisted_events if str(row.get("materiality") or "") == "material" and not row.get("duplicate")]
+    if material_events:
+        by_event_exp = {str(row.get("event_id")): row for row in persisted_exposures if row.get("event_id")}
+        payload_t, audit_t = event_transmission(
+            reason_llm,
+            {
+                "ticker": symbol,
+                "events": [
+                    {
+                        "event_id": row.get("event_id"),
+                        "event_type": row.get("event_type"),
+                        "subject": row.get("subject"),
+                        "title": row.get("title"),
+                        "materiality": row.get("materiality"),
+                        "evidence_ids": row.get("evidence_ids") or [],
+                    }
+                    for row in material_events
+                ],
+                "exposures": persisted_exposures,
+                "states": brain.list_states(symbol, run_id=run_id),
+                "drivers": [
+                    {"driver_id": row.get("driver_id"), "canonical_key": row.get("canonical_key"), "name": row.get("name")}
+                    for row in persisted_drivers
+                ],
+                "claims": [{"claim_id": row.get("claim_id"), "title": row.get("title"), "statement": row.get("statement")} for row in persisted_claims],
+                "evidence": compact_evidence_rows(llm_evidence, limit=24),
+            },
+            allowed_ids=allowed
+            | {str(row.get("event_id")) for row in material_events}
+            | {str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")}
+            | claim_ids,
+        )
+        llm_calls.append(audit_t)
+        items = list((payload_t or {}).get("items") or [])
+        for event in material_events:
+            raw_item = next((row for row in items if str(row.get("event_id")) == str(event.get("event_id"))), items[0] if len(items) == 1 else {})
+            checked = validate_transmission(raw_item, allowed_ids=allowed, exposure=by_event_exp.get(str(event.get("event_id"))))
+            event["transmission"] = checked
+            transmissions.append({"event_id": event.get("event_id"), **checked})
+            if not checked.get("truncated"):
+                event["affected_states"] = checked.get("affected_states") or []
+                event["affected_drivers"] = checked.get("affected_drivers") or []
+                event["affected_claims"] = checked.get("affected_claims") or []
+    elif persisted_events:
+        llm_calls.append({"step": "event_transmission", "llm_called": False, "llm_status": "skipped"})
+
     counter_created: list[dict[str, Any]] = []
     for claim in list(persisted_claims):
         queries = default_counter_queries(claim, symbol)
@@ -1579,5 +1628,6 @@ def run_brain(
         "rejected_drivers": rejected_drivers,
         "events": persisted_events,
         "exposures": persisted_exposures,
+        "transmissions": transmissions,
         "run_mode": run_mode,
     }

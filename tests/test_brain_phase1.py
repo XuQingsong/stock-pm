@@ -164,6 +164,40 @@ class FakeBrainCompleter:
                 "rejected": [{"title": "headline noise", "why_not_core": "not persistent"}],
                 "insufficient_reason": None if eid else "no evidence",
             }
+        elif "STEP_ID: event_transmission" in system:
+            events = payload.get("events") or []
+            claims = payload.get("claims") or []
+            drivers = payload.get("drivers") or []
+            eids = [str(row.get("id")) for row in (payload.get("evidence") or []) if row.get("id")]
+            items = []
+            for event in events:
+                eid = ((event.get("evidence_ids") or eids) or [None])[0]
+                items.append(
+                    {
+                        "event_id": event.get("event_id"),
+                        "affected_states": [],
+                        "affected_drivers": [row.get("driver_id") for row in drivers[:1]],
+                        "affected_claims": [row.get("claim_id") for row in claims[:1]],
+                        "direction": "watch",
+                        "strength": "medium",
+                        "direct_or_indirect": "direct",
+                        "transmission_chain": [
+                            {"layer": "event", "statement": event.get("title") or "material event", "evidence_ids": [eid] if eid else []},
+                            {"layer": "state", "statement": "Operating demand state is in focus.", "evidence_ids": [eid] if eid else []},
+                            {"layer": "exposure", "statement": "Issuer has direct exposure to the reported demand update.", "evidence_ids": [eid] if eid else []},
+                            {"layer": "driver", "statement": "Demand durability remains the binding driver.", "evidence_ids": [eid] if eid else []},
+                            {"layer": "claim", "statement": "The core demand claim is the affected decision variable.", "evidence_ids": [eid] if eid else []},
+                        ],
+                        "short_term_impact": "Near-term operating narrative may move.",
+                        "long_term_impact": "Duration still unproven.",
+                        "financial_metrics_affected": ["revenue"],
+                        "scenario_only": True,
+                        "base_case_change": False,
+                        "confidence": "medium",
+                        "evidence_needed_next": "independent customer confirmation",
+                    }
+                )
+            body = {"items": items}
         elif "STEP_ID: news_interpretation" in system:
             claim_id = (claims[0] or {}).get("claim_id") if claims else None
             news0 = news[0] if news else {}

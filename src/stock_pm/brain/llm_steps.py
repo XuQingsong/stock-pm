@@ -82,6 +82,16 @@ def core_claims(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) 
     )
 
 
+def event_transmission(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    return call_step(
+        completer,
+        step="event_transmission",
+        prompt_file="event_transmission.txt",
+        user=user,
+        allowed_ids=allowed_ids,
+    )
+
+
 def news_interpretation(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     return call_step(
         completer,

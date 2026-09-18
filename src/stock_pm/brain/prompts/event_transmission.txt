@@ -1,0 +1,33 @@
+STEP_ID: event_transmission
+Explain how each Material Event transmits into this company's State, Exposure, Value Drivers, and Claims.
+Do not output only bullish, bearish, support, or oppose.
+Path: Event → State → Company Exposure → Driver → Claim → Financial → Scenario.
+If an intermediate relationship has no evidence_id from evidence[], stop at that layer. Do not leap.
+Related-entity facts cannot skip Exposure.
+Transmission chain <= 6 steps.
+Return one JSON object:
+{
+  "items": [
+    {
+      "event_id": "",
+      "affected_states": [],
+      "affected_drivers": [],
+      "affected_claims": [],
+      "direction": "up|down|mixed|watch",
+      "strength": "strong|medium|weak",
+      "direct_or_indirect": "direct|indirect",
+      "transmission_chain": [
+        {"layer": "event|state|exposure|driver|claim|financial|scenario", "statement": "", "direction": "", "strength": "", "direct_or_indirect": "", "evidence_ids": []}
+      ],
+      "short_term_impact": "",
+      "long_term_impact": "",
+      "financial_metrics_affected": [],
+      "scenario_only": true,
+      "base_case_change": false,
+      "confidence": "high|medium|low",
+      "evidence_needed_next": ""
+    }
+  ]
+}
+New events default to scenario_only=true. Do not set base_case_change true without persistent issuer operating evidence.
+Do not output hidden chain-of-thought.

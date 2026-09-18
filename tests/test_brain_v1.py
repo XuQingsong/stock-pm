@@ -20,6 +20,7 @@ from stock_pm.brain.events import build_event
 from stock_pm.brain.exposure import infer_exposure, may_affect_company_claim, related_entity_cannot_prove_issuer
 from stock_pm.brain.knowledge import classify_information
 from stock_pm.brain.state_layer import make_state_key, normalize_state
+from stock_pm.brain.transmission import validate_transmission
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
 from stock_pm.brain.pipeline import run_brain
@@ -236,4 +237,53 @@ def test_duplicate_event_fingerprint() -> None:
     second = build_event(raw, ticker="ZZZT", existing=[first])
     assert first and first["duplicate"] is False
     assert second and second["duplicate"] is True
+
+
+def test_unsupported_transmission_cannot_leap() -> None:
+    allowed = {"rev_1"}
+    leap = validate_transmission(
+        {
+            "direction": "up",
+            "transmission_chain": [
+                {"layer": "event", "statement": "Meta capex rose", "evidence_ids": ["rev_1"]},
+                {"layer": "claim", "statement": "AVGO revenue rises", "evidence_ids": ["rev_1"]},
+            ],
+            "affected_claims": ["bclm_1"],
+        },
+        allowed_ids=allowed,
+        exposure={"can_affect_claim": True},
+    )
+    assert leap["truncated"] is True
+    assert leap["reason"] == "unsupported_leap"
+    assert leap["affected_claims"] == []
+    missing = validate_transmission(
+        {
+            "transmission_chain": [
+                {"layer": "event", "statement": "Capex news", "evidence_ids": ["rev_1"]},
+                {"layer": "state", "statement": "Industry capex up", "evidence_ids": []},
+            ]
+        },
+        allowed_ids=allowed,
+        exposure={"can_affect_claim": True},
+    )
+    assert missing["reason"] == "unsupported_transmission_step"
+    bare = validate_transmission({"direction": "bullish"}, allowed_ids=allowed)
+    assert bare["valid"] is False
+    blocked = validate_transmission(
+        {
+            "transmission_chain": [
+                {"layer": "event", "statement": "Meta capex", "evidence_ids": ["rev_1"]},
+                {"layer": "state", "statement": "AI capex accelerating", "evidence_ids": ["rev_1"]},
+                {"layer": "exposure", "statement": "Unknown AVGO share", "evidence_ids": ["rev_1"]},
+                {"layer": "claim", "statement": "AVGO bullish", "evidence_ids": ["rev_1"]},
+            ],
+            "affected_claims": ["bclm_1"],
+            "affected_drivers": ["bdrv_1"],
+        },
+        allowed_ids=allowed,
+        exposure={"can_affect_claim": False, "related_only": True},
+    )
+    assert blocked["affected_claims"] == []
+    assert blocked["scenario_only"] is True
+
 
