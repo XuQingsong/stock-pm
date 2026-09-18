@@ -1,0 +1,18 @@
+STEP_ID: event_extract
+You extract and classify. You do not change Core Claims, Base Case, or PM synthesis.
+Use only the current document/news item. Do not invent numbers or contracts.
+Return one JSON object:
+{
+  "fact": "",
+  "event": "",
+  "entities": [""],
+  "event_type": "earnings|guidance|capex|product|regulation|competition|macro|mna|litigation|customer|supply|other",
+  "novelty": "new|repeat|none",
+  "confidence": "high|medium|low",
+  "fact_reliability": "direct_fact|derived_fact|opinion|estimate|signal|rumor",
+  "material": true,
+  "possible_affected": [""],
+  "reason": ""
+}
+material=false when the item is a recap, product promo, routine personnel note, or has no new fact.
+possible_affected may name State / Driver / Claim / Exposure objects, not investment conclusions.

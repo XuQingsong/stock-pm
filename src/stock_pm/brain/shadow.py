@@ -51,3 +51,41 @@ def normalize_shadow(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
 def shadow_blocks_current_state(shadow: dict[str, Any] | None) -> bool:
     status = str((shadow or {}).get("status") or "open")
     return status in {"open", "watching"}
+
+
+def is_shadow_object(row: dict[str, Any] | None) -> bool:
+    item = row or {}
+    if item.get("shadow_id"):
+        return True
+    kind = str(item.get("object_type") or item.get("state_kind") or item.get("kind") or "")
+    return kind in {"shadow", "shadow_state"}
+
+
+def current_states_only(rows: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    """Shadow State is a quarantine zone. It never appears in Current State queries."""
+    return [row for row in (rows or []) if not is_shadow_object(row)]
+
+
+def promote_shadow(shadow: dict[str, Any] | None, *, confirmed: bool = False) -> dict[str, Any] | None:
+    """Confirmed shadows may become a Current State change proposal. They never write Current State directly."""
+    item = shadow or {}
+    status = str(item.get("status") or "open")
+    if not confirmed and status != "confirmed":
+        return None
+    return {
+        "object_type": "company_state",
+        "source_kind": "shadow_confirmed",
+        "object_id": item.get("related_object_ids")[0] if item.get("related_object_ids") else "",
+        "from_payload": {},
+        "to_payload": {
+            "name": item.get("name"),
+            "statement": item.get("statement"),
+            "confidence": "medium",
+            "confirmed": True,
+        },
+        "reason": "Shadow confirmed; propose a Current State change.",
+        "evidence_ids": list(item.get("evidence_ids") or []),
+        "related_objects": [item.get("shadow_id") or "", item.get("name") or ""],
+        "confidence": "medium",
+        "fact_reliability": "direct_fact",
+    }

@@ -181,6 +181,7 @@ OBJECT_LAYER = {
     "market_driver": "market",
     "expectation": "market",
     "market_attention": "market",
+    "price_reaction": "market",
     "state": "state",
     "company_state": "state",
     "industry_state": "state",
@@ -205,6 +206,16 @@ LAYER_RANK = {
     "investment_reasoning": 4,
     "structural_knowledge": 5,
 }
+LAYER_SPEED = {
+    "observation": "fastest",
+    "market": "fast",
+    "state": "medium",
+    "investment_reasoning": "slow",
+    "structural_knowledge": "slowest",
+}
+FAST_LAYERS = ("observation", "market")
+BRAIN_RUNTIME = "phase1"
+DEFAULT_RUN_MODE = "incremental"
 PROPOSAL_DECISIONS = ("approve", "reject", "requires_review")
 SHADOW_STATUSES = ("open", "watching", "confirmed", "closed")
 CAUSAL_EDGE_STATUSES = (

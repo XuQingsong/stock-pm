@@ -62,6 +62,8 @@ def normalize_proposal(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
         "layer": object_layer(target),
         "decision": None,
         "rules": [],
+        "reason_code": str(raw.get("reason_code") or ""),
+        "related_objects": [str(item) for item in (raw.get("related_objects") or []) if str(item).strip()],
     }
 
 
@@ -155,6 +157,7 @@ def evaluate_brain_changes(
         if proposal.get("duplicate"):
             proposal["decision"] = "reject"
             proposal["rules"] = [{"rule": "duplicate_news_cannot_version_claim", "reason": "Duplicate news cannot create a new Claim version."}]
+            proposal["reason_code"] = "duplicate_news_cannot_version_claim"
             rejected.append(proposal)
             continue
         hits = constitution_violations(proposal, brain=context)
@@ -165,11 +168,13 @@ def evaluate_brain_changes(
                 "reason": "Ordinary event cannot auto-commit a large Brain rewrite.",
             }
             proposal["rules"] = [budget_rule, *hits]
+            proposal["reason_code"] = "abnormal_change_scope_requires_review"
             review.append(proposal)
             continue
         if hits:
             proposal["decision"] = "reject"
             proposal["rules"] = hits
+            proposal["reason_code"] = str(hits[0].get("rule") or "constitution_reject")
             if any(row["rule"] == "low_confidence_cannot_modify_current_state" for row in hits):
                 payload = dict(proposal.get("to_payload") or {})
                 shadows.append(normalize_shadow({**proposal, **payload}, ticker=symbol))
@@ -238,10 +243,33 @@ def evaluate_brain_changes(
                 committed.append({"kind": "question", "question_id": stored_q.get("question_id")})
         persistable = approved if auto_commit else []
         for proposal in persistable + rejected + review:
+            if not proposal.get("related_objects"):
+                related = [proposal.get("object_type") or "", proposal.get("object_id") or ""]
+                proposal["related_objects"] = [item for item in related if item]
             if hasattr(store, "insert_proposal"):
                 stored_p = store.insert_proposal({**proposal, "decision": proposal["decision"]})
+                committed.append(
+                    {
+                        "kind": "proposal",
+                        "proposal_id": stored_p.get("proposal_id"),
+                        "object_id": proposal.get("object_id"),
+                        "decision": proposal.get("decision"),
+                        "reason_code": proposal.get("reason_code") or "",
+                    }
+                )
                 if proposal.get("decision") == "approve" and auto_commit:
-                    committed.append({"kind": "proposal", "proposal_id": stored_p.get("proposal_id"), "object_id": proposal["object_id"]})
+                    if proposal.get("object_type") in {"shadow_state", "shadow"} and hasattr(store, "upsert_shadow"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_shadow({**payload, "ticker": symbol, "source_kind": proposal.get("source_kind")})
+                    if proposal.get("object_type") in {"research_question", "question"} and hasattr(store, "insert_question"):
+                        store.insert_question(
+                            {
+                                "ticker": symbol,
+                                "question": (proposal.get("to_payload") or {}).get("question") or proposal.get("reason") or "",
+                                "why_it_matters": proposal.get("reason") or "",
+                                "related_objects": proposal.get("related_objects") or [],
+                            }
+                        )
                     if hasattr(store, "insert_history"):
                         store.insert_history(
                             {

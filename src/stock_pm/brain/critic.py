@@ -100,6 +100,43 @@ def critic_context(
     }
 
 
+def incremental_critic_context(
+    base: dict[str, Any],
+    *,
+    affected_ids: set[str] | None = None,
+    expand: bool = False,
+) -> dict[str, Any]:
+    """Default Critic looks only at touched objects. Expand for high-risk or wide rewrites."""
+    if expand or not affected_ids:
+        return dict(base)
+    ids = {str(item) for item in affected_ids if str(item).strip()}
+
+    def _keep(row: dict[str, Any], keys: tuple[str, ...]) -> bool:
+        return any(str(row.get(key) or "") in ids for key in keys) or any(
+            str(item) in ids for item in (row.get("evidence_ids") or [])
+        )
+
+    scoped = dict(base)
+    scoped["states"] = [row for row in base.get("states") or [] if _keep(row, ("state_id", "name"))]
+    scoped["drivers"] = [row for row in base.get("drivers") or [] if _keep(row, ("driver_id", "canonical_key"))]
+    scoped["claims"] = [row for row in base.get("claims") or [] if _keep(row, ("claim_id",))]
+    scoped["events"] = [row for row in base.get("events") or [] if _keep(row, ("event_id",))]
+    scoped["transmissions"] = [
+        row
+        for row in base.get("transmissions") or []
+        if _keep(row, ("event_id",))
+        or any(str(item) in ids for item in (row.get("affected_claims") or []) + (row.get("affected_drivers") or []))
+    ]
+    scoped["financial_impacts"] = [row for row in base.get("financial_impacts") or [] if _keep(row, ("object_id",))]
+    scoped["evidence"] = [
+        row
+        for row in base.get("evidence") or []
+        if str(row.get("id") or row.get("evidence_id") or "") in ids
+    ]
+    scoped["scope"] = "incremental"
+    return scoped
+
+
 def normalize_issue(raw: dict[str, Any]) -> dict[str, Any] | None:
     issue_type = str(raw.get("issue_type") or "")
     if issue_type not in CRITIC_ISSUE_TYPES:

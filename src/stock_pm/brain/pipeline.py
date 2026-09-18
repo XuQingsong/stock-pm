@@ -744,7 +744,12 @@ def run_brain(
     rejected_drivers: list[dict[str, Any]] = []
     existing_drivers = brain.list_drivers(symbol)
     prior_claims_all = brain.list_active_claims(symbol)
-    rebuild = should_full_review(prior_drivers=existing_drivers, prior_claims=prior_claims_all, mode=run_mode)
+    rebuild = should_full_review(
+        prior_drivers=existing_drivers,
+        prior_claims=prior_claims_all,
+        mode=run_mode,
+        trigger="first_run" if not existing_drivers or not prior_claims_all else None,
+    )
     payload_drivers = None
     audit_drivers = {"step": "value_drivers", "llm_called": False, "llm_status": "skipped"}
     if not rebuild:

@@ -112,6 +112,26 @@ def news_interpretation(completer: Any, user: dict[str, Any], *, allowed_ids: se
     )
 
 
+def event_extract(completer: Any, user: dict[str, Any], *, allowed_ids: set[str] | None = None) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    return call_step(
+        completer,
+        step="event_extract",
+        prompt_file="event_extract.txt",
+        user=user,
+        allowed_ids=allowed_ids,
+    )
+
+
+def change_proposals(completer: Any, user: dict[str, Any], *, allowed_ids: set[str] | None = None) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    return call_step(
+        completer,
+        step="change_proposals",
+        prompt_file="change_proposals.txt",
+        user=user,
+        allowed_ids=allowed_ids,
+    )
+
+
 def claim_reasoning(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     return call_step(
         completer,

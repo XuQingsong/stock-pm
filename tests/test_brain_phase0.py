@@ -4,9 +4,9 @@ from stock_pm.brain.budget import change_scope
 from stock_pm.brain.causal import edge_can_transmit, transmit_path
 from stock_pm.brain.constitution import constitution_violations
 from stock_pm.brain.hysteresis import accumulate_claim_evidence, next_claim_status
-from stock_pm.brain.layers import classify_brain_object, object_layer, slower_than
+from stock_pm.brain.layers import classify_brain_object, is_fast_layer, layer_speed, object_layer, slower_than
 from stock_pm.brain.phase0 import evaluate_brain_changes
-from stock_pm.brain.shadow import shadow_blocks_current_state, should_enter_shadow
+from stock_pm.brain.shadow import current_states_only, promote_shadow, shadow_blocks_current_state, should_enter_shadow
 from stock_pm.brain.store import BrainStore
 from stock_pm.brain.types import BRAIN_PHASE, COGNITIVE_LAYERS, CONSTITUTION_RULES
 from stock_pm.migrate import discover_migrations
@@ -61,10 +61,19 @@ def test_phase0_objects_map_to_five_layers() -> None:
     assert object_layer("news") == "observation"
     assert object_layer("price") == "observation"
     assert object_layer("market_driver") == "market"
+    assert object_layer("price_reaction") == "market"
     assert object_layer("company_state") == "state"
     assert object_layer("core_claim") == "investment_reasoning"
     assert object_layer("value_driver") == "investment_reasoning"
     assert object_layer("causal_edge") == "structural_knowledge"
+    assert layer_speed("observation") == "fastest"
+    assert layer_speed("market_attention") == "fast"
+    assert layer_speed("company_state") == "medium"
+    assert layer_speed("core_claim") == "slow"
+    assert layer_speed("causal_edge") == "slowest"
+    assert is_fast_layer("market")
+    assert is_fast_layer("price_reaction")
+    assert not is_fast_layer("core_claim")
     assert slower_than("core_claim", "event")
     assert slower_than("causal_relationship", "core_claim")
     assert classify_brain_object({"object_type": "shadow_state"})["layer"] == "state"
@@ -366,3 +375,94 @@ def test_related_company_cannot_prove_issuer_fact() -> None:
 def test_phase0_migration_is_discovered() -> None:
     names = [item.filename for item in discover_migrations()]
     assert "migrations/0020_brain_phase0.sql" in names
+    assert "migrations/0021_brain_phase1_runtime.sql" in names
+
+
+def test_market_layer_is_fast_and_not_write_locked() -> None:
+    hits = constitution_violations(
+        {
+            "object_type": "market_attention",
+            "source_kind": "news",
+            "from_payload": {"statement": "Market was focused on AI duration."},
+            "to_payload": {"statement": "Market attention flipped to AI capex slowdown."},
+            "reason": "Today the tape started pricing a capex slowdown.",
+            "evidence_ids": ["ev_attn"],
+        }
+    )
+    assert hits == []
+    result = evaluate_brain_changes(
+        ticker="AVGO",
+        proposals=[
+            {
+                "object_type": "market_attention",
+                "source_kind": "news",
+                "from_payload": {"statement": "AI duration"},
+                "to_payload": {"statement": "AI capex slowdown"},
+                "reason": "Attention moved.",
+                "evidence_ids": ["ev_attn"],
+            }
+        ],
+    )
+    assert result["approved"]
+    assert result["approved"][0]["object_type"] == "market_attention"
+
+
+def test_shadow_state_is_isolated_from_current_state() -> None:
+    store = BrainStore()
+    store.insert_state(
+        {
+            "ticker": "AVGO",
+            "state_type": "company",
+            "name": "Google customer exposure",
+            "statement": "Google remains a named customer.",
+            "confidence": "medium",
+        }
+    )
+    store.upsert_shadow(
+        {
+            "ticker": "AVGO",
+            "name": "possible_google_order_reduction",
+            "statement": "Google may reduce orders.",
+            "confidence": "low",
+            "status": "open",
+        }
+    )
+    current = store.list_current_states("AVGO")
+    shadows = store.list_shadows("AVGO")
+    assert current and all("shadow" not in str(row.get("state_id") or "") for row in current)
+    assert current_states_only(current + shadows) == current
+    assert shadows
+    assert promote_shadow(shadows[0]) is None
+    proposal = promote_shadow(shadows[0], confirmed=True)
+    assert proposal is not None
+    assert proposal["source_kind"] == "shadow_confirmed"
+    assert proposal["object_type"] == "company_state"
+
+
+def test_rejected_proposals_are_persisted() -> None:
+    store = BrainStore()
+    _seed_claim(store)
+    result = evaluate_brain_changes(
+        ticker="AVGO",
+        proposals=[
+            {
+                "object_type": "core_claim",
+                "object_id": CORE_CLAIM["object_id"],
+                "source_kind": "news",
+                "is_core": True,
+                "from_payload": CORE_CLAIM,
+                "to_payload": {**CORE_CLAIM, "status": "challenged"},
+                "reason": "One article challenges duration.",
+                "related_objects": ["bclm_avgo_duration"],
+            }
+        ],
+        store=store,
+    )
+    assert result["rejected"]
+    stored = store.list_proposals("AVGO", decision="reject")
+    assert stored
+    assert stored[0]["decision"] == "reject"
+    assert stored[0]["reason_code"]
+    assert stored[0]["created_at"]
+    assert stored[0]["object_type"] == "core_claim"
+

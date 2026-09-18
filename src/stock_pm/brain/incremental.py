@@ -4,23 +4,83 @@ from __future__ import annotations
 
 from typing import Any
 
-FULL_TRIGGERS = ("earnings", "guidance", "structural", "first_run", "periodic")
+FULL_TRIGGERS = (
+    "earnings",
+    "guidance",
+    "mna",
+    "regulation",
+    "major_customer",
+    "base_case",
+    "periodic",
+    "manual",
+    "first_run",
+    "structural",
+)
+FULL_EVENT_TYPES = ("earnings", "guidance", "mna", "regulation")
 
 
 def should_full_review(
     *,
-    prior_drivers: list[dict[str, Any]] | None,
-    prior_claims: list[dict[str, Any]] | None,
+    prior_drivers: list[dict[str, Any]] | None = None,
+    prior_claims: list[dict[str, Any]] | None = None,
     trigger: str | None = None,
     mode: str | None = None,
+    event: dict[str, Any] | None = None,
 ) -> bool:
     if str(mode or "").lower() == "full":
         return True
-    if str(mode or "").lower() == "incremental":
-        return False
     if not prior_drivers or not prior_claims:
         return True
-    if str(trigger or "").lower() in FULL_TRIGGERS:
+    reason = full_review_reason(trigger=trigger, event=event, mode=mode)
+    return reason is not None
+
+
+def full_review_reason(
+    *,
+    trigger: str | None = None,
+    event: dict[str, Any] | None = None,
+    mode: str | None = None,
+) -> str | None:
+    if str(mode or "").lower() == "full":
+        return "manual"
+    token = str(trigger or "").lower()
+    if token in FULL_TRIGGERS:
+        return token
+    item = event or {}
+    event_type = str(item.get("event_type") or "").lower()
+    if event_type in FULL_EVENT_TYPES:
+        return event_type
+    blob = f"{item.get('title') or ''} {item.get('fact') or ''} {item.get('statement') or ''}".lower()
+    if any(word in blob for word in ("earnings", "10-q", "10-k", "quarterly results")):
+        return "earnings"
+    if "guidance" in blob:
+        return "guidance"
+    if any(word in blob for word in ("acquire", "merger", "m&a", "takeover")):
+        return "mna"
+    if any(word in blob for word in ("regulator", "doj", "antitrust", "ban")):
+        return "regulation"
+    return None
+
+
+def critic_should_expand(
+    *,
+    proposals: list[dict[str, Any]] | None = None,
+    budget: dict[str, Any] | None = None,
+) -> bool:
+    rows = [row for row in (proposals or []) if isinstance(row, dict)]
+    claims = [row for row in rows if str(row.get("object_type") or "") in {"claim", "core_claim"}]
+    bases = [
+        row
+        for row in rows
+        if str(row.get("object_type") or "") == "scenario"
+        and (
+            (row.get("to_payload") or {}).get("base_case_change") is True
+            or str((row.get("to_payload") or {}).get("scope") or "") == "base"
+        )
+    ]
+    if len(claims) > 1 or bases:
+        return True
+    if (budget or {}).get("abnormal_change_scope"):
         return True
     return False
 

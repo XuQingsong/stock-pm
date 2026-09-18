@@ -68,6 +68,7 @@ class BrainStore:
         self.shadows: dict[str, dict[str, Any]] = {}
         self.proposals: dict[str, dict[str, Any]] = {}
         self.causal_edges: dict[str, dict[str, Any]] = {}
+        self.observations: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -292,6 +293,10 @@ class BrainStore:
             "SELECT * FROM brain_states WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
             {"ticker": symbol},
         )
+
+    def list_current_states(self, ticker: str, *, run_id: str | None = None) -> list[dict[str, Any]]:
+        """Current State only. Shadow State lives in list_shadows and is never mixed in."""
+        return self.list_states(ticker, run_id=run_id)
 
     def insert_claim(self, row: dict[str, Any]) -> dict[str, Any]:
         stored = {
@@ -1407,6 +1412,8 @@ class BrainStore:
             "source_kind": row.get("source_kind") or "news",
             "decision": row.get("decision") or "requires_review",
             "rules": list(row.get("rules") or []),
+            "reason_code": row.get("reason_code") or "",
+            "related_objects": list(row.get("related_objects") or []),
             "layer": row.get("layer") or "",
             "run_id": row.get("run_id"),
             "created_at": row.get("created_at") or _now(),
@@ -1424,11 +1431,11 @@ class BrainStore:
             """
             INSERT INTO brain_change_proposals (
                 proposal_id, ticker, object_type, object_id, from_payload, to_payload, reason,
-                evidence_ids, source_kind, decision, rules, layer, run_id, created_at
+                evidence_ids, source_kind, decision, rules, reason_code, related_objects, layer, run_id, created_at
             ) VALUES (
                 %(proposal_id)s, %(ticker)s, %(object_type)s, %(object_id)s, %(from_payload)s,
                 %(to_payload)s, %(reason)s, %(evidence_ids)s, %(source_kind)s, %(decision)s,
-                %(rules)s, %(layer)s, %(run_id)s, %(created_at)s
+                %(rules)s, %(reason_code)s, %(related_objects)s, %(layer)s, %(run_id)s, %(created_at)s
             ) RETURNING *
             """,
             payload,
@@ -1506,4 +1513,42 @@ class BrainStore:
             {"ticker": symbol},
         )
 
+    def insert_observation(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "observation_id": row.get("observation_id") or new_id("bobs"),
+            "ticker": str(row["ticker"]).upper(),
+            "title": row.get("title") or "",
+            "statement": row.get("statement") or row.get("fact") or "",
+            "kind": row.get("kind") or "news",
+            "material": bool(row.get("material")),
+            "reason": row.get("reason") or "",
+            "fingerprint": row.get("fingerprint") or "",
+            "payload": dict(row.get("payload") or {}),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.observations[stored["observation_id"]] = stored
+            return _copy(stored)
+        payload = {**stored, "payload": _jsonb(stored["payload"])}
+        out = self._one(
+            """
+            INSERT INTO brain_observation_memory (
+                observation_id, ticker, title, statement, kind, material, reason, fingerprint, payload, created_at
+            ) VALUES (
+                %(observation_id)s, %(ticker)s, %(title)s, %(statement)s, %(kind)s, %(material)s,
+                %(reason)s, %(fingerprint)s, %(payload)s, %(created_at)s
+            ) RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
 
+    def list_observations(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            return [_copy(row) for row in self.observations.values() if row.get("ticker") == symbol]
+        return self._execute(
+            "SELECT * FROM brain_observation_memory WHERE ticker = %(ticker)s ORDER BY created_at DESC",
+            {"ticker": symbol},
+        )
