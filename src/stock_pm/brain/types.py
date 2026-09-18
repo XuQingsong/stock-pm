@@ -244,9 +244,12 @@ CONSTITUTION_RULES = (
 )
 CHANGE_BUDGET = {
     "max_auto_claims": 1,
-    "max_auto_drivers": 1,
+    "max_related_drivers": 2,
+    "max_unrelated_drivers": 1,
+    "max_auto_states": 2,
     "max_auto_base": 0,
     "max_auto_causal_edges": 1,
+    "max_slow_layers": 2,
 }
 FUNDAMENTAL_CLAIM_TYPES = ("structural", "operating")
 LOW_RELIABILITY = ("rumor", "opinion", "signal")

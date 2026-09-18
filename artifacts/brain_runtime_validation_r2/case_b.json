@@ -1,0 +1,194 @@
+{
+  "case_id": "B",
+  "name": "有新内容但投资意义很低的普通新闻",
+  "historical_basis": "Broadcom CEO Hock Tan regularly presents at the Goldman Sachs Communacopia + Technology Conference. A scheduled conference appearance is not an operating update.",
+  "input": {
+    "kind": "news",
+    "event_id": "bev_val_case_b",
+    "event_key": "avgo_gs_conference_appearance",
+    "title": "Broadcom CEO Hock Tan scheduled for Goldman Sachs conference appearance",
+    "fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+    "url": "https://www.goldmansachs.com/insights/events/communacopia-broadcom-2026",
+    "source": "Goldman Sachs event listing",
+    "published_at": "2026-09-08T14:00:00+00:00",
+    "event_type": "other",
+    "confidence": "high",
+    "fact_reliability": "direct_fact"
+  },
+  "l0_why": "stop=False reason=pass duplicate=False",
+  "l0": {
+    "duplicate": null,
+    "stop": false,
+    "stop_reason": "non_material",
+    "event_type": "other",
+    "source_tier": 4,
+    "fingerprint": "bevfp_7611e931da8885fedfe9"
+  },
+  "glm52_extract": {
+    "called": true,
+    "fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+    "event_type": "other",
+    "novelty": "none",
+    "entities": [
+      "Broadcom",
+      "Hock Tan",
+      "Goldman Sachs"
+    ],
+    "material": false,
+    "fact_reliability": "direct_fact",
+    "possible_affected": null,
+    "reason": "Routine conference appearance with no operating update or new information. This is a calendar/promotional item with no material impact on Core Claims, Base Case, or PM synthesis."
+  },
+  "materiality": {
+    "material": false,
+    "reason": "L1 marked the item non-material or not new.",
+    "layer": "material"
+  },
+  "affected_objects": null,
+  "snapshot": {
+    "targeted": null,
+    "full_brain": null,
+    "states": [],
+    "drivers": [],
+    "claims": [],
+    "exposures": [],
+    "evidence": [],
+    "counter_evidence": [],
+    "history": [],
+    "causal_edges": [],
+    "shadows": [],
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "exposures": 0,
+      "evidence": 0,
+      "counter_evidence": 0,
+      "history": 0,
+      "causal_edges": 0
+    }
+  },
+  "glm53_called": false,
+  "glm53_saw": null,
+  "proposals": [],
+  "phase0": {
+    "approve": [],
+    "reject": [],
+    "requires_review": [],
+    "auto_commit_allowed": null,
+    "committed": null,
+    "current_state_unchanged": null,
+    "core_claims_unchanged": null
+  },
+  "brain_changed": [],
+  "proposal_decisions": {
+    "approve": 0,
+    "reject": 0,
+    "requires_review": 0,
+    "items": []
+  },
+  "critic_scope": "skipped",
+  "full_review_triggered": false,
+  "full_review_reason": null,
+  "path": "observation_memory",
+  "trace": {
+    "event_id": "bev_val_case_b",
+    "ticker": "AVGO",
+    "path": "observation_memory",
+    "l0": {
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": "non_material",
+      "fingerprint": "bevfp_7611e931da8885fedfe9",
+      "source_tier": 4,
+      "event_type": "other"
+    },
+    "duplicate": false,
+    "l1_event_type": "other",
+    "novelty": "none",
+    "materiality": false,
+    "materiality_reason": "L1 marked the item non-material or not new.",
+    "affected_objects": {},
+    "snapshot_objects": {
+      "states": [],
+      "drivers": [],
+      "claims": [],
+      "exposures": [],
+      "shadows": [],
+      "causal_edges": []
+    },
+    "snapshot_evidence_count": 0,
+    "snapshot_counter_evidence_count": 0,
+    "snapshot_history_count": 0,
+    "snapshot_size": 0,
+    "full_brain_size": 51,
+    "snapshot_reduction": 1.0,
+    "glm53_called": false,
+    "glm52_called": true,
+    "proposal_count": 0,
+    "proposal_decisions": {
+      "approve": 0,
+      "reject": 0,
+      "requires_review": 0,
+      "items": []
+    },
+    "changed_objects": [],
+    "critic_scope": "skipped",
+    "full_review_triggered": false,
+    "full_review_reason": null,
+    "token_usage": {
+      "input_tokens": 451,
+      "output_tokens": 277,
+      "total_tokens": 728,
+      "latency_ms": 5622,
+      "calls": [
+        {
+          "step": "event_extract",
+          "role": "mechanical",
+          "model": "glm-5.2",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 451,
+          "output_tokens": 277,
+          "latency_ms": 5622,
+          "error": null
+        }
+      ]
+    },
+    "latency_ms": 5623,
+    "current_state_unchanged": null,
+    "core_claims_unchanged": null,
+    "extract_fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+    "extract_entities": [
+      "Broadcom",
+      "Hock Tan",
+      "Goldman Sachs"
+    ]
+  },
+  "context_miss": [],
+  "context_score": {},
+  "anomalies": [],
+  "llm_calls": [
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.2",
+      "prompt_hash": "b46f8e9549c41a589353582c9ed79cbdb35834f376662bc9ac16b5fa13d21799",
+      "latency_ms": 5622,
+      "input_tokens": 451,
+      "output_tokens": 277,
+      "total_tokens": 728,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "event_extract",
+      "role": "mechanical"
+    }
+  ],
+  "elapsed_ms": 5623,
+  "claim_drift": [],
+  "state_drift": [],
+  "shadows_after": [],
+  "questions_after": []
+}

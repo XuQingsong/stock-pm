@@ -157,6 +157,8 @@ def _seed_brain(store: BrainStore) -> None:
             "name": "Customer concentration",
             "category": "customer_concentration",
             "current_state": "Hyperscaler concentration is high.",
+            "evidence_ids": ["rev_exhibit_991"],
+            "related_claim_ids": ["bclm_duration"],
         }
     )
     store.insert_driver(
@@ -178,6 +180,7 @@ def _seed_brain(store: BrainStore) -> None:
             "claim_type": "operating",
             "status": "strongly_supported",
             "is_core": True,
+            "related_driver_ids": ["bdrv_concentration"],
         }
     )
     store.insert_claim(
@@ -189,6 +192,22 @@ def _seed_brain(store: BrainStore) -> None:
             "claim_type": "operating",
             "status": "background",
             "is_core": False,
+        }
+    )
+    store.upsert_evidence(
+        {
+            "id": "rev_exhibit_991",
+            "ticker": "AVGO",
+            "title": "Exhibit 99.1",
+            "fact": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong.",
+        }
+    )
+    store.insert_link(
+        {
+            "claim_id": "bclm_duration",
+            "evidence_id": "rev_exhibit_991",
+            "direction": "support",
+            "reason": "Exhibit 99.1 supports demand durability.",
         }
     )
 
@@ -291,6 +310,11 @@ def test_case3_material_customer_event_uses_targeted_snapshot() -> None:
     claim_ids = {row.get("claim_id") for row in snapshot["claims"]}
     assert "bclm_duration" in claim_ids
     assert "bclm_unrelated" not in claim_ids
+    evidence_facts = " ".join(
+        f"{row.get('fact') or ''} {row.get('id') or ''} {row.get('evidence_id') or ''}"
+        for row in (snapshot.get("evidence") or []) + (snapshot.get("counter_evidence") or [])
+    )
+    assert "rev_exhibit_991" in evidence_facts or "Exhibit 99.1" in evidence_facts
     assert result["proposals"]
     assert result["gate"] is not None
     assert store.claims["bclm_duration"]["status"] == "strongly_supported"
@@ -356,22 +380,142 @@ def test_incremental_critic_does_not_reload_whole_brain() -> None:
     assert critic_should_expand(proposals=[{"object_type": "core_claim"}, {"object_type": "core_claim"}]) is True
 
 
-def test_context_miss_records_related_objects_not_in_snapshot() -> None:
-    from stock_pm.brain.context_miss import find_context_misses
+def test_duplicate_earnings_stops_at_l0_before_full_review() -> None:
+    store = BrainStore()
+    fake = RuntimeFakeCompleter()
+    item = {
+        "title": "Broadcom reports fiscal Q3 earnings",
+        "event_type": "earnings",
+        "fact": "Quarterly results released.",
+        "event_key": "avgo_q3_earnings",
+        "subject": "avgo_q3_earnings",
+        "url": "https://example.com/sec/exhibit-99-1",
+    }
+    store.insert_news({"ticker": "AVGO", "title": item["title"], "new_fact": item["fact"], "url": item["url"]})
+    result = run_brain_update(ticker="AVGO", item={**item, "url": "https://example.com/reuters/q3-earnings"}, store=store, completer=fake)
+    assert result["path"] == "l0_stop"
+    assert result["duplicate"] is True
+    assert result["full_review"] is False
+    assert result["glm53_called"] is False
+    assert fake.calls == []
 
+
+def test_context_miss_records_related_objects_not_in_snapshot() -> None:
+    from stock_pm.brain.context_miss import find_context_misses, score_snapshot_context
+
+    expected = {
+        "states": ["bst_google"],
+        "drivers": ["bdrv_conc"],
+        "evidence": ["rev_google"],
+        "irrelevant": ["bclm_x", "bdrv_leverage"],
+    }
+    snapshot = {
+        "states": [],
+        "drivers": [{"driver_id": "bdrv_conc", "canonical_key": "customer_concentration"}],
+        "claims": [{"claim_id": "bclm_x", "title": "Tax rate"}],
+        "evidence": [],
+        "counter_evidence": [],
+        "history": [],
+        "causal_edges": [],
+    }
     misses = find_context_misses(
         event={"title": "Google custom ASIC order", "fact": "Google expanded a Broadcom ASIC order.", "entities": ["Google"]},
-        snapshot={"states": [], "drivers": [], "claims": [], "evidence": [], "history": [], "causal_edges": []},
-        brain={
-            "states": [{"state_id": "bst_google", "name": "Google customer exposure", "statement": "Google is an ASIC customer."}],
-            "drivers": [{"driver_id": "bdrv_conc", "canonical_key": "customer_concentration", "name": "Hyperscaler concentration"}],
-            "claims": [{"claim_id": "bclm_x", "title": "Tax rate", "statement": "Tax is not the debate."}],
-            "evidence": [{"id": "rev_google", "fact": "Google confirmed a Broadcom custom ASIC order."}],
-            "history": [],
-            "causal_edges": [],
-        },
+        snapshot=snapshot,
+        expected=expected,
     )
     kinds = {row["kind"] for row in misses}
     assert "state" in kinds
-    assert "evidence" in kinds
+    assert "support_evidence" in kinds
     assert all(row["kind"] != "claim" for row in misses)
+    scored = score_snapshot_context(snapshot=snapshot, expected=expected, irrelevant=["bclm_x", "bdrv_leverage"])
+    assert "bst_google" in {row["object_id"] for row in scored["missed_relevant_objects"]}
+    assert "bclm_x" in scored["obviously_irrelevant_objects"]
+    assert scored["support_evidence_miss"] is True
+
+
+def test_structured_retrieval_skips_unrelated_financial_objects() -> None:
+    from stock_pm.brain.snapshot import build_snapshot, locate_affected_objects
+
+    drivers = [
+        {
+            "driver_id": "bdrv_conc",
+            "canonical_key": "hyperscaler_customer_concentration",
+            "name": "Hyperscaler customer concentration",
+            "category": "customer_concentration",
+            "evidence_ids": ["rev_a65ae2866d404168b4b90236ae2f13a6"],
+            "related_claim_ids": ["bclm_hyp"],
+        },
+        {
+            "driver_id": "bdrv_demand",
+            "canonical_key": "ai_semiconductor_demand_durability",
+            "name": "AI semiconductor demand durability",
+            "category": "demand",
+            "evidence_ids": ["rev_a65ae2866d404168b4b90236ae2f13a6"],
+            "related_claim_ids": ["bclm_dur"],
+        },
+        {
+            "driver_id": "bdrv_lev",
+            "canonical_key": "balance_sheet_leverage_deleveraging",
+            "name": "Balance sheet leverage and deleveraging path",
+            "category": "capital_allocation",
+            "current_state": "Broadcom priced cash tender offers.",
+            "evidence_ids": ["rev_notes"],
+        },
+        {
+            "driver_id": "bdrv_gaap",
+            "canonical_key": "gaap_non_gaap_earnings_gap",
+            "name": "GAAP to non-GAAP earnings gap",
+            "category": "accounting_quality",
+        },
+        {
+            "driver_id": "bdrv_val",
+            "canonical_key": "valuation_multiple_ai_dependency",
+            "name": "Valuation multiple dependence on AI growth persistence",
+            "category": "valuation",
+        },
+    ]
+    claims = [
+        {"claim_id": "bclm_hyp", "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers", "is_core": True, "related_driver_ids": ["bdrv_conc"]},
+        {"claim_id": "bclm_dur", "title": "AI semiconductor demand durability sets the length of the growth ramp", "is_core": True, "related_driver_ids": ["bdrv_demand"]},
+        {"claim_id": "bclm_mgn", "title": "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle", "is_core": True},
+        {"claim_id": "bclm_val", "title": "The premium multiple is conditional on the AI ramp persisting", "is_core": True},
+        {"claim_id": "bclm_mix", "title": "AI is approaching a majority of revenue, tying company economics to one cycle", "is_core": True},
+    ]
+    event = {
+        "title": "Google confirmed a Broadcom custom-silicon order expansion",
+        "fact": "Google, a named Broadcom customer, confirmed it will expand custom ASIC / TPU orders.",
+        "event_type": "customer",
+        "entities": ["Google", "Broadcom"],
+    }
+    affected = locate_affected_objects(
+        extract={"event_type": "customer", "entities": ["Google", "Broadcom"], "possible_affected": ["customer_concentration", "ai_semiconductor_demand_durability"]},
+        event=event,
+        states=[{"state_id": "bst_val", "name": "Valuation snapshot", "statement": "AVGO trades at 43.3x TTM EPS."}],
+        drivers=drivers,
+        claims=claims,
+        ticker="AVGO",
+    )
+    driver_ids = {row["driver_id"] for row in affected["drivers"]}
+    claim_ids = {row["claim_id"] for row in affected["claims"]}
+    assert "bdrv_conc" in driver_ids
+    assert "bdrv_demand" in driver_ids
+    assert "bdrv_lev" not in driver_ids
+    assert "bdrv_gaap" not in driver_ids
+    assert "bdrv_val" not in driver_ids
+    assert "bclm_hyp" in claim_ids
+    assert "bclm_dur" in claim_ids
+    assert len(claim_ids) < 5
+    snapshot = build_snapshot(
+        event=event,
+        affected=affected,
+        evidence=[
+            {
+                "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+                "fact": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong.",
+            }
+        ],
+        links=[{"claim_id": "bclm_hyp", "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6", "direction": "support"}],
+    )
+    evidence_ids = {row.get("id") or row.get("evidence_id") for row in snapshot["evidence"]}
+    assert "rev_a65ae2866d404168b4b90236ae2f13a6" in evidence_ids
+    assert any("Exhibit 99.1" in str(row.get("fact") or "") for row in snapshot["evidence"])

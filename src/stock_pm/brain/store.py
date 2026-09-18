@@ -69,6 +69,7 @@ class BrainStore:
         self.proposals: dict[str, dict[str, Any]] = {}
         self.causal_edges: dict[str, dict[str, Any]] = {}
         self.observations: dict[str, dict[str, Any]] = {}
+        self.evidence_rows: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -678,6 +679,53 @@ class BrainStore:
             """,
             {"ticker": symbol},
         )
+
+    def upsert_evidence(self, row: dict[str, Any]) -> dict[str, Any]:
+        eid = str(row.get("id") or row.get("evidence_id") or new_id("rev"))
+        stored = {
+            "id": eid,
+            "evidence_id": eid,
+            "ticker": str(row.get("ticker") or "").upper() or None,
+            "title": row.get("title") or "",
+            "fact": row.get("fact") or row.get("statement") or row.get("excerpt") or "",
+            "statement": row.get("statement") or row.get("fact") or "",
+            "excerpt": row.get("excerpt") or row.get("fact") or "",
+            "source": row.get("source"),
+            "direction": row.get("direction"),
+            "url": row.get("url"),
+        }
+        self.evidence_rows[eid] = stored
+        return _copy(stored)
+
+    def list_evidence(self, ticker: str | None = None) -> list[dict[str, Any]]:
+        symbol = str(ticker or "").upper()
+        rows = [_copy(row) for row in self.evidence_rows.values()]
+        if symbol:
+            rows = [row for row in rows if not row.get("ticker") or row.get("ticker") == symbol]
+        frozen = self.latest_evidence_set(symbol) if symbol else None
+        payload = dict((frozen or {}).get("payload") or {})
+        extra = payload.get("evidence") or payload.get("items") or payload.get("rows") or []
+        seen = {str(row.get("id") or row.get("evidence_id") or "") for row in rows}
+        for item in extra:
+            if not isinstance(item, dict):
+                continue
+            eid = str(item.get("id") or item.get("evidence_id") or "")
+            if not eid or eid in seen:
+                continue
+            rows.append(
+                {
+                    "id": eid,
+                    "evidence_id": eid,
+                    "ticker": symbol or None,
+                    "title": item.get("title") or "",
+                    "fact": item.get("fact") or item.get("statement") or item.get("excerpt") or "",
+                    "statement": item.get("statement") or item.get("fact") or "",
+                    "excerpt": item.get("excerpt") or item.get("fact") or "",
+                    "source": item.get("source"),
+                }
+            )
+            seen.add(eid)
+        return rows
 
     def insert_candidate(self, row: dict[str, Any]) -> dict[str, Any]:
         stored = {

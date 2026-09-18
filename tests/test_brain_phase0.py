@@ -314,8 +314,16 @@ def test_case5_abnormal_change_scope_requires_review() -> None:
     scope = change_scope(proposals)
     assert scope["abnormal_change_scope"] is True
     result = evaluate_brain_changes(ticker="AVGO", proposals=proposals, store=store)
+    rejected_rules = {row["rule"] for item in result["rejected"] for row in item.get("rules") or []}
+    assert "news_cannot_modify_core_claim" in rejected_rules
+    assert "driver_slower_than_state" in rejected_rules
+    assert "causal_slower_than_claim" in rejected_rules
+    assert all(row["decision"] == "reject" for row in result["rejected"])
+    assert all(row.get("reason_code") for row in result["rejected"])
+    assert not any(row["decision"] == "requires_review" for row in result["rejected"])
     assert result["budget"]["requires_review"] is True
     assert result["requires_review"]
+    assert {row.get("object_type") for row in result["requires_review"]} == {"scenario"}
     assert result["auto_commit_allowed"] is False
     assert result["approved"] == []
     assert all(row["decision"] == "requires_review" for row in result["requires_review"])
@@ -465,4 +473,119 @@ def test_rejected_proposals_are_persisted() -> None:
     assert stored[0]["reason_code"]
     assert stored[0]["created_at"]
     assert stored[0]["object_type"] == "core_claim"
+
+
+def test_constitution_reject_is_not_overridden_by_change_budget() -> None:
+    result = evaluate_brain_changes(
+        ticker="AVGO",
+        proposals=[
+            {
+                "object_type": "core_claim",
+                "object_id": CORE_CLAIM["object_id"],
+                "source_kind": "news",
+                "is_core": True,
+                "from_payload": CORE_CLAIM,
+                "to_payload": {**CORE_CLAIM, "status": "challenged", "statement": "Direct mutation from news."},
+                "reason": "Event tries to rewrite a Core Claim.",
+            },
+            {
+                "object_type": "value_driver",
+                "object_id": "bdrv_demand",
+                "source_kind": "news",
+                "canonical_key": "ai_semiconductor_demand_durability",
+                "category": "demand",
+                "to_payload": {"canonical_key": "ai_semiconductor_demand_durability", "category": "demand"},
+                "reason": "Related driver update.",
+            },
+            {
+                "object_type": "value_driver",
+                "object_id": "bdrv_concentration",
+                "source_kind": "news",
+                "canonical_key": "hyperscaler_customer_concentration",
+                "category": "customer_concentration",
+                "to_payload": {"canonical_key": "hyperscaler_customer_concentration", "category": "customer_concentration"},
+                "reason": "Related driver update.",
+            },
+            {
+                "object_type": "market_attention",
+                "source_kind": "news",
+                "to_payload": {"statement": "Market attention on Google ASIC orders."},
+                "reason": "Fast layer may move.",
+                "evidence_ids": ["rev_exhibit_991"],
+            },
+        ],
+    )
+    decisions = {row["object_type"]: row["decision"] for row in result["proposals"]}
+    assert decisions["core_claim"] == "reject"
+    assert result["rejected"][0]["reason_code"] == "news_cannot_modify_core_claim"
+    assert all(row["decision"] == "reject" for row in result["rejected"] if row["object_type"] in {"core_claim", "value_driver"})
+    assert not any(row["decision"] == "requires_review" and row["object_type"] == "core_claim" for row in result["proposals"])
+    assert result["approved"]
+    assert result["approved"][0]["object_type"] == "market_attention"
+
+
+def test_two_related_drivers_do_not_trip_change_budget() -> None:
+    related = [
+        {
+            "object_type": "company_state",
+            "object_id": "bst_google",
+            "source_kind": "shadow_confirmed",
+            "to_payload": {"statement": "Google remains a named custom-silicon customer."},
+        },
+        {
+            "object_type": "value_driver",
+            "object_id": "bdrv_demand",
+            "source_kind": "shadow_confirmed",
+            "canonical_key": "ai_semiconductor_demand_durability",
+            "category": "demand",
+            "to_payload": {
+                "canonical_key": "ai_semiconductor_demand_durability",
+                "category": "demand",
+                "related_claim_ids": ["bclm_duration"],
+            },
+        },
+        {
+            "object_type": "value_driver",
+            "object_id": "bdrv_concentration",
+            "source_kind": "shadow_confirmed",
+            "canonical_key": "hyperscaler_customer_concentration",
+            "category": "customer_concentration",
+            "to_payload": {
+                "canonical_key": "hyperscaler_customer_concentration",
+                "category": "customer_concentration",
+                "related_claim_ids": ["bclm_duration"],
+            },
+        },
+        {
+            "object_type": "core_claim",
+            "object_id": "bclm_duration",
+            "source_kind": "shadow_confirmed",
+            "from_payload": {"status": "partially_supported", "is_core": True, "statement": "Duration holds."},
+            "to_payload": {"status": "partially_supported", "is_core": True, "statement": "Duration still holds after confirmation."},
+        },
+    ]
+    scope = change_scope(related)
+    assert scope["drivers_related"] is True
+    assert scope["abnormal_change_scope"] is False
+    unrelated = [
+        {
+            "object_type": "value_driver",
+            "object_id": "bdrv_demand",
+            "source_kind": "shadow_confirmed",
+            "canonical_key": "ai_semiconductor_demand_durability",
+            "category": "demand",
+            "to_payload": {"canonical_key": "ai_semiconductor_demand_durability", "category": "demand"},
+        },
+        {
+            "object_type": "value_driver",
+            "object_id": "bdrv_leverage",
+            "source_kind": "shadow_confirmed",
+            "canonical_key": "balance_sheet_leverage_deleveraging",
+            "category": "capital_allocation",
+            "to_payload": {"canonical_key": "balance_sheet_leverage_deleveraging", "category": "capital_allocation"},
+        },
+    ]
+    over = change_scope(unrelated)
+    assert over["drivers_related"] is False
+    assert over["abnormal_change_scope"] is True
 

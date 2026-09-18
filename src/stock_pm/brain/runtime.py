@@ -55,7 +55,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "drivers": store.list_drivers(ticker) if hasattr(store, "list_drivers") else [],
         "claims": store.list_active_claims(ticker) if hasattr(store, "list_active_claims") else [],
         "exposures": store.list_exposures(ticker) if hasattr(store, "list_exposures") else [],
-        "evidence": [],
+        "evidence": store.list_evidence(ticker) if hasattr(store, "list_evidence") else [],
         "links": store.list_links() if hasattr(store, "list_links") else [],
         "causal_edges": store.list_causal_edges(ticker) if hasattr(store, "list_causal_edges") else [],
         "history": store.list_history(ticker) if hasattr(store, "list_history") else [],
@@ -118,24 +118,6 @@ def run_brain_update(
         payload["elapsed_ms"] = elapsed_ms
         return payload
 
-    full_reason = full_review_reason(trigger=trigger, event=item, mode=run_mode)
-    if full_reason:
-        return _finish(
-            {
-                "ticker": symbol,
-                "path": "full_review",
-                "run_mode": "full",
-                "full_review": True,
-                "full_review_reason": full_reason,
-                "glm52_called": False,
-                "glm53_called": False,
-                "critic_called": False,
-                "stopped": False,
-                "material": True,
-                "llm_calls": [],
-            }
-        )
-
     l0 = process_l0(
         item,
         ticker=symbol,
@@ -172,6 +154,25 @@ def run_brain_update(
                 "glm53_called": False,
                 "critic_called": False,
                 "material": False,
+                "l0": l0,
+                "llm_calls": [],
+            }
+        )
+
+    full_reason = full_review_reason(trigger=trigger, event=item, mode=run_mode)
+    if full_reason:
+        return _finish(
+            {
+                "ticker": symbol,
+                "path": "full_review",
+                "run_mode": "full",
+                "full_review": True,
+                "full_review_reason": full_reason,
+                "glm52_called": False,
+                "glm53_called": False,
+                "critic_called": False,
+                "stopped": False,
+                "material": True,
                 "l0": l0,
                 "llm_calls": [],
             }
@@ -260,6 +261,9 @@ def run_brain_update(
         drivers=context.get("drivers"),
         claims=context.get("claims"),
         exposures=context.get("exposures"),
+        links=context.get("links"),
+        causal_edges=context.get("causal_edges"),
+        ticker=symbol,
     )
     snapshot = build_snapshot(
         event=event,
@@ -325,6 +329,9 @@ def run_brain_update(
             "event_fingerprints": context.get("fingerprints") or [],
             "causal_edges": context.get("causal_edges") or [],
             "related_entities": context.get("related_entities") or [],
+            "states": context.get("states") or [],
+            "drivers": context.get("drivers") or [],
+            "claims": context.get("claims") or [],
         },
         store=brain_store,
     )

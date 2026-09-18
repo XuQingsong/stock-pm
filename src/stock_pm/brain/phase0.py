@@ -148,11 +148,11 @@ def evaluate_brain_changes(
     context["event_fingerprints"] = fingerprints
     context["event_identities"] = identities
     normalized = [normalize_proposal(row, ticker=symbol) for row in (proposals or []) if isinstance(row, dict)]
-    budget = change_scope(normalized)
 
     approved: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
     review: list[dict[str, Any]] = []
+    legal: list[dict[str, Any]] = []
     for proposal in normalized:
         if proposal.get("duplicate"):
             proposal["decision"] = "reject"
@@ -161,16 +161,6 @@ def evaluate_brain_changes(
             rejected.append(proposal)
             continue
         hits = constitution_violations(proposal, brain=context)
-        if budget["requires_review"]:
-            proposal["decision"] = "requires_review"
-            budget_rule = {
-                "rule": "abnormal_change_scope_requires_review",
-                "reason": "Ordinary event cannot auto-commit a large Brain rewrite.",
-            }
-            proposal["rules"] = [budget_rule, *hits]
-            proposal["reason_code"] = "abnormal_change_scope_requires_review"
-            review.append(proposal)
-            continue
         if hits:
             proposal["decision"] = "reject"
             proposal["rules"] = hits
@@ -201,6 +191,21 @@ def evaluate_brain_changes(
                 direction = "oppose" if str((proposal.get("to_payload") or {}).get("status") or "") in {"challenged", "contradicted"} else "support"
                 proposal["inertia"] = accumulate_claim_evidence(claim, direction=direction)
             rejected.append(proposal)
+            continue
+        legal.append(proposal)
+
+    budget = change_scope(legal, brain=context)
+    for proposal in legal:
+        if budget["requires_review"]:
+            proposal["decision"] = "requires_review"
+            proposal["rules"] = [
+                {
+                    "rule": "abnormal_change_scope_requires_review",
+                    "reason": "Ordinary event cannot auto-commit a large Brain rewrite.",
+                }
+            ]
+            proposal["reason_code"] = "abnormal_change_scope_requires_review"
+            review.append(proposal)
             continue
         proposal["decision"] = "approve"
         approved.append(proposal)

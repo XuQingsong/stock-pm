@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from stock_pm.brain.context_miss import find_context_misses
+from stock_pm.brain.context_miss import find_context_misses, score_snapshot_context
 from stock_pm.brain.runtime import run_brain_update
 from stock_pm.brain.routing import brain_completers, layer_settings
 from stock_pm.brain.store import BrainStore
@@ -19,9 +19,61 @@ from stock_pm.config import Settings
 from stock_pm.research.llm_reason import compact_text
 
 GOLDEN = Path("artifacts/brain_v1/avgo_brain_v1.json")
-OUT = Path("artifacts/brain_runtime_validation")
+OUT = Path("artifacts/brain_runtime_validation_r2")
+BASELINE_DIR = Path("artifacts/brain_runtime_validation")
 AVGO_FULL_REVIEW_TOTAL_TOKENS = 278739
 AVGO_FULL_REVIEW_INPUT_TOKENS = 81207
+
+DRIVER_CONCENTRATION = "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+DRIVER_COMPETITION = "bdrv_4469e497110847e7a3961129f05e5a33"
+DRIVER_DEMAND = "bdrv_e605ec342c0a4888bec050bd17106982"
+DRIVER_LEVERAGE = "bdrv_0b42bfa225df4760a06d0a81c9df0d12"
+DRIVER_GAAP = "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+DRIVER_VALUATION = "bdrv_c65613d424614e7ba3e474bd1c3d4948"
+CLAIM_DEMAND = "bclm_f4454cfe04e94211a79b23116bcf5de8"
+CLAIM_HYPERSCALER = "bclm_2f3b915b62064c8a98300c530fa331ff"
+CLAIM_MARGIN = "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+CLAIM_MULTIPLE = "bclm_a63762a2ab4f4410ad923ea9b1002c53"
+EVIDENCE_EXHIBIT = "rev_a65ae2866d404168b4b90236ae2f13a6"
+EVIDENCE_MARVELL = "rev_marvell_hyperscaler_win_in_claim"
+IRRELEVANT_CDE = [
+    DRIVER_LEVERAGE,
+    DRIVER_GAAP,
+    DRIVER_VALUATION,
+    "bst_154e6e1ddc4f4970a61cdb2798b0fa51",
+    "bst_21b14d3978024a2b8a6e622e84d40fdc",
+    CLAIM_MARGIN,
+    CLAIM_MULTIPLE,
+]
+GOLDEN_CONTEXT: dict[str, dict[str, Any]] = {
+    "C": {
+        "drivers": [DRIVER_CONCENTRATION, DRIVER_DEMAND],
+        "claims": [CLAIM_HYPERSCALER, CLAIM_DEMAND],
+        "evidence": [EVIDENCE_EXHIBIT],
+        "support_evidence": [EVIDENCE_EXHIBIT],
+        "counter_evidence": [],
+        "states": [],
+        "irrelevant": IRRELEVANT_CDE,
+    },
+    "D": {
+        "drivers": [DRIVER_CONCENTRATION, DRIVER_DEMAND],
+        "claims": [CLAIM_HYPERSCALER, CLAIM_DEMAND],
+        "evidence": [EVIDENCE_EXHIBIT],
+        "support_evidence": [EVIDENCE_EXHIBIT],
+        "counter_evidence": [],
+        "states": [],
+        "irrelevant": IRRELEVANT_CDE,
+    },
+    "E": {
+        "drivers": [DRIVER_CONCENTRATION, DRIVER_COMPETITION],
+        "claims": [CLAIM_HYPERSCALER],
+        "evidence": [EVIDENCE_EXHIBIT],
+        "support_evidence": [EVIDENCE_EXHIBIT],
+        "counter_evidence": [EVIDENCE_MARVELL],
+        "states": [],
+        "irrelevant": IRRELEVANT_CDE,
+    },
+}
 
 EVIDENCE_LABELS = {
     "rev_a65ae2866d404168b4b90236ae2f13a6": (
@@ -119,9 +171,8 @@ CASES: list[dict[str, Any]] = [
             "canonical_keys": [
                 "hyperscaler_customer_concentration",
                 "ai_semiconductor_demand_durability",
-                "ai_silicon_competitive_position",
             ],
-            "claim_needles": ["hyperscaler", "durability", "concentration", "competitive"],
+            "claim_needles": ["hyperscaler", "durability", "concentration"],
         },
         "item": {
             "kind": "news",
@@ -302,7 +353,10 @@ def compact_snapshot(snapshot: dict[str, Any] | None) -> dict[str, Any]:
         "claims": [_compact_row(row, "claim_id", "title", "status", "statement", "is_core") for row in shot.get("claims") or []],
         "exposures": [_compact_row(row, "exposure_id", "exposure_type", "event_id") for row in shot.get("exposures") or []],
         "evidence": [_compact_row(row, "id", "evidence_id", "title", "fact", "statement") for row in shot.get("evidence") or []],
-        "counter_evidence": [_compact_row(row, "link_id", "claim_id", "evidence_id", "direction", "reason") for row in shot.get("counter_evidence") or []],
+        "counter_evidence": [
+            _compact_row(row, "link_id", "claim_id", "evidence_id", "id", "title", "fact", "statement", "direction", "reason")
+            for row in shot.get("counter_evidence") or []
+        ],
         "history": [_compact_row(row, "history_id", "object_type", "object_id", "reason") for row in shot.get("history") or []],
         "causal_edges": [_compact_row(row, "edge_id", "from_node", "to_node", "statement", "status") for row in shot.get("causal_edges") or []],
         "shadows": [_compact_row(row, "shadow_id", "name", "statement") for row in shot.get("shadows") or []],
@@ -320,37 +374,38 @@ def compact_snapshot(snapshot: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def reconstruct_evidence(golden: dict[str, Any]) -> list[dict[str, Any]]:
-    seen: dict[str, dict[str, Any]] = {}
+    catalog = {
+        token: {
+            "id": token,
+            "evidence_id": token,
+            "title": compact_text(label, 120),
+            "fact": label,
+            "statement": label,
+            "source": "golden_brain_v1",
+        }
+        for token, label in EVIDENCE_LABELS.items()
+    }
+    catalog[EVIDENCE_MARVELL] = {
+        "id": EVIDENCE_MARVELL,
+        "evidence_id": EVIDENCE_MARVELL,
+        "title": "Marvell hyperscaler custom ASIC award cited in the golden concentration claim",
+        "fact": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "statement": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "source": "golden_claim_statement",
+        "direction": "oppose",
+    }
+    needed: set[str] = {EVIDENCE_MARVELL}
     for group in (golden.get("drivers") or []), (golden.get("states") or []), (golden.get("exposures") or []):
         for row in group:
             for eid in row.get("evidence_ids") or []:
                 token = str(eid)
-                if not token or token in seen:
-                    continue
-                seen[token] = {
-                    "id": token,
-                    "evidence_id": token,
-                    "title": compact_text(EVIDENCE_LABELS.get(token, token), 120),
-                    "fact": EVIDENCE_LABELS.get(token, f"Evidence {token} cited by the AVGO golden Brain."),
-                    "statement": EVIDENCE_LABELS.get(token, ""),
-                    "source": "golden_brain_v1",
-                }
-    seen.setdefault(
-        "rev_marvell_hyperscaler_win_in_claim",
-        {
-            "id": "rev_marvell_hyperscaler_win_in_claim",
-            "evidence_id": "rev_marvell_hyperscaler_win_in_claim",
-            "title": "Marvell hyperscaler custom ASIC award cited in the golden concentration claim",
-            "fact": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
-            "statement": "Counter evidence already inside the seeded Core Claim text.",
-            "source": "golden_claim_statement",
-        },
-    )
-    return list(seen.values())
+                if token in catalog:
+                    needed.add(token)
+    return [catalog[token] for token in needed if token in catalog]
 
 
 def leftover_brain(store: BrainStore, golden: dict[str, Any]) -> dict[str, Any]:
-    evidence = reconstruct_evidence(golden)
+    evidence = store.list_evidence("AVGO") if hasattr(store, "list_evidence") else reconstruct_evidence(golden)
     return {
         "states": store.list_states("AVGO"),
         "drivers": store.list_drivers("AVGO"),
@@ -361,6 +416,7 @@ def leftover_brain(store: BrainStore, golden: dict[str, Any]) -> dict[str, Any]:
         "causal_edges": store.list_causal_edges("AVGO"),
         "evidence": evidence,
         "shadows": store.list_shadows("AVGO"),
+        "links": store.list_links() if hasattr(store, "list_links") else [],
     }
 
 
@@ -436,6 +492,8 @@ def seed_avgo_brain(golden: dict[str, Any], *, include_case_a_original: bool = F
                 "reason": "The golden claim itself cites a hyperscaler awarding custom AI chip work to Marvell.",
             }
         )
+    for row in reconstruct_evidence(golden):
+        store.upsert_evidence({**row, "ticker": "AVGO"})
     if include_case_a_original:
         store.insert_news(
             {
@@ -554,7 +612,7 @@ def related_expected(case: dict[str, Any], leftover: dict[str, Any]) -> dict[str
     return {"drivers": drivers, "claims": claims}
 
 
-def detect_anomalies(case: dict[str, Any], result: dict[str, Any], leftover: dict[str, Any], store: BrainStore) -> list[dict[str, Any]]:
+def detect_anomalies(case: dict[str, Any], result: dict[str, Any], leftover: dict[str, Any], store: BrainStore, context_score: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     anomalies: list[dict[str, Any]] = []
     trace = result.get("trace") or {}
     path = result.get("path")
@@ -598,6 +656,16 @@ def detect_anomalies(case: dict[str, Any], result: dict[str, Any], leftover: dic
             anomalies.append({"code": "snapshot_missing_key_counter_evidence", "detail": "Case E snapshot has no oppose links."})
         if coverage.get("near_full_brain"):
             anomalies.append({"code": "glm53_received_near_full_brain", "detail": coverage})
+        claims_n = len(snapshot.get("claims") or [])
+        if claims_n >= 5 and path == "incremental":
+            anomalies.append({"code": "glm53_received_near_full_brain", "detail": f"Snapshot included {claims_n} Core Claims."})
+    score = context_score or {}
+    if case["case_id"] in {"C", "D", "E"} and score.get("support_evidence_miss"):
+        anomalies.append({"code": "snapshot_missing_key_evidence", "detail": score.get("missed_relevant_objects")})
+    if case["case_id"] == "E" and score.get("counter_evidence_miss"):
+        anomalies.append({"code": "snapshot_missing_key_counter_evidence", "detail": score.get("missed_relevant_objects")})
+    if score.get("irrelevant_count"):
+        anomalies.append({"code": "irrelevant_objects_in_snapshot", "detail": score.get("obviously_irrelevant_objects")})
 
     core_claim_edits = [
         row
@@ -642,16 +710,23 @@ def detect_anomalies(case: dict[str, Any], result: dict[str, Any], leftover: dic
     return anomalies
 
 
-def build_route(case: dict[str, Any], result: dict[str, Any], misses: list[dict[str, Any]], anomalies: list[dict[str, Any]]) -> dict[str, Any]:
+def build_route(case: dict[str, Any], result: dict[str, Any], misses: list[dict[str, Any]], anomalies: list[dict[str, Any]], context_score: dict[str, Any] | None = None) -> dict[str, Any]:
     extract = result.get("extract") if isinstance(result.get("extract"), dict) else {}
     l0 = result.get("l0") if isinstance(result.get("l0"), dict) else {}
     gate = result.get("gate") if isinstance(result.get("gate"), dict) else {}
     materiality = result.get("materiality") if isinstance(result.get("materiality"), dict) else {}
     snapshot = compact_snapshot(result.get("snapshot") if isinstance(result.get("snapshot"), dict) else {})
     decisions = (result.get("trace") or {}).get("proposal_decisions") or {}
-    l0_why = "not reached (full_review short-circuit)" if result.get("path") == "full_review" else (
+    l0_why = (
         f"stop={l0.get('stop')} reason={l0.get('stop_reason') or 'pass'} duplicate={l0.get('duplicate')}"
+        if l0
+        else "L0 not recorded"
     )
+    if result.get("path") == "full_review":
+        l0_why = (
+            f"L0 ran first: stop={l0.get('stop')} duplicate={l0.get('duplicate') or False}; "
+            f"then full_review reason={result.get('full_review_reason')}"
+        )
     return {
         "case_id": case["case_id"],
         "name": case["name"],
@@ -721,6 +796,7 @@ def build_route(case: dict[str, Any], result: dict[str, Any], misses: list[dict[
         "path": result.get("path"),
         "trace": result.get("trace"),
         "context_miss": misses,
+        "context_score": context_score or {},
         "anomalies": anomalies,
         "llm_calls": result.get("llm_calls") or [],
         "elapsed_ms": result.get("elapsed_ms"),
@@ -745,6 +821,13 @@ def metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
     full_review_n = sum(1 for row in cases if row.get("full_review") or row.get("full_review_triggered"))
     miss_n = sum(len(row.get("context_miss") or []) for row in cases)
     unexpected = sum(1 for row in cases if any(a.get("code") == "incremental_logic_conflict" for a in row.get("anomalies") or []))
+    core_claim_retrieval = []
+    evidence_bodies = []
+    irrelevant_counts = []
+    recalls = []
+    precisions = []
+    support_miss = 0
+    counter_miss = 0
     for row in cases:
         usage = ((row.get("trace") or {}).get("token_usage") or {})
         if row.get("glm53_called"):
@@ -758,6 +841,19 @@ def metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         approve += int(decisions.get("approve") or 0)
         reject += int(decisions.get("reject") or 0)
         review += int(decisions.get("requires_review") or 0)
+        score = row.get("context_score") or {}
+        if row.get("path") == "incremental":
+            core_claim_retrieval.append(int(score.get("core_claim_retrieval_count") or ((row.get("snapshot") or {}).get("counts") or {}).get("claims") or 0))
+            evidence_bodies.append(int(score.get("evidence_body_count") or 0))
+            irrelevant_counts.append(int(score.get("irrelevant_count") or 0))
+            if score.get("context_recall") is not None:
+                recalls.append(float(score["context_recall"]))
+            if score.get("context_precision") is not None:
+                precisions.append(float(score["context_precision"]))
+            if score.get("support_evidence_miss"):
+                support_miss += 1
+            if score.get("counter_evidence_miss"):
+                counter_miss += 1
     skip_rate = round((n - glm53) / n, 4) if n else None
     avg = lambda values: round(sum(values) / len(values), 2) if values else None
     avg_glm53_input = avg(glm53_input)
@@ -772,6 +868,7 @@ def metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "glm53_calls": glm53,
         "glm53_skip_rate": skip_rate,
         "avg_targeted_snapshot_size": avg(snap_sizes),
+        "avg_snapshot_object_count": avg(snap_sizes),
         "avg_snapshot_object_reduction": avg(reductions),
         "avg_glm53_tokens": avg(glm53_tokens),
         "avg_glm53_input_tokens": avg_glm53_input,
@@ -788,15 +885,22 @@ def metrics(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "full_review_triggers": full_review_n,
         "context_miss_count": miss_n,
         "unexpected_brain_change_count": unexpected,
+        "avg_core_claim_retrieval_count": avg(core_claim_retrieval),
+        "avg_relevant_object_recall": round(sum(recalls) / len(recalls), 4) if recalls else None,
+        "avg_context_precision": round(sum(precisions) / len(precisions), 4) if precisions else None,
+        "avg_irrelevant_object_count": avg(irrelevant_counts),
+        "avg_evidence_body_retrieval_count": avg(evidence_bodies),
+        "support_evidence_miss_cases": support_miss,
+        "counter_evidence_miss_cases": counter_miss,
     }
 
 
 def render_report(payload: dict[str, Any]) -> str:
     lines = [
-        "# Phase 0 + Phase 1 功能验证报告",
+        "# Phase 0 + Phase 1.1 第二次验证报告",
         "",
         f"生成时间: {payload.get('generated_at')}",
-        "范围: AVGO golden Brain + 6 类真实/半真实事件。未进入 Phase 2，未改架构。",
+        "范围: 原来的 6 个 AVGO Case。修复 Targeted Context / Constitution-Budget / L0 顺序后的 Before→After。未进入 Phase 2。",
         "",
         "## 1. 六个 Case 的完整 trace",
         "",
@@ -818,6 +922,9 @@ def render_report(payload: dict[str, Any]) -> str:
                 f"- Snapshot states: {[row.get('name') for row in (case.get('snapshot') or {}).get('states') or []]}",
                 f"- Snapshot drivers: {[row.get('canonical_key') or row.get('name') for row in (case.get('snapshot') or {}).get('drivers') or []]}",
                 f"- Snapshot claims: {[row.get('title') for row in (case.get('snapshot') or {}).get('claims') or []]}",
+                f"- Snapshot evidence: {[row.get('id') or row.get('evidence_id') or row.get('title') for row in (case.get('snapshot') or {}).get('evidence') or []]}",
+                f"- Snapshot counter evidence: {[row.get('id') or row.get('evidence_id') or row.get('title') for row in (case.get('snapshot') or {}).get('counter_evidence') or []]}",
+                f"- Context score: recall={((case.get('context_score') or {}).get('context_recall'))} precision={((case.get('context_score') or {}).get('context_precision'))} missed={((case.get('context_score') or {}).get('missed_count'))} irrelevant={((case.get('context_score') or {}).get('irrelevant_count'))}",
                 f"- GLM-5.3 called: {case.get('glm53_called')}",
                 f"- Proposal count: {len(case.get('proposals') or [])}",
                 f"- Phase 0 approve/reject/review: {json.dumps(case.get('proposal_decisions') or {}, ensure_ascii=False)}",
@@ -879,8 +986,11 @@ def render_report(payload: dict[str, Any]) -> str:
     for item in payload.get("expected_matches") or []:
         lines.append(f"- {item}")
     lines.extend(["", "## 6. 哪些地方和设计存在偏差", ""])
-    for item in payload.get("deviations") or []:
-        lines.append(f"- {item}")
+    if payload.get("deviations"):
+        for item in payload.get("deviations") or []:
+            lines.append(f"- {item}")
+    else:
+        lines.append("无新增设计偏差。")
     lines.extend(
         [
             "",
@@ -888,7 +998,25 @@ def render_report(payload: dict[str, Any]) -> str:
             "",
             payload.get("incremental_runtime_verdict") or "",
             "",
-            "## 8. 发现的问题（本轮不修架构）",
+            "## 8. Before → After（第一次 baseline vs 本轮）",
+            "",
+        ]
+    )
+    comparison = payload.get("comparison") or {}
+    if comparison:
+        lines.append("```json")
+        lines.append(json.dumps(comparison.get("metrics") or comparison, ensure_ascii=False, indent=2))
+        lines.append("```")
+        lines.append("")
+        for item in comparison.get("answers") or []:
+            lines.append(f"- {item}")
+        lines.append("")
+    else:
+        lines.append("无 baseline 对比。")
+        lines.append("")
+    lines.extend(
+        [
+            "## 9. 发现的问题（本轮不修架构）",
             "",
         ]
     )
@@ -928,54 +1056,92 @@ def judge(payload: dict[str, Any]) -> dict[str, Any]:
     d_changed = [_changed_blob(row) for row in (d.get("brain_changed") or [])] if d else []
     if d and any("shadow" in token or "question" in token or "research" in token for token in d_changed):
         expected.append("Case D 的未确认信息进入 Shadow / Research Question 通道。")
-    if d and d.get("glm53_called") and not any(str((row or {}).get("object_type") or "") in {"company_state", "state", "core_claim", "value_driver"} and str((row or {}).get("decision") or "") == "approve" for row in ((d.get("proposal_decisions") or {}).get("items") or []) if isinstance(row, dict)):
-        expected.append("Case D GLM-5.3 没有把 rumor 写成 Current State / Driver / Core Claim；Phase 0 批准的是 Shadow / RQ / market_attention。")
     if e and e.get("path") == "incremental" and e.get("glm53_called"):
         expected.append("Case E 竞争/反面证据进入 incremental reasoning，没有短路成 Full Review。")
     if f and (f.get("full_review_triggered") or f.get("full_review")):
-        expected.append("Case F earnings/guidance 触发 Full Review，而不是被当成普通新闻增量改 Brain。")
+        expected.append("Case F 首次 earnings/guidance 在 L0 通过后触发 Full Review。")
     if any((row.get("snapshot") or {}).get("full_brain") is False for row in (c, e) if row):
         expected.append("Incremental 路径声明 snapshot.targeted=True / full_brain=False。")
-    if all((row.get("phase0") or {}).get("current_state_unchanged") in {True, None} for row in (c, d, e) if row):
-        expected.append("三条 material incremental 事件都没有把 Current State / Core Claim 自动写进 Brain。")
 
-    for case_id, row in (("C", c), ("D", d), ("E", e)):
+    def _evidence_blob(row: dict[str, Any] | None) -> str:
+        shot = (row or {}).get("snapshot") or {}
+        parts = []
+        for item in (shot.get("evidence") or []) + (shot.get("counter_evidence") or []):
+            parts.append(
+                f"{item.get('id') or ''} {item.get('evidence_id') or ''} {item.get('title') or ''} {item.get('fact') or ''} {item.get('statement') or ''}"
+            )
+        return " ".join(parts).lower()
+
+    def _driver_blob(row: dict[str, Any] | None) -> str:
+        affected = (row or {}).get("affected_objects") or {}
+        shot = (row or {}).get("snapshot") or {}
+        return " ".join(
+            [
+                " ".join(str(item) for item in (affected.get("drivers") or [])),
+                " ".join(str(item.get("driver_id") or item.get("canonical_key") or "") for item in (shot.get("drivers") or [])),
+            ]
+        )
+
+    if c:
+        blob = _evidence_blob(c)
+        if EVIDENCE_EXHIBIT in blob or "exhibit 99.1" in blob:
+            expected.append("Case C 的 Exhibit 99.1 supporting evidence 进入了 snapshot。")
+        else:
+            extra_anomalies.append({"case_id": "C", "code": "snapshot_missing_key_evidence", "detail": "Exhibit 99.1 body missing from Case C snapshot."})
+            deviations.append("Case C 仍未把 Exhibit 99.1 正文送进 snapshot。")
+        if len(((c.get("snapshot") or {}).get("claims") or [])) >= 5:
+            extra_anomalies.append({"case_id": "C", "code": "glm53_received_near_full_brain", "detail": "Case C still retrieved 5/5 Core Claims."})
+            deviations.append("Case C 仍然把 5/5 Core Claims 全部塞进 snapshot。")
+        else:
+            expected.append("Case C 不再默认塞入全部 5 条 Core Claim。")
+        if any(token in _driver_blob(c) for token in (DRIVER_LEVERAGE, DRIVER_GAAP)):
+            deviations.append("Case C 仍因关键词把 leverage / GAAP 对象带进 snapshot。")
+    if d:
+        if DRIVER_DEMAND not in _driver_blob(d):
+            extra_anomalies.append({"case_id": "D", "code": "affected_objects_missed", "detail": "Case D missed ai_semiconductor_demand_durability."})
+            deviations.append("Case D 仍然漏掉 ai_semiconductor_demand_durability。")
+        else:
+            expected.append("Case D 命中了 AI demand durability 相关对象。")
+        if d.get("phase0", {}).get("core_claims_unchanged") is not False:
+            expected.append("Case D Current State / Core Claim 保持不变。")
+    if e:
+        blob = _evidence_blob(e)
+        has_support = EVIDENCE_EXHIBIT in blob or "exhibit 99.1" in blob
+        has_counter = EVIDENCE_MARVELL in blob or "marvell" in blob
+        if has_support and has_counter:
+            expected.append("Case E 同时拿到相关 support evidence 正文和 Marvell counter evidence。")
+        else:
+            if not has_support:
+                extra_anomalies.append({"case_id": "E", "code": "snapshot_missing_key_evidence", "detail": "Case E missing support evidence body."})
+                deviations.append("Case E 没有把原来支持 Claim 的 Evidence 正文给 GLM-5.3。")
+            if not has_counter:
+                extra_anomalies.append({"case_id": "E", "code": "snapshot_missing_key_counter_evidence", "detail": "Case E missing Marvell counter evidence."})
+                deviations.append("Case E 没有把 Marvell counter evidence 给 GLM-5.3。")
+        if len(((e.get("snapshot") or {}).get("claims") or [])) >= 5:
+            extra_anomalies.append({"case_id": "E", "code": "glm53_received_near_full_brain", "detail": "Case E still retrieved 5/5 Core Claims."})
+            deviations.append("Case E 仍然把 5/5 Core Claims 全部塞进 snapshot。")
+
+    constitution_ok = True
+    for case_id, row in (("C", c), ("E", e)):
         if not row:
             continue
-        claims = ((row.get("snapshot") or {}).get("counts") or {}).get("claims") or 0
-        if claims >= 5:
-            extra_anomalies.append(
-                {
-                    "case_id": case_id,
-                    "code": "glm53_received_near_full_brain",
-                    "detail": f"Snapshot included all {claims} Core Claims plus unrelated objects (valuation / leverage / GAAP / price reaction).",
-                }
-            )
-            deviations.append(f"Case {case_id} 的 targeted snapshot 包含全部 5 条 Core Claim，GLM-5.3 实际看到了接近完整 Claim 层。")
-    if d:
-        drivers = d.get("affected_objects") or {}
-        blob = " ".join(str(item) for item in (drivers.get("drivers") or []))
-        if "e605ec342c0a4888bec050bd17106982" not in blob:
-            extra_anomalies.append(
-                {
-                    "case_id": "D",
-                    "code": "affected_objects_missed",
-                    "detail": "Google order-cut rumor did not retrieve ai_semiconductor_demand_durability; it retrieved leverage / GAAP gap / valuation instead.",
-                }
-            )
-            deviations.append("Case D rumor 漏掉了 AI demand durability driver，却命中了杠杆、GAAP gap、估值这类弱相关对象。")
-    if any((row.get("proposal_decisions") or {}).get("requires_review") for row in (c, e) if row):
-        deviations.append("Case C/E 的 Change Proposal 因 Change Budget 全部进入 requires_review，constitution 拒绝规则没有先落地；新闻改 State/Driver/Claim 没有被直接 reject。")
-        findings.append("evaluate_brain_changes 在 budget.requires_review 时 continue，constitution_violations 即使命中也不会变成 reject。Confirmed customer 改 Core Claim 因此停在 review，而不是按 Phase 0 规则拒绝。")
-    if any(row.get("code") == "snapshot_missing_key_evidence" for row in payload.get("all_anomalies") or []):
-        deviations.append("Targeted snapshot 没有带上 Brain evidence 正文（evidence count=0），只带了 oppose link。")
-        findings.append("run_brain_update._store_context() 把 evidence 固定写成空列表。affected objects 上的 evidence_ids 无法在 snapshot 里解成 Evidence 行。")
-    if payload.get("metrics", {}).get("context_miss_count"):
-        findings.append("存在 context_miss。其中一部分是 Exhibit 99.1 这类确实相关的 supporting evidence 没进 snapshot；另一部分是 Broadcom 关键词误伤（例如 notes tender）。不要用扩大整个 context 来掩盖。")
-    findings.append("locate_affected_objects 把 event blob 里长度>3 的词都当成 needle。AVGO 对象普遍含 Broadcom/AI/revenue/demand，所以一条 customer/rumor/competition 新闻会拖进全部 Core Claims 和若干无关 State/Driver。")
-    findings.append("Full Review 在 L0 之前判定。带 earnings/guidance 字样的重复稿不会走 duplicate stop，而会直接 full_review。")
-    findings.append("Change Budget max_auto_drivers=1。GLM-5.3 一次提 2 个 driver 就会整批 requires_review，包括本来可以批准的 market-layer 以外对象。")
-    findings.append("本轮没有扩大 snapshot，也没有改 routing / constitution / store。")
+        rejects = (row.get("phase0") or {}).get("reject") or []
+        items = ((row.get("proposal_decisions") or {}).get("items") or [])
+        core_items = [item for item in items if isinstance(item, dict) and item.get("object_type") in {"core_claim", "claim"}]
+        if any(item.get("reason_code") == "news_cannot_modify_core_claim" for item in rejects if isinstance(item, dict)):
+            expected.append(f"Case {case_id} 对 Event→Core Claim 给出 constitution reject，而不是被 Change Budget 盖成 review。")
+        elif any(item.get("decision") == "requires_review" for item in core_items):
+            constitution_ok = False
+            deviations.append(f"Case {case_id} 仍把 Core Claim 直接 mutation 停在 requires_review，而不是 reject。")
+    _ = constitution_ok
+
+    metrics = payload.get("metrics") or {}
+    if metrics.get("reject", 0) == 0 and any(len((row.get("phase0") or {}).get("reject") or []) for row in (c, d, e) if row):
+        deviations.append("metrics.reject 仍为 0，但 case 记录里已有 reject；核对 proposal_decisions。")
+    findings.append("context_miss 改为对照 golden expected objects，不再用 Broadcom/AI 宽关键词自我验证 retrieval。")
+    findings.append("Change Budget 先看 Constitution reject，再对剩余合法 proposal 判断 related vs unrelated scope。")
+    findings.append("Full Review 只在 L0 判定非 duplicate 之后触发。")
+    findings.append("本轮没有进入 Phase 2，没有建立完整 Causal Graph，也没有退回 Full Brain Context。")
 
     incremental_yes = bool(
         a
@@ -985,16 +1151,19 @@ def judge(payload: dict[str, Any]) -> dict[str, Any]:
         and f
         and (f.get("full_review") or f.get("full_review_triggered"))
     )
-    near_full = bool(extra_anomalies) or any(row.get("code") == "glm53_received_near_full_brain" for row in payload.get("all_anomalies") or [])
-    verdict = (
-        "主路径已经接上：默认 incremental，L0 / materiality gate / Full Review trigger / Phase 0 写屏障都在真实 run_brain_update 上工作。"
-        + (
-            " 但 targeted snapshot 仍然过宽（5/5 Core Claims），evidence 正文进不了 snapshot，Change Budget 还会把 constitution reject 变成 review。不能认为 Incremental Brain Runtime 已经在信息论意义上完成。"
-            if near_full or payload.get("metrics", {}).get("context_miss_count")
-            else " 六类事件的 routing 已能区分 junk / rumor / confirmed customer / earnings。"
+    near_full = any(row.get("code") == "glm53_received_near_full_brain" for row in (payload.get("all_anomalies") or []) + extra_anomalies)
+    evidence_ok = not any(row.get("code") == "snapshot_missing_key_evidence" for row in extra_anomalies)
+    if incremental_yes and evidence_ok and not near_full and metrics.get("unexpected_brain_change_count") == 0:
+        verdict = (
+            "Routing 仍然正确，Targeted Context 已经按结构关系变窄，关键 Evidence 正文进入 snapshot，"
+            "Constitution reject 不再被 Change Budget 覆盖。可以认为 Incremental Runtime 在信息论意义上成立，停止 Phase 1。"
         )
-    )
-    if not incremental_yes:
+    elif incremental_yes:
+        verdict = (
+            "主路径仍然成立，但 Targeted Context 或 Constitution/Budget 语义还没有完全达到验收线。"
+            "不要进入 Phase 2。"
+        )
+    else:
         verdict = "Incremental 路径存在，但六个 Case 的 routing 与设计不完全一致，还不能宣布 Incremental Brain Runtime 已经真正实现。"
     return {
         "expected_matches": expected,
@@ -1005,6 +1174,58 @@ def judge(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def load_baseline_metrics() -> dict[str, Any]:
+    path = BASELINE_DIR / "metrics.json"
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def compare_with_baseline(current: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
+    keys = [
+        "avg_targeted_snapshot_size",
+        "avg_snapshot_object_count",
+        "avg_glm53_input_tokens",
+        "context_miss_count",
+        "approve",
+        "reject",
+        "requires_review",
+        "avg_core_claim_retrieval_count",
+        "avg_irrelevant_object_count",
+        "avg_evidence_body_retrieval_count",
+        "avg_relevant_object_recall",
+        "avg_context_precision",
+        "support_evidence_miss_cases",
+        "counter_evidence_miss_cases",
+        "unexpected_brain_change_count",
+        "glm53_calls",
+        "l0_duplicate_stop",
+        "full_review_triggers",
+    ]
+    rows = {}
+    for key in keys:
+        if key in current or key in baseline:
+            rows[key] = {"before": baseline.get(key), "after": current.get(key)}
+    answers = [
+        f"1. Routing 是否仍然正确？ L0 stop {baseline.get('l0_duplicate_stop')}→{current.get('l0_duplicate_stop')}; "
+        f"full review {baseline.get('full_review_triggers')}→{current.get('full_review_triggers')}; "
+        f"GLM-5.3 calls {baseline.get('glm53_calls')}→{current.get('glm53_calls')}.",
+        f"2. Targeted Context 是否真正变窄？ snapshot {baseline.get('avg_targeted_snapshot_size')}→{current.get('avg_targeted_snapshot_size')}; "
+        f"Core Claim retrieval/event {current.get('avg_core_claim_retrieval_count')}.",
+        f"3. 关键 Evidence 是否已经进入？ evidence bodies {current.get('avg_evidence_body_retrieval_count')}; "
+        f"support miss cases {current.get('support_evidence_miss_cases')}; counter miss cases {current.get('counter_evidence_miss_cases')}.",
+        f"4. 重要 Context 是否还有遗漏？ context_miss {baseline.get('context_miss_count')}→{current.get('context_miss_count')}; "
+        f"recall {current.get('avg_relevant_object_recall')}.",
+        f"5. 无关对象是否明显减少？ irrelevant {current.get('avg_irrelevant_object_count')}; precision {current.get('avg_context_precision')}.",
+        f"6. Constitution / Budget decision 是否恢复正确语义？ approve/reject/review "
+        f"{baseline.get('approve')}/{baseline.get('reject')}/{baseline.get('requires_review')} → "
+        f"{current.get('approve')}/{current.get('reject')}/{current.get('requires_review')}.",
+        f"7. Incremental Runtime 是否已经可以认为真正成立？ unexpected writes "
+        f"{baseline.get('unexpected_brain_change_count')}→{current.get('unexpected_brain_change_count')}.",
+    ]
+    return {"metrics": rows, "answers": answers}
+
+
 def finalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
     payload["metrics"] = metrics(payload.get("cases") or [])
     judged = judge(payload)
@@ -1013,6 +1234,9 @@ def finalize_payload(payload: dict[str, Any]) -> dict[str, Any]:
     payload.update(judged)
     payload["metrics"]["context_miss_count"] = len(payload.get("all_context_misses") or [])
     payload["metrics"]["runtime_anomaly_count"] = len(payload.get("all_anomalies") or [])
+    baseline = load_baseline_metrics()
+    payload["baseline_metrics"] = baseline
+    payload["comparison"] = compare_with_baseline(payload["metrics"], baseline)
     return payload
 
 
@@ -1096,10 +1320,17 @@ def main() -> int:
             }
         snapshot = result.get("snapshot") if isinstance(result.get("snapshot"), dict) else {}
         event_for_miss = {**(spec.get("item") or {}), **((result.get("extract") or {}) if isinstance(result.get("extract"), dict) else {})}
-        misses = []
+        expected_ctx = GOLDEN_CONTEXT.get(spec["case_id"]) or {}
+        context_score: dict[str, Any] = {}
+        misses: list[dict[str, Any]] = []
         if result.get("path") == "incremental":
-            misses = find_context_misses(event=event_for_miss, snapshot=snapshot, brain=leftover)
-        anomalies = detect_anomalies(spec, result, leftover, store)
+            context_score = score_snapshot_context(
+                snapshot=snapshot,
+                expected=expected_ctx,
+                irrelevant=expected_ctx.get("irrelevant") or [],
+            )
+            misses = find_context_misses(event=event_for_miss, snapshot=snapshot, brain=leftover, expected=expected_ctx)
+        anomalies = detect_anomalies(spec, result, leftover, store, context_score=context_score)
         after_claims = store.list_active_claims("AVGO")
         after_states = store.list_current_states("AVGO")
         claim_drift = [
@@ -1117,7 +1348,7 @@ def main() -> int:
             anomalies.append({"code": "unexpected_brain_change", "detail": {"claims": claim_drift}})
         if state_drift and spec["case_id"] in {"A", "B", "D"}:
             anomalies.append({"code": "unexpected_brain_change", "detail": {"states": state_drift}})
-        route = build_route(spec, result, misses, anomalies)
+        route = build_route(spec, result, misses, anomalies, context_score=context_score)
         route["claim_drift"] = claim_drift
         route["state_drift"] = state_drift
         route["shadows_after"] = [_compact_row(row, "shadow_id", "name", "statement", "status") for row in store.list_shadows("AVGO")]

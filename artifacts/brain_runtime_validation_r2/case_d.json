@@ -1,0 +1,737 @@
+{
+  "case_id": "D",
+  "name": "重要但未经确认的 rumor",
+  "historical_basis": "Markets have repeatedly priced unconfirmed Google in-house silicon / TPU order-cut rumors against Broadcom. The rumor is decision-relevant if true, but unconfirmed.",
+  "input": {
+    "kind": "news",
+    "event_id": "bev_val_case_d",
+    "event_key": "google_may_reduce_avgo_orders_rumor",
+    "title": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+    "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "url": "https://www.theinformation.com/articles/google-may-cut-broadcom-tpu-orders-2026",
+    "source": "The Information (unconfirmed)",
+    "published_at": "2026-09-11T18:05:00+00:00",
+    "event_type": "customer",
+    "entities": [
+      "Google",
+      "Broadcom"
+    ],
+    "confidence": "low",
+    "fact_reliability": "rumor",
+    "confirmed": false
+  },
+  "l0_why": "stop=False reason=pass duplicate=False",
+  "l0": {
+    "duplicate": null,
+    "stop": false,
+    "stop_reason": null,
+    "event_type": "customer",
+    "source_tier": 3,
+    "fingerprint": "bevfp_72cb7f4042bde970025a"
+  },
+  "glm52_extract": {
+    "called": true,
+    "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "event_type": "customer",
+    "novelty": "new",
+    "entities": [
+      "Google",
+      "Broadcom"
+    ],
+    "material": true,
+    "fact_reliability": "rumor",
+    "possible_affected": [
+      "custom_silicon_revenue_exposure",
+      "google_customer_concentration",
+      "tpu_design_relationship"
+    ],
+    "reason": "Unconfirmed rumor of potential order reduction from a major ASIC customer; if true it would directly impact AVGO's custom silicon revenue, but reliability is low and unconfirmed."
+  },
+  "materiality": {
+    "material": true,
+    "reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+    "layer": "material"
+  },
+  "affected_objects": {
+    "states": [],
+    "drivers": [
+      "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+      "bdrv_e605ec342c0a4888bec050bd17106982"
+    ],
+    "claims": [
+      "bclm_2f3b915b62064c8a98300c530fa331ff",
+      "bclm_f4454cfe04e94211a79b23116bcf5de8"
+    ],
+    "exposures": []
+  },
+  "snapshot": {
+    "targeted": true,
+    "full_brain": false,
+    "states": [],
+    "drivers": [
+      {
+        "driver_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "canonical_key": "hyperscaler_customer_concentration",
+        "name": "Hyperscaler customer concentration",
+        "current_state": "AI accelerator and networking demand is described as 'very strong', but customer-level revenue, order pipeline, and concentration ratios are not disclosed in the available evidence."
+      },
+      {
+        "driver_id": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "canonical_key": "ai_semiconductor_demand_durability",
+        "name": "AI semiconductor demand durability",
+        "current_state": "Management states AI accelerator and networking demand 'continues to be very strong'; Q3 FY2026 total revenue was $29.6B (+86% YoY) with AI the largest growth driver; Q4 AI semiconductor revenue guided to $21.7B, up 236…"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+        "status": "partially_supported",
+        "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan to double AI semicon…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "title": "AI semiconductor demand durability sets the length of the growth ramp",
+        "status": "partially_supported",
+        "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,' and secondary repo…",
+        "is_core": true
+      }
+    ],
+    "exposures": [],
+    "evidence": [
+      {
+        "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "title": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue g…",
+        "fact": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue guided to $21.7 billion, up 236%.",
+        "statement": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue guided to $21.7 billion, up 236%."
+      },
+      {
+        "id": "rev_d608e3e7661a49dfb06a59bd5c45927b",
+        "evidence_id": "rev_d608e3e7661a49dfb06a59bd5c45927b",
+        "title": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operatin…",
+        "fact": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operating income $20.1 billion.",
+        "statement": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operating income $20.1 billion."
+      }
+    ],
+    "counter_evidence": [
+      {
+        "evidence_id": "rev_marvell_hyperscaler_win_in_claim",
+        "id": "rev_marvell_hyperscaler_win_in_claim",
+        "title": "Marvell hyperscaler custom ASIC award cited in the golden concentration claim",
+        "fact": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "statement": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "direction": "oppose"
+      }
+    ],
+    "history": [
+      {
+        "history_id": "bhis_2cadecea49824e098e4bc48945beb857",
+        "object_type": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "reason": "statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_4faaafa5350242deb1262d9679cac9fb",
+        "object_type": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_1895b016f22b453bad9e72780f6524bb",
+        "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_d0ac1d3b35394c04a43c341c72a1ecfb",
+        "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8.",
+        "status": "supported"
+      }
+    ],
+    "shadows": [],
+    "counts": {
+      "states": 0,
+      "drivers": 2,
+      "claims": 2,
+      "exposures": 0,
+      "evidence": 2,
+      "counter_evidence": 1,
+      "history": 2,
+      "causal_edges": 2
+    }
+  },
+  "glm53_called": true,
+  "glm53_saw": {
+    "targeted": true,
+    "full_brain": false,
+    "states": [],
+    "drivers": [
+      {
+        "driver_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "canonical_key": "hyperscaler_customer_concentration",
+        "name": "Hyperscaler customer concentration",
+        "current_state": "AI accelerator and networking demand is described as 'very strong', but customer-level revenue, order pipeline, and concentration ratios are not disclosed in the available evidence."
+      },
+      {
+        "driver_id": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "canonical_key": "ai_semiconductor_demand_durability",
+        "name": "AI semiconductor demand durability",
+        "current_state": "Management states AI accelerator and networking demand 'continues to be very strong'; Q3 FY2026 total revenue was $29.6B (+86% YoY) with AI the largest growth driver; Q4 AI semiconductor revenue guided to $21.7B, up 236…"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+        "status": "partially_supported",
+        "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan to double AI semicon…",
+        "is_core": true
+      },
+      {
+        "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "title": "AI semiconductor demand durability sets the length of the growth ramp",
+        "status": "partially_supported",
+        "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,' and secondary repo…",
+        "is_core": true
+      }
+    ],
+    "exposures": [],
+    "evidence": [
+      {
+        "id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "evidence_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "title": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue g…",
+        "fact": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue guided to $21.7 billion, up 236%.",
+        "statement": "Q3 FY2026 Exhibit 99.1: AI accelerator and networking demand continues to be very strong; Q4 AI semiconductor revenue guided to $21.7 billion, up 236%."
+      },
+      {
+        "id": "rev_d608e3e7661a49dfb06a59bd5c45927b",
+        "evidence_id": "rev_d608e3e7661a49dfb06a59bd5c45927b",
+        "title": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operatin…",
+        "fact": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operating income $20.1 billion.",
+        "statement": "Reported Q3 FY2026 financials: revenue $29.6 billion (+86% YoY), GAAP operating income $16.0 billion, non-GAAP operating income $20.1 billion."
+      }
+    ],
+    "counter_evidence": [
+      {
+        "evidence_id": "rev_marvell_hyperscaler_win_in_claim",
+        "id": "rev_marvell_hyperscaler_win_in_claim",
+        "title": "Marvell hyperscaler custom ASIC award cited in the golden concentration claim",
+        "fact": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "statement": "A hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "direction": "oppose"
+      }
+    ],
+    "history": [
+      {
+        "history_id": "bhis_2cadecea49824e098e4bc48945beb857",
+        "object_type": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "reason": "statement materially changed; decisive evidence changed"
+      },
+      {
+        "history_id": "bhis_4faaafa5350242deb1262d9679cac9fb",
+        "object_type": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed"
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_1895b016f22b453bad9e72780f6524bb",
+        "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff.",
+        "status": "supported"
+      },
+      {
+        "edge_id": "bced_d0ac1d3b35394c04a43c341c72a1ecfb",
+        "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8.",
+        "status": "supported"
+      }
+    ],
+    "shadows": [],
+    "counts": {
+      "states": 0,
+      "drivers": 2,
+      "claims": 2,
+      "exposures": 0,
+      "evidence": 2,
+      "counter_evidence": 1,
+      "history": 2,
+      "causal_edges": 2
+    }
+  },
+  "proposals": [
+    {
+      "object_type": "shadow_state",
+      "object_id": "bssh_avgo_google_tpu_order_reduction",
+      "source_kind": "rumor",
+      "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, source_tier: 3, anonymous sources). Rules prohibit rumor-driven changes to Current State, Value Drivers, or Core Claims, so the potential state is captured as a s…",
+      "to": {
+        "ticker": "AVGO",
+        "title": "Shadow: Google reduces Broadcom custom TPU/ASIC orders",
+        "statement": "Unconfirmed report (The Information, anonymous sources, tier 3, 2026-09-11) that Google may reduce Broadcom custom TPU/ASIC orders as it expands in-house silicon. If confirmed, this would cut custom AI silicon revenue from a top customer, directly materializing the in-house-silicon risk flagged in the hyperscaler concentration driver and pressuring the guided AI semiconductor ramp (Q4 FY2026 AI semiconductor revenue guided to $21.7B, +236% YoY).",
+        "status": "unverified",
+        "confidence": "low",
+        "affected_areas": [
+          "custom_silicon_revenue_exposure",
+          "google_customer_concentration",
+          "tpu_design_relationship"
+        ],
+        "linked_driver_ids": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+        ],
+        "linked_claim_ids": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff"
+        ],
+        "confirmation_triggers": [
+          "Google or Broadcom confirms/denies order changes or the design relationship",
+          "Customer-concentration disclosure in 10-K/10-Q (any single customer >10% of revenue)",
+          "Reporting on next-generation TPU design wins or losses",
+          "Corroborating supply-chain or order-pipeline checks"
+        ],
+        "disconfirmation_triggers": [
+          "Broadcom reiterates AI semiconductor guidance including the Google-related pipeline",
+          "A Google-Broadcom next-generation TPU agreement is reported"
+        ],
+        "valuation_impact_if_confirmed": "Lower AI semiconductor revenue trajectory and likely multiple compression; magnitude cannot be sized without Google's revenue share, which is not disclosed in available evidence."
+      }
+    },
+    {
+      "object_type": "research_question",
+      "object_id": "brq_avgo_google_custom_silicon_exposure",
+      "source_kind": "rumor",
+      "reason": "A rumor requires verification and quantification before any state or claim change; the Brain currently lacks customer-level revenue data for Google, so this question gates whether the shadow state is promoted, revised, or discarded.",
+      "to": {
+        "ticker": "AVGO",
+        "question": "What share of Broadcom's AI semiconductor (custom ASIC/TPU) revenue comes from Google, and what is the current status of the Google-Broadcom TPU design relationship, including next-generation design wins?",
+        "reason": "The rumored order reduction cannot be sized without Google's revenue share and design pipeline status; customer-level revenue and concentration ratios are not disclosed in the available evidence, leaving the exposure central to the thesis but unmeasured.",
+        "priority": "high",
+        "status": "open",
+        "linked_driver_ids": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+        ],
+        "linked_claim_ids": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff"
+        ]
+      }
+    },
+    {
+      "object_type": "market_attention",
+      "object_id": "batt_avgo_google_tpu_rumor_202609",
+      "source_kind": "rumor",
+      "reason": "Counter-evidence already in the Brain shows unconfirmed/secondary hyperscaler-silicon news moved AVGO 3.9% (Marvell award). Tracking this rumor's market traction helps interpret price action without asserting the rumor as fact.",
+      "to": {
+        "ticker": "AVGO",
+        "topic": "Google custom TPU order reduction rumor",
+        "attention_type": "rumor_driven_price_risk",
+        "statement": "An unconfirmed The Information report (2026-09-11) that Google may cut Broadcom TPU orders is in circulation. Precedent shows hyperscaler custom-silicon news moves AVGO even without confirmation: a hyperscaler awarding custom AI chip work to competitor Marvell moved AVGO shares 3.9%.",
+        "status": "active",
+        "monitor": [
+          "AVGO price/volume reaction on 2026-09-11 and following sessions",
+          "Confirmations, denials, or follow-up reporting from Google, Broadcom, or tier-1 outlets",
+          "Any revision to AI semiconductor guidance at the next earnings report"
+        ],
+        "linked_driver_ids": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+        ]
+      }
+    }
+  ],
+  "phase0": {
+    "approve": [
+      "shadow_state:The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, source_tier: 3, anonymous sources). Rules prohibit rumor-driven changes to Current State, Value Drivers, or C…",
+      "research_question:A rumor requires verification and quantification before any state or claim change; the Brain currently lacks customer-level revenue data for Google, so this question gates whether t…",
+      "market_attention:Counter-evidence already in the Brain shows unconfirmed/secondary hyperscaler-silicon news moved AVGO 3.9% (Marvell award). Tracking this rumor's market traction helps interpret pric…"
+    ],
+    "reject": [],
+    "requires_review": [],
+    "auto_commit_allowed": true,
+    "committed": [
+      {
+        "kind": "shadow",
+        "shadow_id": "bshd_47ec3e778158481dae2316d5a553e077",
+        "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+      },
+      {
+        "kind": "question",
+        "question_id": "brq_52ae573894bf4998ae63baf5be824b6d"
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_499244ae29b5454f868a74220e889c47",
+        "object_id": "bssh_avgo_google_tpu_order_reduction",
+        "decision": "approve",
+        "reason_code": ""
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_a99ae1760fe445e28c9a13ecb6161bc7",
+        "object_id": "brq_avgo_google_custom_silicon_exposure",
+        "decision": "approve",
+        "reason_code": ""
+      },
+      {
+        "kind": "proposal",
+        "proposal_id": "bcpr_114513616abd41b0875fef43fdd544da",
+        "object_id": "batt_avgo_google_tpu_rumor_202609",
+        "decision": "approve",
+        "reason_code": ""
+      }
+    ],
+    "current_state_unchanged": true,
+    "core_claims_unchanged": true
+  },
+  "brain_changed": [
+    "shadow_state:bssh_avgo_google_tpu_order_reduction",
+    "research_question:brq_avgo_google_custom_silicon_exposure",
+    "market_attention:batt_avgo_google_tpu_rumor_202609",
+    "shadow:bshd_47ec3e778158481dae2316d5a553e077",
+    "question:brq_52ae573894bf4998ae63baf5be824b6d"
+  ],
+  "proposal_decisions": {
+    "approve": 3,
+    "reject": 0,
+    "requires_review": 0,
+    "items": [
+      {
+        "proposal_id": "bcpr_499244ae29b5454f868a74220e889c47",
+        "object_type": "shadow_state",
+        "object_id": "bssh_avgo_google_tpu_order_reduction",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, source_tier: 3, anonymous sources). Rules prohibit rumor-driven changes to Current State, Value Drivers, or Core Claims, s…"
+      },
+      {
+        "proposal_id": "bcpr_a99ae1760fe445e28c9a13ecb6161bc7",
+        "object_type": "research_question",
+        "object_id": "brq_avgo_google_custom_silicon_exposure",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "A rumor requires verification and quantification before any state or claim change; the Brain currently lacks customer-level revenue data for Google, so this question gates whether the shadow state is…"
+      },
+      {
+        "proposal_id": "bcpr_114513616abd41b0875fef43fdd544da",
+        "object_type": "market_attention",
+        "object_id": "batt_avgo_google_tpu_rumor_202609",
+        "decision": "approve",
+        "reason_code": "",
+        "reason": "Counter-evidence already in the Brain shows unconfirmed/secondary hyperscaler-silicon news moved AVGO 3.9% (Marvell award). Tracking this rumor's market traction helps interpret price action without…"
+      }
+    ]
+  },
+  "critic_scope": "incremental",
+  "full_review_triggered": false,
+  "full_review_reason": null,
+  "path": "incremental",
+  "trace": {
+    "event_id": "bev_val_case_d",
+    "ticker": "AVGO",
+    "path": "incremental",
+    "l0": {
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "fingerprint": "bevfp_72cb7f4042bde970025a",
+      "source_tier": 3,
+      "event_type": "customer"
+    },
+    "duplicate": false,
+    "l1_event_type": "customer",
+    "novelty": "new",
+    "materiality": true,
+    "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+    "affected_objects": {
+      "states": [],
+      "drivers": [
+        "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "bdrv_e605ec342c0a4888bec050bd17106982"
+      ],
+      "claims": [
+        "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "bclm_f4454cfe04e94211a79b23116bcf5de8"
+      ],
+      "exposures": []
+    },
+    "snapshot_objects": {
+      "states": [],
+      "drivers": [
+        "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "bdrv_e605ec342c0a4888bec050bd17106982"
+      ],
+      "claims": [
+        "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "bclm_f4454cfe04e94211a79b23116bcf5de8"
+      ],
+      "exposures": [],
+      "shadows": [],
+      "causal_edges": [
+        "bced_1895b016f22b453bad9e72780f6524bb",
+        "bced_d0ac1d3b35394c04a43c341c72a1ecfb"
+      ]
+    },
+    "snapshot_evidence_count": 2,
+    "snapshot_counter_evidence_count": 1,
+    "snapshot_history_count": 2,
+    "snapshot_size": 11,
+    "full_brain_size": 51,
+    "snapshot_reduction": 0.7843,
+    "glm53_called": true,
+    "glm52_called": true,
+    "proposal_count": 3,
+    "proposal_decisions": {
+      "approve": 3,
+      "reject": 0,
+      "requires_review": 0,
+      "items": [
+        {
+          "proposal_id": "bcpr_499244ae29b5454f868a74220e889c47",
+          "object_type": "shadow_state",
+          "object_id": "bssh_avgo_google_tpu_order_reduction",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "The event is an unconfirmed rumor (confidence: low, fact_reliability: rumor, source_tier: 3, anonymous sources). Rules prohibit rumor-driven changes to Current State, Value Drivers, or Core Claims, s…"
+        },
+        {
+          "proposal_id": "bcpr_a99ae1760fe445e28c9a13ecb6161bc7",
+          "object_type": "research_question",
+          "object_id": "brq_avgo_google_custom_silicon_exposure",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "A rumor requires verification and quantification before any state or claim change; the Brain currently lacks customer-level revenue data for Google, so this question gates whether the shadow state is…"
+        },
+        {
+          "proposal_id": "bcpr_114513616abd41b0875fef43fdd544da",
+          "object_type": "market_attention",
+          "object_id": "batt_avgo_google_tpu_rumor_202609",
+          "decision": "approve",
+          "reason_code": "",
+          "reason": "Counter-evidence already in the Brain shows unconfirmed/secondary hyperscaler-silicon news moved AVGO 3.9% (Marvell award). Tracking this rumor's market traction helps interpret price action without…"
+        }
+      ]
+    },
+    "changed_objects": [
+      "shadow_state:bssh_avgo_google_tpu_order_reduction",
+      "research_question:brq_avgo_google_custom_silicon_exposure",
+      "market_attention:batt_avgo_google_tpu_rumor_202609",
+      "shadow:bshd_47ec3e778158481dae2316d5a553e077",
+      "question:brq_52ae573894bf4998ae63baf5be824b6d"
+    ],
+    "critic_scope": "incremental",
+    "full_review_triggered": false,
+    "full_review_reason": null,
+    "token_usage": {
+      "input_tokens": 6172,
+      "output_tokens": 10660,
+      "total_tokens": 16832,
+      "latency_ms": 103669,
+      "calls": [
+        {
+          "step": "event_extract",
+          "role": "mechanical",
+          "model": "glm-5.2",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 470,
+          "output_tokens": 503,
+          "latency_ms": 9588,
+          "error": null
+        },
+        {
+          "step": "change_proposals",
+          "role": "reasoning",
+          "model": "glm-5.3",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 4592,
+          "output_tokens": 7890,
+          "latency_ms": 69643,
+          "error": null
+        },
+        {
+          "step": "independent_critic",
+          "role": "critic",
+          "model": "glm-5.3",
+          "llm_called": true,
+          "llm_status": "ok",
+          "input_tokens": 1110,
+          "output_tokens": 2267,
+          "latency_ms": 24438,
+          "error": null
+        }
+      ]
+    },
+    "latency_ms": 103672,
+    "current_state_unchanged": true,
+    "core_claims_unchanged": true,
+    "extract_fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+    "extract_entities": [
+      "Google",
+      "Broadcom"
+    ]
+  },
+  "context_miss": [],
+  "context_score": {
+    "expected_relevant_objects": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+      },
+      {
+        "kind": "driver",
+        "object_id": "bdrv_e605ec342c0a4888bec050bd17106982"
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+      },
+      {
+        "kind": "support_evidence",
+        "object_id": "rev_a65ae2866d404168b4b90236ae2f13a6"
+      }
+    ],
+    "retrieved_relevant_objects": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "label": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba"
+      },
+      {
+        "kind": "driver",
+        "object_id": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "label": "bdrv_e605ec342c0a4888bec050bd17106982"
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "label": "bclm_2f3b915b62064c8a98300c530fa331ff"
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "label": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+      },
+      {
+        "kind": "support_evidence",
+        "object_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "label": "rev_a65ae2866d404168b4b90236ae2f13a6"
+      }
+    ],
+    "missed_relevant_objects": [],
+    "obviously_irrelevant_objects": [],
+    "expected_count": 5,
+    "retrieved_relevant_count": 5,
+    "missed_count": 0,
+    "irrelevant_count": 0,
+    "context_recall": 1.0,
+    "context_precision": 1.0,
+    "support_evidence_miss": false,
+    "counter_evidence_miss": false,
+    "core_claim_retrieval_count": 2,
+    "evidence_body_count": 3
+  },
+  "anomalies": [],
+  "llm_calls": [
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.2",
+      "prompt_hash": "6fe92f05ea08266f28d34087c23b97fd6b9267a626073334e47e9e9a7196926a",
+      "latency_ms": 9588,
+      "input_tokens": 470,
+      "output_tokens": 503,
+      "total_tokens": 973,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "event_extract",
+      "role": "mechanical"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.3",
+      "prompt_hash": "4b81ced80585301062664a2adfb61e2aec55255492838d41225e075598361487",
+      "latency_ms": 69643,
+      "input_tokens": 4592,
+      "output_tokens": 7890,
+      "total_tokens": 12482,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "change_proposals",
+      "role": "reasoning"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "glm-5.3",
+      "prompt_hash": "f96e196d1a9e710a47e3fa9eed97806d03453528eb7c7cadbea66e4a10746edf",
+      "latency_ms": 24438,
+      "input_tokens": 1110,
+      "output_tokens": 2267,
+      "total_tokens": 3377,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "independent_critic",
+      "role": "critic"
+    }
+  ],
+  "elapsed_ms": 103672,
+  "claim_drift": [],
+  "state_drift": [],
+  "shadows_after": [
+    {
+      "shadow_id": "bshd_47ec3e778158481dae2316d5a553e077",
+      "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+      "statement": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed and uses anonymous sources.",
+      "status": "open"
+    },
+    {
+      "shadow_id": "bshd_261be5eba8a844a090bf1f605cdcc1d0",
+      "name": "unconfirmed_signal",
+      "statement": "Unconfirmed report (The Information, anonymous sources, tier 3, 2026-09-11) that Google may reduce Broadcom custom TPU/ASIC orders as it expands in-house silicon. If confirmed, this would cut custom AI silicon revenue f…",
+      "status": "unverified"
+    }
+  ],
+  "questions_after": [
+    {
+      "question_id": "brq_52ae573894bf4998ae63baf5be824b6d",
+      "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
+      "why_it_matters": "Weak signal is a research question, not a conclusion."
+    },
+    {
+      "question_id": "brq_8fed491890984108972a09536e637f9d",
+      "question": "What share of Broadcom's AI semiconductor (custom ASIC/TPU) revenue comes from Google, and what is the current status of the Google-Broadcom TPU design relationship, including next-generation design wins?",
+      "why_it_matters": "A rumor requires verification and quantification before any state or claim change; the Brain currently lacks customer-level revenue data for Google, so this question gates whether the shadow state is promoted, revised,…"
+    },
+    {
+      "question_id": "brq_cb6abdbbcc984d888a1c040de60e2037",
+      "question": "What percentage of Broadcom's AI semiconductor revenue is attributable to Google, and how much of the guided Q4 FY2026 $21.7B AI semiconductor revenue (and the reported plan to double AI semiconductor revenue in each of…",
+      "why_it_matters": "Needed to size the rumored order reduction; customer-level revenue is not disclosed in current evidence, so the exposure remains unmeasured."
+    },
+    {
+      "question_id": "brq_b40ceed2d860498f87488c687df15359",
+      "question": "Have Google or Broadcom confirmed, denied, or commented on the report, and is there corroborating evidence (supply-chain checks, TPU roadmap reporting, Google in-house silicon hiring) that Google is expanding internal s…",
+      "why_it_matters": "The report is unconfirmed with anonymous sources; verification status determines whether the shadow state should be promoted, revised, or discarded."
+    }
+  ]
+}
