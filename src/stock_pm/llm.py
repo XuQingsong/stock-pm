@@ -411,8 +411,22 @@ def complete_json(
         status = classify_llm_error(exc.status, exc.body)
         return _fail(status, f"HTTP {exc.status}: {exc.body[:400]}")
     except (HTTPError, URLError, TimeoutError, KeyError) as exc:
-        status = classify_llm_error(getattr(exc, "code", None), str(exc))
-        return _fail(status, str(exc))
+        if "timed out" in str(exc).lower() or isinstance(exc, TimeoutError):
+            try:
+                text, used_model, meta = _chat_openai_compatible(
+                    config,
+                    system,
+                    prompt,
+                    timeout=timeout,
+                    max_tokens=max_tokens,
+                    json_object=False,
+                )
+            except Exception as retry_exc:
+                status = classify_llm_error(getattr(retry_exc, "code", None), str(retry_exc))
+                return _fail(status, f"timeout retry failed: {retry_exc}")
+        else:
+            status = classify_llm_error(getattr(exc, "code", None), str(exc))
+            return _fail(status, str(exc))
     try:
         return {
             "status": "ok",

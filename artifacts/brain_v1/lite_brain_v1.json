@@ -1,0 +1,1555 @@
+{
+  "ticker": "LITE",
+  "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+  "status": "partial",
+  "prompt_version": "brain-v1",
+  "run_mode": "full",
+  "header": {
+    "ticker": "LITE",
+    "company_name": "Lumentum Holdings Inc.",
+    "sector": "光通信",
+    "industry": null,
+    "template_id": "semiconductor",
+    "price": {
+      "field": "price",
+      "value": 919.400024414062,
+      "origin": "reported",
+      "display": 919.400024414062
+    },
+    "price_timestamp": "2026-09-16",
+    "market_cap": {
+      "field": "market_cap",
+      "value": 71529320000.0,
+      "origin": "reported",
+      "display": 71529320000.0
+    },
+    "valuation": {
+      "pe_ttm": {
+        "field": "pe_ttm",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "pe_forward": {
+        "field": "pe_forward",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ps": {
+        "field": "ps",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ev_ebitda": {
+        "field": "ev_ebitda",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "fcf_yield": {
+        "field": "fcf_yield",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      }
+    },
+    "growth": {
+      "revenue_ttm": {
+        "field": "revenue_ttm",
+        "value": 3014000000.0,
+        "origin": "reported",
+        "display": 3014000000.0
+      },
+      "revenue_growth_yoy": {
+        "field": "revenue_growth_yoy",
+        "value": 83.22,
+        "origin": "reported",
+        "display": 83.22
+      },
+      "eps_ttm": {
+        "field": "eps_ttm",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "eps_growth_yoy": {
+        "field": "eps_growth_yoy",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      }
+    },
+    "latest_quarter": {
+      "report_date": "2026-08-11",
+      "period_end": "2026-06-27",
+      "fiscal_period": "Q4",
+      "fiscal_year": 2026,
+      "revenue": {
+        "field": "quarter_revenue",
+        "value": 1006300000.0,
+        "origin": "reported",
+        "display": 1006300000.0
+      },
+      "revenue_yoy": {
+        "field": "quarter_revenue_yoy",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "eps": {
+        "field": "quarter_eps",
+        "value": 2.64,
+        "origin": "reported",
+        "display": 2.64
+      },
+      "eps_yoy": {
+        "field": "quarter_eps_yoy",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "gross_margin": {
+        "field": "gross_margin",
+        "value": 47.43,
+        "origin": "reported",
+        "display": 47.43
+      },
+      "operating_margin": {
+        "field": "operating_margin",
+        "value": 27.76,
+        "origin": "reported",
+        "display": 27.76
+      },
+      "fcf": {
+        "field": "quarter_fcf",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "source": "Nasdaq earnings surprise+sec.companyfacts"
+    },
+    "forward": {
+      "management_guidance": {
+        "origin": "reported",
+        "text": "expect further increases in earnings power.” Fiscal Third Quarter Highlights: Net revenue for the third quarter of fiscal year 202",
+        "source": "sec.exhibit",
+        "count": 42
+      },
+      "consensus": {
+        "origin": "unavailable",
+        "reason": "no trusted consensus source is wired for Brain Phase 1"
+      },
+      "system_forecast": {
+        "origin": "unavailable",
+        "reason": "Phase 1 does not run a system forecast"
+      }
+    },
+    "missing_fields": [
+      "fcf",
+      "segment_growth"
+    ],
+    "pack_updated_at": "2026-09-17T10:50:17+00:00",
+    "is_fixture": false,
+    "source": "production"
+  },
+  "quality": {
+    "axes": {
+      "data_coverage": "Poor",
+      "news_coverage": "Partial",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Price, TTM, or latest-quarter fields are incomplete."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "financial_input_incomplete"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Company pack coverage is incomplete; per-claim evidence strength is assessed separately."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM consistency check failed: PM cited unbound number 83.22"
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "当前 LITE 数据覆盖不足。"
+      }
+    ],
+    "poor_axes": [
+      "data_coverage"
+    ],
+    "headline": "BRAIN QUALITY WARNING"
+  },
+  "drivers": [
+    {
+      "driver_id": "bdrv_049c404adfc742329615c2ac30841267",
+      "canonical_key": "datacom_laser_demand_durability",
+      "name": "Datacom laser demand durability (cloud/AI datacenter capex cycle)",
+      "category": "demand",
+      "financial_link": "revenue",
+      "current_state": "Management attributes rising revenue and margins to increased Datacom laser shipments into Cloud & Networking; Q1 FY2027 guided to $1.225B-$1.275B vs. $533.8M a year earlier (~129-139% YoY derived), an acceleration from the 83.22% TTM pace. No independent industry data confirms",
+      "importance": "high",
+      "uncertainty": "high",
+      "why_it_matters": "Nearly all incremental revenue, the margin ramp, and the guided acceleration derive from this single demand source. If cloud/AI datacenter optical demand pauses, revenue growth and margin expansion reverse together, and a valuation priced for sustained hypergrowth compresses. Cycle duration is the largest determinant of terminal enterprise value.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_15b8a51a64b6417eb355974725fc6b1d",
+        "rev_bf1fd788e8ec4a91afc4debf35742e2b"
+      ],
+      "related_claim_ids": [
+        "bclm_a64914a9f0cc4e339e450002b9385756",
+        "bclm_4dcae81dc9ae4b98920c14c844381433"
+      ]
+    },
+    {
+      "driver_id": "bdrv_187c57fbf9854a219dd701f5b58c9d31",
+      "canonical_key": "cloud_networking_customer_concentration",
+      "name": "Customer concentration within Cloud & Networking",
+      "category": "customer_concentration",
+      "financial_link": "revenue",
+      "current_state": "Growth is concentrated in Datacom lasers / Cloud & Networking per management commentary; customer names, concentration percentages, and backlog are absent from the pack, so concentration is plausible but unmeasured.",
+      "importance": "high",
+      "uncertainty": "high",
+      "why_it_matters": "If a few hyperscale customers drive the ramp, a single order pause, inventory correction, or dual-sourcing decision could abruptly cut revenue. Concentration also shapes pricing power and the credibility of multi-quarter guidance, making unquantified concentration a major tail risk to the guided ramp.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "related_claim_ids": [
+        "bclm_da1b3148de4540ce95039ebb8706c0fb"
+      ]
+    },
+    {
+      "driver_id": "bdrv_cc65a2e3865944059252a966e302a7d6",
+      "canonical_key": "capacity_scaling_execution",
+      "name": "Capacity scaling execution",
+      "category": "capacity",
+      "financial_link": "volume",
+      "current_state": "Management cites ongoing investments to scale operations alongside the guided ramp to $1.225B-$1.275B quarterly revenue (~22-27% sequential); capex, FCF, utilization, and bottleneck specifics are not in the pack.",
+      "importance": "high",
+      "uncertainty": "high",
+      "why_it_matters": "The guided sequential ramp requires manufacturing, supply chain, and operations to scale in step. Shortfalls would surface as missed guidance (as in Q1-Q3 FY2026), while over-building would pressure returns and cash flow; execution here gates the entire hypergrowth thesis.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_15b8a51a64b6417eb355974725fc6b1d"
+      ],
+      "related_claim_ids": [
+        "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+      ]
+    },
+    {
+      "driver_id": "bdrv_07bc16b5b6da4091a29b599ecf020079",
+      "canonical_key": "operating_leverage_margin_sensitivity",
+      "name": "Operating leverage / margin sensitivity to volume",
+      "category": "margin",
+      "financial_link": "operating_margin",
+      "current_state": "GAAP operating margin swung from -43.3% (Q4 FY2024) to +27.8% (Q4 FY2026) and rose 21.6% to 27.8% Q3-to-Q4 FY2026 (non-GAAP 32.2% to 36.6%); management cites ongoing investments to scale operations, so the leverage works in both directions.",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "High operating leverage makes EPS hyper-sensitive to revenue direction: the swing from -$3.75 quarterly EPS to +$2.64 was mostly volume-driven. The same leverage would compress margins quickly if datacom demand pauses, amplifying downside well beyond the revenue loss itself.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "related_claim_ids": [
+        "bclm_986de26cac724ea7969121478348b2d7"
+      ]
+    },
+    {
+      "driver_id": "bdrv_ff500c1da9a2411f82d84e235dbca603",
+      "canonical_key": "gross_margin_durability_at_scale",
+      "name": "Gross margin durability at scale",
+      "category": "margin",
+      "financial_link": "gross_margin",
+      "current_state": "GAAP gross margin rose 44.2% to 47.4% and non-GAAP 47.9% to 50.4% Q3-to-Q4 FY2026, attributed to better manufacturing utilization and favorable mix from increased Datacom laser shipments.",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "Each gross-margin point on a >$1B quarterly revenue base moves operating profit materially. If utilization or mix normalizes — or datacom laser pricing erodes — recent gains could unwind, directly hitting EPS and undermining management's stated expectation of further increases in earnings power.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "related_claim_ids": [
+        "bclm_986de26cac724ea7969121478348b2d7"
+      ]
+    },
+    {
+      "driver_id": "bdrv_6bc7fa57584b466b8645560b26605481",
+      "canonical_key": "segment_mix_datacom_weight",
+      "name": "Product/segment mix shift toward Datacom",
+      "category": "product_mix",
+      "financial_link": "gross_margin",
+      "current_state": "Revenue and margin gains are concentrated in Datacom lasers / Cloud & Networking per management commentary; the pack contains no segment revenue split, growth rates, or segment profitability (segment_growth flagged missing).",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "Mix determines blended growth, margin, and cyclicality: heavier Datacom weight lifts margins while volumes ramp but concentrates exposure to one capex cycle. Without segment data, investors cannot see whether other businesses are growing, stable, or shrinking — key to terminal value and downside severity.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "related_claim_ids": [
+        "bclm_a64914a9f0cc4e339e450002b9385756",
+        "bclm_da1b3148de4540ce95039ebb8706c0fb"
+      ]
+    },
+    {
+      "driver_id": "bdrv_10bf02486f994176ad102add18b389f1",
+      "canonical_key": "valuation_hypergrowth_dependency",
+      "name": "Valuation dependency on sustained hypergrowth",
+      "category": "valuation",
+      "financial_link": "multiple",
+      "current_state": "Price $919.40 (2026-09-16) and market cap ~$71.53B against $3.014B TTM revenue imply a derived ~23.7x TTM sales; the multiple embeds continuation of the guided ramp and margin expansion, with no consensus or system forecast available as a cross-check.",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "At a derived ~23.7x TTM sales, the market cap assumes the guided ramp and margin expansion persist for years. Any deceleration in datacom demand, guidance, or margins would compress the multiple severely — valuation is the primary transmission channel for every fundamental risk in this name.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "related_claim_ids": [
+        "bclm_4dcae81dc9ae4b98920c14c844381433"
+      ]
+    },
+    {
+      "driver_id": "bdrv_fd106fd3aa5d4c228e1ac3bf3c403b0e",
+      "canonical_key": "guidance_execution_credibility",
+      "name": "Guidance and estimate execution credibility",
+      "category": "valuation",
+      "financial_link": "multiple",
+      "current_state": "EPS missed estimates Q1-Q3 FY2026 ($0.05 vs $0.59, $0.89 vs $0.97, $1.50 vs $1.81) before the Q4 beat ($2.64 vs $2.62); Q1 FY2027 revenue guided to $1.225B-$1.275B with management expecting further increases in earnings power.",
+      "importance": "medium",
+      "uncertainty": "medium",
+      "why_it_matters": "In a stock valued on forward estimates, repeated misses compress the multiple and amplify drawdowns — the Q3 FY2026 miss drove a -5.06% next-day return after a +25.68% five-day run. Sustained delivery of the new guide would rebuild credibility and support the premium multiple.",
+      "evidence_ids": [
+        "rev_2746bf86784647779c9bdfad10215893",
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_15b8a51a64b6417eb355974725fc6b1d"
+      ],
+      "related_claim_ids": [
+        "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+      ]
+    },
+    {
+      "driver_id": "bdrv_33784f1f07c648f8a660d705c4116de0",
+      "canonical_key": "gaap_non_gaap_margin_gap",
+      "name": "GAAP vs. non-GAAP margin gap",
+      "category": "accounting_quality",
+      "financial_link": "operating_margin",
+      "current_state": "Q4 FY2026 GAAP vs non-GAAP: operating margin 27.8% vs 36.6% (~880bp gap, narrowed from ~1,060bp in Q3), gross margin 47.4% vs 50.4%; the add-back line items behind the gap are not disclosed in the pack.",
+      "importance": "medium",
+      "uncertainty": "medium",
+      "why_it_matters": "The size and persistence of non-GAAP add-backs determine whether GAAP earnings power is structurally below headline margins. A narrowing gap supports GAAP EPS quality and the profitability turnaround; a widening one would flag rising stock comp, amortization, or restructuring costs diluting reported results.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "related_claim_ids": []
+    }
+  ],
+  "core_claims": [
+    {
+      "claim_id": "bclm_a64914a9f0cc4e339e450002b9385756",
+      "claim_key": "bck_7c527fc334c6e347cd40",
+      "title": "Datacom laser demand durability is the single largest determinant of LITE's terminal value",
+      "statement": "Lumentum's revenue and margins ramped sequentially through fiscal 2026 — revenue rose from $808.4 million in fiscal Q3 2026 to $1.01 billion in fiscal Q4 2026, with non-GAAP gross margin expanding from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6% — and management issued fiscal Q1 2027 guidance; financial media frames LITE within the AI-optics sector. Whether this ramp is driven primarily by Datacom laser shipments into cloud/AI datacenter buildouts, and whether that demand persists for multiple years as a structural shift versus a shorter capex cycle, remains unverified: t…",
+      "status": "partially_supported",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_049c404adfc742329615c2ac30841267",
+        "bdrv_6bc7fa57584b466b8645560b26605481"
+      ],
+      "why_it_matters": "Management guided Q1 FY2027 revenue to $1.225B-$1.275B versus $1.01B delivered in Q4 FY2026, an acceleration layered on an already steep ramp. If the cycle is shorter than the valuation assumes, revenue growth and margin expansion reverse together; if it is a multi-year structural shift, current results are an early point on a long curve. Cycle duration, not current momentum, sets terminal enterp…"
+    },
+    {
+      "claim_id": "bclm_986de26cac724ea7969121478348b2d7",
+      "claim_key": "bck_eb84e18ebffcb0fb0ea3",
+      "title": "Margin expansion is volume-driven and cyclical, not yet proven structural",
+      "statement": "Lumentum's Q3-to-Q4 FY2026 margin expansion is documented in primary filings: non-GAAP gross margin rose from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6% (GAAP gross 44.2% to 47.4%; GAAP operating 21.6% to 27.8%) as net revenue grew approximately 25% sequentially from $808.4M to $1.01B. Operating margin expanding more than gross margin alongside a sharp volume ramp is consistent with fixed-cost operating leverage, supporting a volume/utilization component to the expansion. However, no evidence currently attributes the expansion to specific drivers (price, mix, utilization…",
+      "status": "partially_supported",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_ff500c1da9a2411f82d84e235dbca603",
+        "bdrv_07bc16b5b6da4091a29b599ecf020079"
+      ],
+      "why_it_matters": "Each margin point on a quarterly revenue base above $1B moves operating profit materially, and the same operating leverage that produced the expansion would compress margins quickly on any volume pause. Whether current GAAP gross margin is a floor or a peak is a primary input to any terminal-value model and to management's stated expectation of further increases in earnings power."
+    },
+    {
+      "claim_id": "bclm_da1b3148de4540ce95039ebb8706c0fb",
+      "claim_key": "bck_7c32253db9721c05a907",
+      "title": "Unquantified customer concentration in Cloud & Networking is the dominant tail risk",
+      "statement": "Lumentum's net revenue rose from $808.4 million in fiscal Q3 2026 to approximately $1.01 billion in fiscal Q4 2026 (roughly 25% sequential growth), and management issued a Q1 FY2027 forecast. The provided earnings-release excerpts do not quantify end-market or customer concentration, so the source of the ramp and the degree of customer concentration cannot be determined from available evidence; whether a single-customer order pause, inventory correction, or dual-sourcing decision could break the guided ramp remains an untested hypothesis",
+      "status": "unverified",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_187c57fbf9854a219dd701f5b58c9d31",
+        "bdrv_6bc7fa57584b466b8645560b26605481"
+      ],
+      "why_it_matters": "Concentration shapes pricing power, guidance credibility, and downside severity: with growth this steep from one end-market, the difference between three customers and thirty determines whether one decision at a single hyperscaler is a small revenue event or a large one, and whether multi-quarter guidance can be trusted."
+    },
+    {
+      "claim_id": "bclm_4dcae81dc9ae4b98920c14c844381433",
+      "claim_key": "bck_93b204cc10a99bd23303",
+      "title": "The valuation embeds multi-year hypergrowth and is the transmission channel for every fundamental risk",
+      "statement": "Primary filings document a steep fundamental ramp: Lumentum's net revenue rose from $808.4 million in fiscal Q3 2026 to $1.01 billion in fiscal Q4 2026 (roughly 25% sequentially, derived), with non-GAAP gross margin expanding from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6%, and management issued a fiscal Q1 2027 forecast (figures not available in the retrieved excerpt). The stock showed large single-day moves in the post-earnings window (+6.44% on August 26, 2026). Whether the current market price capitalizes multi-year persistence of this ramp, and whether deceleration…",
+      "status": "unverified",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_10bf02486f994176ad102add18b389f1",
+        "bdrv_049c404adfc742329615c2ac30841267"
+      ],
+      "why_it_matters": "At the reported market cap of roughly $71.5B against reported TTM revenue of roughly $3.0B, the stock trades at a derived ~23.7x TTM sales (arithmetic on reported pack figures; official PE, forward PE, EV/EBITDA, and FCF yield are unavailable). The multiple is the primary transmission channel for the demand, margin, concentration, and execution risks - the same fundamentals matter more here than…"
+    },
+    {
+      "claim_id": "bclm_a7e142b3ba5f4d53b6a7d333505031e2",
+      "claim_key": "bck_aeddfbe0b2af154e9575",
+      "title": "Capacity scaling execution gates the guided sequential ramp",
+      "statement": "Lumentum delivered $1.01B net revenue in Q4 FY2026 (primary filing), up approximately 25% sequentially from $808.4M in Q3 FY2026, demonstrating that a large single-quarter revenue ramp was recently executed. Management issued a Q1 FY2027 forecast (the guidance range is not verifiable in current evidence). Whether delivering the next sequential step-up is gated by execution (manufacturing, supply chain, operations scaling) or by demand cannot be determined from current evidence; no capacity, capex, hiring, or demand-side data is available",
+      "status": "partially_supported",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_cc65a2e3865944059252a966e302a7d6",
+        "bdrv_fd106fd3aa5d4c228e1ac3bf3c403b0e"
+      ],
+      "why_it_matters": "The company is making ongoing investments to scale operations while guiding a steep sequential step-up; a shortfall would break the guidance-credibility loop supporting the premium multiple, while over-building would pressure returns and cash flow. Capex, FCF, utilization, and bottleneck specifics are absent from the pack, so execution capacity cannot be assessed from current evidence."
+    }
+  ],
+  "states": [
+    {
+      "state_id": "bst_0e2d18114b38466f9a8573ef0140cd9d",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "revenue_hypergrowth",
+      "statement": "Lumentum's revenue is in hypergrowth: reported TTM (FY2026) revenue of $3.014B, up 83.22% YoY, with quarterly revenue ramping from $308.3M (Q4 FY2024) to $533.8M (Q1 FY2026), $808.4M (Q3 FY2026), and $1.0063B (Q4 FY2026) - landing within management's $960M-$1.01B Q4 guidance",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_bf1fd788e8ec4a91afc4debf35742e2b",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_83b2b0de38e3e4a70b18",
+      "subject": "revenue_hypergrowth",
+      "qualitative_state": "Lumentum's revenue is in hypergrowth: reported TTM (FY2026) revenue of $3.014B, up 83.22% YoY, with quarterly revenue ramping from $308.3M (Q4 FY2024) to $533.8M",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_4e799a833b02455b9980795d1a1146e4",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "margin_expansion",
+      "statement": "Margins are expanding rapidly alongside volume: GAAP gross margin rose from 44.2% (Q3 FY2026) to 47.4% (Q4 FY2026) with non-GAAP gross margin at 50.4%; GAAP operating margin rose from 21.6% to 27.8% (non-GAAP 36.6%). Management commentary in the pack attributes",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_e3a1dc64ec4cdeeccd5f",
+      "subject": "margin_expansion",
+      "qualitative_state": "Margins are expanding rapidly alongside volume: GAAP gross margin rose from 44.2% (Q3 FY2026) to 47.4% (Q4 FY2026) with non-GAAP gross margin at 50.4%;",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_6aa1d0b94faa4f8ab3f7124942c1d6a4",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "guidance_acceleration",
+      "statement": "Management guided Q1 FY2027 net revenue to $1.225B-$1.275B; versus reported Q4 FY2026 revenue of $1.0063B and Q1 FY2026 revenue of $533.8M this implies roughly 22-27% sequential and 129-139% YoY growth (derived arithmetic on reported figures) - an acceleration from the",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_15b8a51a64b6417eb355974725fc6b1d",
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_e525dd1658c843bb5e88",
+      "subject": "guidance_acceleration",
+      "qualitative_state": "Management guided Q1 FY2027 net revenue to $1.225B-$1.275B; versus reported Q4 FY2026 revenue of $1.0063B and Q1 FY2026 revenue of $533.8M this implies roughly",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_27fdc1fbe8724a1e8038abc7bbfc631f",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "profitability_turnaround",
+      "statement": "Per the pack's reported earnings history, Lumentum completed an eight-quarter swing from deep losses to strong profits: EPS went from -$3.75 (Q4 FY2024, operating margin -43.3%) and -$1.21 (Q1 FY2025) to +$0.05 (Q1 FY2026), +$1.50 (Q3 FY2026), and +$2.64 (Q4",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_de0efc550017788ed4af",
+      "subject": "profitability_turnaround",
+      "qualitative_state": "Per the pack's reported earnings history, Lumentum completed an eight-quarter swing from deep losses to strong profits: EPS went from -$3.75 (Q4 FY2024, operating",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_fcc30670ee854509b127acb3abd3e2c9",
+      "ticker": "LITE",
+      "state_type": "industry",
+      "name": "implied_industry_tailwind",
+      "statement": "Inference (low confidence): Lumentum's datacom laser ramp implies a strong industry tailwind in optical components for cloud/AI datacenter buildouts; however, no independent industry-level demand, market-share, or competitor data is present in the pack to confirm the breadth or duration of",
+      "direction": "positive",
+      "confidence": "low",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_46ae1056c8786e105fa2",
+      "subject": "implied_industry_tailwind",
+      "qualitative_state": "Inference (low confidence): Lumentum's datacom laser ramp implies a strong industry tailwind in optical components for cloud/AI datacenter buildouts; however, no independent industry-level demand,",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_aa09b9a82d5f4fa39a73adc64a9a0b20",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "valuation_rich_vs_revenue",
+      "statement": "At a reported price of $919.40 (2026-09-16) and market cap of ~$71.53B against $3.014B TTM revenue, LITE trades at a derived ~23.7x TTM sales (arithmetic on reported figures; official PE/PS/EV-EBITDA/FCF-yield are unavailable in the pack). The valuation embeds sustained hypergrowth",
+      "direction": "negative",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_4938bcd84e694aae3a23",
+      "subject": "valuation_rich_vs_revenue",
+      "qualitative_state": "At a reported price of $919.40 (2026-09-16) and market cap of ~$71.53B against $3.014B TTM revenue, LITE trades at a derived ~23.7x TTM sales",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_b47e5312e2964bb9b7d7be94869717f7",
+      "ticker": "LITE",
+      "state_type": "event",
+      "name": "q4_fy26_earnings_event",
+      "statement": "The Q4 FY2026 earnings event (reported 2026-08-11) was strongly received: revenue of $1.01B within the guided $960M-$1.01B range, EPS $2.64 vs. a $2.62 estimate, and a +13.63% next-day return on 2.45x average volume (outperforming SOXX by 11.31 points), followed by",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_bf1fd788e8ec4a91afc4debf35742e2b"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_50800342a3b70003d409",
+      "subject": "q4_fy26_earnings_event",
+      "qualitative_state": "The Q4 FY2026 earnings event (reported 2026-08-11) was strongly received: revenue of $1.01B within the guided $960M-$1.01B range, EPS $2.64 vs. a $2.62 estimate,",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_d165b35bddcd4b6d826cde51f54d31ef",
+      "ticker": "LITE",
+      "state_type": "event",
+      "name": "estimate_miss_pattern",
+      "statement": "Despite the revenue ramp, Lumentum missed EPS estimates in Q1-Q3 FY2026 ($0.05 vs. $0.59, $0.89 vs. $0.97, $1.50 vs. $1.81) before the Q4 beat ($2.64 vs. $2.62); the Q3 miss drove a -5.06% next-day return after a +25.68% five-day pre-earnings",
+      "direction": "negative",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_f451986a77b2d28abb7a",
+      "subject": "estimate_miss_pattern",
+      "qualitative_state": "Despite the revenue ramp, Lumentum missed EPS estimates in Q1-Q3 FY2026 ($0.05 vs. $0.59, $0.89 vs. $0.97, $1.50 vs. $1.81) before the Q4 beat",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_f7a7d50711de4026b693350dc958def8",
+      "ticker": "LITE",
+      "state_type": "company",
+      "name": "demand_concentration_operating_leverage",
+      "statement": "Growth is concentrated in Datacom lasers / Cloud & Networking per management commentary, with ongoing investments to scale operations; given operating leverage this high (operating margin swung ~71 points from -43.3% to +27.8% in two years), a pause in cloud",
+      "direction": "negative",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T06:32:28+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:32:28+00:00",
+      "updated_at": "2026-09-18T06:32:28+00:00",
+      "state_key": "bsk_70c25ae07ebdb09a7bb1",
+      "subject": "demand_concentration_operating_leverage",
+      "qualitative_state": "Growth is concentrated in Datacom lasers / Cloud & Networking per management commentary, with ongoing investments to scale operations; given operating leverage this high",
+      "current_value": null,
+      "related_entities": []
+    }
+  ],
+  "events": [
+    {
+      "event_id": "bev_381c302ba8f5424a93eac1c8ea11fbad",
+      "event_type": "guidance",
+      "title": "Stocks Tumble as Fed Hikes Interest Rates and Signals More to Come",
+      "materiality": "context",
+      "fingerprint": "bevfp_23759432a3553b99a986"
+    },
+    {
+      "event_id": "bev_f3241504437d4322912945800e396e24",
+      "event_type": "earnings",
+      "title": "FPS Q4 Earnings Beat Estimates on Powertrain Solutions Growth",
+      "materiality": "noise",
+      "fingerprint": "bevfp_20d8f8a6c210f32043f7"
+    },
+    {
+      "event_id": "bev_6fc10108f6e44f82b5d8c3fb9addda72",
+      "event_type": "supply",
+      "title": "AXT's Geographic Reach Expands: Can It Drive More Revenue Growth?",
+      "materiality": "context",
+      "fingerprint": "bevfp_b06a7e1971cd3e692f6b"
+    },
+    {
+      "event_id": "bev_18b8a9e768734ee5b73456365e3654e2",
+      "event_type": "other",
+      "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+      "materiality": "noise",
+      "fingerprint": "bevfp_218275cb07191e44fd2f"
+    },
+    {
+      "event_id": "bev_096db6dc91dd40acbda2164704e54a0e",
+      "event_type": "earnings",
+      "title": "LITE Stock Rallies As Analysts Chase AI Optics Boom",
+      "materiality": "context",
+      "fingerprint": "bevfp_fc610ef4722bee7d079a"
+    },
+    {
+      "event_id": "bev_fc1719b132c246359d125fd35e952ddb",
+      "event_type": "guidance",
+      "title": "LITE Stock Climbs As Analysts Chase Aggressive AI Outlook",
+      "materiality": "noise",
+      "fingerprint": "bevfp_c1ba4ae8977c4f7ca716"
+    },
+    {
+      "event_id": "bev_5f7ca2120b0e4348ad7ee15500c5c36d",
+      "event_type": "other",
+      "title": "Lumentum (LITE) Stock Forecast & Price Target (2026)",
+      "materiality": "context",
+      "fingerprint": "bevfp_5ade67513e5a7bf958f5"
+    },
+    {
+      "event_id": "bev_57c1148909784964953875d0471a7468",
+      "event_type": "other",
+      "title": "What Is Lumentum Holdings (LITE) Stock Tied Token LITEON Really About?",
+      "materiality": "noise",
+      "fingerprint": "bevfp_f06b1284f769a292205f"
+    },
+    {
+      "event_id": "bev_fde5dbd02f19464c894de99454bd38b6",
+      "event_type": "other",
+      "title": "Lumentum Sets ECOC 2026 Speaker Schedule | LITE Stock News",
+      "materiality": "noise",
+      "fingerprint": "bevfp_1fab42093fb66d6b6cea"
+    },
+    {
+      "event_id": "bev_4259809c813442adb4a8c6ceec557933",
+      "event_type": "other",
+      "title": "Electreon unveils new charging solution at IAA Transportation 2026 With Lite DOT: Charging electric vehicles without cables",
+      "materiality": "noise",
+      "fingerprint": "bevfp_f74ee2dd22e787af8699"
+    },
+    {
+      "event_id": "bev_a4f0bb253d514542939fe2db7ab09cc5",
+      "event_type": "other",
+      "title": "Lumentum (LITE) Stock Could Be Fully Priced Despite Fresh AI Demand News",
+      "materiality": "context",
+      "fingerprint": "bevfp_bd3c1032745dcdbfffa0"
+    },
+    {
+      "event_id": "bev_cc654db3f89e4408b1f762ae9c8dde46",
+      "event_type": "mna",
+      "title": "Lumentum shares fall as AI-optics group weakens after peer financing move | Quiver Quantitative",
+      "materiality": "context",
+      "fingerprint": "bevfp_89e0ddeceb0e64be4798"
+    }
+  ],
+  "exposures": [
+    {
+      "exposure_id": "bexp_645413143d674d2987dbb4a82484de80",
+      "ticker": "LITE",
+      "state_or_event": "bev_381c302ba8f5424a93eac1c8ea11fbad",
+      "event_id": "bev_381c302ba8f5424a93eac1c8ea11fbad",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_098ef7dc2a5146d091eec02ca615f85e",
+      "ticker": "LITE",
+      "state_or_event": "bev_f3241504437d4322912945800e396e24",
+      "event_id": "bev_f3241504437d4322912945800e396e24",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_816c239ef2df4a26b3a06663537d34cb",
+      "ticker": "LITE",
+      "state_or_event": "bev_6fc10108f6e44f82b5d8c3fb9addda72",
+      "event_id": "bev_6fc10108f6e44f82b5d8c3fb9addda72",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_20cdf3bdeb9047a493b802bb321ffea8",
+      "ticker": "LITE",
+      "state_or_event": "bev_18b8a9e768734ee5b73456365e3654e2",
+      "event_id": "bev_18b8a9e768734ee5b73456365e3654e2",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_25c0f58ab7af4cdeade2317234a4bcce",
+      "ticker": "LITE",
+      "state_or_event": "bev_096db6dc91dd40acbda2164704e54a0e",
+      "event_id": "bev_096db6dc91dd40acbda2164704e54a0e",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "support",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_3618210b292543d794e9f4de0b9e1860",
+      "ticker": "LITE",
+      "state_or_event": "bev_fc1719b132c246359d125fd35e952ddb",
+      "event_id": "bev_fc1719b132c246359d125fd35e952ddb",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_37be4224a0bf45f48846fdd9c0832736",
+      "ticker": "LITE",
+      "state_or_event": "bev_5f7ca2120b0e4348ad7ee15500c5c36d",
+      "event_id": "bev_5f7ca2120b0e4348ad7ee15500c5c36d",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_0ae8e4a1561a4237a5f92ce70ca287d7",
+      "ticker": "LITE",
+      "state_or_event": "bev_57c1148909784964953875d0471a7468",
+      "event_id": "bev_57c1148909784964953875d0471a7468",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_bf2daade05054b44899c2c0e918fc214",
+      "ticker": "LITE",
+      "state_or_event": "bev_fde5dbd02f19464c894de99454bd38b6",
+      "event_id": "bev_fde5dbd02f19464c894de99454bd38b6",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_986b176a73b64fb08daf822f56c56aa7",
+      "ticker": "LITE",
+      "state_or_event": "bev_4259809c813442adb4a8c6ceec557933",
+      "event_id": "bev_4259809c813442adb4a8c6ceec557933",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_9c8a7787a0084dfdb7941883775b5601",
+      "ticker": "LITE",
+      "state_or_event": "bev_a4f0bb253d514542939fe2db7ab09cc5",
+      "event_id": "bev_a4f0bb253d514542939fe2db7ab09cc5",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "support",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    },
+    {
+      "exposure_id": "bexp_8a933c2299c64b2fa102226144309b6b",
+      "ticker": "LITE",
+      "state_or_event": "bev_cc654db3f89e4408b1f762ae9c8dde46",
+      "event_id": "bev_cc654db3f89e4408b1f762ae9c8dde46",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "support",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [
+        "rev_94263a065bdc49f9a3c412d53c49fda7"
+      ],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:47:51+00:00"
+    }
+  ],
+  "transmissions": [],
+  "financial_impacts": [
+    {
+      "impact_id": "bfi_d84f6c0e2d0444cb807456d407193332",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_049c404adfc742329615c2ac30841267",
+      "metric": "revenue",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "long",
+      "confidence": "high",
+      "mechanism": "Nearly all incremental revenue, the margin ramp, and the guided acceleration derive from this single demand source. If cloud/AI datacenter optical demand pauses, revenue growth and margin expansion reverse together, and a valuation priced for sustained hypergrowth compresses. Cycle duration",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_41001c5352a1460784c53b03d8fe875d",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_187c57fbf9854a219dd701f5b58c9d31",
+      "metric": "revenue",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "high",
+      "mechanism": "If a few hyperscale customers drive the ramp, a single order pause, inventory correction, or dual-sourcing decision could abruptly cut revenue. Concentration also shapes pricing power and the credibility of multi-quarter guidance, making unquantified concentration a major tail risk to",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_8b54c790826445da8031154e818c996c",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_cc65a2e3865944059252a966e302a7d6",
+      "metric": "volume",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "high",
+      "mechanism": "The guided sequential ramp requires manufacturing, supply chain, and operations to scale in step. Shortfalls would surface as missed guidance (as in Q1-Q3 FY2026), while over-building would pressure returns and cash flow; execution here gates the entire hypergrowth thesis.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_597b398a5bcf4a938876b5f6de6e6637",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_07bc16b5b6da4091a29b599ecf020079",
+      "metric": "operating_margin",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "High operating leverage makes EPS hyper-sensitive to revenue direction: the swing from -$3.75 quarterly EPS to +$2.64 was mostly volume-driven. The same leverage would compress margins quickly if datacom demand pauses, amplifying downside well beyond the revenue loss itself.",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_25dce38430bb416a85fc4fe7f648e118",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_ff500c1da9a2411f82d84e235dbca603",
+      "metric": "gross_margin",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "Each gross-margin point on a >$1B quarterly revenue base moves operating profit materially. If utilization or mix normalizes — or datacom laser pricing erodes — recent gains could unwind, directly hitting EPS and undermining management's stated expectation of further increases",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_d1d23c484d51478d8062f686393ae296",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_6bc7fa57584b466b8645560b26605481",
+      "metric": "gross_margin",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "Mix determines blended growth, margin, and cyclicality: heavier Datacom weight lifts margins while volumes ramp but concentrates exposure to one capex cycle. Without segment data, investors cannot see whether other businesses are growing, stable, or shrinking — key to terminal",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_291fb8939adb46ef830d76eed0076e7c",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_10bf02486f994176ad102add18b389f1",
+      "metric": "multiple",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "At a derived ~23.7x TTM sales, the market cap assumes the guided ramp and margin expansion persist for years. Any deceleration in datacom demand, guidance, or margins would compress the multiple severely — valuation is the primary transmission channel for",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_ab4c988c5c5e48a19672346a1cd4d6df",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_fd106fd3aa5d4c228e1ac3bf3c403b0e",
+      "metric": "multiple",
+      "direction": "mixed",
+      "magnitude_range": {},
+      "time_horizon": "short",
+      "confidence": "medium",
+      "mechanism": "In a stock valued on forward estimates, repeated misses compress the multiple and amplify drawdowns — the Q3 FY2026 miss drove a -5.06% next-day return after a +25.68% five-day run. Sustained delivery of the new guide would rebuild credibility and",
+      "evidence_ids": [
+        "rev_2746bf86784647779c9bdfad10215893",
+        "rev_ab1965f3cdb44c1bb501d023787a61b1"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    },
+    {
+      "impact_id": "bfi_1a1d9c822d394924b20c6e3d29aee95e",
+      "ticker": "LITE",
+      "object_type": "driver",
+      "object_id": "bdrv_33784f1f07c648f8a660d705c4116de0",
+      "metric": "operating_margin",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "The size and persistence of non-GAAP add-backs determine whether GAAP earnings power is structurally below headline margins. A narrowing gap supports GAAP EPS quality and the profitability turnaround; a widening one would flag rising stock comp, amortization, or restructuring costs",
+      "evidence_ids": [
+        "rev_ab1965f3cdb44c1bb501d023787a61b1",
+        "rev_2746bf86784647779c9bdfad10215893"
+      ],
+      "direction_only": true,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    }
+  ],
+  "critic": {
+    "issues": [
+      {
+        "issue_id": "bcri_fad7e358559b426a9501f8d7462ed439",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_6aa1d0b94faa4f8ab3f7124942c1d6a4, bdrv_049c404adfc742329615c2ac30841267, bd…",
+        "reasoning": "The Q1 FY2027 guidance range ($1.225B–$1.275B) is asserted as fact citing rev_15b8a51a64b6417eb355974725fc6b1d, which is absent from the evidence array. Meanwhile claim bclm_a7e142b3ba5f4d53b6a7d333505031e2 states the guidance range is 'not verifiable in current evidence' — an internal contradiction. The only in-boundary Q4 release excerpt truncates before the guidance figure.",
+        "required_fix": "Either add the guidance evidence to the set and correct the claim, or downgrade the guidance range to unverified in the state and drivers.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_88fdf63ba017417a9c20ad2e618c0b8a",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_b47e5312e2964bb9b7d7be94869717f7, bst_0e2d18114b38466f9a8573ef0140cd9d, bdr…",
+        "reasoning": "These objects cite rev_bf1fd788e8ec4a91afc4debf35742e2b, which is not in the evidence array. Unsupported facts include the +13.63% next-day return, 2.45x volume, SOXX outperformance, and the Q4 FY2024/Q1 FY2026 quarterly revenue ramp ($308.3M, $533.8M). No available evidence contains market-reaction or pre-FY2026 quarterly data.",
+        "required_fix": "Re-source market-reaction and historical quarterly figures from evidence inside the boundary, or remove/mark them unverified.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_b4cdeed0811642bbae711998f1827e1e",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "medium",
+        "affected_object": "bdrv_10bf02486f994176ad102add18b389f1, bst_aa09b9a82d5f4fa39a73adc64a9a0b20",
+        "reasoning": "The driver cites the 2026-08-11 earnings release for a $919.40 price dated 2026-09-16 and ~$71.53B market cap; a filing from 2026-08-11 cannot contain a 2026-09-16 price. The valuation state itself carries empty evidence_ids, so the derived ~23.7x TTM sales multiple rests on unsourced market data.",
+        "required_fix": "Attach a dated market-data evidence item for price and market cap, or explicitly mark the valuation inputs as unsourced.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_0722a12b94894dfabd42851c6d7b25d9",
+        "issue_type": "unsupported_leap",
+        "severity": "medium",
+        "affected_object": "bst_d165b35bddcd4b6d826cde51f54d31ef, bst_27fdc1fbe8724a1e8038abc7bbfc631f",
+        "reasoning": "Consensus EPS estimates ($0.59, $0.97, $1.81, $2.62), the -5.06% next-day return, and FY2024–FY2025 EPS history (-$3.75, -$1.21) are not contained in the cited Q3/Q4 FY2026 releases; no estimate-source or price-history evidence exists in the set. The miss-pattern and turnaround narratives extend beyond available evidence.",
+        "required_fix": "Cite a consensus-estimate and price-history source, or mark the estimate comparisons and returns as unverified.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_4d428ac8f22846d8871a668b68240cb4",
+        "issue_type": "missed_material_driver",
+        "severity": "medium",
+        "affected_object": "bev_381c302ba8f5424a93eac1c8ea11fbad",
+        "reasoning": "A Fed hike with 'signals more to come' is classified as context, but for a stock at ~23.7x TTM sales whose valuation is explicitly flagged as the risk transmission channel, the rate path materially drives the discount rate and multiple. No macro/rates driver exists anywhere in the graph.",
+        "required_fix": "Add a macro rates/valuation-discount driver and wire the event to it, or document why the rate cycle is immaterial to LITE's multiple.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_ba911feb3d384f138da90105680009e0",
+        "issue_type": "missed_material_driver",
+        "severity": "low",
+        "affected_object": "bev_cc654db3f89e4408b1f762ae9c8dde46",
+        "reasoning": "A documented event shows LITE falling as the AI-optics group weakened after a peer financing move. Sector contagion/sentiment is a drawdown channel distinct from issuer fundamentals and from the valuation-dependency driver; no driver captures sector beta or peer-driven correlation risk.",
+        "required_fix": "Consider adding a sector-sentiment/contagion driver, or document why peer moves are immaterial to LITE.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_c650206a4b864bd2be91a4d4d11e26ba",
+        "issue_type": "missing_counter_evidence",
+        "severity": "low",
+        "affected_object": "bst_aa09b9a82d5f4fa39a73adc64a9a0b20, bclm_4dcae81dc9ae4b98920c14c844381433",
+        "reasoning": "The negative valuation state has empty evidence_ids while usable in-boundary items exist: bev_a4f0bb253d514542939fe2db7ab09cc5 ('fully priced' analysis) and rev_f89e5f4c617d4c7c90296b8c41d6b7d9 (+6.44% Aug 26 move, referenced in the claim's statement but not cited).",
+        "required_fix": "Wire the available valuation/sentiment evidence to the valuation state and the claim.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_2d8c85555de44236a991bd2317774381",
+        "issue_type": "weak_causal_link",
+        "severity": "low",
+        "affected_object": "bclm_4dcae81dc9ae4b98920c14c844381433",
+        "reasoning": "The claim asserts valuation is 'the transmission channel for every fundamental risk,' but the transmissions array is empty — no driver-to-valuation wiring exists. The causal structure the claim describes is not represented in the graph, leaving the transmission assertion structurally untested.",
+        "required_fix": "Add transmissions linking demand/margin/concentration drivers to the valuation state, or soften the claim's transmission language.",
+        "resolved": true
+      }
+    ],
+    "fixed": [
+      {
+        "issue_id": "bcri_b4cdeed0811642bbae711998f1827e1e",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "medium",
+        "affected_object": "bdrv_10bf02486f994176ad102add18b389f1, bst_aa09b9a82d5f4fa39a73adc64a9a0b20",
+        "reasoning": "The driver cites the 2026-08-11 earnings release for a $919.40 price dated 2026-09-16 and ~$71.53B market cap; a filing from 2026-08-11 cannot contain a 2026-09-16 price. The valuation state itself carries empty evidence_ids, so the derived ~23.7x TTM sales multiple rests on unsourced market data.",
+        "required_fix": "Attach a dated market-data evidence item for price and market cap, or explicitly mark the valuation inputs as unsourced.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_0722a12b94894dfabd42851c6d7b25d9",
+        "issue_type": "unsupported_leap",
+        "severity": "medium",
+        "affected_object": "bst_d165b35bddcd4b6d826cde51f54d31ef, bst_27fdc1fbe8724a1e8038abc7bbfc631f",
+        "reasoning": "Consensus EPS estimates ($0.59, $0.97, $1.81, $2.62), the -5.06% next-day return, and FY2024–FY2025 EPS history (-$3.75, -$1.21) are not contained in the cited Q3/Q4 FY2026 releases; no estimate-source or price-history evidence exists in the set. The miss-pattern and turnaround narratives extend beyond available evidence.",
+        "required_fix": "Cite a consensus-estimate and price-history source, or mark the estimate comparisons and returns as unverified.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_4d428ac8f22846d8871a668b68240cb4",
+        "issue_type": "missed_material_driver",
+        "severity": "medium",
+        "affected_object": "bev_381c302ba8f5424a93eac1c8ea11fbad",
+        "reasoning": "A Fed hike with 'signals more to come' is classified as context, but for a stock at ~23.7x TTM sales whose valuation is explicitly flagged as the risk transmission channel, the rate path materially drives the discount rate and multiple. No macro/rates driver exists anywhere in the graph.",
+        "required_fix": "Add a macro rates/valuation-discount driver and wire the event to it, or document why the rate cycle is immaterial to LITE's multiple.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_ba911feb3d384f138da90105680009e0",
+        "issue_type": "missed_material_driver",
+        "severity": "low",
+        "affected_object": "bev_cc654db3f89e4408b1f762ae9c8dde46",
+        "reasoning": "A documented event shows LITE falling as the AI-optics group weakened after a peer financing move. Sector contagion/sentiment is a drawdown channel distinct from issuer fundamentals and from the valuation-dependency driver; no driver captures sector beta or peer-driven correlation risk.",
+        "required_fix": "Consider adding a sector-sentiment/contagion driver, or document why peer moves are immaterial to LITE.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_c650206a4b864bd2be91a4d4d11e26ba",
+        "issue_type": "missing_counter_evidence",
+        "severity": "low",
+        "affected_object": "bst_aa09b9a82d5f4fa39a73adc64a9a0b20, bclm_4dcae81dc9ae4b98920c14c844381433",
+        "reasoning": "The negative valuation state has empty evidence_ids while usable in-boundary items exist: bev_a4f0bb253d514542939fe2db7ab09cc5 ('fully priced' analysis) and rev_f89e5f4c617d4c7c90296b8c41d6b7d9 (+6.44% Aug 26 move, referenced in the claim's statement but not cited).",
+        "required_fix": "Wire the available valuation/sentiment evidence to the valuation state and the claim.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_2d8c85555de44236a991bd2317774381",
+        "issue_type": "weak_causal_link",
+        "severity": "low",
+        "affected_object": "bclm_4dcae81dc9ae4b98920c14c844381433",
+        "reasoning": "The claim asserts valuation is 'the transmission channel for every fundamental risk,' but the transmissions array is empty — no driver-to-valuation wiring exists. The causal structure the claim describes is not represented in the graph, leaving the transmission assertion structurally untested.",
+        "required_fix": "Add transmissions linking demand/margin/concentration drivers to the valuation state, or soften the claim's transmission language.",
+        "resolved": true
+      }
+    ],
+    "unresolved": [
+      {
+        "issue_id": "bcri_fad7e358559b426a9501f8d7462ed439",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_6aa1d0b94faa4f8ab3f7124942c1d6a4, bdrv_049c404adfc742329615c2ac30841267, bd…",
+        "reasoning": "The Q1 FY2027 guidance range ($1.225B–$1.275B) is asserted as fact citing rev_15b8a51a64b6417eb355974725fc6b1d, which is absent from the evidence array. Meanwhile claim bclm_a7e142b3ba5f4d53b6a7d333505031e2 states the guidance range is 'not verifiable in current evidence' — an internal contradiction. The only in-boundary Q4 release excerpt truncates before the guidance figure.",
+        "required_fix": "Either add the guidance evidence to the set and correct the claim, or downgrade the guidance range to unverified in the state and drivers.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_88fdf63ba017417a9c20ad2e618c0b8a",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_b47e5312e2964bb9b7d7be94869717f7, bst_0e2d18114b38466f9a8573ef0140cd9d, bdr…",
+        "reasoning": "These objects cite rev_bf1fd788e8ec4a91afc4debf35742e2b, which is not in the evidence array. Unsupported facts include the +13.63% next-day return, 2.45x volume, SOXX outperformance, and the Q4 FY2024/Q1 FY2026 quarterly revenue ramp ($308.3M, $533.8M). No available evidence contains market-reaction or pre-FY2026 quarterly data.",
+        "required_fix": "Re-source market-reaction and historical quarterly figures from evidence inside the boundary, or remove/mark them unverified.",
+        "resolved": false
+      }
+    ],
+    "transmissions": [],
+    "inconsistent": true,
+    "status": "inconsistent"
+  },
+  "pm_synthesis": {
+    "what_matters_now": "Whether the guided Q1 FY2027 step-up (revenue $1.225B–$1.275B, non-GAAP operating margin 39.5%–40.5%, non-GAAP EPS $4.05–$4.35 per rev_ab1965f3cdb44c1bb501d023787a61b1) is delivered — and whether the Datacom/cloud-AI demand believed to be behind the ramp is durable. Coverage is poor: only two primary press releases plus two weak secondary items; no segment, customer, capex/FCF, consensus, or industry data, and counter searches returned nothing relevant. The ramp is proven; its source and duration are not.",
+    "what_changed": [
+      "Q4 FY2026 (reported 2026-08-11): revenue $1.01B within the $960M–$1.01B guide; EPS $2.64 vs $2.62 estimate; +13.63% next-day return on 2.45x average volume, outperforming SOXX by 11.31 points (state bst_b47e5312e2964bb9b7d7be94869717f7).",
+      "Management guided Q1 FY2027 to $1.225B–$1.275B revenue, 39.5%–40.5% non-GAAP operating margin, $4.05–$4.35 non-GAAP diluted EPS (rev_ab1965f3cdb44c1bb501d023787a61b1) — roughly 22–27% sequential and 129–139% YoY growth (state bst_6aa1d0b94faa4f8ab3f7124942c1d6a4), an acceleration from the 83.22% TTM pace.",
+      "Margin expansion continued Q3→Q4 FY2026: non-GAAP gross margin 47.9%→50.4%, non-GAAP operating margin 32.2%→36.6% (rev_2746bf86784647779c9bdfad10215893, rev_ab1965f3cdb44c1bb501d023787a61b1).",
+      "During validation (2026-09-18) all five core claims were materially re-scoped: the valuation claim (bclm_4dcae81dc9ae4b98920c14c844381433) was downgraded to unverified; the capacity-execution claim (bclm_a7e142b3ba5f4d53b6a7d333505031e2) was upgraded to partially_supported.",
+      "Post-earnings momentum: +6.44% on 2026-08-26 (rev_f89e5f4c617d4c7c90296b8c41d6b7d9) amid AI-optics sector volatility around September 1 (per rev_94263a065bdc49f9a3c412d53c49fda7 coverage note); price $919.40 at 2026-09-16, ~23.7x derived TTM sales (state bst_aa09b9a82d5f4fa39a73adc64a9a0b20)."
+    ],
+    "current_core_claims": [
+      {
+        "claim_id": "bclm_a64914a9f0cc4e339e450002b9385756",
+        "statement": "Datacom laser demand durability is the single largest determinant of LITE's terminal value: the FY2026 ramp and margin expansion are documented, but attribution to Datacom/cloud-AI datacenter buildouts and multi-year persistence remain unverified.",
+        "status": "partially_supported"
+      },
+      {
+        "claim_id": "bclm_986de26cac724ea7969121478348b2d7",
+        "statement": "Margin expansion is volume-driven and cyclical, not yet proven structural: Q3→Q4 FY2026 non-GAAP GM 47.9%→50.4% and OM 32.2%→36.6% alongside ~25% sequential revenue growth is consistent with fixed-cost leverage, but no margin bridge isolates utilization vs price vs mix.",
+        "status": "partially_supported"
+      },
+      {
+        "claim_id": "bclm_da1b3148de4540ce95039ebb8706c0fb",
+        "statement": "Unquantified customer concentration in Cloud & Networking is the dominant tail risk: no segment or customer data exists in evidence; whether a single-customer pause or dual-sourcing decision could break the guided ramp is an untested hypothesis.",
+        "status": "unverified"
+      },
+      {
+        "claim_id": "bclm_4dcae81dc9ae4b98920c14c844381433",
+        "statement": "The valuation embeds multi-year hypergrowth and is the transmission channel for every fundamental risk: the ramp is documented, but no evidence establishes what growth duration the price capitalizes or how deceleration would transmit into the multiple.",
+        "status": "unverified"
+      },
+      {
+        "claim_id": "bclm_a7e142b3ba5f4d53b6a7d333505031e2",
+        "statement": "Capacity scaling execution gates the guided sequential ramp: a ~25% single-quarter ramp was delivered in Q4 FY2026, but whether the next step-up is gated by execution or demand cannot be determined — no capacity, capex, or hiring data.",
+        "status": "partially_supported"
+      }
+    ],
+    "strongest_support": "Two tier-1 issuer press releases (rev_ab1965f3cdb44c1bb501d023787a61b1, rev_2746bf86784647779c9bdfad10215893) fully document the factual core: revenue ramping $808.4M→$1.01B Q3→Q4 FY2026 with non-GAAP GM 47.9%→50.4% and non-GAAP OM 32.2%→36.6%, plus the Q1 FY2027 guide. The margin claim (bclm_986de26cac724ea7969121478348b2d7) is the best-evidenced: the numbers and their co-movement with ~25% sequential volume growth are proven by primary filings; only the causal attribution is open.",
+    "strongest_counter": "No genuine counter-evidence was found — counter searches returned irrelevant results, so absence of opposition is not confirmation. The strongest internal counter is the estimate-miss pattern: EPS missed in Q1–Q3 FY2026 ($0.05 vs $0.59, $0.89 vs $0.97, $1.50 vs $1.81) before the Q4 beat, and the Q3 miss drove a -5.06% next-day return after a +25.68% five-day run (state bst_d165b35bddcd4b6d826cde51f54d31ef) — execution and expectations have repeatedly broken mid-ramp, at a valuation (~23.7x derived TTM sales) with no cushion.",
+    "base_bull_bear": {
+      "base": "Q1 FY2027 lands within the $1.225B–$1.275B guide with non-GAAP OM ~39.5%–40.5%; growth continues but decelerates as the base compounds; the stock stays volatile and multiple-sensitive through FY2027 with demand duration unresolved.",
+      "bull": "Datacom/cloud-AI demand is a multi-year structural shift; guidance proves conservative (Q4 landed at the top of its range and beat EPS); margins hold ≥50% non-GAAP GM as utilization and mix improve; hypergrowth persists into FY2028 and forward earnings grow into the multiple.",
+      "bear": "The AI-optics capex cycle pauses or corrects on inventory; concentrated hyperscaler orders slow; operating leverage reverses (OM swung ~71 points from -43.3% to +27.8% in two years — it can swing back); the ~23.7x TTM sales multiple compresses severely; the Q1–Q3 FY2026 miss pattern repeats at higher stakes."
+    },
+    "valuation_sensitivity": "At $919.40 (2026-09-16) and ~$71.53B market cap vs $3.014B TTM revenue, LITE trades at a derived ~23.7x TTM sales (state bst_aa09b9a82d5f4fa39a73adc64a9a0b20; official PE/PS/EV-EBITDA/FCF-yield unavailable). Naive annualization of the Q1 FY2027 non-GAAP EPS guide ($4.05–$4.35 × 4 ≈ $16.20–$17.40) implies roughly 53–57x on that run-rate — derived arithmetic on guided figures, not an official multiple. The multiple is the transmission channel for every fundamental risk (driver bdrv_10bf02486f994176ad102add18b389f1): any deceleration in the guided ramp or margins compresses it, and the Q3 FY2026 reaction (-5.06% next-day on a miss after a +25.68% run) shows the asymmetry when expectations break. No quantified downside scenarios exist in the pack — financial impacts are direction-only.",
+    "next_evidence_to_watch": [
+      "Q1 FY2027 earnings print (~late Oct/early Nov 2026): revenue vs $1.225B–$1.275B, non-GAAP OM vs 39.5%–40.5%, non-GAAP EPS vs $4.05–$4.35 (rev_ab1965f3cdb44c1bb501d023787a61b1).",
+      "FY2026 Form 10-K: segment revenue split, >10% customer disclosures, capex, FCF, backlog — the claim coverage explicitly notes the 10-K/10-Q was not retrieved.",
+      "Gross-margin durability: whether non-GAAP GM holds ~50% as volumes scale further (driver bdrv_ff500c1da9a2411f82d84e235dbca603).",
+      "GAAP vs non-GAAP gap: narrowed from ~1,060bp to ~880bp Q3→Q4 FY2026 (driver bdrv_33784f1f07c648f8a660d705c4116de0) — watch whether it keeps narrowing.",
+      "Hyperscaler capex commentary and AI-optics peer results to test demand breadth — industry confirmation is entirely missing from the pack."
+    ],
+    "what_would_change_the_thesis": "A Q1 FY2027 miss or guide-down breaks the execution-and-demand narrative at ~23.7x TTM sales and likely flips bclm_a7e142b3ba5f4d53b6a7d333505031e2 and bclm_a64914a9f0cc4e339e450002b9385756 negative. Conversely, 10-K disclosure of a broadened customer base, backlog/long-term agreements, and segment data showing Datacom breadth would upgrade the durability claim. Evidence of hyperscaler capex deceleration, inventory correction, or second-sourcing/CPO displacement would flip it. Non-GAAP GM reverting below ~48% would support the cyclical reading of bclm_986de26cac724ea7969121478348b2d7.",
+    "current_view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 83.22",
+    "core_claim_ids": [
+      "bclm_a64914a9f0cc4e339e450002b9385756",
+      "bclm_986de26cac724ea7969121478348b2d7",
+      "bclm_da1b3148de4540ce95039ebb8706c0fb",
+      "bclm_4dcae81dc9ae4b98920c14c844381433",
+      "bclm_a7e142b3ba5f4d53b6a7d333505031e2"
+    ],
+    "decisive_variables": [
+      {
+        "name": "Datacom/cloud-AI demand durability",
+        "why": "Nearly all incremental revenue, the margin ramp, and the guided acceleration transmit through this single demand source; if it pauses, growth and margins reverse together at a hypergrowth multiple (driver bdrv_049c404adfc742329615c2ac30841267).",
+        "evidence_ids": [
+          "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "rev_2746bf86784647779c9bdfad10215893"
+        ]
+      },
+      {
+        "name": "Customer concentration in Cloud & Networking",
+        "why": "Unquantified: a single order pause, inventory correction, or dual-sourcing decision could abruptly cut revenue and break the guided ramp; concentration also shapes pricing power and guidance credibility (driver bdrv_187c57fbf9854a219dd701f5b58c9d31).",
+        "evidence_ids": [
+          "rev_ab1965f3cdb44c1bb501d023787a61b1"
+        ]
+      },
+      {
+        "name": "Capacity scaling execution",
+        "why": "The guided ~22–27% sequential step-up requires manufacturing, supply chain, and operations to scale in step; the Q1–Q3 FY2026 miss pattern shows shortfalls surface as missed estimates (driver bdrv_cc65a2e3865944059252a966e302a7d6).",
+        "evidence_ids": [
+          "rev_ab1965f3cdb44c1bb501d023787a61b1",
+          "rev_2746bf86784647779c9bdfad10215893"
+        ]
+      }
+    ],
+    "strongest_claim_id": "bclm_986de26cac724ea7969121478348b2d7",
+    "weakest_claim_id": "bclm_da1b3148de4540ce95039ebb8706c0fb",
+    "what_changed_last_30d": [
+      "Q4 FY2026 earnings (2026-08-11) beat and strong reception: +13.63% next-day on 2.45x volume, outperforming SOXX by 11.31 points (state bst_b47e5312e2964bb9b7d7be94869717f7).",
+      "Post-earnings strength: +6.44% on 2026-08-26 (rev_f89e5f4c617d4c7c90296b8c41d6b7d9) with AI-optics sector volatility around September 1; price $919.40 at 2026-09-16.",
+      "All five core claims materially re-scoped during validation on 2026-09-18; valuation claim downgraded to unverified, capacity claim upgraded to partially_supported (history bhis_f9694ebd6c5a47a985f70ad2a749953d, bhis_0ce6ce033fc24a368b0bdaddb1a74291).",
+      "No new fundamental evidence beyond the Q3/Q4 FY2026 press releases; counter searches returned only irrelevant results, so no opposing evidence was found — and none confirmed."
+    ],
+    "most_likely_wrong": "The attribution and durability layer. The ramp itself is proven by primary filings, but the story that it is driven by Datacom lasers into cloud/AI datacenter buildouts — and that this demand persists for years — rests on management commentary and media framing with zero segment, customer, or industry data behind it. Given the Q1–Q3 FY2026 pattern of missing EPS estimates mid-ramp, the most likely error is underestimating fragility (concentration, execution, cycle timing) while the price at ~23.7x derived TTM sales assumes smooth multi-year continuation.",
+    "next_information_to_seek": "The FY2026 Form 10-K first: segment revenue split, >10% customer disclosures, capex, FCF, and backlog — it directly resolves or bounds the two unverified claims. Then hyperscaler capex guidance and AI-optics peer results for demand breadth, and a consensus forward-estimate set to anchor what the $919.40 price actually embeds.",
+    "short_view": "Binary around the Q1 FY2027 print: guide is $1.225B–$1.275B revenue / 39.5%–40.5% non-GAAP OM / $4.05–$4.35 non-GAAP EPS. Expectations are elevated after the Q4 beat and September momentum; the Q3 FY2026 precedent (-5.06% next-day on a miss after a +25.68% five-day run) shows the downside asymmetry when estimates break. Trade it as an event, not a trend.",
+    "mid_view": "FY2027 is about deceleration math and margin durability: whether growth slows as the base compounds and whether non-GAAP GM holds ~50% and OM reaches the guided high-30s. Operating leverage cuts both ways — the OM swing from -43.3% to +27.8% in two years (driver bdrv_07bc16b5b6da4091a29b599ecf020079) means a demand pause hits EPS harder than revenue. Without segment or customer data, the mid-term view is a judgment on the AI-optics capex cycle this pack cannot resolve.",
+    "long_view": "Terminal value rests on Datacom demand durability (bclm_a64914a9f0cc4e339e450002b9385756, partially_supported). Structural shift: current margins prove a durable step and the multiple earns itself down. Shorter cycle: the ~23.7x derived TTM sales multiple has a long way to fall, and the eight-quarter swing from -$3.75 to +$2.64 quarterly EPS shows how fast the leverage reverses. Current evidence cannot distinguish these paths.",
+    "cannot_conclude": [
+      "Whether the ramp is driven by Datacom/cloud-AI datacenter demand — no segment or end-market data in evidence.",
+      "Degree of customer concentration — no customer data; the 10-K/10-Q that typically discloses >10% customers was not retrieved.",
+      "What growth duration the $919.40 price embeds — no consensus, no official multiples, no reverse-DCF; the valuation claim is unverified.",
+      "Whether margin expansion is structural vs utilization/mix-driven — no margin bridge, ASP, or mix data.",
+      "Whether capacity, capex, or cash flow constrains the guided ramp — capex and FCF are flagged missing.",
+      "Whether counter-evidence exists — counter searches returned only irrelevant results, so the absence of opposition is not confirmation."
+    ],
+    "status": "inconsistent",
+    "pm_consistency": {
+      "passed": false,
+      "status": "inconsistent",
+      "reasons": [
+        "PM cited unbound number 83.22"
+      ]
+    },
+    "critic_blocked": true
+  },
+  "history": [
+    {
+      "history_id": "bhis_16726063af4c4cedb301ceddb93db6d6",
+      "ticker": "LITE",
+      "object_type": "claim",
+      "object_id": "bclm_a64914a9f0cc4e339e450002b9385756",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "The revenue ramp and guided acceleration are driven almost entirely by Datacom laser shipments into cloud/AI datacenter buildouts; whether this demand persists for multiple years (a structural AI infrastructure shift) or proves a shorter capex cycle is the key decision variable, because nearly all incremental revenue, the margin expansion, and the premium valuation derive from this single demand source"
+      },
+      "to_payload": {
+        "status": "partially_supported",
+        "statement": "Lumentum's revenue and margins ramped sequentially through fiscal 2026 — revenue rose from $808.4 million in fiscal Q3 2026 to $1.01 billion in fiscal Q4 2026, with non-GAAP gross margin expanding from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6% — and management issued fiscal Q1 2027 guidance; financial media frames LITE within the AI-optics sector. Whether this ramp is driven primarily by Datacom laser shipments into cloud/AI datacenter buildouts, and whether that demand persists for multiple years as a structural shift versus a shorter capex cycle, remains unverified: t…"
+      },
+      "reason": "statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:50:32+00:00"
+    },
+    {
+      "history_id": "bhis_b78a1a1f312b47ccbb131bcb449cb494",
+      "ticker": "LITE",
+      "object_type": "claim",
+      "object_id": "bclm_986de26cac724ea7969121478348b2d7",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "Lumentum's gross margin expanded from 44.2% GAAP (47.9% non-GAAP) in Q3 FY2026 to 47.4% GAAP (50.4% non-GAAP) in Q4 FY2026, and operating margin expanded from 21.6% GAAP (32.2% non-GAAP) to 27.8% GAAP (36.6% non-GAAP) over one quarter. This expansion may reflect structural mix shift toward higher-value Datacom products or cyclical manufacturing utilization gains that could reverse"
+      },
+      "to_payload": {
+        "status": "partially_supported",
+        "statement": "Lumentum's Q3-to-Q4 FY2026 margin expansion is documented in primary filings: non-GAAP gross margin rose from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6% (GAAP gross 44.2% to 47.4%; GAAP operating 21.6% to 27.8%) as net revenue grew approximately 25% sequentially from $808.4M to $1.01B. Operating margin expanding more than gross margin alongside a sharp volume ramp is consistent with fixed-cost operating leverage, supporting a volume/utilization component to the expansion. However, no evidence currently attributes the expansion to specific drivers (price, mix, utilization…"
+      },
+      "reason": "statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:52:23+00:00"
+    },
+    {
+      "history_id": "bhis_f98561a72fd34b7ba0d2c4b73624df01",
+      "ticker": "LITE",
+      "object_type": "claim",
+      "object_id": "bclm_da1b3148de4540ce95039ebb8706c0fb",
+      "from_payload": {
+        "status": "unverified",
+        "statement": "Revenue growth is concentrated in the Datacom/Cloud & Networking end-market and plausibly in a small number of hyperscale customers; because concentration is not quantified in available disclosures, a single customer order pause, inventory correction, or dual-sourcing decision could abruptly cut revenue and break the guided ramp"
+      },
+      "to_payload": {
+        "status": "unverified",
+        "statement": "Lumentum's net revenue rose from $808.4 million in fiscal Q3 2026 to approximately $1.01 billion in fiscal Q4 2026 (roughly 25% sequential growth), and management issued a Q1 FY2027 forecast. The provided earnings-release excerpts do not quantify end-market or customer concentration, so the source of the ramp and the degree of customer concentration cannot be determined from available evidence; whether a single-customer order pause, inventory correction, or dual-sourcing decision could break the guided ramp remains an untested hypothesis"
+      },
+      "reason": "statement materially changed",
+      "event_id": null,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:54:29+00:00"
+    },
+    {
+      "history_id": "bhis_f9694ebd6c5a47a985f70ad2a749953d",
+      "ticker": "LITE",
+      "object_type": "claim",
+      "object_id": "bclm_4dcae81dc9ae4b98920c14c844381433",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "LITE's equity value depends on the guided revenue ramp and margin expansion persisting for years, not quarters; because the market price already capitalizes sustained hypergrowth, any deceleration in Datacom demand, guidance, or margins transmits into severe multiple compression rather than a gentle re-rating"
+      },
+      "to_payload": {
+        "status": "unverified",
+        "statement": "Primary filings document a steep fundamental ramp: Lumentum's net revenue rose from $808.4 million in fiscal Q3 2026 to $1.01 billion in fiscal Q4 2026 (roughly 25% sequentially, derived), with non-GAAP gross margin expanding from 47.9% to 50.4% and non-GAAP operating margin from 32.2% to 36.6%, and management issued a fiscal Q1 2027 forecast (figures not available in the retrieved excerpt). The stock showed large single-day moves in the post-earnings window (+6.44% on August 26, 2026). Whether the current market price capitalizes multi-year persistence of this ramp, and whether deceleration…"
+      },
+      "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T06:57:54+00:00"
+    },
+    {
+      "history_id": "bhis_0ce6ce033fc24a368b0bdaddb1a74291",
+      "ticker": "LITE",
+      "object_type": "claim",
+      "object_id": "bclm_a7e142b3ba5f4d53b6a7d333505031e2",
+      "from_payload": {
+        "status": "unverified",
+        "statement": "Management's Q1 FY2027 revenue guidance implies continued sequential growth, but the company has a recent history of a negative earnings reaction in Q3 FY2026, suggesting guidance may be difficult to meet or that market expectations are elevated"
+      },
+      "to_payload": {
+        "status": "partially_supported",
+        "statement": "Lumentum delivered $1.01B net revenue in Q4 FY2026 (primary filing), up approximately 25% sequentially from $808.4M in Q3 FY2026, demonstrating that a large single-quarter revenue ramp was recently executed. Management issued a Q1 FY2027 forecast (the guidance range is not verifiable in current evidence). Whether delivering the next sequential step-up is gated by execution (manufacturing, supply chain, operations scaling) or by demand cannot be determined from current evidence; no capacity, capex, hiring, or demand-side data is available"
+      },
+      "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "created_at": "2026-09-18T07:00:34+00:00"
+    }
+  ],
+  "theme_gaps": [],
+  "material_events": [],
+  "integrity_violations": [
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_4dcae81dc9ae4b98920c14c844381433",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "core assertion or number is not bound to evidence"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_a7e142b3ba5f4d53b6a7d333505031e2",
+      "from": "emerging",
+      "to": "partially_supported",
+      "reason": "direction is evidenced but links are incomplete or issuer-only"
+    },
+    {
+      "code": "critic_high_severity_unresolved",
+      "issues": [
+        {
+          "issue_id": "bcri_fad7e358559b426a9501f8d7462ed439",
+          "issue_type": "evidence_boundary_violation",
+          "severity": "high",
+          "affected_object": "bst_6aa1d0b94faa4f8ab3f7124942c1d6a4, bdrv_049c404adfc742329615c2ac30841267, bd…",
+          "reasoning": "The Q1 FY2027 guidance range ($1.225B–$1.275B) is asserted as fact citing rev_15b8a51a64b6417eb355974725fc6b1d, which is absent from the evidence array. Meanwhile claim bclm_a7e142b3ba5f4d53b6a7d333505031e2 states the guidance range is 'not verifiable in current evidence' — an internal contradiction. The only in-boundary Q4 release excerpt truncates before the guidance figure.",
+          "required_fix": "Either add the guidance evidence to the set and correct the claim, or downgrade the guidance range to unverified in the state and drivers.",
+          "resolved": false
+        },
+        {
+          "issue_id": "bcri_88fdf63ba017417a9c20ad2e618c0b8a",
+          "issue_type": "evidence_boundary_violation",
+          "severity": "high",
+          "affected_object": "bst_b47e5312e2964bb9b7d7be94869717f7, bst_0e2d18114b38466f9a8573ef0140cd9d, bdr…",
+          "reasoning": "These objects cite rev_bf1fd788e8ec4a91afc4debf35742e2b, which is not in the evidence array. Unsupported facts include the +13.63% next-day return, 2.45x volume, SOXX outperformance, and the Q4 FY2024/Q1 FY2026 quarterly revenue ramp ($308.3M, $533.8M). No available evidence contains market-reaction or pre-FY2026 quarterly data.",
+          "required_fix": "Re-source market-reaction and historical quarterly figures from evidence inside the boundary, or remove/mark them unverified.",
+          "resolved": false
+        }
+      ]
+    },
+    {
+      "code": "pm_inconsistency_blocked",
+      "reasons": [
+        "PM cited unbound number 83.22"
+      ]
+    }
+  ],
+  "audit": {
+    "llm_invoked": true,
+    "driver_count": 9,
+    "core_claim_count": 5,
+    "model": "glm-5.3",
+    "input_tokens": 86845,
+    "output_tokens": 190162,
+    "fallbacks": []
+  }
+}

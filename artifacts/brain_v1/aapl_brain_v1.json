@@ -1,0 +1,1815 @@
+{
+  "ticker": "AAPL",
+  "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+  "status": "partial",
+  "prompt_version": "brain-v1",
+  "run_mode": "full",
+  "header": {
+    "ticker": "AAPL",
+    "company_name": "Apple Inc",
+    "sector": "消费电子",
+    "industry": null,
+    "template_id": "generic_company",
+    "price": {
+      "field": "price",
+      "value": 332.410003662109,
+      "origin": "reported",
+      "display": 332.410003662109
+    },
+    "price_timestamp": "2026-09-16",
+    "market_cap": {
+      "field": "market_cap",
+      "value": 4882224007960.0,
+      "origin": "reported",
+      "display": 4882224007960.0
+    },
+    "valuation": {
+      "pe_ttm": {
+        "field": "pe_ttm",
+        "value": 37.9463470319635,
+        "origin": "reported",
+        "display": 37.9463470319635
+      },
+      "pe_forward": {
+        "field": "pe_forward",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ps": {
+        "field": "ps",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "ev_ebitda": {
+        "field": "ev_ebitda",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "fcf_yield": {
+        "field": "fcf_yield",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      }
+    },
+    "growth": {
+      "revenue_ttm": {
+        "field": "revenue_ttm",
+        "value": 466823000000.0,
+        "origin": "reported",
+        "display": 466823000000.0
+      },
+      "revenue_growth_yoy": {
+        "field": "revenue_growth_yoy",
+        "value": 14.24,
+        "origin": "reported",
+        "display": 14.24
+      },
+      "eps_ttm": {
+        "field": "eps_ttm",
+        "value": 8.71,
+        "origin": "reported",
+        "display": 8.71
+      },
+      "eps_growth_yoy": {
+        "field": "eps_growth_yoy",
+        "value": 29.94,
+        "origin": "reported",
+        "display": 29.94
+      }
+    },
+    "latest_quarter": {
+      "report_date": "2026-07-30",
+      "period_end": "2026-06-27",
+      "fiscal_period": "Q3",
+      "fiscal_year": 2026,
+      "revenue": {
+        "field": "quarter_revenue",
+        "value": 109417000000.0,
+        "origin": "reported",
+        "display": 109417000000.0
+      },
+      "revenue_yoy": {
+        "field": "quarter_revenue_yoy",
+        "value": 16.36,
+        "origin": "reported",
+        "display": 16.36
+      },
+      "eps": {
+        "field": "quarter_eps",
+        "value": 2.02,
+        "origin": "reported",
+        "display": 2.02
+      },
+      "eps_yoy": {
+        "field": "quarter_eps_yoy",
+        "value": 28.66,
+        "origin": "reported",
+        "display": 28.66
+      },
+      "gross_margin": {
+        "field": "gross_margin",
+        "value": 50.06,
+        "origin": "reported",
+        "display": 50.06
+      },
+      "operating_margin": {
+        "field": "operating_margin",
+        "value": 32.62,
+        "origin": "reported",
+        "display": 32.62
+      },
+      "fcf": {
+        "field": "quarter_fcf",
+        "value": null,
+        "origin": "unavailable",
+        "display": "unavailable"
+      },
+      "source": "FMP earnings + income-statement+sec.companyfacts"
+    },
+    "forward": {
+      "management_guidance": {
+        "origin": "reported",
+        "text": "Thanks, Tim, and good afternoon, everyone. Our March quarter revenue of $95.4 billion was up 5% year-over-year despite a headwind of almost 2.5 percentage points from foreign exchange. We also grew in the majority of the markets we track. Products revenue was $68.7 billion, up 3% year-over-year, driven by growth in iPhone, iPad, and Mac. And thanks to our high levels of customer satisfaction and strong loyalty, our installed base of active devices reached an all-time high across all product categories and geographic segments. Services revenue was $26.6 billion, up 12% year-over-year despite over 2 percentage points of foreign exchange headwinds. And as Tim mentioned, this was an all-time revenue record. We also grew in every geographic segment and saw double-digit growth in both developed and emerging markets. Company gross margin was 47.1%, in the middle of our guidance range and up 20 basis points sequentially primarily driven by favorable mix. Products gross margin was 35.9%, down 340 basis points sequentially, driven by mix, foreign exchange, and a seasonal loss of leverage. Services gross margin was 75.7%, up 70 basis points sequentially, primarily driven by a different mix, p",
+        "source": "alpha_vantage",
+        "count": 33
+      },
+      "consensus": {
+        "origin": "unavailable",
+        "reason": "no trusted consensus source is wired for Brain Phase 1"
+      },
+      "system_forecast": {
+        "origin": "unavailable",
+        "reason": "Phase 1 does not run a system forecast"
+      }
+    },
+    "missing_fields": [
+      "fcf",
+      "segment_growth"
+    ],
+    "pack_updated_at": "2026-09-17T10:48:25+00:00",
+    "is_fixture": false,
+    "source": "production"
+  },
+  "quality": {
+    "axes": {
+      "data_coverage": "Partial",
+      "news_coverage": "Partial",
+      "evidence_quality": "Good",
+      "independent_evidence": "Good",
+      "llm_reasoning": "Good",
+      "freshness": "Good"
+    },
+    "warnings": [
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "FCF is unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "Official segment mix is missing."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "Data Coverage",
+        "reason": "No trusted consensus source is wired; consensus stays unavailable."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "News Coverage",
+        "reason": "No Reuters / Bloomberg / FT / WSJ / IR items with a real last-30-day date."
+      },
+      {
+        "code": "BRAIN QUALITY WARNING",
+        "axis": "LLM Reasoning",
+        "reason": "PM consistency check failed: PM cited unbound number 95.4b"
+      }
+    ],
+    "poor_axes": [],
+    "headline": "Brain quality"
+  },
+  "drivers": [
+    {
+      "driver_id": "bdrv_07ba0deb562742468a6ffe1e40cc4ed9",
+      "canonical_key": "tariff_trade_policy_exposure",
+      "name": "Tariff and trade-policy cost exposure",
+      "category": "regulation",
+      "financial_link": "gross_margin",
+      "current_state": "June-quarter gross margin of 50.1% included an approximately 2pp favorable tariff-refund impact; excluding it, margin would have been near the guidance midpoint; the prior-year June quarter absorbed ~$800M of tariff costs. Underlying tariff run-rate not disclosed.",
+      "importance": "high",
+      "uncertainty": "high",
+      "why_it_matters": "Reported margin quality is flattered by a non-recurring ~2pp benefit, so the sustainable margin base is lower. Trade-policy shifts can swing Products gross margin by hundreds of basis points, directly moving EPS and the credibility of margin assumptions embedded in the multiple.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "related_claim_ids": [
+        "bclm_aaff24b577fc43db8cf909715a0cb353",
+        "bclm_206dcfe484184314a710333afcf22562"
+      ]
+    },
+    {
+      "driver_id": "bdrv_d2e7974a652847f9af17077d18c294a7",
+      "canonical_key": "ai_siri_upgrade_pull",
+      "name": "AI (Siri/Apple Intelligence) capability and upgrade pull",
+      "category": "technology",
+      "financial_link": "revenue",
+      "current_state": "Next-generation Apple Intelligence powering Siri AI released September 14, 2026, positioned as a potential upgrade-cycle catalyst alongside the iPhone 18 Pro/A20 Pro launch; no adoption, usage, or review data available yet.",
+      "importance": "high",
+      "uncertainty": "high",
+      "why_it_matters": "AI differentiation is the main swing factor for upgrade pace across a 2.5B+ device base and for competitive position. Success lifts volumes, ASPs, and Services attach; failure leaves growth dependent on replacement timing alone, challenging the premium multiple.",
+      "evidence_ids": [
+        "rev_a813d9313b8f4332a30429331fd2a01e",
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "related_claim_ids": [
+        "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+        "bclm_75163ea04e9e44ff907fe758e3f9f78e"
+      ]
+    },
+    {
+      "driver_id": "bdrv_57f8ef6e588a43bfa9380914232410a9",
+      "canonical_key": "iphone_upgrade_cycle_strength",
+      "name": "iPhone upgrade cycle strength",
+      "category": "demand",
+      "financial_link": "revenue",
+      "current_state": "Double-digit YoY iPhone revenue growth in both the March and June FY2026 quarters, setting records in both; iPhone 18 Pro/Pro Max with the A20 Pro chip launched September 9, 2026; no early sell-through or pre-order data yet.",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "iPhone is the largest revenue line and the entry point to the installed base that Services monetizes. Sustained double-digit cycle strength determines most of near-term enterprise value; a strong or weak iPhone 18/AI-driven cycle swings revenue, product mix, and the growth rate embedded in the premium multiple.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187",
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "related_claim_ids": [
+        "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+        "bclm_206dcfe484184314a710333afcf22562"
+      ]
+    },
+    {
+      "driver_id": "bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+      "canonical_key": "valuation_expectations_dependency",
+      "name": "Valuation expectations dependency",
+      "category": "valuation",
+      "financial_link": "multiple",
+      "current_state": "At $332.41, AAPL trades at ~37.9x TTM EPS ($8.71) with a ~$4.88T market cap against 14.24% TTM revenue growth; shares fell 7.35% in one day on 2.6x volume after the Q3 FY2026 beat, underperforming SPY by ~8.1pp and QQQ by",
+      "importance": "high",
+      "uncertainty": "medium",
+      "why_it_matters": "At ~38x TTM earnings, modest deceleration or margin-quality disappointment (e.g., non-repeat of the ~2pp tariff benefit) can trigger multiple compression that dominates operating outcomes in total-return scenarios, as the negative reaction to a beat demonstrates.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "related_claim_ids": [
+        "bclm_206dcfe484184314a710333afcf22562"
+      ]
+    },
+    {
+      "driver_id": "bdrv_92ea4908435040988ae625589dbc3ecf",
+      "canonical_key": "installed_base_scale_engagement",
+      "name": "Installed base scale and engagement",
+      "category": "demand",
+      "financial_link": "revenue",
+      "current_state": "Installed base of over 2.5 billion active devices, at an all-time high across all product categories and geographic segments, supported by high customer satisfaction and loyalty.",
+      "importance": "high",
+      "uncertainty": "low",
+      "why_it_matters": "The installed base is the compounding asset behind both revenue engines: it sets the ceiling on replacement hardware volume and the audience for high-margin Services. Its continued growth underwrites durable cash flows and terminal-value assumptions.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "related_claim_ids": [
+        "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+        "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+        "bclm_50cb5246e283434c80d438a586cb8495"
+      ]
+    },
+    {
+      "driver_id": "bdrv_7284013fc4e24c3ea5dc15879ded5d47",
+      "canonical_key": "services_products_margin_mix",
+      "name": "Services vs Products revenue mix",
+      "category": "product_mix",
+      "financial_link": "gross_margin",
+      "current_state": "Services gross margin ~75.6–75.7% vs Products ~40.1%; company gross margin 50.06% in the June quarter. Near-term, June-quarter Products revenue grew 18% YoY vs Services 12%, temporarily leaning mix toward Products during the hardware cycle.",
+      "importance": "high",
+      "uncertainty": "low",
+      "why_it_matters": "With roughly a 35-point gross-margin gap between segments, each point of revenue mix shifted toward Services adds about a third of a point to company gross margin. This is the least cyclical margin lever and underpins terminal margin assumptions.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "related_claim_ids": [
+        "bclm_aaff24b577fc43db8cf909715a0cb353",
+        "bclm_50cb5246e283434c80d438a586cb8495"
+      ]
+    },
+    {
+      "driver_id": "bdrv_3667140a84094c7e839f5a1afce51485",
+      "canonical_key": "geographic_demand_breadth",
+      "name": "Geographic demand breadth (incl. Greater China)",
+      "category": "demand",
+      "financial_link": "revenue",
+      "current_state": "Double-digit YoY growth in every geographic segment in the June FY2026 quarter, spanning developed and emerging markets; no regional revenue dollar figures are available in the pack.",
+      "importance": "medium",
+      "uncertainty": "medium",
+      "why_it_matters": "Broad geographic growth reduces concentration risk in any single region (notably Greater China) and signals genuine demand durability rather than channel or one-market effects. Regional policy or demand shocks would hit reported growth disproportionately.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "related_claim_ids": []
+    },
+    {
+      "driver_id": "bdrv_299c353662d6485ea7158a3226adc765",
+      "canonical_key": "iphone_mac_supply_constraints",
+      "name": "iPhone and Mac supply constraints",
+      "category": "capacity",
+      "financial_link": "volume",
+      "current_state": "Supply constraints on iPhone and, to a lesser extent, Mac cited in the March FY2026 quarter and still present into the June quarter, which nonetheless delivered double-digit growth in every geographic segment; magnitude and duration unquantified.",
+      "importance": "medium",
+      "uncertainty": "medium",
+      "why_it_matters": "Near-term, unmet demand defers rather than destroys revenue, but constraints persisting into the iPhone 18 ramp could cap launch-quarter volume, distort product mix, and delay the AI-driven upgrade cycle the market is pricing.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "related_claim_ids": []
+    }
+  ],
+  "core_claims": [
+    {
+      "claim_id": "bclm_aaff24b577fc43db8cf909715a0cb353",
+      "claim_key": "bck_fa803606ce0857a3a2ed",
+      "title": "Sustainable gross margin sits below the reported June-quarter level",
+      "statement": "Apple's fiscal 2026 third quarter (ended June 27, 2026) set June-quarter records for total company revenue, EPS, iPhone, Mac, and Services revenue, per the company's SEC-filed press release. The reported gross margin for the quarter, any one-time tariff-refund benefit, and the sustainable margin base relative to the reported level are not disclosed in the available evidence and remain unverified",
+      "status": "unverified",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_07ba0deb562742468a6ffe1e40cc4ed9",
+        "bdrv_7284013fc4e24c3ea5dc15879ded5d47"
+      ],
+      "why_it_matters": "Margin assumptions embedded in the premium multiple rest on the reported level. If the true run-rate is lower, both EPS and the multiple face downward pressure, and the margin narrative shifts from structural improvement to a policy windfall."
+    },
+    {
+      "claim_id": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+      "claim_key": "bck_3bd41853138630e1e797",
+      "title": "iPhone double-digit growth is a durable reacceleration, not a cycle peak",
+      "statement": "iPhone revenue set new March quarter and June quarter records in fiscal 2026, per Apple's Q2 and Q3 FY2026 earnings releases (primary, tier-1 sources); the iPhone 18 Pro and iPhone 18 Pro Max were announced September 9, 2026, and next-generation Siri AI shipped September 14, 2026. The year-over-year iPhone growth rate in either quarter is not quantified in the available evidence, and whether growth persists through the iPhone 18 cycle or marks a peak before replacement demand normalizes remains an open question with neither supporting nor opposing evidence in the set",
+      "status": "partially_supported",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_57f8ef6e588a43bfa9380914232410a9",
+        "bdrv_92ea4908435040988ae625589dbc3ecf",
+        "bdrv_d2e7974a652847f9af17077d18c294a7"
+      ],
+      "why_it_matters": "iPhone is the largest revenue line and the funnel into the installed base that Services monetizes. The premium multiple assumes growth persistence, so the gap between durable reacceleration and a two-quarter spike is the biggest single revenue swing factor."
+    },
+    {
+      "claim_id": "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+      "claim_key": "bck_66b2ccef82097886a511",
+      "title": "Siri AI is the upgrade-cycle accelerant the market is paying for",
+      "statement": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026, five days after the September 9, 2026 announcement of the iPhone 18 Pro and iPhone 18 Pro Max (both confirmed by primary Apple sources; the on-sale date of the hardware is not in evidence). No adoption, usage, review, upgrade-intent, trade-in, or sell-through data exists in the evidence set, so any demand or upgrade-cycle acceleration effect from Siri AI is unverified. The assertions that Siri AI is 'positioned as the catalyst' for upgrades or that 'the market is paying for' it are unsupported by…",
+      "status": "partially_supported",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_d2e7974a652847f9af17077d18c294a7",
+        "bdrv_92ea4908435040988ae625589dbc3ecf"
+      ],
+      "why_it_matters": "AI differentiation is the main swing factor for upgrade pace and competitive position across a base of more than 2.5 billion active devices. Success lifts volumes, ASPs, and Services attach; failure leaves growth dependent on replacement timing alone, a path the premium multiple cannot support."
+    },
+    {
+      "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+      "claim_key": "bck_f9536fbfb50deb8ecc13",
+      "title": "Total return depends on expectations, not just results",
+      "statement": "Apple's fiscal 2026 third quarter (ended June 27, 2026) set June-quarter records for total company revenue and EPS, per the company's primary 8-K exhibit. The broader assertion — that at a premium trailing earnings multiple total return hinges on growth and margin assumptions holding, and that a post-earnings one-day decline on elevated volume after a quarter that beat expectations demonstrated multiple compression dominating operating outcomes — is not established by the evidence in this set, which contains no price, volume, valuation-multiple, or consensus-estimate data",
+      "status": "unverified",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+        "bdrv_07ba0deb562742468a6ffe1e40cc4ed9",
+        "bdrv_57f8ef6e588a43bfa9380914232410a9"
+      ],
+      "why_it_matters": "The market is paying for continuation of double-digit growth and roughly fifty percent gross margins. Any deceleration or margin-quality miss, such as the tariff benefit not repeating, compresses the multiple faster than fundamentals deteriorate, so expectations risk dominates total-return scenarios."
+    },
+    {
+      "claim_id": "bclm_50cb5246e283434c80d438a586cb8495",
+      "claim_key": "bck_00954b8e0550a2fada13",
+      "title": "Services mix is the structural margin floor beneath a cyclical hardware cycle",
+      "statement": "Apple's Products (iPhone, Mac) and Services segments both set June-quarter revenue records in fiscal Q3 2026, and Services revenue reached an all-time high in fiscal Q2 2026, alongside records for total company revenue and EPS in both quarters; a hardware refresh cycle is active (iPhone 18 Pro launched September 2026). The relative gross margin profiles of the two segments, their relative growth rates, and the resulting revenue-mix and company gross margin trajectory are not established in the current evidence set",
+      "status": "unverified",
+      "lifecycle": "core",
+      "related_driver_ids": [
+        "bdrv_7284013fc4e24c3ea5dc15879ded5d47",
+        "bdrv_92ea4908435040988ae625589dbc3ecf"
+      ],
+      "why_it_matters": "Terminal margin assumptions rest on the structural Services mix trend. If the hardware cycle keeps leaning mix toward Products, reported margin gains stall even as revenue grows, weakening the margin narrative that supports the multiple."
+    }
+  ],
+  "states": [
+    {
+      "state_id": "bst_d2d1e751b68747f18ffa869a4efbd5b4",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "iPhone cycle momentum",
+      "statement": "iPhone revenue grew double digits YoY in both the March and June quarters of fiscal 2026, setting records in both quarters; iPhone 18 Pro/Pro Max with the A20 Pro chip launched September 9, 2026.",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187",
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_4d6917e09dd72de96757",
+      "subject": "iphone_cycle_momentum",
+      "qualitative_state": "iPhone revenue grew double digits YoY in both the March and June quarters of fiscal 2026, setting records in both quarters; iPhone 18 Pro/Pro",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_7ace9c9049b045fe88a0b3ac54d07d95",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Services growth and margin mix",
+      "statement": "Services revenue was $30.7B in the June 2026 quarter, up 12% YoY, with records in every Services category including all-time records in cloud and payment services; Services gross margin runs ~75.6–75.7% vs Products ~40.1%, supporting the 50.06% company gross margin.",
+      "direction": "positive",
+      "confidence": "high",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_cf34dd58c08968e4ecd2",
+      "subject": "services_growth_and_margin_mix",
+      "qualitative_state": "Services revenue was $30.7B in the June 2026 quarter, up 12% YoY, with records in every Services category including all-time records in cloud and",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_ceef045e7c14469d874c2a4efab54fbb",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Gross margin one-time tariff benefit",
+      "statement": "June-quarter gross margin of 50.1% included an approximately 2 percentage point favorable impact from tariff refunds; excluding it, margin would have been near the guidance midpoint, and the prior-year June quarter absorbed ~$800M of tariff-related costs.",
+      "direction": "negative",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_9fd421445963b4ae9b6a",
+      "subject": "gross_margin_one_time_tariff_benefit",
+      "qualitative_state": "June-quarter gross margin of 50.1% included an approximately 2 percentage point favorable impact from tariff refunds; excluding it, margin would have been near the",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_8e89fcabdfd749708c158d332f4c9101",
+      "ticker": "AAPL",
+      "state_type": "event",
+      "name": "Negative post-earnings reaction despite beat",
+      "statement": "After Q3 FY2026 results beat estimates (revenue $109.4B vs ~$109.0B; EPS $2.02 vs $1.89), shares fell 7.35% in one day on 2.6x normal volume, underperforming SPY by ~8.1pp and QQQ by ~8.0pp.",
+      "direction": "negative",
+      "confidence": "high",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_baa9648a482de70d4236",
+      "subject": "negative_post_earnings_reaction_despite_beat",
+      "qualitative_state": "After Q3 FY2026 results beat estimates (revenue $109.4B vs ~$109.0B; EPS $2.02 vs $1.89), shares fell 7.35% in one day on 2.6x normal volume,",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_bd72f14d666544dc849cdd804e3bf5e9",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Siri AI / Apple Intelligence launch",
+      "statement": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026, a potential catalyst for the device upgrade cycle.",
+      "direction": "positive",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [
+        "rev_a813d9313b8f4332a30429331fd2a01e"
+      ],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_add27f32b05467c671d9",
+      "subject": "siri_ai_apple_intelligence_launch",
+      "qualitative_state": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026, a potential catalyst for the device upgrade cycle.",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_11580c42f2664b5eb2dcc7db5a5fb4af",
+      "ticker": "AAPL",
+      "state_type": "macro",
+      "name": "FX volatility on reported growth",
+      "statement": "Foreign exchange swung from a ~2.5pp headwind to reported growth in the March 2025 quarter to a ~2.5pp tailwind in the March 2026 quarter, materially affecting reported YoY growth rates.",
+      "direction": "neutral",
+      "confidence": "medium",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_d9d88a34e3f5e21bd3fd",
+      "subject": "fx_volatility_on_reported_growth",
+      "qualitative_state": "Foreign exchange swung from a ~2.5pp headwind to reported growth in the March 2025 quarter to a ~2.5pp tailwind in the March 2026 quarter,",
+      "current_value": null,
+      "related_entities": []
+    },
+    {
+      "state_id": "bst_1b8c3e2552b54ac98483b3ed36d42469",
+      "ticker": "AAPL",
+      "state_type": "company",
+      "name": "Valuation at premium multiple",
+      "statement": "At $332.41 (2026-09-16), AAPL trades at ~37.9x TTM EPS ($8.71) with a ~$4.88T market cap, against TTM revenue growth of 14.24% and EPS growth of 29.94%.",
+      "direction": "neutral",
+      "confidence": "high",
+      "effective_at": "2026-09-18T04:50:41+00:00",
+      "expires_at": null,
+      "evidence_ids": [],
+      "source": "llm_company_understanding",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T04:50:41+00:00",
+      "updated_at": "2026-09-18T04:50:41+00:00",
+      "state_key": "bsk_80955836254ddeebc5dd",
+      "subject": "valuation_at_premium_multiple",
+      "qualitative_state": "At $332.41 (2026-09-16), AAPL trades at ~37.9x TTM EPS ($8.71) with a ~$4.88T market cap, against TTM revenue growth of 14.24% and EPS growth",
+      "current_value": null,
+      "related_entities": []
+    }
+  ],
+  "events": [
+    {
+      "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "event_type": "other",
+      "title": "Siri AI, a profoundly more capable and personal assistant, is here - Apple",
+      "materiality": "material",
+      "fingerprint": "bevfp_d226701368f1aa1698cd"
+    },
+    {
+      "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "event_type": "product",
+      "title": "Apple debuts iPhone 18 Pro and iPhone 18 Pro Max - Apple",
+      "materiality": "material",
+      "fingerprint": "bevfp_3a0093c29a1f4a22d01e"
+    },
+    {
+      "event_id": "bev_4c68f4c8041441b290f5cccbe4e807d5",
+      "event_type": "other",
+      "title": "Major updates for Apple’s software platforms are now available - Apple",
+      "materiality": "context",
+      "fingerprint": "bevfp_3d5fe801ae3e596e0d90"
+    },
+    {
+      "event_id": "bev_2772dd3023124fbca89105663919df32",
+      "event_type": "other",
+      "title": "Apple introduces AirPods 5 with best-in-class open-ear Active Noise Cancellation - Apple",
+      "materiality": "context",
+      "fingerprint": "bevfp_88deae6bb3bb5d34180b"
+    },
+    {
+      "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "event_type": "product",
+      "title": "Apple unveils iPhone Duo - Apple",
+      "materiality": "material",
+      "fingerprint": "bevfp_2aff59ec6036d683ef30"
+    },
+    {
+      "event_id": "bev_19b71fbd7c64439088a6e53c68cf4dc6",
+      "event_type": "product",
+      "title": "Get ready to experience iPhone 18 Pro, the new Apple Watch lineup, and AirPods 5 - Apple",
+      "materiality": "context",
+      "fingerprint": "bevfp_f2173102c81470358591"
+    },
+    {
+      "event_id": "bev_bdfa1315945c4fb89ab484ac1eaa1cfe",
+      "event_type": "other",
+      "title": "The next generation of Apple Intelligence is available today - Apple (IE)",
+      "materiality": "context",
+      "fingerprint": "bevfp_17e1caca09c8b5882f6d"
+    },
+    {
+      "event_id": "bev_6337c3ef33544bc79becb87dee14e825",
+      "event_type": "product",
+      "title": "Apple event 2026 recap: iPhone Duo, iPhone 18 Pro, and ...",
+      "materiality": "context",
+      "fingerprint": "bevfp_d869465fc588dbd173ee"
+    },
+    {
+      "event_id": "bev_4ff6fbcbfcb84d6db16504dbf6a28738",
+      "event_type": "other",
+      "title": "Berkshire Hathaway Has 30.6% of Its Portfolio in These 2 Magnificent AI Stocks. Here's Why That's a Signal Worth Watching.",
+      "materiality": "noise",
+      "fingerprint": "bevfp_d463e57a810be4e5f903"
+    },
+    {
+      "event_id": "bev_2eba2d9d8b6740048cf064acc34538df",
+      "event_type": "other",
+      "title": "Zacks Investment Ideas feature highlights: Apple, Taiwan and Alphabet's",
+      "materiality": "noise",
+      "fingerprint": "bevfp_d4b2a768b8a249bd2408"
+    },
+    {
+      "event_id": "bev_45aa1b89c4dd42dfb72a1a98ca8acdd0",
+      "event_type": "other",
+      "title": "Apple Is Considering Something It Hasn't Done in 15 Years. Here's What Investors Need to Know.",
+      "materiality": "context",
+      "fingerprint": "bevfp_302ce8b10dcf89da2fa3"
+    },
+    {
+      "event_id": "bev_50352ab0db464ac5bf9cae7d642d84ce",
+      "event_type": "capex",
+      "title": "31% of Berkshire Hathaway's Portfolio Is Riding on These 2 AI Stocks Under Greg Abel",
+      "materiality": "noise",
+      "fingerprint": "bevfp_914e3ec5e2c778cf5bb3"
+    },
+    {
+      "event_id": "bev_8a2f6db222e744f7929bd21aabf1da4f",
+      "event_type": "other",
+      "title": "Apple (AAPL) Builds Secret Enterprise AI Server Push Beyond Consumer Hardware - Simply Wall St News",
+      "materiality": "context",
+      "fingerprint": "bevfp_1a8d1d704b269ff3ab90"
+    },
+    {
+      "event_id": "bev_37a790563999451f849de91ebc378e05",
+      "event_type": "earnings",
+      "title": "Spotting Winners: Apple (NASDAQ:AAPL) And Consumer Discretionary Stocks In Q2 - StockStory",
+      "materiality": "noise",
+      "fingerprint": "bevfp_3da14b8c476d2f7a870a"
+    },
+    {
+      "event_id": "bev_65da3e3b9b9842888e30b28ac0e98309",
+      "event_type": "product",
+      "title": "AAPL Stock Price Target Hiked Ahead Of iPhone Launch – But Analyst Still Sees Downside Amid CEO Transition",
+      "materiality": "context",
+      "fingerprint": "bevfp_501ff79433487f7fd3c6"
+    }
+  ],
+  "exposures": [
+    {
+      "exposure_id": "bexp_ae9d1e024a8b4151b5ed85d448585ea8",
+      "ticker": "AAPL",
+      "state_or_event": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "support",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [
+        "rev_a813d9313b8f4332a30429331fd2a01e"
+      ],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_fa090d51bb7c4d36b0ce570d40454068",
+      "ticker": "AAPL",
+      "state_or_event": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_cdf2ad29660145a9857b8779caf6e9ec",
+      "ticker": "AAPL",
+      "state_or_event": "bev_4c68f4c8041441b290f5cccbe4e807d5",
+      "event_id": "bev_4c68f4c8041441b290f5cccbe4e807d5",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_64301ad1e2b9483e933e66a3cd72aa30",
+      "ticker": "AAPL",
+      "state_or_event": "bev_2772dd3023124fbca89105663919df32",
+      "event_id": "bev_2772dd3023124fbca89105663919df32",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_f5ef4e01b0ab4d148141feda08dc0009",
+      "ticker": "AAPL",
+      "state_or_event": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_bdfd0fd393da45c689b91708a17e0bc4",
+      "ticker": "AAPL",
+      "state_or_event": "bev_19b71fbd7c64439088a6e53c68cf4dc6",
+      "event_id": "bev_19b71fbd7c64439088a6e53c68cf4dc6",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_84ea96caccdf44cd83fb8f36f59fb039",
+      "ticker": "AAPL",
+      "state_or_event": "bev_bdfa1315945c4fb89ab484ac1eaa1cfe",
+      "event_id": "bev_bdfa1315945c4fb89ab484ac1eaa1cfe",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "support",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_ea4104d4e1b84107ad47e223fd19c882",
+      "ticker": "AAPL",
+      "state_or_event": "bev_6337c3ef33544bc79becb87dee14e825",
+      "event_id": "bev_6337c3ef33544bc79becb87dee14e825",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_8b8c8e709cc74f06b3b68ae83a082f65",
+      "ticker": "AAPL",
+      "state_or_event": "bev_4ff6fbcbfcb84d6db16504dbf6a28738",
+      "event_id": "bev_4ff6fbcbfcb84d6db16504dbf6a28738",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_25d6b0836db243cb829180acb7fddc4d",
+      "ticker": "AAPL",
+      "state_or_event": "bev_2eba2d9d8b6740048cf064acc34538df",
+      "event_id": "bev_2eba2d9d8b6740048cf064acc34538df",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_c0d48f72a5b04b9ca4c8742541e518e1",
+      "ticker": "AAPL",
+      "state_or_event": "bev_45aa1b89c4dd42dfb72a1a98ca8acdd0",
+      "event_id": "bev_45aa1b89c4dd42dfb72a1a98ca8acdd0",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_ecc77b953e94410b8ed40a07b3f5db42",
+      "ticker": "AAPL",
+      "state_or_event": "bev_50352ab0db464ac5bf9cae7d642d84ce",
+      "event_id": "bev_50352ab0db464ac5bf9cae7d642d84ce",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_3c05dda2b230467e82db68599256bcd9",
+      "ticker": "AAPL",
+      "state_or_event": "bev_8a2f6db222e744f7929bd21aabf1da4f",
+      "event_id": "bev_8a2f6db222e744f7929bd21aabf1da4f",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [
+        "rev_f777faae9cf94b2a96a835f98efa34b9"
+      ],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_aa000c1e977d45fab20349383c046b72",
+      "ticker": "AAPL",
+      "state_or_event": "bev_37a790563999451f849de91ebc378e05",
+      "event_id": "bev_37a790563999451f849de91ebc378e05",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "none",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    },
+    {
+      "exposure_id": "bexp_fa5f8b8add524b4b9b2aafdd046954ad",
+      "ticker": "AAPL",
+      "state_or_event": "bev_65da3e3b9b9842888e30b28ac0e98309",
+      "event_id": "bev_65da3e3b9b9842888e30b28ac0e98309",
+      "state_id": null,
+      "exposure_type": "financial",
+      "direction": "contextual",
+      "magnitude": "medium",
+      "direct_or_indirect": "direct",
+      "evidence_ids": [
+        "rev_26d20ce2279a4aaca03588a7eab051a3"
+      ],
+      "uncertainty": "medium",
+      "related_only": false,
+      "can_affect_claim": true,
+      "reason": "Issuer-linked exposure",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:04:57+00:00"
+    }
+  ],
+  "transmissions": [
+    {
+      "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "valid": false,
+      "truncated": false,
+      "reason": "",
+      "transmission_chain": [],
+      "affected_states": [],
+      "affected_drivers": [],
+      "affected_claims": [],
+      "direction": null,
+      "strength": "medium",
+      "direct_or_indirect": "direct",
+      "short_term_impact": "",
+      "long_term_impact": "",
+      "financial_metrics_affected": [],
+      "scenario_only": true,
+      "base_case_change": false,
+      "confidence": "low",
+      "evidence_needed_next": "",
+      "scenario_policy": {
+        "base_update_allowed": false,
+        "scenario_only": true,
+        "proposed_base_change": false,
+        "blocked": false,
+        "reasons": [
+          "persistence_not_confirmed",
+          "missing_repeated_or_reported_signal"
+        ],
+        "direct_count": 1,
+        "independent_count": 0,
+        "persistence_confirmed": false
+      }
+    },
+    {
+      "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "valid": false,
+      "truncated": false,
+      "reason": "",
+      "transmission_chain": [],
+      "affected_states": [],
+      "affected_drivers": [],
+      "affected_claims": [],
+      "direction": null,
+      "strength": "medium",
+      "direct_or_indirect": "direct",
+      "short_term_impact": "",
+      "long_term_impact": "",
+      "financial_metrics_affected": [],
+      "scenario_only": true,
+      "base_case_change": false,
+      "confidence": "low",
+      "evidence_needed_next": "",
+      "scenario_policy": {
+        "base_update_allowed": false,
+        "scenario_only": true,
+        "proposed_base_change": false,
+        "blocked": false,
+        "reasons": [
+          "persistence_not_confirmed",
+          "missing_repeated_or_reported_signal"
+        ],
+        "direct_count": 1,
+        "independent_count": 0,
+        "persistence_confirmed": false
+      }
+    },
+    {
+      "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "valid": false,
+      "truncated": false,
+      "reason": "",
+      "transmission_chain": [],
+      "affected_states": [],
+      "affected_drivers": [],
+      "affected_claims": [],
+      "direction": null,
+      "strength": "medium",
+      "direct_or_indirect": "direct",
+      "short_term_impact": "",
+      "long_term_impact": "",
+      "financial_metrics_affected": [],
+      "scenario_only": true,
+      "base_case_change": false,
+      "confidence": "low",
+      "evidence_needed_next": "",
+      "scenario_policy": {
+        "base_update_allowed": false,
+        "scenario_only": true,
+        "proposed_base_change": false,
+        "blocked": false,
+        "reasons": [
+          "missing_direct_high_quality_evidence",
+          "persistence_not_confirmed",
+          "missing_repeated_or_reported_signal"
+        ],
+        "direct_count": 0,
+        "independent_count": 0,
+        "persistence_confirmed": false
+      }
+    }
+  ],
+  "financial_impacts": [
+    {
+      "impact_id": "bfi_ad17a9c00d5d476c84de851b1c3acce0",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_07ba0deb562742468a6ffe1e40cc4ed9",
+      "metric": "gross_margin",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "high",
+      "mechanism": "Reported margin quality is flattered by a non-recurring ~2pp benefit, so the sustainable margin base is lower. Trade-policy shifts can swing Products gross margin by hundreds of basis points, directly moving EPS and the credibility of margin assumptions embedded in",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_8bb9ead4abfb4ea19c6d3e048af9fe39",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_d2e7974a652847f9af17077d18c294a7",
+      "metric": "revenue",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "high",
+      "mechanism": "AI differentiation is the main swing factor for upgrade pace across a 2.5B+ device base and for competitive position. Success lifts volumes, ASPs, and Services attach; failure leaves growth dependent on replacement timing alone, challenging the premium multiple.",
+      "evidence_ids": [
+        "rev_a813d9313b8f4332a30429331fd2a01e",
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_3f8f839246154fa38cd34a6ce115e990",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_57f8ef6e588a43bfa9380914232410a9",
+      "metric": "revenue",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "iPhone is the largest revenue line and the entry point to the installed base that Services monetizes. Sustained double-digit cycle strength determines most of near-term enterprise value; a strong or weak iPhone 18/AI-driven cycle swings revenue, product mix, and the",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187",
+        "rev_9685524991084f70bc6b15246e0d4aad"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_d5c730ed452542a4a22a05155b783963",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+      "metric": "multiple",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "At ~38x TTM earnings, modest deceleration or margin-quality disappointment (e.g., non-repeat of the ~2pp tariff benefit) can trigger multiple compression that dominates operating outcomes in total-return scenarios, as the negative reaction to a beat demonstrates.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_3278f8bc53454a6cb6d67e974d97fc33",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_92ea4908435040988ae625589dbc3ecf",
+      "metric": "revenue",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "long",
+      "confidence": "low",
+      "mechanism": "The installed base is the compounding asset behind both revenue engines: it sets the ceiling on replacement hardware volume and the audience for high-margin Services. Its continued growth underwrites durable cash flows and terminal-value assumptions.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_a9e31b0715eb4aa4bc1875e85d1f93ee",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_7284013fc4e24c3ea5dc15879ded5d47",
+      "metric": "gross_margin",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "long",
+      "confidence": "low",
+      "mechanism": "With roughly a 35-point gross-margin gap between segments, each point of revenue mix shifted toward Services adds about a third of a point to company gross margin. This is the least cyclical margin lever and underpins terminal margin assumptions.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_12e312863cf04377a3d88dfefa855289",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_3667140a84094c7e839f5a1afce51485",
+      "metric": "revenue",
+      "direction": "up",
+      "magnitude_range": {},
+      "time_horizon": "medium",
+      "confidence": "medium",
+      "mechanism": "Broad geographic growth reduces concentration risk in any single region (notably Greater China) and signals genuine demand durability rather than channel or one-market effects. Regional policy or demand shocks would hit reported growth disproportionately.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    },
+    {
+      "impact_id": "bfi_3e44191c27c842b9abe1bbb2a9b44975",
+      "ticker": "AAPL",
+      "object_type": "driver",
+      "object_id": "bdrv_299c353662d6485ea7158a3226adc765",
+      "metric": "volume",
+      "direction": "watch",
+      "magnitude_range": {},
+      "time_horizon": "short",
+      "confidence": "medium",
+      "mechanism": "Near-term, unmet demand defers rather than destroys revenue, but constraints persisting into the iPhone 18 ramp could cap launch-quarter volume, distort product mix, and delay the AI-driven upgrade cycle the market is pricing.",
+      "evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a",
+        "rev_f380aa032a3041bea9ca174726be3187"
+      ],
+      "direction_only": true,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    }
+  ],
+  "critic": {
+    "issues": [
+      {
+        "issue_id": "bcri_a36b42b0cce94c67951a07b5a1eee89b",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_8e89fcabdfd749708c158d332f4c9101; bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+        "reasoning": "The post-earnings reaction state and valuation driver cite the Q3 FY2026 8-K press release (rev_f680a2738ac040b7a37c1e15345b143a) for a -7.35% one-day decline, 2.6x volume, SPY/QQQ underperformance, and consensus estimates ($1.89 EPS, ~$109.0B revenue). An issuer earnings exhibit cannot contain market-reaction or consensus data; claim bclm_206dcfe484184314a710333afcf22562 itself confirms no such…",
+        "required_fix": "Remove or re-source the price/volume/consensus figures with valid market data evidence; otherwise mark the reaction state and the related driver content unverified.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_82ef3e929d26417cbe7bb0085e92566f",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "medium",
+        "affected_object": "bst_1b8c3e2552b54ac98483b3ed36d42469; bst_11580c42f2664b5eb2dcc7db5a5fb4af",
+        "reasoning": "The valuation state asserts specific figures ($332.41, ~37.9x TTM P/E, $8.71 EPS, ~$4.88T market cap, 14.24%/29.94% growth) and the FX state asserts ~2.5pp swings, both with empty evidence_ids. No evidence object in the set contains price, multiple, or FX data; claim bclm_206dcfe484184314a710333afcf22562 explicitly notes this gap.",
+        "required_fix": "Attach valid market/FX evidence to these states or relabel them as unsourced estimates; unsourced figures should not anchor the valuation driver.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_46ed37f645c24c67ab50e9ccc5b6b0b6",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_ceef045e7c14469d874c2a4efab54fbb; bst_7ace9c9049b045fe88a0b3ac54d07d95; bdr…",
+        "reasoning": "States/drivers assert quantified specifics — ~2pp tariff-refund benefit, ~$800M prior-year tariff costs, guidance-midpoint comparison, 50.06% GM, Services $30.7B/+12%, segment margins 75.6-75.7% vs 40.1%, Products +18% — yet claims bclm_aaff24b577fc43db8cf909715a0cb353 and bclm_50cb5246e283434c80d438a586cb8495 state these figures are not disclosed/established in the evidence. The graph contradict…",
+        "required_fix": "Reconcile: cite exact primary-source locations for each figure, or strip them from states/drivers and mark unverified, aligning with the claims.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_b34b7f322ddf47d0900257635a071619",
+        "issue_type": "weak_causal_link",
+        "severity": "medium",
+        "affected_object": "financial_impact (gross_margin, up) for bdrv_7284013fc4e24c3ea5dc15879ded5d47",
+        "reasoning": "The mix driver's own text says June-quarter Products (+18%) outgrew Services (+12%), temporarily shifting mix toward ~40%-margin Products — a dilutive mix effect — and the reported 50.1% GM included a ~2pp one-time tariff refund. Directing gross_margin 'up' contradicts both the stated mix mechanics and the one-time benefit.",
+        "required_fix": "Change direction to 'watch' (or 'down' for the mix effect specifically), or separately evidence the company GM trend excluding one-time items.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_8242ea6874d04d5d86a3ea392f644d4d",
+        "issue_type": "missed_material_driver",
+        "severity": "medium",
+        "affected_object": "bev_65da3e3b9b9842888e30b28ac0e98309",
+        "reasoning": "The event title references a CEO transition ('Analyst Still Sees Downside Amid CEO Transition'), but no driver or state covers management succession — potentially material for Apple if real. The sole evidence (rev_26d20ce2279a4aaca03588a7eab051a3) is a broken Yahoo error page with no usable content, so the transition is unverified rather than disproven.",
+        "required_fix": "Source a working article on Apple's CEO transition; if confirmed, add a management-succession driver; otherwise document it as an explicit open question.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_c7bfea87823b43ecad64559a54dd3641",
+        "issue_type": "missed_material_driver",
+        "severity": "low",
+        "affected_object": "bev_7f4d14e93d8b436e85e7a3a147254c59 (iPhone Duo)",
+        "reasoning": "iPhone Duo is marked material but has no evidence IDs, no linked driver or state, and its transmission lists no affected drivers/claims and no reason. A new iPhone form factor could affect the upgrade cycle, ASPs, and mix, yet bdrv_57f8ef6e588a43bfa9380914232410a9 ignores it. All three transmissions also lack documented reasoning.",
+        "required_fix": "Link the iPhone Duo event to the upgrade-cycle driver (or a new form-factor driver) with a documented scenario-only rationale and noted evidence gap.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_86c691ceb86a489996fad0f6b39a773b",
+        "issue_type": "alternative_hypothesis",
+        "severity": "low",
+        "affected_object": "bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+        "reasoning": "The driver's framing ('Valuation expectations dependency') presupposes the post-earnings decline reflects multiple compression, but no evidence identifies the cause. Alternatives — soft Q4 FY2026 guidance, optics of the one-time tariff benefit, or supply constraints — are not excluded; the driver lists guidance as missing evidence yet still leans on the expectations narrative.",
+        "required_fix": "Keep the decline's cause explicitly open until guidance/consensus evidence is sourced; avoid baking the expectations interpretation into the driver name and state.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_6cc1f55818a045cfab553b7ed1ef446e",
+        "issue_type": "alternative_hypothesis",
+        "severity": "low",
+        "affected_object": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed; bdrv_57f8ef6e588a43bfa9380914232410a9",
+        "reasoning": "The FX state says reported growth swung ~5pp (from a ~2.5pp headwind to a ~2.5pp tailwind), meaning reported double-digit iPhone growth is partly currency-driven, yet the FX state is never linked to the iPhone durability claim or driver as a counter-consideration. Underlying constant-currency growth is materially lower than reported.",
+        "required_fix": "Link the FX state to the iPhone growth claim/driver and assess constant-currency growth once FX figures are properly evidenced.",
+        "resolved": true
+      }
+    ],
+    "fixed": [
+      {
+        "issue_id": "bcri_82ef3e929d26417cbe7bb0085e92566f",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "medium",
+        "affected_object": "bst_1b8c3e2552b54ac98483b3ed36d42469; bst_11580c42f2664b5eb2dcc7db5a5fb4af",
+        "reasoning": "The valuation state asserts specific figures ($332.41, ~37.9x TTM P/E, $8.71 EPS, ~$4.88T market cap, 14.24%/29.94% growth) and the FX state asserts ~2.5pp swings, both with empty evidence_ids. No evidence object in the set contains price, multiple, or FX data; claim bclm_206dcfe484184314a710333afcf22562 explicitly notes this gap.",
+        "required_fix": "Attach valid market/FX evidence to these states or relabel them as unsourced estimates; unsourced figures should not anchor the valuation driver.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_b34b7f322ddf47d0900257635a071619",
+        "issue_type": "weak_causal_link",
+        "severity": "medium",
+        "affected_object": "financial_impact (gross_margin, up) for bdrv_7284013fc4e24c3ea5dc15879ded5d47",
+        "reasoning": "The mix driver's own text says June-quarter Products (+18%) outgrew Services (+12%), temporarily shifting mix toward ~40%-margin Products — a dilutive mix effect — and the reported 50.1% GM included a ~2pp one-time tariff refund. Directing gross_margin 'up' contradicts both the stated mix mechanics and the one-time benefit.",
+        "required_fix": "Change direction to 'watch' (or 'down' for the mix effect specifically), or separately evidence the company GM trend excluding one-time items.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_8242ea6874d04d5d86a3ea392f644d4d",
+        "issue_type": "missed_material_driver",
+        "severity": "medium",
+        "affected_object": "bev_65da3e3b9b9842888e30b28ac0e98309",
+        "reasoning": "The event title references a CEO transition ('Analyst Still Sees Downside Amid CEO Transition'), but no driver or state covers management succession — potentially material for Apple if real. The sole evidence (rev_26d20ce2279a4aaca03588a7eab051a3) is a broken Yahoo error page with no usable content, so the transition is unverified rather than disproven.",
+        "required_fix": "Source a working article on Apple's CEO transition; if confirmed, add a management-succession driver; otherwise document it as an explicit open question.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_c7bfea87823b43ecad64559a54dd3641",
+        "issue_type": "missed_material_driver",
+        "severity": "low",
+        "affected_object": "bev_7f4d14e93d8b436e85e7a3a147254c59 (iPhone Duo)",
+        "reasoning": "iPhone Duo is marked material but has no evidence IDs, no linked driver or state, and its transmission lists no affected drivers/claims and no reason. A new iPhone form factor could affect the upgrade cycle, ASPs, and mix, yet bdrv_57f8ef6e588a43bfa9380914232410a9 ignores it. All three transmissions also lack documented reasoning.",
+        "required_fix": "Link the iPhone Duo event to the upgrade-cycle driver (or a new form-factor driver) with a documented scenario-only rationale and noted evidence gap.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_86c691ceb86a489996fad0f6b39a773b",
+        "issue_type": "alternative_hypothesis",
+        "severity": "low",
+        "affected_object": "bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+        "reasoning": "The driver's framing ('Valuation expectations dependency') presupposes the post-earnings decline reflects multiple compression, but no evidence identifies the cause. Alternatives — soft Q4 FY2026 guidance, optics of the one-time tariff benefit, or supply constraints — are not excluded; the driver lists guidance as missing evidence yet still leans on the expectations narrative.",
+        "required_fix": "Keep the decline's cause explicitly open until guidance/consensus evidence is sourced; avoid baking the expectations interpretation into the driver name and state.",
+        "resolved": true
+      },
+      {
+        "issue_id": "bcri_6cc1f55818a045cfab553b7ed1ef446e",
+        "issue_type": "alternative_hypothesis",
+        "severity": "low",
+        "affected_object": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed; bdrv_57f8ef6e588a43bfa9380914232410a9",
+        "reasoning": "The FX state says reported growth swung ~5pp (from a ~2.5pp headwind to a ~2.5pp tailwind), meaning reported double-digit iPhone growth is partly currency-driven, yet the FX state is never linked to the iPhone durability claim or driver as a counter-consideration. Underlying constant-currency growth is materially lower than reported.",
+        "required_fix": "Link the FX state to the iPhone growth claim/driver and assess constant-currency growth once FX figures are properly evidenced.",
+        "resolved": true
+      }
+    ],
+    "unresolved": [
+      {
+        "issue_id": "bcri_a36b42b0cce94c67951a07b5a1eee89b",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_8e89fcabdfd749708c158d332f4c9101; bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+        "reasoning": "The post-earnings reaction state and valuation driver cite the Q3 FY2026 8-K press release (rev_f680a2738ac040b7a37c1e15345b143a) for a -7.35% one-day decline, 2.6x volume, SPY/QQQ underperformance, and consensus estimates ($1.89 EPS, ~$109.0B revenue). An issuer earnings exhibit cannot contain market-reaction or consensus data; claim bclm_206dcfe484184314a710333afcf22562 itself confirms no such…",
+        "required_fix": "Remove or re-source the price/volume/consensus figures with valid market data evidence; otherwise mark the reaction state and the related driver content unverified.",
+        "resolved": false
+      },
+      {
+        "issue_id": "bcri_46ed37f645c24c67ab50e9ccc5b6b0b6",
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_ceef045e7c14469d874c2a4efab54fbb; bst_7ace9c9049b045fe88a0b3ac54d07d95; bdr…",
+        "reasoning": "States/drivers assert quantified specifics — ~2pp tariff-refund benefit, ~$800M prior-year tariff costs, guidance-midpoint comparison, 50.06% GM, Services $30.7B/+12%, segment margins 75.6-75.7% vs 40.1%, Products +18% — yet claims bclm_aaff24b577fc43db8cf909715a0cb353 and bclm_50cb5246e283434c80d438a586cb8495 state these figures are not disclosed/established in the evidence. The graph contradict…",
+        "required_fix": "Reconcile: cite exact primary-source locations for each figure, or strip them from states/drivers and mark unverified, aligning with the claims.",
+        "resolved": false
+      }
+    ],
+    "transmissions": [
+      {
+        "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+        "valid": false,
+        "truncated": false,
+        "reason": "",
+        "transmission_chain": [],
+        "affected_states": [],
+        "affected_drivers": [],
+        "affected_claims": [],
+        "direction": null,
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "short_term_impact": "",
+        "long_term_impact": "",
+        "financial_metrics_affected": [],
+        "scenario_only": true,
+        "base_case_change": false,
+        "confidence": "low",
+        "evidence_needed_next": "",
+        "scenario_policy": {
+          "base_update_allowed": false,
+          "scenario_only": true,
+          "proposed_base_change": false,
+          "blocked": false,
+          "reasons": [
+            "persistence_not_confirmed",
+            "missing_repeated_or_reported_signal"
+          ],
+          "direct_count": 1,
+          "independent_count": 0,
+          "persistence_confirmed": false
+        }
+      },
+      {
+        "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+        "valid": false,
+        "truncated": false,
+        "reason": "",
+        "transmission_chain": [],
+        "affected_states": [],
+        "affected_drivers": [],
+        "affected_claims": [],
+        "direction": null,
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "short_term_impact": "",
+        "long_term_impact": "",
+        "financial_metrics_affected": [],
+        "scenario_only": true,
+        "base_case_change": false,
+        "confidence": "low",
+        "evidence_needed_next": "",
+        "scenario_policy": {
+          "base_update_allowed": false,
+          "scenario_only": true,
+          "proposed_base_change": false,
+          "blocked": false,
+          "reasons": [
+            "persistence_not_confirmed",
+            "missing_repeated_or_reported_signal"
+          ],
+          "direct_count": 1,
+          "independent_count": 0,
+          "persistence_confirmed": false
+        }
+      },
+      {
+        "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+        "valid": false,
+        "truncated": false,
+        "reason": "",
+        "transmission_chain": [],
+        "affected_states": [],
+        "affected_drivers": [],
+        "affected_claims": [],
+        "direction": null,
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "short_term_impact": "",
+        "long_term_impact": "",
+        "financial_metrics_affected": [],
+        "scenario_only": true,
+        "base_case_change": false,
+        "confidence": "low",
+        "evidence_needed_next": "",
+        "scenario_policy": {
+          "base_update_allowed": false,
+          "scenario_only": true,
+          "proposed_base_change": false,
+          "blocked": false,
+          "reasons": [
+            "missing_direct_high_quality_evidence",
+            "persistence_not_confirmed",
+            "missing_repeated_or_reported_signal"
+          ],
+          "direct_count": 0,
+          "independent_count": 0,
+          "persistence_confirmed": false
+        }
+      }
+    ],
+    "inconsistent": true,
+    "status": "inconsistent"
+  },
+  "pm_synthesis": {
+    "what_matters_now": "Two questions dominate: does the iPhone 18 / Siri AI launch window (2026-09-09 and 2026-09-14) extend the double-digit growth run, and does the ~37.9x TTM multiple survive the roll-off of the ~2pp tariff-refund margin benefit in the June quarter (rev_f680a2738ac040b7a37c1e15345b143a)? Evidence coverage is poor on both: no sell-through, adoption, consensus, forward-multiple, or FCF data in the set, and three of five core claims are unverified.",
+    "what_changed": [
+      "Q3 FY2026 (reported 2026-07-30): revenue $109.4B, +16% YoY; EPS $2.02, +29% YoY; gross margin 50.1% including ~2pp favorable tariff-refund impact and $0.11 of EPS (rev_f680a2738ac040b7a37c1e15345b143a).",
+      "iPhone 18 Pro/Pro Max announced 2026-09-09 (rev_9685524991084f70bc6b15246e0d4aad); next-generation Siri AI shipped 2026-09-14 (rev_a813d9313b8f4332a30429331fd2a01e).",
+      "Validation pass downgraded the margin-quality, market-reaction, and Services-mix claims to unverified (bclm_aaff24b577fc43db8cf909715a0cb353, bclm_206dcfe484184314a710333afcf22562, bclm_50cb5246e283434c80d438a586cb8495).",
+      "All scenario events in the set are flagged scenario_only with no base-case change and no affected claims."
+    ],
+    "current_core_claims": [
+      {
+        "claim_id": "bclm_aaff24b577fc43db8cf909715a0cb353",
+        "statement": "Sustainable gross margin sits below the reported June-quarter level (reported 50.1% included ~2pp of tariff refunds).",
+        "status": "unverified"
+      },
+      {
+        "claim_id": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+        "statement": "iPhone double-digit growth is a durable reacceleration, not a cycle peak; records confirmed in March and June quarters, iPhone 18 cycle underway.",
+        "status": "partially_supported"
+      },
+      {
+        "claim_id": "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+        "statement": "Siri AI is the upgrade-cycle accelerant the market is paying for; release confirmed, demand effect untested.",
+        "status": "partially_supported"
+      },
+      {
+        "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+        "statement": "Total return depends on expectations, not just results, at a premium multiple.",
+        "status": "unverified"
+      },
+      {
+        "claim_id": "bclm_50cb5246e283434c80d438a586cb8495",
+        "statement": "Services mix is the structural margin floor beneath a cyclical hardware cycle.",
+        "status": "unverified"
+      }
+    ],
+    "strongest_support": "Two consecutive primary-source record quarters: Q3 FY2026 revenue $109.4B (+16% YoY), EPS $2.02 (+29% YoY), June-quarter records for total revenue, EPS, iPhone, Mac, and Services (rev_f680a2738ac040b7a37c1e15345b143a); Q2 FY2026 revenue $111.2B (+17% YoY), EPS $2.01 (+22% YoY), Services all-time high, double-digit growth in every geographic segment (rev_f380aa032a3041bea9ca174726be3187). Both launches are confirmed by primary Apple sources (rev_9685524991084f70bc6b15246e0d4aad, rev_a813d9313b8f4332a30429331fd2a01e).",
+    "strongest_counter": "Claim-level evidence is thin exactly where it matters: no data on iPhone 18 pre-orders or sell-through, Siri AI adoption, the sustainable margin base ex-tariff-refund, or consensus. The market-reaction claim (bclm_206dcfe484184314a710333afcf22562) lists the -7.35% one-day drop on 2.6x volume as unsupported; those figures appear only in validated state bst_8e89fcabdfd749708c158d332f4c9101 with no bound price/volume evidence. Counter-searches found no opposing evidence, so the bear case is untested, not refuted.",
+    "base_bull_bear": {
+      "base": "Record March and June quarters plus a normal iPhone 18 launch keep growth positive, but the ~2pp tariff-refund margin benefit rolls off and the FX tailwind can fade (state bst_11580c42f2664b5eb2dcc7db5a5fb4af); at ~37.9x TTM (header), earnings growth is largely offset by multiple risk. Sideways stock.",
+      "bull": "Siri AI (rev_a813d9313b8f4332a30429331fd2a01e) accelerates upgrades across the 2.5B+ device installed base (driver bdrv_92ea4908435040988ae625589dbc3ecf), extending double-digit iPhone growth (driver bdrv_57f8ef6e588a43bfa9380914232410a9) and Services attach; margin holds via Services mix (driver bdrv_7284013fc4e24c3ea5dc15879ded5d47) and the multiple is defended.",
+      "bear": "iPhone 18 sell-through disappoints at ~37.9x TTM; the ~2pp tariff-refund benefit (rev_f680a2738ac040b7a37c1e15345b143a) does not repeat and gross margin guides down; the negative post-beat reaction recorded in state bst_8e89fcabdfd749708c158d332f4c9101 repeats and compounds."
+    },
+    "valuation_sensitivity": "At $332.41, ~37.9x TTM EPS of $8.71, and ~$4.88T market cap (header, 2026-09-16), the multiple is the dominant swing: the Q3 tariff-refund benefit was ~2pp of gross margin and $0.11 of the $2.02 quarter EPS (~5%) (rev_f680a2738ac040b7a37c1e15345b143a), so its non-repeat alone dents the earnings base; any deceleration from 14.24% TTM revenue growth (header) compresses the multiple. Forward PE, PS, EV/EBITDA, and FCF yield are unavailable in the pack, so the sensitivity cannot be quantified.",
+    "next_evidence_to_watch": [
+      "Q4 FY2026 (September quarter) earnings and gross-margin guidance: the direct test of the tariff-refund roll-off (driver bdrv_07ba0deb562742468a6ffe1e40cc4ed9; claim bclm_aaff24b577fc43db8cf909715a0cb353).",
+      "iPhone 18 pre-order volumes, shipping times, and sell-through vs. prior launches (driver bdrv_57f8ef6e588a43bfa9380914232410a9; claim bclm_36b884123cbc4ce09dfa4eb6328ba5ed).",
+      "Siri AI adoption, usage, and review data since the 2026-09-14 release (driver bdrv_d2e7974a652847f9af17077d18c294a7; claim bclm_75163ea04e9e44ff907fe758e3f9f78e).",
+      "Resolution of iPhone/Mac supply constraints into the launch ramp (driver bdrv_299c353662d6485ea7158a3226adc765)."
+    ],
+    "what_would_change_the_thesis": "September-quarter gross-margin guidance holding near the reported level ex-tariff-refund, plus iPhone 18 sell-through above prior cycles, would confirm growth at a premium multiple; a margin step-down as the ~2pp benefit rolls off combined with soft launch-quarter iPhone data would break it (claims bclm_aaff24b577fc43db8cf909715a0cb353, bclm_36b884123cbc4ce09dfa4eb6328ba5ed).",
+    "current_view": "PM consistency check failed. Do not treat this as a completed PM view. PM cited unbound number 95.4b",
+    "core_claim_ids": [
+      "bclm_aaff24b577fc43db8cf909715a0cb353",
+      "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+      "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+      "bclm_206dcfe484184314a710333afcf22562",
+      "bclm_50cb5246e283434c80d438a586cb8495"
+    ],
+    "decisive_variables": [
+      {
+        "name": "iPhone 18 / Siri AI upgrade pull",
+        "why": "Highest combined importance and uncertainty; determines whether double-digit growth extends or peaks and whether the premium multiple is earned (drivers bdrv_d2e7974a652847f9af17077d18c294a7, bdrv_57f8ef6e588a43bfa9380914232410a9).",
+        "evidence_ids": [
+          "rev_9685524991084f70bc6b15246e0d4aad",
+          "rev_a813d9313b8f4332a30429331fd2a01e",
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ]
+      },
+      {
+        "name": "Sustainable gross margin ex-tariff refund",
+        "why": "Reported 50.1% includes a ~2pp non-recurring tariff-refund benefit; the durable base anchors EPS forecasts and the margin assumptions in the multiple (driver bdrv_07ba0deb562742468a6ffe1e40cc4ed9; claim bclm_aaff24b577fc43db8cf909715a0cb353).",
+        "evidence_ids": [
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ]
+      },
+      {
+        "name": "Multiple / expectations dependency",
+        "why": "At ~37.9x TTM, modest deceleration or margin-quality disappointment can compress the multiple enough to dominate operating outcomes (driver bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5; claim bclm_206dcfe484184314a710333afcf22562).",
+        "evidence_ids": [
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ]
+      }
+    ],
+    "strongest_claim_id": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+    "weakest_claim_id": "bclm_206dcfe484184314a710333afcf22562",
+    "what_changed_last_30d": [
+      "iPhone 18 Pro/Pro Max announced 2026-09-09 with the A20 Pro chip (rev_9685524991084f70bc6b15246e0d4aad).",
+      "Next-generation Siri AI released 2026-09-14 (rev_a813d9313b8f4332a30429331fd2a01e).",
+      "Claim re-validation on 2026-09-18 downgraded margin-quality, market-reaction, and Services-mix claims to unverified (history for bclm_aaff24b577fc43db8cf909715a0cb353, bclm_206dcfe484184314a710333afcf22562, bclm_50cb5246e283434c80d438a586cb8495).",
+      "Price marked at $332.41 on 2026-09-16 (header)."
+    ],
+    "most_likely_wrong": "Extrapolating the June-quarter run-rate: the 50.1% gross margin includes ~2pp of tariff refunds and EPS includes $0.11 of the same (rev_f680a2738ac040b7a37c1e15345b143a), and double-digit iPhone growth has no sell-through confirmation for the iPhone 18 cycle; the durability claim (bclm_36b884123cbc4ce09dfa4eb6328ba5ed) rests on record levels, not tested forward rates.",
+    "next_information_to_seek": "iPhone 18 pre-order/sell-through and Siri AI adoption/usage data since the September launches; September-quarter guidance, especially gross margin ex-tariff-refund; consensus estimates and a forward multiple — all currently absent from the pack (header: consensus and forward PE unavailable).",
+    "short_view": "Launch-quarter optics dominate: iPhone/Mac supply constraints (driver bdrv_299c353662d6485ea7158a3226adc765) could cap volumes, and at ~37.9x TTM the stock trades on any sell-through signal. A validated state records a -7.35% one-day drop on 2.6x volume after the last beat (bst_8e89fcabdfd749708c158d332f4c9101), though that figure carries no bound evidence (claim bclm_206dcfe484184314a710333afcf22562 unverified).",
+    "mid_view": "The October earnings print is the checkpoint: gross-margin guidance tests the tariff-refund roll-off (bclm_aaff24b577fc43db8cf909715a0cb353) and the first iPhone 18 quarter tests cycle durability (bclm_36b884123cbc4ce09dfa4eb6328ba5ed); FX swings of ~2.5pp (state bst_11580c42f2664b5eb2dcc7db5a5fb4af) can distort reported growth in either direction.",
+    "long_view": "The 2.5B+ device installed base (driver bdrv_92ea4908435040988ae625589dbc3ecf) and the Services-vs-Products mix (driver bdrv_7284013fc4e24c3ea5dc15879ded5d47; state bst_7ace9c9049b045fe88a0b3ac54d07d95) underwrite terminal value if the AI upgrade pull materializes; without it, growth reverts to replacement timing and the premium multiple is hard to defend.",
+    "cannot_conclude": [
+      "Whether iPhone growth persists through the iPhone 18 cycle or marks a peak — no pre-order, sell-through, or channel data (bclm_36b884123cbc4ce09dfa4eb6328ba5ed).",
+      "Whether Siri AI is accelerating upgrades — no adoption, usage, or review data since the 2026-09-14 release (bclm_75163ea04e9e44ff907fe758e3f9f78e).",
+      "The sustainable gross margin excluding the ~2pp tariff-refund benefit, and the underlying tariff cost run-rate (bclm_aaff24b577fc43db8cf909715a0cb353).",
+      "The cause and durability of the post-earnings price reaction, and what multiple the market will sustain — no price, volume, or consensus data bound (bclm_206dcfe484184314a710333afcf22562).",
+      "The Services-vs-Products margin mix trajectory — segment margins appear only in validated state bst_7ace9c9049b045fe88a0b3ac54d07d95, and the mix claim is unverified (bclm_50cb5246e283434c80d438a586cb8495).",
+      "Any valuation floor or target — forward PE, PS, EV/EBITDA, FCF yield, and consensus are all unavailable in the pack."
+    ],
+    "status": "inconsistent",
+    "pm_consistency": {
+      "passed": false,
+      "status": "inconsistent",
+      "reasons": [
+        "PM cited unbound number 95.4b"
+      ]
+    },
+    "critic_blocked": true
+  },
+  "history": [
+    {
+      "history_id": "bhis_6b430ed609b94d81b0b2e2842e1d14cc",
+      "ticker": "AAPL",
+      "object_type": "event_impact",
+      "object_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "from_payload": {},
+      "to_payload": {
+        "scenario_only": true,
+        "affected_claims": [],
+        "base_case_change": false
+      },
+      "reason": "event_transmission",
+      "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:14:58+00:00"
+    },
+    {
+      "history_id": "bhis_a1cdaf543b4a4ffcbdf61f5606cdbe3b",
+      "ticker": "AAPL",
+      "object_type": "event_impact",
+      "object_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "from_payload": {},
+      "to_payload": {
+        "scenario_only": true,
+        "affected_claims": [],
+        "base_case_change": false
+      },
+      "reason": "event_transmission",
+      "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:14:58+00:00"
+    },
+    {
+      "history_id": "bhis_977fa344fce04e2480c2778a9683c5b0",
+      "ticker": "AAPL",
+      "object_type": "event_impact",
+      "object_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "from_payload": {},
+      "to_payload": {
+        "scenario_only": true,
+        "affected_claims": [],
+        "base_case_change": false
+      },
+      "reason": "event_transmission",
+      "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:14:58+00:00"
+    },
+    {
+      "history_id": "bhis_a2b4b1aafb604c20837b71a346e4db0b",
+      "ticker": "AAPL",
+      "object_type": "claim",
+      "object_id": "bclm_aaff24b577fc43db8cf909715a0cb353",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "The June-quarter gross margin was flattered by a one-time tariff-refund benefit that management sized at roughly two percentage points, so the durable margin base is materially below the reported level; the sustainable figure depends on the undisclosed tariff cost run-rate and on Services-vs-Products mix"
+      },
+      "to_payload": {
+        "status": "unverified",
+        "statement": "Apple's fiscal 2026 third quarter (ended June 27, 2026) set June-quarter records for total company revenue, EPS, iPhone, Mac, and Services revenue, per the company's SEC-filed press release. The reported gross margin for the quarter, any one-time tariff-refund benefit, and the sustainable margin base relative to the reported level are not disclosed in the available evidence and remain unverified"
+      },
+      "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:16:53+00:00"
+    },
+    {
+      "history_id": "bhis_dec86b9a706046c29b7e551f574524c2",
+      "ticker": "AAPL",
+      "object_type": "claim",
+      "object_id": "bclm_36b884123cbc4ce09dfa4eb6328ba5ed",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "iPhone revenue grew double digits year over year in both the March and June quarters of fiscal 2026, setting records in both; the decision variable is whether this pace persists through the iPhone 18 cycle or marks a peak before replacement demand normalizes"
+      },
+      "to_payload": {
+        "status": "partially_supported",
+        "statement": "iPhone revenue set new March quarter and June quarter records in fiscal 2026, per Apple's Q2 and Q3 FY2026 earnings releases (primary, tier-1 sources); the iPhone 18 Pro and iPhone 18 Pro Max were announced September 9, 2026, and next-generation Siri AI shipped September 14, 2026. The year-over-year iPhone growth rate in either quarter is not quantified in the available evidence, and whether growth persists through the iPhone 18 cycle or marks a peak before replacement demand normalizes remains an open question with neither supporting nor opposing evidence in the set"
+      },
+      "reason": "statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:18:56+00:00"
+    },
+    {
+      "history_id": "bhis_f6ba373b1a054dd8bf4200673c0618db",
+      "ticker": "AAPL",
+      "object_type": "claim",
+      "object_id": "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+      "from_payload": {
+        "status": "unverified",
+        "statement": "The next generation of Apple Intelligence powering Siri AI, released days after the iPhone 18 Pro launch, is positioned as the catalyst that accelerates upgrades across the installed base; with no adoption, usage, or review data yet, the demand effect is entirely unverified"
+      },
+      "to_payload": {
+        "status": "partially_supported",
+        "statement": "Apple released the next generation of Apple Intelligence powering Siri AI on September 14, 2026, five days after the September 9, 2026 announcement of the iPhone 18 Pro and iPhone 18 Pro Max (both confirmed by primary Apple sources; the on-sale date of the hardware is not in evidence). No adoption, usage, review, upgrade-intent, trade-in, or sell-through data exists in the evidence set, so any demand or upgrade-cycle acceleration effect from Siri AI is unverified. The assertions that Siri AI is 'positioned as the catalyst' for upgrades or that 'the market is paying for' it are unsupported by…"
+      },
+      "reason": "status changed; confidence changed; statement materially changed",
+      "event_id": null,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:21:03+00:00"
+    },
+    {
+      "history_id": "bhis_8c50093d98fc47209eb31714e33be24a",
+      "ticker": "AAPL",
+      "object_type": "claim",
+      "object_id": "bclm_206dcfe484184314a710333afcf22562",
+      "from_payload": {
+        "status": "unverified",
+        "statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple"
+      },
+      "to_payload": {
+        "status": "unverified",
+        "statement": "Apple's fiscal 2026 third quarter (ended June 27, 2026) set June-quarter records for total company revenue and EPS, per the company's primary 8-K exhibit. The broader assertion — that at a premium trailing earnings multiple total return hinges on growth and margin assumptions holding, and that a post-earnings one-day decline on elevated volume after a quarter that beat expectations demonstrated multiple compression dominating operating outcomes — is not established by the evidence in this set, which contains no price, volume, valuation-multiple, or consensus-estimate data"
+      },
+      "reason": "statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:23:20+00:00"
+    },
+    {
+      "history_id": "bhis_3e2d7db758a84e4fae3367de19512d98",
+      "ticker": "AAPL",
+      "object_type": "claim",
+      "object_id": "bclm_50cb5246e283434c80d438a586cb8495",
+      "from_payload": {
+        "status": "partially_supported",
+        "statement": "Services carries a gross margin roughly 35 points above Products, so each point of revenue mix shifting toward Services structurally lifts company gross margin; near term the hardware cycle is temporarily reversing that mix as Products outgrows Services, leaving the margin trajectory a tug-of-war between structural mix and cyclical hardware leverage"
+      },
+      "to_payload": {
+        "status": "unverified",
+        "statement": "Apple's Products (iPhone, Mac) and Services segments both set June-quarter revenue records in fiscal Q3 2026, and Services revenue reached an all-time high in fiscal Q2 2026, alongside records for total company revenue and EPS in both quarters; a hardware refresh cycle is active (iPhone 18 Pro launched September 2026). The relative gross margin profiles of the two segments, their relative growth rates, and the resulting revenue-mix and company gross margin trajectory are not established in the current evidence set"
+      },
+      "reason": "status changed; confidence changed; statement materially changed; decisive evidence changed",
+      "event_id": null,
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "created_at": "2026-09-18T05:25:56+00:00"
+    }
+  ],
+  "theme_gaps": [],
+  "material_events": [
+    {
+      "event_id": "bev_336a0e6e9e5e42d497ec18375c437251",
+      "event_type": "other",
+      "title": "Siri AI, a profoundly more capable and personal assistant, is here - Apple",
+      "materiality": "material",
+      "subject": "Siri AI / Apple Intelligence release status"
+    },
+    {
+      "event_id": "bev_751b91ee5ff24ff5a6c1cef0c5963c15",
+      "event_type": "product",
+      "title": "Apple debuts iPhone 18 Pro and iPhone 18 Pro Max - Apple",
+      "materiality": "material",
+      "subject": "iPhone 18 Pro launch status"
+    },
+    {
+      "event_id": "bev_7f4d14e93d8b436e85e7a3a147254c59",
+      "event_type": "product",
+      "title": "Apple unveils iPhone Duo - Apple",
+      "materiality": "material",
+      "subject": "iPhone category expansion (foldable)"
+    }
+  ],
+  "integrity_violations": [
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_aaff24b577fc43db8cf909715a0cb353",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "no supporting evidence in the current evidence set"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_75163ea04e9e44ff907fe758e3f9f78e",
+      "from": "unverified",
+      "to": "partially_supported",
+      "reason": "direction is evidenced but links are incomplete or issuer-only"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_206dcfe484184314a710333afcf22562",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "core assertion or number is not bound to evidence"
+    },
+    {
+      "code": "status_downgrade",
+      "claim_id": "bclm_50cb5246e283434c80d438a586cb8495",
+      "from": "partially_supported",
+      "to": "unverified",
+      "reason": "no supporting evidence in the current evidence set"
+    },
+    {
+      "code": "critic_high_severity_unresolved",
+      "issues": [
+        {
+          "issue_id": "bcri_a36b42b0cce94c67951a07b5a1eee89b",
+          "issue_type": "evidence_boundary_violation",
+          "severity": "high",
+          "affected_object": "bst_8e89fcabdfd749708c158d332f4c9101; bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5",
+          "reasoning": "The post-earnings reaction state and valuation driver cite the Q3 FY2026 8-K press release (rev_f680a2738ac040b7a37c1e15345b143a) for a -7.35% one-day decline, 2.6x volume, SPY/QQQ underperformance, and consensus estimates ($1.89 EPS, ~$109.0B revenue). An issuer earnings exhibit cannot contain market-reaction or consensus data; claim bclm_206dcfe484184314a710333afcf22562 itself confirms no such…",
+          "required_fix": "Remove or re-source the price/volume/consensus figures with valid market data evidence; otherwise mark the reaction state and the related driver content unverified.",
+          "resolved": false
+        },
+        {
+          "issue_id": "bcri_46ed37f645c24c67ab50e9ccc5b6b0b6",
+          "issue_type": "evidence_boundary_violation",
+          "severity": "high",
+          "affected_object": "bst_ceef045e7c14469d874c2a4efab54fbb; bst_7ace9c9049b045fe88a0b3ac54d07d95; bdr…",
+          "reasoning": "States/drivers assert quantified specifics — ~2pp tariff-refund benefit, ~$800M prior-year tariff costs, guidance-midpoint comparison, 50.06% GM, Services $30.7B/+12%, segment margins 75.6-75.7% vs 40.1%, Products +18% — yet claims bclm_aaff24b577fc43db8cf909715a0cb353 and bclm_50cb5246e283434c80d438a586cb8495 state these figures are not disclosed/established in the evidence. The graph contradict…",
+          "required_fix": "Reconcile: cite exact primary-source locations for each figure, or strip them from states/drivers and mark unverified, aligning with the claims.",
+          "resolved": false
+        }
+      ]
+    },
+    {
+      "code": "pm_inconsistency_blocked",
+      "reasons": [
+        "PM cited unbound number 95.4b"
+      ]
+    }
+  ],
+  "audit": {
+    "llm_invoked": true,
+    "driver_count": 8,
+    "core_claim_count": 5,
+    "model": "glm-5.3",
+    "input_tokens": 82449,
+    "output_tokens": 189242,
+    "fallbacks": []
+  }
+}

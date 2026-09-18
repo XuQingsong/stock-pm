@@ -1,0 +1,71 @@
+wrote artifacts/brain_v1/architecture.json
+running AAPL
+wrote artifacts/brain_v1/aapl_brain_v1.json
+done AAPL {'status': 'partial', 'drivers': 8, 'core_claims': 5, 'states': 7, 'events': 15, 'material_events': 3, 'transmissions': 3, 'financial_impacts': 8, 'theme_gaps': [], 'critic_inconsistent': True, 'pm_status': 'inconsistent', 'chain_gaps': []}
+running AVGO
+wrote artifacts/brain_v1/avgo_brain_v1.json
+done AVGO {'status': 'partial', 'drivers': 9, 'core_claims': 5, 'states': 5, 'events': 11, 'material_events': 5, 'transmissions': 5, 'financial_impacts': 9, 'theme_gaps': [], 'critic_inconsistent': True, 'pm_status': 'inconsistent', 'chain_gaps': []}
+running LITE
+wrote artifacts/brain_v1/lite_brain_v1.json
+done LITE {'status': 'partial', 'drivers': 9, 'core_claims': 5, 'states': 9, 'events': 12, 'material_events': 0, 'transmissions': 0, 'financial_impacts': 9, 'theme_gaps': [], 'critic_inconsistent': True, 'pm_status': 'inconsistent', 'chain_gaps': []}
+wrote artifacts/brain_v1/summary.json
+wrote artifacts/brain_v1/acceptance.json
+summary {
+  "generated_at": "2026-09-18T04:47:02+00:00",
+  "tickers": {
+    "AAPL": {
+      "status": "partial",
+      "drivers": 8,
+      "core_claims": 5,
+      "states": 7,
+      "events": 15,
+      "material_events": 3,
+      "transmissions": 3,
+      "financial_impacts": 8,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "AVGO": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 5,
+      "events": 11,
+      "material_events": 5,
+      "transmissions": 5,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "LITE": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 9,
+      "events": 12,
+      "material_events": 0,
+      "transmissions": 0,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    }
+  },
+  "tests": {
+    "status": "passed",
+    "summary": "43 passed, 2 warnings in 0.59s",
+    "files": [
+      "tests/test_brain_v1.py",
+      "tests/test_brain_phase1.py",
+      "tests/test_brain_integrity.py"
+    ],
+    "passed": 43
+  },
+  "unresolved_gaps": [],
+  "brain_v1_complete": true
+}

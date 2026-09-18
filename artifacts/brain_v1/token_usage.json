@@ -1,0 +1,398 @@
+{
+  "quota_note": "Trial/package ~1M tokens. After this dump the user will rotate the API key.",
+  "runs": [
+    {
+      "run_id": "brun_45205b452493401587ffbd4b4199bfc7",
+      "ticker": "AAPL",
+      "status": "partial",
+      "created_at": "2026-09-18 04:31:51+00:00",
+      "completed_at": "2026-09-18 04:39:30+00:00",
+      "input_tokens": 20778,
+      "output_tokens": 39671,
+      "total_tokens": 60449,
+      "wasted": true,
+      "by_step": {
+        "external_search_plan": {
+          "n": 1,
+          "input": 672,
+          "output": 1647,
+          "status": [
+            "ok"
+          ]
+        },
+        "external_fact_extract": {
+          "n": 1,
+          "input": 4852,
+          "output": 3398,
+          "status": [
+            "ok"
+          ]
+        },
+        "company_understanding": {
+          "n": 1,
+          "input": 7791,
+          "output": 8192,
+          "status": [
+            "failed"
+          ]
+        },
+        "value_drivers": {
+          "n": 1,
+          "input": 2533,
+          "output": 8192,
+          "status": [
+            "failed"
+          ]
+        },
+        "core_claims": {
+          "n": 1,
+          "input": 0,
+          "output": 0,
+          "status": [
+            "skipped"
+          ]
+        },
+        "news_interpretation": {
+          "n": 1,
+          "input": 2160,
+          "output": 8192,
+          "status": [
+            "failed"
+          ]
+        },
+        "independent_critic": {
+          "n": 1,
+          "input": 1083,
+          "output": 1858,
+          "status": [
+            "ok"
+          ]
+        },
+        "pm_synthesis": {
+          "n": 1,
+          "input": 1687,
+          "output": 8192,
+          "status": [
+            "failed"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "brun_08ed8fe8132a47dab52212b6f594f27b",
+      "ticker": "AAPL",
+      "status": "partial",
+      "created_at": "2026-09-18 04:47:02+00:00",
+      "completed_at": "2026-09-18 05:32:40+00:00",
+      "input_tokens": 82449,
+      "output_tokens": 189242,
+      "total_tokens": 271691,
+      "wasted": false,
+      "by_step": {
+        "external_search_plan": {
+          "n": 2,
+          "input": 2452,
+          "output": 6990,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "external_fact_extract": {
+          "n": 2,
+          "input": 6942,
+          "output": 4051,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "company_understanding": {
+          "n": 1,
+          "input": 8131,
+          "output": 10251,
+          "status": [
+            "ok"
+          ]
+        },
+        "value_drivers": {
+          "n": 1,
+          "input": 7613,
+          "output": 18512,
+          "status": [
+            "ok"
+          ]
+        },
+        "core_claims": {
+          "n": 1,
+          "input": 9906,
+          "output": 24709,
+          "status": [
+            "ok"
+          ]
+        },
+        "news_interpretation": {
+          "n": 1,
+          "input": 3497,
+          "output": 30281,
+          "status": [
+            "ok"
+          ]
+        },
+        "event_transmission": {
+          "n": 1,
+          "input": 0,
+          "output": 0,
+          "status": [
+            "failed"
+          ]
+        },
+        "claim_reasoning": {
+          "n": 5,
+          "input": 17022,
+          "output": 56384,
+          "status": [
+            "ok",
+            "ok",
+            "ok",
+            "ok",
+            "ok"
+          ]
+        },
+        "independent_critic": {
+          "n": 1,
+          "input": 8089,
+          "output": 17348,
+          "status": [
+            "ok"
+          ]
+        },
+        "pm_synthesis": {
+          "n": 1,
+          "input": 18797,
+          "output": 20716,
+          "status": [
+            "ok"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "brun_b1c268aae8b345559ac2dc93176a70ab",
+      "ticker": "AVGO",
+      "status": "partial",
+      "created_at": "2026-09-18 05:32:40+00:00",
+      "completed_at": "2026-09-18 06:26:12+00:00",
+      "input_tokens": 81207,
+      "output_tokens": 197532,
+      "total_tokens": 278739,
+      "wasted": false,
+      "by_step": {
+        "external_search_plan": {
+          "n": 2,
+          "input": 2424,
+          "output": 5025,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "external_fact_extract": {
+          "n": 2,
+          "input": 8463,
+          "output": 7775,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "company_understanding": {
+          "n": 1,
+          "input": 5995,
+          "output": 10374,
+          "status": [
+            "ok"
+          ]
+        },
+        "value_drivers": {
+          "n": 1,
+          "input": 6499,
+          "output": 16833,
+          "status": [
+            "ok"
+          ]
+        },
+        "core_claims": {
+          "n": 1,
+          "input": 9043,
+          "output": 22886,
+          "status": [
+            "ok"
+          ]
+        },
+        "news_interpretation": {
+          "n": 1,
+          "input": 3038,
+          "output": 25423,
+          "status": [
+            "ok"
+          ]
+        },
+        "event_transmission": {
+          "n": 1,
+          "input": 0,
+          "output": 0,
+          "status": [
+            "failed"
+          ]
+        },
+        "claim_reasoning": {
+          "n": 5,
+          "input": 17219,
+          "output": 85752,
+          "status": [
+            "ok",
+            "ok",
+            "ok",
+            "ok",
+            "ok"
+          ]
+        },
+        "independent_critic": {
+          "n": 1,
+          "input": 7429,
+          "output": 13858,
+          "status": [
+            "ok"
+          ]
+        },
+        "pm_synthesis": {
+          "n": 1,
+          "input": 21097,
+          "output": 9606,
+          "status": [
+            "ok"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "brun_67a954d7f85c459e9d5576dc650ff022",
+      "ticker": "LITE",
+      "status": "partial",
+      "created_at": "2026-09-18 06:26:12+00:00",
+      "completed_at": "2026-09-18 07:05:40+00:00",
+      "input_tokens": 86845,
+      "output_tokens": 190162,
+      "total_tokens": 277007,
+      "wasted": false,
+      "by_step": {
+        "external_search_plan": {
+          "n": 2,
+          "input": 2568,
+          "output": 5392,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "external_fact_extract": {
+          "n": 2,
+          "input": 8041,
+          "output": 3896,
+          "status": [
+            "ok",
+            "ok"
+          ]
+        },
+        "company_understanding": {
+          "n": 1,
+          "input": 6653,
+          "output": 23333,
+          "status": [
+            "ok"
+          ]
+        },
+        "value_drivers": {
+          "n": 1,
+          "input": 9400,
+          "output": 17620,
+          "status": [
+            "ok"
+          ]
+        },
+        "core_claims": {
+          "n": 1,
+          "input": 12160,
+          "output": 26367,
+          "status": [
+            "ok"
+          ]
+        },
+        "news_interpretation": {
+          "n": 1,
+          "input": 3080,
+          "output": 23639,
+          "status": [
+            "ok"
+          ]
+        },
+        "event_transmission": {
+          "n": 1,
+          "input": 0,
+          "output": 0,
+          "status": [
+            "skipped"
+          ]
+        },
+        "claim_reasoning": {
+          "n": 5,
+          "input": 16310,
+          "output": 62882,
+          "status": [
+            "ok",
+            "ok",
+            "ok",
+            "ok",
+            "ok"
+          ]
+        },
+        "independent_critic": {
+          "n": 1,
+          "input": 8486,
+          "output": 11412,
+          "status": [
+            "ok"
+          ]
+        },
+        "pm_synthesis": {
+          "n": 1,
+          "input": 20147,
+          "output": 15621,
+          "status": [
+            "ok"
+          ]
+        }
+      }
+    }
+  ],
+  "totals": {
+    "input_tokens": 271279,
+    "output_tokens": 616607,
+    "total_tokens": 887886,
+    "approx_quota": 1000000,
+    "remaining_estimate": 112114
+  },
+  "why_expensive": [
+    "GLM-5.3 thinking tokens are billed as output; visible JSON is a fraction of completion_tokens.",
+    "Raising max_tokens to 32768 stopped truncation but allowed thinking to run long.",
+    "Each ticker does ~12-15 sequential reasoning calls; 5 core claims means 5 claim_reasoning calls.",
+    "First AAPL run was truncated at 8192 and discarded (~60k tokens).",
+    "event_transmission timed out twice; provider may still have billed thinking."
+  ],
+  "later_work": [
+    "Token budget per Brain step (especially claim_reasoning and news_interpretation).",
+    "Disable or cap hidden thinking where the API allows it; GLM-5.3 currently rejects enable_thinking=false.",
+    "Do not batch-timeout event_transmission; per-event calls are now in pipeline but not live-validated."
+  ]
+}

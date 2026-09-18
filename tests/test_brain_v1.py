@@ -130,7 +130,7 @@ def test_brain_routing_uses_env_not_deepseek_default() -> None:
     assert mech.role == ROLE_MECHANICAL
     assert reason.role == ROLE_REASONING
     assert reasoning.llm_max_tokens >= 16384
-    assert reasoning.llm_timeout_seconds >= 300
+    assert reasoning.llm_timeout_seconds >= 600
     assert mechanical.llm_max_tokens >= 2048
 
 

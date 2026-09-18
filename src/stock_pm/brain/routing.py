@@ -39,8 +39,8 @@ _DEFAULT_BY_ROLE = {
 # GLM-5.3 thinking consumes completion tokens before JSON. 8192 truncates Driver/Claim/PM.
 _BUDGET_BY_ROLE = {
     ROLE_MECHANICAL: {"timeout": 180, "max_tokens": 8192},
-    ROLE_REASONING: {"timeout": 600, "max_tokens": 32768},
-    ROLE_CRITIC: {"timeout": 300, "max_tokens": 16384},
+    ROLE_REASONING: {"timeout": 900, "max_tokens": 32768},
+    ROLE_CRITIC: {"timeout": 360, "max_tokens": 16384},
 }
 
 

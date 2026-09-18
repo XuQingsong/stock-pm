@@ -1,0 +1,172 @@
+{
+  "brain_v1_complete": false,
+  "reason": "Architecture and golden Driver/Claim discovery held; live Event transmission and token discipline did not.",
+  "tests": {
+    "status": "passed",
+    "summary": "43 passed, 2 warnings in 0.59s",
+    "files": [
+      "tests/test_brain_v1.py",
+      "tests/test_brain_phase1.py",
+      "tests/test_brain_integrity.py"
+    ],
+    "passed": 43
+  },
+  "migrations": [
+    "0016_brain_value_drivers.sql",
+    "0017_brain_state_event_exposure.sql",
+    "0018_brain_financial_scenario.sql",
+    "0019_brain_history.sql"
+  ],
+  "models": {
+    "mechanical": "glm-5.2",
+    "reasoning": "glm-5.3"
+  },
+  "tickers": {
+    "AAPL": {
+      "status": "partial",
+      "drivers": 8,
+      "core_claims": 5,
+      "states": 7,
+      "events": 15,
+      "material_events": 3,
+      "transmissions": 3,
+      "financial_impacts": 8,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "AVGO": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 5,
+      "events": 11,
+      "material_events": 5,
+      "transmissions": 5,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "LITE": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 9,
+      "events": 12,
+      "material_events": 0,
+      "transmissions": 0,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    }
+  },
+  "value_driver_keys": {
+    "AAPL": [
+      "tariff_trade_policy_exposure",
+      "ai_siri_upgrade_pull",
+      "iphone_upgrade_cycle_strength",
+      "valuation_expectations_dependency",
+      "installed_base_scale_engagement",
+      "services_products_margin_mix",
+      "geographic_demand_breadth",
+      "iphone_mac_supply_constraints"
+    ],
+    "AVGO": [
+      "hyperscaler_customer_concentration",
+      "ai_silicon_competitive_position",
+      "ai_semiconductor_demand_durability",
+      "ai_revenue_mix_concentration",
+      "non_ai_revenue_durability",
+      "non_gaap_operating_margin_sustainability",
+      "valuation_multiple_ai_dependency",
+      "balance_sheet_leverage_deleveraging",
+      "gaap_non_gaap_earnings_gap"
+    ],
+    "LITE": [
+      "datacom_laser_demand_durability",
+      "cloud_networking_customer_concentration",
+      "capacity_scaling_execution",
+      "operating_leverage_margin_sensitivity",
+      "gross_margin_durability_at_scale",
+      "segment_mix_datacom_weight",
+      "valuation_hypergrowth_dependency",
+      "guidance_execution_credibility",
+      "gaap_non_gaap_margin_gap"
+    ]
+  },
+  "core_claim_titles": {
+    "AAPL": [
+      "Sustainable gross margin sits below the reported June-quarter level",
+      "iPhone double-digit growth is a durable reacceleration, not a cycle peak",
+      "Siri AI is the upgrade-cycle accelerant the market is paying for",
+      "Total return depends on expectations, not just results",
+      "Services mix is the structural margin floor beneath a cyclical hardware cycle"
+    ],
+    "AVGO": [
+      "AI semiconductor demand durability sets the length of the growth ramp",
+      "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+      "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle",
+      "The premium multiple is conditional on the AI ramp persisting",
+      "AI is approaching a majority of revenue, tying company economics to one cycle"
+    ],
+    "LITE": [
+      "Datacom laser demand durability is the single largest determinant of LITE's terminal value",
+      "Margin expansion is volume-driven and cyclical, not yet proven structural",
+      "Unquantified customer concentration in Cloud & Networking is the dominant tail risk",
+      "The valuation embeds multi-year hypergrowth and is the transmission channel for every fundamental risk",
+      "Capacity scaling execution gates the guided sequential ramp"
+    ]
+  },
+  "critic_unresolved": {
+    "AAPL": [
+      {
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_8e89fcabdfd749708c158d332f4c9101; bdrv_66c94a8bf6214cfa9c6b1c0f41a8b3e5"
+      },
+      {
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_ceef045e7c14469d874c2a4efab54fbb; bst_7ace9c9049b045fe88a0b3ac54d07d95; bdr…"
+      }
+    ],
+    "AVGO": [
+      {
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_cf6f0b17ea0f47d78c05082a0034de0d and drivers citing rev_d608e3e7661a49dfb06…"
+      }
+    ],
+    "LITE": [
+      {
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_6aa1d0b94faa4f8ab3f7124942c1d6a4, bdrv_049c404adfc742329615c2ac30841267, bd…"
+      },
+      {
+        "issue_type": "evidence_boundary_violation",
+        "severity": "high",
+        "affected_object": "bst_b47e5312e2964bb9b7d7be94869717f7, bst_0e2d18114b38466f9a8573ef0140cd9d, bdr…"
+      }
+    ]
+  },
+  "token_usage": {
+    "input_tokens": 271279,
+    "output_tokens": 616607,
+    "total_tokens": 887886,
+    "approx_quota": 1000000,
+    "remaining_estimate": 112114
+  },
+  "unresolved_gaps": [
+    "event_transmission timed out on AAPL and AVGO; live transmission chains are empty so Event→Driver→Claim was not proven in production",
+    "Independent Critic left high-severity evidence_boundary issues unresolved; runs are fail-loud inconsistent",
+    "PM synthesis produced a desk note but integrity blocked unbound numbers (AAPL 95.4b, AVGO 34.8b)",
+    "GLM-5.3 thinking consumed most of a ~1M token trial; token budget per step is not yet enforced",
+    "LITE classified 0 material events (news mostly noise/context); incremental event mapping still unproven live"
+  ]
+}

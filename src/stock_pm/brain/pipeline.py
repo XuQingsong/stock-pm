@@ -1236,37 +1236,42 @@ def run_brain(
     material_events = [row for row in persisted_events if str(row.get("materiality") or "") == "material" and not row.get("duplicate")]
     if material_events:
         by_event_exp = {str(row.get("event_id")): row for row in persisted_exposures if row.get("event_id")}
-        payload_t, audit_t = event_transmission(
-            reason_llm,
-            {
-                "ticker": symbol,
-                "events": [
-                    {
-                        "event_id": row.get("event_id"),
-                        "event_type": row.get("event_type"),
-                        "subject": row.get("subject"),
-                        "title": row.get("title"),
-                        "materiality": row.get("materiality"),
-                        "evidence_ids": row.get("evidence_ids") or [],
-                    }
-                    for row in material_events
-                ],
-                "exposures": persisted_exposures,
-                "states": brain.list_states(symbol, run_id=run_id),
-                "drivers": [
-                    {"driver_id": row.get("driver_id"), "canonical_key": row.get("canonical_key"), "name": row.get("name")}
-                    for row in persisted_drivers
-                ],
-                "claims": [{"claim_id": row.get("claim_id"), "title": row.get("title"), "statement": row.get("statement")} for row in persisted_claims],
-                "evidence": compact_evidence_rows(llm_evidence, limit=24),
-            },
-            allowed_ids=allowed
-            | {str(row.get("event_id")) for row in material_events}
-            | {str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")}
-            | claim_ids,
-        )
-        llm_calls.append(audit_t)
-        items = list((payload_t or {}).get("items") or [])
+        allowed_transmission = allowed | {str(row.get("event_id")) for row in material_events} | {
+            str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")
+        } | claim_ids
+        context = {
+            "ticker": symbol,
+            "exposures": persisted_exposures,
+            "states": brain.list_states(symbol, run_id=run_id),
+            "drivers": [
+                {"driver_id": row.get("driver_id"), "canonical_key": row.get("canonical_key"), "name": row.get("name")}
+                for row in persisted_drivers
+            ],
+            "claims": [{"claim_id": row.get("claim_id"), "title": row.get("title"), "statement": row.get("statement")} for row in persisted_claims],
+            "evidence": compact_evidence_rows(llm_evidence, limit=12),
+        }
+        items: list[dict[str, Any]] = []
+        # One event at a time: batch GLM-5.3 thinking otherwise hits the HTTP timeout.
+        for event in material_events[:6]:
+            payload_t, audit_t = event_transmission(
+                reason_llm,
+                {
+                    **context,
+                    "events": [
+                        {
+                            "event_id": event.get("event_id"),
+                            "event_type": event.get("event_type"),
+                            "subject": event.get("subject"),
+                            "title": event.get("title"),
+                            "materiality": event.get("materiality"),
+                            "evidence_ids": event.get("evidence_ids") or [],
+                        }
+                    ],
+                },
+                allowed_ids=allowed_transmission,
+            )
+            llm_calls.append(audit_t)
+            items.extend(list((payload_t or {}).get("items") or []))
         for event in material_events:
             raw_item = next((row for row in items if str(row.get("event_id")) == str(event.get("event_id"))), items[0] if len(items) == 1 else {})
             checked = validate_transmission(raw_item, allowed_ids=allowed, exposure=by_event_exp.get(str(event.get("event_id"))))

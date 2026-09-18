@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-09-18T04:47:02+00:00",
+  "tickers": {
+    "AAPL": {
+      "status": "partial",
+      "drivers": 8,
+      "core_claims": 5,
+      "states": 7,
+      "events": 15,
+      "material_events": 3,
+      "transmissions": 3,
+      "financial_impacts": 8,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "AVGO": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 5,
+      "events": 11,
+      "material_events": 5,
+      "transmissions": 5,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    },
+    "LITE": {
+      "status": "partial",
+      "drivers": 9,
+      "core_claims": 5,
+      "states": 9,
+      "events": 12,
+      "material_events": 0,
+      "transmissions": 0,
+      "financial_impacts": 9,
+      "theme_gaps": [],
+      "critic_inconsistent": true,
+      "pm_status": "inconsistent",
+      "chain_gaps": []
+    }
+  },
+  "tests": {
+    "status": "passed",
+    "summary": "43 passed, 2 warnings in 0.59s",
+    "files": [
+      "tests/test_brain_v1.py",
+      "tests/test_brain_phase1.py",
+      "tests/test_brain_integrity.py"
+    ],
+    "passed": 43
+  },
+  "unresolved_gaps": [
+    "event_transmission timed out on AAPL and AVGO; live transmission chains are empty so Event→Driver→Claim was not proven in production",
+    "Independent Critic left high-severity evidence_boundary issues unresolved; runs are fail-loud inconsistent",
+    "PM synthesis produced a desk note but integrity blocked unbound numbers (AAPL 95.4b, AVGO 34.8b)",
+    "GLM-5.3 thinking consumed most of a ~1M token trial; token budget per step is not yet enforced",
+    "LITE classified 0 material events (news mostly noise/context); incremental event mapping still unproven live"
+  ],
+  "brain_v1_complete": false,
+  "token_usage": {
+    "input_tokens": 271279,
+    "output_tokens": 616607,
+    "total_tokens": 887886,
+    "approx_quota": 1000000,
+    "remaining_estimate": 112114
+  }
+}

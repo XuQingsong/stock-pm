@@ -1,0 +1,53 @@
+{
+  "version": "brain-v1",
+  "chain": [
+    "Information",
+    "Knowledge",
+    "State",
+    "Value Driver",
+    "Claim",
+    "Exposure",
+    "Financial Impact",
+    "Scenario",
+    "Valuation",
+    "Thesis"
+  ],
+  "event_chain": [
+    "New Event",
+    "State",
+    "Company Exposure",
+    "Driver",
+    "Claim",
+    "Scenario then Base"
+  ],
+  "models": {
+    "mechanical": {
+      "provider": "openai",
+      "model": "glm-5.2",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    },
+    "reasoning": {
+      "provider": "openai",
+      "model": "glm-5.3",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    },
+    "not_in_production": [
+      "kimi-k3",
+      "deepseek-chat as Brain default"
+    ]
+  },
+  "layers_preserved": [
+    "Data Layer",
+    "Evidence Set Builder",
+    "Brain Integrity",
+    "Claim identity/versioning",
+    "Counter Search",
+    "Existing valuation/research infrastructure"
+  ],
+  "migrations": [
+    "0016_brain_value_drivers.sql",
+    "0017_brain_state_event_exposure.sql",
+    "0018_brain_financial_scenario.sql",
+    "0019_brain_history.sql"
+  ]
+}
