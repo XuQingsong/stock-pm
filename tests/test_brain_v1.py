@@ -129,6 +129,16 @@ def test_brain_routing_uses_env_not_deepseek_default() -> None:
     mech, reason = resolve_brain_completers(settings=settings)
     assert mech.role == ROLE_MECHANICAL
     assert reason.role == ROLE_REASONING
+    assert reasoning.llm_max_tokens >= 16384
+    assert reasoning.llm_timeout_seconds >= 300
+    assert mechanical.llm_max_tokens >= 2048
+
+
+def test_parse_json_object_skips_thinking_preamble() -> None:
+    from stock_pm.llm import parse_json_object
+
+    text = "thinking {not json}\n```json\n{\"drivers\": [{\"name\": \"duration\"}]}\n```"
+    assert parse_json_object(text)["drivers"][0]["name"] == "duration"
 
 
 def test_injected_completer_is_shared_for_tests() -> None:

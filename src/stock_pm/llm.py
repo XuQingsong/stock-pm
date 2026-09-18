@@ -295,19 +295,30 @@ def parse_json_object(text: str) -> dict[str, Any]:
     if raw.startswith("```"):
         raw = re.sub(r"^```(?:json)?\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
-    start = raw.find("{")
-    if start < 0:
+    decoder = json.JSONDecoder()
+    starts = [index for index, char in enumerate(raw) if char == "{"]
+    if not starts:
         raise ValueError("model response is not JSON")
-    try:
-        payload, _end = json.JSONDecoder().raw_decode(raw[start:])
-    except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
-        if not match:
-            raise ValueError("model response is not JSON")
-        payload = json.loads(match.group(0))
-    if not isinstance(payload, dict):
-        raise ValueError("model JSON must be an object")
-    return payload
+    # Prefer the first valid object, then any later complete object if thinking text precedes JSON.
+    last_error: Exception | None = None
+    for start in starts[:24] + starts[-8:]:
+        try:
+            payload, _end = decoder.raw_decode(raw[start:])
+        except json.JSONDecodeError as exc:
+            last_error = exc
+            continue
+        if isinstance(payload, dict):
+            return payload
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if match:
+        try:
+            payload = json.loads(match.group(0))
+        except json.JSONDecodeError as exc:
+            last_error = exc
+        else:
+            if isinstance(payload, dict):
+                return payload
+    raise ValueError("model response is not JSON" + (f" ({last_error})" if last_error else ""))
 
 
 def _prompt_hash(system: str, user: str) -> str:

@@ -36,6 +36,13 @@ _DEFAULT_BY_ROLE = {
     ROLE_CRITIC: "glm-5.3",
 }
 
+# GLM-5.3 thinking consumes completion tokens before JSON. 8192 truncates Driver/Claim/PM.
+_BUDGET_BY_ROLE = {
+    ROLE_MECHANICAL: {"timeout": 180, "max_tokens": 8192},
+    ROLE_REASONING: {"timeout": 600, "max_tokens": 32768},
+    ROLE_CRITIC: {"timeout": 300, "max_tokens": 16384},
+}
+
 
 def canonical_brain_model(name: str, *, role: str) -> str:
     raw = str(name or "").strip()
@@ -79,12 +86,17 @@ def layer_settings(settings: Settings | None = None, *, role: str) -> Settings:
         provider = (config.reasoning_model_provider or "openai").strip() or "openai"
         key = _credential_key(config, config.reasoning_model_api_key)
         base = _credential_base(config, config.reasoning_model_base_url, key=key)
+    budget = _BUDGET_BY_ROLE.get(role) or _BUDGET_BY_ROLE[ROLE_REASONING]
+    timeout = max(int(config.llm_timeout_seconds or 0), int(budget["timeout"]))
+    max_tokens = max(int(config.llm_max_tokens or 0), int(budget["max_tokens"]))
     return replace(
         config,
         llm_provider=provider,
         llm_model=name,
         llm_api_key=key,
         llm_base_url=base or config.llm_base_url,
+        llm_timeout_seconds=timeout,
+        llm_max_tokens=max_tokens,
     )
 
 
