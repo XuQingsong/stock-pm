@@ -180,7 +180,10 @@ OBJECT_LAYER = {
     "market_state": "market",
     "market_driver": "market",
     "expectation": "market",
+    "expectation_state": "market",
     "market_attention": "market",
+    "market_driver": "market",
+    "market_driver_hypothesis": "market",
     "price_reaction": "market",
     "state": "state",
     "company_state": "state",
@@ -218,6 +221,24 @@ LAYER_SPEED = {
 FAST_LAYERS = ("observation", "market")
 BRAIN_RUNTIME = "phase3"
 MARKET_ALIGNMENTS = ("aligned", "partial", "unexplained", "unknown")
+EXPECTATION_COMPARISONS = ("above", "in_line", "below")
+EXPECTATION_TRENDS = ("rising", "falling", "unchanged")
+HYPOTHESIS_STATUSES = (
+    "candidate",
+    "open",
+    "supported",
+    "weakened",
+    "unresolved",
+    "retired",
+)
+HYPOTHESIS_KINDS = (
+    "ai_demand",
+    "customer_concentration",
+    "valuation",
+    "sector_macro",
+    "company_specific",
+    "other",
+)
 NOW_CHAIN_QUESTIONS = (
     "what_happened",
     "why_it_affects_company",
@@ -274,6 +295,8 @@ CONSTITUTION_RULES = (
     "new_causal_edge_starts_candidate",
     "unsupported_event_claim_jump",
     "financial_transmission_cannot_modify_base",
+    "price_cannot_modify_fundamental_state",
+    "market_hypothesis_is_not_fact",
 )
 CHANGE_BUDGET = {
     "max_auto_claims": 1,

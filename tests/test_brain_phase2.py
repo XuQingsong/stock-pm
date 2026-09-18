@@ -312,7 +312,7 @@ def test_phase2_runtime_flag_and_graph_reuses_brain_objects() -> None:
     assert not edge_can_transmit({"status": "candidate"})
     names = [item.filename for item in discover_migrations()]
     assert "migrations/0022_brain_phase2_causal.sql" in names
-    assert len(CONSTITUTION_RULES) == 17
+    assert len(CONSTITUTION_RULES) == 19
 
 
 def test_case1_supported_path_can_transmit() -> None:

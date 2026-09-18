@@ -3,9 +3,9 @@
 1. What happened
 2. Why it affects this company
 3. Through what path it reaches Driver / Claim
-4. What the market is actually trading
+4. How the market currently understands it
 
-Deterministic. LLM may propose market_attention; this assembler decides the answers.
+Deterministic. LLM may propose market objects; this assembler decides the answers.
 """
 
 from __future__ import annotations
@@ -44,29 +44,44 @@ def _path_line(transmission: dict[str, Any] | None, gaps: list[dict[str, Any]] |
     return "No targeted causal path is available for this event.", False, False
 
 
-def _market_line(
+def _understand_line(
     *,
-    event: dict[str, Any] | None,
-    attentions: list[dict[str, Any]] | None,
+    attentions: list[dict[str, Any]],
+    expectations: list[dict[str, Any]],
+    hypotheses: list[dict[str, Any]],
     alignment: dict[str, Any],
+    unresolved: bool,
 ) -> str:
-    status = str(alignment.get("alignment") or "unknown")
-    if status == "unknown":
-        return "Unknown — this update has no tape evidence, so the Brain does not guess what the market is trading."
+    parts: list[str] = []
     if attentions:
-        statement = compact_text((attentions[0] or {}).get("statement") or (attentions[0] or {}).get("reason") or "", 200)
+        statement = compact_text((attentions[0] or {}).get("statement") or (attentions[0] or {}).get("name") or "", 160)
         if statement:
-            if status == "unexplained":
-                return f"Tape attention: {statement} Brain path does not justify treating this as mispricing."
-            return f"Market appears to be trading: {statement}"
-    if event_has_tape(event) and status == "unexplained":
-        return "A price move is unexplained by the current causal path. That is not mispricing."
-    if event_has_tape(event):
-        return compact_text(
-            (event or {}).get("price_reaction") or alignment.get("reason") or "Tape moved; Claims stay unchanged.",
-            200,
+            parts.append(f"Attention: {statement}")
+    if expectations:
+        row = expectations[0]
+        parts.append(
+            f"Expectation: actual {row.get('actual')} vs expected {row.get('expected')} ({row.get('comparison')}, {row.get('trend')})"
         )
-    return compact_text(alignment.get("reason") or "Market attention is not a conclusion.", 200)
+    live = [row for row in hypotheses if str(row.get("status") or "") != "retired"][:4]
+    if live:
+        labels = [compact_text(row.get("hypothesis") or row.get("canonical_key") or "", 80) for row in live]
+        labels = [item for item in labels if item]
+        numbered = "; ".join(f"{idx}. {label}" for idx, label in enumerate(labels, start=1))
+        parts.append(f"Candidate drivers: {numbered}.")
+        if len(live) > 1:
+            parts.append("Which driver dominates is not established.")
+    parts.append(f"Price alignment: {alignment.get('alignment') or 'unknown'}")
+    conf = "low" if unresolved or any(str(row.get("status") or "") == "unresolved" for row in hypotheses) else (
+        "medium" if hypotheses or expectations or attentions else "low"
+    )
+    parts.append(f"Confidence: {conf}")
+    if unresolved or any(str(row.get("status") or "") == "unresolved" for row in hypotheses):
+        parts.append("Unresolved: the tape move does not yet have a supported market driver.")
+    if not parts:
+        if alignment.get("alignment") == "unknown" and not event_has_tape(None):
+            return "Unknown — this update has no tape evidence, so the Brain does not guess a market driver."
+        return compact_text(alignment.get("reason") or "Market understanding is not a conclusion.", 200)
+    return " ".join(parts)
 
 
 def build_now_chain(
@@ -77,9 +92,12 @@ def build_now_chain(
     transmission: dict[str, Any] | None = None,
     causal_gaps: list[dict[str, Any]] | None = None,
     market_attentions: list[dict[str, Any]] | None = None,
+    expectations: list[dict[str, Any]] | None = None,
+    hypotheses: list[dict[str, Any]] | None = None,
     questions: list[dict[str, Any]] | None = None,
     material: bool | None = None,
     stopped: str | None = None,
+    unresolved: bool | None = None,
 ) -> dict[str, Any]:
     item = dict(event or {})
     extracted = dict(extract or {})
@@ -89,13 +107,23 @@ def build_now_chain(
     exposures = list(exposures or [])
     gaps = list(causal_gaps or [])
     attentions = list(market_attentions or [])
+    expectation_rows = list(expectations or [])
+    hypothesis_rows = list(hypotheses or [])
     why = "; ".join(_exposure_line(row) for row in exposures[:3]) if exposures else "No company exposure is linked yet."
     path_text, can_driver, can_claim = _path_line(transmission, gaps)
     alignment = align_market_with_path(event=item, attentions=attentions, transmission=transmission, gaps=gaps)
-    market_text = _market_line(event=item, attentions=attentions, alignment=alignment)
+    open_unresolved = bool(unresolved) or any(str(row.get("status") or "") == "unresolved" for row in hypothesis_rows)
+    market_text = _understand_line(
+        attentions=attentions,
+        expectations=expectation_rows,
+        hypotheses=hypothesis_rows,
+        alignment=alignment,
+        unresolved=open_unresolved,
+    )
     happened = title or fact or "No event."
     if stopped:
         happened = f"{happened} ({stopped})" if happened else stopped
+    conf = "low" if open_unresolved or reliability in {"rumor", "signal"} else ("medium" if hypothesis_rows or expectation_rows else "low")
     return {
         "what_happened": {
             "question": "发生了什么",
@@ -132,10 +160,11 @@ def build_now_chain(
             "gaps": gaps[:3],
         },
         "what_market_is_trading": {
-            "question": "市场现在到底在交易什么",
+            "question": "市场现在怎么理解它",
             "answer": market_text,
             "alignment": alignment.get("alignment"),
             "cannot_conclude_mispricing": bool(alignment.get("cannot_conclude_mispricing", True)),
+            "confidence": conf,
             "attentions": [
                 {
                     "attention_id": row.get("attention_id"),
@@ -145,11 +174,31 @@ def build_now_chain(
                 }
                 for row in attentions[:3]
             ],
+            "expectation": {
+                "actual": (expectation_rows[0] or {}).get("actual") if expectation_rows else None,
+                "expected": (expectation_rows[0] or {}).get("expected") if expectation_rows else None,
+                "comparison": (expectation_rows[0] or {}).get("comparison") if expectation_rows else None,
+                "trend": (expectation_rows[0] or {}).get("trend") if expectation_rows else None,
+                "confidence": (expectation_rows[0] or {}).get("confidence") if expectation_rows else None,
+                "last_material_change": (expectation_rows[0] or {}).get("last_material_change") if expectation_rows else None,
+            }
+            if expectation_rows
+            else None,
+            "candidate_drivers": [
+                {
+                    "canonical_key": row.get("canonical_key"),
+                    "hypothesis": row.get("hypothesis"),
+                    "status": row.get("status"),
+                    "confidence": row.get("confidence"),
+                }
+                for row in hypothesis_rows[:5]
+            ],
+            "unresolved": open_unresolved,
             "research_questions": [
                 compact_text(row.get("question") or "", 160)
                 for row in (questions or [])
-                if "market" in str(row.get("question") or "").lower() or "pricing" in str(row.get("question") or "").lower()
-            ][:3],
+                if row.get("question")
+            ][:4],
         },
         "answers": {
             "what_happened": happened or fact,

@@ -71,6 +71,8 @@ class BrainStore:
         self.observations: dict[str, dict[str, Any]] = {}
         self.evidence_rows: dict[str, dict[str, Any]] = {}
         self.market_attentions: dict[str, dict[str, Any]] = {}
+        self.expectations: dict[str, dict[str, Any]] = {}
+        self.hypotheses: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -1714,5 +1716,146 @@ class BrainStore:
             return [_copy(row) for row in self.market_attentions.values() if row.get("ticker") == symbol]
         return self._execute(
             "SELECT * FROM brain_market_attention WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
+            {"ticker": symbol},
+        )
+
+    def upsert_expectation(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "expectation_id": row.get("expectation_id") or new_id("bexpc"),
+            "ticker": str(row["ticker"]).upper(),
+            "name": row.get("name") or "",
+            "subject": row.get("subject") or row.get("name") or "",
+            "actual": row.get("actual"),
+            "expected": row.get("expected"),
+            "comparison": row.get("comparison") or "in_line",
+            "trend": row.get("trend") or "unchanged",
+            "confidence": row.get("confidence") or "medium",
+            "supporting_evidence_ids": list(row.get("supporting_evidence_ids") or row.get("evidence_ids") or []),
+            "last_material_change": row.get("last_material_change") or "",
+            "reason": row.get("reason") or "",
+            "source_kind": row.get("source_kind") or "news",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            for existing in self.expectations.values():
+                if existing.get("ticker") == stored["ticker"] and existing.get("name") == stored["name"]:
+                    stored["expectation_id"] = existing["expectation_id"]
+                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                    stored["supporting_evidence_ids"] = list(
+                        dict.fromkeys(list(existing.get("supporting_evidence_ids") or []) + stored["supporting_evidence_ids"])
+                    )
+                    break
+            self.expectations[stored["expectation_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_expectations (
+                expectation_id, ticker, name, subject, actual, expected, comparison, trend, confidence,
+                supporting_evidence_ids, last_material_change, reason, source_kind, run_id, created_at, updated_at
+            ) VALUES (
+                %(expectation_id)s, %(ticker)s, %(name)s, %(subject)s, %(actual)s, %(expected)s, %(comparison)s,
+                %(trend)s, %(confidence)s, %(supporting_evidence_ids)s, %(last_material_change)s, %(reason)s,
+                %(source_kind)s, %(run_id)s, %(created_at)s, %(updated_at)s
+            )
+            ON CONFLICT (ticker, name) DO UPDATE SET
+                actual = EXCLUDED.actual,
+                expected = EXCLUDED.expected,
+                comparison = EXCLUDED.comparison,
+                trend = EXCLUDED.trend,
+                confidence = EXCLUDED.confidence,
+                supporting_evidence_ids = EXCLUDED.supporting_evidence_ids,
+                last_material_change = EXCLUDED.last_material_change,
+                reason = EXCLUDED.reason,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def list_expectations(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            return [_copy(row) for row in self.expectations.values() if row.get("ticker") == symbol]
+        return self._execute(
+            "SELECT * FROM brain_expectations WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
+            {"ticker": symbol},
+        )
+
+    def upsert_hypothesis(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "hypothesis_id": row.get("hypothesis_id") or new_id("bmdh"),
+            "ticker": str(row["ticker"]).upper(),
+            "canonical_key": row.get("canonical_key") or "",
+            "kind": row.get("kind") or "other",
+            "hypothesis": row.get("hypothesis") or "",
+            "name": row.get("name") or row.get("canonical_key") or "",
+            "confidence": row.get("confidence") or "low",
+            "status": row.get("status") or "candidate",
+            "supporting_observations": list(row.get("supporting_observations") or []),
+            "counter_observations": list(row.get("counter_observations") or []),
+            "related_expectation_id": row.get("related_expectation_id"),
+            "related_attention_id": row.get("related_attention_id"),
+            "related_causal_path": list(row.get("related_causal_path") or []),
+            "source_kind": row.get("source_kind") or "news",
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            for existing in self.hypotheses.values():
+                if existing.get("ticker") == stored["ticker"] and existing.get("canonical_key") == stored["canonical_key"]:
+                    stored["hypothesis_id"] = existing["hypothesis_id"]
+                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                    stored["supporting_observations"] = list(
+                        dict.fromkeys(list(existing.get("supporting_observations") or []) + stored["supporting_observations"])
+                    )
+                    stored["counter_observations"] = list(
+                        dict.fromkeys(list(existing.get("counter_observations") or []) + stored["counter_observations"])
+                    )
+                    break
+            self.hypotheses[stored["hypothesis_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_market_hypotheses (
+                hypothesis_id, ticker, canonical_key, kind, hypothesis, name, confidence, status,
+                supporting_observations, counter_observations, related_expectation_id, related_attention_id,
+                related_causal_path, source_kind, reason, run_id, created_at, updated_at
+            ) VALUES (
+                %(hypothesis_id)s, %(ticker)s, %(canonical_key)s, %(kind)s, %(hypothesis)s, %(name)s,
+                %(confidence)s, %(status)s, %(supporting_observations)s, %(counter_observations)s,
+                %(related_expectation_id)s, %(related_attention_id)s, %(related_causal_path)s,
+                %(source_kind)s, %(reason)s, %(run_id)s, %(created_at)s, %(updated_at)s
+            )
+            ON CONFLICT (ticker, canonical_key) DO UPDATE SET
+                hypothesis = EXCLUDED.hypothesis,
+                kind = EXCLUDED.kind,
+                confidence = EXCLUDED.confidence,
+                status = EXCLUDED.status,
+                supporting_observations = EXCLUDED.supporting_observations,
+                counter_observations = EXCLUDED.counter_observations,
+                related_expectation_id = EXCLUDED.related_expectation_id,
+                related_attention_id = EXCLUDED.related_attention_id,
+                related_causal_path = EXCLUDED.related_causal_path,
+                reason = EXCLUDED.reason,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def list_hypotheses(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            return [_copy(row) for row in self.hypotheses.values() if row.get("ticker") == symbol]
+        return self._execute(
+            "SELECT * FROM brain_market_hypotheses WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
             {"ticker": symbol},
         )

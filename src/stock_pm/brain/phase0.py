@@ -13,6 +13,8 @@ from stock_pm.research.llm_reason import compact_text
 from .budget import change_scope
 from .causal import accumulate_edge_evidence, next_edge_status, normalize_causal_edge
 from .exposure import normalize_exposure
+from .expectation import normalize_expectation
+from .hypothesis import normalize_hypothesis
 from .market import normalize_market_attention
 from .claim_integrity import news_is_duplicate
 from .constitution import constitution_violations, is_weak_signal
@@ -340,6 +342,22 @@ def evaluate_brain_changes(
                         store.upsert_market_attention(
                             normalize_market_attention(
                                 {**payload, "ticker": symbol, "source_kind": proposal.get("source_kind")},
+                                ticker=symbol,
+                            )
+                        )
+                    if proposal.get("object_type") in {"expectation", "expectation_state"} and hasattr(store, "upsert_expectation"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_expectation(
+                            normalize_expectation(
+                                {**payload, "ticker": symbol, "source_kind": proposal.get("source_kind"), "fact_reliability": proposal.get("fact_reliability")},
+                                ticker=symbol,
+                            )
+                        )
+                    if proposal.get("object_type") in {"market_driver_hypothesis", "market_driver"} and hasattr(store, "upsert_hypothesis"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_hypothesis(
+                            normalize_hypothesis(
+                                {**payload, "ticker": symbol, "source_kind": proposal.get("source_kind"), "fact_reliability": proposal.get("fact_reliability")},
                                 ticker=symbol,
                             )
                         )

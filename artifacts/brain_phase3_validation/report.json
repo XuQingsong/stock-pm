@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T18:44:16.487642+00:00",
+  "generated_at": "2026-09-18T18:59:41.521200+00:00",
   "brain_runtime": "phase3",
   "phase": "phase3",
   "metrics": {
@@ -14,7 +14,7 @@
       "what_happened": "Meta raises 2026 hyperscaler AI capex",
       "why_it_affects_company": "AVGO sells custom silicon to hyperscalers.",
       "path_to_driver_claim": "Event can travel a supported path: hyperscaler_ai_capex → bst_ai_infra → bexp_avgo_asic → bdrv_ai_demand → bclm_duration.",
-      "what_market_is_trading": "Market appears to be trading: Market attention on hyperscaler AI capex."
+      "what_market_is_trading": "Attention: Market attention on hyperscaler AI capex. Candidate drivers: 1. Customer concentration concern is increasing; 2. AI demand expectations are weakening. Which driver dominates is not established. Price alignment: partial Confidence: medium"
     },
     "market_alignment": "partial",
     "cannot_conclude_mispricing": true,
@@ -25,20 +25,43 @@
     "snapshot_full_brain": false,
     "market_attentions_in_snapshot": 0,
     "causal_edges_in_snapshot": 3,
-    "persisted_market_attentions": 1
+    "persisted_market_attentions": 1,
+    "expectation_changes": 2,
+    "hypotheses_created": 10,
+    "hypotheses_updated": 3,
+    "competing_hypotheses_per_event": 3,
+    "hypothesis_strengthened": 2,
+    "hypothesis_weakened": 0,
+    "duplicates_prevented": 3,
+    "unresolved_events": 1,
+    "research_questions": 5,
+    "peer_observations_used": 2,
+    "price_fundamental_violations": 0,
+    "price_claim_violations": 0
   },
   "checklist": {
     "now_chain_answers_four_questions": true,
     "happened": true,
     "why_company": true,
     "causal_path": true,
-    "market_is_trading": true,
+    "market_understands": true,
     "market_cannot_conclude_mispricing": true,
     "price_cannot_rewrite_claim": true,
     "unsupported_jump_zero": true,
     "targeted_not_full_brain": true,
-    "no_full_market_driver_system": true,
-    "phase0_phase2_regression": true
+    "expectation_changes": true,
+    "market_driver_hypothesis_created": true,
+    "existing_hypothesis_updated": true,
+    "competing_hypotheses_allowed": true,
+    "hypothesis_strengthened_or_weakened": true,
+    "duplicate_hypothesis_prevented": true,
+    "unresolved_events": true,
+    "research_questions": true,
+    "peer_sector_observations_used": true,
+    "price_to_fundamental_violation_zero": true,
+    "price_to_claim_violation_zero": true,
+    "phase0_phase2_regression": true,
+    "no_forced_winner_in_dummy": true
   },
   "regression": [
     {
@@ -58,6 +81,41 @@
     },
     {
       "name": "phase3_no_mispricing_attention",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_expectation_below_print",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_company_specific_hypothesis",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_sector_macro_hypothesis",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_google_rumor_market_only",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_competing_hypotheses",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_unresolved_research",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_constitution_price_and_fact",
       "ok": true,
       "error": null
     },

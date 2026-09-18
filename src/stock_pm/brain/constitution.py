@@ -42,10 +42,18 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         if "mispricing" in f"{payload.get('statement') or ''} {proposal.get('reason') or ''}".lower():
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Unexplained price move is not mispricing."})
 
-    if target in {"market_attention", "expectation", "market_driver", "price_reaction"}:
-        blob = f"{payload.get('statement') or ''} {proposal.get('reason') or ''} {payload.get('conclusion') or ''} {payload.get('alignment') or ''}".lower()
+    if source == "price" and target in {"state", "company_state", "industry_state", "macro_state"}:
+        hits.append({"rule": "price_cannot_modify_fundamental_state", "reason": "Price cannot directly modify Fundamental State."})
+
+    if target in {"market_attention", "expectation", "expectation_state", "market_driver", "market_driver_hypothesis", "price_reaction"}:
+        blob = f"{payload.get('statement') or ''} {payload.get('hypothesis') or ''} {proposal.get('reason') or ''} {payload.get('conclusion') or ''} {payload.get('alignment') or ''}".lower()
         if "mispricing" in blob:
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Unexplained price move is not mispricing."})
+
+    if target in {"market_driver_hypothesis", "market_driver"}:
+        requested = str(payload.get("status") or "")
+        if requested in {"established", "confirmed", "fact"} or payload.get("is_fact") is True:
+            hits.append({"rule": "market_hypothesis_is_not_fact", "reason": "A market driver hypothesis stays a hypothesis, not a fact."})
 
     if source in {"news", "event"} and target in {"claim", "core_claim"}:
         changing_status = "status" in payload and str(payload.get("status") or "") != str(current.get("status") or "")

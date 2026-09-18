@@ -77,7 +77,7 @@ def test_phase0_objects_map_to_five_layers() -> None:
     assert slower_than("core_claim", "event")
     assert slower_than("causal_relationship", "core_claim")
     assert classify_brain_object({"object_type": "shadow_state"})["layer"] == "state"
-    assert len(CONSTITUTION_RULES) == 17
+    assert len(CONSTITUTION_RULES) == 19
     assert "new_causal_edge_starts_candidate" in CONSTITUTION_RULES
     assert "unsupported_event_claim_jump" in CONSTITUTION_RULES
     assert "financial_transmission_cannot_modify_base" in CONSTITUTION_RULES

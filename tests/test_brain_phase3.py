@@ -71,6 +71,7 @@ def test_phase3_runtime_and_now_chain_questions() -> None:
     assert "aligned" in MARKET_ALIGNMENTS
     names = [item.filename for item in discover_migrations()]
     assert "migrations/0023_brain_phase3_market.sql" in names
+    assert "migrations/0024_brain_phase3_expectation.sql" in names
 
 
 def test_case1_supported_path_answers_happened_why_and_path() -> None:

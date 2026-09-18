@@ -25,11 +25,12 @@ from .causal import (
 )
 from .exposure import relevant_exposures
 from .market import relevant_market_attentions
+from .market_layer import interpret_market_layer, merge_market_proposals
 from .now import build_now_chain
 from .store import BrainStore
 from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
-from .types import DEFAULT_RUN_MODE
+from .types import DEFAULT_RUN_MODE, LOW_RELIABILITY
 
 
 def _calls(audit: dict[str, Any] | None, role: str, step: str) -> dict[str, Any]:
@@ -52,6 +53,8 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
             "history": [],
             "shadows": [],
             "market_attentions": [],
+            "expectations": [],
+            "hypotheses": [],
             "facts": [],
             "fingerprints": [],
             "identities": [],
@@ -75,6 +78,8 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "history": store.list_history(ticker) if hasattr(store, "list_history") else [],
         "shadows": store.list_shadows(ticker) if hasattr(store, "list_shadows") else [],
         "market_attentions": store.list_market_attentions(ticker) if hasattr(store, "list_market_attentions") else [],
+        "expectations": store.list_expectations(ticker) if hasattr(store, "list_expectations") else [],
+        "hypotheses": store.list_hypotheses(ticker) if hasattr(store, "list_hypotheses") else [],
         "facts": facts,
         "fingerprints": fingerprints,
         "identities": identities,
@@ -230,6 +235,12 @@ def run_brain_update(
         "fact_reliability": extract.get("fact_reliability") or l0["fact_reliability"],
         "possible_affected": extract.get("possible_affected") or [],
     }
+    ingested_reliability = str(l0.get("fact_reliability") or l0["item"].get("fact_reliability") or "")
+    if ingested_reliability in LOW_RELIABILITY:
+        event["fact_reliability"] = ingested_reliability
+    ingested_kind = str(l0["item"].get("kind") or "")
+    if ingested_kind in {"rumor", "signal"}:
+        event["kind"] = ingested_kind
     gate = materiality_gate(
         event,
         ticker=symbol,
@@ -352,6 +363,8 @@ def run_brain_update(
         related_ids=related_ids,
         limit=3,
     )
+    targeted_expectations = list(context.get("expectations") or [])[:3]
+    targeted_hypotheses = list(context.get("hypotheses") or [])[:4]
     transmission = assess_event_transmissions(
         event=event,
         edges=context.get("causal_edges"),
@@ -371,6 +384,8 @@ def run_brain_update(
         causal_gaps=causal_gaps[:3],
         financial_links=financial_links,
         market_attentions=targeted_attentions,
+        expectations=targeted_expectations,
+        hypotheses=targeted_hypotheses,
     )
     proposals: list[dict[str, Any]] = []
     questions: list[dict[str, Any]] = []
@@ -446,6 +461,19 @@ def run_brain_update(
                     "related_objects": gap.get("related_objects") or [],
                 }
             )
+
+    market_layer = interpret_market_layer(
+        event,
+        ticker=symbol,
+        existing_expectations=context.get("expectations"),
+        existing_hypotheses=context.get("hypotheses"),
+    )
+    proposals, _dup_skipped = merge_market_proposals(proposals, market_layer.get("proposals") or [])
+    for question in market_layer.get("questions") or []:
+        token = str(question.get("question") or "")
+        if token and token not in seen_questions:
+            questions.append(question)
+            seen_questions.add(token)
 
     observations = [event]
     gate_result = evaluate_brain_changes(
@@ -543,6 +571,19 @@ def run_brain_update(
         if token and token not in seen_att:
             seen_att.add(token)
             chain_attentions.append(row)
+    chain_exp: list[dict[str, Any]] = list(targeted_expectations)
+    chain_hyp: list[dict[str, Any]] = list(targeted_hypotheses)
+    for row in gate_result.get("approved") or []:
+        payload = dict(row.get("to_payload") or {})
+        kind = str(row.get("object_type") or "")
+        if kind in {"expectation", "expectation_state"}:
+            chain_exp.append(payload)
+        if kind in {"market_driver_hypothesis", "market_driver"}:
+            chain_hyp.append(payload)
+    if hasattr(brain_store, "list_expectations"):
+        chain_exp = list(brain_store.list_expectations(symbol) or chain_exp)[:4]
+    if hasattr(brain_store, "list_hypotheses"):
+        chain_hyp = list(brain_store.list_hypotheses(symbol) or chain_hyp)[:6]
     now_chain = build_now_chain(
         event=event,
         extract=extract,
@@ -550,9 +591,26 @@ def run_brain_update(
         transmission=transmission,
         causal_gaps=causal_gaps,
         market_attentions=chain_attentions[:4],
+        expectations=chain_exp,
+        hypotheses=chain_hyp,
         questions=list(questions) + list(gate_result.get("questions") or []),
         material=True,
+        unresolved=bool(market_layer.get("unresolved")),
     )
+    price_state_violations = sum(
+        1
+        for row in (gate_result.get("approved") or [])
+        if str(row.get("source_kind") or "") == "price" and str(row.get("object_type") or "") in {"state", "company_state", "industry_state", "macro_state"}
+    )
+    price_claim_violations = sum(
+        1
+        for row in (gate_result.get("approved") or [])
+        if str(row.get("source_kind") or "") == "price" and str(row.get("object_type") or "") in {"claim", "core_claim"}
+    )
+    market_stats = dict(market_layer.get("stats") or {})
+    market_stats["price_fundamental_violations"] = price_state_violations
+    market_stats["price_claim_violations"] = price_claim_violations
+    market_stats["duplicates_prevented"] = int(market_stats.get("duplicates_prevented") or 0) + int(_dup_skipped)
     return _finish(
         {
             "ticker": symbol,
@@ -586,5 +644,6 @@ def run_brain_update(
             "current_state_unchanged": gate_result.get("current_state_unchanged"),
             "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
             "now_chain": now_chain,
+            "market_layer": market_stats,
         }
     )

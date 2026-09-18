@@ -8,15 +8,18 @@ New causal edges cannot be observed, supported, or established.
 Do not jump from an unconfirmed rumor to Current State, Value Driver, Core Claim, or Base Case.
 If the event is a rumor or low-confidence signal, propose Shadow State and/or a Research Question.
 Driver → financial_metric may be proposed as a causal_edge or financial_impact. It cannot modify Base Case.
-After the causal path, you may propose market_attention: what the tape appears to be trading.
-Market attention cannot conclude mispricing, cannot rewrite Core Claim, and cannot establish a causal edge.
-If price moved but the snapshot has no transmittable path, ask a Research Question instead of calling it mispricing.
-Answer, in the reason fields, the four questions: what happened; why it affects this company; through which path it reaches Driver/Claim; what the market is trading.
+After the causal path, you may propose market_attention, expectation, and market_driver_hypothesis.
+Expectation is the market's prior vs the print. Below expectation must not rewrite Fundamental State or Core Claim.
+A market_driver_hypothesis is what the tape MAY be trading. Keep it a hypothesis. Multiple hypotheses may coexist. Do not pick a winner.
+Price / peer / sector moves may support or weaken a hypothesis. They cannot write Fundamental State or Core Claim.
+If a large price move is unexplained, set Market Driver = unresolved and ask a Research Question. Do not invent a reason.
+Do not write "the stock fell because X".
+Answer, in the reason fields: what happened; why it affects this company; through which path it reaches Driver/Claim; how the market currently understands it.
 Return one JSON object:
 {
   "proposals": [
     {
-      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|scenario|causal_edge|exposure|financial_impact|causal_gap",
+      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|expectation|market_driver_hypothesis|scenario|causal_edge|exposure|financial_impact|causal_gap",
       "object_id": "",
       "from": {},
       "to": {},

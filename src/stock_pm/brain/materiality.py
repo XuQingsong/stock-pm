@@ -63,9 +63,16 @@ def materiality_gate(
     classified = classify_information(row, ticker=ticker, related_entities=related_entities, drivers=drivers, claims=claims)
     low_value = any(token in blob for token in _LOW_VALUE)
     explicit = extracted.get("material")
+    try:
+        tape_move = abs(float(row.get("price_change_pct")))
+    except (TypeError, ValueError):
+        tape_move = 0.0
     if explicit is False or str(extracted.get("novelty") or "") in {"repeat", "none"}:
         material = False
         reason = "L1 marked the item non-material or not new."
+    elif tape_move >= 5:
+        material = True
+        reason = "Large price move requires market-layer interpretation."
     elif low_value and not any(token in blob for token in _MATERIAL_HINTS):
         material = False
         reason = "Low-value news does not justify GLM-5.3 reasoning."

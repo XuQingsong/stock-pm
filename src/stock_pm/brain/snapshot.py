@@ -389,6 +389,8 @@ def build_snapshot(
     causal_gaps: list[dict[str, Any]] | None = None,
     financial_links: list[dict[str, Any]] | None = None,
     market_attentions: list[dict[str, Any]] | None = None,
+    expectations: list[dict[str, Any]] | None = None,
+    hypotheses: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     claim_ids = {str(row.get("claim_id")) for row in affected.get("claims") or [] if row.get("claim_id")}
     driver_ids = {str(row.get("driver_id")) for row in affected.get("drivers") or [] if row.get("driver_id")}
@@ -453,6 +455,8 @@ def build_snapshot(
     gap_rows = list(causal_gaps or [])[:3]
     finance_rows = list(financial_links or [])[:4]
     attention_rows = list(market_attentions or [])[:3]
+    expectation_rows = list(expectations or [])[:3]
+    hypothesis_rows = list(hypotheses or [])[:4]
     causal_context = {
         "causal_edges": relevant_edges,
         "causal_paths": path_rows,
@@ -460,6 +464,8 @@ def build_snapshot(
         "exposures": list(affected.get("exposures") or []),
         "financial_links": finance_rows,
         "market_attentions": attention_rows,
+        "expectations": expectation_rows,
+        "hypotheses": hypothesis_rows,
     }
     return {
         "event": event,
@@ -474,6 +480,8 @@ def build_snapshot(
         "causal_gaps": gap_rows,
         "financial_links": finance_rows,
         "market_attentions": attention_rows,
+        "expectations": expectation_rows,
+        "hypotheses": hypothesis_rows,
         "history": relevant_history,
         "shadows": relevant_shadows[:6],
         "targeted": True,
