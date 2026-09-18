@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .causal import transmission_stop_reason
+from .causal import next_edge_status, shortest_path, transmission_stop_reason
 from .claim_integrity import news_is_duplicate
 from .exposure import related_entity_cannot_prove_issuer
 from .hysteresis import next_claim_status
@@ -87,16 +87,60 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         if proposed_status and proposed_status != current_status and (proposed_status != inertia["status"] or not inertia["changed"]):
             hits.append({"rule": "claim_slower_than_driver", "reason": "Core Claim cannot jump on a single item."})
 
-    if target in {"causal_edge", "causal_relationship"} and source in {"news", "event", "signal", "price"}:
-        new_status = str(payload.get("status") or "candidate")
-        if new_status in {"supported", "established"}:
+    if target in {"causal_edge", "causal_relationship"}:
+        requested = str(payload.get("status") or payload.get("requested_status") or current.get("status") or "candidate")
+        existing = None
+        for edge in context.get("causal_edges") or []:
+            if str(edge.get("edge_id") or "") == str(proposal.get("object_id") or "") or (
+                str(edge.get("from_node") or "") == str(payload.get("from_node") or current.get("from_node") or "")
+                and str(edge.get("to_node") or "") == str(payload.get("to_node") or current.get("to_node") or "")
+            ):
+                existing = edge
+                break
+        is_new = existing is None
+        if is_new and requested != "candidate":
+            hits.append({"rule": "new_causal_edge_starts_candidate", "reason": "A newly discovered causal relationship starts as candidate, not established."})
+        stepped = next_edge_status(
+            existing,
+            requested,
+            independent_support_count=int(proposal.get("independent_support_count") or len(proposal.get("evidence_ids") or [])),
+            independent_counter_count=int(proposal.get("independent_counter_count") or 0),
+            source_kind=source,
+            is_new=is_new,
+        )
+        if requested in {"supported", "established"} and stepped["status"] not in {"supported", "established"}:
+            hits.append({"rule": "causal_slower_than_claim", "reason": "Causal Graph cannot jump to established from a single event."})
+        elif source in {"news", "event", "signal", "price"} and requested in {"supported", "established"} and is_new:
             hits.append({"rule": "causal_slower_than_claim", "reason": "Causal Graph cannot jump to established from a single event."})
 
-    edges = list(proposal.get("causal_edges") or payload.get("causal_edges") or context.get("causal_edges") or [])
-    if target in {"claim", "core_claim", "driver", "value_driver", "financial_impact", "scenario"}:
-        stopped = transmission_stop_reason(edges)
-        if stopped:
-            hits.append({"rule": "unsupported_causal_cannot_transmit", "reason": stopped})
+    supplied_edges = list(proposal.get("causal_edges") or payload.get("causal_edges") or [])
+    impact_targets = {"claim", "core_claim", "driver", "value_driver"}
+    if target in impact_targets | {"financial_impact", "scenario"}:
+        if supplied_edges:
+            stopped = transmission_stop_reason(supplied_edges)
+            if stopped:
+                hits.append({"rule": "unsupported_causal_cannot_transmit", "reason": stopped})
+        elif target in impact_targets and context.get("causal_edges") and context.get("event_nodes"):
+            target_id = str(proposal.get("object_id") or payload.get("object_id") or "")
+            if target_id:
+                walked = shortest_path(
+                    list(context.get("causal_edges") or []),
+                    start_ids={str(item) for item in (context.get("event_nodes") or []) if str(item)},
+                    goal_ids={target_id},
+                )
+                if walked.get("stopped"):
+                    hits.append({"rule": "unsupported_causal_cannot_transmit", "reason": walked.get("reason") or "transmission_stop"})
+                elif target in {"claim", "core_claim"} and not walked.get("found"):
+                    hits.append({"rule": "unsupported_event_claim_jump", "reason": "Event cannot jump to this object without a transmittable causal path."})
+
+    if target == "financial_impact" and (
+        payload.get("base_case_change") is True or str(payload.get("scope") or "") == "base"
+    ):
+        hits.append({"rule": "financial_transmission_cannot_modify_base", "reason": "Driver → financial metric cannot directly rewrite the Base Case."})
+    if target == "scenario" and (
+        payload.get("base_case_change") is True or str(payload.get("scope") or "") == "base"
+    ) and (payload.get("financial_metric") or payload.get("from_driver") or payload.get("driver_id")):
+        hits.append({"rule": "financial_transmission_cannot_modify_base", "reason": "Driver → financial metric cannot directly rewrite the Base Case."})
 
     if source == "price" and target in {"claim", "core_claim", "driver", "value_driver"}:
         if not proposal.get("fundamental_evidence_ids"):

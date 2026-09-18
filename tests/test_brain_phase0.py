@@ -77,7 +77,10 @@ def test_phase0_objects_map_to_five_layers() -> None:
     assert slower_than("core_claim", "event")
     assert slower_than("causal_relationship", "core_claim")
     assert classify_brain_object({"object_type": "shadow_state"})["layer"] == "state"
-    assert len(CONSTITUTION_RULES) == 14
+    assert len(CONSTITUTION_RULES) == 17
+    assert "new_causal_edge_starts_candidate" in CONSTITUTION_RULES
+    assert "unsupported_event_claim_jump" in CONSTITUTION_RULES
+    assert "financial_transmission_cannot_modify_base" in CONSTITUTION_RULES
 
 
 def test_case1_unconfirmed_google_order_enters_shadow() -> None:
@@ -384,6 +387,7 @@ def test_phase0_migration_is_discovered() -> None:
     names = [item.filename for item in discover_migrations()]
     assert "migrations/0020_brain_phase0.sql" in names
     assert "migrations/0021_brain_phase1_runtime.sql" in names
+    assert "migrations/0022_brain_phase2_causal.sql" in names
 
 
 def test_market_layer_is_fast_and_not_write_locked() -> None:

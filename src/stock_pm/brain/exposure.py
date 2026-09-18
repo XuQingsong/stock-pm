@@ -86,6 +86,81 @@ def infer_exposure(
     }
 
 
+def normalize_exposure(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
+    symbol = str(ticker or raw.get("ticker") or "").upper()
+    subject = compact_text(raw.get("subject") or symbol, 80) or symbol
+    object_name = compact_text(raw.get("object_name") or raw.get("object") or raw.get("name") or "", 120)
+    exposure_type = str(raw.get("exposure_type") or "financial")
+    if exposure_type not in EXPOSURE_TYPES:
+        exposure_type = "financial"
+    return {
+        "exposure_id": raw.get("exposure_id") or new_id("bexp"),
+        "ticker": symbol,
+        "subject": subject,
+        "object_name": object_name,
+        "state_or_event": raw.get("state_or_event") or raw.get("event_id") or raw.get("state_id"),
+        "event_id": raw.get("event_id"),
+        "state_id": raw.get("state_id"),
+        "exposure_type": exposure_type,
+        "direction": str(raw.get("direction") or "watch"),
+        "magnitude": str(raw.get("magnitude") or "medium"),
+        "direct_or_indirect": raw.get("direct_or_indirect") or "direct",
+        "mechanism": compact_text(raw.get("mechanism") or raw.get("reason") or "", 240),
+        "evidence_ids": [str(item) for item in (raw.get("evidence_ids") or []) if str(item).strip()],
+        "uncertainty": raw.get("uncertainty") or "medium",
+        "related_only": bool(raw.get("related_only")),
+        "can_affect_claim": bool(raw.get("can_affect_claim", True)) and not raw.get("related_only"),
+        "reason": compact_text(raw.get("reason") or raw.get("mechanism") or f"{subject} is exposed to {object_name}", 240),
+        "related_driver_id": raw.get("related_driver_id"),
+        "related_claim_id": raw.get("related_claim_id"),
+    }
+
+
+def relevant_exposures(
+    *,
+    event: dict[str, Any] | None,
+    exposures: list[dict[str, Any]] | None,
+    driver_ids: set[str] | None = None,
+    limit: int = 6,
+) -> list[dict[str, Any]]:
+    item = event or {}
+    entities = {str(value).strip().lower() for value in (item.get("entities") or []) if str(value).strip()}
+    event_type = str(item.get("event_type") or "").lower()
+    blob = f"{item.get('title') or ''} {item.get('fact') or ''} {' '.join(entities)}".lower()
+    wanted_types = set()
+    if event_type in {"customer", "demand", "capex"} or any(ent in {"google", "meta", "openai", "anthropic"} for ent in entities):
+        wanted_types.add("customer")
+    if event_type in {"competition"} or "marvell" in entities:
+        wanted_types.update({"competitive", "customer"})
+    if event_type in {"supply"}:
+        wanted_types.add("supplier")
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in exposures or []:
+        eid = str(row.get("exposure_id") or "")
+        if not eid or eid in seen:
+            continue
+        text = " ".join(
+            str(row.get(key) or "")
+            for key in ("subject", "object_name", "reason", "mechanism", "exposure_type", "related_driver_id")
+        ).lower()
+        hit = False
+        if row.get("related_driver_id") and str(row.get("related_driver_id")) in (driver_ids or set()):
+            hit = True
+        if str(row.get("exposure_type") or "") in wanted_types:
+            hit = True
+        if any(ent and len(ent) > 3 and ent in text for ent in entities):
+            hit = True
+        if any(token in text for token in ("asic", "hyperscaler", "custom silicon") if token in blob):
+            hit = True
+        if hit:
+            seen.add(eid)
+            out.append(row)
+        if len(out) >= limit:
+            break
+    return out
+
+
 def may_affect_company_claim(exposure: dict[str, Any] | None) -> bool:
     if not exposure:
         return False

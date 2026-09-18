@@ -198,6 +198,8 @@ OBJECT_LAYER = {
     "industry_structure": "structural_knowledge",
     "causal_edge": "structural_knowledge",
     "causal_relationship": "structural_knowledge",
+    "causal_gap": "structural_knowledge",
+    "financial_metric": "investment_reasoning",
 }
 LAYER_RANK = {
     "observation": 1,
@@ -214,7 +216,7 @@ LAYER_SPEED = {
     "structural_knowledge": "slowest",
 }
 FAST_LAYERS = ("observation", "market")
-BRAIN_RUNTIME = "phase1"
+BRAIN_RUNTIME = "phase2"
 DEFAULT_RUN_MODE = "incremental"
 PROPOSAL_DECISIONS = ("approve", "reject", "requires_review")
 SHADOW_STATUSES = ("open", "watching", "confirmed", "closed")
@@ -226,6 +228,27 @@ CAUSAL_EDGE_STATUSES = (
     "challenged",
     "deprecated",
 )
+CAUSAL_RELATIONSHIP_TYPES = (
+    "event_to_state",
+    "state_to_exposure",
+    "exposure_to_driver",
+    "driver_to_claim",
+    "driver_to_financial",
+    "demand",
+    "supply",
+    "competition",
+    "customer",
+    "financial",
+    "other",
+)
+CAUSAL_EDGE_STATUS_RANK = {
+    "deprecated": 0,
+    "challenged": 1,
+    "candidate": 2,
+    "observed": 3,
+    "supported": 4,
+    "established": 5,
+}
 CONSTITUTION_RULES = (
     "price_cannot_modify_fundamental_claim",
     "news_cannot_modify_core_claim",
@@ -241,6 +264,9 @@ CONSTITUTION_RULES = (
     "absence_is_not_counter_evidence",
     "related_entity_cannot_prove_issuer",
     "duplicate_news_cannot_version_claim",
+    "new_causal_edge_starts_candidate",
+    "unsupported_event_claim_jump",
+    "financial_transmission_cannot_modify_base",
 )
 CHANGE_BUDGET = {
     "max_auto_claims": 1,

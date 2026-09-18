@@ -13,8 +13,19 @@ from .materiality import materiality_gate
 from .phase0 import _observation_identity, evaluate_brain_changes
 from .routing import resolve_brain_completers
 from .shadow import current_states_only, should_enter_shadow
-from .snapshot import build_snapshot, locate_affected_objects
+from .causal import (
+    assess_event_transmissions,
+    claim_causal_paths,
+    compact_path,
+    detect_causal_gaps,
+    event_anchor_ids,
+    financial_edges_from_drivers,
+    relevant_causal_subgraph,
+    transmission_stop_reason,
+)
+from .exposure import relevant_exposures
 from .store import BrainStore
+from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
 from .types import DEFAULT_RUN_MODE
 
@@ -265,14 +276,85 @@ def run_brain_update(
         causal_edges=context.get("causal_edges"),
         ticker=symbol,
     )
+    driver_ids = {
+        str(row.get("driver_id") or row.get("canonical_key") or "")
+        for row in affected.get("drivers") or []
+    }
+    driver_ids.discard("")
+    merged_exposures = list(affected.get("exposures") or [])
+    seen_exposures = {str(row.get("exposure_id") or "") for row in merged_exposures}
+    for row in relevant_exposures(event=event, exposures=context.get("exposures"), driver_ids=driver_ids):
+        eid = str(row.get("exposure_id") or "")
+        if eid and eid not in seen_exposures:
+            seen_exposures.add(eid)
+            merged_exposures.append(row)
+    affected = {**affected, "exposures": merged_exposures}
+    anchors = event_anchor_ids(event=event, exposures=merged_exposures, states=affected.get("states") or context.get("states"))
+    object_ids = set(anchors)
+    for group, keys in (
+        (affected.get("states"), ("state_id", "name")),
+        (affected.get("drivers"), ("driver_id", "canonical_key")),
+        (affected.get("claims"), ("claim_id",)),
+        (merged_exposures, ("exposure_id",)),
+    ):
+        for row in group or []:
+            for key in keys:
+                if row.get(key):
+                    object_ids.add(str(row.get(key)))
+    relevant_edges = relevant_causal_subgraph(
+        edges=context.get("causal_edges"),
+        object_ids=object_ids,
+        limit=8,
+    )
+    causal_paths: list[dict[str, Any]] = []
+    for claim in (affected.get("claims") or [])[:4]:
+        cid = str(claim.get("claim_id") or "")
+        if not cid:
+            continue
+        for path in claim_causal_paths(
+            claim_id=cid,
+            edges=context.get("causal_edges"),
+            start_ids=anchors,
+            limit=2,
+        ):
+            causal_paths.append(compact_path(path))
+        if len(causal_paths) >= 4:
+            break
+    causal_gaps = detect_causal_gaps(
+        event=event,
+        edges=context.get("causal_edges"),
+        related_claims=affected.get("claims"),
+        exposures=merged_exposures,
+        states=affected.get("states"),
+    )
+    financial_links = [
+        {
+            "from_node": edge.get("from_node"),
+            "to_node": edge.get("to_node"),
+            "relationship_type": edge.get("relationship_type"),
+            "mechanism": edge.get("mechanism"),
+            "status": edge.get("status"),
+        }
+        for edge in financial_edges_from_drivers(affected.get("drivers"), ticker=symbol)
+    ][:4]
+    transmission = assess_event_transmissions(
+        event=event,
+        edges=context.get("causal_edges"),
+        claims=affected.get("claims"),
+        exposures=merged_exposures,
+        states=affected.get("states"),
+    )
     snapshot = build_snapshot(
         event=event,
         affected=affected,
         evidence=context.get("evidence"),
         links=context.get("links"),
-        causal_edges=context.get("causal_edges"),
+        causal_edges=relevant_edges,
         history=context.get("history"),
         shadows=context.get("shadows"),
+        causal_paths=causal_paths[:4],
+        causal_gaps=causal_gaps[:3],
+        financial_links=financial_links,
     )
     proposals: list[dict[str, Any]] = []
     questions: list[dict[str, Any]] = []
@@ -318,6 +400,36 @@ def run_brain_update(
                 "related_objects": [event.get("title") or ""],
             }
         )
+    seen_questions = {str(row.get("question") or "") for row in questions}
+    for gap in causal_gaps:
+        question = str(gap.get("question") or "")
+        if question and question not in seen_questions:
+            questions.append(
+                {
+                    "question": question,
+                    "reason": gap.get("reason") or "causal_gap",
+                    "related_objects": gap.get("related_objects") or [],
+                }
+            )
+            seen_questions.add(question)
+        already = any(
+            str(row.get("object_type") or "") in {"causal_gap", "research_question"}
+            and (
+                str((row.get("to") or row.get("to_payload") or {}).get("to_node") or "") == str(gap.get("to_node") or "")
+                or str((row.get("to") or row.get("to_payload") or {}).get("question") or "") == question
+            )
+            for row in proposals
+        )
+        if not already and question:
+            proposals.append(
+                {
+                    "object_type": "research_question",
+                    "source_kind": event.get("kind") or "event",
+                    "to": {"question": question, **gap},
+                    "reason": gap.get("reason") or "Missing reliable causal path.",
+                    "related_objects": gap.get("related_objects") or [],
+                }
+            )
 
     observations = [event]
     gate_result = evaluate_brain_changes(
@@ -328,10 +440,12 @@ def run_brain_update(
             "existing_facts": context.get("facts") or [],
             "event_fingerprints": context.get("fingerprints") or [],
             "causal_edges": context.get("causal_edges") or [],
+            "event_nodes": sorted(anchors),
             "related_entities": context.get("related_entities") or [],
             "states": context.get("states") or [],
             "drivers": context.get("drivers") or [],
             "claims": context.get("claims") or [],
+            "exposures": merged_exposures,
         },
         store=brain_store,
     )
@@ -371,6 +485,33 @@ def run_brain_update(
         critic_result = reconcile_critic(list((payload or {}).get("issues") or []), transmissions=[])
         critic_result["scope"] = "expanded" if expand else "incremental"
 
+    unsupported_jump_count = 0
+    unexpected_claim_change_count = 0
+    if gate_result.get("auto_commit_allowed"):
+        for row in gate_result.get("approved") or []:
+            if str(row.get("object_type") or "") not in {"claim", "core_claim"}:
+                continue
+            unexpected_claim_change_count += 1
+            if str(row.get("source_kind") or "") not in {"news", "event"}:
+                continue
+            target_id = str(row.get("object_id") or (row.get("to_payload") or {}).get("object_id") or "")
+            supplied = list(row.get("causal_edges") or (row.get("to_payload") or {}).get("causal_edges") or [])
+            if supplied:
+                if transmission_stop_reason(supplied) or not any(
+                    "bclm_" in str(edge.get("to_node") or "") or str(edge.get("to_type") or "") in {"claim", "core_claim"}
+                    for edge in supplied
+                ):
+                    unsupported_jump_count += 1
+                continue
+            if not target_id:
+                unsupported_jump_count += 1
+                continue
+            walked = next(
+                (item for item in (transmission.get("successful") or []) if item.get("claim_id") == target_id),
+                None,
+            )
+            if walked is None:
+                unsupported_jump_count += 1
     return _finish(
         {
             "ticker": symbol,
@@ -388,6 +529,11 @@ def run_brain_update(
             },
             "snapshot": snapshot,
             "proposals": proposals,
+            "questions": questions,
+            "causal_gaps": causal_gaps,
+            "transmission": transmission,
+            "unsupported_jump_count": unsupported_jump_count,
+            "unexpected_claim_change_count": unexpected_claim_change_count,
             "gate": gate_result,
             "glm52_called": glm52_called,
             "glm53_called": glm53_called,

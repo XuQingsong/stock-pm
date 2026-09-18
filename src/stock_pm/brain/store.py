@@ -1233,6 +1233,11 @@ class BrainStore:
             "related_only": bool(row.get("related_only")),
             "can_affect_claim": bool(row.get("can_affect_claim")),
             "reason": row.get("reason") or "",
+            "subject": row.get("subject") or str(row.get("ticker") or "").upper(),
+            "object_name": row.get("object_name") or row.get("object") or "",
+            "mechanism": row.get("mechanism") or row.get("reason") or "",
+            "related_driver_id": row.get("related_driver_id"),
+            "related_claim_id": row.get("related_claim_id"),
             "run_id": row.get("run_id"),
             "created_at": row.get("created_at") or _now(),
         }
@@ -1244,12 +1249,14 @@ class BrainStore:
             INSERT INTO brain_exposures (
                 exposure_id, ticker, state_or_event, event_id, state_id, exposure_type, direction,
                 magnitude, direct_or_indirect, evidence_ids, uncertainty, related_only,
-                can_affect_claim, reason, run_id, created_at
+                can_affect_claim, reason, subject, object_name, mechanism, related_driver_id,
+                related_claim_id, run_id, created_at
             ) VALUES (
                 %(exposure_id)s, %(ticker)s, %(state_or_event)s, %(event_id)s, %(state_id)s,
                 %(exposure_type)s, %(direction)s, %(magnitude)s, %(direct_or_indirect)s,
                 %(evidence_ids)s, %(uncertainty)s, %(related_only)s, %(can_affect_claim)s,
-                %(reason)s, %(run_id)s, %(created_at)s
+                %(reason)s, %(subject)s, %(object_name)s, %(mechanism)s, %(related_driver_id)s,
+                %(related_claim_id)s, %(run_id)s, %(created_at)s
             ) RETURNING *
             """,
             stored,
@@ -1512,38 +1519,87 @@ class BrainStore:
             "ticker": str(row["ticker"]).upper(),
             "from_node": row.get("from_node") or "",
             "to_node": row.get("to_node") or "",
-            "statement": row.get("statement") or "",
+            "from_type": row.get("from_type") or "",
+            "to_type": row.get("to_type") or "",
+            "relationship_type": row.get("relationship_type") or "other",
+            "mechanism": row.get("mechanism") or row.get("statement") or "",
+            "statement": row.get("statement") or row.get("mechanism") or "",
+            "direction": row.get("direction") or "positive",
+            "strength": row.get("strength") or "medium",
+            "confidence": row.get("confidence") or "low",
+            "time_horizon": row.get("time_horizon") or "medium",
+            "lag": row.get("lag") or "unknown",
+            "conditions": row.get("conditions") or "",
             "status": row.get("status") or "candidate",
-            "evidence_ids": list(row.get("evidence_ids") or []),
+            "evidence_ids": list(row.get("evidence_ids") or row.get("support_evidence_ids") or []),
+            "support_evidence_ids": list(row.get("support_evidence_ids") or row.get("evidence_ids") or []),
+            "counter_evidence_ids": list(row.get("counter_evidence_ids") or []),
+            "support_strength": int(row.get("support_strength") or 0),
+            "counter_strength": int(row.get("counter_strength") or 0),
             "run_id": row.get("run_id"),
             "created_at": row.get("created_at") or _now(),
             "updated_at": row.get("updated_at") or _now(),
         }
+        existing = None
         if not self._pg():
-            for existing in self.causal_edges.values():
+            for existing_row in self.causal_edges.values():
                 if (
-                    existing.get("ticker") == stored["ticker"]
-                    and existing.get("from_node") == stored["from_node"]
-                    and existing.get("to_node") == stored["to_node"]
+                    existing_row.get("ticker") == stored["ticker"]
+                    and existing_row.get("from_node") == stored["from_node"]
+                    and existing_row.get("to_node") == stored["to_node"]
                 ):
-                    stored["edge_id"] = existing["edge_id"]
-                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
-                    self.causal_edges[stored["edge_id"]] = stored
-                    return _copy(stored)
+                    existing = existing_row
+                    break
+        else:
+            existing = self._one(
+                """
+                SELECT * FROM brain_causal_edges
+                WHERE ticker = %(ticker)s AND from_node = %(from_node)s AND to_node = %(to_node)s
+                LIMIT 1
+                """,
+                {"ticker": stored["ticker"], "from_node": stored["from_node"], "to_node": stored["to_node"]},
+            )
+        if existing:
+            stored["edge_id"] = existing["edge_id"]
+            stored["created_at"] = existing.get("created_at") or stored["created_at"]
+            stored["support_evidence_ids"] = list(
+                dict.fromkeys(list(existing.get("support_evidence_ids") or []) + stored["support_evidence_ids"])
+            )
+            stored["counter_evidence_ids"] = list(
+                dict.fromkeys(list(existing.get("counter_evidence_ids") or []) + stored["counter_evidence_ids"])
+            )
+            stored["evidence_ids"] = list(dict.fromkeys(list(existing.get("evidence_ids") or []) + stored["evidence_ids"]))
+            stored["support_strength"] = max(int(existing.get("support_strength") or 0), stored["support_strength"])
+            stored["counter_strength"] = max(int(existing.get("counter_strength") or 0), stored["counter_strength"])
+        if not self._pg():
             self.causal_edges[stored["edge_id"]] = stored
             return _copy(stored)
         out = self._one(
             """
             INSERT INTO brain_causal_edges (
-                edge_id, ticker, from_node, to_node, statement, status, evidence_ids, run_id, created_at, updated_at
+                edge_id, ticker, from_node, to_node, from_type, to_type, relationship_type,
+                mechanism, statement, direction, strength, confidence, time_horizon, lag,
+                conditions, status, evidence_ids, support_evidence_ids, counter_evidence_ids,
+                support_strength, counter_strength, run_id, created_at, updated_at
             ) VALUES (
-                %(edge_id)s, %(ticker)s, %(from_node)s, %(to_node)s, %(statement)s, %(status)s,
-                %(evidence_ids)s, %(run_id)s, %(created_at)s, %(updated_at)s
+                %(edge_id)s, %(ticker)s, %(from_node)s, %(to_node)s, %(from_type)s, %(to_type)s,
+                %(relationship_type)s, %(mechanism)s, %(statement)s, %(direction)s, %(strength)s,
+                %(confidence)s, %(time_horizon)s, %(lag)s, %(conditions)s, %(status)s,
+                %(evidence_ids)s, %(support_evidence_ids)s, %(counter_evidence_ids)s,
+                %(support_strength)s, %(counter_strength)s, %(run_id)s, %(created_at)s, %(updated_at)s
             )
             ON CONFLICT (ticker, from_node, to_node) DO UPDATE SET
                 statement = EXCLUDED.statement,
+                mechanism = EXCLUDED.mechanism,
                 status = EXCLUDED.status,
+                direction = EXCLUDED.direction,
+                strength = EXCLUDED.strength,
+                confidence = EXCLUDED.confidence,
                 evidence_ids = EXCLUDED.evidence_ids,
+                support_evidence_ids = EXCLUDED.support_evidence_ids,
+                counter_evidence_ids = EXCLUDED.counter_evidence_ids,
+                support_strength = EXCLUDED.support_strength,
+                counter_strength = EXCLUDED.counter_strength,
                 updated_at = EXCLUDED.updated_at
             RETURNING *
             """,

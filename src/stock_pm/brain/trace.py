@@ -96,6 +96,9 @@ def build_runtime_trace(
         "exposures": _ids(snapshot.get("exposures"), "exposure_id", "exposure_type"),
         "shadows": _ids(snapshot.get("shadows"), "shadow_id", "name"),
         "causal_edges": _ids(snapshot.get("causal_edges"), "edge_id", "from_node"),
+        "causal_paths": list(snapshot.get("causal_paths") or [])[:4],
+        "causal_gaps": list(snapshot.get("causal_gaps") or [])[:3],
+        "financial_links": list(snapshot.get("financial_links") or [])[:4],
     }
     snap_size = (
         len(snapshot.get("states") or [])
@@ -166,4 +169,14 @@ def build_runtime_trace(
         "core_claims_unchanged": result.get("core_claims_unchanged"),
         "extract_fact": compact_text(extract.get("fact") or "", 240),
         "extract_entities": list(extract.get("entities") or [])[:8],
+        "causal_edges_read": len(snapshot.get("causal_edges") or []),
+        "causal_paths": list(snapshot.get("causal_paths") or [])[:4],
+        "causal_gaps": list(snapshot.get("causal_gaps") or [])[:3],
+        "glm53_causal_context_tokens": int(snapshot.get("causal_context_tokens") or 0),
+        "transmission_successful": int((result.get("transmission") or {}).get("successful_count") or 0),
+        "transmission_blocked": int((result.get("transmission") or {}).get("blocked_count") or 0),
+        "transmission_blocked_reasons": list((result.get("transmission") or {}).get("blocked_reasons") or []),
+        "unsupported_jump_count": int(result.get("unsupported_jump_count") or 0),
+        "unexpected_claim_change_count": int(result.get("unexpected_claim_change_count") or 0),
+        "research_question_count": len(result.get("questions") or gate.get("questions") or []),
     }

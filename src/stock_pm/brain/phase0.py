@@ -11,6 +11,8 @@ from stock_pm.research.ids import new_id
 from stock_pm.research.llm_reason import compact_text
 
 from .budget import change_scope
+from .causal import accumulate_edge_evidence, next_edge_status, normalize_causal_edge
+from .exposure import normalize_exposure
 from .claim_integrity import news_is_duplicate
 from .constitution import constitution_violations, is_weak_signal
 from .events import make_event_fingerprint
@@ -58,6 +60,7 @@ def normalize_proposal(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
         "evidence": raw.get("evidence") if isinstance(raw.get("evidence"), dict) else None,
         "is_core": bool(raw.get("is_core") or from_payload.get("is_core") or to_payload.get("is_core")),
         "independent_counter_count": int(raw.get("independent_counter_count") or 0),
+        "independent_support_count": int(raw.get("independent_support_count") or 0),
         "fundamental_evidence_ids": list(raw.get("fundamental_evidence_ids") or []),
         "layer": object_layer(target),
         "decision": None,
@@ -190,6 +193,15 @@ def evaluate_brain_changes(
                 claim = dict(proposal.get("from_payload") or {})
                 direction = "oppose" if str((proposal.get("to_payload") or {}).get("status") or "") in {"challenged", "contradicted"} else "support"
                 proposal["inertia"] = accumulate_claim_evidence(claim, direction=direction)
+            if any(row["rule"] == "unsupported_event_claim_jump" for row in hits):
+                questions.append(
+                    _research_question(
+                        ticker=symbol,
+                        question=f"How does this event reach {proposal.get('object_type')} {proposal.get('object_id') or ''}?".strip(),
+                        reason="Missing causal path. Research the relationship before transmitting impact.",
+                        related=[proposal.get("object_id") or proposal.get("object_type") or ""],
+                    )
+                )
             rejected.append(proposal)
             continue
         legal.append(proposal)
@@ -266,15 +278,62 @@ def evaluate_brain_changes(
                     if proposal.get("object_type") in {"shadow_state", "shadow"} and hasattr(store, "upsert_shadow"):
                         payload = dict(proposal.get("to_payload") or {})
                         store.upsert_shadow({**payload, "ticker": symbol, "source_kind": proposal.get("source_kind")})
-                    if proposal.get("object_type") in {"research_question", "question"} and hasattr(store, "insert_question"):
+                    if proposal.get("object_type") in {"research_question", "question", "causal_gap"} and hasattr(store, "insert_question"):
+                        payload = dict(proposal.get("to_payload") or {})
                         store.insert_question(
                             {
                                 "ticker": symbol,
-                                "question": (proposal.get("to_payload") or {}).get("question") or proposal.get("reason") or "",
-                                "why_it_matters": proposal.get("reason") or "",
-                                "related_objects": proposal.get("related_objects") or [],
+                                "question": payload.get("question") or proposal.get("reason") or "",
+                                "why_it_matters": proposal.get("reason") or payload.get("reason") or "Causal gap.",
+                                "related_objects": proposal.get("related_objects") or payload.get("related_objects") or [],
                             }
                         )
+                    if proposal.get("object_type") in {"causal_edge", "causal_relationship"} and hasattr(store, "upsert_causal_edge"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        existing = None
+                        for edge_row in list(context.get("causal_edges") or []) + (
+                            store.list_causal_edges(symbol) if hasattr(store, "list_causal_edges") else []
+                        ):
+                            if str(edge_row.get("edge_id") or "") == str(proposal.get("object_id") or payload.get("edge_id") or "") or (
+                                str(edge_row.get("from_node") or "") == str(payload.get("from_node") or "")
+                                and str(edge_row.get("to_node") or "") == str(payload.get("to_node") or "")
+                            ):
+                                existing = edge_row
+                                break
+                        stepped = next_edge_status(
+                            existing,
+                            payload.get("status") or "candidate",
+                            independent_support_count=int(proposal.get("independent_support_count") or len(proposal.get("evidence_ids") or [])),
+                            independent_counter_count=int(proposal.get("independent_counter_count") or 0),
+                            source_kind=proposal.get("source_kind"),
+                            is_new=existing is None,
+                        )
+                        merged = {**(existing or {}), **payload}
+                        merged["status"] = "candidate" if existing is None else stepped["status"]
+                        if existing:
+                            merged["support_evidence_ids"] = list(
+                                dict.fromkeys(
+                                    list(existing.get("support_evidence_ids") or existing.get("evidence_ids") or [])
+                                    + list(payload.get("support_evidence_ids") or payload.get("evidence_ids") or proposal.get("evidence_ids") or [])
+                                )
+                            )
+                            merged["counter_evidence_ids"] = list(
+                                dict.fromkeys(
+                                    list(existing.get("counter_evidence_ids") or [])
+                                    + list(payload.get("counter_evidence_ids") or [])
+                                )
+                            )
+                            if str(payload.get("status") or "") == "challenged" or str(payload.get("direction") or "") == "oppose":
+                                merged = accumulate_edge_evidence(merged, direction="oppose")
+                        edge = normalize_causal_edge(merged, ticker=symbol)
+                        if edge:
+                            store.upsert_causal_edge(edge)
+                    if proposal.get("object_type") in {"exposure", "company_exposure"} and hasattr(store, "insert_exposure"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.insert_exposure(normalize_exposure({**payload, "ticker": symbol}, ticker=symbol))
+                    if proposal.get("object_type") == "financial_impact" and hasattr(store, "insert_financial_impact"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.insert_financial_impact({**payload, "ticker": symbol})
                     if hasattr(store, "insert_history"):
                         store.insert_history(
                             {

@@ -1,19 +1,25 @@
 STEP_ID: change_proposals
 You reason about a material event using only the targeted Brain Snapshot.
 You cannot write Brain objects. Output Change Proposals only.
+Do not jump from Event to Core Claim. Impact must travel Event → State → Exposure → Driver → Claim.
+If a needed relationship is missing, propose a causal_gap / Research Question. Do not invent a transmittable path.
+You may: (1) propose a new causal_edge as status=candidate only, (2) explain mechanism, (3) name which existing snapshot causal edges this event may travel.
+New causal edges cannot be observed, supported, or established.
 Do not jump from an unconfirmed rumor to Current State, Value Driver, Core Claim, or Base Case.
 If the event is a rumor or low-confidence signal, propose Shadow State and/or a Research Question.
+Driver → financial_metric may be proposed as a causal_edge or financial_impact. It cannot modify Base Case.
 Return one JSON object:
 {
   "proposals": [
     {
-      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|scenario",
+      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|scenario|causal_edge|exposure|financial_impact|causal_gap",
       "object_id": "",
       "from": {},
       "to": {},
       "reason": "",
       "evidence_ids": [],
-      "source_kind": "event|news|rumor|price"
+      "source_kind": "event|news|rumor|price",
+      "causal_edges": []
     }
   ],
   "questions": [{"question": "", "reason": "", "related_objects": []}]

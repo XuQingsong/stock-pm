@@ -1,0 +1,205 @@
+{
+  "generated_at": "2026-09-18T18:14:34.027973+00:00",
+  "brain_runtime": "phase2",
+  "phase": "phase2",
+  "cases": [
+    {
+      "case_id": "1",
+      "name": "complete supported causal path",
+      "ok": true,
+      "successful_transmission": 1,
+      "blocked_transmission": 0,
+      "blocked_reasons": [],
+      "causal_edges_read": 3,
+      "glm53_causal_context_tokens": 831,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 0,
+      "causal_gaps": 0,
+      "research_questions": 0,
+      "status_counts": {
+        "candidate": 0,
+        "observed": 0,
+        "supported": 14,
+        "established": 0,
+        "challenged": 0,
+        "deprecated": 0
+      }
+    },
+    {
+      "case_id": "2",
+      "name": "candidate edge stops transmission",
+      "ok": true,
+      "successful_transmission": 0,
+      "blocked_transmission": 1,
+      "blocked_reasons": [
+        "unsupported_causal_edge:bced_d225b1e9adff4d3fbd0d470b6a94e8a5:candidate"
+      ],
+      "causal_edges_read": 4,
+      "glm53_causal_context_tokens": 0,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 0,
+      "causal_gaps": 0,
+      "research_questions": 0,
+      "status_counts": {
+        "candidate": 1,
+        "observed": 0,
+        "supported": 3,
+        "established": 0,
+        "challenged": 0,
+        "deprecated": 0
+      }
+    },
+    {
+      "case_id": "3",
+      "name": "new relationship is candidate not established",
+      "ok": true,
+      "successful_transmission": 0,
+      "blocked_transmission": 0,
+      "blocked_reasons": [],
+      "causal_edges_read": 0,
+      "glm53_causal_context_tokens": 0,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 1,
+      "causal_gaps": 0,
+      "research_questions": 0,
+      "status_counts": {
+        "candidate": 1,
+        "observed": 0,
+        "supported": 0,
+        "established": 0,
+        "challenged": 0,
+        "deprecated": 0
+      }
+    },
+    {
+      "case_id": "4",
+      "name": "counter evidence challenges edge, history remains",
+      "ok": true,
+      "successful_transmission": 0,
+      "blocked_transmission": 0,
+      "blocked_reasons": [],
+      "causal_edges_read": 1,
+      "glm53_causal_context_tokens": 0,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 0,
+      "causal_gaps": 0,
+      "research_questions": 0,
+      "status_counts": {
+        "candidate": 0,
+        "observed": 0,
+        "supported": 0,
+        "established": 0,
+        "challenged": 1,
+        "deprecated": 0
+      }
+    },
+    {
+      "case_id": "5",
+      "name": "causal gap creates research question, no jump",
+      "ok": true,
+      "successful_transmission": 0,
+      "blocked_transmission": 0,
+      "blocked_reasons": [],
+      "causal_edges_read": 0,
+      "glm53_causal_context_tokens": 307,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 0,
+      "causal_gaps": 1,
+      "research_questions": 3,
+      "status_counts": {
+        "candidate": 0,
+        "observed": 0,
+        "supported": 1,
+        "established": 0,
+        "challenged": 0,
+        "deprecated": 0
+      }
+    },
+    {
+      "case_id": "6",
+      "name": "driver to financial metric, no base case rewrite",
+      "ok": true,
+      "successful_transmission": 1,
+      "blocked_transmission": 0,
+      "blocked_reasons": [],
+      "causal_edges_read": 3,
+      "glm53_causal_context_tokens": 831,
+      "unsupported_jump": 0,
+      "unexpected_claim_change": 0,
+      "new_edges": 0,
+      "causal_gaps": 0,
+      "research_questions": 0,
+      "status_counts": {
+        "candidate": 0,
+        "observed": 0,
+        "supported": 4,
+        "established": 0,
+        "challenged": 0,
+        "deprecated": 0
+      }
+    }
+  ],
+  "metrics": {
+    "new_causal_edge_count": 1,
+    "status_counts": {
+      "candidate": 2,
+      "observed": 0,
+      "supported": 22,
+      "established": 0,
+      "challenged": 1,
+      "deprecated": 0
+    },
+    "successful_transmission_count": 2,
+    "blocked_transmission_count": 1,
+    "blocked_reasons": [
+      "unsupported_causal_edge:bced_d225b1e9adff4d3fbd0d470b6a94e8a5:candidate"
+    ],
+    "new_causal_gap_count": 1,
+    "research_question_count": 3,
+    "avg_causal_edges_read_per_material_event": 2.75,
+    "glm53_causal_context_tokens": 1969,
+    "unsupported_jump_count": 0,
+    "unexpected_claim_change_count": 0
+  },
+  "checklist": {
+    "causal_edge_in_runtime": true,
+    "graph_reuses_brain_objects": true,
+    "exposure_expressed": true,
+    "glm_can_propose_candidate_edge": true,
+    "new_edge_not_established": true,
+    "unsupported_edge_blocks_transmission": true,
+    "claim_can_trace_causal_path": true,
+    "driver_to_financial_metric": true,
+    "causal_gap_creates_research_question": true,
+    "phase1_targeted_context_holds": true,
+    "no_full_graph_dump": true,
+    "no_unsupported_event_claim_jump": true,
+    "phase0_phase1_regression": true
+  },
+  "regression": {
+    "ok": true,
+    "checks": [
+      {
+        "name": "phase0_case1_shadow",
+        "ok": true,
+        "error": null
+      },
+      {
+        "name": "phase0_case3_candidate_stop",
+        "ok": true,
+        "error": null
+      },
+      {
+        "name": "phase1_targeted_snapshot",
+        "ok": true,
+        "error": null
+      }
+    ]
+  },
+  "all_ok": true
+}

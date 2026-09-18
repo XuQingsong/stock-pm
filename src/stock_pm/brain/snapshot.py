@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -384,11 +385,24 @@ def build_snapshot(
     causal_edges: list[dict[str, Any]] | None = None,
     history: list[dict[str, Any]] | None = None,
     shadows: list[dict[str, Any]] | None = None,
+    causal_paths: list[dict[str, Any]] | None = None,
+    causal_gaps: list[dict[str, Any]] | None = None,
+    financial_links: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     claim_ids = {str(row.get("claim_id")) for row in affected.get("claims") or [] if row.get("claim_id")}
     driver_ids = {str(row.get("driver_id")) for row in affected.get("drivers") or [] if row.get("driver_id")}
     state_ids = {str(row.get("state_id")) for row in affected.get("states") or [] if row.get("state_id")}
-    object_ids = claim_ids | driver_ids | state_ids
+    object_ids = claim_ids | driver_ids | state_ids | {
+        str(row.get("exposure_id") or "") for row in affected.get("exposures") or [] if row.get("exposure_id")
+    }
+    for path in causal_paths or []:
+        object_ids.update(str(node) for node in (path.get("nodes") or []) if str(node))
+        object_ids.update(str(edge_id) for edge_id in (path.get("edge_ids") or []) if str(edge_id))
+        for edge in path.get("edges") or []:
+            if isinstance(edge, dict):
+                object_ids.add(str(edge.get("from_node") or ""))
+                object_ids.add(str(edge.get("to_node") or ""))
+    object_ids.discard("")
     evidence_ids: set[str] = set()
     oppose_ids: set[str] = set()
     for row in (affected.get("states") or []) + (affected.get("drivers") or []) + (affected.get("claims") or []):
@@ -434,6 +448,16 @@ def build_snapshot(
         text = f"{row.get('name') or ''} {row.get('statement') or ''}".lower()
         if any(token in text for token in _tokens(event_blob) if len(token) > 4):
             relevant_shadows.append(row)
+    path_rows = list(causal_paths or [])[:4]
+    gap_rows = list(causal_gaps or [])[:3]
+    finance_rows = list(financial_links or [])[:4]
+    causal_context = {
+        "causal_edges": relevant_edges,
+        "causal_paths": path_rows,
+        "causal_gaps": gap_rows,
+        "exposures": list(affected.get("exposures") or []),
+        "financial_links": finance_rows,
+    }
     return {
         "event": event,
         "states": current_states_only(affected.get("states")),
@@ -443,8 +467,12 @@ def build_snapshot(
         "evidence": support_rows[:16],
         "counter_evidence": counter_rows[:12],
         "causal_edges": relevant_edges,
+        "causal_paths": path_rows,
+        "causal_gaps": gap_rows,
+        "financial_links": finance_rows,
         "history": relevant_history,
         "shadows": relevant_shadows[:6],
         "targeted": True,
         "full_brain": False,
+        "causal_context_tokens": max(0, (len(json.dumps(causal_context, default=str, ensure_ascii=False)) + 3) // 4),
     }
