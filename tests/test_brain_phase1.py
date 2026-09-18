@@ -198,6 +198,8 @@ class FakeBrainCompleter:
                     }
                 )
             body = {"items": items}
+        elif "STEP_ID: independent_critic" in system:
+            body = {"issues": []}
         elif "STEP_ID: news_interpretation" in system:
             claim_id = (claims[0] or {}).get("claim_id") if claims else None
             news0 = news[0] if news else {}

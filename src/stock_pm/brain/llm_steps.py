@@ -92,6 +92,16 @@ def event_transmission(completer: Any, user: dict[str, Any], *, allowed_ids: set
     )
 
 
+def independent_critic(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    return call_step(
+        completer,
+        step="independent_critic",
+        prompt_file="independent_critic.txt",
+        user=user,
+        allowed_ids=allowed_ids,
+    )
+
+
 def news_interpretation(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     return call_step(
         completer,

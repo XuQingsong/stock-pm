@@ -25,6 +25,7 @@ from .claim_integrity import (
     score_candidate,
     strip_unbound_facts,
 )
+from .critic import critic_context, reconcile_critic
 from .drivers import claims_require_drivers, select_driver_universe
 from .events import build_event
 from .exposure import infer_exposure, may_affect_company_claim
@@ -37,6 +38,7 @@ from .llm_steps import (
     compact_evidence_rows,
     core_claims,
     event_transmission,
+    independent_critic,
     news_interpretation,
     normalize_claim,
     normalize_news_item,
@@ -1468,6 +1470,30 @@ def run_brain(
     ):
         financial_impacts.append(brain.insert_financial_impact({**item, "ticker": symbol, "run_id": run_id}))
 
+    critic_result = {"issues": [], "unresolved": [], "inconsistent": False, "status": "ok", "transmissions": transmissions}
+    payload_critic, audit_critic = independent_critic(
+        reason_llm,
+        critic_context(
+            states=brain.list_states(symbol, run_id=run_id),
+            drivers=persisted_drivers,
+            claims=persisted_claims,
+            events=persisted_events,
+            transmissions=transmissions,
+            financial_impacts=financial_impacts,
+            evidence=compact_evidence_rows(llm_evidence, limit=24),
+        ),
+        allowed_ids=allowed | claim_ids | {str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")},
+    )
+    llm_calls.append(audit_critic)
+    if payload_critic:
+        critic_result = reconcile_critic(list(payload_critic.get("issues") or []), transmissions=transmissions)
+        transmissions = critic_result.get("transmissions") or transmissions
+        if critic_result.get("inconsistent"):
+            integrity_violations.append({"code": "critic_high_severity_unresolved", "issues": critic_result.get("unresolved")})
+    else:
+        fallbacks.append("independent_critic")
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": audit_critic.get("error") or "Independent critic did not return JSON."})
+
     pm_claims = []
     for row in persisted_claims:
         stored = brain.get_claim(row["claim_id"]) or {}
@@ -1560,8 +1586,11 @@ def run_brain(
     status = "success" if llm_ok and persisted_claims else ("partial" if header.get("price") or evidence else "failed")
     if quality["axes"]["llm_reasoning"] == "Poor" and not persisted_claims:
         status = "partial" if (hits or evidence or (header.get("growth") or {}).get("revenue_ttm", {}).get("value") is not None) else "failed"
-    if synthesis.get("status") == "inconsistent":
+    if synthesis.get("status") == "inconsistent" or critic_result.get("inconsistent"):
         status = "partial"
+        if critic_result.get("inconsistent"):
+            synthesis["status"] = "inconsistent"
+            synthesis["critic_blocked"] = True
 
     audit = {
         "ticker": symbol,
@@ -1654,5 +1683,6 @@ def run_brain(
         "exposures": persisted_exposures,
         "transmissions": transmissions,
         "financial_impacts": financial_impacts,
+        "critic": critic_result,
         "run_mode": run_mode,
     }

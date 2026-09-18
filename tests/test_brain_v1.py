@@ -22,6 +22,7 @@ from stock_pm.brain.knowledge import classify_information
 from stock_pm.brain.state_layer import make_state_key, normalize_state
 from stock_pm.brain.financial_bridge import normalize_financial_impact
 from stock_pm.brain.scenario import apply_scenario_policy, qualifies_for_base
+from stock_pm.brain.critic import reconcile_critic
 from stock_pm.brain.transmission import validate_transmission
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
@@ -341,5 +342,39 @@ def test_financial_impact_direction_without_magnitude() -> None:
     )
     assert grounded["direction_only"] is False
     assert grounded["magnitude_range"] == "100-200bps"
+
+
+def test_critic_blocks_unsupported_base_change() -> None:
+    result = reconcile_critic(
+        [
+            {
+                "issue_type": "wrong_base_case_update",
+                "severity": "high",
+                "affected_object": "event:bev_1",
+                "reasoning": "A single news item is not persistent operating evidence.",
+                "required_fix": "Keep scenario_only.",
+            }
+        ],
+        transmissions=[{"event_id": "bev_1", "base_case_change": True, "scenario_only": False, "affected_claims": ["bclm_1"]}],
+    )
+    assert result["transmissions"][0]["base_case_change"] is False
+    assert result["transmissions"][0]["scenario_only"] is True
+    assert result["issues"][0]["resolved"] is True
+    high = reconcile_critic(
+        [
+            {
+                "issue_type": "unsupported_leap",
+                "severity": "high",
+                "affected_object": "claim:bclm_1",
+                "reasoning": "Event jumped to claim without exposure evidence.",
+                "required_fix": "Truncate chain.",
+            }
+        ],
+        transmissions=[{"event_id": "bev_1", "affected_claims": ["bclm_1"], "truncated": False}],
+    )
+    assert high["inconsistent"] is True
+    assert high["status"] == "inconsistent"
+    assert high["transmissions"][0]["affected_claims"] == []
+
 
 
