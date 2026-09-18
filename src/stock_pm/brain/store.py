@@ -244,6 +244,11 @@ class BrainStore:
             "evidence_ids": list(row.get("evidence_ids") or []),
             "source": row.get("source"),
             "run_id": row.get("run_id"),
+            "state_key": row.get("state_key"),
+            "subject": row.get("subject"),
+            "qualitative_state": row.get("qualitative_state") or "",
+            "current_value": row.get("current_value"),
+            "related_entities": list(row.get("related_entities") or []),
             "created_at": row.get("created_at") or _now(),
             "updated_at": row.get("updated_at") or _now(),
         }
@@ -254,11 +259,13 @@ class BrainStore:
             """
             INSERT INTO brain_states (
                 state_id, ticker, state_type, name, statement, direction, confidence,
-                effective_at, expires_at, evidence_ids, source, run_id, created_at, updated_at
+                effective_at, expires_at, evidence_ids, source, run_id, state_key, subject,
+                qualitative_state, current_value, related_entities, created_at, updated_at
             ) VALUES (
                 %(state_id)s, %(ticker)s, %(state_type)s, %(name)s, %(statement)s, %(direction)s,
                 %(confidence)s, %(effective_at)s, %(expires_at)s, %(evidence_ids)s, %(source)s,
-                %(run_id)s, %(created_at)s, %(updated_at)s
+                %(run_id)s, %(state_key)s, %(subject)s, %(qualitative_state)s, %(current_value)s,
+                %(related_entities)s, %(created_at)s, %(updated_at)s
             ) RETURNING *
             """,
             stored,
@@ -1005,4 +1012,206 @@ class BrainStore:
             updated["match_action"] = "update_existing"
             return updated
         return self.insert_driver({**row, "match_action": row.get("match_action") or "create_new"})
+
+    def get_state_by_key(self, ticker: str, state_key: str) -> dict[str, Any] | None:
+        if not state_key:
+            return None
+        if not self._pg():
+            for row in self.states.values():
+                if row.get("ticker") == ticker.upper() and row.get("state_key") == state_key:
+                    return _copy(row)
+            return None
+        return self._one(
+            "SELECT * FROM brain_states WHERE ticker = %(ticker)s AND state_key = %(state_key)s LIMIT 1",
+            {"ticker": ticker.upper(), "state_key": state_key},
+        )
+
+    def upsert_state(self, row: dict[str, Any]) -> dict[str, Any]:
+        existing = None
+        if row.get("state_id"):
+            existing = self._one("SELECT * FROM brain_states WHERE state_id = %(state_id)s", {"state_id": row["state_id"]}) if self._pg() else _copy(self.states.get(str(row["state_id"])))
+        if existing is None and row.get("state_key"):
+            existing = self.get_state_by_key(str(row.get("ticker") or ""), str(row.get("state_key")))
+        if existing:
+            merged = {**existing, **row, "state_id": existing["state_id"], "updated_at": _now()}
+            if not self._pg():
+                self.states[existing["state_id"]] = merged
+                return _copy(merged)
+            return self.insert_state({**merged, "state_id": existing["state_id"]}) if False else self._update_state(existing["state_id"], merged)
+        return self.insert_state(row)
+
+    def _update_state(self, state_id: str, row: dict[str, Any]) -> dict[str, Any]:
+        payload = {
+            "state_id": state_id,
+            "name": row.get("name"),
+            "statement": row.get("statement"),
+            "direction": row.get("direction"),
+            "confidence": row.get("confidence"),
+            "evidence_ids": row.get("evidence_ids"),
+            "qualitative_state": row.get("qualitative_state"),
+            "current_value": row.get("current_value"),
+            "related_entities": row.get("related_entities"),
+            "updated_at": _now(),
+        }
+        out = self._one(
+            """
+            UPDATE brain_states SET
+                name = COALESCE(%(name)s, name),
+                statement = COALESCE(%(statement)s, statement),
+                direction = COALESCE(%(direction)s, direction),
+                confidence = COALESCE(%(confidence)s, confidence),
+                evidence_ids = COALESCE(%(evidence_ids)s, evidence_ids),
+                qualitative_state = COALESCE(%(qualitative_state)s, qualitative_state),
+                current_value = COALESCE(%(current_value)s, current_value),
+                related_entities = COALESCE(%(related_entities)s, related_entities),
+                updated_at = %(updated_at)s
+            WHERE state_id = %(state_id)s
+            RETURNING *
+            """,
+            payload,
+        )
+        return out or {}
+
+    def insert_event(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "event_id": row.get("event_id") or new_id("bev"),
+            "ticker": str(row["ticker"]).upper(),
+            "event_type": row.get("event_type") or "other",
+            "subject": row.get("subject") or "",
+            "title": row.get("title") or "",
+            "event_date": row.get("event_date"),
+            "entities": list(row.get("entities") or []),
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "confidence": row.get("confidence"),
+            "materiality": row.get("materiality") or "context",
+            "novelty": row.get("novelty"),
+            "source_quality": row.get("source_quality"),
+            "fact_reliability": row.get("fact_reliability"),
+            "decision_targets": list(row.get("decision_targets") or []),
+            "affected_states": list(row.get("affected_states") or []),
+            "affected_drivers": list(row.get("affected_drivers") or []),
+            "affected_claims": list(row.get("affected_claims") or []),
+            "transmission": dict(row.get("transmission") or {}),
+            "financial_impact": dict(row.get("financial_impact") or {}),
+            "scenario_impact": dict(row.get("scenario_impact") or {}),
+            "fingerprint": row.get("fingerprint"),
+            "url": row.get("url"),
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "duplicate": bool(row.get("duplicate")),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.events[stored["event_id"]] = stored
+            return _copy(stored)
+        payload = {
+            **stored,
+            "transmission": _jsonb(stored["transmission"]),
+            "financial_impact": _jsonb(stored["financial_impact"]),
+            "scenario_impact": _jsonb(stored["scenario_impact"]),
+        }
+        payload.pop("duplicate", None)
+        out = self._one(
+            """
+            INSERT INTO brain_events (
+                event_id, ticker, event_type, subject, title, event_date, entities, evidence_ids,
+                confidence, materiality, novelty, source_quality, fact_reliability, decision_targets,
+                affected_states, affected_drivers, affected_claims, transmission, financial_impact,
+                scenario_impact, fingerprint, url, reason, run_id, created_at
+            ) VALUES (
+                %(event_id)s, %(ticker)s, %(event_type)s, %(subject)s, %(title)s, %(event_date)s,
+                %(entities)s, %(evidence_ids)s, %(confidence)s, %(materiality)s, %(novelty)s,
+                %(source_quality)s, %(fact_reliability)s, %(decision_targets)s, %(affected_states)s,
+                %(affected_drivers)s, %(affected_claims)s, %(transmission)s, %(financial_impact)s,
+                %(scenario_impact)s, %(fingerprint)s, %(url)s, %(reason)s, %(run_id)s, %(created_at)s
+            ) RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
+
+    def list_events(self, ticker: str, *, run_id: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.events.values() if row.get("ticker") == symbol]
+            if run_id:
+                rows = [row for row in rows if row.get("run_id") == run_id]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_events WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if run_id:
+            query += " AND run_id = %(run_id)s"
+            params["run_id"] = run_id
+        query += " ORDER BY created_at DESC"
+        return self._execute(query, params)
+
+    def get_event_by_fingerprint(self, ticker: str, fingerprint: str) -> dict[str, Any] | None:
+        if not fingerprint:
+            return None
+        if not self._pg():
+            for row in self.events.values():
+                if row.get("ticker") == ticker.upper() and row.get("fingerprint") == fingerprint:
+                    return _copy(row)
+            return None
+        return self._one(
+            "SELECT * FROM brain_events WHERE ticker = %(ticker)s AND fingerprint = %(fingerprint)s LIMIT 1",
+            {"ticker": ticker.upper(), "fingerprint": fingerprint},
+        )
+
+    def insert_exposure(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "exposure_id": row.get("exposure_id") or new_id("bexp"),
+            "ticker": str(row["ticker"]).upper(),
+            "state_or_event": row.get("state_or_event"),
+            "event_id": row.get("event_id"),
+            "state_id": row.get("state_id"),
+            "exposure_type": row.get("exposure_type") or "financial",
+            "direction": row.get("direction"),
+            "magnitude": row.get("magnitude"),
+            "direct_or_indirect": row.get("direct_or_indirect"),
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "uncertainty": row.get("uncertainty"),
+            "related_only": bool(row.get("related_only")),
+            "can_affect_claim": bool(row.get("can_affect_claim")),
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.exposures[stored["exposure_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_exposures (
+                exposure_id, ticker, state_or_event, event_id, state_id, exposure_type, direction,
+                magnitude, direct_or_indirect, evidence_ids, uncertainty, related_only,
+                can_affect_claim, reason, run_id, created_at
+            ) VALUES (
+                %(exposure_id)s, %(ticker)s, %(state_or_event)s, %(event_id)s, %(state_id)s,
+                %(exposure_type)s, %(direction)s, %(magnitude)s, %(direct_or_indirect)s,
+                %(evidence_ids)s, %(uncertainty)s, %(related_only)s, %(can_affect_claim)s,
+                %(reason)s, %(run_id)s, %(created_at)s
+            ) RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def list_exposures(self, ticker: str, *, run_id: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.exposures.values() if row.get("ticker") == symbol]
+            if run_id:
+                rows = [row for row in rows if row.get("run_id") == run_id]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_exposures WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if run_id:
+            query += " AND run_id = %(run_id)s"
+            params["run_id"] = run_id
+        query += " ORDER BY created_at DESC"
+        return self._execute(query, params)
+
 

@@ -12,6 +12,7 @@ from stock_pm.research.llm_reason import compact_pack, compact_text
 from .claim_integrity import (
     COUNTER_MARKERS,
     check_pm_consistency,
+    classify_source_relationship,
     default_counter_queries,
     derive_claim_identity,
     freeze_evidence_set,
@@ -25,6 +26,8 @@ from .claim_integrity import (
     strip_unbound_facts,
 )
 from .drivers import claims_require_drivers, select_driver_universe
+from .events import build_event
+from .exposure import infer_exposure, may_affect_company_claim
 from .header import company_header
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -41,6 +44,7 @@ from .llm_steps import (
 from .news import classify_news_hits, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
 from .routing import resolve_brain_completers
+from .state_layer import match_existing_state, normalize_state
 from .store import BrainStore
 from .types import (
     EXA_SEARCH_BUDGET,
@@ -698,19 +702,18 @@ def run_brain(
             if not isinstance(state, dict) or not state.get("name"):
                 continue
             eids = [eid for eid in (state.get("evidence_ids") or []) if str(eid) in allowed]
-            brain.insert_state(
-                {
-                    "ticker": symbol,
-                    "state_type": state.get("state_type") or "company",
-                    "name": compact_text(state.get("name"), 80),
-                    "statement": compact_text(state.get("statement"), 400),
-                    "direction": state.get("direction"),
-                    "confidence": state.get("confidence") if state.get("confidence") in {"high", "medium", "low"} else "low",
-                    "evidence_ids": eids,
-                    "source": "llm_company_understanding",
-                    "run_id": run_id,
-                }
+            item = normalize_state(
+                {**state, "evidence_ids": eids, "source": "llm_company_understanding"},
+                ticker=symbol,
+                allowed_ids=allowed,
+                existing=match_existing_state(
+                    {"state_key": None, "subject": state.get("name"), "state_type": state.get("state_type") or "company", "name": state.get("name")},
+                    brain.list_states(symbol),
+                ),
             )
+            if not item:
+                continue
+            brain.upsert_state({**item, "run_id": run_id, "ticker": symbol, "source": "llm_company_understanding"})
         for question in payload_a.get("candidate_questions") or []:
             text = compact_text(question, 240)
             if not text:
@@ -1037,6 +1040,8 @@ def run_brain(
         allowed = set(frozen.get("reasoning_allowed_ids") or [])
         evidence_by_id = {str(row.get("id")): row for row in (frozen.get("rows") or []) if row.get("id")}
 
+    persisted_events: list[dict[str, Any]] = []
+    persisted_exposures: list[dict[str, Any]] = []
     news_payload = []
     for idx, hit in enumerate(hits[:24]):
         news_payload.append(
@@ -1080,12 +1085,48 @@ def run_brain(
             changed = False
             facts = [str(row.get("fact") or "") for row in (frozen.get("rows") or [])]
             duplicate = news_is_duplicate(hit, facts + [str(item.get("new_fact") or "")])
+            event_row = build_event(
+                {
+                    **hit,
+                    **item,
+                    "evidence_id": evidence_id,
+                    "subject": item.get("affected_state") or hit.get("title"),
+                    "ticker": symbol,
+                },
+                ticker=symbol,
+                related_entities=related_entities,
+                drivers=persisted_drivers,
+                claims=persisted_claims,
+                existing=persisted_events + brain.list_events(symbol),
+            )
+            exposure_row = None
+            if event_row and not event_row.get("duplicate"):
+                stored_event = brain.insert_event({**event_row, "run_id": run_id, "ticker": symbol})
+                persisted_events.append(stored_event)
+                evidence_rows = [evidence_by_id[evidence_id]] if evidence_id and evidence_by_id.get(evidence_id) else []
+                origin = "issuer_news"
+                if evidence_rows and classify_source_relationship(evidence_rows[0], ticker=symbol, related_entities=related_entities) == "related_entity_primary":
+                    origin = "related_entity"
+                exposure_row = infer_exposure(
+                    ticker=symbol,
+                    state_or_event={**stored_event, "direction": item.get("impact")},
+                    related_entities=related_entities,
+                    evidence_rows=evidence_rows,
+                    origin=origin,
+                )
+                if exposure_row:
+                    stored_exp = brain.insert_exposure({**exposure_row, "run_id": run_id, "event_id": stored_event["event_id"], "ticker": symbol})
+                    persisted_exposures.append(stored_exp)
+                    exposure_row = stored_exp
+            elif event_row and event_row.get("duplicate"):
+                persisted_events.append(event_row)
             if (
                 item.get("layer") == "material"
                 and item.get("affected_claim_id")
                 and evidence_id
                 and evidence_id in allowed
                 and not duplicate
+                and may_affect_company_claim(exposure_row)
             ):
                 target = next((row for row in persisted_claims if row.get("claim_id") == item.get("affected_claim_id")), None)
                 if target is not None:
@@ -1536,5 +1577,7 @@ def run_brain(
         "external_intelligence": intel or {},
         "drivers": persisted_drivers,
         "rejected_drivers": rejected_drivers,
+        "events": persisted_events,
+        "exposures": persisted_exposures,
         "run_mode": run_mode,
     }

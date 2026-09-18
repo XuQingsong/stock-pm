@@ -16,6 +16,10 @@ from stock_pm.brain.routing import (
     layer_settings,
     resolve_brain_completers,
 )
+from stock_pm.brain.events import build_event
+from stock_pm.brain.exposure import infer_exposure, may_affect_company_claim, related_entity_cannot_prove_issuer
+from stock_pm.brain.knowledge import classify_information
+from stock_pm.brain.state_layer import make_state_key, normalize_state
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
 from stock_pm.brain.pipeline import run_brain
@@ -145,3 +149,91 @@ def test_brain_run_persists_drivers_before_claims(monkeypatch) -> None:
     assert result["claims"][0].get("related_driver_ids")
     assert result["claims"][0]["related_driver_ids"][0] == result["drivers"][0]["driver_id"]
     assert store.list_drivers("ZZZT")
+
+
+def test_event_requires_exposure_before_claim() -> None:
+    event = {
+        "event_id": "bev_meta",
+        "title": "Meta AI capex rises",
+        "subject": "Meta capex",
+        "entities": ["Meta"],
+        "event_type": "capex",
+        "materiality": "material",
+    }
+    exposure = infer_exposure(
+        ticker="AVGO",
+        state_or_event=event,
+        related_entities=[{"name": "Meta", "ticker": "META"}],
+        origin="related_entity",
+    )
+    assert exposure is not None
+    assert exposure["related_only"] is True
+    assert may_affect_company_claim(exposure) is False
+    issuer_news = infer_exposure(
+        ticker="AVGO",
+        state_or_event={"title": "Broadcom custom silicon demand update", "subject": "AVGO demand"},
+        origin="issuer_news",
+    )
+    assert may_affect_company_claim(issuer_news) is True
+    assert may_affect_company_claim(None) is False
+
+
+def test_related_entity_cannot_directly_prove_issuer_fact() -> None:
+    evidence = {
+        "source_url": "https://www.meta.com/investors/10q",
+        "source_type": "official_document",
+        "source": "meta.com",
+        "fact": "Meta increased AI capex.",
+        "raw_reference": {"query_type": "related_entity", "entity": "Meta"},
+    }
+    assert related_entity_cannot_prove_issuer(
+        evidence,
+        ticker="AVGO",
+        related_entities=[{"name": "Meta", "domain": "meta.com"}],
+    )
+    issuer = {
+        "source_url": "https://www.sec.gov/Archives/avgo-10q",
+        "source": "sec.gov",
+        "source_type": "sec_filing",
+        "fact": "Broadcom reported semiconductor revenue.",
+    }
+    assert related_entity_cannot_prove_issuer(issuer, ticker="AVGO") is False
+
+
+def test_sec_source_is_not_automatically_material() -> None:
+    row = {
+        "source_url": "https://www.sec.gov/Archives/apple-8k",
+        "source_type": "sec_filing",
+        "source": "sec.gov",
+        "fact": "Apple furnished an 8-K cover page with no operating update.",
+        "title": "Form 8-K",
+    }
+    classified = classify_information(row, ticker="AAPL")
+    assert classified["source_quality"] == "issuer_primary"
+    assert classified["layer"] in {"context", "noise"}
+
+
+def test_state_identity_is_stable() -> None:
+    first = normalize_state(
+        {"name": "Hyperscaler AI capex accelerating", "state_type": "industry", "statement": "Capex is accelerating.", "evidence_ids": ["rev_1"]},
+        ticker="AVGO",
+        allowed_ids={"rev_1"},
+    )
+    second = normalize_state(
+        {"name": "Hyperscaler AI capex accelerating", "state_type": "industry", "statement": "Still accelerating.", "evidence_ids": ["rev_1"]},
+        ticker="AVGO",
+        allowed_ids={"rev_1"},
+        existing=first,
+    )
+    assert first and second
+    assert first["state_key"] == second["state_key"] == make_state_key("AVGO", "industry", "Hyperscaler AI capex accelerating")
+    assert first["state_id"] == second["state_id"]
+
+
+def test_duplicate_event_fingerprint() -> None:
+    raw = {"title": "Demand update", "published_at": "2026-09-16", "url": "https://www.reuters.com/test-demand", "layer": "material"}
+    first = build_event(raw, ticker="ZZZT")
+    second = build_event(raw, ticker="ZZZT", existing=[first])
+    assert first and first["duplicate"] is False
+    assert second and second["duplicate"] is True
+
