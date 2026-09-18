@@ -348,10 +348,10 @@ def run_benchmark(
             "base_url_example": "https://dashscope.aliyuncs.com/compatible-mode/v1",
             "model_ids": {
                 "qwen3.8-max": "qwen3.8-max",
-                "glm-5.3": "ZHIPU/GLM-5.3",
+                "glm-5.3": "glm-5.3",
                 "kimi-k3": "kimi-k3",
             },
-            "thinking": "ZHIPU/GLM-5.3 and kimi-k3 always think; enable_thinking=false is rejected.",
+            "thinking": "glm-5.3 and kimi-k3 keep native thinking; do not send enable_thinking=false.",
         },
         "production_model_unchanged": True,
         "searched": False,

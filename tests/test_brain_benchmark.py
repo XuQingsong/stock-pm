@@ -221,7 +221,8 @@ def test_slug_and_profiles_keep_production_deepseek(monkeypatch) -> None:
 
 
 def test_profiles_three_bailian_models() -> None:
-    assert canonical_model_id("glm-5.3") == "ZHIPU/GLM-5.3"
+    assert canonical_model_id("glm-5.3") == "glm-5.3"
+    assert canonical_model_id("ZHIPU/GLM-5.3") == "glm-5.3"
     settings = Settings(
         llm_api_key="k",
         llm_model="deepseek-chat",
@@ -235,7 +236,7 @@ def test_profiles_three_bailian_models() -> None:
     rows = model_profiles(settings)
     assert rows[0]["model"] == "deepseek-chat"
     extra = rows[1:]
-    assert [row["model"] for row in extra] == ["qwen3.8-max", "ZHIPU/GLM-5.3", "kimi-k3"]
+    assert [row["model"] for row in extra] == ["qwen3.8-max", "glm-5.3", "kimi-k3"]
     assert extra[0]["file_aliases"][-1] == "strong" or "strong" in extra[0]["file_aliases"]
     assert extra[0]["settings"].llm_model == "qwen3.8-max"
     assert extra[0]["settings"].llm_api_key == "dash-key"

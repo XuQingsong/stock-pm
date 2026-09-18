@@ -14,15 +14,15 @@ from stock_pm.research.agents.base import SettingsCompleter
 BAILIAN_COMPAT_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
 # Short names the user may type -> documented Bailian model IDs.
-# glm-5.3 is published as ZHIPU/GLM-5.3 (third-party). kimi-k3 is the Alibaba-hosted ID;
-# kimi/kimi-k3 is the Moonshot-supplied twin and is left unchanged if requested.
+# Alibaba-hosted glm-5.3 is the working ID. ZHIPU/GLM-5.3 is third-party and
+# requires a separate activation; map it to glm-5.3 unless already hosted.
 MODEL_ID_ALIASES = {
-    "glm-5.3": "ZHIPU/GLM-5.3",
-    "glm5.3": "ZHIPU/GLM-5.3",
-    "zhipu-glm-5.3": "ZHIPU/GLM-5.3",
+    "glm5.3": "glm-5.3",
+    "zhipu-glm-5.3": "glm-5.3",
+    "zhipu/glm-5.3": "glm-5.3",
 }
 
-DEFAULT_BAILIAN_MODELS = ("qwen3.8-max", "ZHIPU/GLM-5.3", "kimi-k3")
+DEFAULT_BAILIAN_MODELS = ("qwen3.8-max", "glm-5.3", "kimi-k3")
 
 
 def slug_model(name: str) -> str:
@@ -71,8 +71,8 @@ def _file_aliases(label: str, model: str, *, also_strong: bool) -> list[str]:
     slug = slug_model(model)
     if slug not in aliases:
         aliases.append(slug)
-    if model == "ZHIPU/GLM-5.3" and "glm-5.3" not in aliases:
-        aliases.append("glm-5.3")
+    if slug == "glm-5.3" and "zhipu-glm-5.3" not in aliases:
+        aliases.append("zhipu-glm-5.3")
     if also_strong and "strong" not in aliases:
         aliases.append("strong")
     return aliases
