@@ -1265,5 +1265,59 @@ class BrainStore:
             params["run_id"] = run_id
         return self._execute(query, params)
 
+    def insert_history(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "history_id": row.get("history_id") or new_id("bhis"),
+            "ticker": str(row["ticker"]).upper(),
+            "object_type": row.get("object_type") or "",
+            "object_id": row.get("object_id") or "",
+            "from_payload": dict(row.get("from_payload") or {}),
+            "to_payload": dict(row.get("to_payload") or {}),
+            "reason": row.get("reason") or "",
+            "event_id": row.get("event_id"),
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+        }
+        if not self._pg():
+            self.history[stored["history_id"]] = stored
+            return _copy(stored)
+        payload = {**stored, "from_payload": _jsonb(stored["from_payload"]), "to_payload": _jsonb(stored["to_payload"])}
+        out = self._one(
+            """
+            INSERT INTO brain_history (
+                history_id, ticker, object_type, object_id, from_payload, to_payload,
+                reason, event_id, run_id, created_at
+            ) VALUES (
+                %(history_id)s, %(ticker)s, %(object_type)s, %(object_id)s, %(from_payload)s,
+                %(to_payload)s, %(reason)s, %(event_id)s, %(run_id)s, %(created_at)s
+            ) RETURNING *
+            """,
+            payload,
+        )
+        assert out is not None
+        return out
+
+    def list_history(self, ticker: str, *, object_type: str | None = None, object_id: str | None = None) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.history.values() if row.get("ticker") == symbol]
+            if object_type:
+                rows = [row for row in rows if row.get("object_type") == object_type]
+            if object_id:
+                rows = [row for row in rows if row.get("object_id") == object_id]
+            rows.sort(key=lambda item: str(item.get("created_at") or ""))
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_history WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if object_type:
+            query += " AND object_type = %(object_type)s"
+            params["object_type"] = object_type
+        if object_id:
+            query += " AND object_id = %(object_id)s"
+            params["object_id"] = object_id
+        query += " ORDER BY created_at"
+        return self._execute(query, params)
+
+
 
 

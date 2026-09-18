@@ -23,6 +23,8 @@ from stock_pm.brain.state_layer import make_state_key, normalize_state
 from stock_pm.brain.financial_bridge import normalize_financial_impact
 from stock_pm.brain.scenario import apply_scenario_policy, qualifies_for_base
 from stock_pm.brain.critic import reconcile_critic
+from stock_pm.brain.history import why_thesis_changed
+from stock_pm.brain.incremental import affected_scope, should_full_review
 from stock_pm.brain.transmission import validate_transmission
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
@@ -375,6 +377,79 @@ def test_critic_blocks_unsupported_base_change() -> None:
     assert high["inconsistent"] is True
     assert high["status"] == "inconsistent"
     assert high["transmissions"][0]["affected_claims"] == []
+
+
+def test_incremental_run_only_updates_affected_objects() -> None:
+    assert should_full_review(prior_drivers=[], prior_claims=[], mode="full") is True
+    assert should_full_review(prior_drivers=[{"driver_id": "d1"}], prior_claims=[{"claim_id": "c1"}], mode="incremental") is False
+    scope = affected_scope(
+        events=[{"materiality": "material", "affected_claims": ["c1"], "affected_drivers": ["d1"]}],
+        transmissions=[{"affected_claims": ["c1"], "affected_drivers": ["d1"]}],
+        drivers=[{"driver_id": "d1"}, {"driver_id": "d2"}],
+        claims=[{"claim_id": "c1"}, {"claim_id": "c2"}],
+    )
+    assert scope["touched"] is True
+    assert scope["claims"] == ["c1"]
+    assert scope["drivers"] == ["d1"]
+    quiet = affected_scope(events=[], transmissions=[], drivers=[{"driver_id": "d1"}], claims=[{"claim_id": "c1"}])
+    assert quiet["touched"] is False
+
+
+def test_history_reconstructs_why_thesis_changed() -> None:
+    store = BrainStore()
+    store.insert_history(
+        {
+            "ticker": "AVGO",
+            "object_type": "event_impact",
+            "object_id": "bev_1",
+            "from_payload": {},
+            "to_payload": {"affected_claims": ["bclm_1"], "scenario_only": True},
+            "reason": "Meta capex mapped through exposure to duration driver",
+            "event_id": "bev_1",
+        }
+    )
+    store.insert_history(
+        {
+            "ticker": "AVGO",
+            "object_type": "driver",
+            "object_id": "bdrv_1",
+            "from_payload": {"current_state": "duration unproven"},
+            "to_payload": {"current_state": "duration still the binding variable"},
+            "reason": "event_transmission",
+            "event_id": "bev_1",
+        }
+    )
+    store.insert_history(
+        {
+            "ticker": "AVGO",
+            "object_type": "claim",
+            "object_id": "bclm_1",
+            "from_payload": {"status": "emerging"},
+            "to_payload": {"status": "partially_supported"},
+            "reason": "material claim update",
+            "event_id": "bev_1",
+        }
+    )
+    timeline = why_thesis_changed(store.list_history("AVGO"))
+    assert [row["object_type"] for row in timeline] == ["event_impact", "driver", "claim"]
+    assert "duration" in str(timeline[1]["to"])
+
+
+def test_incremental_pipeline_reuses_drivers(monkeypatch) -> None:
+    svc = _service()
+    svc.ensure_issuer("ZZZT", legal_name="Test Co")
+    _seed_evidence(svc)
+    monkeypatch.setattr("stock_pm.brain.pipeline.search_recent_news", lambda *args, **kwargs: [])
+    store = BrainStore()
+    first = run_brain(svc, "ZZZT", store=store, completer=svc.completer, fetch_live=False, mode="full")
+    driver_ids = {row["driver_id"] for row in first["drivers"]}
+    claim_ids = {row["claim_id"] for row in first["claims"]}
+    second = run_brain(svc, "ZZZT", store=store, completer=svc.completer, fetch_live=False, mode="incremental")
+    assert second["run_mode"] == "incremental"
+    assert second["full_review"] is False
+    assert {row["driver_id"] for row in second["drivers"]} == driver_ids
+    assert {row["claim_id"] for row in second["claims"]} == claim_ids
+
 
 
 

@@ -30,7 +30,9 @@ from .drivers import claims_require_drivers, select_driver_universe
 from .events import build_event
 from .exposure import infer_exposure, may_affect_company_claim
 from .financial_bridge import impacts_from_objects
+from .history import history_row
 from .header import company_header
+from .incremental import affected_scope, should_full_review
 from .integrity import assess_financial_integrity
 from .llm_steps import (
     claim_reasoning,
@@ -740,9 +742,14 @@ def run_brain(
     persisted_drivers: list[dict[str, Any]] = []
     rejected_drivers: list[dict[str, Any]] = []
     existing_drivers = brain.list_drivers(symbol)
+    prior_claims_all = brain.list_active_claims(symbol)
+    rebuild = should_full_review(prior_drivers=existing_drivers, prior_claims=prior_claims_all, mode=run_mode)
     payload_drivers = None
     audit_drivers = {"step": "value_drivers", "llm_called": False, "llm_status": "skipped"}
-    if not integrity.get("block_core_claims"):
+    if not rebuild:
+        persisted_drivers = list(existing_drivers)
+        llm_calls.append(audit_drivers)
+    elif not integrity.get("block_core_claims"):
         payload_drivers, audit_drivers = value_driver_universe(
             reason_llm,
             {
@@ -776,8 +783,28 @@ def run_brain(
             )
             rejected_drivers.extend(payload_drivers.get("rejected") or [])
             for item in selected:
+                prior_row = next(
+                    (
+                        row
+                        for row in existing_drivers
+                        if row.get("canonical_key") == item.get("canonical_key") or row.get("driver_id") == item.get("driver_id")
+                    ),
+                    None,
+                )
                 stored_driver = brain.upsert_driver({**item, "run_id": run_id, "ticker": symbol})
                 persisted_drivers.append(stored_driver)
+                if prior_row:
+                    brain.insert_history(
+                        history_row(
+                            ticker=symbol,
+                            object_type="driver",
+                            object_id=str(stored_driver.get("driver_id")),
+                            from_payload={"current_state": prior_row.get("current_state"), "direction": prior_row.get("direction")},
+                            to_payload={"current_state": stored_driver.get("current_state"), "direction": stored_driver.get("direction")},
+                            reason="driver_universe_update",
+                            run_id=run_id,
+                        )
+                    )
         else:
             fallbacks.append("value_drivers")
             warnings.append(
@@ -802,6 +829,8 @@ def run_brain(
         warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "Data Coverage", "reason": "Core Claim Generation blocked: financial_input_inconsistent"})
         audit_b["error"] = "financial_input_inconsistent"
         audit_b["fallback_used"] = True
+        llm_calls.append(audit_b)
+    elif not rebuild:
         llm_calls.append(audit_b)
     elif not persisted_drivers:
         fallbacks.append("core_claims")
@@ -868,6 +897,13 @@ def run_brain(
     claim_ids: set[str] = set()
     selected_ids: set[str] = set()
     existing_active = brain.list_active_claims(symbol)
+    if not rebuild:
+        for prior in existing_active:
+            if not prior.get("is_core"):
+                continue
+            persisted_claims.append(prior)
+            selected_ids.add(str(prior["claim_id"]))
+            claim_ids.add(str(prior["claim_id"]))
     for item in core:
         match = match_existing_claim(item, existing_active)
         action = match.get("action") or "create_new"
@@ -1252,6 +1288,18 @@ def run_brain(
             transmissions[idx] = apply_scenario_policy(row, decision)
             transmissions[idx]["scenario_policy"] = decision
             event["transmission"] = transmissions[idx]
+            brain.insert_history(
+                history_row(
+                    ticker=symbol,
+                    object_type="event_impact",
+                    object_id=str(event.get("event_id") or ""),
+                    from_payload={},
+                    to_payload={"scenario_only": transmissions[idx].get("scenario_only"), "base_case_change": transmissions[idx].get("base_case_change"), "affected_claims": transmissions[idx].get("affected_claims") or []},
+                    reason="event_transmission",
+                    event_id=str(event.get("event_id") or "") or None,
+                    run_id=run_id,
+                )
+            )
     elif persisted_events:
         llm_calls.append({"step": "event_transmission", "llm_called": False, "llm_status": "skipped"})
 
@@ -1313,7 +1361,20 @@ def run_brain(
         allowed = set(frozen.get("reasoning_allowed_ids") or [])
         evidence_by_id = {str(row.get("id")): row for row in (frozen.get("rows") or []) if row.get("id")}
 
-    for claim in list(persisted_claims):
+    claims_for_reasoning = list(persisted_claims)
+    if not rebuild:
+        scope = affected_scope(
+            events=persisted_events,
+            transmissions=transmissions,
+            drivers=persisted_drivers,
+            claims=persisted_claims,
+        )
+        if scope.get("touched"):
+            wanted = set(scope.get("claims") or [])
+            filtered = [row for row in persisted_claims if str(row.get("claim_id")) in wanted]
+            if filtered:
+                claims_for_reasoning = filtered
+    for claim in claims_for_reasoning:
         bound_ids = set(claim.get("supporting_evidence_ids") or []) | set(claim.get("opposing_evidence_ids") or [])
         related = [row for row in (frozen.get("reasoning_rows") or llm_evidence) if str(row.get("id")) in bound_ids or str(row.get("id")) in allowed]
         related = related or llm_evidence
@@ -1452,6 +1513,17 @@ def run_brain(
         if _apply_claim_version(brain, claim, new_fields, snapshot_id=snapshot_id, run_id=run_id):
             versions_changed += 1
             version_id = claim.get("current_version_id") or version_id
+            brain.insert_history(
+                history_row(
+                    ticker=symbol,
+                    object_type="claim",
+                    object_id=str(claim.get("claim_id")),
+                    from_payload={"status": (claim.get("prior_version") or {}).get("status"), "statement": (claim.get("prior_version") or {}).get("statement")},
+                    to_payload={"status": new_fields.get("status"), "statement": new_fields.get("statement")},
+                    reason=str(claim.get("version_reason") or "material claim update"),
+                    run_id=run_id,
+                )
+            )
             for row in links:
                 row["claim_version_id"] = version_id
         persisted_links = []
@@ -1684,5 +1756,7 @@ def run_brain(
         "transmissions": transmissions,
         "financial_impacts": financial_impacts,
         "critic": critic_result,
+        "history": brain.list_history(symbol),
         "run_mode": run_mode,
+        "full_review": rebuild,
     }
