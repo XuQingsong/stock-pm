@@ -59,6 +59,12 @@ class BrainStore:
         self.news: dict[str, dict[str, Any]] = {}
         self.evidence_sets: dict[str, dict[str, Any]] = {}
         self.candidates: dict[str, dict[str, Any]] = {}
+        self.drivers: dict[str, dict[str, Any]] = {}
+        self.events: dict[str, dict[str, Any]] = {}
+        self.exposures: dict[str, dict[str, Any]] = {}
+        self.history: dict[str, dict[str, Any]] = {}
+        self.financial_impacts: dict[str, dict[str, Any]] = {}
+        self.critic_issues: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -306,6 +312,7 @@ class BrainStore:
             "unverified_detail": row.get("unverified_detail") or "",
             "counter_search": dict(row.get("counter_search") or {}),
             "match_action": row.get("match_action"),
+            "related_driver_ids": list(row.get("related_driver_ids") or []),
             "created_at": row.get("created_at") or _now(),
             "updated_at": row.get("updated_at") or _now(),
         }
@@ -320,7 +327,8 @@ class BrainStore:
                 time_horizon, why_it_matters, financial_driver, is_core, current_version_id,
                 reasoning, run_id, snapshot_id, claim_key, claim_subject, claim_dimension,
                 proposed_status, lifecycle, why_core, evidence_set_id, last_reviewed_at,
-                unverified_detail, counter_search, match_action, created_at, updated_at
+                unverified_detail, counter_search, match_action, related_driver_ids,
+                created_at, updated_at
             ) VALUES (
                 %(claim_id)s, %(ticker)s, %(title)s, %(statement)s, %(claim_type)s, %(status)s,
                 %(importance)s, %(confidence)s, %(time_horizon)s, %(why_it_matters)s,
@@ -328,7 +336,7 @@ class BrainStore:
                 %(run_id)s, %(snapshot_id)s, %(claim_key)s, %(claim_subject)s, %(claim_dimension)s,
                 %(proposed_status)s, %(lifecycle)s, %(why_core)s, %(evidence_set_id)s,
                 %(last_reviewed_at)s, %(unverified_detail)s, %(counter_search)s, %(match_action)s,
-                %(created_at)s, %(updated_at)s
+                %(related_driver_ids)s, %(created_at)s, %(updated_at)s
             ) RETURNING *
             """,
             payload,
@@ -363,6 +371,7 @@ class BrainStore:
             "claim_subject",
             "claim_dimension",
             "claim_key",
+            "related_driver_ids",
         )
         if not self._pg():
             current = dict(self.claims.get(claim_id) or {})
@@ -398,6 +407,7 @@ class BrainStore:
             "claim_subject": row.get("claim_subject"),
             "claim_dimension": row.get("claim_dimension"),
             "claim_key": row.get("claim_key"),
+            "related_driver_ids": row.get("related_driver_ids"),
             "updated_at": _now(),
         }
         out = self._one(
@@ -427,6 +437,7 @@ class BrainStore:
                 claim_subject = COALESCE(%(claim_subject)s, claim_subject),
                 claim_dimension = COALESCE(%(claim_dimension)s, claim_dimension),
                 claim_key = COALESCE(%(claim_key)s, claim_key),
+                related_driver_ids = COALESCE(%(related_driver_ids)s, related_driver_ids),
                 updated_at = %(updated_at)s
             WHERE claim_id = %(claim_id)s
             RETURNING *
@@ -817,3 +828,181 @@ class BrainStore:
             params["layer"] = layer
         query += " ORDER BY published_at DESC NULLS LAST"
         return self._execute(query, params)
+
+    def insert_driver(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "driver_id": row.get("driver_id") or new_id("bdrv"),
+            "ticker": str(row["ticker"]).upper(),
+            "canonical_key": row.get("canonical_key") or "",
+            "driver_key": row.get("driver_key"),
+            "name": row.get("name") or "",
+            "description": row.get("description") or "",
+            "category": row.get("category") or "demand",
+            "financial_link": row.get("financial_link"),
+            "time_horizon": row.get("time_horizon"),
+            "current_state": row.get("current_state") or "",
+            "direction": row.get("direction"),
+            "importance": row.get("importance") or "medium",
+            "uncertainty": row.get("uncertainty") or "medium",
+            "persistence": row.get("persistence") or "medium",
+            "reversibility": row.get("reversibility"),
+            "why_it_matters": row.get("why_it_matters") or "",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "related_claim_ids": list(row.get("related_claim_ids") or []),
+            "related_entity_ids": list(row.get("related_entity_ids") or []),
+            "missing_evidence": list(row.get("missing_evidence") or []),
+            "status": row.get("status") or "active",
+            "match_action": row.get("match_action"),
+            "run_id": row.get("run_id"),
+            "last_updated_at": row.get("last_updated_at") or _now(),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            self.drivers[stored["driver_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_value_drivers (
+                driver_id, ticker, canonical_key, driver_key, name, description, category,
+                financial_link, time_horizon, current_state, direction, importance, uncertainty,
+                persistence, reversibility, why_it_matters, evidence_ids, related_claim_ids,
+                related_entity_ids, missing_evidence, status, match_action, run_id,
+                last_updated_at, created_at, updated_at
+            ) VALUES (
+                %(driver_id)s, %(ticker)s, %(canonical_key)s, %(driver_key)s, %(name)s,
+                %(description)s, %(category)s, %(financial_link)s, %(time_horizon)s,
+                %(current_state)s, %(direction)s, %(importance)s, %(uncertainty)s,
+                %(persistence)s, %(reversibility)s, %(why_it_matters)s, %(evidence_ids)s,
+                %(related_claim_ids)s, %(related_entity_ids)s, %(missing_evidence)s,
+                %(status)s, %(match_action)s, %(run_id)s, %(last_updated_at)s,
+                %(created_at)s, %(updated_at)s
+            ) RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def update_driver(self, driver_id: str, row: dict[str, Any]) -> dict[str, Any]:
+        keys = (
+            "name",
+            "description",
+            "category",
+            "financial_link",
+            "time_horizon",
+            "current_state",
+            "direction",
+            "importance",
+            "uncertainty",
+            "persistence",
+            "reversibility",
+            "why_it_matters",
+            "evidence_ids",
+            "related_claim_ids",
+            "related_entity_ids",
+            "missing_evidence",
+            "status",
+            "match_action",
+            "run_id",
+            "canonical_key",
+            "driver_key",
+        )
+        if not self._pg():
+            current = dict(self.drivers.get(driver_id) or {})
+            for key in keys:
+                if key in row:
+                    current[key] = row[key]
+            current["last_updated_at"] = row.get("last_updated_at") or _now()
+            current["updated_at"] = _now()
+            self.drivers[driver_id] = current
+            return _copy(current)
+        payload = {key: row.get(key) for key in keys}
+        payload["driver_id"] = driver_id
+        payload["last_updated_at"] = row.get("last_updated_at") or _now()
+        payload["updated_at"] = _now()
+        out = self._one(
+            """
+            UPDATE brain_value_drivers SET
+                name = COALESCE(%(name)s, name),
+                description = COALESCE(%(description)s, description),
+                category = COALESCE(%(category)s, category),
+                financial_link = COALESCE(%(financial_link)s, financial_link),
+                time_horizon = COALESCE(%(time_horizon)s, time_horizon),
+                current_state = COALESCE(%(current_state)s, current_state),
+                direction = COALESCE(%(direction)s, direction),
+                importance = COALESCE(%(importance)s, importance),
+                uncertainty = COALESCE(%(uncertainty)s, uncertainty),
+                persistence = COALESCE(%(persistence)s, persistence),
+                reversibility = COALESCE(%(reversibility)s, reversibility),
+                why_it_matters = COALESCE(%(why_it_matters)s, why_it_matters),
+                evidence_ids = COALESCE(%(evidence_ids)s, evidence_ids),
+                related_claim_ids = COALESCE(%(related_claim_ids)s, related_claim_ids),
+                related_entity_ids = COALESCE(%(related_entity_ids)s, related_entity_ids),
+                missing_evidence = COALESCE(%(missing_evidence)s, missing_evidence),
+                status = COALESCE(%(status)s, status),
+                match_action = COALESCE(%(match_action)s, match_action),
+                run_id = COALESCE(%(run_id)s, run_id),
+                canonical_key = COALESCE(%(canonical_key)s, canonical_key),
+                driver_key = COALESCE(%(driver_key)s, driver_key),
+                last_updated_at = %(last_updated_at)s,
+                updated_at = %(updated_at)s
+            WHERE driver_id = %(driver_id)s
+            RETURNING *
+            """,
+            payload,
+        )
+        return out or {}
+
+    def get_driver(self, driver_id: str) -> dict[str, Any] | None:
+        if not self._pg():
+            row = self.drivers.get(driver_id)
+            return _copy(row) if row else None
+        return self._one(
+            "SELECT * FROM brain_value_drivers WHERE driver_id = %(driver_id)s",
+            {"driver_id": driver_id},
+        )
+
+    def get_driver_by_key(self, ticker: str, canonical_key: str) -> dict[str, Any] | None:
+        if not canonical_key:
+            return None
+        if not self._pg():
+            for row in self.drivers.values():
+                if row.get("ticker") == ticker.upper() and row.get("canonical_key") == canonical_key:
+                    return _copy(row)
+            return None
+        return self._one(
+            """
+            SELECT * FROM brain_value_drivers
+            WHERE ticker = %(ticker)s AND canonical_key = %(canonical_key)s
+            LIMIT 1
+            """,
+            {"ticker": ticker.upper(), "canonical_key": canonical_key},
+        )
+
+    def list_drivers(self, ticker: str, *, active_only: bool = True) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [row for row in self.drivers.values() if row.get("ticker") == symbol]
+            if active_only:
+                rows = [row for row in rows if str(row.get("status") or "active") not in {"closed", "retired"}]
+            return [_copy(row) for row in rows]
+        query = "SELECT * FROM brain_value_drivers WHERE ticker = %(ticker)s"
+        params: dict[str, Any] = {"ticker": symbol}
+        if active_only:
+            query += " AND status IS DISTINCT FROM 'closed' AND status IS DISTINCT FROM 'retired'"
+        query += " ORDER BY importance DESC, updated_at DESC"
+        return self._execute(query, params)
+
+    def upsert_driver(self, row: dict[str, Any]) -> dict[str, Any]:
+        existing = None
+        if row.get("driver_id"):
+            existing = self.get_driver(str(row["driver_id"]))
+        if existing is None:
+            existing = self.get_driver_by_key(str(row.get("ticker") or ""), str(row.get("canonical_key") or ""))
+        if existing:
+            updated = self.update_driver(existing["driver_id"], {**row, "match_action": row.get("match_action") or "update_existing"})
+            updated["match_action"] = "update_existing"
+            return updated
+        return self.insert_driver({**row, "match_action": row.get("match_action") or "create_new"})
+

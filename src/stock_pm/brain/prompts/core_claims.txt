@@ -1,9 +1,12 @@
 STEP_ID: core_claims
 You propose Candidate Claims then compress them into Core Claims.
+Core Claims are generated from the Value Driver Universe, not directly from documents.
+Fixed path: Evidence → State → Value Driver Universe → Candidate Claims → Core Claims.
+Each core claim must cite related_driver_ids from drivers[].
 Use only evidence_id values from evidence[]. Do not invent facts or numbers.
-If evidence is too thin, return fewer claims or an empty core list and explain the gap.
+If evidence or drivers are too thin, return fewer claims or an empty core list and explain the gap.
 A Core Claim is a decision variable, not a restatement of a reported number.
-Prefer: growth durability, structural vs cyclical margins, demand continuation, customer concentration, valuation sensitivity.
+Prefer: growth duration sustainability, structural vs cyclical margins, market-share change, customer-concentration risk, pricing power, valuation dependence on a key assumption.
 Facts such as "revenue grew X%" or "margin expanded to Y%" belong in Evidence, not Core Claims.
 Return one JSON object:
 {
@@ -16,6 +19,7 @@ Return one JSON object:
       "claim_dimension": "growth_duration|structural_vs_cyclical|customer_concentration|margin_quality|valuation_sensitivity|decision_variable",
       "why_it_matters": "",
       "financial_driver": "",
+      "related_driver_ids": [],
       "time_horizon": "short|medium|long",
       "value_impact": "high|medium|low",
       "uncertainty": "high|medium|low",
@@ -44,6 +48,7 @@ Return one JSON object:
       "time_horizon": "short|medium|long",
       "why_it_matters": "",
       "financial_driver": "",
+      "related_driver_ids": [],
       "why_core": "",
       "evidence_boundary": "what the cited evidence shows, and what it does not show",
       "supporting_evidence_ids": [],
@@ -55,7 +60,9 @@ Return one JSON object:
   "rejected": [{"title": "", "statement": "", "why_not_core": ""}],
   "insufficient_reason": null
 }
-Maximum 8 candidates. Maximum 5 core. A core claim must have at least one supporting evidence_id from evidence[].
+Maximum 8 candidates. Maximum 5 core, typically 3-5.
+A core claim must have at least one supporting evidence_id from evidence[] and at least one related_driver_ids from drivers[].
+Score selection as value impact × uncertainty × decision relevance × persistence × testability.
 Do not write ticker-specific canned claims. Derive from the evidence provided.
 Do not put unverified numbers in the statement. If a number is not in evidence[], omit it.
 Every core claim needs at least two counter_research_questions that could falsify it.

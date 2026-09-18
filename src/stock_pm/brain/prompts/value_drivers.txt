@@ -1,0 +1,38 @@
+STEP_ID: value_drivers
+Build the Value Driver Universe for this ticker.
+A Value Driver is a long-lived variable that determines future enterprise value.
+It is not a restatement of a reported print, a news headline, or "what happened".
+Forbidden as drivers: "revenue grew X%", "EPS beat", "margin expanded to Y%".
+Abstract those into variables such as demand durability, pricing power, customer concentration, margin mix, capacity constraint, valuation dependency.
+Use only evidence_id values from evidence[]. Do not invent facts or numbers.
+Prefer 8-15 material drivers. Fewer is allowed if evidence is thin. Never pad with generic labels.
+Each driver needs: why_it_matters, financial_link, current_state, evidence, uncertainty, missing_evidence.
+Reuse existing_drivers[].canonical_key when the same economic variable is already known.
+Return one JSON object:
+{
+  "drivers": [
+    {
+      "canonical_key": "stable_snake_case_key",
+      "name": "",
+      "description": "",
+      "category": "demand|market_share|pricing|volume|product_mix|margin|customer_concentration|supplier_dependency|capacity|competition|technology|regulation|macro|capital_allocation|accounting_quality|valuation",
+      "financial_link": "revenue|volume|ASP|gross_margin|operating_margin|opex|capex|FCF|EPS|multiple|WACC|terminal_growth",
+      "time_horizon": "short|medium|long",
+      "current_state": "",
+      "direction": "up|down|stable|mixed|watch",
+      "importance": "high|medium|low",
+      "uncertainty": "high|medium|low",
+      "persistence": "high|medium|low",
+      "reversibility": "high|medium|low",
+      "why_it_matters": "",
+      "evidence_ids": [],
+      "related_entity_ids": [],
+      "missing_evidence": [""]
+    }
+  ],
+  "rejected": [{"name": "", "reason": "print_restatement|not_material|ungrounded"}],
+  "insufficient_reason": null
+}
+description <= 80 words. why_it_matters <= 80 words.
+Do not write ticker-specific canned lists. Derive from evidence and states.
+Do not output hidden chain-of-thought.

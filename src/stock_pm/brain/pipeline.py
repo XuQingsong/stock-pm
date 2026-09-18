@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from stock_pm.config import Settings
-from stock_pm.research.agents.base import SettingsCompleter
 from stock_pm.research.backfill import ResearchDataBackfill, can_live_backfill, pack_needs_research_data
 from stock_pm.research.llm_reason import compact_pack, compact_text
 
@@ -25,6 +24,7 @@ from .claim_integrity import (
     score_candidate,
     strip_unbound_facts,
 )
+from .drivers import claims_require_drivers, select_driver_universe
 from .header import company_header
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -36,9 +36,11 @@ from .llm_steps import (
     normalize_claim,
     normalize_news_item,
     pm_synthesis,
+    value_driver_universe,
 )
 from .news import classify_news_hits, is_high_quality, search_recent_news
 from .quality import assess_brain_quality
+from .routing import resolve_brain_completers
 from .store import BrainStore
 from .types import (
     EXA_SEARCH_BUDGET,
@@ -538,22 +540,34 @@ def run_brain(
     *,
     store: BrainStore | None = None,
     completer: Any | None = None,
+    mechanical_completer: Any | None = None,
+    reasoning_completer: Any | None = None,
     fetch_live: bool = True,
     days: int = NEWS_WINDOW_DAYS,
+    mode: str = "full",
 ) -> dict[str, Any]:
     from stock_pm.external.clients import SearchBudget, exa_configured, tavily_configured
     from stock_pm.external.layer import gather_external_intelligence, merge_intelligence
 
     symbol = str(ticker or "").upper()
     brain = store or BrainStore(getattr(getattr(research, "store", None), "database", None))
-    model_completer = completer if completer is not None else getattr(research, "completer", None) or SettingsCompleter()
+    run_mode = str(mode or "full").strip().lower()
+    if run_mode not in {"full", "incremental"}:
+        run_mode = "full"
+    settings = Settings()
+    mech_llm, reason_llm = resolve_brain_completers(
+        completer if completer is not None else getattr(research, "completer", None),
+        mechanical=mechanical_completer,
+        reasoning=reasoning_completer,
+        settings=settings,
+    )
     warnings: list[dict[str, str]] = []
     errors: list[str] = []
     fallbacks: list[str] = []
     llm_calls: list[dict[str, Any]] = []
-    run = brain.insert_run({"ticker": symbol, "status": "running", "prompt_version": PROMPT_VERSION})
+    run = brain.insert_run({"ticker": symbol, "status": "running", "prompt_version": PROMPT_VERSION, "run_mode": run_mode})
     run_id = run["run_id"]
-    actor = "brain_phase1"
+    actor = "brain_v1"
 
     research.ensure_issuer(symbol)
     pack = research.get_pack(symbol) or {}
@@ -593,7 +607,6 @@ def run_brain(
     snapshot_id = (snapshot or {}).get("snapshot_id")
 
     extra_queries: list[str] = []
-    settings = Settings()
     budget = SearchBudget(
         tavily=TAVILY_SEARCH_BUDGET if tavily_configured(settings) else 0,
         exa=EXA_SEARCH_BUDGET if exa_configured(settings) else 0,
@@ -606,7 +619,7 @@ def run_brain(
             header=header,
             claims=[],
             understanding=None,
-            completer=model_completer,
+            completer=mech_llm,
             settings=settings,
             days=days,
             fetch_live=True,
@@ -644,7 +657,7 @@ def run_brain(
 
     understanding = None
     payload_a, audit_a = company_understanding(
-        model_completer,
+        reason_llm,
         {
             "ticker": symbol,
             "reported_financials": header,
@@ -715,6 +728,59 @@ def run_brain(
         fallbacks.append("company_understanding")
         warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": audit_a.get("error") or "Company understanding LLM call did not return JSON."})
 
+    persisted_drivers: list[dict[str, Any]] = []
+    rejected_drivers: list[dict[str, Any]] = []
+    existing_drivers = brain.list_drivers(symbol)
+    payload_drivers = None
+    audit_drivers = {"step": "value_drivers", "llm_called": False, "llm_status": "skipped"}
+    if not integrity.get("block_core_claims"):
+        payload_drivers, audit_drivers = value_driver_universe(
+            reason_llm,
+            {
+                "ticker": symbol,
+                "reported_financials": header,
+                "states": [row for row in brain.list_states(symbol, run_id=run_id)],
+                "existing_drivers": [
+                    {
+                        "driver_id": row.get("driver_id"),
+                        "canonical_key": row.get("canonical_key"),
+                        "name": row.get("name"),
+                        "category": row.get("category"),
+                        "status": row.get("status"),
+                    }
+                    for row in existing_drivers
+                ],
+                "evidence": compact_evidence_rows(llm_evidence, limit=24),
+                "evidence_set_id": frozen.get("evidence_set_id"),
+                "company_understanding": understanding or {"missing": True},
+                "snapshot_id": snapshot_id,
+            },
+            allowed_ids=allowed,
+        )
+        llm_calls.append(audit_drivers)
+        if payload_drivers:
+            selected, rejected_drivers = select_driver_universe(
+                list(payload_drivers.get("drivers") or []),
+                ticker=symbol,
+                allowed_ids=allowed,
+                existing=existing_drivers,
+            )
+            rejected_drivers.extend(payload_drivers.get("rejected") or [])
+            for item in selected:
+                stored_driver = brain.upsert_driver({**item, "run_id": run_id, "ticker": symbol})
+                persisted_drivers.append(stored_driver)
+        else:
+            fallbacks.append("value_drivers")
+            warnings.append(
+                {
+                    "code": "BRAIN QUALITY WARNING",
+                    "axis": "LLM Reasoning",
+                    "reason": audit_drivers.get("error") or "Value Driver Universe LLM call failed.",
+                }
+            )
+    else:
+        llm_calls.append(audit_drivers)
+
     candidates: list[dict[str, Any]] = []
     core: list[dict[str, Any]] = []
     insufficient = None
@@ -728,19 +794,44 @@ def run_brain(
         audit_b["error"] = "financial_input_inconsistent"
         audit_b["fallback_used"] = True
         llm_calls.append(audit_b)
+    elif not persisted_drivers:
+        fallbacks.append("core_claims")
+        insufficient = "No grounded Value Driver Universe; Core Claims were not generated from documents."
+        warnings.append({"code": "BRAIN QUALITY WARNING", "axis": "LLM Reasoning", "reason": str(insufficient)})
+        audit_b["error"] = insufficient
+        audit_b["fallback_used"] = True
+        llm_calls.append(audit_b)
     else:
         payload_b, audit_b = core_claims(
-            model_completer,
+            reason_llm,
             {
                 "ticker": symbol,
                 "reported_financials": header,
                 "states": [row for row in brain.list_states(symbol, run_id=run_id)],
+                "drivers": [
+                    {
+                        "driver_id": row.get("driver_id"),
+                        "canonical_key": row.get("canonical_key"),
+                        "name": row.get("name"),
+                        "category": row.get("category"),
+                        "financial_link": row.get("financial_link"),
+                        "current_state": row.get("current_state"),
+                        "importance": row.get("importance"),
+                        "uncertainty": row.get("uncertainty"),
+                        "persistence": row.get("persistence"),
+                        "why_it_matters": row.get("why_it_matters"),
+                        "evidence_ids": row.get("evidence_ids") or [],
+                    }
+                    for row in persisted_drivers
+                ],
                 "evidence": compact_evidence_rows(llm_evidence, limit=24),
                 "evidence_set_id": frozen.get("evidence_set_id"),
                 "company_understanding": understanding or {"missing": True},
                 "snapshot_id": snapshot_id,
             },
-            allowed_ids=allowed,
+            allowed_ids=allowed
+            | {str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")}
+            | {str(row.get("canonical_key")) for row in persisted_drivers if row.get("canonical_key")},
         )
         llm_calls.append(audit_b)
         if payload_b:
@@ -751,6 +842,9 @@ def run_brain(
                 allowed=allowed,
                 ticker=symbol,
             )
+            core = claims_require_drivers(core, persisted_drivers)
+            if not core:
+                insufficient = insufficient or "No Core Claim bound to a grounded Value Driver."
             insufficient = insufficient or payload_b.get("insufficient_reason")
             integrity_violations.extend(rejected_ids)
         else:
@@ -801,6 +895,7 @@ def run_brain(
             "claim_key": item.get("claim_key"),
             "claim_subject": item.get("claim_subject"),
             "claim_dimension": item.get("claim_dimension"),
+            "related_driver_ids": item.get("related_driver_ids") or [],
             "why_core": item.get("why_core") or "",
             "is_core": True,
             "lifecycle": "core",
@@ -891,6 +986,15 @@ def run_brain(
     for prior in brain.list_active_claims(symbol):
         if prior.get("is_core") and prior.get("claim_id") not in selected_ids and prior.get("run_id") != run_id:
             brain.update_claim_pointer(prior["claim_id"], {"is_core": False, "lifecycle": "background", "last_reviewed_at": _now()})
+    for driver in persisted_drivers:
+        bound_claims = [
+            str(row.get("claim_id"))
+            for row in persisted_claims
+            if str(driver.get("driver_id")) in [str(item) for item in (row.get("related_driver_ids") or [])]
+        ]
+        if bound_claims:
+            brain.update_driver(driver["driver_id"], {"related_claim_ids": bound_claims})
+            driver["related_claim_ids"] = bound_claims
 
     intel_claims: dict[str, Any] | None = None
     if fetch_live and persisted_claims:
@@ -901,7 +1005,7 @@ def run_brain(
             header=header,
             claims=persisted_claims,
             understanding=understanding,
-            completer=model_completer,
+            completer=mech_llm,
             settings=settings,
             days=days,
             fetch_live=True,
@@ -948,7 +1052,7 @@ def run_brain(
         )
     news_allowed = {str(item.get("evidence_id")) for item in news_payload if item.get("evidence_id")} | allowed
     payload_c, audit_c = news_interpretation(
-        model_completer,
+        reason_llm,
         {
             "ticker": symbol,
             "news": news_payload,
@@ -1112,7 +1216,7 @@ def run_brain(
                 coverage = row
                 break
         payload_d, audit_d = claim_reasoning(
-            model_completer,
+            reason_llm,
             {
                 "claim": {
                     "claim_id": claim.get("claim_id"),
@@ -1277,7 +1381,7 @@ def run_brain(
         for row in persisted_claims
     ]
     payload_e, audit_e = pm_synthesis(
-        model_completer,
+        reason_llm,
         {
             "ticker": symbol,
             "header": header,
@@ -1371,6 +1475,9 @@ def run_brain(
         "integrity_violations": integrity_violations,
         "pm_consistency": pm_check,
         "llm_invoked": llm_ok,
+        "driver_count": len(persisted_drivers),
+        "rejected_drivers": rejected_drivers,
+        "run_mode": run_mode,
         "external_intelligence_report": (intel or {}).get("report") or {},
         "evidence_coverage_matrix": ((intel or {}).get("evidence_set") or {}).get("coverage_matrix") or ((intel or {}).get("report") or {}).get("coverage_matrix") or [],
         "independent_validation": ((intel or {}).get("evidence_set") or {}).get("independent_validation"),
@@ -1427,4 +1534,7 @@ def run_brain(
         "pm_consistency": pm_check,
         "evidence_set_id": frozen.get("evidence_set_id"),
         "external_intelligence": intel or {},
+        "drivers": persisted_drivers,
+        "rejected_drivers": rejected_drivers,
+        "run_mode": run_mode,
     }

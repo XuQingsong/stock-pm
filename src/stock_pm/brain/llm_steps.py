@@ -62,6 +62,16 @@ def company_understanding(completer: Any, user: dict[str, Any], *, allowed_ids: 
     )
 
 
+def value_driver_universe(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    return call_step(
+        completer,
+        step="value_drivers",
+        prompt_file="value_drivers.txt",
+        user=user,
+        allowed_ids=allowed_ids,
+    )
+
+
 def core_claims(completer: Any, user: dict[str, Any], *, allowed_ids: set[str]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     return call_step(
         completer,
@@ -147,6 +157,7 @@ def normalize_claim(raw: dict[str, Any], *, allowed_ids: set[str], core: bool) -
         "claim_subject": compact_text(raw.get("claim_subject") or "", 80) or None,
         "claim_dimension": compact_text(raw.get("claim_dimension") or "", 80) or None,
         "claim_key": compact_text(raw.get("claim_key") or "", 80) or None,
+        "related_driver_ids": [str(item).strip() for item in (raw.get("related_driver_ids") or []) if str(item).strip()][:8],
         "why_core": compact_text(raw.get("why_core") or "", 240),
         "why_not_core": compact_text(raw.get("why_not_core") or "", 240),
         "evidence_boundary": compact_text(raw.get("evidence_boundary") or "", 400) or None,

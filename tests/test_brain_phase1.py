@@ -87,8 +87,34 @@ class FakeBrainCompleter:
                 "coverage_gaps": ["fcf"],
                 "cannot_conclude": [],
             }
+        elif "STEP_ID: value_drivers" in system:
+            body = {
+                "drivers": [
+                    {
+                        "canonical_key": "demand_durability",
+                        "name": "Demand durability",
+                        "description": "Whether current demand converts into a durable earnings path rather than a one-quarter print.",
+                        "category": "demand",
+                        "financial_link": "revenue",
+                        "time_horizon": "medium",
+                        "current_state": "Demand is the binding operating variable.",
+                        "direction": "watch",
+                        "importance": "high",
+                        "uncertainty": "high",
+                        "persistence": "medium",
+                        "reversibility": "medium",
+                        "why_it_matters": "It changes the 1-3y revenue and multiple path.",
+                        "evidence_ids": eids[:1],
+                        "missing_evidence": ["independent customer confirmation"],
+                    }
+                ],
+                "rejected": [],
+                "insufficient_reason": None,
+            }
         elif "STEP_ID: core_claims" in system:
             eid = eids[0] if eids else None
+            drivers = payload.get("drivers") or []
+            driver_id = (drivers[0] or {}).get("driver_id") if drivers else None
             body = {
                 "candidates": [
                     {
@@ -99,6 +125,7 @@ class FakeBrainCompleter:
                         "claim_dimension": "growth_duration",
                         "why_it_matters": "It changes the 1-3y earnings path.",
                         "financial_driver": "revenue",
+                        "related_driver_ids": [driver_id] if driver_id else [],
                         "supporting_evidence_ids": [eid] if eid else [],
                         "opposing_evidence_ids": [],
                         "missing_evidence": ["independent customer confirmation"],
@@ -124,6 +151,7 @@ class FakeBrainCompleter:
                         "time_horizon": "medium",
                         "why_it_matters": "It changes the 1-3y earnings path.",
                         "financial_driver": "revenue",
+                        "related_driver_ids": [driver_id] if driver_id else [],
                         "why_core": "Highest value impact times uncertainty.",
                         "uncertainty": "high",
                         "valuation_relevance": "high",
