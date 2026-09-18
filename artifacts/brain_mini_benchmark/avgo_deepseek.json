@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-09-18T03:10:56+00:00",
+  "round": 1,
+  "ticker": "AVGO",
+  "model": "deepseek-chat",
+  "file_label": "deepseek",
+  "provider": "openai",
+  "base_url": "https://api.deepseek.com/v1",
+  "freeze_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+  "prompt_input_hash": "0e11c9fa4544e78ad22f8b3bd32d74459e52b55c355bea1be00c5603beb2bd92",
+  "searched": false,
+  "drivers": [
+    {
+      "driver": "AI semiconductor demand",
+      "why_it_matters": "AI accelerators and networking strength drives growth",
+      "financial_link": "revenue",
+      "uncertainty": "medium",
+      "evidence_ids": [
+        "rev_a65ae2866d404168b4b90236ae2f13a6"
+      ]
+    },
+    {
+      "driver": "Quarterly revenue scale",
+      "why_it_matters": "Large revenue base supports earnings and cash flow",
+      "financial_link": "revenue",
+      "uncertainty": "low",
+      "evidence_ids": [
+        "rev_d608e3e7661a49dfb06a59bd5c45927b"
+      ]
+    },
+    {
+      "driver": "Quarterly dividend",
+      "why_it_matters": "Dividend signals cash return and shareholder yield",
+      "financial_link": "share",
+      "uncertainty": "low",
+      "evidence_ids": [
+        "rev_d608e3e7661a49dfb06a59bd5c45927b"
+      ]
+    },
+    {
+      "driver": "Debt repurchase activity",
+      "why_it_matters": "Liability management can affect interest costs and leverage",
+      "financial_link": "eps",
+      "uncertainty": "medium",
+      "evidence_ids": [
+        "rev_843a1ee827964a139673007f7c44e957"
+      ]
+    }
+  ],
+  "core_claims": [
+    {
+      "claim": "AI accelerator and networking demand is a durable growth driver for Broadcom.",
+      "why_core": "Directly tied to revenue growth and competitive positioning in AI semis.",
+      "strongest_support": "Evidence cites very strong AI semiconductor revenue.",
+      "strongest_counter": "No quantified AI revenue or margin data provided.",
+      "missing_evidence": "AI revenue size, growth rate, and margin contribution.",
+      "evidence_ids": [
+        "rev_a65ae2866d404168b4b90236ae2f13a6"
+      ]
+    },
+    {
+      "claim": "Broadcom's large revenue scale supports earnings and cash flow durability.",
+      "why_core": "Scale underpins margin stability and ability to fund dividends.",
+      "strongest_support": "Quarterly revenue of $29.6 billion cited.",
+      "strongest_counter": "No margin or cash flow figures to confirm profitability.",
+      "missing_evidence": "Operating margin, free cash flow, and segment breakdown.",
+      "evidence_ids": [
+        "rev_d608e3e7661a49dfb06a59bd5c45927b"
+      ]
+    },
+    {
+      "claim": "Debt repurchase activity may reduce leverage but impact interest costs and EPS.",
+      "why_core": "Liability management affects capital structure and shareholder returns.",
+      "strongest_support": "Pricing terms for debt repurchase offers disclosed.",
+      "strongest_counter": "No repurchase amount or interest savings quantified.",
+      "missing_evidence": "Debt reduction size, interest expense change, and EPS impact.",
+      "evidence_ids": [
+        "rev_843a1ee827964a139673007f7c44e957"
+      ]
+    }
+  ],
+  "event": {
+    "event_id": "avgo_custom_silicon",
+    "affected_drivers": [
+      "AI semiconductor demand"
+    ],
+    "affected_claims": [
+      "AI accelerator and networking demand is a durable growth driver for Broadcom."
+    ],
+    "direction": "oppose",
+    "strength": "medium",
+    "transmission_chain": "Hyperscaler in-house AI silicon reduces demand for Broadcom custom ASIC and networking co-design, pressuring AI semiconductor revenue growth.",
+    "short_term_impact": "Limited near-term revenue impact; existing programs and backlog persist.",
+    "long_term_impact": "Potential share loss in custom AI silicon, slower AI revenue growth trajectory.",
+    "base_case_change": "no",
+    "scenario_only": "yes",
+    "confidence": "medium"
+  },
+  "metrics": {
+    "driver_count": 4,
+    "core_claim_count": 3,
+    "invalid_evidence_ids": [],
+    "invalid_evidence_id_count": 0,
+    "unsupported_assertions": [],
+    "unsupported_assertion_count": 0,
+    "consistency_failures": 0,
+    "latency_ms": 5445,
+    "input_tokens": 2484,
+    "output_tokens": 700,
+    "estimated_cost": {
+      "amount": 0.000544,
+      "ccy": "USD",
+      "note": "indicative, not an invoice"
+    },
+    "human_scores": {
+      "driver_recall": null,
+      "core_claim_quality": null,
+      "event_transmission": null,
+      "counter_reasoning": null,
+      "evidence_discipline": null,
+      "unsupported_assertion_rate": null,
+      "overall": null
+    }
+  },
+  "llm_calls": [
+    {
+      "step": "drivers",
+      "llm_called": true,
+      "llm_status": "ok",
+      "model": "deepseek-flash",
+      "provider": "openai",
+      "latency_ms": 1631,
+      "input_tokens": 500,
+      "output_tokens": 242,
+      "error": null
+    },
+    {
+      "step": "claims",
+      "llm_called": true,
+      "llm_status": "ok",
+      "model": "deepseek-flash",
+      "provider": "openai",
+      "latency_ms": 2193,
+      "input_tokens": 785,
+      "output_tokens": 325,
+      "error": null
+    },
+    {
+      "step": "event",
+      "llm_called": true,
+      "llm_status": "ok",
+      "model": "deepseek-flash",
+      "provider": "openai",
+      "latency_ms": 1621,
+      "input_tokens": 1199,
+      "output_tokens": 133,
+      "error": null
+    }
+  ]
+}

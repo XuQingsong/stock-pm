@@ -59,10 +59,10 @@ def _strong_credentials(settings: Settings) -> tuple[str, str, str]:
 
 
 def extra_body_for(model: str) -> dict[str, Any] | None:
-    """Bailian thinking models reject enable_thinking=false. Leave native mode."""
+    """Bailian thinking models reject enable_thinking=false. kimi-k3 rejects temperature=0.2."""
     lower = str(model or "").lower()
-    if "kimi-k3" in lower or "glm-5.3" in lower:
-        return None
+    if "kimi-k3" in lower:
+        return {"temperature": 1}
     return None
 
 
@@ -130,6 +130,65 @@ def model_profiles(settings: Settings | None = None) -> list[dict[str, Any]]:
             }
         )
     return profiles
+
+
+MINI_FILE_LABELS = {
+    "deepseek-chat": "deepseek",
+    "deepseek-flash": "deepseek",
+    "glm-5.3": "glm53",
+    "kimi-k3": "kimik3",
+    "qwen3.8-max": "qwen38",
+}
+
+
+def mini_file_label(model: str) -> str:
+    name = canonical_model_id(model)
+    if name in MINI_FILE_LABELS:
+        return MINI_FILE_LABELS[name]
+    slug = slug_model(name).replace(".", "").replace("-", "")
+    return slug or "model"
+
+
+def extra_body_for_mini(model: str) -> dict[str, Any] | None:
+    """Disable thinking only where the API allows it. Saves trial-package tokens."""
+    lower = str(model or "").lower()
+    if "kimi-k3" in lower:
+        return {"temperature": 1}
+    if "qwen" in lower:
+        return {"enable_thinking": False}
+    return None
+
+
+def mini_profiles(settings: Settings | None = None) -> list[dict[str, Any]]:
+    """DeepSeek + Bailian glm-5.3 / kimi-k3 / qwen3.8-max with compact token caps."""
+    rows = []
+    for profile in model_profiles(settings):
+        model = str(profile.get("model") or "")
+        extra = extra_body_for_mini(model)
+        timeout = 90
+        max_tokens = 2048
+        if "kimi-k3" in model.lower():
+            timeout = 180
+            max_tokens = 4096
+        elif "glm-5.3" in model.lower():
+            timeout = 150
+            max_tokens = 3072
+        elif profile.get("role") == "baseline":
+            timeout = 60
+            max_tokens = 2048
+        cfg = profile.get("settings")
+        if cfg is not None:
+            cfg = replace(cfg, llm_timeout_seconds=timeout, llm_max_tokens=max_tokens, llm_extra_body=extra)
+        file_label = "deepseek" if profile.get("role") == "baseline" else mini_file_label(model)
+        rows.append(
+            {
+                **profile,
+                "file_label": file_label,
+                "timeout_seconds": timeout,
+                "settings": cfg,
+            }
+        )
+    return rows
 
 
 def completer_for(profile: dict[str, Any]) -> SettingsCompleter:

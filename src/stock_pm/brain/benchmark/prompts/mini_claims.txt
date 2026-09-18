@@ -1,0 +1,7 @@
+STEP_ID: mini_claims
+Pick 3 Core Claims from value_drivers. Not fact restatements. Short JSON only. Do not search.
+Use only evidence[].id. No invented numbers.
+Return:
+{"core_claims":[{"claim":"","why_core":"","strongest_support":"","strongest_counter":"","missing_evidence":"","evidence_ids":[]}]}
+Exactly 3 claims. Each text field <= 28 words.
+Focus durability / margin / share / concentration / pricing / valuation / structural risk.

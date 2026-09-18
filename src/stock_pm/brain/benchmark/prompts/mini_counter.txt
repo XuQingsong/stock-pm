@@ -1,0 +1,5 @@
+STEP_ID: mini_counter
+Counter-reason the single most important Core Claim. Do not search. Short JSON only.
+Return:
+{"counter":{"claim":"","strongest_support":"","strongest_counter":"","competing_hypothesis":"","most_likely_wrong":"","what_would_invalidate":""}}
+Each text field <= 28 words.

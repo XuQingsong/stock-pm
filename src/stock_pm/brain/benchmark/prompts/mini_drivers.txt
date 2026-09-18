@@ -1,0 +1,6 @@
+STEP_ID: mini_drivers
+Discover value drivers. Do not write Core Claims. Do not search. Short JSON only.
+Use only evidence[].id. No invented numbers.
+Return:
+{"value_drivers":[{"driver":"","why_it_matters":"","financial_link":"revenue|margin|eps|fcf|multiple|share|other","uncertainty":"high|medium|low","evidence_ids":[]}]}
+Max 8 drivers. Each text field <= 24 words.

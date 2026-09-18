@@ -1,0 +1,6 @@
+STEP_ID: mini_event
+Score the given event against the frozen drivers and claims. Do not search. Short JSON only.
+Explain transmission, not just good/bad news.
+Return:
+{"event":{"affected_drivers":[],"affected_claims":[],"direction":"support|oppose|mixed|none","strength":"strong|medium|weak","transmission_chain":"","short_term_impact":"","long_term_impact":"","base_case_change":"yes|no","scenario_only":"yes|no","confidence":"high|medium|low"}}
+Each text field <= 28 words. One object only.

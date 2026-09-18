@@ -172,6 +172,54 @@ def freeze_from_artifact(ticker: str, path: Path | None = None) -> dict[str, Any
     return pack
 
 
+def compact_mini_pack(pack: dict[str, Any], *, fact_limit: int = 8, excerpt_width: int = 180) -> dict[str, Any]:
+    """Shrink a frozen pack for Mini Benchmark prompts. Does not re-search."""
+    evidence = []
+    for row in pack.get("validated_facts") or pack.get("evidence") or []:
+        if not isinstance(row, dict) or not row.get("id"):
+            continue
+        evidence.append(
+            {
+                "id": str(row.get("id")),
+                "fact": compact_text(row.get("fact") or row.get("excerpt") or "", excerpt_width),
+                "source": compact_text(row.get("source") or "", 40),
+            }
+        )
+        if len(evidence) >= fact_limit:
+            break
+    related = []
+    for item in pack.get("related_entities") or []:
+        if isinstance(item, dict):
+            text = compact_text(item.get("name") or item.get("ticker") or item.get("id") or "", 40)
+        else:
+            text = compact_text(item, 40)
+        if text and text not in related:
+            related.append(text)
+        if len(related) >= 8:
+            break
+    compact = {
+        "ticker": pack.get("ticker"),
+        "snapshot_id": pack.get("snapshot_id"),
+        "evidence_set_id": pack.get("evidence_set_id"),
+        "run_id": pack.get("run_id"),
+        "freeze_hash": pack.get("input_hash"),
+        "related_entities": related,
+        "evidence": evidence,
+        "allowed_evidence_ids": [row["id"] for row in evidence],
+    }
+    compact["prompt_input_hash"] = _hash(
+        {
+            "ticker": compact["ticker"],
+            "snapshot_id": compact["snapshot_id"],
+            "evidence_set_id": compact["evidence_set_id"],
+            "related_entities": compact["related_entities"],
+            "evidence": compact["evidence"],
+            "allowed_evidence_ids": compact["allowed_evidence_ids"],
+        }
+    )
+    return compact
+
+
 def freeze_benchmark_input(store: Any, research: Any, ticker: str) -> dict[str, Any]:
     pack = freeze_from_store(store, research, ticker)
     if pack and pack.get("allowed_evidence_ids"):
