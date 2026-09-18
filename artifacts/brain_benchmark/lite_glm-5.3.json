@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-09-18T02:41:27+00:00",
+  "ticker": "LITE",
+  "model_label": "zhipu-glm-5.3",
+  "model": "ZHIPU/GLM-5.3",
+  "provider": "openai",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "role": "strong",
+  "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+  "snapshot_id": "rsnap_c008a6217b864e3a9231c6574a60cc08",
+  "evidence_set_id": "bes_bc75fad0fe1545ff9c6b3557a0db9b50",
+  "run_id": "brun_541ce25ce53e4fd4b0abc7003e4fcc65",
+  "searched": false,
+  "driver_discovery": {},
+  "core_claims": [],
+  "event_impact": {},
+  "counter_reasoning": {},
+  "metrics": {
+    "driver_count": 0,
+    "driver_overlap": {
+      "all_models": [],
+      "deepseek∩qwen3.8-max": [],
+      "deepseek∩zhipu-glm-5.3": [],
+      "deepseek∩kimi-k3": [],
+      "qwen3.8-max∩zhipu-glm-5.3": [],
+      "qwen3.8-max∩kimi-k3": [],
+      "zhipu-glm-5.3∩kimi-k3": []
+    },
+    "unique_material_drivers": [],
+    "core_driver_count": 0,
+    "core_claim_count": 0,
+    "fact_restatement_core_claims": 0,
+    "unsupported_assertion_count": 0,
+    "unsupported_tokens": [],
+    "invalid_evidence_id_count": 0,
+    "invalid_evidence_ids": [],
+    "counter_reasoning_count": 0,
+    "event_routing_success": 0.0,
+    "event_routing": {
+      "expected": 10,
+      "returned": 0,
+      "routed": 0,
+      "thin_good_news_bad_news": 0,
+      "missing_event_ids": [
+        "lite_e1",
+        "lite_e2",
+        "lite_e3",
+        "lite_e4",
+        "lite_e5",
+        "lite_e6",
+        "lite_e7",
+        "lite_e8",
+        "lite_e9",
+        "lite_e10"
+      ],
+      "success_rate": 0.0
+    },
+    "consistency_failures": 4,
+    "latency_ms": 0,
+    "input_tokens": null,
+    "output_tokens": null,
+    "estimated_cost": {
+      "amount": 0.0,
+      "ccy": "CNY",
+      "note": "indicative, not an invoice"
+    },
+    "human_scores": {
+      "driver_recall": null,
+      "driver_precision": null,
+      "core_claim_quality": null,
+      "event_routing": null,
+      "transmission_quality": null,
+      "counter_reasoning": null,
+      "evidence_grounding": null,
+      "overall": null
+    }
+  },
+  "llm_calls": [
+    {
+      "step": "driver_discovery",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "core_claim_test",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "event_impact",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "counter_reasoning",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    }
+  ],
+  "rejected_evidence_ids": [],
+  "note": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing; model not called"
+}

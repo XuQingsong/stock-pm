@@ -1,0 +1,34 @@
+STEP_ID: driver_discovery
+You are discovering value drivers. Do not write Core Claims yet.
+Use only evidence_id values from evidence[]. Do not invent numbers or sources.
+A driver is a decision variable, not a restated reported fact.
+Return one JSON object:
+{
+  "value_drivers": [
+    {
+      "driver_name": "",
+      "description": "",
+      "why_it_matters": "",
+      "financial_link": "revenue|margin|eps|fcf|multiple|share|other",
+      "time_horizon": "short|medium|long",
+      "current_state": "",
+      "uncertainty": "high|medium|low",
+      "evidence_ids": [],
+      "missing_evidence": [""],
+      "possible_counter_drivers": [""]
+    }
+  ],
+  "core_drivers": [
+    {
+      "driver_name": "",
+      "why_selected": "",
+      "why_not_selected": ""
+    }
+  ],
+  "not_selected": [
+    {"driver_name": "", "why_not_selected": ""}
+  ]
+}
+Maximum 15 value_drivers. Select 3-5 core_drivers from that list.
+Prefer durability, margin quality, share, concentration, pricing, valuation, structural risk.
+If a number is not in evidence[], do not write it.

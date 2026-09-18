@@ -1,0 +1,956 @@
+{
+  "generated_at": "2026-09-18T02:41:27+00:00",
+  "tickers": [
+    "AAPL",
+    "AVGO",
+    "LITE"
+  ],
+  "models": [
+    {
+      "label": "deepseek",
+      "role": "baseline",
+      "model": "deepseek-chat",
+      "provider": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "file_aliases": [
+        "deepseek"
+      ]
+    },
+    {
+      "label": "qwen3.8-max",
+      "role": "strong",
+      "model": "qwen3.8-max",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "file_aliases": [
+        "qwen3.8-max",
+        "strong"
+      ]
+    },
+    {
+      "label": "zhipu-glm-5.3",
+      "role": "strong",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "file_aliases": [
+        "zhipu-glm-5.3",
+        "glm-5.3"
+      ]
+    },
+    {
+      "label": "kimi-k3",
+      "role": "strong",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "file_aliases": [
+        "kimi-k3"
+      ]
+    }
+  ],
+  "same_input_per_ticker": {
+    "AAPL": {
+      "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+      "snapshot_id": "rsnap_5810ce98e52142d09a3280876db2038d",
+      "evidence_set_id": "bes_32ba9540eebd49529ef643317ad6e6e6",
+      "evidence_count": 4,
+      "core_claim_count": 4
+    },
+    "AVGO": {
+      "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "snapshot_id": "rsnap_ce2cd5952b114840be23747e225d1089",
+      "evidence_set_id": "bes_2aee1c22c7294b68b9bf0c1fba279353",
+      "evidence_count": 3,
+      "core_claim_count": 3
+    },
+    "LITE": {
+      "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "snapshot_id": "rsnap_c008a6217b864e3a9231c6574a60cc08",
+      "evidence_set_id": "bes_bc75fad0fe1545ff9c6b3557a0db9b50",
+      "evidence_count": 4,
+      "core_claim_count": 2
+    }
+  },
+  "driver_overlap": {
+    "overlap": {
+      "all_models": [],
+      "deepseek∩qwen3.8-max": [],
+      "deepseek∩zhipu-glm-5.3": [],
+      "deepseek∩kimi-k3": [],
+      "qwen3.8-max∩zhipu-glm-5.3": [],
+      "qwen3.8-max∩kimi-k3": [],
+      "zhipu-glm-5.3∩kimi-k3": []
+    },
+    "unique_material_drivers": {
+      "deepseek": [
+        "ai semiconductor revenue acceleration",
+        "ai/software platform adoption (siri ai)",
+        "capital allocation and debt management",
+        "capital return and share count",
+        "competitive positioning in ai networking and custom silicon",
+        "customer concentration and order visibility",
+        "earnings execution and eps quality",
+        "foreign exchange impact",
+        "geographic revenue diversification",
+        "gross and operating margin sustainability",
+        "gross margin quality and one-time items",
+        "hardware product cycle cadence",
+        "hyperscale datacenter capex and optical interconnect demand",
+        "hyperscaler customer concentration and demand",
+        "infrastructure software (vmware) integration and margin contribution",
+        "manufacturing execution and supply chain reliability",
+        "operating expense discipline and operating leverage",
+        "pricing power and competitive intensity in optical components",
+        "product mix shift toward higher-value datacom/cloud products",
+        "regulatory and antitrust environment",
+        "regulatory and export control risk",
+        "revenue growth durability",
+        "services revenue growth and mix",
+        "supply chain concentration and resilience",
+        "supply chain dependence on tsmc",
+        "technology transition to 800g/1.6t and next-gen optical",
+        "telecom network operator capex cycles",
+        "valuation multiple and market expectations",
+        "valuation multiple compression risk",
+        "valuation multiple sensitivity"
+      ],
+      "qwen3.8-max": [],
+      "zhipu-glm-5.3": [],
+      "kimi-k3": []
+    }
+  },
+  "by_model": {
+    "deepseek": [
+      {
+        "ticker": "AAPL",
+        "model": "deepseek-chat",
+        "metrics": {
+          "driver_count": 10,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [
+            "ai/software platform adoption (siri ai)",
+            "capital return and share count",
+            "foreign exchange impact",
+            "geographic revenue diversification",
+            "gross margin quality and one-time items",
+            "hardware product cycle cadence",
+            "regulatory and antitrust environment",
+            "services revenue growth and mix",
+            "supply chain concentration and resilience",
+            "valuation multiple sensitivity"
+          ],
+          "core_driver_count": 5,
+          "core_claim_count": 4,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 4,
+          "event_routing_success": 1.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 10,
+            "routed": 10,
+            "thin_good_news_bad_news": 7,
+            "missing_event_ids": [],
+            "success_rate": 1.0
+          },
+          "consistency_failures": 0,
+          "latency_ms": 36849,
+          "input_tokens": 22665,
+          "output_tokens": 8375,
+          "estimated_cost": {
+            "amount": 0.005518,
+            "ccy": "USD",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+        "core_claim_titles": [
+          "Services mix shift supports structural margin expansion",
+          "Product cycle catalysts may extend revenue growth durability",
+          "Reported gross margin is inflated by one-time tariff refund",
+          "Valuation multiple is sensitive to margin normalization"
+        ]
+      },
+      {
+        "ticker": "AVGO",
+        "model": "deepseek-chat",
+        "metrics": {
+          "driver_count": 10,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [
+            "ai semiconductor revenue acceleration",
+            "capital allocation and debt management",
+            "competitive positioning in ai networking and custom silicon",
+            "earnings execution and eps quality",
+            "gross and operating margin sustainability",
+            "hyperscaler customer concentration and demand",
+            "infrastructure software (vmware) integration and margin contribution",
+            "revenue growth durability",
+            "supply chain dependence on tsmc",
+            "valuation multiple compression risk"
+          ],
+          "core_driver_count": 5,
+          "core_claim_count": 5,
+          "fact_restatement_core_claims": 1,
+          "unsupported_assertion_count": 8,
+          "unsupported_tokens": [
+            "21.7b",
+            "69.13",
+            "53.92",
+            "85.5",
+            "48.69",
+            "215.29",
+            "2.68",
+            "1.615"
+          ],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 5,
+          "event_routing_success": 1.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 10,
+            "routed": 10,
+            "thin_good_news_bad_news": 7,
+            "missing_event_ids": [],
+            "success_rate": 1.0
+          },
+          "consistency_failures": 0,
+          "latency_ms": 40699,
+          "input_tokens": 20901,
+          "output_tokens": 9322,
+          "estimated_cost": {
+            "amount": 0.005536,
+            "ccy": "USD",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "core_claim_titles": [
+          "AI semiconductor revenue acceleration is the dominant growth driver, but its durability is unverified",
+          "Margin sustainability depends on AI mix, but AI segment margin profile is unverified",
+          "Revenue growth durability is uncertain despite exceptional current growth",
+          "High valuation multiple leaves little room for execution missteps",
+          "Hyperscaler customer concentration creates revenue volatility risk"
+        ]
+      },
+      {
+        "ticker": "LITE",
+        "model": "deepseek-chat",
+        "metrics": {
+          "driver_count": 10,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [
+            "customer concentration and order visibility",
+            "hyperscale datacenter capex and optical interconnect demand",
+            "manufacturing execution and supply chain reliability",
+            "operating expense discipline and operating leverage",
+            "pricing power and competitive intensity in optical components",
+            "product mix shift toward higher-value datacom/cloud products",
+            "regulatory and export control risk",
+            "technology transition to 800g/1.6t and next-gen optical",
+            "telecom network operator capex cycles",
+            "valuation multiple and market expectations"
+          ],
+          "core_driver_count": 5,
+          "core_claim_count": 5,
+          "fact_restatement_core_claims": 3,
+          "unsupported_assertion_count": 2,
+          "unsupported_tokens": [
+            "71.5b",
+            "3.014b"
+          ],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 5,
+          "event_routing_success": 1.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 10,
+            "routed": 10,
+            "thin_good_news_bad_news": 7,
+            "missing_event_ids": [],
+            "success_rate": 1.0
+          },
+          "consistency_failures": 0,
+          "latency_ms": 43070,
+          "input_tokens": 22689,
+          "output_tokens": 9960,
+          "estimated_cost": {
+            "amount": 0.005965,
+            "ccy": "USD",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "core_claim_titles": [
+          "Revenue growth durability hinges on hyperscaler capex persistence",
+          "Margin expansion may reflect structural mix shift but durability is unproven",
+          "Operating leverage is evident but sustainability depends on opex discipline",
+          "Customer concentration risk is a critical unknown that could amplify revenue volatility",
+          "Valuation sensitivity is high given implied P/S multiple and lack of forward estimates"
+        ]
+      }
+    ],
+    "qwen3.8-max": [
+      {
+        "ticker": "AAPL",
+        "model": "qwen3.8-max",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "aapl_e1",
+              "aapl_e2",
+              "aapl_e3",
+              "aapl_e4",
+              "aapl_e5",
+              "aapl_e6",
+              "aapl_e7",
+              "aapl_e8",
+              "aapl_e9",
+              "aapl_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "AVGO",
+        "model": "qwen3.8-max",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "avgo_e1",
+              "avgo_e2",
+              "avgo_e3",
+              "avgo_e4",
+              "avgo_e5",
+              "avgo_e6",
+              "avgo_e7",
+              "avgo_e8",
+              "avgo_e9",
+              "avgo_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "LITE",
+        "model": "qwen3.8-max",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "lite_e1",
+              "lite_e2",
+              "lite_e3",
+              "lite_e4",
+              "lite_e5",
+              "lite_e6",
+              "lite_e7",
+              "lite_e8",
+              "lite_e9",
+              "lite_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "core_claim_titles": []
+      }
+    ],
+    "zhipu-glm-5.3": [
+      {
+        "ticker": "AAPL",
+        "model": "ZHIPU/GLM-5.3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "aapl_e1",
+              "aapl_e2",
+              "aapl_e3",
+              "aapl_e4",
+              "aapl_e5",
+              "aapl_e6",
+              "aapl_e7",
+              "aapl_e8",
+              "aapl_e9",
+              "aapl_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "AVGO",
+        "model": "ZHIPU/GLM-5.3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "avgo_e1",
+              "avgo_e2",
+              "avgo_e3",
+              "avgo_e4",
+              "avgo_e5",
+              "avgo_e6",
+              "avgo_e7",
+              "avgo_e8",
+              "avgo_e9",
+              "avgo_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "LITE",
+        "model": "ZHIPU/GLM-5.3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "lite_e1",
+              "lite_e2",
+              "lite_e3",
+              "lite_e4",
+              "lite_e5",
+              "lite_e6",
+              "lite_e7",
+              "lite_e8",
+              "lite_e9",
+              "lite_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "core_claim_titles": []
+      }
+    ],
+    "kimi-k3": [
+      {
+        "ticker": "AAPL",
+        "model": "kimi-k3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "aapl_e1",
+              "aapl_e2",
+              "aapl_e3",
+              "aapl_e4",
+              "aapl_e5",
+              "aapl_e6",
+              "aapl_e7",
+              "aapl_e8",
+              "aapl_e9",
+              "aapl_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "AVGO",
+        "model": "kimi-k3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "avgo_e1",
+              "avgo_e2",
+              "avgo_e3",
+              "avgo_e4",
+              "avgo_e5",
+              "avgo_e6",
+              "avgo_e7",
+              "avgo_e8",
+              "avgo_e9",
+              "avgo_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+        "core_claim_titles": []
+      },
+      {
+        "ticker": "LITE",
+        "model": "kimi-k3",
+        "metrics": {
+          "driver_count": 0,
+          "driver_overlap": {
+            "all_models": [],
+            "deepseek∩qwen3.8-max": [],
+            "deepseek∩zhipu-glm-5.3": [],
+            "deepseek∩kimi-k3": [],
+            "qwen3.8-max∩zhipu-glm-5.3": [],
+            "qwen3.8-max∩kimi-k3": [],
+            "zhipu-glm-5.3∩kimi-k3": []
+          },
+          "unique_material_drivers": [],
+          "core_driver_count": 0,
+          "core_claim_count": 0,
+          "fact_restatement_core_claims": 0,
+          "unsupported_assertion_count": 0,
+          "unsupported_tokens": [],
+          "invalid_evidence_id_count": 0,
+          "invalid_evidence_ids": [],
+          "counter_reasoning_count": 0,
+          "event_routing_success": 0.0,
+          "event_routing": {
+            "expected": 10,
+            "returned": 0,
+            "routed": 0,
+            "thin_good_news_bad_news": 0,
+            "missing_event_ids": [
+              "lite_e1",
+              "lite_e2",
+              "lite_e3",
+              "lite_e4",
+              "lite_e5",
+              "lite_e6",
+              "lite_e7",
+              "lite_e8",
+              "lite_e9",
+              "lite_e10"
+            ],
+            "success_rate": 0.0
+          },
+          "consistency_failures": 4,
+          "latency_ms": 0,
+          "input_tokens": null,
+          "output_tokens": null,
+          "estimated_cost": {
+            "amount": 0.0,
+            "ccy": "CNY",
+            "note": "indicative, not an invoice"
+          },
+          "human_scores": {
+            "driver_recall": null,
+            "driver_precision": null,
+            "core_claim_quality": null,
+            "event_routing": null,
+            "transmission_quality": null,
+            "counter_reasoning": null,
+            "evidence_grounding": null,
+            "overall": null
+          }
+        },
+        "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+        "core_claim_titles": []
+      }
+    ]
+  },
+  "winner": null,
+  "note": "No automatic winner. Human scores remain null."
+}

@@ -179,6 +179,23 @@ def _anthropic_usage(payload: dict) -> dict[str, int | None]:
     return {"input_tokens": inn, "output_tokens": out, "total_tokens": total}
 
 
+def _message_text(message: dict[str, Any] | None) -> str:
+    row = message or {}
+    content = row.get("content")
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            if isinstance(item, dict):
+                parts.append(str(item.get("text") or item.get("content") or ""))
+            else:
+                parts.append(str(item))
+        content = "".join(parts)
+    text = str(content or "").strip()
+    if text:
+        return text
+    return str(row.get("reasoning_content") or row.get("reasoning") or "").strip()
+
+
 def _chat_openai_compatible(
     settings: Settings,
     system: str,
@@ -202,6 +219,9 @@ def _chat_openai_compatible(
         body["max_tokens"] = max_tokens
     if json_object:
         body["response_format"] = {"type": "json_object"}
+    extra = getattr(settings, "llm_extra_body", None)
+    if isinstance(extra, dict) and extra:
+        body.update(extra)
     started = time.perf_counter()
     payload = _post_json(
         f"{base}/chat/completions",
@@ -213,7 +233,8 @@ def _chat_openai_compatible(
         timeout=timeout,
     )
     latency_ms = int(round((time.perf_counter() - started) * 1000))
-    text = (((payload.get("choices") or [{}])[0].get("message") or {}).get("content")) or ""
+    message = ((payload.get("choices") or [{}])[0].get("message") or {})
+    text = _message_text(message if isinstance(message, dict) else {})
     used_model = payload.get("model") or model
     meta = {"latency_ms": latency_ms, **_openai_usage(payload)}
     return text, used_model, meta
@@ -350,16 +371,18 @@ def complete_json(
         return row
 
     try:
+        timeout = int(getattr(config, "llm_timeout_seconds", None) or 180)
+        max_tokens = int(getattr(config, "llm_max_tokens", None) or 8192)
         if provider == "anthropic":
-            text, used_model, meta = _chat_anthropic(config, system, prompt, timeout=180, max_tokens=8192)
+            text, used_model, meta = _chat_anthropic(config, system, prompt, timeout=timeout, max_tokens=max_tokens)
         else:
             try:
                 text, used_model, meta = _chat_openai_compatible(
                     config,
                     system,
                     prompt,
-                    timeout=180,
-                    max_tokens=8192,
+                    timeout=timeout,
+                    max_tokens=max_tokens,
                     json_object=True,
                 )
             except LLMRequestError as exc:
@@ -369,8 +392,8 @@ def complete_json(
                     config,
                     system,
                     prompt,
-                    timeout=180,
-                    max_tokens=8192,
+                    timeout=timeout,
+                    max_tokens=max_tokens,
                     json_object=False,
                 )
     except LLMRequestError as exc:

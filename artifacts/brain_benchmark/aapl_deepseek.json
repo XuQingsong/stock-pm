@@ -1,0 +1,812 @@
+{
+  "generated_at": "2026-09-18T02:40:03+00:00",
+  "ticker": "AAPL",
+  "model_label": "deepseek",
+  "model": "deepseek-chat",
+  "provider": "openai",
+  "base_url": "https://api.deepseek.com/v1",
+  "role": "baseline",
+  "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+  "snapshot_id": "rsnap_5810ce98e52142d09a3280876db2038d",
+  "evidence_set_id": "bes_32ba9540eebd49529ef643317ad6e6e6",
+  "run_id": "brun_be4878bdfcaf427485a20f72746fb18a",
+  "searched": false,
+  "driver_discovery": {
+    "value_drivers": [
+      {
+        "driver_name": "Services revenue growth and mix",
+        "description": "Growth and revenue mix of Apple's Services segment, which management describes as reaching all-time highs and carrying much higher gross margin than Products.",
+        "why_it_matters": "Services is the primary lever for structural gross margin expansion and recurring revenue durability; mix shift toward Services can offset hardware cyclicality.",
+        "financial_link": "margin",
+        "time_horizon": "medium",
+        "current_state": "Services revenue reached a new all-time high in the March 2026 quarter and set a June quarter record in the June 2026 quarter, with management citing double-digit growth in developed and emerging markets.",
+        "uncertainty": "medium",
+        "evidence_ids": [
+          "rev_f380aa032a3041bea9ca174726be3187",
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ],
+        "missing_evidence": [
+          "Gross margin by segment (Products vs Services) for recent quarters",
+          "Services as % of total revenue over time",
+          "Regulatory or competitive developments affecting Services margin"
+        ],
+        "possible_counter_drivers": [
+          "Regulatory actions (DMA, antitrust) altering App Store economics",
+          "Default search engine payment disruption",
+          "Developer ecosystem pushback on App Store policies"
+        ]
+      },
+      {
+        "driver_name": "Hardware product cycle cadence",
+        "description": "Timing and reception of major hardware launches, including the first foldable iPhone (iPhone Duo) and annual iPhone/Mac refreshes.",
+        "why_it_matters": "New form factors and refresh cycles drive unit demand, ASPs, and upgrade rates, directly affecting Products revenue and overall growth durability.",
+        "financial_link": "revenue",
+        "time_horizon": "short",
+        "current_state": "Apple introduced iPhone Duo, its first foldable iPhone, with a 7.6-inch inner display and 5.4-inch outer display, in September 2026.",
+        "uncertainty": "high",
+        "evidence_ids": [
+          "rev_0e3ea5e68a1b442b899f7bf2a99e45bc"
+        ],
+        "missing_evidence": [
+          "Pre-order or early sales data for iPhone Duo",
+          "Analyst or industry forecasts on revenue impact",
+          "Historical TTM revenue growth rate for comparison"
+        ],
+        "possible_counter_drivers": [
+          "Cannibalization of existing iPhone models",
+          "Demand softness or delayed adoption of foldables",
+          "Supply chain constraints on new form factors"
+        ]
+      },
+      {
+        "driver_name": "Gross margin quality and one-time items",
+        "description": "Whether reported gross margin reflects sustainable structural profitability or is distorted by non-recurring benefits such as a tariff refund.",
+        "why_it_matters": "Margin quality determines the durability of earnings and the appropriate valuation multiple; one-time benefits can overstate structural profitability.",
+        "financial_link": "margin",
+        "time_horizon": "short",
+        "current_state": "Latest quarter gross margin was 50.06% (reported), with management citing favorable mix; a one-time tariff refund benefit has been flagged as a possible distortion.",
+        "uncertainty": "high",
+        "evidence_ids": [
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ],
+        "missing_evidence": [
+          "Detailed gross margin discussion in Q3 FY2026 10-Q",
+          "Management commentary on gross margin drivers",
+          "Any mention of tariff refunds in financial disclosures",
+          "Historical gross margin data to assess anomaly"
+        ],
+        "possible_counter_drivers": [
+          "Tariff refund not repeated",
+          "FX headwinds",
+          "Product mix shift toward lower-margin hardware"
+        ]
+      },
+      {
+        "driver_name": "AI/software platform adoption (Siri AI)",
+        "description": "Rollout and adoption of next-generation Apple Intelligence features, including Siri AI, across iOS, iPadOS, and macOS.",
+        "why_it_matters": "AI features can drive device upgrade cycles, ecosystem stickiness, and Services engagement, supporting both hardware and Services revenue.",
+        "financial_link": "revenue",
+        "time_horizon": "medium",
+        "current_state": "Siri AI and other software updates started rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27.",
+        "uncertainty": "medium",
+        "evidence_ids": [
+          "rev_87d6a241e2a94930a4cfa4c3560d5c62"
+        ],
+        "missing_evidence": [
+          "Adoption metrics or user engagement data for Siri AI post-launch",
+          "Analyst forecasts on revenue impact",
+          "Competitive AI feature comparisons"
+        ],
+        "possible_counter_drivers": [
+          "Delayed or underwhelming AI feature adoption",
+          "Competitive AI offerings from peers",
+          "Regulatory scrutiny of AI features"
+        ]
+      },
+      {
+        "driver_name": "Geographic revenue diversification",
+        "description": "Growth in emerging markets and developed markets outside the US, reducing reliance on any single region.",
+        "why_it_matters": "Broad-based geographic growth supports revenue durability and reduces exposure to regional downturns or regulatory actions.",
+        "financial_link": "revenue",
+        "time_horizon": "medium",
+        "current_state": "Management noted growth in the majority of markets tracked and double-digit Services growth in both developed and emerging markets.",
+        "uncertainty": "medium",
+        "evidence_ids": [
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ],
+        "missing_evidence": [
+          "Segment-level revenue growth by geography",
+          "Regional margin data",
+          "Impact of FX on regional revenue"
+        ],
+        "possible_counter_drivers": [
+          "Geopolitical tensions in key markets (e.g., China)",
+          "FX headwinds",
+          "Local competition"
+        ]
+      },
+      {
+        "driver_name": "Regulatory and antitrust environment",
+        "description": "Actions by regulators (EU DMA, US antitrust, China) that could alter App Store rules, default search payments, and effective tax rates.",
+        "why_it_matters": "Regulatory changes can directly impact Services revenue and margin, as well as overall cost structure and legal liabilities.",
+        "financial_link": "margin",
+        "time_horizon": "long",
+        "current_state": "Ongoing regulatory scrutiny from EU, US, and China governments, with potential impacts on App Store economics and Services margin.",
+        "uncertainty": "high",
+        "evidence_ids": [],
+        "missing_evidence": [
+          "Specific regulatory rulings or fines",
+          "Quantified impact on Services revenue",
+          "Timeline for regulatory changes"
+        ],
+        "possible_counter_drivers": [
+          "Favorable regulatory outcomes",
+          "Apple adapting business model to comply without material impact",
+          "Lobbying efforts mitigating risk"
+        ]
+      },
+      {
+        "driver_name": "Supply chain concentration and resilience",
+        "description": "Dependence on key suppliers (TSMC, Foxconn) and exposure to geopolitical disruptions, labor issues, or capacity constraints.",
+        "why_it_matters": "Supply chain disruptions can delay product launches, increase costs, and reduce revenue, impacting margins and growth.",
+        "financial_link": "margin",
+        "time_horizon": "medium",
+        "current_state": "Sole-source advanced chip fabrication from TSMC and primary assembly from Foxconn create concentration risk.",
+        "uncertainty": "medium",
+        "evidence_ids": [],
+        "missing_evidence": [
+          "Supplier diversification plans",
+          "Inventory levels and lead times",
+          "Geopolitical risk assessments"
+        ],
+        "possible_counter_drivers": [
+          "Successful diversification to other suppliers",
+          "Inventory buffers",
+          "Government incentives for domestic production"
+        ]
+      },
+      {
+        "driver_name": "Valuation multiple sensitivity",
+        "description": "The price-to-earnings multiple and its sensitivity to earnings quality, growth expectations, and margin normalization.",
+        "why_it_matters": "A high multiple amplifies downside if growth slows or margins normalize; valuation is a key decision variable for investors.",
+        "financial_link": "multiple",
+        "time_horizon": "short",
+        "current_state": "TTM PE is 37.95 (reported), with market cap of $4.88 trillion.",
+        "uncertainty": "high",
+        "evidence_ids": [],
+        "missing_evidence": [
+          "Forward PE consensus",
+          "EV/EBITDA",
+          "FCF yield",
+          "Peer valuation comparisons"
+        ],
+        "possible_counter_drivers": [
+          "Earnings growth exceeding expectations",
+          "Multiple expansion from Services mix",
+          "Share buybacks supporting EPS"
+        ]
+      },
+      {
+        "driver_name": "Capital return and share count",
+        "description": "Apple's ability to return capital via dividends and buybacks, affecting EPS and shareholder value.",
+        "why_it_matters": "Buybacks reduce share count, boosting EPS and supporting valuation, especially when growth is moderate.",
+        "financial_link": "eps",
+        "time_horizon": "medium",
+        "current_state": "No specific evidence on capital return in the provided set.",
+        "uncertainty": "medium",
+        "evidence_ids": [],
+        "missing_evidence": [
+          "Dividend per share",
+          "Buyback authorization and pace",
+          "Cash flow from operations"
+        ],
+        "possible_counter_drivers": [
+          "Reduced cash flow limiting buybacks",
+          "Alternative uses of cash (R&D, M&A)",
+          "Regulatory restrictions on capital return"
+        ]
+      },
+      {
+        "driver_name": "Foreign exchange impact",
+        "description": "Currency fluctuations affecting reported revenue and margins, particularly given Apple's global sales.",
+        "why_it_matters": "FX headwinds can mask underlying growth and pressure margins, as noted in management commentary.",
+        "financial_link": "revenue",
+        "time_horizon": "short",
+        "current_state": "Management cited a headwind of almost 2.5 percentage points from foreign exchange on March quarter revenue and over 2 percentage points on Services revenue.",
+        "uncertainty": "medium",
+        "evidence_ids": [
+          "rev_f680a2738ac040b7a37c1e15345b143a"
+        ],
+        "missing_evidence": [
+          "Currency hedging details",
+          "FX impact by segment",
+          "Forward FX rates"
+        ],
+        "possible_counter_drivers": [
+          "Favorable currency movements",
+          "Hedging strategies",
+          "Local pricing adjustments"
+        ]
+      }
+    ],
+    "core_drivers": [
+      {
+        "driver_name": "Services revenue growth and mix",
+        "why_selected": "Services is the highest-margin, most recurring revenue stream and the primary lever for structural margin expansion; evidence shows record highs and double-digit growth.",
+        "why_not_selected": ""
+      },
+      {
+        "driver_name": "Hardware product cycle cadence",
+        "why_selected": "New form factors like the foldable iPhone Duo can drive upgrade cycles and revenue growth; timing and reception are critical for near-term performance.",
+        "why_not_selected": ""
+      },
+      {
+        "driver_name": "Gross margin quality and one-time items",
+        "why_selected": "Margin quality directly affects earnings durability and valuation; the potential distortion from a one-time tariff refund is a key uncertainty.",
+        "why_not_selected": ""
+      },
+      {
+        "driver_name": "AI/software platform adoption (Siri AI)",
+        "why_selected": "AI features can enhance ecosystem stickiness and drive device upgrades, supporting both hardware and Services revenue; rollout is imminent.",
+        "why_not_selected": ""
+      },
+      {
+        "driver_name": "Valuation multiple sensitivity",
+        "why_selected": "With a high TTM PE, the stock is sensitive to any disappointment in growth or margin; valuation is a critical decision variable for investors.",
+        "why_not_selected": ""
+      }
+    ],
+    "not_selected": [
+      {
+        "driver_name": "Geographic revenue diversification",
+        "why_not_selected": "While important, it is a secondary factor compared to product cycles and Services mix; evidence is less specific."
+      },
+      {
+        "driver_name": "Regulatory and antitrust environment",
+        "why_not_selected": "Long-term risk with high uncertainty and no direct evidence in the provided set; better monitored as a counter-driver."
+      },
+      {
+        "driver_name": "Supply chain concentration and resilience",
+        "why_not_selected": "Operational risk that is typically managed; no specific evidence in the set to assess current state."
+      },
+      {
+        "driver_name": "Capital return and share count",
+        "why_not_selected": "No evidence provided; less critical for near-term value drivers compared to growth and margin."
+      },
+      {
+        "driver_name": "Foreign exchange impact",
+        "why_not_selected": "Short-term headwind that management can partially offset; not a durable driver of intrinsic value."
+      }
+    ]
+  },
+  "core_claims": [
+    {
+      "claim_id": "bench_1",
+      "title": "Services mix shift supports structural margin expansion",
+      "statement": "Apple's Services revenue reached new all-time highs in recent quarters, and Services carries higher gross margin than Products, but the available evidence does not quantify the revenue mix shift or the gross margin differential, so the claim that the margin trajectory is more structural than cyclical remains unverified",
+      "claim_subject": "apple_inc",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "time_horizon": "medium",
+      "why_core": "Margin quality is a key decision variable for Apple's valuation, and the evidence shows Services revenue reaching all-time records with high gross margin.",
+      "supporting_evidence_ids": [
+        "rev_f380aa032a3041bea9ca174726be3187",
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Gross margin by segment (Products vs Services) for recent quarters",
+        "Revenue mix percentages (Services as % of total revenue) over time",
+        "Trend in overall gross margin and decomposition into mix versus rate effects",
+        "Regulatory or competitive developments affecting Services margin"
+      ],
+      "unverified_detail": ""
+    },
+    {
+      "claim_id": "bench_2",
+      "title": "Product cycle catalysts may extend revenue growth durability",
+      "statement": "The introduction of the foldable iPhone Duo and the rollout of Siri AI across platforms in September 2026 provide new product cycle catalysts that could sustain or accelerate revenue growth beyond the current TTM rate",
+      "claim_subject": "hardware_demand",
+      "claim_dimension": "growth_duration",
+      "financial_driver": "demand",
+      "time_horizon": "short",
+      "why_core": "Growth durability is a key decision variable, and the evidence shows concrete new product and software launches that could influence future demand.",
+      "supporting_evidence_ids": [
+        "rev_0e3ea5e68a1b442b899f7bf2a99e45bc",
+        "rev_87d6a241e2a94930a4cfa4c3560d5c62"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Pre-order or early sales data for the foldable iPhone Duo",
+        "Adoption metrics or user engagement data for Siri AI post-launch",
+        "Analyst or industry forecasts on the revenue impact of these products",
+        "Historical TTM revenue growth rate for comparison",
+        "Counter-evidence on potential cannibalization or demand softness"
+      ],
+      "unverified_detail": ""
+    },
+    {
+      "claim_id": "bench_3",
+      "title": "Reported gross margin is inflated by one-time tariff refund",
+      "statement": "The latest quarter's gross margin includes a favorable one-time tariff refund benefit, implying underlying gross margin is lower and the reported margin overstates structural profitability",
+      "claim_subject": "apple_inc",
+      "claim_dimension": "margin_quality",
+      "financial_driver": "margin",
+      "time_horizon": "short",
+      "why_core": "Margin quality is a key decision variable, and the evidence explicitly flags a one-time benefit that distorts the reported margin.",
+      "supporting_evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Apple's Q3 FY2026 earnings release or 10-Q with detailed gross margin discussion",
+        "Management commentary on gross margin drivers during the Q3 FY2026 earnings call",
+        "Any mention of tariff refunds or one-time benefits in Apple's financial disclosures",
+        "Analyst reports or news articles discussing Apple's gross margin composition for Q3 FY2026",
+        "Historical gross margin data to assess whether the reported margin is anomalous"
+      ],
+      "unverified_detail": "50.06 could not be verified"
+    },
+    {
+      "claim_id": "bench_4",
+      "title": "Valuation multiple is sensitive to margin normalization",
+      "statement": "Apple's TTM PE may be sensitive to any normalization of gross margin if a non-recurring benefit (such as a tariff refund) is included in earnings, potentially compressing earnings and the multiple",
+      "claim_subject": "valuation",
+      "claim_dimension": "valuation_sensitivity",
+      "financial_driver": "margin",
+      "time_horizon": "short",
+      "why_core": "Valuation sensitivity to margin quality is a key decision variable, and the evidence provides both the PE and the margin distortion.",
+      "supporting_evidence_ids": [
+        "rev_f680a2738ac040b7a37c1e15345b143a"
+      ],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [
+        "Apple's actual TTM PE ratio (the number 37.95 is unverified)",
+        "Any mention of a tariff refund in Apple's financial statements or earnings calls",
+        "Gross margin figures for the relevant periods to assess normalization impact",
+        "Analyst estimates or consensus forward PE that adjust for non-recurring items",
+        "Quantification of the EPS impact if the tariff refund benefit is not repeated"
+      ],
+      "unverified_detail": "37.95 could not be verified"
+    }
+  ],
+  "event_impact": {
+    "events": [
+      {
+        "event_id": "aapl_e1",
+        "affected_drivers": [
+          "Services revenue growth and mix",
+          "Hardware product cycle cadence",
+          "Gross margin quality and one-time items"
+        ],
+        "affected_claims": [
+          "bench_1",
+          "bench_3"
+        ],
+        "direction": "support",
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "transmission_chain": "June-quarter records for total company revenue and EPS, with iPhone, Mac and Services setting new June quarter records, directly support the Services mix shift and hardware demand drivers. However, the excerpt does not quantify Services mix or gross margin, so it supports the existence of record revenue but not the structural margin expansion claim. It also does not confirm or deny the one-time tariff refund, so margin quality remains unverified.",
+        "short_term_impact": "Positive revenue and EPS headline supports near-term sentiment and confirms demand durability.",
+        "long_term_impact": "Without segment margin detail, the long-term margin trajectory remains uncertain; the record revenue alone does not resolve the structural vs cyclical margin debate.",
+        "financial_metrics_affected": [
+          "revenue",
+          "eps",
+          "gross_margin"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Segment-level gross margin and revenue mix (Products vs Services) from the Q3 FY2026 10-Q or earnings call."
+      },
+      {
+        "event_id": "aapl_e2",
+        "affected_drivers": [
+          "Services revenue growth and mix"
+        ],
+        "affected_claims": [
+          "bench_1"
+        ],
+        "direction": "support",
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "transmission_chain": "March quarter records for total company revenue, iPhone revenue, and EPS, with Services revenue reaching a new all-time high, directly support the Services growth driver. This strengthens the evidence that Services is growing and becoming a larger part of the mix, but the excerpt does not quantify the mix shift or the gross margin differential, so the structural margin expansion claim remains unverified.",
+        "short_term_impact": "Confirms Services momentum and record profitability, supporting near-term earnings quality.",
+        "long_term_impact": "Repeated Services records build the case for a structural mix shift, but without margin decomposition the long-term margin impact is not proven.",
+        "financial_metrics_affected": [
+          "services_revenue",
+          "total_revenue",
+          "eps"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Services gross margin and Services as a percentage of total revenue for the March quarter and prior periods."
+      },
+      {
+        "event_id": "aapl_e3",
+        "affected_drivers": [
+          "Hardware product cycle cadence"
+        ],
+        "affected_claims": [
+          "bench_2"
+        ],
+        "direction": "support",
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "transmission_chain": "The introduction of the foldable iPhone Duo is a new form factor that could stimulate upgrade demand and extend the hardware product cycle. This directly supports the claim that product cycle catalysts may extend revenue growth durability. However, the event is a launch announcement, not evidence of sales, so the strength is medium and the impact depends on adoption.",
+        "short_term_impact": "Positive for near-term sentiment and potential pre-order interest, but no sales data yet.",
+        "long_term_impact": "If successful, could expand the iPhone addressable market and lengthen the upgrade cycle; if not, it may be a niche product.",
+        "financial_metrics_affected": [
+          "iphone_revenue",
+          "asp",
+          "unit_volume"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Pre-order or early sales data for iPhone Duo, and analyst forecasts for its revenue contribution."
+      },
+      {
+        "event_id": "aapl_e4",
+        "affected_drivers": [
+          "AI/software platform adoption (Siri AI)",
+          "Services revenue growth and mix"
+        ],
+        "affected_claims": [
+          "bench_2"
+        ],
+        "direction": "support",
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "transmission_chain": "The rollout of Siri AI across iOS 27, iPadOS 27, and macOS 27 is a software catalyst that could enhance ecosystem stickiness, drive device upgrades, and increase Services engagement. This supports the claim that product cycle catalysts may extend revenue growth durability. The impact is indirect for hardware (via upgrade incentive) and direct for Services (via potential new AI services), but adoption metrics are not yet available.",
+        "short_term_impact": "Positive for user engagement and ecosystem lock-in, but monetization is not immediate.",
+        "long_term_impact": "Could strengthen the Services narrative and support higher-margin recurring revenue if AI features are monetized or drive device upgrades.",
+        "financial_metrics_affected": [
+          "services_revenue",
+          "iphone_revenue",
+          "user_engagement"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Adoption metrics, user engagement data, and any monetization plans for Siri AI."
+      },
+      {
+        "event_id": "aapl_e5",
+        "affected_drivers": [
+          "Gross margin quality and one-time items",
+          "Valuation multiple sensitivity"
+        ],
+        "affected_claims": [
+          "bench_3",
+          "bench_4"
+        ],
+        "direction": "mixed",
+        "strength": "weak",
+        "direct_or_indirect": "indirect",
+        "transmission_chain": "The event is a claim that the latest quarter's gross margin includes a one-time tariff refund. If true, it would mean reported gross margin overstates structural profitability, supporting the margin quality concern and potentially pressuring the valuation multiple. However, the frozen 8-K excerpt does not mention the refund, so the event is unverified and its impact is speculative. It is mixed because it could be positive (if refund is real and recurring) or negative (if one-time and reverses).",
+        "short_term_impact": "If confirmed, could lead to downward earnings revisions and multiple compression.",
+        "long_term_impact": "If the refund is truly one-time, the underlying margin is lower, which would reduce long-term earnings power and justify a lower multiple.",
+        "financial_metrics_affected": [
+          "gross_margin",
+          "eps",
+          "pe_ttm"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "yes",
+        "confidence": "low",
+        "evidence_needed_next": "Apple's Q3 FY2026 earnings release or 10-Q with detailed gross margin discussion and any mention of tariff refunds."
+      },
+      {
+        "event_id": "aapl_e6",
+        "affected_drivers": [
+          "Hardware product cycle cadence"
+        ],
+        "affected_claims": [
+          "bench_2"
+        ],
+        "direction": "none",
+        "strength": "weak",
+        "direct_or_indirect": "indirect",
+        "transmission_chain": "This event is a candidate claim that management cited supply constraints that may have capped reported hardware revenue. It is not confirmed in the frozen 8-K excerpts, so it does not map to any verified driver or claim. If true, it would be a negative for hardware revenue but also imply pent-up demand, making the net impact ambiguous. Without confirmation, direction is none.",
+        "short_term_impact": "Unknown without confirmation.",
+        "long_term_impact": "Unknown without confirmation.",
+        "financial_metrics_affected": [
+          "iphone_revenue",
+          "unit_volume"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "yes",
+        "confidence": "low",
+        "evidence_needed_next": "Management commentary on supply constraints from the Q3 FY2026 earnings call or 10-Q."
+      },
+      {
+        "event_id": "aapl_e7",
+        "affected_drivers": [
+          "Services revenue growth and mix"
+        ],
+        "affected_claims": [
+          "bench_1"
+        ],
+        "direction": "oppose",
+        "strength": "medium",
+        "direct_or_indirect": "indirect",
+        "transmission_chain": "DMA / App Store regulatory pressure could force changes to App Store economics, potentially compressing Services take-rate or mix. This opposes the claim that Services mix shift supports structural margin expansion, as it introduces a risk to Services margin. The impact is indirect because it depends on regulatory outcomes and Apple's compliance strategies.",
+        "short_term_impact": "Uncertainty may weigh on Services growth expectations and valuation.",
+        "long_term_impact": "If regulations reduce App Store fees, Services margin could be structurally lower, undermining the margin expansion thesis.",
+        "financial_metrics_affected": [
+          "services_revenue",
+          "services_gross_margin",
+          "app_store_take_rate"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Details on DMA enforcement actions and Apple's proposed compliance changes, and their estimated impact on Services revenue."
+      },
+      {
+        "event_id": "aapl_e8",
+        "affected_drivers": [
+          "Gross margin quality and one-time items"
+        ],
+        "affected_claims": [
+          "bench_3"
+        ],
+        "direction": "none",
+        "strength": "weak",
+        "direct_or_indirect": "indirect",
+        "transmission_chain": "This event is about Apple chartering freighters to move iPhones from India to the US, possibly tariff or supply-chain related. It does not directly map to any core driver or claim in the frozen set. It could be a response to tariffs, which might affect gross margin, but the connection is speculative and not supported by the frozen evidence. Therefore, direction is none.",
+        "short_term_impact": "Unknown; could indicate supply chain adjustments.",
+        "long_term_impact": "Unknown; may reflect ongoing tariff mitigation efforts.",
+        "financial_metrics_affected": [
+          "gross_margin",
+          "logistics_cost"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "yes",
+        "confidence": "low",
+        "evidence_needed_next": "Confirmation of the airfreight activity and its rationale, and any associated cost impact."
+      },
+      {
+        "event_id": "aapl_e9",
+        "affected_drivers": [
+          "Valuation multiple sensitivity"
+        ],
+        "affected_claims": [
+          "bench_4"
+        ],
+        "direction": "oppose",
+        "strength": "weak",
+        "direct_or_indirect": "indirect",
+        "transmission_chain": "A post-earnings sell-off despite record prints could signal market skepticism about growth quality or margin sustainability. This opposes the bullish narrative and supports the valuation sensitivity claim, as it suggests the market may be discounting the earnings quality. However, the event is a candidate not selected as core, and the frozen evidence does not include price reaction data, so the impact is weak and indirect.",
+        "short_term_impact": "Negative price action could pressure the multiple.",
+        "long_term_impact": "If skepticism persists, the stock may de-rate until margin quality is clarified.",
+        "financial_metrics_affected": [
+          "pe_ttm",
+          "price"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "yes",
+        "confidence": "low",
+        "evidence_needed_next": "Actual post-earnings price performance and analyst commentary on growth quality."
+      },
+      {
+        "event_id": "aapl_e10",
+        "affected_drivers": [
+          "Valuation multiple sensitivity",
+          "Gross margin quality and one-time items"
+        ],
+        "affected_claims": [
+          "bench_4",
+          "bench_3"
+        ],
+        "direction": "support",
+        "strength": "medium",
+        "direct_or_indirect": "direct",
+        "transmission_chain": "This event is the existing Core Claim that TTM PE may compress if a non-recurring margin benefit reverses. It directly supports the valuation sensitivity driver and the margin quality claim. The transmission is: if the tariff refund is one-time, earnings are overstated, and the PE multiple on normalized earnings would be higher, implying potential compression. However, the 37.95 multiple is unverified in the frozen evidence, so the strength is medium.",
+        "short_term_impact": "Could lead to multiple compression if the market adjusts for non-recurring items.",
+        "long_term_impact": "If the margin benefit is truly one-time, the sustainable earnings power is lower, justifying a lower multiple.",
+        "financial_metrics_affected": [
+          "pe_ttm",
+          "eps",
+          "gross_margin"
+        ],
+        "base_case_change": "no",
+        "scenario_only": "no",
+        "confidence": "medium",
+        "evidence_needed_next": "Verification of the TTM PE ratio and quantification of the EPS impact from the tariff refund."
+      }
+    ]
+  },
+  "counter_reasoning": {
+    "claims": [
+      {
+        "claim_id": "bench_1",
+        "title": "Services mix shift supports structural margin expansion",
+        "strongest_support": "Apple's Q2 FY2026 earnings release (rev_f380aa032a3041bea9ca174726be3187) states Services revenue reached a new all-time high, and the Q3 FY2026 release (rev_f680a2738ac040b7a37c1e15345b143a) notes Services set a new June quarter record, confirming sustained Services growth.",
+        "strongest_counter": "No evidence in the set quantifies the Services revenue mix shift or the gross margin differential between Products and Services, so the claim that margin trajectory is structural rather than cyclical cannot be verified from the provided evidence.",
+        "competing_hypothesis": "The margin trajectory may be driven by cyclical factors such as favorable product mix, foreign exchange, or seasonal leverage rather than a structural shift toward higher-margin Services.",
+        "what_would_invalidate": "Evidence showing that Services gross margin is not materially higher than Products, or that Services revenue as a percentage of total revenue has not increased over time, would invalidate the structural margin expansion thesis.",
+        "most_likely_wrong": "The assumption that Services mix shift is the primary driver of margin expansion, when other factors like product mix or cost efficiencies could be more significant.",
+        "missing_evidence": [
+          "Gross margin by segment (Products vs Services) for recent quarters",
+          "Revenue mix percentages (Services as % of total revenue) over time",
+          "Trend in overall gross margin and decomposition into mix versus rate effects",
+          "Regulatory or competitive developments affecting Services margin"
+        ]
+      },
+      {
+        "claim_id": "bench_2",
+        "title": "Product cycle catalysts may extend revenue growth durability",
+        "strongest_support": "Apple introduced its first foldable iPhone, iPhone Duo, with a 7.6-inch inner display (rev_0e3ea5e68a1b442b899f7bf2a99e45bc), and Siri AI began rolling out on September 14, 2026 across iOS 27, iPadOS 27, and macOS 27 (rev_87d6a241e2a94930a4cfa4c3560d5c62), providing concrete new product and software catalysts.",
+        "strongest_counter": "No evidence in the set provides pre-order data, early sales figures, adoption metrics, or analyst forecasts for these products, so the actual revenue impact and growth durability remain speculative.",
+        "competing_hypothesis": "The new product cycle may fail to accelerate growth if the foldable iPhone Duo sees limited adoption due to high pricing or niche appeal, or if Siri AI does not drive meaningful hardware upgrades.",
+        "what_would_invalidate": "Evidence showing weak pre-order volumes for iPhone Duo, low adoption of Siri AI, or cannibalization of existing iPhone models without net incremental demand would invalidate the growth durability claim.",
+        "most_likely_wrong": "The assumption that new product launches will sustain or accelerate revenue growth, when historical patterns show that not all product cycles lead to durable growth acceleration.",
+        "missing_evidence": [
+          "Pre-order or early sales data for the foldable iPhone Duo",
+          "Adoption metrics or user engagement data for Siri AI post-launch",
+          "Analyst or industry forecasts on the revenue impact of these products",
+          "Historical TTM revenue growth rate for comparison",
+          "Counter-evidence on potential cannibalization or demand softness"
+        ]
+      },
+      {
+        "claim_id": "bench_3",
+        "title": "Reported gross margin is inflated by one-time tariff refund",
+        "strongest_support": "The Q3 FY2026 earnings release (rev_f680a2738ac040b7a37c1e15345b143a) reports quarter records for total company revenue and EPS, but the evidence set does not contain any mention of a tariff refund or one-time benefit.",
+        "strongest_counter": "There is no evidence in the provided set that mentions a tariff refund or any one-time benefit in Apple's gross margin; the claim is entirely unverified and lacks supporting documentation.",
+        "competing_hypothesis": "The reported gross margin may be sustainable and driven by favorable product mix, Services growth, or cost efficiencies rather than a one-time tariff refund.",
+        "what_would_invalidate": "Evidence from Apple's financial disclosures or management commentary confirming that no tariff refund or one-time benefit was included in the reported gross margin would invalidate the claim.",
+        "most_likely_wrong": "The existence of a tariff refund benefit, as no evidence in the set supports it; the claim may be based on speculation rather than actual financial disclosures.",
+        "missing_evidence": [
+          "Apple's Q3 FY2026 earnings release or 10-Q with detailed gross margin discussion",
+          "Management commentary on gross margin drivers during the Q3 FY2026 earnings call",
+          "Any mention of tariff refunds or one-time benefits in Apple's financial disclosures",
+          "Analyst reports or news articles discussing Apple's gross margin composition for Q3 FY2026",
+          "Historical gross margin data to assess whether the reported margin is anomalous"
+        ]
+      },
+      {
+        "claim_id": "bench_4",
+        "title": "Valuation multiple is sensitive to margin normalization",
+        "strongest_support": "The Q3 FY2026 earnings release (rev_f680a2738ac040b7a37c1e15345b143a) reports quarter records for total company revenue and EPS, which could contribute to a high TTM PE if earnings are inflated by non-recurring items.",
+        "strongest_counter": "No evidence in the set mentions a tariff refund or any non-recurring benefit, and the TTM PE value of 37.95 is unverified, so the sensitivity of the valuation multiple to margin normalization cannot be substantiated.",
+        "competing_hypothesis": "The TTM PE may be justified by sustainable earnings growth and margin expansion, and any normalization of margins would not significantly compress the multiple if growth remains strong.",
+        "what_would_invalidate": "Evidence showing that the TTM PE is not sensitive to margin changes, or that no non-recurring benefits are included in earnings, would invalidate the claim.",
+        "most_likely_wrong": "The assumption that a non-recurring benefit is included in earnings and that the PE is sensitive to its normalization, as neither is supported by the evidence set.",
+        "missing_evidence": [
+          "Apple's actual TTM PE ratio (the number 37.95 is unverified)",
+          "Any mention of a tariff refund in Apple's financial statements or earnings calls",
+          "Gross margin figures for the relevant periods to assess normalization impact",
+          "Analyst estimates or consensus forward PE that adjust for non-recurring items",
+          "Quantification of the EPS impact if the tariff refund benefit is not repeated"
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "driver_count": 10,
+    "driver_overlap": {
+      "all_models": [],
+      "deepseek∩qwen3.8-max": [],
+      "deepseek∩zhipu-glm-5.3": [],
+      "deepseek∩kimi-k3": [],
+      "qwen3.8-max∩zhipu-glm-5.3": [],
+      "qwen3.8-max∩kimi-k3": [],
+      "zhipu-glm-5.3∩kimi-k3": []
+    },
+    "unique_material_drivers": [
+      "ai/software platform adoption (siri ai)",
+      "capital return and share count",
+      "foreign exchange impact",
+      "geographic revenue diversification",
+      "gross margin quality and one-time items",
+      "hardware product cycle cadence",
+      "regulatory and antitrust environment",
+      "services revenue growth and mix",
+      "supply chain concentration and resilience",
+      "valuation multiple sensitivity"
+    ],
+    "core_driver_count": 5,
+    "core_claim_count": 4,
+    "fact_restatement_core_claims": 0,
+    "unsupported_assertion_count": 0,
+    "unsupported_tokens": [],
+    "invalid_evidence_id_count": 0,
+    "invalid_evidence_ids": [],
+    "counter_reasoning_count": 4,
+    "event_routing_success": 1.0,
+    "event_routing": {
+      "expected": 10,
+      "returned": 10,
+      "routed": 10,
+      "thin_good_news_bad_news": 7,
+      "missing_event_ids": [],
+      "success_rate": 1.0
+    },
+    "consistency_failures": 0,
+    "latency_ms": 36849,
+    "input_tokens": 22665,
+    "output_tokens": 8375,
+    "estimated_cost": {
+      "amount": 0.005518,
+      "ccy": "USD",
+      "note": "indicative, not an invoice"
+    },
+    "human_scores": {
+      "driver_recall": null,
+      "driver_precision": null,
+      "core_claim_quality": null,
+      "event_routing": null,
+      "transmission_quality": null,
+      "counter_reasoning": null,
+      "evidence_grounding": null,
+      "overall": null
+    }
+  },
+  "llm_calls": [
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "deepseek-flash",
+      "prompt_hash": "b95b52e8bb98eb3d419086161e0db9026f3ece56e894b22bc4b30bf50e33225b",
+      "latency_ms": 13030,
+      "input_tokens": 4334,
+      "output_tokens": 2737,
+      "total_tokens": 7071,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "driver_discovery"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "deepseek-flash",
+      "prompt_hash": "41cc2bb78496c101c5139635f4b982a7f8d03128e1153b6dc8c7d370e3e1db41",
+      "latency_ms": 4083,
+      "input_tokens": 6634,
+      "output_tokens": 1179,
+      "total_tokens": 7813,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "core_claim_test"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "deepseek-flash",
+      "prompt_hash": "a94dc4470bb1d30903c62079cef2382bb5c17ea8b80c0505ad21871a814b34b8",
+      "latency_ms": 12440,
+      "input_tokens": 6409,
+      "output_tokens": 2961,
+      "total_tokens": 9370,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "event_impact"
+    },
+    {
+      "llm_called": true,
+      "llm_status": "ok",
+      "provider": "openai",
+      "model": "deepseek-flash",
+      "prompt_hash": "874b5b066a2bf5fbf50911a83f72ae33df47fdd57e878816d3776a056bbaf76e",
+      "latency_ms": 7296,
+      "input_tokens": 5288,
+      "output_tokens": 1498,
+      "total_tokens": 6786,
+      "error": null,
+      "fallback_used": false,
+      "raw_status": "ok",
+      "step": "counter_reasoning"
+    }
+  ],
+  "rejected_evidence_ids": []
+}

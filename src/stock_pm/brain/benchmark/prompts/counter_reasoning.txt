@@ -1,0 +1,18 @@
+STEP_ID: counter_reasoning
+For every Core Claim, write counter-reasoning. Do not invent evidence_id values.
+Return one JSON object:
+{
+  "claims": [
+    {
+      "claim_id": "",
+      "title": "",
+      "strongest_support": "",
+      "strongest_counter": "",
+      "competing_hypothesis": "",
+      "what_would_invalidate": "",
+      "most_likely_wrong": "",
+      "missing_evidence": [""]
+    }
+  ]
+}
+One row per input claim. If there is no counter in the evidence set, say so explicitly in strongest_counter.

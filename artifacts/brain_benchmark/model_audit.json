@@ -1,0 +1,1470 @@
+{
+  "generated_at": "2026-09-18T02:41:27+00:00",
+  "gateway": "stock_pm.llm.complete_json via SettingsCompleter / complete_structured",
+  "strong_connect": {
+    "protocol": "OpenAI-compatible POST {base_url}/chat/completions",
+    "auth": "Authorization: Bearer STRONG_MODEL_API_KEY or DASHSCOPE_API_KEY",
+    "base_url_example": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "model_ids": {
+      "qwen3.8-max": "qwen3.8-max",
+      "glm-5.3": "ZHIPU/GLM-5.3",
+      "kimi-k3": "kimi-k3"
+    },
+    "thinking": "ZHIPU/GLM-5.3 and kimi-k3 always think; enable_thinking=false is rejected."
+  },
+  "production_model_unchanged": true,
+  "searched": false,
+  "missing_strong_key_labels": [
+    "qwen3.8-max",
+    "zhipu-glm-5.3",
+    "kimi-k3"
+  ],
+  "calls": [
+    {
+      "ticker": "AAPL",
+      "label": "deepseek",
+      "model": "deepseek-chat",
+      "provider": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_present": true,
+      "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+      "llm_calls": [
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "b95b52e8bb98eb3d419086161e0db9026f3ece56e894b22bc4b30bf50e33225b",
+          "latency_ms": 13030,
+          "input_tokens": 4334,
+          "output_tokens": 2737,
+          "total_tokens": 7071,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "driver_discovery"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "41cc2bb78496c101c5139635f4b982a7f8d03128e1153b6dc8c7d370e3e1db41",
+          "latency_ms": 4083,
+          "input_tokens": 6634,
+          "output_tokens": 1179,
+          "total_tokens": 7813,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "core_claim_test"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "a94dc4470bb1d30903c62079cef2382bb5c17ea8b80c0505ad21871a814b34b8",
+          "latency_ms": 12440,
+          "input_tokens": 6409,
+          "output_tokens": 2961,
+          "total_tokens": 9370,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "event_impact"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "874b5b066a2bf5fbf50911a83f72ae33df47fdd57e878816d3776a056bbaf76e",
+          "latency_ms": 7296,
+          "input_tokens": 5288,
+          "output_tokens": 1498,
+          "total_tokens": 6786,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "counter_reasoning"
+        }
+      ],
+      "metrics": {
+        "driver_count": 10,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [
+          "ai/software platform adoption (siri ai)",
+          "capital return and share count",
+          "foreign exchange impact",
+          "geographic revenue diversification",
+          "gross margin quality and one-time items",
+          "hardware product cycle cadence",
+          "regulatory and antitrust environment",
+          "services revenue growth and mix",
+          "supply chain concentration and resilience",
+          "valuation multiple sensitivity"
+        ],
+        "core_driver_count": 5,
+        "core_claim_count": 4,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 4,
+        "event_routing_success": 1.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 10,
+          "routed": 10,
+          "thin_good_news_bad_news": 7,
+          "missing_event_ids": [],
+          "success_rate": 1.0
+        },
+        "consistency_failures": 0,
+        "latency_ms": 36849,
+        "input_tokens": 22665,
+        "output_tokens": 8375,
+        "estimated_cost": {
+          "amount": 0.005518,
+          "ccy": "USD",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "label": "qwen3.8-max",
+      "model": "qwen3.8-max",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "aapl_e1",
+            "aapl_e2",
+            "aapl_e3",
+            "aapl_e4",
+            "aapl_e5",
+            "aapl_e6",
+            "aapl_e7",
+            "aapl_e8",
+            "aapl_e9",
+            "aapl_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "label": "zhipu-glm-5.3",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "aapl_e1",
+            "aapl_e2",
+            "aapl_e3",
+            "aapl_e4",
+            "aapl_e5",
+            "aapl_e6",
+            "aapl_e7",
+            "aapl_e8",
+            "aapl_e9",
+            "aapl_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AAPL",
+      "label": "kimi-k3",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "aapl_e1",
+            "aapl_e2",
+            "aapl_e3",
+            "aapl_e4",
+            "aapl_e5",
+            "aapl_e6",
+            "aapl_e7",
+            "aapl_e8",
+            "aapl_e9",
+            "aapl_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "label": "deepseek",
+      "model": "deepseek-chat",
+      "provider": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_present": true,
+      "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "llm_calls": [
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "3b58a89694c8ce0c1cec662533973c8cd8fa7cff6587aabcedfc7db21e081fb1",
+          "latency_ms": 14847,
+          "input_tokens": 3676,
+          "output_tokens": 3347,
+          "total_tokens": 7023,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "driver_discovery"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "f47ecbe4cccb9dc8336de83520c16b996c0735252c9bfc50dcdaa6ca76609fcd",
+          "latency_ms": 5443,
+          "input_tokens": 6450,
+          "output_tokens": 1403,
+          "total_tokens": 7853,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "core_claim_test"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "027de2c8d95c1054206550d0892e8b0619ac8f5703b18401e67b27f8096b0d3a",
+          "latency_ms": 11891,
+          "input_tokens": 5954,
+          "output_tokens": 2753,
+          "total_tokens": 8707,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "event_impact"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "ba9d2cb81e528c72af89369d111805cd188a729643e63f0417f367154e4c5ab0",
+          "latency_ms": 8518,
+          "input_tokens": 4821,
+          "output_tokens": 1819,
+          "total_tokens": 6640,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "counter_reasoning"
+        }
+      ],
+      "metrics": {
+        "driver_count": 10,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [
+          "ai semiconductor revenue acceleration",
+          "capital allocation and debt management",
+          "competitive positioning in ai networking and custom silicon",
+          "earnings execution and eps quality",
+          "gross and operating margin sustainability",
+          "hyperscaler customer concentration and demand",
+          "infrastructure software (vmware) integration and margin contribution",
+          "revenue growth durability",
+          "supply chain dependence on tsmc",
+          "valuation multiple compression risk"
+        ],
+        "core_driver_count": 5,
+        "core_claim_count": 5,
+        "fact_restatement_core_claims": 1,
+        "unsupported_assertion_count": 8,
+        "unsupported_tokens": [
+          "21.7b",
+          "69.13",
+          "53.92",
+          "85.5",
+          "48.69",
+          "215.29",
+          "2.68",
+          "1.615"
+        ],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 5,
+        "event_routing_success": 1.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 10,
+          "routed": 10,
+          "thin_good_news_bad_news": 7,
+          "missing_event_ids": [],
+          "success_rate": 1.0
+        },
+        "consistency_failures": 0,
+        "latency_ms": 40699,
+        "input_tokens": 20901,
+        "output_tokens": 9322,
+        "estimated_cost": {
+          "amount": 0.005536,
+          "ccy": "USD",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "label": "qwen3.8-max",
+      "model": "qwen3.8-max",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "avgo_e1",
+            "avgo_e2",
+            "avgo_e3",
+            "avgo_e4",
+            "avgo_e5",
+            "avgo_e6",
+            "avgo_e7",
+            "avgo_e8",
+            "avgo_e9",
+            "avgo_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "label": "zhipu-glm-5.3",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "avgo_e1",
+            "avgo_e2",
+            "avgo_e3",
+            "avgo_e4",
+            "avgo_e5",
+            "avgo_e6",
+            "avgo_e7",
+            "avgo_e8",
+            "avgo_e9",
+            "avgo_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "AVGO",
+      "label": "kimi-k3",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "avgo_e1",
+            "avgo_e2",
+            "avgo_e3",
+            "avgo_e4",
+            "avgo_e5",
+            "avgo_e6",
+            "avgo_e7",
+            "avgo_e8",
+            "avgo_e9",
+            "avgo_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "LITE",
+      "label": "deepseek",
+      "model": "deepseek-chat",
+      "provider": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_present": true,
+      "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "llm_calls": [
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "e0e3548638019167fed47a864912ec6f60fc793b59746efc2fb3513eb3158721",
+          "latency_ms": 14062,
+          "input_tokens": 3945,
+          "output_tokens": 3047,
+          "total_tokens": 6992,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "driver_discovery"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "84886c083092311545ecb35095986c500e2bcaca1503c625ce4f9af6ac1c2b11",
+          "latency_ms": 7859,
+          "input_tokens": 6501,
+          "output_tokens": 1897,
+          "total_tokens": 8398,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "core_claim_test"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "9a04caa63f764e19526b74eeb5da0ee1401212b0e2ea12d383297d60dd9ed4bd",
+          "latency_ms": 13468,
+          "input_tokens": 6709,
+          "output_tokens": 3197,
+          "total_tokens": 9906,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "event_impact"
+        },
+        {
+          "llm_called": true,
+          "llm_status": "ok",
+          "provider": "openai",
+          "model": "deepseek-flash",
+          "prompt_hash": "4a4b8a30b5dedf2f148f0681e2f73aea2634ba237417957b430bcbd4de193965",
+          "latency_ms": 7681,
+          "input_tokens": 5534,
+          "output_tokens": 1819,
+          "total_tokens": 7353,
+          "error": null,
+          "fallback_used": false,
+          "raw_status": "ok",
+          "step": "counter_reasoning"
+        }
+      ],
+      "metrics": {
+        "driver_count": 10,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [
+          "customer concentration and order visibility",
+          "hyperscale datacenter capex and optical interconnect demand",
+          "manufacturing execution and supply chain reliability",
+          "operating expense discipline and operating leverage",
+          "pricing power and competitive intensity in optical components",
+          "product mix shift toward higher-value datacom/cloud products",
+          "regulatory and export control risk",
+          "technology transition to 800g/1.6t and next-gen optical",
+          "telecom network operator capex cycles",
+          "valuation multiple and market expectations"
+        ],
+        "core_driver_count": 5,
+        "core_claim_count": 5,
+        "fact_restatement_core_claims": 3,
+        "unsupported_assertion_count": 2,
+        "unsupported_tokens": [
+          "71.5b",
+          "3.014b"
+        ],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 5,
+        "event_routing_success": 1.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 10,
+          "routed": 10,
+          "thin_good_news_bad_news": 7,
+          "missing_event_ids": [],
+          "success_rate": 1.0
+        },
+        "consistency_failures": 0,
+        "latency_ms": 43070,
+        "input_tokens": 22689,
+        "output_tokens": 9960,
+        "estimated_cost": {
+          "amount": 0.005965,
+          "ccy": "USD",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "LITE",
+      "label": "qwen3.8-max",
+      "model": "qwen3.8-max",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "qwen3.8-max",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "lite_e1",
+            "lite_e2",
+            "lite_e3",
+            "lite_e4",
+            "lite_e5",
+            "lite_e6",
+            "lite_e7",
+            "lite_e8",
+            "lite_e9",
+            "lite_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "LITE",
+      "label": "zhipu-glm-5.3",
+      "model": "ZHIPU/GLM-5.3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "ZHIPU/GLM-5.3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "lite_e1",
+            "lite_e2",
+            "lite_e3",
+            "lite_e4",
+            "lite_e5",
+            "lite_e6",
+            "lite_e7",
+            "lite_e8",
+            "lite_e9",
+            "lite_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    },
+    {
+      "ticker": "LITE",
+      "label": "kimi-k3",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_present": false,
+      "input_hash": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34",
+      "llm_calls": [
+        {
+          "step": "driver_discovery",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "core_claim_test",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "event_impact",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        },
+        {
+          "step": "counter_reasoning",
+          "llm_called": false,
+          "llm_status": "skipped",
+          "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+          "model": "kimi-k3",
+          "provider": "openai",
+          "input_tokens": null,
+          "output_tokens": null,
+          "latency_ms": 0
+        }
+      ],
+      "metrics": {
+        "driver_count": 0,
+        "driver_overlap": {
+          "all_models": [],
+          "deepseek∩qwen3.8-max": [],
+          "deepseek∩zhipu-glm-5.3": [],
+          "deepseek∩kimi-k3": [],
+          "qwen3.8-max∩zhipu-glm-5.3": [],
+          "qwen3.8-max∩kimi-k3": [],
+          "zhipu-glm-5.3∩kimi-k3": []
+        },
+        "unique_material_drivers": [],
+        "core_driver_count": 0,
+        "core_claim_count": 0,
+        "fact_restatement_core_claims": 0,
+        "unsupported_assertion_count": 0,
+        "unsupported_tokens": [],
+        "invalid_evidence_id_count": 0,
+        "invalid_evidence_ids": [],
+        "counter_reasoning_count": 0,
+        "event_routing_success": 0.0,
+        "event_routing": {
+          "expected": 10,
+          "returned": 0,
+          "routed": 0,
+          "thin_good_news_bad_news": 0,
+          "missing_event_ids": [
+            "lite_e1",
+            "lite_e2",
+            "lite_e3",
+            "lite_e4",
+            "lite_e5",
+            "lite_e6",
+            "lite_e7",
+            "lite_e8",
+            "lite_e9",
+            "lite_e10"
+          ],
+          "success_rate": 0.0
+        },
+        "consistency_failures": 4,
+        "latency_ms": 0,
+        "input_tokens": null,
+        "output_tokens": null,
+        "estimated_cost": {
+          "amount": 0.0,
+          "ccy": "CNY",
+          "note": "indicative, not an invoice"
+        },
+        "human_scores": {
+          "driver_recall": null,
+          "driver_precision": null,
+          "core_claim_quality": null,
+          "event_routing": null,
+          "transmission_quality": null,
+          "counter_reasoning": null,
+          "evidence_grounding": null,
+          "overall": null
+        }
+      }
+    }
+  ],
+  "input_hashes": {
+    "AAPL": "ccd8fb10bff1642be16596cb53f5a76deb398434cc262414e233a0fd21ca1310",
+    "AVGO": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+    "LITE": "d9afce25bf52a34220df57b78af91d6ee35a54a6f8562a357aeaebd464099f34"
+  },
+  "distinct_pack_hashes": 3
+}

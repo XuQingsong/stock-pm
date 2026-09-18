@@ -1,0 +1,24 @@
+STEP_ID: core_claim_test
+Generate 3-5 Core Claims from the provided core_drivers and evidence[].
+A Core Claim is a decision variable, not a restatement of a reported number.
+Must revolve around durability / margin / share / concentration / pricing / valuation / structural risk.
+Cite only evidence_id values from evidence[]. Unsupported numbers must not appear in final statements.
+Return one JSON object:
+{
+  "core_claims": [
+    {
+      "title": "",
+      "statement": "",
+      "claim_subject": "",
+      "claim_dimension": "growth_duration|structural_vs_cyclical|customer_concentration|margin_quality|valuation_sensitivity|decision_variable",
+      "financial_driver": "",
+      "time_horizon": "short|medium|long",
+      "why_core": "",
+      "supporting_evidence_ids": [],
+      "opposing_evidence_ids": [],
+      "missing_evidence": [""],
+      "unverified_detail": ""
+    }
+  ]
+}
+Maximum 5 core_claims. Each must have at least one supporting_evidence_id from evidence[].

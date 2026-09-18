@@ -1,0 +1,126 @@
+{
+  "generated_at": "2026-09-18T02:40:44+00:00",
+  "ticker": "AVGO",
+  "model_label": "kimi-k3",
+  "model": "kimi-k3",
+  "provider": "openai",
+  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "role": "strong",
+  "input_hash": "c184f1ba62111d7682c6bc25edc2c36e93e9a8feff0818137c31c362f9c3bbf2",
+  "snapshot_id": "rsnap_ce2cd5952b114840be23747e225d1089",
+  "evidence_set_id": "bes_2aee1c22c7294b68b9bf0c1fba279353",
+  "run_id": "brun_4266dc50c87949ac91184d983e209959",
+  "searched": false,
+  "driver_discovery": {},
+  "core_claims": [],
+  "event_impact": {},
+  "counter_reasoning": {},
+  "metrics": {
+    "driver_count": 0,
+    "driver_overlap": {
+      "all_models": [],
+      "deepseek∩qwen3.8-max": [],
+      "deepseek∩zhipu-glm-5.3": [],
+      "deepseek∩kimi-k3": [],
+      "qwen3.8-max∩zhipu-glm-5.3": [],
+      "qwen3.8-max∩kimi-k3": [],
+      "zhipu-glm-5.3∩kimi-k3": []
+    },
+    "unique_material_drivers": [],
+    "core_driver_count": 0,
+    "core_claim_count": 0,
+    "fact_restatement_core_claims": 0,
+    "unsupported_assertion_count": 0,
+    "unsupported_tokens": [],
+    "invalid_evidence_id_count": 0,
+    "invalid_evidence_ids": [],
+    "counter_reasoning_count": 0,
+    "event_routing_success": 0.0,
+    "event_routing": {
+      "expected": 10,
+      "returned": 0,
+      "routed": 0,
+      "thin_good_news_bad_news": 0,
+      "missing_event_ids": [
+        "avgo_e1",
+        "avgo_e2",
+        "avgo_e3",
+        "avgo_e4",
+        "avgo_e5",
+        "avgo_e6",
+        "avgo_e7",
+        "avgo_e8",
+        "avgo_e9",
+        "avgo_e10"
+      ],
+      "success_rate": 0.0
+    },
+    "consistency_failures": 4,
+    "latency_ms": 0,
+    "input_tokens": null,
+    "output_tokens": null,
+    "estimated_cost": {
+      "amount": 0.0,
+      "ccy": "CNY",
+      "note": "indicative, not an invoice"
+    },
+    "human_scores": {
+      "driver_recall": null,
+      "driver_precision": null,
+      "core_claim_quality": null,
+      "event_routing": null,
+      "transmission_quality": null,
+      "counter_reasoning": null,
+      "evidence_grounding": null,
+      "overall": null
+    }
+  },
+  "llm_calls": [
+    {
+      "step": "driver_discovery",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "core_claim_test",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "event_impact",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    },
+    {
+      "step": "counter_reasoning",
+      "llm_called": false,
+      "llm_status": "skipped",
+      "error": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing",
+      "model": "kimi-k3",
+      "provider": "openai",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0
+    }
+  ],
+  "rejected_evidence_ids": [],
+  "note": "STRONG_MODEL_API_KEY / DASHSCOPE_API_KEY missing; model not called"
+}

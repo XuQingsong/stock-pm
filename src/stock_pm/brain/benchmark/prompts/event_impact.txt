@@ -1,0 +1,25 @@
+STEP_ID: event_impact
+Score each provided event against the frozen drivers and Core Claims.
+Do not search. Use only this JSON. Explain transmission, not just good-news / bad-news.
+Return one JSON object:
+{
+  "events": [
+    {
+      "event_id": "",
+      "affected_drivers": [""],
+      "affected_claims": [""],
+      "direction": "support|oppose|mixed|none",
+      "strength": "strong|medium|weak",
+      "direct_or_indirect": "direct|indirect",
+      "transmission_chain": "",
+      "short_term_impact": "",
+      "long_term_impact": "",
+      "financial_metrics_affected": [""],
+      "base_case_change": "yes|no",
+      "scenario_only": "yes|no",
+      "confidence": "high|medium|low",
+      "evidence_needed_next": ""
+    }
+  ]
+}
+One row per input event_id. If the event does not map, direction=none and say why in transmission_chain.

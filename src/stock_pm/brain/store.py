@@ -627,6 +627,32 @@ class BrainStore:
         assert out is not None
         return out
 
+    def latest_evidence_set(self, ticker: str, *, run_id: str | None = None) -> dict[str, Any] | None:
+        symbol = str(ticker or "").upper()
+        if not self._pg():
+            rows = [row for row in self.evidence_sets.values() if row.get("ticker") == symbol]
+            if run_id:
+                rows = [row for row in rows if row.get("run_id") == run_id]
+            rows.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+            return _copy(rows[0]) if rows else None
+        if run_id:
+            return self._one(
+                """
+                SELECT * FROM brain_evidence_sets
+                WHERE ticker = %(ticker)s AND run_id = %(run_id)s
+                ORDER BY created_at DESC LIMIT 1
+                """,
+                {"ticker": symbol, "run_id": run_id},
+            )
+        return self._one(
+            """
+            SELECT * FROM brain_evidence_sets
+            WHERE ticker = %(ticker)s
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            {"ticker": symbol},
+        )
+
     def insert_candidate(self, row: dict[str, Any]) -> dict[str, Any]:
         stored = {
             "candidate_id": row.get("candidate_id") or new_id("bcc"),
