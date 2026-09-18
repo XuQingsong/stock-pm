@@ -264,6 +264,15 @@ class FakeBrainCompleter:
         elif "STEP_ID: pm_synthesis" in system:
             ids = [str(row.get("claim_id")) for row in claims if row.get("claim_id")]
             body = {
+                "what_matters_now": "Demand duration is the live debate; FCF is still missing.",
+                "what_changed": ["material demand update"],
+                "current_core_claims": [{"claim_id": ids[0], "statement": "demand", "status": "partially_supported"}] if ids else [],
+                "strongest_support": "Issuer described demand as remaining strong.",
+                "strongest_counter": "Independent customer confirmation is missing.",
+                "base_bull_bear": {"base": "demand still binds", "bull": "duration extends", "bear": "duration fades"},
+                "valuation_sensitivity": "Multiple depends on duration, not the last print.",
+                "next_evidence_to_watch": ["named customer confirmation"],
+                "what_would_change_the_thesis": "A guidance cut or customer 10-Q omission.",
                 "current_view": "Demand duration is the live debate; FCF is still missing.",
                 "core_claim_ids": ids,
                 "decisive_variables": [{"name": "demand duration", "why": "binds earnings", "evidence_ids": eids[:1]}],

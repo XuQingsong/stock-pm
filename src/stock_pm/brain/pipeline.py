@@ -30,8 +30,8 @@ from .drivers import claims_require_drivers, select_driver_universe
 from .events import build_event
 from .exposure import infer_exposure, may_affect_company_claim
 from .financial_bridge import impacts_from_objects
-from .history import history_row
 from .header import company_header
+from .history import history_row
 from .incremental import affected_scope, should_full_review
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -48,6 +48,7 @@ from .llm_steps import (
     value_driver_universe,
 )
 from .news import classify_news_hits, is_high_quality, search_recent_news
+from .pm_gate import pm_context
 from .quality import assess_brain_quality
 from .routing import resolve_brain_completers
 from .scenario import apply_scenario_policy, qualifies_for_base
@@ -1592,20 +1593,27 @@ def run_brain(
         _pm_claim_view(row, row.get("evidence_links") or brain.list_links(claim_id=row["claim_id"]), brain.list_versions(row["claim_id"]))
         for row in persisted_claims
     ]
+    pm_payload = pm_context(
+        ticker=symbol,
+        states=brain.list_states(symbol, run_id=run_id),
+        drivers=persisted_drivers,
+        claims=persisted_claims,
+        evidence_by_id=evidence_by_id,
+        financial_impacts=financial_impacts,
+        transmissions=transmissions,
+        history=brain.list_history(symbol),
+        rejected_ids={
+            str(row.get("evidence_id"))
+            for row in integrity_violations
+            if row.get("evidence_id")
+        },
+    )
     payload_e, audit_e = pm_synthesis(
         reason_llm,
         {
-            "ticker": symbol,
+            **pm_payload,
             "header": header,
-            "states": brain.list_states(symbol, run_id=run_id),
             "core_claims": pm_payload_claims,
-            "material_news": [row for row in interpreted if row.get("layer") == "material"],
-            "valuation_snapshot": {
-                "pe_ttm": ((header.get("valuation") or {}).get("pe_ttm") or {}),
-                "revenue_ttm": ((header.get("growth") or {}).get("revenue_ttm") or {}),
-                "eps_ttm": ((header.get("growth") or {}).get("eps_ttm") or {}),
-                "price": header.get("price"),
-            },
             "snapshot_id": snapshot_id,
             "evidence_set_id": frozen.get("evidence_set_id"),
         },

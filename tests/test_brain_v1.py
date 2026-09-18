@@ -25,6 +25,7 @@ from stock_pm.brain.scenario import apply_scenario_policy, qualifies_for_base
 from stock_pm.brain.critic import reconcile_critic
 from stock_pm.brain.history import why_thesis_changed
 from stock_pm.brain.incremental import affected_scope, should_full_review
+from stock_pm.brain.pm_gate import assert_pm_cannot_see_rejected, pm_context
 from stock_pm.brain.transmission import validate_transmission
 from stock_pm.brain.store import BrainStore
 from stock_pm.config import Settings
@@ -449,6 +450,37 @@ def test_incremental_pipeline_reuses_drivers(monkeypatch) -> None:
     assert second["full_review"] is False
     assert {row["driver_id"] for row in second["drivers"]} == driver_ids
     assert {row["claim_id"] for row in second["claims"]} == claim_ids
+
+
+def test_pm_cannot_read_rejected_fact() -> None:
+    payload = pm_context(
+        ticker="AVGO",
+        states=[{"name": "demand", "statement": "Demand is binding", "evidence_ids": ["rev_ok"]}],
+        drivers=[{"driver_id": "d1", "canonical_key": "demand_durability", "name": "Demand durability", "evidence_ids": ["rev_ok"], "status": "active"}],
+        claims=[
+            {
+                "claim_id": "c1",
+                "title": "Duration",
+                "statement": "Duration binds value.",
+                "is_core": True,
+                "lifecycle": "core",
+                "supporting_evidence_ids": ["rev_ok", "rev_rejected"],
+                "opposing_evidence_ids": [],
+            }
+        ],
+        evidence_by_id={
+            "rev_ok": {"id": "rev_ok", "fact": "Management described demand as remaining strong."},
+            "rev_rejected": {"id": "rev_rejected", "fact": "Unsupported rumor number 21.7B."},
+        },
+        financial_impacts=[],
+        transmissions=[{"event_id": "e1", "scenario_only": True, "base_case_change": False}],
+        history=[],
+        rejected_ids={"rev_rejected"},
+    )
+    assert assert_pm_cannot_see_rejected(payload, {"rev_rejected"})
+    assert payload["evidence"][0]["id"] == "rev_ok"
+    assert "rev_rejected" not in payload["core_claims"][0]["supporting_evidence_ids"]
+
 
 
 
