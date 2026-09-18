@@ -216,7 +216,14 @@ LAYER_SPEED = {
     "structural_knowledge": "slowest",
 }
 FAST_LAYERS = ("observation", "market")
-BRAIN_RUNTIME = "phase2"
+BRAIN_RUNTIME = "phase3"
+MARKET_ALIGNMENTS = ("aligned", "partial", "unexplained", "unknown")
+NOW_CHAIN_QUESTIONS = (
+    "what_happened",
+    "why_it_affects_company",
+    "path_to_driver_claim",
+    "what_market_is_trading",
+)
 DEFAULT_RUN_MODE = "incremental"
 PROPOSAL_DECISIONS = ("approve", "reject", "requires_review")
 SHADOW_STATUSES = ("open", "watching", "confirmed", "closed")

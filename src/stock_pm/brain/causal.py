@@ -459,7 +459,15 @@ def assess_event_transmissions(
     states: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     graph = list(edges or [])
-    anchors = event_anchor_ids(event=event, exposures=exposures, states=states)
+    item = event or {}
+    anchors = {
+        str(item.get(key) or "")
+        for key in ("event_id", "subject", "event_key")
+        if item.get(key)
+    }
+    anchors.discard("")
+    if not anchors:
+        anchors = event_anchor_ids(event=event, exposures=exposures, states=states)
     successful: list[dict[str, Any]] = []
     blocked: list[dict[str, Any]] = []
     for row in claims or []:

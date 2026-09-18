@@ -24,6 +24,8 @@ from .causal import (
     transmission_stop_reason,
 )
 from .exposure import relevant_exposures
+from .market import relevant_market_attentions
+from .now import build_now_chain
 from .store import BrainStore
 from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
@@ -49,6 +51,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
             "causal_edges": [],
             "history": [],
             "shadows": [],
+            "market_attentions": [],
             "facts": [],
             "fingerprints": [],
             "identities": [],
@@ -71,6 +74,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "causal_edges": store.list_causal_edges(ticker) if hasattr(store, "list_causal_edges") else [],
         "history": store.list_history(ticker) if hasattr(store, "list_history") else [],
         "shadows": store.list_shadows(ticker) if hasattr(store, "list_shadows") else [],
+        "market_attentions": store.list_market_attentions(ticker) if hasattr(store, "list_market_attentions") else [],
         "facts": facts,
         "fingerprints": fingerprints,
         "identities": identities,
@@ -167,6 +171,7 @@ def run_brain_update(
                 "material": False,
                 "l0": l0,
                 "llm_calls": [],
+                "now_chain": build_now_chain(event=item, extract=None, material=False, stopped=l0["stop_reason"] or "duplicate"),
             }
         )
 
@@ -262,6 +267,7 @@ def run_brain_update(
                 "l0": l0,
                 "extract": extract,
                 "llm_calls": llm_calls,
+                "now_chain": build_now_chain(event=event, extract=extract, material=False, stopped="non_material"),
             }
         )
 
@@ -337,6 +343,15 @@ def run_brain_update(
         }
         for edge in financial_edges_from_drivers(affected.get("drivers"), ticker=symbol)
     ][:4]
+    related_ids = object_ids | {
+        str(row.get("claim_id") or "") for row in affected.get("claims") or []
+    }
+    targeted_attentions = relevant_market_attentions(
+        event=event,
+        attentions=context.get("market_attentions"),
+        related_ids=related_ids,
+        limit=3,
+    )
     transmission = assess_event_transmissions(
         event=event,
         edges=context.get("causal_edges"),
@@ -355,6 +370,7 @@ def run_brain_update(
         causal_paths=causal_paths[:4],
         causal_gaps=causal_gaps[:3],
         financial_links=financial_links,
+        market_attentions=targeted_attentions,
     )
     proposals: list[dict[str, Any]] = []
     questions: list[dict[str, Any]] = []
@@ -512,6 +528,31 @@ def run_brain_update(
             )
             if walked is None:
                 unsupported_jump_count += 1
+    approved_attentions = []
+    for row in gate_result.get("approved") or []:
+        if str(row.get("object_type") or "") not in {"market_attention", "price_reaction"}:
+            continue
+        payload = dict(row.get("to_payload") or {})
+        payload.setdefault("statement", payload.get("name") or row.get("reason"))
+        payload.setdefault("related_objects", row.get("related_objects") or [])
+        approved_attentions.append(payload)
+    chain_attentions = list(targeted_attentions)
+    seen_att = {str(row.get("attention_id") or row.get("name") or "") for row in chain_attentions}
+    for row in approved_attentions:
+        token = str(row.get("attention_id") or row.get("name") or row.get("statement") or "")
+        if token and token not in seen_att:
+            seen_att.add(token)
+            chain_attentions.append(row)
+    now_chain = build_now_chain(
+        event=event,
+        extract=extract,
+        exposures=merged_exposures,
+        transmission=transmission,
+        causal_gaps=causal_gaps,
+        market_attentions=chain_attentions[:4],
+        questions=list(questions) + list(gate_result.get("questions") or []),
+        material=True,
+    )
     return _finish(
         {
             "ticker": symbol,
@@ -544,5 +585,6 @@ def run_brain_update(
             "llm_calls": llm_calls,
             "current_state_unchanged": gate_result.get("current_state_unchanged"),
             "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
+            "now_chain": now_chain,
         }
     )

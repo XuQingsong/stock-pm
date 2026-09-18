@@ -13,6 +13,7 @@ from stock_pm.research.llm_reason import compact_text
 from .budget import change_scope
 from .causal import accumulate_edge_evidence, next_edge_status, normalize_causal_edge
 from .exposure import normalize_exposure
+from .market import normalize_market_attention
 from .claim_integrity import news_is_duplicate
 from .constitution import constitution_violations, is_weak_signal
 from .events import make_event_fingerprint
@@ -334,6 +335,14 @@ def evaluate_brain_changes(
                     if proposal.get("object_type") == "financial_impact" and hasattr(store, "insert_financial_impact"):
                         payload = dict(proposal.get("to_payload") or {})
                         store.insert_financial_impact({**payload, "ticker": symbol})
+                    if proposal.get("object_type") in {"market_attention", "price_reaction"} and hasattr(store, "upsert_market_attention"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_market_attention(
+                            normalize_market_attention(
+                                {**payload, "ticker": symbol, "source_kind": proposal.get("source_kind")},
+                                ticker=symbol,
+                            )
+                        )
                     if hasattr(store, "insert_history"):
                         store.insert_history(
                             {

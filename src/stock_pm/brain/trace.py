@@ -169,6 +169,10 @@ def build_runtime_trace(
         "core_claims_unchanged": result.get("core_claims_unchanged"),
         "extract_fact": compact_text(extract.get("fact") or "", 240),
         "extract_entities": list(extract.get("entities") or [])[:8],
+        "now_chain": (result.get("now_chain") or {}).get("answers") if isinstance(result.get("now_chain"), dict) else None,
+        "market_alignment": ((result.get("now_chain") or {}).get("what_market_is_trading") or {}).get("alignment")
+        if isinstance(result.get("now_chain"), dict)
+        else None,
         "causal_edges_read": len(snapshot.get("causal_edges") or []),
         "causal_paths": list(snapshot.get("causal_paths") or [])[:4],
         "causal_gaps": list(snapshot.get("causal_gaps") or [])[:3],

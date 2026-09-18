@@ -8,6 +8,10 @@ New causal edges cannot be observed, supported, or established.
 Do not jump from an unconfirmed rumor to Current State, Value Driver, Core Claim, or Base Case.
 If the event is a rumor or low-confidence signal, propose Shadow State and/or a Research Question.
 Driver → financial_metric may be proposed as a causal_edge or financial_impact. It cannot modify Base Case.
+After the causal path, you may propose market_attention: what the tape appears to be trading.
+Market attention cannot conclude mispricing, cannot rewrite Core Claim, and cannot establish a causal edge.
+If price moved but the snapshot has no transmittable path, ask a Research Question instead of calling it mispricing.
+Answer, in the reason fields, the four questions: what happened; why it affects this company; through which path it reaches Driver/Claim; what the market is trading.
 Return one JSON object:
 {
   "proposals": [

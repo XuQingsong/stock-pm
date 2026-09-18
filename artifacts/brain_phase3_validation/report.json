@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-09-18T18:44:16.487642+00:00",
+  "brain_runtime": "phase3",
+  "phase": "phase3",
+  "metrics": {
+    "now_chain_present": true,
+    "questions": [
+      "what_happened",
+      "why_it_affects_company",
+      "path_to_driver_claim",
+      "what_market_is_trading"
+    ],
+    "answers": {
+      "what_happened": "Meta raises 2026 hyperscaler AI capex",
+      "why_it_affects_company": "AVGO sells custom silicon to hyperscalers.",
+      "path_to_driver_claim": "Event can travel a supported path: hyperscaler_ai_capex → bst_ai_infra → bexp_avgo_asic → bdrv_ai_demand → bclm_duration.",
+      "what_market_is_trading": "Market appears to be trading: Market attention on hyperscaler AI capex."
+    },
+    "market_alignment": "partial",
+    "cannot_conclude_mispricing": true,
+    "can_affect_claim": true,
+    "core_claims_unchanged": true,
+    "unsupported_jump_count": 0,
+    "unexpected_claim_change_count": 0,
+    "snapshot_full_brain": false,
+    "market_attentions_in_snapshot": 0,
+    "causal_edges_in_snapshot": 3,
+    "persisted_market_attentions": 1
+  },
+  "checklist": {
+    "now_chain_answers_four_questions": true,
+    "happened": true,
+    "why_company": true,
+    "causal_path": true,
+    "market_is_trading": true,
+    "market_cannot_conclude_mispricing": true,
+    "price_cannot_rewrite_claim": true,
+    "unsupported_jump_zero": true,
+    "targeted_not_full_brain": true,
+    "no_full_market_driver_system": true,
+    "phase0_phase2_regression": true
+  },
+  "regression": [
+    {
+      "name": "phase3_now_chain",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_market_attention_persist",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_unexplained_price",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_no_mispricing_attention",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase2_supported_path",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase2_candidate_stop",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase0_shadow",
+      "ok": true,
+      "error": null
+    }
+  ],
+  "all_ok": true
+}

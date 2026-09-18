@@ -42,6 +42,11 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         if "mispricing" in f"{payload.get('statement') or ''} {proposal.get('reason') or ''}".lower():
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Unexplained price move is not mispricing."})
 
+    if target in {"market_attention", "expectation", "market_driver", "price_reaction"}:
+        blob = f"{payload.get('statement') or ''} {proposal.get('reason') or ''} {payload.get('conclusion') or ''} {payload.get('alignment') or ''}".lower()
+        if "mispricing" in blob:
+            hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Unexplained price move is not mispricing."})
+
     if source in {"news", "event"} and target in {"claim", "core_claim"}:
         changing_status = "status" in payload and str(payload.get("status") or "") != str(current.get("status") or "")
         changing_statement = "statement" in payload and str(payload.get("statement") or "") != str(current.get("statement") or "")

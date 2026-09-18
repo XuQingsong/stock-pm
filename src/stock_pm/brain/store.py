@@ -70,6 +70,7 @@ class BrainStore:
         self.causal_edges: dict[str, dict[str, Any]] = {}
         self.observations: dict[str, dict[str, Any]] = {}
         self.evidence_rows: dict[str, dict[str, Any]] = {}
+        self.market_attentions: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -1654,5 +1655,64 @@ class BrainStore:
             return [_copy(row) for row in self.observations.values() if row.get("ticker") == symbol]
         return self._execute(
             "SELECT * FROM brain_observation_memory WHERE ticker = %(ticker)s ORDER BY created_at DESC",
+            {"ticker": symbol},
+        )
+
+    def upsert_market_attention(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "attention_id": row.get("attention_id") or new_id("batt"),
+            "ticker": str(row["ticker"]).upper(),
+            "name": row.get("name") or "",
+            "statement": row.get("statement") or "",
+            "object_id": row.get("object_id") or "",
+            "related_objects": list(row.get("related_objects") or []),
+            "source_kind": row.get("source_kind") or "news",
+            "alignment": row.get("alignment") or "unknown",
+            "evidence_ids": list(row.get("evidence_ids") or []),
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            for existing in self.market_attentions.values():
+                if existing.get("ticker") == stored["ticker"] and existing.get("name") == stored["name"]:
+                    stored["attention_id"] = existing["attention_id"]
+                    stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                    break
+            self.market_attentions[stored["attention_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_market_attention (
+                attention_id, ticker, name, statement, object_id, related_objects, source_kind,
+                alignment, evidence_ids, reason, run_id, created_at, updated_at
+            ) VALUES (
+                %(attention_id)s, %(ticker)s, %(name)s, %(statement)s, %(object_id)s, %(related_objects)s,
+                %(source_kind)s, %(alignment)s, %(evidence_ids)s, %(reason)s, %(run_id)s, %(created_at)s,
+                %(updated_at)s
+            )
+            ON CONFLICT (ticker, name) DO UPDATE SET
+                statement = EXCLUDED.statement,
+                object_id = EXCLUDED.object_id,
+                related_objects = EXCLUDED.related_objects,
+                source_kind = EXCLUDED.source_kind,
+                alignment = EXCLUDED.alignment,
+                evidence_ids = EXCLUDED.evidence_ids,
+                reason = EXCLUDED.reason,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            stored,
+        )
+        assert out is not None
+        return out
+
+    def list_market_attentions(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            return [_copy(row) for row in self.market_attentions.values() if row.get("ticker") == symbol]
+        return self._execute(
+            "SELECT * FROM brain_market_attention WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
             {"ticker": symbol},
         )

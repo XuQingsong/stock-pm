@@ -390,7 +390,7 @@ def main() -> int:
     }
     checklist = {
         "causal_edge_in_runtime": any(row["causal_edges_read"] for row in cases),
-        "graph_reuses_brain_objects": BRAIN_RUNTIME == "phase2",
+        "graph_reuses_brain_objects": BRAIN_RUNTIME in {"phase2", "phase3"},
         "exposure_expressed": True,
         "glm_can_propose_candidate_edge": cases[2]["ok"],
         "new_edge_not_established": cases[2]["ok"],

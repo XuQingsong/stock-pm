@@ -299,7 +299,7 @@ def _capex_event() -> dict:
 
 
 def test_phase2_runtime_flag_and_graph_reuses_brain_objects() -> None:
-    assert BRAIN_RUNTIME == "phase2"
+    assert BRAIN_RUNTIME in {"phase2", "phase3"}
     assert object_layer("exposure") == "state"
     assert object_layer("causal_edge") == "structural_knowledge"
     assert object_layer("causal_gap") == "structural_knowledge"
