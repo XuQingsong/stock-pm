@@ -281,7 +281,9 @@ def _claim_recent_change(store: Any, ticker: str, claim: dict[str, Any], history
 
 
 def _core_claims(store: Any, ticker: str, evidence: dict[str, dict[str, Any]], history: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    claims = [row for row in _rows(store, "list_active_claims", ticker) if row.get("is_core")]
+    from .product_read import is_fundamental_core_claim
+
+    claims = [row for row in _rows(store, "list_active_claims", ticker) if is_fundamental_core_claim(row)]
     claims.sort(
         key=lambda row: (
             CLAIM_STATUS_RANK.get(str(row.get("final_status") or row.get("status") or "").lower(), 3),
@@ -636,5 +638,8 @@ def build_pm_view(store: Any, ticker: str, *, research: Any | None = None) -> di
     snapshot["base_scenario"] = invest.get("base_scenario")
     snapshot["valuation_state"] = invest.get("valuation_state")
     snapshot["current_thesis"] = invest.get("current_thesis")
+    from .product_read import attach_company_overview
+
+    snapshot = attach_company_overview(snapshot, store, symbol, research=research)
     snapshot["can_answer"] = pm_questions_answerable(snapshot)
     return snapshot

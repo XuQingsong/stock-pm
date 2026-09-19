@@ -2386,3 +2386,45 @@ class BrainStore:
             "SELECT * FROM brain_price_divergences WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
             {"ticker": symbol},
         )
+
+    def list_all_hypotheses(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.hypotheses.values()]
+        return self._execute("SELECT * FROM brain_market_hypotheses ORDER BY updated_at DESC")
+
+    def list_all_market_attentions(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.market_attentions.values()]
+        return self._execute("SELECT * FROM brain_market_attention ORDER BY updated_at DESC")
+
+    def list_all_expectations(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.expectations.values()]
+        return self._execute("SELECT * FROM brain_expectations ORDER BY updated_at DESC")
+
+    def list_all_events(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.events.values()]
+        return self._execute("SELECT * FROM brain_events ORDER BY created_at DESC")
+
+    def list_all_states(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.states.values()]
+        return self._execute("SELECT * FROM brain_states ORDER BY updated_at DESC")
+
+    def list_all_drivers(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.drivers.values()]
+        return self._execute("SELECT * FROM brain_value_drivers ORDER BY updated_at DESC")
+
+    def list_all_exposures(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            return [_copy(row) for row in self.exposures.values()]
+        return self._execute("SELECT * FROM brain_exposures ORDER BY created_at DESC")
+
+    def list_all_history(self) -> list[dict[str, Any]]:
+        if not self._pg():
+            rows = [_copy(row) for row in self.history.values()]
+            rows.sort(key=lambda item: str(item.get("created_at") or ""))
+            return rows
+        return self._execute("SELECT * FROM brain_history ORDER BY created_at")

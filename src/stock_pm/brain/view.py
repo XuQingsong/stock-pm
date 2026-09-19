@@ -197,7 +197,9 @@ def build_claim_detail(store: Any, research: Any, ticker: str, claim_id: str) ->
         for row in store.list_news(ticker, run_id=claim.get("run_id"))
         if row.get("affected_claim_id") == claim_id or row.get("layer") == "material"
     ]
-    return {
+    from .product_read import attach_claim_detail
+
+    payload = {
         "ticker": ticker.upper(),
         "claim": claim,
         "support_evidence": _bundle("support"),
@@ -208,6 +210,7 @@ def build_claim_detail(store: Any, research: Any, ticker: str, claim_id: str) ->
         "questions": [row for row in store.list_questions(ticker, run_id=claim.get("run_id")) if row.get("related_claim_id") == claim_id],
         "news": news,
     }
+    return attach_claim_detail(payload, store, ticker, research=research)
 
 
 def build_evidence_detail(store: Any, research: Any, ticker: str, evidence_id: str) -> dict[str, Any] | None:
