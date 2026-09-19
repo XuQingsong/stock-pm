@@ -102,4 +102,5 @@ Market / company / claim HTML, full causal-graph page, events page, portfolio / 
 - Page paths set `llm_invoked=false`. Empty persisted data stays empty.
 - Cases 1–2 and 4–7 covered at the API layer. Phase 0–4 / Persistence / Investment Reasoning / PM View: PASS.
 - AVGO / LITE: endpoints accept whatever is persisted; missing fields return honest empties.
-- Not done: three HTML pages, Step 5 live data check, Step 6 deploy.
+- Not done at Step 1 close: three HTML pages, Step 5 live data check, Step 6 deploy.
+- Step 2 (separate): `/market` page. See `V1_STEP2_MARKET_PAGE.md`.

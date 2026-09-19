@@ -172,6 +172,11 @@ def overview_page() -> str:
     return _page("overview.html")
 
 
+@app.get("/market", response_class=HTMLResponse, include_in_schema=False)
+def market_overview_page() -> str:
+    return _page("market.html")
+
+
 @app.get("/stock/{symbol}", response_class=HTMLResponse, include_in_schema=False)
 def stock_page(symbol: str) -> str:
     return _page("stock.html")

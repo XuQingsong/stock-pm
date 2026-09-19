@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>市场总览 · Stock-PM V1</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-name">Stock-PM</span>
+      </div>
+      <nav class="nav">
+        <a href="market.html" class="active">市场总览</a>
+        <a href="#" class="muted">自选股</a>
+        <a href="company.html">公司研究</a>
+        <a href="#" class="muted">待验证问题</a>
+        <a href="#" class="muted">研究档案</a>
+      </nav>
+      <div class="meta-time">数据截至 09-19</div>
+    </header>
+
+    <div class="page-head">
+      <div class="page-head-row">
+        <div>
+          <h1>市场现在在交易什么？</h1>
+          <p class="lede">定价主轴优先 · 触发事件另层 · 非行情墙 · 非新闻流</p>
+        </div>
+        <span class="zone-badge fast">快变量区</span>
+      </div>
+    </div>
+
+    <!-- 市场状态 -->
+    <section class="status-bar">
+      <p class="status-line">当前定价主轴：美债收益率（折现）+ AI 资本开支（主题预期）。</p>
+      <div class="status-meta">
+        <span class="chip status-ok">主轴清晰</span>
+        <span class="chip cred-mid">可信度 中</span>
+        <span class="chip status-watch">近窗有触发</span>
+        <span class="chip tag-multi">多解释并存</span>
+      </div>
+      <p class="status-hint">※ Meta 资本开支上修是「触发事件」，不是与利率并列的定价主轴</p>
+    </section>
+
+    <!-- ■ 层一：当前定价主轴 Top 1–3 -->
+    <section class="layer-zone axis-zone">
+      <div class="layer-label">
+        <h2>当前定价主轴 · Top 1–3</h2>
+        <span class="zone-badge fast">主导变量 · 定价轴</span>
+      </div>
+      <p class="layer-hint">定价轴 = 市场用什么在给资产定价。强度 / 方向 / 可信度 · 支持与反向对称</p>
+
+      <div class="axis-rank">
+        <!-- #1 美债收益率 -->
+        <article class="axis-rank-card rank-1">
+          <span class="rank-badge">Top 1</span>
+          <h3>美债收益率 <span class="zone-badge fast">快</span></h3>
+          <div class="var-meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+            <span class="chip intensity-strong">强度 强</span>
+            <span class="chip cred-mid">可信度 中</span>
+            <span class="chip status-ok">持续中</span>
+          </div>
+          <p class="var-dir" style="margin:0;font-size:13px;color:var(--text-secondary);">方向：压制长久期估值</p>
+          <div class="signal-block support" style="margin-top:8px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--support-head);">支持信号 [事]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>10Y 近窗上行</li>
+              <li>实际利率同步抬升</li>
+            </ul>
+          </div>
+          <div class="signal-block oppose" style="margin-top:6px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--oppose-head);">反向信号 [事]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>实际利率曾回落窗口仍在</li>
+            </ul>
+          </div>
+          <div class="axis-why">
+            <strong>为什么它比其他变量更重要</strong>
+            折现率直接改写成长股估值带；近窗强度「强」、跨多数久期资产同步，而 AI 开支叙事仍处「预期分化」、解释度更窄。利率是「定价尺子」，主题是「尺子上的标尺读数」。
+          </div>
+        </article>
+
+        <!-- #2 AI 资本开支 -->
+        <article class="axis-rank-card">
+          <span class="rank-badge">Top 2</span>
+          <h3>AI 资本开支 <span class="zone-badge fast">快</span></h3>
+          <div class="var-meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+            <span class="chip intensity-mid">强度 中</span>
+            <span class="chip cred-mid">可信度 中</span>
+            <span class="chip status-watch">刚强化</span>
+          </div>
+          <p class="var-dir" style="margin:0;font-size:13px;color:var(--text-secondary);">方向：预期分化中</p>
+          <div class="signal-block support" style="margin-top:8px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--support-head);">支持信号 [事]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>云厂商指引上修</li>
+              <li>主题近窗波动可见</li>
+            </ul>
+          </div>
+          <div class="signal-block oppose" style="margin-top:6px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--oppose-head);">反向信号 [事]/[假]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>交付节奏滞后风险</li>
+            </ul>
+          </div>
+          <div class="axis-why">
+            <strong>为什么排在 Top 2</strong>
+            半导/云链条定价高度依赖开支路径，但覆盖面窄于利率；近窗被 Meta 事件「触发强化」，本身仍是主题轴而非全局折现轴。
+          </div>
+        </article>
+
+        <!-- #3 美元流动性（示意第三轴） -->
+        <article class="axis-rank-card">
+          <span class="rank-badge">Top 3</span>
+          <h3>风险偏好 / 流动性 <span class="zone-badge fast">快</span></h3>
+          <div class="var-meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+            <span class="chip intensity-weak">强度 弱–中</span>
+            <span class="chip cred-mid">可信度 中</span>
+            <span class="chip status-weak">背景中</span>
+          </div>
+          <p class="var-dir" style="margin:0;font-size:13px;color:var(--text-secondary);">方向：随利率与主题波动</p>
+          <div class="signal-block support" style="margin-top:8px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--support-head);">支持信号 [事]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>风险资产与利率负相关仍可见</li>
+            </ul>
+          </div>
+          <div class="signal-block oppose" style="margin-top:6px;font-size:12px;">
+            <h4 style="margin:0 0 4px;font-size:11px;color:var(--oppose-head);">反向信号 [多解]</h4>
+            <ul style="margin:0;padding-left:16px;color:var(--text-secondary);">
+              <li>近窗更像利率与主题的合成，非独立主轴</li>
+            </ul>
+          </div>
+          <div class="axis-why">
+            <strong>为什么排在 Top 3</strong>
+            解释力多被利率与 AI 开支吸收；保留为第三轴以免漏读「偏好切换」，但不宜与 Top1/2 同权。
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ■ 层二：触发事件（视觉降权，非同卡同级） -->
+    <section class="layer-zone trigger-zone">
+      <div class="layer-label">
+        <h2>触发事件</h2>
+        <span class="chip tag-multi">非定价主轴</span>
+      </div>
+      <p class="layer-hint">触发事件 = 改写或强化某条定价主轴的近窗证据。不与「美债收益率 / AI 资本开支」并列同卡。</p>
+
+      <div class="trigger-grid">
+        <article class="trigger-card">
+          <h3>Meta 资本开支指引上修</h3>
+          <a href="event.html">影响链 →</a>
+          <div class="trigger-meta">
+            <span class="chip status-watch">刚出现</span>
+            <span class="chip cred-mid">可信度 中</span>
+            <span class="chip intensity-mid">落点 → AI 资本开支主轴</span>
+          </div>
+          <p class="trigger-note">作用：把「AI 资本开支」从背景推近为近窗主导之一。本身不是独立定价主轴——若外溢不成立，主轴排序应回落，而非新增一条「Meta 轴」。</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 最近变化 -->
+    <section class="section">
+      <div class="section-head">
+        <h2>最近主轴 / 触发变化</h2>
+        <span class="section-note">只列近窗真正变化 · 非全史</span>
+      </div>
+      <ul class="change-list">
+        <li>
+          <span class="date">09-18</span>
+          <span class="body"><strong>触发 · Meta 资本开支上修</strong> → 「AI 资本开支」主轴强度抬升（非新增并列主轴）</span>
+        </li>
+        <li>
+          <span class="date">09-17</span>
+          <span class="body"><strong>主轴 · 美债收益率加速上行</strong> → 强度 中→强；反向信号仍在</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 相关标的 -->
+    <section class="section">
+      <div class="section-head">
+        <h2>相关标的</h2>
+      </div>
+      <div class="pills">
+        <a class="pill" href="company.html">AVGO</a>
+        <a class="pill" href="#">NVDA</a>
+      </div>
+    </section>
+
+    <details class="collapse-panel">
+      <summary>▸ 多解释 / 证据说明（默认折）</summary>
+      <p class="sketch">当前定价也可读成：利率主导为主、开支叙事为辅；或反之。两叙事并存时，不宜强行单一归因。触发事件与主轴分层阅读，避免把公司级开支新闻抬成全局定价轴。</p>
+    </details>
+  </div>
+</body>
+</html>

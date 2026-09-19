@@ -20,6 +20,8 @@ UI_FILES = [
     Path("src/stock_pm/static/stock.js"),
     Path("src/stock_pm/static/shell.js"),
     Path("src/stock_pm/static/desk.js"),
+    Path("src/stock_pm/static/market.html"),
+    Path("src/stock_pm/static/market.js"),
 ]
 
 

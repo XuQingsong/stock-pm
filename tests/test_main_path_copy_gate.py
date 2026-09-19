@@ -43,9 +43,12 @@ MAIN_PATH_TEMPLATES = (
     ROOT / "src/stock_pm/static/review.html",
     ROOT / "src/stock_pm/static/desk.js",
     ROOT / "src/stock_pm/static/stock.js",
+    ROOT / "src/stock_pm/static/market.html",
+    ROOT / "src/stock_pm/static/market.js",
     ROOT / "design-hifi/overview.html",
     ROOT / "design-hifi/stock.html",
     ROOT / "design-hifi/review.html",
+    ROOT / "design-hifi-v1/market.html",
 )
 
 # Page builders + origin copy that feed the main path. copy.py is the denylist
