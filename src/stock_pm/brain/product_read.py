@@ -100,7 +100,20 @@ def _placeholder_hypothesis(row: dict[str, Any]) -> bool:
 
 def _hay(row: dict[str, Any] | None, *keys: str) -> str:
     item = row or {}
-    default = ("name", "title", "statement", "hypothesis", "canonical_key", "kind", "reason", "subject", "current_state")
+    default = (
+        "name",
+        "title",
+        "statement",
+        "hypothesis",
+        "canonical_key",
+        "kind",
+        "reason",
+        "subject",
+        "current_state",
+        "object_name",
+        "mechanism",
+        "why_it_matters",
+    )
     return " ".join(str(item.get(key) or "") for key in (keys or default)).lower()
 
 
@@ -603,9 +616,18 @@ def attach_company_overview(snapshot: dict[str, Any], store: Any, ticker: str, *
     symbol = str(ticker or "").upper()
     drivers = aggregate_dominant_drivers(store)
     sensitivities = ticker_sensitivities(store, symbol, drivers)
-    claims = list(snapshot.get("core_claims") or [])
-    snapshot["core_claims"] = [row for row in claims if not is_market_pricing_or_valuation_claim(row)][:CORE_CLAIM_MAX]
-    snapshot["valuation_or_market_claims"] = [row for row in claims if is_market_pricing_or_valuation_claim(row)]
+    raw_cores = [row for row in _rows(store, "list_active_claims", symbol) if row.get("is_core")]
+    snapshot["core_claims"] = [row for row in (snapshot.get("core_claims") or []) if not is_market_pricing_or_valuation_claim(row)][:CORE_CLAIM_MAX]
+    snapshot["valuation_or_market_claims"] = [
+        {
+            "claim_id": row.get("claim_id"),
+            "title": row.get("title"),
+            "claim_type": row.get("claim_type"),
+            "claim_dimension": row.get("claim_dimension"),
+        }
+        for row in raw_cores
+        if is_market_pricing_or_valuation_claim(row)
+    ]
     snapshot["thesis"] = _thesis_card(store, symbol, snapshot["core_claims"])
     snapshot["quote"] = _quote(store, symbol, research)
     snapshot["market_environment"] = {
