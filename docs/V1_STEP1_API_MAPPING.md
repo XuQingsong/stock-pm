@@ -94,3 +94,12 @@ Trigger events never become a sensitivity row.
 ## Out of scope (later steps)
 
 Market / company / claim HTML, full causal-graph page, events page, portfolio / DCF, new providers, Brain rewrite, deploy to 43.166.2.31.
+
+## Step 1 completion note
+
+- APIs live: `GET /api/market/overview`, extended `GET /api/brain/{symbol}/pm-view`, extended `GET /api/brain/{symbol}/claims/{claim_id}`.
+- No new Brain tables. `MarketDominantDriver` / `TickerMarketSensitivity` are read views in `product_read.py`.
+- Page paths set `llm_invoked=false`. Empty persisted data stays empty.
+- Cases 1–2 and 4–7 covered at the API layer. Phase 0–4 / Persistence / Investment Reasoning / PM View: PASS.
+- AVGO / LITE: endpoints accept whatever is persisted; missing fields return honest empties.
+- Not done: three HTML pages, Step 5 live data check, Step 6 deploy.
