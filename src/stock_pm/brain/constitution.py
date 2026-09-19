@@ -10,6 +10,7 @@ from .exposure import related_entity_cannot_prove_issuer
 from .hysteresis import next_claim_status
 from .knowledge import fact_reliability
 from .shadow import should_enter_shadow
+from .divergence import price_as_evidence_forbidden
 from .types import FUNDAMENTAL_CLAIM_TYPES, LOW_RELIABILITY
 
 
@@ -101,7 +102,16 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
     if source == "price" and target in {"state", "company_state", "industry_state", "macro_state"}:
         hits.append({"rule": "price_cannot_modify_fundamental_state", "reason": "Price cannot directly modify Fundamental State."})
 
-    if target in {"market_attention", "expectation", "expectation_state", "market_driver", "market_driver_hypothesis", "price_reaction"}:
+    if target in {
+        "market_attention",
+        "expectation",
+        "expectation_state",
+        "market_driver",
+        "market_driver_hypothesis",
+        "price_reaction",
+        "price_fundamental_divergence",
+        "price_feedback",
+    }:
         blob = f"{payload.get('statement') or ''} {payload.get('hypothesis') or ''} {proposal.get('reason') or ''} {payload.get('conclusion') or ''} {payload.get('alignment') or ''}".lower()
         if "mispricing" in blob:
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Unexplained price move is not mispricing."})
@@ -156,6 +166,16 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         current_status = str(current.get("status") or "")
         if proposed_status and proposed_status != current_status and (proposed_status != inertia["status"] or not inertia["changed"]):
             hits.append({"rule": "claim_slower_than_driver", "reason": "Core Claim cannot jump on a single item."})
+
+    if source == "price" and target in {"causal_edge", "causal_relationship"}:
+        requested_edge = str(payload.get("status") or payload.get("requested_status") or current.get("status") or "candidate")
+        if requested_edge in {"supported", "established"}:
+            hits.append(
+                {
+                    "rule": "price_cannot_create_established_causal_edge",
+                    "reason": "Price cannot create or promote an established causal edge.",
+                }
+            )
 
     if target in {"causal_edge", "causal_relationship"}:
         requested = str(payload.get("status") or payload.get("requested_status") or current.get("status") or "candidate")
@@ -220,6 +240,18 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Price without fundamental evidence cannot rewrite investment reasoning."})
 
     evidence_ids = [str(item) for item in (proposal.get("evidence_ids") or payload.get("evidence_ids") or []) if str(item).strip()]
+    if target in conclusion_targets and price_as_evidence_forbidden(
+        evidence_ids,
+        price_observation_ids=[str(item) for item in (proposal.get("price_observation_ids") or payload.get("price_observation_ids") or []) if str(item).strip()],
+    ):
+        hits.append(
+            {
+                "rule": "price_cannot_modify_fundamental_state"
+                if target in {"state", "company_state", "industry_state", "macro_state"}
+                else "price_cannot_modify_fundamental_claim",
+                "reason": "A price observation cannot be used as evidence for a later fundamental fact.",
+            }
+        )
     reason = str(proposal.get("reason") or payload.get("reason") or "").lower()
     oppose = str(payload.get("status") or "").lower() in {"challenged", "contradicted"} or str(payload.get("direction") or "") == "oppose"
     if oppose and not evidence_ids:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 
@@ -27,6 +28,7 @@ from .causal import (
     transmission_stop_reason,
 )
 from .exposure import relevant_exposures
+from .divergence import apply_divergence_lifecycle, explain_price_move, repeated_divergence_gaps
 from .market import relevant_market_attentions
 from .market_layer import interpret_market_layer, merge_market_proposals
 from .now import build_now_chain
@@ -193,6 +195,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
             "market_attentions": [],
             "expectations": [],
             "hypotheses": [],
+            "divergences": [],
             "facts": [],
             "fingerprints": [],
             "identities": [],
@@ -218,6 +221,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "market_attentions": store.list_market_attentions(ticker) if hasattr(store, "list_market_attentions") else [],
         "expectations": store.list_expectations(ticker) if hasattr(store, "list_expectations") else [],
         "hypotheses": store.list_hypotheses(ticker) if hasattr(store, "list_hypotheses") else [],
+        "divergences": store.list_divergences(ticker) if hasattr(store, "list_divergences") else [],
         "facts": facts,
         "fingerprints": fingerprints,
         "identities": identities,
@@ -675,12 +679,55 @@ def run_brain_update(
         existing_expectations=context.get("expectations"),
         existing_hypotheses=context.get("hypotheses"),
     )
+    explanation = explain_price_move(
+        event,
+        ticker=symbol,
+        prior_states=context.get("states"),
+        current_states=context.get("states"),
+        prior_claims=context.get("claims"),
+        current_claims=context.get("claims"),
+        expectation=market_layer.get("expectation"),
+        hypotheses=list(context.get("hypotheses") or [])
+        + list(market_layer.get("hypotheses_created") or [])
+        + list(market_layer.get("hypotheses_updated") or []),
+    )
+    lifecycle = apply_divergence_lifecycle(
+        explanation,
+        ticker=symbol,
+        event=event,
+        existing=context.get("divergences"),
+    )
+    gap_layer = repeated_divergence_gaps(
+        list(context.get("divergences") or []) + list(lifecycle.get("created") or []) + list(lifecycle.get("updated") or []),
+        ticker=symbol,
+    )
     proposals, _dup_skipped = merge_market_proposals(proposals, market_layer.get("proposals") or [])
-    for question in market_layer.get("questions") or []:
+    proposals, _div_skipped = merge_market_proposals(proposals, lifecycle.get("proposals") or [])
+    proposals, _gap_skipped = merge_market_proposals(proposals, gap_layer.get("proposals") or [])
+    _dup_skipped = int(_dup_skipped) + int(_div_skipped) + int(_gap_skipped)
+    for question in list(market_layer.get("questions") or []) + list(lifecycle.get("questions") or []) + list(gap_layer.get("questions") or []):
         token = str(question.get("question") or "")
         if token and token not in seen_questions:
             questions.append(question)
             seen_questions.add(token)
+    price_ctx = {
+        "price_change_pct": event.get("price_change_pct"),
+        "peers": event.get("peers") or event.get("peer_moves"),
+        "explanation_grade": explanation.get("grade"),
+        "feedback": explanation.get("feedback"),
+        "divergences": [
+            {
+                "divergence_id": row.get("divergence_id"),
+                "status": row.get("status"),
+                "signature": row.get("signature"),
+            }
+            for row in list(lifecycle.get("created") or []) + list(lifecycle.get("updated") or []) + list(context.get("divergences") or [])
+        ][:4],
+    }
+    snapshot["price"] = price_ctx
+    parts = dict(snapshot.get("context_part_tokens") or {})
+    parts["price"] = max(0, (len(json.dumps(price_ctx, default=str, ensure_ascii=False)) + 3) // 4)
+    snapshot["context_part_tokens"] = parts
     if price_only:
         proposals = [
             row
@@ -848,6 +895,9 @@ def run_brain_update(
         chain_exp = list(brain_store.list_expectations(symbol) or chain_exp)[:4]
     if hasattr(brain_store, "list_hypotheses"):
         chain_hyp = list(brain_store.list_hypotheses(symbol) or chain_hyp)[:6]
+    chain_div: list[dict[str, Any]] = list(lifecycle.get("created") or []) + list(lifecycle.get("updated") or [])
+    if hasattr(brain_store, "list_divergences"):
+        chain_div = list(brain_store.list_divergences(symbol) or chain_div)[:6]
     now_chain = build_now_chain(
         event=event,
         extract=extract,
@@ -859,7 +909,9 @@ def run_brain_update(
         hypotheses=chain_hyp,
         questions=list(questions) + list(gate_result.get("questions") or []),
         material=True,
-        unresolved=bool(market_layer.get("unresolved")),
+        unresolved=bool(market_layer.get("unresolved") or explanation.get("should_create_divergence")),
+        explanation=explanation,
+        divergences=chain_div,
     )
     price_state_violations = sum(
         1
@@ -871,10 +923,26 @@ def run_brain_update(
         for row in (gate_result.get("approved") or [])
         if str(row.get("source_kind") or "") == "price" and str(row.get("object_type") or "") in {"claim", "core_claim"}
     )
+    price_edge_violations = sum(
+        1
+        for row in (gate_result.get("approved") or [])
+        if str(row.get("source_kind") or "") == "price"
+        and str(row.get("object_type") or "") in {"causal_edge", "causal_relationship"}
+        and str((row.get("to_payload") or {}).get("status") or "") in {"supported", "established"}
+    )
     market_stats = dict(market_layer.get("stats") or {})
     market_stats["price_fundamental_violations"] = price_state_violations
     market_stats["price_claim_violations"] = price_claim_violations
+    market_stats["price_established_edge_violations"] = price_edge_violations
     market_stats["duplicates_prevented"] = int(market_stats.get("duplicates_prevented") or 0) + int(_dup_skipped)
+    market_stats["explanation_grade"] = explanation.get("grade")
+    market_stats["divergences_created"] = len(lifecycle.get("created") or [])
+    market_stats["divergences_resolved"] = len(lifecycle.get("resolved") or [])
+    market_stats["divergences_partially_explained"] = len(lifecycle.get("partially_explained") or [])
+    market_stats["divergences_still_open"] = len(lifecycle.get("still_open") or [])
+    market_stats["repeated_divergence_patterns"] = len(gap_layer.get("patterns") or [])
+    market_stats["research_questions_from_price"] = len(lifecycle.get("questions") or []) + len(gap_layer.get("questions") or [])
+    market_stats["price_feedback"] = explanation.get("feedback")
     return _finish(
         {
             "ticker": symbol,
@@ -910,6 +978,8 @@ def run_brain_update(
             "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
             "now_chain": now_chain,
             "market_layer": market_stats,
+            "explanation": explanation,
+            "price_feedback": explanation.get("feedback"),
             "token_usage": _token_usage(llm_calls, snapshot),
         }
     )

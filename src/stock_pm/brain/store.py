@@ -73,6 +73,7 @@ class BrainStore:
         self.market_attentions: dict[str, dict[str, Any]] = {}
         self.expectations: dict[str, dict[str, Any]] = {}
         self.hypotheses: dict[str, dict[str, Any]] = {}
+        self.divergences: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -1857,5 +1858,114 @@ class BrainStore:
             return [_copy(row) for row in self.hypotheses.values() if row.get("ticker") == symbol]
         return self._execute(
             "SELECT * FROM brain_market_hypotheses WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
+            {"ticker": symbol},
+        )
+
+    def upsert_divergence(self, row: dict[str, Any]) -> dict[str, Any]:
+        stored = {
+            "divergence_id": row.get("divergence_id") or new_id("bpfd"),
+            "ticker": str(row["ticker"]).upper(),
+            "signature": row.get("signature") or "",
+            "kind": row.get("kind") or "price_fundamental_divergence",
+            "status": row.get("status") or "open",
+            "explanation_grade": row.get("explanation_grade") or "largely_unexplained",
+            "direction": row.get("direction") or "",
+            "price_change_pct": row.get("price_change_pct"),
+            "peer_pattern": row.get("peer_pattern"),
+            "opened_by_event_id": row.get("opened_by_event_id"),
+            "opened_as_of": row.get("opened_as_of") or "",
+            "resolved_by_event_id": row.get("resolved_by_event_id"),
+            "resolved_as_of": row.get("resolved_as_of") or "",
+            "known_at_open": dict(row.get("known_at_open") or {}),
+            "resolution_evidence_ids": list(row.get("resolution_evidence_ids") or []),
+            "price_observation_ids": list(row.get("price_observation_ids") or []),
+            "price_is_not_evidence_for_resolution": True,
+            "unresolved_question": row.get("unresolved_question") or "",
+            "reason": row.get("reason") or "",
+            "source_kind": row.get("source_kind") or "price",
+            "observation_count": int(row.get("observation_count") or 1),
+            "as_of": row.get("as_of") or row.get("opened_as_of") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
+        }
+        if not self._pg():
+            if stored.get("status") in {"open", "partially_explained"}:
+                for existing in self.divergences.values():
+                    if (
+                        existing.get("ticker") == stored["ticker"]
+                        and existing.get("signature") == stored["signature"]
+                        and existing.get("status") in {"open", "partially_explained"}
+                    ):
+                        stored["divergence_id"] = existing["divergence_id"]
+                        stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                        stored["opened_by_event_id"] = existing.get("opened_by_event_id") or stored["opened_by_event_id"]
+                        stored["opened_as_of"] = existing.get("opened_as_of") or stored["opened_as_of"]
+                        stored["known_at_open"] = dict(existing.get("known_at_open") or stored["known_at_open"] or {})
+                        stored["price_observation_ids"] = list(
+                            dict.fromkeys(list(existing.get("price_observation_ids") or []) + stored["price_observation_ids"])
+                        )
+                        stored["observation_count"] = max(
+                            int(existing.get("observation_count") or 1), stored["observation_count"]
+                        )
+                        break
+            elif stored.get("divergence_id") in self.divergences:
+                existing = self.divergences[stored["divergence_id"]]
+                stored["created_at"] = existing.get("created_at") or stored["created_at"]
+                stored["opened_by_event_id"] = existing.get("opened_by_event_id") or stored["opened_by_event_id"]
+                stored["opened_as_of"] = existing.get("opened_as_of") or stored["opened_as_of"]
+                stored["known_at_open"] = dict(existing.get("known_at_open") or stored["known_at_open"] or {})
+                stored["price_observation_ids"] = list(
+                    dict.fromkeys(list(existing.get("price_observation_ids") or []) + stored["price_observation_ids"])
+                )
+            self.divergences[stored["divergence_id"]] = stored
+            return _copy(stored)
+        out = self._one(
+            """
+            INSERT INTO brain_price_divergences (
+                divergence_id, ticker, signature, kind, status, explanation_grade, direction,
+                price_change_pct, peer_pattern, opened_by_event_id, opened_as_of,
+                resolved_by_event_id, resolved_as_of, known_at_open, resolution_evidence_ids,
+                price_observation_ids, price_is_not_evidence_for_resolution, unresolved_question,
+                reason, source_kind, observation_count, as_of, run_id, created_at, updated_at
+            ) VALUES (
+                %(divergence_id)s, %(ticker)s, %(signature)s, %(kind)s, %(status)s, %(explanation_grade)s,
+                %(direction)s, %(price_change_pct)s, %(peer_pattern)s, %(opened_by_event_id)s,
+                %(opened_as_of)s, %(resolved_by_event_id)s, %(resolved_as_of)s, %(known_at_open)s,
+                %(resolution_evidence_ids)s, %(price_observation_ids)s, %(price_is_not_evidence_for_resolution)s,
+                %(unresolved_question)s, %(reason)s, %(source_kind)s, %(observation_count)s, %(as_of)s,
+                %(run_id)s, %(created_at)s, %(updated_at)s
+            )
+            ON CONFLICT (divergence_id) DO UPDATE SET
+                status = EXCLUDED.status,
+                explanation_grade = EXCLUDED.explanation_grade,
+                price_change_pct = EXCLUDED.price_change_pct,
+                peer_pattern = EXCLUDED.peer_pattern,
+                resolved_by_event_id = EXCLUDED.resolved_by_event_id,
+                resolved_as_of = EXCLUDED.resolved_as_of,
+                resolution_evidence_ids = EXCLUDED.resolution_evidence_ids,
+                price_observation_ids = EXCLUDED.price_observation_ids,
+                observation_count = EXCLUDED.observation_count,
+                reason = EXCLUDED.reason,
+                as_of = EXCLUDED.as_of,
+                updated_at = EXCLUDED.updated_at
+            RETURNING *
+            """,
+            {
+                **stored,
+                "known_at_open": _jsonb(stored["known_at_open"]),
+            },
+        )
+        assert out is not None
+        return out
+
+    def list_divergences(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [_copy(row) for row in self.divergences.values() if row.get("ticker") == symbol]
+            rows.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+            return rows
+        return self._execute(
+            "SELECT * FROM brain_price_divergences WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
             {"ticker": symbol},
         )

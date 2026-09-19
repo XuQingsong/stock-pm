@@ -477,6 +477,7 @@ def build_snapshot(
     market_attentions: list[dict[str, Any]] | None = None,
     expectations: list[dict[str, Any]] | None = None,
     hypotheses: list[dict[str, Any]] | None = None,
+    price: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     claim_ids = {str(row.get("claim_id")) for row in affected.get("claims") or [] if row.get("claim_id")}
     driver_ids = {str(row.get("driver_id")) for row in affected.get("drivers") or [] if row.get("driver_id")}
@@ -580,6 +581,11 @@ def build_snapshot(
             causal=causal_context,
             market={"attentions": attention_rows, "expectations": expectation_rows, "hypotheses": hypothesis_rows},
             history=relevant_history,
+            price=price
+            or {
+                "price_change_pct": event.get("price_change_pct"),
+                "peers": event.get("peers") or event.get("peer_moves"),
+            },
         ),
     }
 
@@ -596,6 +602,7 @@ def _context_part_tokens(
     causal: dict[str, Any],
     market: dict[str, Any],
     history: list[dict[str, Any]],
+    price: dict[str, Any] | None = None,
 ) -> dict[str, int]:
     return {
         "event": _approx_tokens(event),
@@ -603,5 +610,6 @@ def _context_part_tokens(
         "evidence": _approx_tokens(evidence),
         "causal": _approx_tokens(causal),
         "market": _approx_tokens(market),
+        "price": _approx_tokens(price or {}),
         "history": _approx_tokens(history),
     }

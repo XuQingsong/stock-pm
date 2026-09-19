@@ -1,0 +1,146 @@
+{
+  "generated_at": "2026-09-19T05:00:39.422335+00:00",
+  "brain_runtime": "phase4",
+  "phase": "phase4",
+  "metrics": {
+    "price_observations": 8,
+    "material_abnormal_price_events": 7,
+    "divergences_created": 3,
+    "divergences_resolved": 1,
+    "divergences_partially_explained": 0,
+    "divergences_still_open": 4,
+    "repeated_divergence_patterns": 3,
+    "research_questions_from_price": 12,
+    "hypotheses_updated_from_price": 2,
+    "expectation_updates_from_price_context": 1,
+    "price_fundamental_violations": 0,
+    "price_claim_violations": 0,
+    "price_established_edge_violations": 0,
+    "open_after_case4": 1,
+    "resolved_after_case5": 1,
+    "brain_gap_questions_case6": 8,
+    "context_parts_case4": {
+      "event": 176,
+      "state": 1,
+      "evidence": 96,
+      "causal": 770,
+      "market": 14,
+      "price": 80,
+      "history": 1
+    }
+  },
+  "token_usage": {
+    "context_parts": {
+      "event": 176,
+      "state": 1,
+      "evidence": 96,
+      "causal": 770,
+      "market": 14,
+      "price": 80,
+      "history": 1
+    },
+    "price_token_inflation_flag": false,
+    "note": "Phase 4 records a dedicated price context part. Full Brain context is not used."
+  },
+  "checklist": {
+    "price_fundamental_divergence_in_runtime": true,
+    "explanation_check_first": true,
+    "fundamental_expectation_market_distinguished": true,
+    "unexplained_can_stay_unresolved": true,
+    "unresolved_creates_research_question": true,
+    "later_evidence_resolves": true,
+    "no_hindsight_contamination": true,
+    "repeated_divergence_brain_gap": true,
+    "price_does_not_modify_fundamental": true,
+    "price_does_not_modify_core_claim": true,
+    "price_does_not_create_established_edge": true,
+    "now_chain_still_four_questions": true,
+    "phase0_3_regression": true,
+    "price_to_fundamental_zero": true,
+    "price_to_core_claim_zero": true,
+    "price_to_established_edge_zero": true
+  },
+  "regression": [
+    {
+      "name": "phase4_runtime_now_chain",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case1_explained",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case2_expectation",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case3_sector",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case4_unexplained",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case5_resolve_no_hindsight",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_case6_brain_gap",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_constitution",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase4_unit_lifecycle",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_now_chain",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_unexplained_not_mispricing",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_expectation_below",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase3_unresolved_research",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase2_supported_path",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase2_candidate_stop",
+      "ok": true,
+      "error": null
+    },
+    {
+      "name": "phase0_shadow",
+      "ok": true,
+      "error": null
+    }
+  ],
+  "all_ok": true
+}

@@ -13,6 +13,7 @@ from stock_pm.research.llm_reason import compact_text
 from .budget import change_scope
 from .causal import accumulate_edge_evidence, coerce_causal_edges, next_edge_status, normalize_causal_edge, research_question_ok
 from .exposure import normalize_exposure
+from .divergence import normalize_divergence, strip_price_evidence
 from .expectation import normalize_expectation
 from .hypothesis import normalize_hypothesis
 from .market import normalize_market_attention
@@ -369,9 +370,19 @@ def evaluate_brain_changes(
                                 ticker=symbol,
                             )
                         )
+                    if proposal.get("object_type") in {"price_fundamental_divergence", "price_feedback"} and hasattr(store, "upsert_divergence"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_divergence(
+                            normalize_divergence(
+                                {**payload, "ticker": symbol, "source_kind": proposal.get("source_kind") or "price"},
+                                ticker=symbol,
+                            )
+                        )
                     if proposal.get("object_type") in {"state", "company_state", "industry_state", "macro_state"} and hasattr(store, "upsert_state"):
                         payload = dict(proposal.get("to_payload") or {})
                         current = dict(proposal.get("from_payload") or {})
+                        if payload.get("evidence_ids"):
+                            payload["evidence_ids"] = strip_price_evidence(list(payload.get("evidence_ids") or []))
                         store.upsert_state(
                             {
                                 **current,
@@ -383,6 +394,8 @@ def evaluate_brain_changes(
                     if proposal.get("object_type") in {"driver", "value_driver"} and hasattr(store, "upsert_driver"):
                         payload = dict(proposal.get("to_payload") or {})
                         current = dict(proposal.get("from_payload") or {})
+                        if payload.get("evidence_ids"):
+                            payload["evidence_ids"] = strip_price_evidence(list(payload.get("evidence_ids") or []))
                         store.upsert_driver(
                             {
                                 **current,
@@ -399,7 +412,7 @@ def evaluate_brain_changes(
                             merged = dict(current)
                             merged["reasoning"] = {
                                 **dict(current.get("reasoning") or {}),
-                                "evidence_ids": list(payload.get("evidence_ids") or current.get("evidence_ids") or []),
+                                "evidence_ids": strip_price_evidence(list(payload.get("evidence_ids") or current.get("evidence_ids") or [])),
                                 "support_strength": payload.get("support_strength") or current.get("support_strength"),
                                 "counter_strength": payload.get("counter_strength") or current.get("counter_strength"),
                             }

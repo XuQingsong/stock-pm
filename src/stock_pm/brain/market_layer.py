@@ -129,14 +129,14 @@ def merge_market_proposals(existing: list[dict[str, Any]], incoming: list[dict[s
     seen: set[str] = set()
     for row in out:
         payload = row.get("to") or row.get("to_payload") or {}
-        token = str(payload.get("canonical_key") or payload.get("name") or row.get("object_type") or "")
+        token = str(payload.get("canonical_key") or payload.get("name") or payload.get("signature") or row.get("object_type") or "")
         if token:
             seen.add(f"{row.get('object_type')}:{token}")
     extra = 0
     skipped = 0
     for row in incoming or []:
         payload = row.get("to") or row.get("to_payload") or {}
-        token = str(payload.get("canonical_key") or payload.get("name") or "")
+        token = str(payload.get("canonical_key") or payload.get("name") or payload.get("signature") or "")
         key = f"{row.get('object_type')}:{token}"
         if token and key in seen:
             skipped += 1

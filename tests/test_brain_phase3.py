@@ -61,7 +61,7 @@ class Phase3Completer(Phase2Completer):
 
 
 def test_phase3_runtime_and_now_chain_questions() -> None:
-    assert BRAIN_RUNTIME == "phase3"
+    assert BRAIN_RUNTIME == "phase4"
     assert NOW_CHAIN_QUESTIONS == (
         "what_happened",
         "why_it_affects_company",

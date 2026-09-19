@@ -51,6 +51,8 @@ def _understand_line(
     hypotheses: list[dict[str, Any]],
     alignment: dict[str, Any],
     unresolved: bool,
+    explanation: dict[str, Any] | None = None,
+    divergences: list[dict[str, Any]] | None = None,
 ) -> str:
     parts: list[str] = []
     if attentions:
@@ -70,13 +72,24 @@ def _understand_line(
         parts.append(f"Candidate drivers: {numbered}.")
         if len(live) > 1:
             parts.append("Which driver dominates is not established.")
-    parts.append(f"Price alignment: {alignment.get('alignment') or 'unknown'}")
+    peer = (explanation or {}).get("peer_pattern")
+    parts.append(f"Price / Peer Alignment: {peer or alignment.get('alignment') or 'unknown'}")
     conf = "low" if unresolved or any(str(row.get("status") or "") == "unresolved" for row in hypotheses) else (
         "medium" if hypotheses or expectations or attentions else "low"
     )
     parts.append(f"Confidence: {conf}")
-    if unresolved or any(str(row.get("status") or "") == "unresolved" for row in hypotheses):
-        parts.append("Unresolved: the tape move does not yet have a supported market driver.")
+    if explanation and explanation.get("feedback"):
+        parts.append(f"Price Feedback: {explanation.get('feedback')}")
+    live_div = [row for row in (divergences or []) if str(row.get("status") or "") in {"open", "partially_explained", "resolved"}]
+    if live_div:
+        parts.append(f"Divergence: {live_div[0].get('status')}")
+    if unresolved or any(str(row.get("status") or "") == "unresolved" for row in hypotheses) or any(
+        str(row.get("status") or "") == "open" for row in (divergences or [])
+    ):
+        question = (explanation or {}).get("unresolved_question") or (
+            (live_div[0].get("unresolved_question") if live_div else "") or "what is the market pricing that the Brain does not explain?"
+        )
+        parts.append(f"Unresolved: {question}")
     if not parts:
         if alignment.get("alignment") == "unknown" and not event_has_tape(None):
             return "Unknown — this update has no tape evidence, so the Brain does not guess a market driver."
@@ -98,6 +111,8 @@ def build_now_chain(
     material: bool | None = None,
     stopped: str | None = None,
     unresolved: bool | None = None,
+    explanation: dict[str, Any] | None = None,
+    divergences: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     item = dict(event or {})
     extracted = dict(extract or {})
@@ -112,13 +127,18 @@ def build_now_chain(
     why = "; ".join(_exposure_line(row) for row in exposures[:3]) if exposures else "No company exposure is linked yet."
     path_text, can_driver, can_claim = _path_line(transmission, gaps)
     alignment = align_market_with_path(event=item, attentions=attentions, transmission=transmission, gaps=gaps)
-    open_unresolved = bool(unresolved) or any(str(row.get("status") or "") == "unresolved" for row in hypothesis_rows)
+    divergence_rows = list(divergences or [])
+    open_unresolved = bool(unresolved) or any(str(row.get("status") or "") == "unresolved" for row in hypothesis_rows) or any(
+        str(row.get("status") or "") == "open" for row in divergence_rows
+    )
     market_text = _understand_line(
         attentions=attentions,
         expectations=expectation_rows,
         hypotheses=hypothesis_rows,
         alignment=alignment,
         unresolved=open_unresolved,
+        explanation=explanation,
+        divergences=divergence_rows,
     )
     happened = title or fact or "No event."
     if stopped:
@@ -194,6 +214,17 @@ def build_now_chain(
                 for row in hypothesis_rows[:5]
             ],
             "unresolved": open_unresolved,
+            "price_feedback": (explanation or {}).get("feedback"),
+            "explanation_grade": (explanation or {}).get("grade"),
+            "price_peer_alignment": (explanation or {}).get("peer_pattern") or alignment.get("alignment"),
+            "divergence": {
+                "status": (divergence_rows[0] or {}).get("status") if divergence_rows else None,
+                "grade": (divergence_rows[0] or {}).get("explanation_grade") if divergence_rows else None,
+                "divergence_id": (divergence_rows[0] or {}).get("divergence_id") if divergence_rows else None,
+                "signature": (divergence_rows[0] or {}).get("signature") if divergence_rows else None,
+            }
+            if divergence_rows
+            else None,
             "research_questions": [
                 compact_text(row.get("question") or "", 160)
                 for row in (questions or [])

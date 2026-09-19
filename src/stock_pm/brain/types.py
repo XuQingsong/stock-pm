@@ -185,6 +185,9 @@ OBJECT_LAYER = {
     "market_driver": "market",
     "market_driver_hypothesis": "market",
     "price_reaction": "market",
+    "price_fundamental_divergence": "market",
+    "price_feedback": "market",
+    "brain_gap": "market",
     "state": "state",
     "company_state": "state",
     "industry_state": "state",
@@ -219,8 +222,16 @@ LAYER_SPEED = {
     "structural_knowledge": "slowest",
 }
 FAST_LAYERS = ("observation", "market")
-BRAIN_RUNTIME = "phase3"
+BRAIN_RUNTIME = "phase4"
 MARKET_ALIGNMENTS = ("aligned", "partial", "unexplained", "unknown")
+DIVERGENCE_STATUSES = ("open", "partially_explained", "resolved", "expired")
+EXPLANATION_GRADES = ("well_explained", "partially_explained", "largely_unexplained")
+BRAIN_GAP_KINDS = (
+    "missing_market_driver",
+    "missing_expectation_variable",
+    "missing_exposure",
+    "missing_causal_edge",
+)
 EXPECTATION_COMPARISONS = ("above", "in_line", "below", "unknown")
 EXPECTATION_TRENDS = ("rising", "falling", "unchanged")
 HYPOTHESIS_STATUSES = (
@@ -298,6 +309,7 @@ CONSTITUTION_RULES = (
     "financial_transmission_cannot_modify_base",
     "price_cannot_modify_fundamental_state",
     "market_hypothesis_is_not_fact",
+    "price_cannot_create_established_causal_edge",
 )
 CHANGE_BUDGET = {
     "max_auto_claims": 1,
