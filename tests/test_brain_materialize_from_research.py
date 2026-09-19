@@ -151,13 +151,14 @@ def _inventory(store: BrainStore) -> dict[str, object]:
         ),
         "attentions": sorted((row.get("ticker"), row.get("name")) for row in store.list_all_market_attentions()),
         "expectations": sorted((row.get("ticker"), row.get("name")) for row in store.list_all_expectations()),
-        "states": sorted((row.get("ticker"), row.get("state_key"), row.get("statement")) for row in store.list_all_states()),
+        "states": sorted((row.get("ticker") or "", row.get("state_key"), row.get("statement")) for row in store.list_all_states()),
         "claims": sorted((row.get("ticker"), row.get("claim_key"), row.get("statement")) for row in store.list_active_claims("AVGO") + store.list_active_claims("LITE")),
         "theses": sorted((row.get("ticker"), row.get("current_thesis")) for row in (store.list_theses("AVGO") + store.list_theses("LITE"))),
         "drivers": sorted((row.get("ticker"), row.get("canonical_key")) for row in store.list_all_drivers()),
         "events": sorted((row.get("ticker"), row.get("fingerprint") or row.get("title")) for row in store.list_all_events()),
         "questions": sorted((row.get("ticker"), row.get("question")) for row in store.list_questions("AVGO") + store.list_questions("LITE")),
         "valuation": (store.latest_valuation_state("AVGO") or {}).get("supporting_data"),
+        "history": len(store.list_all_history()),
         "gaps": GAPS,
     }
 
@@ -311,7 +312,7 @@ def test_materialize_and_page_paths_never_invoke_llm(monkeypatch) -> None:
     monkeypatch.setattr("stock_pm.brain.pipeline.run_brain", boom)
     monkeypatch.setattr("stock_pm.brain.runtime.run_brain_update", boom)
     monkeypatch.setattr("stock_pm.brain.bootstrap.bootstrap_brain", boom)
-    monkeypatch.setattr("stock_pm.llm.chat", boom)
+    monkeypatch.setattr("stock_pm.llm.complete_json", boom)
     materialize_from_research("AVGO,LITE", research=research, brain=brain)
     assert spy.calls == 0
     brain_api._override = {"research": research, "store": brain}
