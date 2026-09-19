@@ -389,6 +389,19 @@ def sync_status() -> dict:
     return _read_dict("sync_runs", lambda: database.sync_status() or {"status": "never_synced"})
 
 
+@app.get("/api/market/overview")
+def market_overview() -> dict:
+    """Persisted-Brain market page. Never calls GLM."""
+    from .brain.api import get_brain_deps
+    from .brain.product_read import build_market_overview
+
+    try:
+        research, store = get_brain_deps()
+        return build_market_overview(store, research=research)
+    except Exception as exc:
+        raise _http_error(exc) from exc
+
+
 @app.get("/api/market/snapshot")
 def market_snapshot(
     symbols: Annotated[list[str] | None, Query()] = None,
