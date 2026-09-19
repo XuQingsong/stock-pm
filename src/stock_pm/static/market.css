@@ -970,7 +970,7 @@ a:hover { text-decoration: underline; }
 /* Top axis rank strip */
 .axis-rank {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 380px));
   gap: 12px;
   margin-bottom: 14px;
 }

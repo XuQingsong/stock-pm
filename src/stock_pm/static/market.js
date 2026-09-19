@@ -112,7 +112,8 @@
     const trend = zhMap(TREND_ZH, row.trend, "");
     const status = zhMap(STATUS_ZH, row.status, "");
     const direction = zhMap(DIRECTION_ZH, row.direction, "");
-    const why = displayText(row.why_it_matters, "");
+    const whyRaw = displayText(row.why_it_matters, "");
+    const why = hasCjk(whyRaw) ? whyRaw : "";
     const sectors = (row.affected_sectors || []).map((item) => displayText(item, "")).filter(Boolean);
     const tickers = (row.affected_tickers || []).map((item) => String(item || "").toUpperCase()).filter(Boolean);
     const impact = [...sectors, ...tickers].join(" · ");
