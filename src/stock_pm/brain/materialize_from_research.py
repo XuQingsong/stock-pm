@@ -1,0 +1,1097 @@
+"""One-shot offline materialize: research_* / related tables → persisted brain_*.
+
+Page views keep reading BrainStore only. This job never calls GLM, never
+schedules a rerun, and stops after the upserts.
+
+Prefer existing JSON / table fields. If a Brain field cannot be copied or
+mechanically classified from those fields, leave it empty (see GAPS).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from collections import defaultdict
+from typing import Any
+
+from stock_pm.research.llm_reason import compact_text
+
+from .product_read import MARKET_WIDE_KEYS, is_trigger_event, theme_key
+from .store import BrainStore
+
+
+SOURCE_KIND = "research_materialize"
+MISSING_ENV = "环境信息暂缺"
+PLACEHOLDER_ENV = ("环境信息暂缺", "当前判断置信度有限")
+
+# Fields this job will not invent. Empty is honest.
+GAPS = {
+    "causal_edges": "No structural graph is synthesized. Existing research has no persisted causal edges.",
+    "exposures": "Written only when a key_economic_driver already has mechanism / valuation_channel text.",
+    "scenarios": "brain_scenarios stay empty unless a later mapper is added; valuation cases are copied onto valuation_state.supporting_data only.",
+    "financial_impacts": "Not derived. Research valuations do not carry claim-linked impact rows.",
+    "what_would_invalidate": "Copied from assumption.invalidation_condition or thesis.invalidation_conditions only.",
+    "price_divergences": "Not inferred from tape. Requires an existing unresolved-price object.",
+    "cross_asset_summary": "Stays empty until persisted cross-asset rows exist.",
+    "sector_summary": "Stays empty until persisted sector rows exist.",
+    "llm_fields": "Competing-hypothesis how_to_test / impact_if_true copied only if already present. No GLM rewrite.",
+    "unlinked_evidence": "research_evidence rows that are not linked to an assumption or snapshot are not reinterpreted as claims.",
+}
+
+THEME_KIND = {
+    "ai_capex_expectations": ("ai_demand", "ai_demand"),
+    "sector_macro": ("sector_macro", "sector_macro"),
+    "real_yields": ("real_yields", "real_yields"),
+}
+
+CLAIM_STATUS = {
+    "unverified": "unverified",
+    "strengthened": "strongly_supported",
+    "unchanged": "partially_supported",
+    "weakened": "challenged",
+    "broken": "contradicted",
+}
+
+HYP_STATUS = {
+    "unverified": "candidate",
+    "strengthened": "supported",
+    "unchanged": "active",
+    "weakened": "weakened",
+    "broken": "rejected",
+}
+
+SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def parse_tickers(raw: str | list[str] | None) -> list[str]:
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        parts = raw.replace(";", ",").split(",")
+    else:
+        parts = list(raw)
+    out: list[str] = []
+    for part in parts:
+        symbol = str(part or "").strip().upper()
+        if symbol and symbol not in out:
+            out.append(symbol)
+    return out
+
+
+def _research_store(research: Any) -> Any:
+    return getattr(research, "store", research)
+
+
+def _slug(value: Any, *, limit: int = 40) -> str:
+    text = SLUG_RE.sub("_", str(value or "").strip().lower()).strip("_")
+    return (text or "item")[:limit]
+
+
+def _band_confidence(value: Any) -> str:
+    if value is None or value == "":
+        return "low"
+    token = str(value).strip().lower()
+    if token in {"high", "medium", "low"}:
+        return token
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "low"
+    if number >= 0.75:
+        return "high"
+    if number >= 0.4:
+        return "medium"
+    return "low"
+
+
+def _importance(value: Any) -> str:
+    token = str(value or "medium").strip().lower()
+    if token in {"critical", "high"}:
+        return "high"
+    if token == "low":
+        return "low"
+    return "medium"
+
+
+def _collect_text(value: Any, *, limit: int = 8, min_len: int = 8) -> list[str]:
+    preferred = (
+        "statement",
+        "hypothesis",
+        "summary",
+        "narrative",
+        "description",
+        "text",
+        "one_liner",
+        "row_thesis",
+        "synthesis",
+        "core_thesis",
+        "industry",
+        "cycle",
+        "demand",
+        "outlook",
+        "comment",
+        "why_it_matters",
+        "driver",
+        "name",
+        "title",
+        "fact",
+        "legal_name",
+        "sector",
+    )
+    out: list[str] = []
+
+    def walk(item: Any, *, preferred_only: bool = False) -> None:
+        if len(out) >= limit:
+            return
+        if isinstance(item, str):
+            text = compact_text(item, 400)
+            if len(text) >= min_len and not any(token in text for token in PLACEHOLDER_ENV):
+                if text not in out:
+                    out.append(text)
+            return
+        if isinstance(item, dict):
+            for key in preferred:
+                if key in item:
+                    walk(item.get(key))
+            if not preferred_only:
+                for nested in item.values():
+                    if isinstance(nested, (dict, list, str)):
+                        walk(nested)
+            return
+        if isinstance(item, list):
+            for nested in item[:16]:
+                walk(nested)
+
+    walk(value, preferred_only=True)
+    if not out:
+        walk(value, preferred_only=False)
+    return out
+
+
+def _first_text(*values: Any, limit: int = 280) -> str:
+    for value in values:
+        if isinstance(value, (list, tuple)):
+            for item in value:
+                text = compact_text(item, limit)
+                if len(text) >= 8:
+                    return text
+            continue
+        text = compact_text(value, limit)
+        if len(text) >= 8:
+            return text
+    return ""
+
+
+def _theme_row(**fields: Any) -> dict[str, Any]:
+    return {key: value for key, value in fields.items() if value not in (None, "")}
+
+
+def _theme_for(row: dict[str, Any]) -> str | None:
+    key = theme_key(row)
+    if key:
+        return key
+    blob = " ".join(str(row.get(name) or "") for name in ("name", "statement", "hypothesis", "canonical_key", "kind"))
+    return theme_key({"name": blob, "statement": blob})
+
+
+def _kind_for_theme(theme: str | None) -> tuple[str, str]:
+    if not theme:
+        return "other", "other"
+    if theme in THEME_KIND:
+        return THEME_KIND[theme]
+    if theme in MARKET_WIDE_KEYS:
+        mapped = MARKET_WIDE_KEYS[theme]
+        return THEME_KIND.get(mapped, (theme, theme))
+    return "other", theme
+
+
+def _empty_counts() -> dict[str, int]:
+    return {
+        "hypotheses": 0,
+        "attentions": 0,
+        "expectations": 0,
+        "states": 0,
+        "claims": 0,
+        "claim_links": 0,
+        "thesis": 0,
+        "drivers": 0,
+        "events": 0,
+        "questions": 0,
+        "valuation": 0,
+        "exposures": 0,
+    }
+
+
+def _add(counts: dict[str, int], key: str, written: bool) -> None:
+    if written:
+        counts[key] = counts.get(key, 0) + 1
+
+
+def _latest_agent_runs(store: Any, ticker: str) -> list[dict[str, Any]]:
+    symbol = ticker.upper()
+    if hasattr(store, "_execute"):
+        try:
+            return list(
+                store._execute(
+                    """
+                    SELECT DISTINCT ON (agent_name) *
+                    FROM research_agent_runs
+                    WHERE ticker = %(ticker)s AND status = 'success'
+                    ORDER BY agent_name, started_at DESC
+                    """,
+                    {"ticker": symbol},
+                )
+                or []
+            )
+        except Exception:
+            pass
+    rows = list(store.list_agent_runs(symbol) if hasattr(store, "list_agent_runs") else [])
+    latest: dict[str, dict[str, Any]] = {}
+    rows.sort(key=lambda item: str(item.get("started_at") or item.get("completed_at") or ""), reverse=True)
+    for row in rows:
+        if str(row.get("status") or "") not in {"", "success"}:
+            continue
+        name = str(row.get("agent_name") or "agent")
+        latest.setdefault(name, row)
+    return list(latest.values())
+
+
+def _load_environment(market: Any | None, tickers: list[str]) -> list[dict[str, Any]]:
+    if market is None:
+        return []
+    rows: list[dict[str, Any]] = []
+    if hasattr(market, "fetch_all"):
+        try:
+            fetched = market.fetch_all(
+                """
+                SELECT DISTINCT ON (scope, COALESCE(symbol, ''))
+                       id, as_of_date, scope, symbol, one_liner, row_thesis,
+                       struct, missing_flags, publish_state, created_at
+                FROM environment_snapshots
+                WHERE publish_state IS DISTINCT FROM 'missing'
+                  AND (scope = 'market' OR symbol = ANY(%s))
+                ORDER BY scope, COALESCE(symbol, ''), created_at DESC
+                """,
+                (tickers,),
+            )
+            from stock_pm.environment import snapshot_from_row
+
+            rows.extend(item for item in (snapshot_from_row(row) for row in fetched or []) if item)
+        except Exception:
+            rows = []
+    if not rows and hasattr(market, "market_session") and hasattr(market, "latest_environment_snapshots"):
+        try:
+            session = market.market_session(None) or {}
+            date = session.get("default_review_date") or session.get("date")
+            rows.extend(market.latest_environment_snapshots(date) or [])
+        except Exception:
+            pass
+    if hasattr(market, "environment_history"):
+        for symbol in tickers:
+            try:
+                rows.extend(market.environment_history(symbol, limit=3) or [])
+            except Exception:
+                continue
+    if hasattr(market, "environment_snapshots"):
+        rows.extend(list(market.environment_snapshots or []))
+    seen: set[str] = set()
+    unique: list[dict[str, Any]] = []
+    for row in rows:
+        key = f"{row.get('scope')}|{row.get('symbol')}|{row.get('id')}|{row.get('as_of_date')}"
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(row)
+    return unique
+
+
+def _load_market_events(market: Any | None, ticker: str, *, limit: int = 25) -> list[dict[str, Any]]:
+    if market is None:
+        return []
+    if hasattr(market, "market_events"):
+        try:
+            return list(market.market_events(ticker, limit) or [])
+        except TypeError:
+            try:
+                return list(market.market_events(ticker) or [])[:limit]
+            except Exception:
+                return []
+        except Exception:
+            return []
+    rows = [row for row in list(getattr(market, "events", None) or []) if str(row.get("symbol") or row.get("ticker") or "").upper() == ticker]
+    return rows[:limit]
+
+
+def load_research_bundle(store: Any, ticker: str) -> dict[str, Any]:
+    symbol = ticker.upper()
+    pack = store.get_pack(symbol) if hasattr(store, "get_pack") else None
+    if isinstance(pack, dict) and pack.get("status") == "missing":
+        pack = None
+    assumptions = list(store.list_assumptions(symbol) if hasattr(store, "list_assumptions") else [])
+    links = list(store.list_links(ticker=symbol) if hasattr(store, "list_links") else [])
+    thesis = store.get_latest_thesis(symbol) if hasattr(store, "get_latest_thesis") else None
+    snapshot = None
+    if hasattr(store, "get_latest_snapshot"):
+        snapshot = store.get_latest_snapshot(symbol, include_fixture=False)
+        if snapshot is None:
+            snapshot = store.get_latest_snapshot(symbol, include_fixture=True)
+    valuation = None
+    if thesis and thesis.get("valuation_id") and hasattr(store, "get_valuation"):
+        valuation = store.get_valuation(thesis["valuation_id"])
+    elif thesis and hasattr(store, "get_valuation_for_thesis"):
+        valuation = store.get_valuation_for_thesis(thesis["id"])
+    evidence: list[dict[str, Any]] = []
+    seen_eids: set[str] = set()
+    for link in links:
+        eid = str(link.get("evidence_id") or "")
+        if not eid or eid in seen_eids or not hasattr(store, "get_evidence"):
+            continue
+        row = store.get_evidence(eid)
+        if row:
+            evidence.append(row)
+            seen_eids.add(eid)
+    if snapshot:
+        for row in list(snapshot.get("evidence") or snapshot.get("evidence_payload") or []):
+            if not isinstance(row, dict):
+                continue
+            eid = str(row.get("id") or row.get("evidence_id") or "")
+            if eid and eid not in seen_eids:
+                evidence.append(row)
+                seen_eids.add(eid)
+    return {
+        "ticker": symbol,
+        "pack": pack,
+        "assumptions": assumptions,
+        "links": links,
+        "thesis": thesis,
+        "snapshot": snapshot,
+        "valuation": valuation,
+        "evidence": evidence,
+        "agent_runs": _latest_agent_runs(store, symbol),
+    }
+
+
+def research_present(bundle: dict[str, Any]) -> bool:
+    pack = bundle.get("pack") or {}
+    has_pack = bool(pack) and (
+        pack.get("industry_context")
+        or pack.get("major_events")
+        or pack.get("earnings_history")
+        or (pack.get("company_profile") or {}).get("legal_name")
+        or pack.get("competitive_context")
+    )
+    return bool(
+        has_pack
+        or bundle.get("assumptions")
+        or bundle.get("thesis")
+        or bundle.get("snapshot")
+        or bundle.get("evidence")
+    )
+
+
+def _find_state(brain: BrainStore, ticker: str | None, state_key: str) -> dict[str, Any] | None:
+    if ticker:
+        found = brain.get_state_by_key(ticker, state_key)
+        if found:
+            return found
+    for row in brain.list_all_states():
+        if row.get("state_key") == state_key and (row.get("ticker") or None) == (ticker or None):
+            return row
+    return None
+
+
+def _write_state(brain: BrainStore, row: dict[str, Any]) -> bool:
+    key = str(row.get("state_key") or "")
+    ticker = row.get("ticker")
+    existing = _find_state(brain, str(ticker) if ticker else None, key) if key else None
+    if existing:
+        updated = brain.upsert_state({**row, "state_id": existing.get("state_id")})
+        return bool(updated)
+    brain.insert_state(row)
+    return True
+
+
+def _write_claim(brain: BrainStore, row: dict[str, Any]) -> dict[str, Any]:
+    key = str(row.get("claim_key") or "")
+    existing = brain.get_claim_by_key(row["ticker"], key) if key else None
+    if existing:
+        return brain.update_claim_pointer(existing["claim_id"], {**row, "claim_id": existing["claim_id"]})
+    return brain.insert_claim(row)
+
+
+def _write_event(brain: BrainStore, row: dict[str, Any]) -> bool:
+    fingerprint = str(row.get("fingerprint") or "")
+    if fingerprint:
+        existing = brain.get_event_by_fingerprint(row["ticker"], fingerprint)
+        if existing:
+            return False
+    brain.insert_event(row)
+    return True
+
+
+def _write_question(brain: BrainStore, row: dict[str, Any]) -> bool:
+    qid = str(row.get("question_id") or "")
+    text = " ".join(str(row.get("question") or "").lower().split())
+    for existing in brain.list_questions(row["ticker"]):
+        if existing.get("question_id") == qid:
+            return False
+        if " ".join(str(existing.get("question") or "").lower().split()) == text:
+            return False
+    brain.insert_question(row)
+    return True
+
+
+def _write_link(brain: BrainStore, claim_id: str, evidence_id: str, *, direction: str) -> bool:
+    if not claim_id or not evidence_id:
+        return False
+    if brain.list_links(claim_id=claim_id, evidence_id=evidence_id):
+        return False
+    mapped = {"support": "support", "oppose": "oppose", "contextual": "contextual"}.get(direction, "contextual")
+    brain.insert_link(
+        {
+            "claim_id": claim_id,
+            "evidence_id": evidence_id,
+            "direction": mapped,
+            "reason": "mapped from assumption_evidence_links",
+            "source_relationship": "unknown",
+        }
+    )
+    return True
+
+
+def _write_thesis(brain: BrainStore, row: dict[str, Any]) -> bool:
+    prior = brain.latest_thesis(row["ticker"])
+    current = compact_text(row.get("current_thesis") or "", 2000)
+    if prior:
+        return False
+    if len(current) < 8:
+        return False
+    brain.upsert_thesis(row)
+    return True
+
+
+def _write_exposure(brain: BrainStore, row: dict[str, Any]) -> bool:
+    eid = str(row.get("exposure_id") or "")
+    for existing in brain.list_exposures(row["ticker"]):
+        if existing.get("exposure_id") == eid:
+            return False
+        if existing.get("object_name") == row.get("object_name") and existing.get("mechanism") == row.get("mechanism"):
+            return False
+    brain.insert_exposure(row)
+    return True
+
+
+def _hypothesis_payload(
+    ticker: str,
+    *,
+    canonical_key: str,
+    kind: str,
+    statement: str,
+    name: str = "",
+    confidence: str = "low",
+    status: str = "candidate",
+    supporting: list[str] | None = None,
+    counter: list[str] | None = None,
+    reason: str = "",
+) -> dict[str, Any]:
+    return {
+        "ticker": ticker,
+        "canonical_key": canonical_key,
+        "kind": kind,
+        "hypothesis": statement,
+        "name": name or compact_text(statement, 80) or canonical_key,
+        "confidence": confidence,
+        "status": status,
+        "supporting_observations": list(supporting or []),
+        "counter_observations": list(counter or []),
+        "source_kind": SOURCE_KIND,
+        "reason": reason or statement,
+    }
+
+
+def _map_pack(brain: BrainStore, ticker: str, pack: dict[str, Any], counts: dict[str, int]) -> None:
+    profile = dict(pack.get("company_profile") or {})
+    legal = compact_text(profile.get("legal_name") or "", 80)
+    sector = compact_text(profile.get("sector") or "", 80)
+    summary = _first_text(profile.get("summary"), profile.get("description"), " ".join(part for part in (legal, sector) if part), limit=280)
+    if legal or sector or summary:
+        _add(
+            counts,
+            "states",
+            _write_state(
+                brain,
+                {
+                    "ticker": ticker,
+                    "state_type": "company",
+                    "state_key": "company_profile",
+                    "name": legal or ticker,
+                    "statement": summary or legal,
+                    "subject": ticker,
+                    "source": SOURCE_KIND,
+                    "confidence": "medium" if legal else "low",
+                },
+            ),
+        )
+    industry_texts = _collect_text(pack.get("industry_context"))
+    if industry_texts:
+        statement = industry_texts[0]
+        theme = _theme_for({"name": statement, "statement": statement, "state_type": "industry"})
+        _add(
+            counts,
+            "states",
+            _write_state(
+                brain,
+                {
+                    "ticker": ticker,
+                    "state_type": "industry",
+                    "state_key": theme or "industry_context",
+                    "name": compact_text(statement, 80),
+                    "statement": statement,
+                    "source": SOURCE_KIND,
+                    "confidence": "medium",
+                },
+            ),
+        )
+    for idx, event in enumerate(list(pack.get("major_events") or [])[:12]):
+        if not isinstance(event, dict):
+            title = compact_text(event, 160)
+            event = {"title": title} if title else {}
+        title = _first_text(event.get("title"), event.get("name"), event.get("statement"), event.get("fact"), limit=160)
+        if not title:
+            continue
+        event_type = str(event.get("event_type") or event.get("type") or "other").lower()
+        fingerprint = f"pack:{ticker}:major:{_slug(event.get('id') or title)}"
+        _add(
+            counts,
+            "events",
+            _write_event(
+                brain,
+                {
+                    "ticker": ticker,
+                    "event_id": f"bev_pack_{ticker.lower()}_{_slug(event.get('id') or idx)}",
+                    "event_type": event_type,
+                    "title": title,
+                    "subject": compact_text(event.get("subject") or title, 80),
+                    "event_date": event.get("event_date") or event.get("date") or event.get("published_at"),
+                    "fingerprint": fingerprint,
+                    "reason": "mapped from research_packs.major_events",
+                    "materiality": "material" if is_trigger_event({**event, "title": title, "event_type": event_type}) else "context",
+                },
+            ),
+        )
+    for print_row in list(pack.get("earnings_history") or [])[:8]:
+        if not isinstance(print_row, dict):
+            continue
+        actual = print_row.get("eps") if print_row.get("eps") is not None else print_row.get("eps_actual")
+        expected = print_row.get("eps_estimate")
+        period = compact_text(print_row.get("fiscal_period") or print_row.get("period") or "", 40)
+        if actual is None or expected is None or not period:
+            continue
+        brain.upsert_expectation(
+            {
+                "ticker": ticker,
+                "name": f"{period} EPS",
+                "subject": f"{period} EPS",
+                "actual": actual,
+                "expected": expected,
+                "source_kind": SOURCE_KIND,
+                "reason": "mapped from research_packs.earnings_history",
+                "supporting_evidence_ids": [],
+            }
+        )
+        _add(counts, "expectations", True)
+    for print_row in list(pack.get("guidance_history") or [])[:6]:
+        if not isinstance(print_row, dict):
+            continue
+        actual = print_row.get("actual") if print_row.get("actual") is not None else print_row.get("guided")
+        expected = print_row.get("expected") if print_row.get("expected") is not None else print_row.get("consensus")
+        name = _first_text(print_row.get("name"), print_row.get("metric"), print_row.get("fiscal_period"), limit=40)
+        if actual is None or expected is None or not name:
+            continue
+        brain.upsert_expectation(
+            {
+                "ticker": ticker,
+                "name": f"{name} guidance",
+                "subject": name,
+                "actual": actual,
+                "expected": expected,
+                "source_kind": SOURCE_KIND,
+                "reason": "mapped from research_packs.guidance_history",
+            }
+        )
+        _add(counts, "expectations", True)
+
+
+def _map_assumptions(
+    brain: BrainStore,
+    ticker: str,
+    assumptions: list[dict[str, Any]],
+    links: list[dict[str, Any]],
+    counts: dict[str, int],
+) -> dict[str, str]:
+    claim_ids: dict[str, str] = {}
+    by_assumption: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for link in links:
+        by_assumption[str(link.get("assumption_id") or "")].append(link)
+    hyp_acc: dict[str, dict[str, Any]] = {}
+    att_acc: dict[str, dict[str, Any]] = {}
+    for row in assumptions:
+        statement = compact_text(row.get("statement") or "", 400)
+        if len(statement) < 8:
+            continue
+        aid = str(row.get("id") or "")
+        role = str(row.get("thesis_role") or "supporting")
+        status = str(row.get("status") or "unverified")
+        confidence = _band_confidence(row.get("confidence"))
+        theme = _theme_for({"name": statement, "statement": statement, "hypothesis": statement})
+        kind, canonical = _kind_for_theme(theme)
+        linked = by_assumption.get(aid) or []
+        support_ids = [str(item.get("evidence_id")) for item in linked if item.get("direction") == "support" and item.get("evidence_id")]
+        oppose_ids = [str(item.get("evidence_id")) for item in linked if item.get("direction") == "oppose" and item.get("evidence_id")]
+        if theme and kind in MARKET_WIDE_KEYS:
+            bucket = hyp_acc.setdefault(
+                canonical,
+                _hypothesis_payload(
+                    ticker,
+                    canonical_key=canonical,
+                    kind=kind,
+                    statement=statement,
+                    name=compact_text(statement, 80),
+                    confidence=confidence,
+                    status=HYP_STATUS.get(status, "candidate"),
+                    supporting=support_ids,
+                    counter=oppose_ids,
+                    reason=f"mapped from research_assumptions {aid}",
+                ),
+            )
+            bucket["supporting_observations"] = list(dict.fromkeys(list(bucket.get("supporting_observations") or []) + support_ids))
+            bucket["counter_observations"] = list(dict.fromkeys(list(bucket.get("counter_observations") or []) + oppose_ids))
+            if confidence == "high":
+                bucket["confidence"] = "high"
+            att_name = compact_text(statement, 80)
+            att_acc.setdefault(
+                att_name,
+                {
+                    "ticker": ticker,
+                    "name": att_name,
+                    "statement": statement,
+                    "source_kind": SOURCE_KIND,
+                    "alignment": "support" if status in {"strengthened", "unchanged"} else ("counter" if status in {"weakened", "broken"} else "unknown"),
+                    "evidence_ids": support_ids + oppose_ids,
+                    "reason": f"mapped from research_assumptions {aid}",
+                },
+            )
+        if role == "none":
+            continue
+        claim = _write_claim(
+            brain,
+            {
+                "ticker": ticker,
+                "claim_id": f"bclm_rasm_{aid}" if aid else None,
+                "claim_key": f"rasm:{aid}" if aid else _slug(statement),
+                "title": compact_text(statement, 80),
+                "statement": statement,
+                "claim_type": "operating",
+                "status": CLAIM_STATUS.get(status, "unverified"),
+                "importance": _importance(row.get("importance")),
+                "confidence": confidence,
+                "is_core": role in {"core", "risk"},
+                "why_it_matters": compact_text(row.get("why_it_matters") or "", 240),
+                "what_would_invalidate": compact_text(row.get("invalidation_condition") or "", 240),
+                "lifecycle": "core" if role in {"core", "risk"} else "emerging",
+            },
+        )
+        cid = str(claim.get("claim_id") or "")
+        if aid and cid:
+            claim_ids[aid] = cid
+        _add(counts, "claims", True)
+        for link in linked:
+            if _write_link(brain, cid, str(link.get("evidence_id") or ""), direction=str(link.get("direction") or "contextual")):
+                _add(counts, "claim_links", True)
+        next_q = compact_text(row.get("next_verification") or "", 240)
+        if next_q:
+            _add(
+                counts,
+                "questions",
+                _write_question(
+                    brain,
+                    {
+                        "ticker": ticker,
+                        "question_id": f"brq_rasm_{aid}" if aid else f"brq_{ticker.lower()}_{_slug(next_q)}",
+                        "related_claim_id": cid or None,
+                        "question": next_q,
+                        "why_it_matters": statement,
+                        "priority": _importance(row.get("importance")),
+                        "status": "open",
+                    },
+                ),
+            )
+    for payload in hyp_acc.values():
+        brain.upsert_hypothesis(payload)
+        _add(counts, "hypotheses", True)
+    for payload in att_acc.values():
+        brain.upsert_market_attention(payload)
+        _add(counts, "attentions", True)
+    return claim_ids
+
+
+def _map_snapshot_and_agents(brain: BrainStore, ticker: str, bundle: dict[str, Any], counts: dict[str, int]) -> None:
+    hyps: list[Any] = []
+    drivers: list[Any] = []
+    snapshot = bundle.get("snapshot") or {}
+    hyps.extend(snapshot.get("competing_hypotheses") or [])
+    drivers.extend(snapshot.get("economic_drivers") or snapshot.get("key_economic_drivers") or [])
+    for run in bundle.get("agent_runs") or []:
+        payload = run.get("output_json") if isinstance(run.get("output_json"), dict) else {}
+        reasoning = payload.get("reasoning") if isinstance(payload.get("reasoning"), dict) else {}
+        hyps.extend(payload.get("competing_hypotheses") or reasoning.get("competing_hypotheses") or [])
+        drivers.extend(payload.get("key_economic_drivers") or reasoning.get("key_economic_drivers") or [])
+    seen_hyp: set[str] = set()
+    for item in hyps:
+        if isinstance(item, str):
+            statement = compact_text(item, 280)
+            item = {"statement": statement}
+        if not isinstance(item, dict):
+            continue
+        statement = compact_text(item.get("statement") or item.get("hypothesis") or "", 280)
+        if len(statement) < 8 or statement.lower() in seen_hyp:
+            continue
+        seen_hyp.add(statement.lower())
+        theme = _theme_for({**item, "name": statement, "statement": statement, "hypothesis": statement})
+        kind, canonical = _kind_for_theme(theme)
+        if kind == "other":
+            canonical = f"research_{_slug(statement, limit=32)}"
+        support = [str(eid) for eid in (item.get("supporting_evidence_ids") or []) if str(eid).strip()]
+        oppose = [str(eid) for eid in (item.get("opposing_evidence_ids") or item.get("counter_evidence_ids") or []) if str(eid).strip()]
+        brain.upsert_hypothesis(
+            _hypothesis_payload(
+                ticker,
+                canonical_key=canonical,
+                kind=kind,
+                statement=statement,
+                confidence=_band_confidence(item.get("confidence") or item.get("probability_band")),
+                status="candidate",
+                supporting=support,
+                counter=oppose,
+                reason="mapped from research competing_hypotheses",
+            )
+        )
+        _add(counts, "hypotheses", True)
+        how = compact_text(item.get("how_to_test") or "", 240)
+        if how:
+            _add(
+                counts,
+                "questions",
+                _write_question(
+                    brain,
+                    {
+                        "ticker": ticker,
+                        "question_id": f"brq_hyp_{ticker.lower()}_{_slug(statement, limit=24)}",
+                        "question": how,
+                        "why_it_matters": statement,
+                        "priority": "medium",
+                    },
+                ),
+            )
+    seen_drv: set[str] = set()
+    for item in drivers:
+        if not isinstance(item, dict):
+            continue
+        name = compact_text(item.get("driver") or item.get("name") or "", 120)
+        if len(name) < 4 or name.lower() in seen_drv:
+            continue
+        seen_drv.add(name.lower())
+        key = _slug(name, limit=48)
+        why = compact_text(item.get("why_it_matters") or "", 280)
+        mechanism = compact_text(item.get("valuation_channel") or item.get("mechanism") or "", 200)
+        brain.upsert_driver(
+            {
+                "ticker": ticker,
+                "canonical_key": key,
+                "name": name,
+                "description": why,
+                "category": "demand" if _theme_for({"name": name, "statement": why}) == "ai_capex_expectations" else "macro",
+                "why_it_matters": why,
+                "current_state": why,
+                "evidence_ids": [str(eid) for eid in (item.get("evidence_ids") or []) if str(eid).strip()][:8],
+                "importance": _band_confidence(item.get("confidence")),
+                "status": "active",
+            }
+        )
+        _add(counts, "drivers", True)
+        if mechanism:
+            _add(
+                counts,
+                "exposures",
+                _write_exposure(
+                    brain,
+                    {
+                        "ticker": ticker,
+                        "exposure_id": f"bexp_mat_{ticker.lower()}_{key}",
+                        "object_name": name,
+                        "mechanism": mechanism,
+                        "magnitude": "medium",
+                        "reason": "mapped from key_economic_drivers.valuation_channel",
+                    },
+                ),
+            )
+
+
+def _map_thesis(
+    brain: BrainStore,
+    ticker: str,
+    thesis: dict[str, Any] | None,
+    claim_ids: dict[str, str],
+    counts: dict[str, int],
+) -> None:
+    if not thesis:
+        return
+    core = compact_text(thesis.get("core_thesis") or "", 2000)
+    if len(core) < 8:
+        return
+    risks = thesis.get("key_risks") or []
+    invalid = thesis.get("invalidation_conditions") or []
+    catalysts = thesis.get("key_catalysts") or []
+    support = [claim_ids[aid] for aid in list(thesis.get("core_assumption_ids") or thesis.get("key_assumption_ids") or []) if aid in claim_ids]
+    risk_ids = [
+        claim_ids[aid]
+        for aid in list(thesis.get("supporting_assumption_ids") or [])
+        if aid in claim_ids
+    ]
+    _add(
+        counts,
+        "thesis",
+        _write_thesis(
+            brain,
+            {
+                "ticker": ticker,
+                "thesis_id": f"bths_research_{ticker.lower()}",
+                "current_thesis": core,
+                "top_supporting_claim_ids": support[:6],
+                "top_risk_claim_ids": risk_ids[:6],
+                "key_upside_condition": _first_text(*catalysts, limit=200),
+                "key_downside_condition": _first_text(*risks, limit=200),
+                "what_would_change_thesis": _first_text(*invalid, limit=240),
+                "confidence": _band_confidence(thesis.get("confidence")),
+                "reason": "mapped from investment_theses",
+            },
+        ),
+    )
+    for idx, item in enumerate(list(thesis.get("monitoring_items") or [])[:8]):
+        question = compact_text(item if not isinstance(item, dict) else item.get("item") or item.get("question") or item.get("text") or "", 240)
+        if len(question) < 8:
+            continue
+        _add(
+            counts,
+            "questions",
+            _write_question(
+                brain,
+                {
+                    "ticker": ticker,
+                    "question_id": f"brq_mon_{ticker.lower()}_{idx}",
+                    "question": question,
+                    "why_it_matters": core,
+                    "priority": "medium",
+                },
+            ),
+        )
+
+
+def _map_valuation(brain: BrainStore, ticker: str, valuation: dict[str, Any] | None, counts: dict[str, int]) -> None:
+    if not valuation:
+        return
+    base = valuation.get("base_case") if isinstance(valuation.get("base_case"), dict) else {}
+    supporting = {
+        "bear_case": valuation.get("bear_case") or {},
+        "base_case": valuation.get("base_case") or {},
+        "bull_case": valuation.get("bull_case") or {},
+        "spot_price": valuation.get("spot_price"),
+        "horizon": valuation.get("horizon"),
+    }
+    has_number = valuation.get("spot_price") is not None or any(
+        isinstance(case, dict) and any(case.get(key) not in (None, "", {}) for key in case)
+        for case in supporting.values()
+        if isinstance(case, dict)
+    )
+    direction = str(base.get("direction") or valuation.get("valuation_direction") or "").strip().lower()
+    if direction not in {"up", "down", "neutral", "uncertain"}:
+        direction = "uncertain"
+    context = _first_text(base.get("narrative"), base.get("summary"), valuation.get("horizon"), limit=200)
+    brain.upsert_valuation_state(
+        {
+            "ticker": ticker,
+            "valuation_context": context,
+            "valuation_direction": direction,
+            "confidence": "low",
+            "valuation_data_missing": not has_number,
+            "supporting_data": supporting,
+            "reason": "mapped from research_valuations",
+        }
+    )
+    _add(counts, "valuation", True)
+
+
+def _map_market_events(brain: BrainStore, ticker: str, events: list[dict[str, Any]], counts: dict[str, int]) -> None:
+    for row in events:
+        title = compact_text(row.get("title") or "", 160)
+        if len(title) < 8:
+            continue
+        event_type = str(row.get("event_type") or "other").lower()
+        stamp = row.get("event_time") or row.get("detected_at") or ""
+        fingerprint = f"mkt:{ticker}:{event_type}:{_slug(title, limit=32)}:{_slug(stamp, limit=20)}"
+        _add(
+            counts,
+            "events",
+            _write_event(
+                brain,
+                {
+                    "ticker": ticker,
+                    "event_id": f"bev_mkt_{ticker.lower()}_{_slug(title, limit=20)}_{_slug(stamp, limit=12)}",
+                    "event_type": event_type,
+                    "title": title,
+                    "subject": title,
+                    "event_date": row.get("event_time"),
+                    "fingerprint": fingerprint,
+                    "reason": "mapped from market_events",
+                    "materiality": "material" if str(row.get("severity") or "") == "high" else "context",
+                    "url": (row.get("details") or {}).get("url") if isinstance(row.get("details"), dict) else None,
+                },
+            ),
+        )
+
+
+def _map_environment(brain: BrainStore, tickers: list[str], snapshots: list[dict[str, Any]], counts: dict[str, int]) -> None:
+    del tickers
+    for row in snapshots:
+        if str(row.get("publishState") or row.get("publish_state") or "") == "missing":
+            continue
+        statement = _first_text(row.get("one_liner"), row.get("row_thesis"), row.get("synthesis"), limit=280)
+        if not statement or MISSING_ENV in statement:
+            continue
+        theme = _theme_for({"name": statement, "statement": statement, "state_type": "macro"})
+        scope = str(row.get("scope") or "market")
+        symbol = str(row.get("symbol") or "").upper() or None
+        state_type = "macro" if scope == "market" else ("industry" if theme == "sector_macro" else "macro")
+        ticker = None if scope == "market" else symbol
+        key = theme or ("macro_env_market" if scope == "market" else "env_symbol")
+        if ticker is None:
+            key = f"macro_env_{key}"
+        _add(
+            counts,
+            "states",
+            _write_state(
+                brain,
+                {
+                    "ticker": ticker,
+                    "state_type": state_type,
+                    "state_key": key,
+                    "name": compact_text(statement, 80),
+                    "statement": statement,
+                    "source": SOURCE_KIND,
+                    "confidence": "medium",
+                },
+            ),
+        )
+
+
+def materialize_ticker(
+    *,
+    ticker: str,
+    research: Any,
+    brain: BrainStore,
+    market: Any | None = None,
+) -> dict[str, Any]:
+    symbol = str(ticker or "").upper()
+    store = _research_store(research)
+    bundle = load_research_bundle(store, symbol)
+    counts = _empty_counts()
+    present = research_present(bundle)
+    if present:
+        if bundle.get("pack"):
+            _map_pack(brain, symbol, bundle["pack"], counts)
+        claim_ids = _map_assumptions(brain, symbol, bundle.get("assumptions") or [], bundle.get("links") or [], counts)
+        _map_snapshot_and_agents(brain, symbol, bundle, counts)
+        _map_thesis(brain, symbol, bundle.get("thesis"), claim_ids, counts)
+        _map_valuation(brain, symbol, bundle.get("valuation"), counts)
+        _map_market_events(brain, symbol, _load_market_events(market, symbol), counts)
+    return {
+        "ticker": symbol,
+        "status": "written" if present else "empty",
+        "reason": None if present else "no research pack, assumptions, thesis, or snapshot",
+        "written": counts,
+        "sources": {
+            "pack": bool(bundle.get("pack")),
+            "assumptions": len(bundle.get("assumptions") or []),
+            "thesis": bool(bundle.get("thesis")),
+            "snapshot": bool(bundle.get("snapshot")),
+            "evidence_used": len(bundle.get("evidence") or []),
+            "agent_runs_used": len(bundle.get("agent_runs") or []),
+        },
+        "llm_invoked": False,
+    }
+
+
+def materialize_from_research(
+    tickers: str | list[str],
+    *,
+    research: Any,
+    brain: BrainStore | None = None,
+    market: Any | None = None,
+) -> dict[str, Any]:
+    """Map existing research artifacts into brain_* and stop. No LLM. No schedule."""
+    symbols = parse_tickers(tickers)
+    store = _research_store(research)
+    brain_store = brain or BrainStore(getattr(store, "database", None))
+    env_counts = _empty_counts()
+    snapshots = _load_environment(market, symbols)
+    _map_environment(brain_store, symbols, snapshots, env_counts)
+    results = [
+        materialize_ticker(ticker=symbol, research=research, brain=brain_store, market=market)
+        for symbol in symbols
+    ]
+    return {
+        "ok": True,
+        "llm_invoked": False,
+        "scheduled": False,
+        "source_kind": SOURCE_KIND,
+        "tickers": symbols,
+        "results": results,
+        "market_environment": {
+            "snapshots_seen": len(snapshots),
+            "states_written": env_counts["states"],
+        },
+        "gaps": GAPS,
+    }
+
+
+def main(argv: list[str] | None = None) -> dict[str, Any]:
+    parser = argparse.ArgumentParser(
+        description="One-shot: upsert brain_* from research_* / related tables. Does not call GLM or schedule reruns."
+    )
+    parser.add_argument(
+        "--tickers",
+        default="AVGO,LITE",
+        help="Comma-separated tickers (default: AVGO,LITE). Missing research stays honestly empty.",
+    )
+    args = parser.parse_args(argv)
+    from stock_pm.database import Database
+    from stock_pm.research.store import ResearchStore
+
+    database = Database()
+    try:
+        database.initialize()
+        payload = materialize_from_research(
+            args.tickers,
+            research=ResearchStore(database),
+            brain=BrainStore(database),
+            market=database,
+        )
+    finally:
+        database.close()
+    print(json.dumps(payload, ensure_ascii=False, default=str, indent=2))
+    return payload
+
+
+if __name__ == "__main__":
+    main()

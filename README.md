@@ -56,6 +56,8 @@ bash scripts/start-postgres.sh
 python -m stock_pm.migrate
 # 4) Optional: persist live NVDA bars, FMP earnings, and FRED NFP.
 python -m stock_pm.persist_live --symbol NVDA
+# 5) Optional one-shot: map existing research_* into empty brain_* (no GLM, no schedule).
+python -m stock_pm.brain.materialize_from_research --tickers AVGO,LITE
 ```
 
 `DATABASE_URL` is read from the process environment (and gitignored `.env` via

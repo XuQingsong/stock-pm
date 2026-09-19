@@ -35,6 +35,7 @@ stock-pm-prediction = "stock_pm.prediction_job:main"
 stock-pm-migrate = "stock_pm.migrate:main"
 stock-pm-persist-live = "stock_pm.persist_live:main"
 stock-pm-events = "stock_pm.events.job:main"
+stock-pm-materialize-brain = "stock_pm.brain.materialize_from_research:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
