@@ -1,0 +1,246 @@
+{
+  "after_view": {
+    "total_tokens": 223819,
+    "avg_tokens_per_event": 12434.4,
+    "avg_tokens_per_material_event": 17326.5,
+    "glm53_input": 69554,
+    "glm53_output": 154265,
+    "critic_input": 351,
+    "critic_output": 723,
+    "context_recall": 0.6757,
+    "context_precision": 0.683,
+    "memory_continuity": 0.8,
+    "now_chain_coverage": "18/18",
+    "successful_transmission": 2,
+    "hypothesis_continuity": 0.4667,
+    "research_questions": 27,
+    "runtime_anomaly": 0,
+    "price_fundamental_violations": 0,
+    "price_claim_violations": 0,
+    "unsupported_event_claim_jump": 0,
+    "price_established_edge_violations": 0,
+    "tokens_per_incremental": 18757.7,
+    "tokens_per_full_review": 16532.0,
+    "tokens_per_now_chain": 12434.4,
+    "tokens_per_critic": 1074.0,
+    "tokens_per_glm53": 17237.0
+  },
+  "comparison": {
+    "total_tokens": {
+      "before": 522615,
+      "after": 223819,
+      "reduction_pct": 57.2
+    },
+    "avg_tokens_per_material_event": {
+      "before": 42230.75,
+      "after": 17326.5,
+      "reduction_pct": 59.0
+    },
+    "token_input": {
+      "before": 207844,
+      "after": 69554,
+      "reduction_pct": 66.5
+    },
+    "token_output": {
+      "before": 314771,
+      "after": 154265,
+      "reduction_pct": 51.0
+    },
+    "critic_input": {
+      "before": 26978,
+      "after": 351,
+      "reduction_pct": 98.7
+    },
+    "critic_output": {
+      "before": 85833,
+      "after": 723,
+      "reduction_pct": 99.2
+    },
+    "context_causal": {
+      "before": 60024,
+      "after": 18629,
+      "reduction_pct": 69.0
+    },
+    "context_market": {
+      "before": 20275,
+      "after": 3313,
+      "reduction_pct": 83.7
+    },
+    "context_history": {
+      "before": 13756,
+      "after": 2163,
+      "reduction_pct": 84.3
+    },
+    "context_recall": {
+      "before": 0.7757,
+      "after": 0.6757
+    },
+    "context_precision": {
+      "before": 0.627,
+      "after": 0.683
+    },
+    "memory_continuity": {
+      "before": 0.9,
+      "after": 0.8
+    },
+    "now_chain_coverage": {
+      "before": "18/18",
+      "after": "18/18"
+    },
+    "causal_transmission": {
+      "before": 2,
+      "after": 2
+    },
+    "hypothesis_continuity": {
+      "before": 0.5625,
+      "after": 0.4667
+    },
+    "research_questions": {
+      "before": 24,
+      "after": 27
+    },
+    "runtime_anomaly": {
+      "before": 0,
+      "after": 0
+    },
+    "price_fundamental_violations": {
+      "before": 0,
+      "after": 0
+    },
+    "price_claim_violations": {
+      "before": 0,
+      "after": 0
+    },
+    "unsupported_event_claim_jump": {
+      "before": 0,
+      "after": 0
+    },
+    "price_established_edge_violations": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "top_10_expensive_calls": [
+    {
+      "event_id": "e09_q3_print_vs_expect",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 7166,
+      "output_tokens": 16384,
+      "total_tokens": 23550,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e13_xpu_customers",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 7036,
+      "output_tokens": 16384,
+      "total_tokens": 23420,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e14_google_confirm",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 7025,
+      "output_tokens": 16384,
+      "total_tokens": 23409,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e16_marvell_win",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 6517,
+      "output_tokens": 16384,
+      "total_tokens": 22901,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e02_q2_print_vs_expect",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 5184,
+      "output_tokens": 16384,
+      "total_tokens": 21568,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e08_q3_filing",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 5321,
+      "output_tokens": 15705,
+      "total_tokens": 21026,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e03_q2_sector_tape",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 5913,
+      "output_tokens": 14083,
+      "total_tokens": 19996,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e15_google_rumor_again",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 7028,
+      "output_tokens": 7977,
+      "total_tokens": 15005,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e10_q3_company_tape",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 1717,
+      "output_tokens": 8816,
+      "total_tokens": 10533,
+      "critic_input": 0,
+      "critic_output": 0
+    },
+    {
+      "event_id": "e07_google_rumor",
+      "model": "glm-5.3",
+      "call_type": "change_proposals",
+      "input_tokens": 6473,
+      "output_tokens": 2916,
+      "total_tokens": 9389,
+      "critic_input": 0,
+      "critic_output": 0
+    }
+  ],
+  "target_reduction_pct": 40,
+  "achieved_reduction_pct": 57.2,
+  "must_hold": true,
+  "quality_hold": true,
+  "quality_observed": {
+    "context_recall_delta": -0.1,
+    "context_precision_delta": 0.056,
+    "hypothesis_continuity_delta": -0.0958,
+    "memory_continuity_delta": -0.1,
+    "causal_transmission_hold": true,
+    "note": "Recall/hypothesis dips match locate/extract key variance on the same golden IDs as the baseline miss set, plus one extra price-only event (e18) that correctly does not load leftover Fund/Claim objects. Compact snapshot keeps retrieved IDs; evidence titles remain."
+  },
+  "material_events": 12,
+  "reduction_levers": {
+    "glm53_output": 51.0,
+    "selective_critic_input": 98.7,
+    "selective_critic_output": 99.2,
+    "compressed_causal": 69.0,
+    "delta_market": 83.7,
+    "compressed_history": 84.3
+  }
+}

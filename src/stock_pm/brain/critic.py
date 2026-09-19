@@ -100,6 +100,80 @@ def critic_context(
     }
 
 
+def proposal_critic_context(
+    *,
+    proposals: list[dict[str, Any]] | None,
+    snapshot: dict[str, Any] | None = None,
+    event: dict[str, Any] | None = None,
+    transmission: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Critic sees the proposal, current object, support/counter, and the relevant path. Not the whole snapshot."""
+    shot = snapshot or {}
+    high = {
+        "claim",
+        "core_claim",
+        "state",
+        "company_state",
+        "industry_state",
+        "macro_state",
+        "driver",
+        "value_driver",
+        "causal_edge",
+        "causal_relationship",
+        "scenario",
+        "financial_impact",
+    }
+    rows = [row for row in (proposals or []) if str(row.get("object_type") or "") in high][:6]
+
+    def _lookup(object_id: str) -> dict[str, Any]:
+        token = str(object_id or "")
+        for group in ("states", "drivers", "claims", "causal_edges"):
+            for item in shot.get(group) or []:
+                ids = {
+                    str(item.get("state_id") or ""),
+                    str(item.get("driver_id") or ""),
+                    str(item.get("claim_id") or ""),
+                    str(item.get("edge_id") or ""),
+                    str(item.get("canonical_key") or ""),
+                }
+                if token and token in ids:
+                    return item
+        return {}
+
+    packed = []
+    for row in rows:
+        payload = row.get("to_payload") or row.get("to") or {}
+        current = row.get("from_payload") or row.get("from") or _lookup(str(row.get("object_id") or ""))
+        packed.append(
+            {
+                "object_type": row.get("object_type"),
+                "object_id": row.get("object_id"),
+                "from": current,
+                "to": payload,
+                "reason": compact_text(row.get("reason") or "", 160),
+                "evidence_ids": list(row.get("evidence_ids") or [])[:6],
+            }
+        )
+    item = event or shot.get("event") or {}
+    successful = list((transmission or {}).get("successful") or [])[:2]
+    return {
+        "event": {
+            "title": compact_text(item.get("title") or "", 160),
+            "fact": compact_text(item.get("fact") or "", 160),
+            "event_type": item.get("event_type"),
+            "kind": item.get("kind"),
+        },
+        "proposals": packed,
+        "support": list(shot.get("evidence") or [])[:8],
+        "counter": list(shot.get("counter_evidence") or [])[:6],
+        "relevant_causal_path": successful or list(shot.get("causal_paths") or [])[:2],
+        "rules": [
+            "You do not see primary chain-of-thought.",
+            "Review only these proposals. Empty issues is allowed.",
+        ],
+    }
+
+
 def incremental_critic_context(
     base: dict[str, Any],
     *,

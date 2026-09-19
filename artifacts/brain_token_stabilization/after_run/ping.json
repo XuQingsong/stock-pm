@@ -1,0 +1,26 @@
+{
+  "mechanical": {
+    "ok": true,
+    "status": "ok",
+    "model": "glm-5.2",
+    "base_url": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+    "llm_called": true,
+    "error": null,
+    "input_tokens": 43,
+    "output_tokens": 79,
+    "latency_ms": 2947,
+    "elapsed_s": 2.947707
+  },
+  "reasoning": {
+    "ok": true,
+    "status": "ok",
+    "model": "glm-5.3",
+    "base_url": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+    "llm_called": true,
+    "error": null,
+    "input_tokens": 42,
+    "output_tokens": 178,
+    "latency_ms": 2926,
+    "elapsed_s": 2.926571
+  }
+}

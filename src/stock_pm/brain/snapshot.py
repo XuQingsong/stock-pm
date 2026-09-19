@@ -6,6 +6,8 @@ import json
 import re
 from typing import Any
 
+from stock_pm.research.llm_reason import compact_text
+
 from .claim_integrity import token_overlap
 from .shadow import current_states_only
 
@@ -538,55 +540,271 @@ def build_snapshot(
         text = f"{row.get('name') or ''} {row.get('statement') or ''}".lower()
         if any(token in text for token in _tokens(event_blob) if len(token) > 4):
             relevant_shadows.append(row)
-    path_rows = list(causal_paths or [])[:4]
-    gap_rows = list(causal_gaps or [])[:3]
-    finance_rows = list(financial_links or [])[:4]
-    attention_rows = list(market_attentions or [])[:3]
-    expectation_rows = list(expectations or [])[:3]
-    hypothesis_rows = list(hypotheses or [])[:4]
+    event_tokens = _tokens(event_blob)
+    challenged_ids = _challenged_ids(
+        event_tokens,
+        states=current_states_only(affected.get("states")),
+        drivers=list(affected.get("drivers") or []),
+        claims=list(affected.get("claims") or []),
+        edges=relevant_edges,
+    )
+    path_rows = [_compact_path(row) for row in list(causal_paths or [])[:4]]
+    gap_rows = [_compact_gap(row) for row in list(causal_gaps or [])[:3]]
+    finance_rows = [_compact_finance(row) for row in list(financial_links or [])[:4]]
+    attention_rows = [_compact_attention(row) for row in list(market_attentions or [])[:3]]
+    expectation_rows = [_compact_expectation(row) for row in list(expectations or [])[:3]]
+    hypothesis_rows = [_compact_hypothesis(row) for row in list(hypotheses or [])[:4]]
+    state_rows = [_compact_state(row, challenged=_row_id(row, "state_id", "name") in challenged_ids) for row in current_states_only(affected.get("states"))]
+    driver_rows = [_compact_driver(row, challenged=_row_id(row, "driver_id", "canonical_key") in challenged_ids) for row in list(affected.get("drivers") or [])]
+    claim_rows = [_compact_claim(row, challenged=_row_id(row, "claim_id", "title") in challenged_ids) for row in list(affected.get("claims") or [])]
+    exposure_rows = [_compact_exposure(row) for row in list(affected.get("exposures") or [])]
+    edge_rows = [_compact_edge(row, challenged=str(row.get("edge_id") or "") in challenged_ids) for row in relevant_edges]
+    evidence_rows = [_compact_evidence(row) for row in support_rows[:16]]
+    counter_compact = [_compact_evidence(row) for row in counter_rows[:12]]
+    history_rows = [_compact_history(row) for row in relevant_history]
+    shadow_rows = [_compact_shadow(row) for row in relevant_shadows[:6]]
+    event_row = _compact_event(event)
     causal_context = {
-        "causal_edges": relevant_edges,
+        "causal_edges": edge_rows,
         "causal_paths": path_rows,
         "causal_gaps": gap_rows,
-        "exposures": list(affected.get("exposures") or []),
+        "exposures": exposure_rows,
         "financial_links": finance_rows,
         "market_attentions": attention_rows,
         "expectations": expectation_rows,
         "hypotheses": hypothesis_rows,
     }
     return {
-        "event": event,
-        "states": current_states_only(affected.get("states")),
-        "drivers": list(affected.get("drivers") or []),
-        "claims": list(affected.get("claims") or []),
-        "exposures": list(affected.get("exposures") or []),
-        "evidence": support_rows[:16],
-        "counter_evidence": counter_rows[:12],
-        "causal_edges": relevant_edges,
+        "event": event_row,
+        "states": state_rows,
+        "drivers": driver_rows,
+        "claims": claim_rows,
+        "exposures": exposure_rows,
+        "evidence": evidence_rows,
+        "counter_evidence": counter_compact,
+        "causal_edges": edge_rows,
         "causal_paths": path_rows,
         "causal_gaps": gap_rows,
         "financial_links": finance_rows,
         "market_attentions": attention_rows,
         "expectations": expectation_rows,
         "hypotheses": hypothesis_rows,
-        "history": relevant_history,
-        "shadows": relevant_shadows[:6],
+        "history": history_rows,
+        "shadows": shadow_rows,
         "targeted": True,
         "full_brain": False,
+        "compacted": True,
+        "challenged_ids": sorted(challenged_ids)[:12],
         "causal_context_tokens": max(0, (len(json.dumps(causal_context, default=str, ensure_ascii=False)) + 3) // 4),
         "context_part_tokens": _context_part_tokens(
-            event=event,
-            states=current_states_only(affected.get("states")),
-            evidence=support_rows[:16] + counter_rows[:12],
+            event=event_row,
+            states=state_rows,
+            evidence=evidence_rows + counter_compact,
             causal=causal_context,
             market={"attentions": attention_rows, "expectations": expectation_rows, "hypotheses": hypothesis_rows},
-            history=relevant_history,
+            history=history_rows,
             price=price
             or {
                 "price_change_pct": event.get("price_change_pct"),
                 "peers": event.get("peers") or event.get("peer_moves"),
             },
         ),
+    }
+
+
+def _challenged_ids(
+    event_tokens: set[str],
+    *,
+    states: list[dict[str, Any]],
+    drivers: list[dict[str, Any]],
+    claims: list[dict[str, Any]],
+    edges: list[dict[str, Any]],
+) -> set[str]:
+    ids: set[str] = set()
+    for row in states + drivers + claims:
+        token = _row_id(row, "state_id", "driver_id", "claim_id", "canonical_key", "name")
+        if token and len(event_tokens & _tokens(_hay(row))) >= 2:
+            ids.add(token)
+    for row in edges:
+        blob = f"{row.get('mechanism') or ''} {row.get('from_node') or ''} {row.get('to_node') or ''}"
+        if len(event_tokens & _tokens(blob)) >= 2 and row.get("edge_id"):
+            ids.add(str(row.get("edge_id")))
+    return ids
+
+
+def _compact_event(event: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "event_key": event.get("event_key") or event.get("event_id"),
+        "title": compact_text(event.get("title") or "", 160),
+        "fact": compact_text(event.get("fact") or event.get("statement") or "", 200),
+        "event_type": event.get("event_type"),
+        "kind": event.get("kind"),
+        "entities": list(event.get("entities") or [])[:6],
+        "fact_reliability": event.get("fact_reliability"),
+        "confirmed": event.get("confirmed"),
+        "price_change_pct": event.get("price_change_pct"),
+        "peers": event.get("peers") or event.get("peer_moves"),
+        "actual": event.get("actual"),
+        "expected": event.get("expected"),
+    }
+
+
+def _compact_state(row: dict[str, Any], *, challenged: bool) -> dict[str, Any]:
+    limit = 200 if challenged else 80
+    return {
+        "state_id": row.get("state_id"),
+        "name": compact_text(row.get("name") or "", 80),
+        "status": row.get("status") or row.get("direction") or row.get("confidence"),
+        "summary": compact_text(row.get("statement") or row.get("current_state") or "", limit),
+        "confidence": row.get("confidence"),
+        "evidence_ids": list(row.get("evidence_ids") or [])[:6],
+    }
+
+
+def _compact_driver(row: dict[str, Any], *, challenged: bool) -> dict[str, Any]:
+    limit = 200 if challenged else 80
+    return {
+        "driver_id": row.get("driver_id"),
+        "canonical_key": row.get("canonical_key"),
+        "name": compact_text(row.get("name") or "", 80),
+        "category": row.get("category"),
+        "status": row.get("status") or row.get("current_state"),
+        "summary": compact_text(row.get("current_state") or row.get("why_it_matters") or "", limit),
+        "confidence": row.get("confidence") or row.get("uncertainty"),
+        "evidence_ids": list(row.get("evidence_ids") or [])[:6],
+        "related_claim_ids": list(row.get("related_claim_ids") or [])[:4],
+    }
+
+
+def _compact_claim(row: dict[str, Any], *, challenged: bool) -> dict[str, Any]:
+    limit = 200 if challenged else 80
+    return {
+        "claim_id": row.get("claim_id"),
+        "title": compact_text(row.get("title") or "", 80),
+        "status": row.get("status") or row.get("final_status"),
+        "is_core": bool(row.get("is_core")),
+        "summary": compact_text(row.get("statement") or "", limit),
+        "confidence": row.get("confidence"),
+        "evidence_ids": list(row.get("evidence_ids") or row.get("supporting_evidence_ids") or [])[:6],
+        "related_driver_ids": list(row.get("related_driver_ids") or [])[:4],
+    }
+
+
+def _compact_edge(row: dict[str, Any], *, challenged: bool) -> dict[str, Any]:
+    payload = {
+        "edge_id": row.get("edge_id"),
+        "source": row.get("from_node") or row.get("source"),
+        "target": row.get("to_node") or row.get("target"),
+        "from_node": row.get("from_node") or row.get("source"),
+        "to_node": row.get("to_node") or row.get("target"),
+        "status": row.get("status"),
+        "confidence": row.get("confidence"),
+        "mechanism_short": compact_text(row.get("mechanism") or row.get("statement") or "", 80),
+        "condition": compact_text(row.get("conditions") or row.get("condition") or "", 80),
+    }
+    if challenged:
+        payload["support_evidence_ids"] = list(row.get("support_evidence_ids") or row.get("evidence_ids") or [])[:6]
+        payload["counter_evidence_ids"] = list(row.get("counter_evidence_ids") or [])[:4]
+    return payload
+
+
+def _compact_evidence(row: dict[str, Any]) -> dict[str, Any]:
+    fact = compact_text(row.get("fact") or row.get("statement") or row.get("excerpt") or "", 160)
+    return {
+        "id": row.get("id") or row.get("evidence_id"),
+        "evidence_id": row.get("evidence_id") or row.get("id"),
+        "title": compact_text(row.get("title") or "", 80),
+        "fact": fact,
+        "excerpt": compact_text(row.get("excerpt") or fact, 160),
+    }
+
+
+def _compact_history(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "history_id": row.get("history_id"),
+        "object_id": row.get("object_id"),
+        "object_type": row.get("object_type"),
+        "reason": compact_text(row.get("reason") or "", 80),
+    }
+
+
+def _compact_hypothesis(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "hypothesis_id": row.get("hypothesis_id"),
+        "canonical_key": row.get("canonical_key"),
+        "kind": row.get("kind"),
+        "status": row.get("status"),
+        "confidence": row.get("confidence"),
+        "summary": compact_text(row.get("hypothesis") or row.get("name") or "", 80),
+    }
+
+
+def _compact_expectation(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "expectation_id": row.get("expectation_id"),
+        "name": compact_text(row.get("name") or "", 80),
+        "comparison": row.get("comparison"),
+        "trend": row.get("trend"),
+        "actual": row.get("actual"),
+        "expected": row.get("expected"),
+    }
+
+
+def _compact_attention(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "attention_id": row.get("attention_id"),
+        "name": compact_text(row.get("name") or "", 80),
+        "summary": compact_text(row.get("statement") or "", 80),
+        "alignment": row.get("alignment"),
+        "related_objects": list(row.get("related_objects") or [])[:4],
+    }
+
+
+def _compact_exposure(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "exposure_id": row.get("exposure_id"),
+        "exposure_type": row.get("exposure_type"),
+        "subject": compact_text(row.get("subject") or "", 40),
+        "object_name": compact_text(row.get("object_name") or "", 80),
+        "direction": row.get("direction"),
+        "mechanism": compact_text(row.get("mechanism") or row.get("reason") or "", 80),
+    }
+
+
+def _compact_path(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "nodes": list(row.get("nodes") or [])[:8],
+        "edge_ids": list(row.get("edge_ids") or [])[:8],
+        "status": row.get("status"),
+        "claim_id": row.get("claim_id"),
+    }
+
+
+def _compact_gap(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "question": compact_text(row.get("question") or "", 160),
+        "reason": compact_text(row.get("reason") or "", 80),
+        "to_node": row.get("to_node"),
+        "from_node": row.get("from_node"),
+    }
+
+
+def _compact_finance(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "from_node": row.get("from_node"),
+        "to_node": row.get("to_node"),
+        "relationship_type": row.get("relationship_type"),
+        "status": row.get("status"),
+        "mechanism": compact_text(row.get("mechanism") or "", 80),
+    }
+
+
+def _compact_shadow(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "shadow_id": row.get("shadow_id"),
+        "name": compact_text(row.get("name") or "", 80),
+        "summary": compact_text(row.get("statement") or "", 80),
+        "status": row.get("status"),
     }
 
 

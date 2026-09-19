@@ -1,0 +1,137 @@
+[
+  {
+    "question": "Is 143% AI semiconductor growth sustainable (backlog, bookings, customer concentration)?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "No core claim exists for AVGO; what claim should the AI driver ultimately support?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "What is the market pricing that the current Brain does not explain?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.2)?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Did the selloff reflect a shift in market sentiment on AI capex durability, and is there confirmed evidence bearing on the ai_demand hypothesis?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "Can we confirm: Google custom silicon volume?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What share of Broadcom's AI semiconductor revenue depends on Google custom silicon, and is a volume delay actually confirmed?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Is Google expanding in-house silicon in a way that would structurally displace Broadcom custom silicon volumes, versus a timing delay?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Confirm or refute the Google volume-delay rumor and quantify Google's share of AVGO AI revenue.",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Does Google's in-house silicon expansion change Broadcom's long-run custom silicon share at that customer?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Is there a missing Market Driver that would explain repeated unexplained AVGO tape?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "Is a missing Expectation variable leaving repeated unexplained AVGO tape?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Is a missing Exposure leaving repeated unexplained AVGO price behavior?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Is a missing Causal Edge leaving repeated unexplained AVGO tape?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What is the customer-level composition of the guided $21.7B Q4 AI semiconductor revenue (e.g., Google custom silicon share vs other hyperscalers)?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Why did Q3 AI semiconductor revenue ($16.7B) miss the ~$17.2B expectation despite 'very strong' demand commentary?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Can we confirm: AVGO shares move -2.74% after the latest print?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What share of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B) is attributable to Google custom TPU/ASIC orders, and can the order-reduction rumor be corroborated?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Can the Google order-reduction rumor be corroborated via supply-chain data, Google capex disclosures, or Broadcom commentary before any State, Driver, or Claim change?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What drove AVGO's -6.2% move on 2026-09-16 given no new filing or operating disclosure — sector-wide semiconductor selloff, AVGO-specific flow, or unconfirmed information?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
+    "question": "What drove AVGO's -6.2% decline on 2026-09-16 in the absence of any new filing or operating disclosure (sector-wide semis move vs. AVGO-specific flow vs. unconfirmed information)?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  }
+]

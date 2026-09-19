@@ -6,8 +6,8 @@ import json
 import time
 from typing import Any
 
-from .critic import critic_context, incremental_critic_context, reconcile_critic
-from .incremental import critic_should_expand, full_review_reason
+from .critic import critic_context, incremental_critic_context, proposal_critic_context, reconcile_critic
+from .incremental import critic_is_needed, critic_should_expand, full_review_reason
 from .l0 import process_l0
 from .llm_steps import change_proposals, event_extract, independent_critic
 from .materiality import materiality_gate
@@ -43,6 +43,8 @@ def _calls(audit: dict[str, Any] | None, role: str, step: str) -> dict[str, Any]
     row = dict(audit or {})
     row["role"] = role
     row["step"] = step
+    row["call_type"] = step
+    row["model"] = row.get("model") or ("glm-5.3" if role in {"reasoning", "critic"} else "glm-5.2")
     return row
 
 
@@ -177,6 +179,16 @@ def _token_usage(llm_calls: list[dict[str, Any]] | None, snapshot: dict[str, Any
         "mechanical_output": _sum(mechanical, "output_tokens"),
         "total_tokens": input_tokens + output_tokens,
         "context_parts": dict((snapshot or {}).get("context_part_tokens") or {}),
+        "calls": [
+            {
+                "model": row.get("model"),
+                "call_type": row.get("call_type") or row.get("step") or row.get("role"),
+                "input_tokens": int(row.get("input_tokens") or 0),
+                "output_tokens": int(row.get("output_tokens") or 0),
+                "role": row.get("role"),
+            }
+            for row in calls
+        ],
     }
 
 
@@ -196,6 +208,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
             "expectations": [],
             "hypotheses": [],
             "divergences": [],
+            "questions": [],
             "facts": [],
             "fingerprints": [],
             "identities": [],
@@ -222,6 +235,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "expectations": store.list_expectations(ticker) if hasattr(store, "list_expectations") else [],
         "hypotheses": store.list_hypotheses(ticker) if hasattr(store, "list_hypotheses") else [],
         "divergences": store.list_divergences(ticker) if hasattr(store, "list_divergences") else [],
+        "questions": store.list_questions(ticker) if hasattr(store, "list_questions") else [],
         "facts": facts,
         "fingerprints": fingerprints,
         "identities": identities,
@@ -605,11 +619,32 @@ def run_brain_update(
             reason,
             {
                 "ticker": symbol,
-                "event": event,
-                "snapshot": snapshot,
+                "event": snapshot.get("event") or {
+                    "title": event.get("title"),
+                    "fact": event.get("fact"),
+                    "event_type": event.get("event_type"),
+                    "kind": event.get("kind"),
+                },
+                "snapshot": {key: snapshot.get(key) for key in (
+                    "states",
+                    "drivers",
+                    "claims",
+                    "exposures",
+                    "evidence",
+                    "counter_evidence",
+                    "causal_edges",
+                    "causal_paths",
+                    "causal_gaps",
+                    "financial_links",
+                    "market_attentions",
+                    "expectations",
+                    "hypotheses",
+                    "history",
+                    "shadows",
+                )},
+                "output_contract": "delta_only",
                 "rules": [
-                    "Output Change Proposals only.",
-                    "Do not write Brain objects directly.",
+                    "Output delta Change Proposals only. Do not restate unchanged objects.",
                     "Rumor cannot modify Current State or Core Claim.",
                 ],
             },
@@ -815,28 +850,48 @@ def run_brain_update(
 
     critic_result = None
     expand = critic_should_expand(proposals=proposals, budget=gate_result.get("budget"))
+    need_critic = critic_is_needed(
+        proposals=proposals,
+        approved=gate_result.get("approved"),
+        budget=gate_result.get("budget"),
+    )
     affected_ids = {
         str(row.get("state_id") or row.get("driver_id") or row.get("claim_id") or "")
         for group in (affected.get("states"), affected.get("drivers"), affected.get("claims"))
         for row in (group or [])
     }
     affected_ids.discard("")
-    if reason is not None and (gate_result.get("approved") or expand):
-        base = critic_context(
-            states=snapshot["states"],
-            drivers=snapshot["drivers"],
-            claims=snapshot["claims"],
-            events=[event],
-            transmissions=[],
-            financial_impacts=[],
-            evidence=snapshot.get("evidence") or [],
+    if reason is not None and need_critic and (gate_result.get("approved") or expand):
+        scoped = proposal_critic_context(
+            proposals=gate_result.get("approved") or proposals,
+            snapshot=snapshot,
+            event=event,
+            transmission=transmission,
         )
-        scoped = incremental_critic_context(base, affected_ids=affected_ids, expand=expand)
+        if expand:
+            base = critic_context(
+                states=snapshot["states"],
+                drivers=snapshot["drivers"],
+                claims=snapshot["claims"],
+                events=[event],
+                transmissions=[],
+                financial_impacts=[],
+                evidence=snapshot.get("evidence") or [],
+            )
+            scoped = incremental_critic_context(base, affected_ids=affected_ids, expand=True)
+            scoped["proposals"] = proposal_critic_context(
+                proposals=gate_result.get("approved") or proposals,
+                snapshot=snapshot,
+                event=event,
+                transmission=transmission,
+            ).get("proposals")
         payload, audit = independent_critic(reason, scoped, allowed_ids=allowed_ids or set())
         llm_calls.append(_calls(audit, "critic", "independent_critic"))
         critic_called = bool((audit or {}).get("llm_called"))
         critic_result = reconcile_critic(list((payload or {}).get("issues") or []), transmissions=[])
-        critic_result["scope"] = "expanded" if expand else "incremental"
+        critic_result["scope"] = "expanded" if expand else "proposal"
+    elif reason is not None:
+        critic_result = {"skipped": True, "reason": "low_value_market_or_delta", "issues": []}
 
     unsupported_jump_count = 0
     unexpected_claim_change_count = 0
@@ -980,6 +1035,10 @@ def run_brain_update(
             "market_layer": market_stats,
             "explanation": explanation,
             "price_feedback": explanation.get("feedback"),
-            "token_usage": _token_usage(llm_calls, snapshot),
+            "token_usage": {
+                **_token_usage(llm_calls, snapshot),
+                "critic_skipped": not need_critic,
+            },
+            "critic_skipped": not need_critic,
         }
     )

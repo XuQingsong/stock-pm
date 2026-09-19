@@ -1,0 +1,35 @@
+{
+  "event_id": "e09_q3_print_vs_expect",
+  "expectations": [
+    {
+      "name": "Q3 AI semiconductor revenue",
+      "comparison": "below",
+      "trend": "falling",
+      "actual": 16.0,
+      "expected": 17.2
+    },
+    {
+      "name": "Google custom silicon volume",
+      "comparison": "unknown",
+      "trend": "falling",
+      "actual": null,
+      "expected": null
+    },
+    {
+      "name": "expectation",
+      "comparison": "unknown",
+      "trend": "unchanged",
+      "actual": 16.7,
+      "expected": null
+    },
+    {
+      "name": "Q3 EPS",
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "actual": 2.68,
+      "expected": 2.83
+    }
+  ],
+  "claim_changed": false,
+  "state_changed": true
+}

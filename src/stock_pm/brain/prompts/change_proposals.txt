@@ -1,34 +1,39 @@
 STEP_ID: change_proposals
 You reason about a material event using only the targeted Brain Snapshot.
-You cannot write Brain objects. Output Change Proposals only.
+You cannot write Brain objects. Output Change Proposals only. Output = delta only.
+Do not restate company background, full Claim text, full history, or the full Causal Graph.
+Do not propose unchanged objects.
+For each proposal include only: what changed, why, object id, proposed delta, evidence_ids, causal_path_ids, confidence.
+Existing objects are identified by id + current status + short summary. Do not copy their full text into `to`.
+If a Market Driver Hypothesis already exists, output only: hypothesis_id, new observation, confidence delta, status delta, reason.
+If an Expectation already exists, output only: expectation_id, old, new, reason.
+If a Divergence already exists, output only: divergence_id, old status, new status, new explanatory evidence.
 Do not jump from Event to Core Claim. Impact must travel Event → State → Exposure → Driver → Claim.
 If a needed relationship is missing, propose a causal_gap / Research Question. Do not invent a transmittable path.
-You may: (1) propose a new causal_edge as status=candidate only, (2) explain mechanism, (3) name which existing snapshot causal edges this event may travel.
-New causal edges cannot be observed, supported, or established.
-Do not jump from an unconfirmed rumor to Current State, Value Driver, Core Claim, or Base Case.
-If the event is a rumor or low-confidence signal, propose Shadow State and/or a Research Question.
-Driver → financial_metric may be proposed as a causal_edge or financial_impact. It cannot modify Base Case.
-After the causal path, you may propose market_attention, expectation, and market_driver_hypothesis.
-Expectation is the market's prior vs the print. Below expectation must not rewrite Fundamental State or Core Claim.
-A market_driver_hypothesis is what the tape MAY be trading. Keep it a hypothesis. Multiple hypotheses may coexist. Do not pick a winner.
-Price / peer / sector moves may support or weaken a hypothesis. They cannot write Fundamental State or Core Claim.
-If a large price move is unexplained, set Market Driver = unresolved and ask a Research Question. Do not invent a reason.
+New causal edges start as status=candidate only.
+Rumor or low-confidence signal: Shadow State and/or Research Question only.
+Driver → financial_metric cannot modify Base Case.
+A market_driver_hypothesis stays a hypothesis. Multiple may coexist. Do not pick a winner.
+Price cannot write Fundamental State or Core Claim.
+If a large price move is unexplained, set Market Driver = unresolved and ask a Research Question.
 Do not write "the stock fell because X".
-Answer, in the reason fields: what happened; why it affects this company; through which path it reaches Driver/Claim; how the market currently understands it.
+Do not write "mispricing".
 Return one JSON object:
 {
   "proposals": [
     {
-      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|expectation|market_driver_hypothesis|scenario|causal_edge|exposure|financial_impact|causal_gap",
+      "object_type": "company_state|value_driver|core_claim|shadow_state|research_question|market_attention|expectation|market_driver_hypothesis|scenario|causal_edge|exposure|financial_impact|causal_gap|price_fundamental_divergence",
       "object_id": "",
       "from": {},
       "to": {},
       "reason": "",
       "evidence_ids": [],
-      "source_kind": "event|news|rumor|price",
-      "causal_edges": []
+      "causal_path_ids": [],
+      "confidence": "low|medium|high",
+      "source_kind": "event|news|rumor|price"
     }
   ],
   "questions": [{"question": "", "reason": "", "related_objects": []}]
 }
-Keep the proposal set small. One ordinary event must not rewrite the whole Brain.
+Keep at most 6 proposals. Each reason <= 40 words.
+One ordinary event must not rewrite the whole Brain.

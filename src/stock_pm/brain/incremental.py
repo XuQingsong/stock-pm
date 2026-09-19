@@ -62,6 +62,84 @@ def full_review_reason(
     return None
 
 
+_CRITIC_HIGH_VALUE = {
+    "claim",
+    "core_claim",
+    "state",
+    "company_state",
+    "industry_state",
+    "macro_state",
+    "driver",
+    "value_driver",
+    "causal_edge",
+    "causal_relationship",
+    "scenario",
+    "financial_impact",
+}
+_CRITIC_SKIP = {
+    "market_attention",
+    "price_reaction",
+    "expectation",
+    "expectation_state",
+    "market_driver_hypothesis",
+    "market_driver",
+    "research_question",
+    "causal_gap",
+    "price_fundamental_divergence",
+    "price_feedback",
+    "shadow_state",
+    "shadow",
+}
+_IDENTITY_FIELDS = ("statement", "status", "current_state", "direction", "name", "title")
+
+
+def _payload_of(row: dict[str, Any]) -> dict[str, Any]:
+    raw = row.get("to_payload") if isinstance(row.get("to_payload"), dict) else row.get("to")
+    return dict(raw) if isinstance(raw, dict) else {}
+
+
+def _from_of(row: dict[str, Any]) -> dict[str, Any]:
+    raw = row.get("from_payload") if isinstance(row.get("from_payload"), dict) else row.get("from")
+    return dict(raw) if isinstance(raw, dict) else {}
+
+
+def _identity_changed(row: dict[str, Any]) -> bool:
+    now = _from_of(row)
+    nxt = _payload_of(row)
+    return any(field in nxt and str(nxt.get(field) or "") != str(now.get(field) or "") for field in _IDENTITY_FIELDS)
+
+
+def critic_is_needed(
+    *,
+    proposals: list[dict[str, Any]] | None = None,
+    approved: list[dict[str, Any]] | None = None,
+    budget: dict[str, Any] | None = None,
+) -> bool:
+    """Full Critic only for high-value writes. Market / RQ / Divergence skip."""
+    if critic_should_expand(proposals=proposals, budget=budget):
+        return True
+    source = approved if approved is not None else proposals
+    rows = [row for row in (source or []) if isinstance(row, dict)]
+    for row in rows:
+        target = str(row.get("object_type") or "")
+        if target in _CRITIC_SKIP:
+            continue
+        if target not in _CRITIC_HIGH_VALUE:
+            continue
+        payload = _payload_of(row)
+        if target in {"causal_edge", "causal_relationship"} and str(payload.get("status") or "") in {"supported", "established"}:
+            return True
+        if target == "scenario" and (
+            payload.get("base_case_change") is True or str(payload.get("scope") or "") == "base"
+        ):
+            return True
+        if _identity_changed(row):
+            return True
+        if target in {"claim", "core_claim", "state", "company_state", "driver", "value_driver"} and _identity_changed(row):
+            return True
+    return False
+
+
 def critic_should_expand(
     *,
     proposals: list[dict[str, Any]] | None = None,

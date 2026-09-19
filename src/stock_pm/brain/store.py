@@ -800,6 +800,20 @@ class BrainStore:
             "created_at": row.get("created_at") or _now(),
         }
         if not self._pg():
+            norm = " ".join(str(stored["question"] or "").lower().split())
+            if norm and stored.get("status") == "open":
+                for existing in self.questions.values():
+                    if (
+                        existing.get("ticker") == stored["ticker"]
+                        and str(existing.get("status") or "open") == "open"
+                        and " ".join(str(existing.get("question") or "").lower().split()) == norm
+                    ):
+                        existing["why_it_matters"] = stored["why_it_matters"] or existing.get("why_it_matters")
+                        existing["related_objects"] = list(
+                            dict.fromkeys(list(existing.get("related_objects") or []) + stored["related_objects"])
+                        )
+                        existing["updated_at"] = _now()
+                        return _copy(existing)
             self.questions[stored["question_id"]] = stored
             return _copy(stored)
         out = self._one(

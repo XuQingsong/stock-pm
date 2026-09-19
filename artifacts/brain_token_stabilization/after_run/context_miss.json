@@ -1,0 +1,1172 @@
+[
+  {
+    "event_id": "e02_q2_print_vs_expect",
+    "published_at": "2026-06-03T21:10:00+00:00",
+    "role": "expectation_print",
+    "title": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+    "source": "CNBC / company figures, 2026-06-03: revenue 22.19 vs 22.27; Q3 AI 16 vs expected 17.2; EPS 2.44 vs 2.40",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+      "why_company": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; Long-run AI revenue depends on winning and retaining accelerator and networki…",
+      "path": "Event can travel a supported path: bst_4aba4dcba45d4ed297da059e8769818e → bdrv_f789bcf02eb248b7b3ea3552dcbd47f4 → bclm_426dd93ffbfa4167ab49970c97da681f.",
+      "market_understands": "Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…. Price / Peer Alignment: unknown Confidence: medium Price Feedback: current Brain explains the move",
+      "can_affect_claim": true,
+      "alignment": "unknown",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "candidate",
+          "confidence": "medium"
+        }
+      ],
+      "unresolved": false,
+      "research_questions": [],
+      "confidence": "medium",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 1,
+      "hypotheses_created": 0,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 0,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 0,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": "well_explained",
+      "divergences_created": 0,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 0,
+      "repeated_divergence_patterns": 0,
+      "research_questions_from_price": 0,
+      "price_feedback": "current Brain explains the move"
+    },
+    "transmission": {
+      "successful": 1,
+      "blocked": 0
+    },
+    "causal_gaps": [],
+    "questions": [],
+    "memory": {
+      "used_historical_objects": 24,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "ai_revenue_mix_concentration",
+        "ai_semiconductor_demand_durability",
+        "ai_silicon_competitive_position",
+        "bced_0481d7068b2244eb8b320c8710c1c319",
+        "bced_137f3d7165d34c22a8aa8065958fdb43",
+        "bced_56b7220016484bd8ae2c67e25b7906fe",
+        "bced_a335339c96b64b77af017dea1857fa05",
+        "bced_c1d50b264ff4417c8c96975f277204f7"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.6,
+      "context_precision": 0.75,
+      "missed_count": 2,
+      "irrelevant_count": 1
+    },
+    "context_misses": [
+      {
+        "kind": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "label": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "label": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 1,
+      "drivers": 1,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 1,
+      "attentions": 0,
+      "hypotheses": 0,
+      "shadows": 0,
+      "questions": 0
+    },
+    "tokens": {
+      "input_tokens": 5708,
+      "output_tokens": 16961,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 22669,
+      "reasoning_input": 5184,
+      "reasoning_output": 16384,
+      "glm53_calls": 1,
+      "glm53_input": 5184,
+      "glm53_output": 16384,
+      "all_input": 5708,
+      "all_output": 16961,
+      "context_event": 133,
+      "context_state": 71,
+      "context_evidence": 258,
+      "context_causal": 1578,
+      "context_market": 77,
+      "context_history": 38,
+      "context_price": 37
+    },
+    "hypothesis_keys_after": [
+      "ai_demand"
+    ]
+  },
+  {
+    "event_id": "e03_q2_sector_tape",
+    "published_at": "2026-06-04T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "AVGO shares move -12.6% with semiconductor peers",
+    "source": "Golden Brain price-reaction state; SOX -10.26% and AVGO about -12.6% on 2026-06-04",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO shares move -12.6% with semiconductor peers",
+      "why_company": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; Long-run AI revenue depends on winning and retaining accelerator and networki…",
+      "path": "Transmission stops on an unsupported edge (unsupported_causal_edge:bced_0d4281c592c64aad8fee710c16d17f4f:candidate). Downstream Driver / Claim cannot be rewritten.",
+      "market_understands": "Attention: Sector-wide drawdown elevates attention on AI-linked valuation risk for high-multiple names like AVGO. Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. sector wide semiconductor selloff; 3. Sector / macro move; 4. Market driver is unresolved. Which driver dominates is no…",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [
+        {
+          "attention_id": null,
+          "name": null,
+          "statement": "Sector-wide drawdown elevates attention on AI-linked valuation risk for high-multiple names like AVGO.",
+          "related_objects": [
+            "market_attention",
+            "bmat_ai_semi_sector_riskoff"
+          ]
+        },
+        {
+          "attention_id": null,
+          "name": "unexplained_price_vs_brain",
+          "statement": "Price behavior is not fully explained by the current Brain.",
+          "related_objects": [
+            "AVGO"
+          ]
+        }
+      ],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "candidate",
+          "confidence": "medium"
+        },
+        {
+          "canonical_key": "sector_wide_semiconductor_selloff",
+          "hypothesis": "sector wide semiconductor selloff",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.…",
+        "Did the selloff reflect a shift in market sentiment on AI capex durability, and is there confirmed evidence bearing on the ai_demand hypothesis?",
+        "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
+        "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 2,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 2,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 1,
+      "unresolved_events": 1,
+      "research_questions": 1,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": "largely_unexplained",
+      "divergences_created": 1,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 1,
+      "repeated_divergence_patterns": 0,
+      "research_questions_from_price": 1,
+      "price_feedback": "current Brain cannot explain the move"
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 1
+    },
+    "causal_gaps": [
+      {
+        "from_node": "bexp_40f241303473423daddbe3edb63bd1e6",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "kind": "causal_gap",
+        "reason": "unsupported_causal_edge:bced_0d4281c592c64aad8fee710c16d17f4f:candidate",
+        "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "NVDA"
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "question": "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.2)?",
+        "reason": "Decomposition determines whether fundamental drivers need re-evaluation or the move is macro noise.",
+        "related_objects": [
+          "bst_21b14d3978024a2b8a6e622e84d40fdc",
+          "bexpc_89019d30a58549cf9d4fedbe29b7bdb2",
+          "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4"
+        ]
+      },
+      {
+        "question": "Did the selloff reflect a shift in market sentiment on AI capex durability, and is there confirmed evidence bearing on the ai_demand hypothesis?",
+        "reason": "Sector-wide AI semi selling may signal sentiment change, but no confirmed evidence yet; avoid causal attribution from price alone.",
+        "related_objects": [
+          "bmdh_8dc71e3824584b429b95ecb153843fac",
+          "bdrv_e605ec342c0a4888bec050bd17106982",
+          "bmdh_sector_semi_selloff_20260603"
+        ]
+      },
+      {
+        "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
+        "reason": "Weak signal is a research question, not a conclusion.",
+        "related_objects": [
+          "AVGO shares move -12.6% with semiconductor peers"
+        ]
+      },
+      {
+        "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+        "reason": "unsupported_causal_edge:bced_0d4281c592c64aad8fee710c16d17f4f:candidate",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "NVDA"
+        ]
+      },
+      {
+        "question": "What is the market pricing that the current Brain does not explain?",
+        "reason": "Large price move is unresolved.",
+        "related_objects": [
+          "AVGO"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 26,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "ai_revenue_mix_concentration",
+        "ai_semiconductor_demand_durability",
+        "ai_silicon_competitive_position",
+        "bced_0481d7068b2244eb8b320c8710c1c319",
+        "bced_137f3d7165d34c22a8aa8065958fdb43",
+        "bced_56b7220016484bd8ae2c67e25b7906fe",
+        "bced_a335339c96b64b77af017dea1857fa05",
+        "bced_c1d50b264ff4417c8c96975f277204f7"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.5,
+      "context_precision": 0.3333,
+      "missed_count": 1,
+      "irrelevant_count": 2
+    },
+    "context_misses": [
+      {
+        "kind": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "label": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 2,
+      "hypotheses": 3,
+      "shadows": 1,
+      "questions": 5
+    },
+    "tokens": {
+      "input_tokens": 6360,
+      "output_tokens": 14723,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 21083,
+      "reasoning_input": 5913,
+      "reasoning_output": 14083,
+      "glm53_calls": 1,
+      "glm53_input": 5913,
+      "glm53_output": 14083,
+      "all_input": 6360,
+      "all_output": 14723,
+      "context_event": 123,
+      "context_state": 144,
+      "context_evidence": 357,
+      "context_causal": 1793,
+      "context_market": 121,
+      "context_history": 167,
+      "context_price": 77
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "sector_macro",
+      "sector_wide_semiconductor_selloff",
+      "unresolved"
+    ]
+  },
+  {
+    "event_id": "e09_q3_print_vs_expect",
+    "published_at": "2026-09-02T21:20:00+00:00",
+    "role": "expectation_print",
+    "title": "AVGO AI semiconductor printed 16.7 billion; EPS 2.68 versus 2.83 expected",
+    "source": "Company print + golden EPS history: EPS 2.68 vs 2.83; AI 16.7 vs prior 16 figure",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO AI semiconductor printed 16.7 billion; EPS 2.68 versus 2.83 expected",
+      "why_company": "AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any dece…; The non-AI base supports dividends, debt service, and terminal value assumpti…",
+      "path": "Event can travel a supported path: bst_4aba4dcba45d4ed297da059e8769818e → bdrv_f789bcf02eb248b7b3ea3552dcbd47f4 → bclm_426dd93ffbfa4167ab49970c97da681f.",
+      "market_understands": "Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. sector wide semiconductor selloff; 3. Sector / macro move; 4. Market driver is unresolved. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Div…",
+      "can_affect_claim": true,
+      "alignment": "unknown",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "closed",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_wide_semiconductor_selloff",
+          "hypothesis": "sector wide semiconductor selloff",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 1,
+      "hypotheses_created": 0,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 0,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 0,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": "well_explained",
+      "divergences_created": 0,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 0,
+      "repeated_divergence_patterns": 0,
+      "research_questions_from_price": 0,
+      "price_feedback": "current Brain explains the move"
+    },
+    "transmission": {
+      "successful": 1,
+      "blocked": 1
+    },
+    "causal_gaps": [
+      {
+        "from_node": "bev_eb255a9f880b424a993cb68e40b59ebf",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "kind": "causal_gap",
+        "reason": "unsupported_causal_edge:bced_a288739f287e401abd2218af20fbb092:candidate",
+        "question": "What AI semiconductor demand durability links earnings to AI semiconductor demand durability sets the length of the g…?",
+        "related_objects": [
+          "bclm_f4454cfe04e94211a79b23116bcf5de8",
+          "earnings"
+        ]
+      }
+    ],
+    "questions": [],
+    "memory": {
+      "used_historical_objects": 30,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "ai_revenue_mix_concentration",
+        "ai_semiconductor_demand_durability",
+        "ai_silicon_competitive_position",
+        "balance_sheet_leverage_deleveraging",
+        "bced_0481d7068b2244eb8b320c8710c1c319",
+        "bced_137f3d7165d34c22a8aa8065958fdb43",
+        "bced_56b7220016484bd8ae2c67e25b7906fe",
+        "bced_a335339c96b64b77af017dea1857fa05"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.8,
+      "context_precision": 0.6667,
+      "missed_count": 1,
+      "irrelevant_count": 2
+    },
+    "context_misses": [
+      {
+        "kind": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "label": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 1,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 1,
+      "attentions": 0,
+      "hypotheses": 0,
+      "shadows": 0,
+      "questions": 0
+    },
+    "tokens": {
+      "input_tokens": 7694,
+      "output_tokens": 17056,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 24750,
+      "reasoning_input": 7166,
+      "reasoning_output": 16384,
+      "glm53_calls": 1,
+      "glm53_input": 7166,
+      "glm53_output": 16384,
+      "all_input": 7694,
+      "all_output": 17056,
+      "context_event": 127,
+      "context_state": 216,
+      "context_evidence": 353,
+      "context_causal": 2144,
+      "context_market": 358,
+      "context_history": 320,
+      "context_price": 65
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "customer_concentration",
+      "sector_macro",
+      "sector_wide_semiconductor_selloff",
+      "unresolved"
+    ]
+  },
+  {
+    "event_id": "e10_q3_company_tape",
+    "published_at": "2026-09-03T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "AVGO shares move -2.74% after the latest print",
+    "source": "Golden Brain: shares fell 2.74% after Q3 (2026-09-02 session reaction)",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO shares move -2.74% after the latest print",
+      "why_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+      "path": "No targeted causal path is available for this event.",
+      "market_understands": "Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. sector wide semiconductor selloff; 3. Sector / macro move; 4. Market driver is unresolved. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: low Price Feedback: no material price move to expla…",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "closed",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_wide_semiconductor_selloff",
+          "hypothesis": "sector wide semiconductor selloff",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "open",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "Can we confirm: AVGO shares move -2.74% after the latest print?",
+        "What is the market pricing that the current Brain does not explain?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 0,
+      "hypotheses_updated": 1,
+      "competing_hypotheses": 1,
+      "hypothesis_strengthened": 1,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 1,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": null,
+      "divergences_created": 0,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 0,
+      "repeated_divergence_patterns": 0,
+      "research_questions_from_price": 0,
+      "price_feedback": "no material price move to explain"
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 0
+    },
+    "causal_gaps": [],
+    "questions": [
+      {
+        "question": "Can we confirm: AVGO shares move -2.74% after the latest print?",
+        "reason": "Weak signal is a research question, not a conclusion.",
+        "related_objects": [
+          "AVGO shares move -2.74% after the latest print"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 0,
+      "historical_pool": 39,
+      "used": false,
+      "sample_ids": []
+    },
+    "context_score": {
+      "context_recall": 0.0,
+      "context_precision": null,
+      "missed_count": 2,
+      "irrelevant_count": 0
+    },
+    "context_misses": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "label": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "label": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 0,
+      "hypotheses": 3,
+      "shadows": 1,
+      "questions": 1
+    },
+    "tokens": {
+      "input_tokens": 2155,
+      "output_tokens": 9969,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 12124,
+      "reasoning_input": 1717,
+      "reasoning_output": 8816,
+      "glm53_calls": 1,
+      "glm53_input": 1717,
+      "glm53_output": 8816,
+      "all_input": 2155,
+      "all_output": 9969,
+      "context_event": 114,
+      "context_state": 1,
+      "context_evidence": 1,
+      "context_causal": 668,
+      "context_market": 358,
+      "context_history": 1,
+      "context_price": 68
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "avgo_post_print_ai_revenue_shortfall",
+      "customer_concentration",
+      "other",
+      "sector_macro",
+      "sector_wide_semiconductor_selloff",
+      "unresolved"
+    ]
+  },
+  {
+    "event_id": "e16_marvell_win",
+    "published_at": "2026-09-12T15:30:00+00:00",
+    "role": "competition",
+    "title": "Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply",
+    "source": "Golden claim already cites a hyperscaler awarding custom AI chip work to Marvell",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply",
+      "why_company": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; Long-run AI revenue depends on winning and retaining accelerator and networki…",
+      "path": "Transmission stops on an unsupported edge (unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate). Downstream Driver / Claim cannot be rewritten.",
+      "market_understands": "Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. sector wide semiconductor selloff; 3. Sector / macro move; 4. Market driver is unresolved. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Div…",
+      "can_affect_claim": false,
+      "alignment": "unknown",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "candidate",
+          "confidence": "medium"
+        },
+        {
+          "canonical_key": "sector_wide_semiconductor_selloff",
+          "hypothesis": "sector wide semiconductor selloff",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "open",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 1,
+      "hypotheses_updated": 1,
+      "competing_hypotheses": 2,
+      "hypothesis_strengthened": 1,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 1,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": "well_explained",
+      "divergences_created": 0,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 0,
+      "repeated_divergence_patterns": 0,
+      "research_questions_from_price": 0,
+      "price_feedback": "current Brain explains the move"
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 1
+    },
+    "causal_gaps": [
+      {
+        "from_node": "marvell_hyperscaler_asic_win",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "kind": "causal_gap",
+        "reason": "unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate",
+        "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "Marvell"
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+        "reason": "unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "Marvell"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 26,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "ai_revenue_mix_concentration",
+        "ai_semiconductor_demand_durability",
+        "ai_silicon_competitive_position",
+        "bced_0481d7068b2244eb8b320c8710c1c319",
+        "bced_137f3d7165d34c22a8aa8065958fdb43",
+        "bced_56b7220016484bd8ae2c67e25b7906fe",
+        "bced_a335339c96b64b77af017dea1857fa05",
+        "bced_c1d50b264ff4417c8c96975f277204f7"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.8571,
+      "context_precision": 0.8571,
+      "missed_count": 1,
+      "irrelevant_count": 1
+    },
+    "context_misses": [
+      {
+        "kind": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "label": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 0,
+      "hypotheses": 2,
+      "shadows": 0,
+      "questions": 1
+    },
+    "tokens": {
+      "input_tokens": 6945,
+      "output_tokens": 16766,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 23711,
+      "reasoning_input": 6517,
+      "reasoning_output": 16384,
+      "glm53_calls": 1,
+      "glm53_input": 6517,
+      "glm53_output": 16384,
+      "all_input": 6945,
+      "all_output": 16766,
+      "context_event": 120,
+      "context_state": 205,
+      "context_evidence": 357,
+      "context_causal": 1862,
+      "context_market": 357,
+      "context_history": 327,
+      "context_price": 65
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "avgo_post_print_ai_revenue_shortfall",
+      "company_specific",
+      "customer_concentration",
+      "other",
+      "sector_macro",
+      "sector_wide_semiconductor_selloff",
+      "unresolved"
+    ]
+  },
+  {
+    "event_id": "e18_unexplained_tape",
+    "published_at": "2026-09-16T19:30:00+00:00",
+    "role": "unresolved_tape",
+    "title": "AVGO shares move -6.2% with no new filing",
+    "source": "Golden header price date 2026-09-16; no new operating disclosure in the dump",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO shares move -6.2% with no new filing",
+      "why_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+      "path": "No targeted causal path is available for this event.",
+      "market_understands": "Attention: Notable unexplained move elevates attention on AVGO price action. Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. sector wide semiconductor selloff; 3. Sector / macro move; 4. Market driver is unresolved. Which driver dominates is not established. Price / Peer Alignment…",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+      },
+      "attentions": [
+        {
+          "attention_id": null,
+          "name": null,
+          "statement": "Notable unexplained move elevates attention on AVGO price action.",
+          "related_objects": [
+            "market_attention",
+            "bmat_avgo_20260916_price_action"
+          ]
+        },
+        {
+          "attention_id": null,
+          "name": "unexplained_price_vs_brain",
+          "statement": "Price behavior is not fully explained by the current Brain.",
+          "related_objects": [
+            "AVGO"
+          ]
+        }
+      ],
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "candidate",
+          "confidence": "medium"
+        },
+        {
+          "canonical_key": "sector_wide_semiconductor_selloff",
+          "hypothesis": "sector wide semiconductor selloff",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "open",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "What drove AVGO's -6.2% decline on 2026-09-16 in the absence of any new filing or operating disclosure (sector-wide semis move vs. AVGO-specific flow vs. uncon…",
+        "What is the market pricing that the current Brain does not explain?",
+        "Is there a missing Market Driver that would explain repeated unexplained AVGO tape?",
+        "Is a missing Expectation variable leaving repeated unexplained AVGO tape?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 1,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 1,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "hypothesis_closed": 0,
+      "duplicates_prevented": 1,
+      "unresolved_events": 1,
+      "research_questions": 1,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0,
+      "price_established_edge_violations": 0,
+      "explanation_grade": "largely_unexplained",
+      "divergences_created": 1,
+      "divergences_resolved": 0,
+      "divergences_partially_explained": 0,
+      "divergences_still_open": 1,
+      "repeated_divergence_patterns": 1,
+      "research_questions_from_price": 5,
+      "price_feedback": "current Brain cannot explain the move"
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 0
+    },
+    "causal_gaps": [],
+    "questions": [
+      {
+        "question": "What drove AVGO's -6.2% decline on 2026-09-16 in the absence of any new filing or operating disclosure (sector-wide semis move vs. AVGO-specific flow vs. unconfirmed information)?",
+        "reason": "Large unexplained price move; driver must be identified before any state or claim changes.",
+        "related_objects": [
+          "bmdh_4e3c26422d144e268b24e9ce442c8ab3",
+          "bmdh_a6c4a141c4c345f3b79c3437f4129538",
+          "bshd_avgo_20260916_tape_nofiling",
+          "pfd_avgo_20260916"
+        ]
+      },
+      {
+        "question": "What is the market pricing that the current Brain does not explain?",
+        "reason": "Large price move is unresolved.",
+        "related_objects": [
+          "AVGO"
+        ]
+      },
+      {
+        "question": "Is there a missing Market Driver that would explain repeated unexplained AVGO tape?",
+        "reason": "Repeated unexplained divergence.",
+        "related_objects": [
+          "AVGO",
+          "missing_market_driver"
+        ]
+      },
+      {
+        "question": "Is a missing Expectation variable leaving repeated unexplained AVGO tape?",
+        "reason": "Repeated unexplained divergence.",
+        "related_objects": [
+          "AVGO",
+          "missing_expectation_variable"
+        ]
+      },
+      {
+        "question": "Is a missing Exposure leaving repeated unexplained AVGO price behavior?",
+        "reason": "Repeated unexplained divergence.",
+        "related_objects": [
+          "AVGO",
+          "missing_exposure"
+        ]
+      },
+      {
+        "question": "Is a missing Causal Edge leaving repeated unexplained AVGO tape?",
+        "reason": "Repeated unexplained divergence.",
+        "related_objects": [
+          "AVGO",
+          "missing_causal_edge"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 0,
+      "historical_pool": 39,
+      "used": false,
+      "sample_ids": []
+    },
+    "context_score": {
+      "context_recall": 0.0,
+      "context_precision": null,
+      "missed_count": 2,
+      "irrelevant_count": 0
+    },
+    "context_misses": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "label": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "label": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 0,
+      "hypotheses": 0,
+      "shadows": 1,
+      "questions": 2
+    },
+    "tokens": {
+      "input_tokens": 2187,
+      "output_tokens": 6280,
+      "critic_input": 0,
+      "critic_output": 0,
+      "total_tokens": 8467,
+      "reasoning_input": 1776,
+      "reasoning_output": 5508,
+      "glm53_calls": 1,
+      "glm53_input": 1776,
+      "glm53_output": 5508,
+      "all_input": 2187,
+      "all_output": 6280,
+      "context_event": 98,
+      "context_state": 1,
+      "context_evidence": 1,
+      "context_causal": 670,
+      "context_market": 360,
+      "context_history": 1,
+      "context_price": 96
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "avgo_post_print_ai_revenue_shortfall",
+      "company_specific",
+      "customer_concentration",
+      "other",
+      "sector_macro",
+      "sector_wide_semiconductor_selloff",
+      "unresolved"
+    ]
+  }
+]

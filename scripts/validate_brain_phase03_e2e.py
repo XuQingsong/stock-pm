@@ -608,6 +608,7 @@ def _tokens(result: dict[str, Any]) -> dict[str, int]:
         "context_causal": int(parts.get("causal") or 0),
         "context_market": int(parts.get("market") or 0),
         "context_history": int(parts.get("history") or 0),
+        "context_price": int(parts.get("price") or 0),
     }
 
 
@@ -1022,6 +1023,7 @@ def main() -> int:
         "context_causal": 0,
         "context_market": 0,
         "context_history": 0,
+        "context_price": 0,
         "context_miss_events": 0,
         "unexpected_brain_write": 0,
         "state_changes": 0,
@@ -1105,6 +1107,7 @@ def main() -> int:
         metrics["context_causal"] += tokens.get("context_causal") or 0
         metrics["context_market"] += tokens.get("context_market") or 0
         metrics["context_history"] += tokens.get("context_history") or 0
+        metrics["context_price"] += tokens.get("context_price") or 0
         for row in store.list_expectations(TICKER):
             if row.get("expected") is None and str(row.get("comparison") or "") in {"above", "in_line", "below"}:
                 anomalies.append(f"{spec['event_id']}: expectation {row.get('name')} has expected=None with comparison={row.get('comparison')}")
@@ -1272,6 +1275,7 @@ def main() -> int:
                 "event_id": spec["event_id"],
                 "trace": result.get("trace"),
                 "llm_calls": result.get("llm_calls") or [],
+                "token_usage": result.get("token_usage") or {},
                 "l0": result.get("l0"),
                 "extract": result.get("extract"),
                 "error": result.get("error"),
