@@ -350,9 +350,12 @@ def test_case4_material_rumor_cannot_write_current_state() -> None:
 
 def test_case5_earnings_may_enter_full_review() -> None:
     fake = RuntimeFakeCompleter()
+    store = BrainStore()
+    _seed_brain(store)
     result = run_brain_update(
         ticker="AVGO",
         item={"title": "Broadcom reports fiscal Q3 earnings", "event_type": "earnings", "fact": "Quarterly results released."},
+        store=store,
         completer=fake,
     )
     assert result["path"] == "full_review"

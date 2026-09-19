@@ -1,2 +1,9 @@
 wrote artifacts/brain_lite_cross_ticker/ping.json
 wrote artifacts/brain_lite_cross_ticker/timeline.json
+[bootstrap] starting research-pack init (not the first event)
+wrote artifacts/brain_lite_cross_ticker/bootstrap.json
+[bootstrap] initialized=True inventory={'ticker': 'LITE', 'states': 3, 'drivers': 8, 'core_claims': 3, 'state_ids': ['bst_fde1ffb642924bd0b79fd6474b09bcca', 'bst_0a25758c978d4cbc96fe6c24f95999c5', 'bst_bfbfe04eed5040d696eb4e0fee78028a'], 'driver_ids': ['bdrv_f06c19951c68472192986c64aee99696', 'bdrv_935b99226d8f4ccbbf93f9aa04c80f8f', 'bdrv_2bc98a29307841fc9f074a82a031921e', 'bdrv_a994d4630afb4a53950440ac9d842eae', 'bdrv_ca74a05cc807485b8d56a45b8672a0f3', 'bdrv_b45a3fb198724fa9ae481f7c504472db', 'bdrv_d24ef268087f4103bda3198f59e0f09f', 'bdrv_7009186557a5416a80962ac59a7a7b6b'], 'claim_ids': ['bclm_159183cf7f554312b14d0bef30e874c3', 'bclm_ffa3e1b43bc84d0ca3b7056f5ca75df7', 'bclm_872c3aa87d7441a5b0c31d1343e065e6']} tokens=116333
+[e01_q3_filing] path=full_review material=True glm53=True states=3 drivers=8 claims=3
+[e02_q3_print_vs_expect] path=incremental material=True glm53=True states=3 drivers=8 claims=3
+[e03_q3_tape] path=incremental material=True glm53=True states=3 drivers=8 claims=3
+[e04_q3_call_cloud] path=incremental material=True glm53=True states=3 drivers=8 claims=3

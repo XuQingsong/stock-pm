@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""LITE LITE cross-ticker validation on the frozen Brain v2 runtime.
+"""LITE Cold-Start Bootstrap then the same frozen 18-event tape.
 
-Empty Brain. Real continuous public tape. No LITE-specific rules, no seeded
-drivers/claims/graph, no AVGO copy. Record findings. Do not patch architecture.
+Empty Brain. Bootstrap from research-pack Evidence (not the first event).
+Then incremental replay. No LITE-specific rules, no seeded drivers/claims/graph.
 """
 
 from __future__ import annotations
@@ -20,11 +20,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from stock_pm.brain.bootstrap import bootstrap_brain, brain_has_baseline
 from stock_pm.brain.context_miss import find_context_misses, score_snapshot_context
 from stock_pm.brain.runtime import run_brain_update
 from stock_pm.brain.store import BrainStore
+from stock_pm.brain.routing import brain_completers
 from stock_pm.config import Settings
 from stock_pm.research.llm_reason import compact_text
+from stock_pm.research.memory import InMemoryResearchStore
+from stock_pm.research.service import ResearchService
+from stock_pm.research.sources import DictPackSource
 
 from validate_brain_phase03_e2e import (
     SLOW_TYPES,
@@ -76,6 +81,133 @@ REVIEW_REFERENCE = (
 
 def _now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _public_history_pack() -> dict[str, Any]:
+    """Historical Evidence for bootstrap. Not a seeded Driver / Claim / Graph."""
+    return {
+        "ticker": TICKER,
+        "template_id": "optical",
+        "is_fixture": False,
+        "source": "public_filings",
+        "company_profile": {
+            "legal_name": "Lumentum Holdings Inc.",
+            "cik": "0001633978",
+            "fiscal_year_end_month": 6,
+            "sector": "光通信",
+            "revenue_ttm": 1_645_000_000,
+            "gross_margin_pct": 35.0,
+            "operating_margin_pct": 10.0,
+        },
+        "earnings_history": [
+            {
+                "report_date": "2025-05-07",
+                "period_end": "2025-03-29",
+                "fiscal_year": 2025,
+                "fiscal_period": "Q3",
+                "revenue": 425_200_000,
+                "source": "derived from Q3 FY2026 Exhibit 99.1 YoY +90.1% on $808.4M",
+            }
+        ],
+        "official_documents": [
+            {
+                "title": "Lumentum Form 10-K business description",
+                "published_at": "2025-08-22",
+                "source": "sec.gov",
+                "form": "10-K",
+                "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001633978",
+                "excerpt": (
+                    "Lumentum Holdings Inc. is a provider of optical and photonic products "
+                    "that enable optical networking and laser applications. The company sells "
+                    "components, modules, and subsystems used in telecommunications and "
+                    "datacom networks, including lasers and transceivers that carry traffic "
+                    "inside and between data centers, as well as commercial lasers for "
+                    "industrial and manufacturing uses."
+                ),
+            }
+        ],
+        "guidance_history": [
+            {
+                "text": "Management has described datacom and cloud optical demand as a growing share of the optical product mix, while manufacturing capacity and component supply remain operating constraints.",
+                "source": "prior transcripts / 10-K",
+                "published_at": "2025-08-22",
+            }
+        ],
+        "missing_fields": ["fcf", "segment_growth"],
+    }
+
+
+def _make_research() -> tuple[Any, BrainStore, dict[str, Any]]:
+    """Fresh in-memory Brain. Research pack is public Evidence, not a seeded Brain."""
+    meta: dict[str, Any] = {"live_db": False, "fetch_live": False, "seeded_brain_objects": False}
+    pack = _public_history_pack()
+    source = DictPackSource.from_mapping(TICKER, pack)
+    research = ResearchService(InMemoryResearchStore(), pack_source=source)
+    research.ensure_issuer(
+        TICKER,
+        legal_name="Lumentum Holdings Inc.",
+        cik="0001633978",
+        sector="光通信",
+        fiscal_year_end_month=6,
+    )
+    research.store.upsert_pack(pack)
+    for doc in pack.get("official_documents") or []:
+        try:
+            research.create_evidence(
+                TICKER,
+                {
+                    "evidence_type": "filing",
+                    "fact": doc.get("excerpt"),
+                    "excerpt": doc.get("excerpt"),
+                    "source": doc.get("source") or "sec.gov",
+                    "source_url": doc.get("url"),
+                    "source_time": doc.get("published_at"),
+                    "retrieved_at": _now(),
+                    "source_type": "sec_filing",
+                    "importance": "high",
+                },
+                actor="bootstrap",
+            )
+        except Exception:
+            continue
+    return research, BrainStore(), meta
+
+
+def _object_signature(row: dict[str, Any]) -> tuple[str, str, str]:
+    return (
+        str(row.get("status") or ""),
+        compact_text(row.get("statement") or row.get("current_state") or row.get("mechanism") or "", 80),
+        str(row.get("confidence") or row.get("support_strength") or ""),
+    )
+
+
+def continuity_delta(prior: dict[str, Any], after: dict[str, Any], bootstrap: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for kind, key in (
+        ("states", "states"),
+        ("drivers", "drivers"),
+        ("claims", "claims"),
+        ("edges", "edges"),
+    ):
+        before = prior.get(kind) or {}
+        now = after.get(kind) or {}
+        boot = bootstrap.get(kind) or {}
+        created = [token for token in now if token not in before]
+        reused = [token for token in now if token in boot]
+        updated = [
+            token
+            for token in now
+            if token in before and _object_signature(now[token]) != _object_signature(before[token])
+        ]
+        out[kind] = {
+            "created": len(created),
+            "updated": len(updated),
+            "reused_bootstrap": len(reused),
+            "bootstrap_pool": len(boot),
+            "created_ids": created[:6],
+            "updated_ids": updated[:6],
+        }
+    return out
 
 
 def _write(name: str, payload: object) -> Path:
@@ -720,17 +852,21 @@ def write_report(payload: dict[str, Any]) -> str:
     cmp = payload["comparison"]
     q = payload["review_answers"]
     lines = [
-        "# Stock-PM Brain v2 — LITE Cross-Ticker Validation",
+        "# Stock-PM Brain v2 — LITE Cold-Start Bootstrap",
         "",
         f"Generated: {payload['generated_at']}",
         f"Ticker: `{payload['ticker']}`",
         f"Window: {payload['window']['start']} → {payload['window']['end']}",
-        "Seed: empty BrainStore. No pre-written LITE drivers / claims / graph. No AVGO copy.",
-        "Architecture: frozen Phase 0–4 runtime. No special LITE path.",
+        "Seed: empty BrainStore. Cold-Start Bootstrap from research-pack Evidence. No pre-written LITE drivers / claims / graph. No AVGO copy.",
+        "Architecture: frozen Phase 0–4 runtime + Cold-Start Bootstrap. No special LITE path. Constitution unchanged.",
         "",
         "## LLM ping",
         "",
         json.dumps(payload["llm_ping"], ensure_ascii=False, indent=2),
+        "",
+        "## Cold-Start Bootstrap",
+        "",
+        json.dumps(payload.get("bootstrap") or {}, ensure_ascii=False, indent=2),
         "",
         "## Runtime path mix",
         "",
@@ -742,17 +878,19 @@ def write_report(payload: dict[str, Any]) -> str:
         f"- glm53_called: {m['glm53_called']}",
         f"- Now Chain coverage: {m['now_chain_coverage']}",
         "",
-        "## Token metrics (observe only, no optimization)",
+        "## Token metrics (bootstrap vs incremental)",
         "",
-        f"- Total tokens: {m['total_tokens']}",
-        f"- tokens / event: {m['avg_tokens_per_event']}",
-        f"- tokens / material event: {m['avg_glm53_tokens']}",
-        f"- Incremental tokens (avg): {m['tokens_per_incremental']}",
-        f"- Full Review tokens (avg): {m['tokens_per_full_review']}",
-        f"- GLM-5.3 input / output: {m['token_input']} / {m['token_output']}",
-        f"- Critic input / output: {m['critic_input']} / {m['critic_output']}",
+        f"- Bootstrap tokens (one-time): {m.get('bootstrap_tokens')}",
+        f"- Incremental tokens (18-event tape): {m.get('incremental_tape_tokens')}",
+        f"- Incremental tokens / event: {m.get('tokens_per_incremental')}",
+        f"- Incremental tokens / material event: {m.get('tokens_per_material')}",
+        f"- Full Review tokens (avg, if any): {m.get('tokens_per_full_review')}",
+        f"- Tape total tokens (no bootstrap): {m['total_tokens']}",
+        f"- Combined bootstrap + tape: {m.get('combined_tokens')}",
+        f"- GLM-5.3 input / output (tape): {m['token_input']} / {m['token_output']}",
+        f"- Critic input / output (tape): {m['critic_input']} / {m['critic_output']}",
         f"- AVGO after-stabilization total tokens (reference): {payload.get('avgo_tokens')}",
-        f"- Cold-start vs mature AVGO: {payload.get('cold_start_note')}",
+        f"- Note: {payload.get('cold_start_note')}",
         "",
         "## Context retrieval",
         "",
@@ -772,9 +910,11 @@ def write_report(payload: dict[str, Any]) -> str:
         "",
         "## Brain growth",
         "",
+        f"- Bootstrap inventory: {(payload.get('bootstrap') or {}).get('inventory')}",
         f"- Early (first 4 events) counts: {payload['growth']['early']}",
         f"- Mid counts: {payload['growth']['mid']}",
         f"- Final counts: {payload['growth']['final']}",
+        f"- Continuity: {payload.get('continuity')}",
         f"- High-confidence claims in first 2 material events: {payload['growth']['early_high_conf_claims']}",
         f"- Candidate / shadow / RQ early: {payload['growth']['early_uncertain']}",
         f"- Layer mix (fast / slow / graph writes): {payload['growth']['layer_mix']}",
@@ -826,7 +966,7 @@ def write_report(payload: dict[str, Any]) -> str:
             "",
             cmp.get("distinct_note") or "",
             "",
-            "## Eight review questions",
+            "## Eight bootstrap review questions",
             "",
         ]
     )
@@ -867,56 +1007,56 @@ def write_report(payload: dict[str, Any]) -> str:
 
 def _answer_questions(payload: dict[str, Any]) -> dict[str, str]:
     m = payload["metrics"]
-    ran = m["events_total"] == 18 and m["unexpected_brain_write"] == 0
-    invariants = (
-        m["price_fundamental_violations"] == 0
-        and m["price_claim_violations"] == 0
-        and m["unsupported_event_claim_jump"] == 0
-        and m["price_established_edge_violations"] == 0
-    )
+    boot = payload.get("bootstrap") or {}
+    cont = payload.get("continuity") or {}
+    growth = payload["growth"]
     lite_hits = payload["lite_hits"]["reference_terms_found"]
     overfit_n = payload["overfit"]["count"]
-    arch = payload["arch_overfit"]
-    growth = payload["growth"]
-    early_u = growth["early_uncertain"]
-    grew = (growth["final"].get("drivers") or 0) > (growth["early"].get("drivers") or 0) or (
-        growth["final"].get("states") or 0
-    ) > (growth["early"].get("states") or 0)
-    recall = m.get("context_recall")
-    retrieval_ok = recall is None or recall >= 0.4
-    distinct = arch.get("driver_jaccard", 1) < 0.5 and overfit_n == 0
+    initialized = bool(boot.get("brain_initialized"))
+    slow = (
+        (growth["final"].get("states") or 0) > 0
+        and (growth["final"].get("drivers") or 0) > 0
+        and (growth["final"].get("claims") or 0) > 0
+    )
+    reused = any(int((cont.get(key) or {}).get("reused_bootstrap") or 0) > 0 for key in ("states", "drivers", "claims"))
+    evolved = any(int((cont.get(key) or {}).get("updated") or 0) > 0 for key in ("states", "drivers", "claims"))
+    edges = growth["final"].get("edges") or 0
+    candidate_only = bool((payload.get("final_brain") or {}).get("causal_edges")) and all(
+        str(row.get("status") or "") == "candidate" for row in (payload.get("final_brain") or {}).get("causal_edges") or []
+    )
+    early = bool(slow and lite_hits)
     return {
-        "换成 LITE 后，Brain 是否仍然能够正常运行？": (
-            f"{'是' if ran and not payload['anomalies'] else '部分/否'}。"
-            f" 18 events, crash={m['unexpected_brain_write']}, Now Chain={m['now_chain_coverage']}, "
-            f"anomalies={len(payload['anomalies'])}."
+        "Empty Brain 是否能够完成 bootstrap？": (
+            f"{'是' if initialized and slow else '否'}。"
+            f" brain_initialized={initialized} bootstrap_states={boot.get('inventory', {}).get('states')} "
+            f"drivers={boot.get('inventory', {}).get('drivers')} core_claims={boot.get('inventory', {}).get('core_claims')}."
         ),
-        "Brain 是否自主形成了 LITE 特有的投资逻辑？": (
-            f"{'倾向是' if lite_hits else '不明显'}。"
-            f" Review-reference terms found in formed objects: {lite_hits}. "
-            "These were not hardcoded as drivers."
+        "Bootstrap 是否形成 LITE-specific Slow Brain？": (
+            f"{'倾向是' if lite_hits and slow else '不明显'}。"
+            f" Review-reference terms found: {lite_hits}. Not hardcoded."
         ),
-        "是否出现明显 AVGO overfitting？": (
-            f"{'是' if overfit_n else '未发现明显 AVGO_OVERFIT'}。 count={overfit_n}."
+        "是否没有人工 seed Driver / Claim / Graph？": (
+            f"是。 seed.prewritten_lite_objects={payload.get('seed', {}).get('prewritten_lite_objects')} "
+            f"research_meta={payload.get('research_meta')}."
         ),
-        "Cold-start 阶段是否保持合理不确定性？": (
-            f"Early high-confidence claims={growth['early_high_conf_claims']}; "
-            f"early candidate/shadow/RQ={early_u}."
+        "后续 Incremental 是否真正利用 bootstrap 结果？": (
+            f"{'是' if reused else '弱'}。"
+            f" Continuity reused/updated: { {k: {kk: (cont.get(k) or {}).get(kk) for kk in ('reused_bootstrap', 'updated', 'created')} for k in ('states', 'drivers', 'claims', 'edges')} }."
         ),
-        "随历史累积，Brain 是否逐渐稳定？": (
-            f"{'有累积迹象' if grew else '主要一次生成'}。 early={growth['early']} mid={growth['mid']} final={growth['final']}."
+        "State / Driver / Claim 是否会随 Evidence 演化？": (
+            f"{'有更新' if evolved else '主要停留在 bootstrap 快照'}。 layer_mix={growth.get('layer_mix')}."
         ),
-        "Context Retrieval 是否仍然有效？": (
-            f"{'可用' if retrieval_ok else '偏弱'}。 recall={recall} precision={m.get('context_precision')} "
-            f"miss_events={m.get('context_miss_events')} memory={m.get('memory_continuity')}."
+        "Causal Graph 是否从 candidate 逐步积累？": (
+            f"Final edges={edges}. candidate_only={candidate_only}. "
+            f"edge continuity={cont.get('edges')}."
         ),
-        "Causal Graph 是否真正适应了新的业务结构？": (
-            f"Final edges={growth['final'].get('edges')} exposures={growth['final'].get('exposures')}. "
-            f"Shared driver keys vs AVGO: {arch.get('shared_drivers')}."
+        "是否仍然没有 AVGO overfit？": (
+            f"{'未发现明显 AVGO_OVERFIT' if not overfit_n else '是'}。 count={overfit_n}."
         ),
-        "同一套架构是否已经表现出 ticker-independent 的能力？": (
-            f"{'初步是' if ran and invariants and distinct else '未完全证明'}。"
-            f" Invariants held={invariants}. Distinct from AVGO={distinct}."
+        "Bootstrap 后，LITE 是否可以被称为一个完整的 early Investment Brain？": (
+            f"{'可以作为 early / minimum viable Investment Brain' if early else '仍不完整'}。"
+            f" states={growth['final'].get('states')} drivers={growth['final'].get('drivers')} "
+            f"claims={growth['final'].get('claims')} edges={edges} exposures={growth['final'].get('exposures')}."
         ),
     }
 
@@ -926,9 +1066,57 @@ def main() -> int:
     settings = Settings()
     ping = ping_layers(settings)
     _write("ping.json", ping)
-    store = BrainStore()
+    research, store, research_meta = _make_research()
+    assert brain_has_baseline(store, TICKER) is False
     events = timeline()
     _write("timeline.json", [{"event_id": row["event_id"], "published_at": row["published_at"], "role": row["role"], "title": row["item"].get("title"), "source": row.get("source")} for row in events])
+    mechanical, reasoning = brain_completers(settings)
+
+    # Pack Evidence is the bootstrap corpus. Do not block Cold-Start on live web search.
+    import stock_pm.brain.pipeline as brain_pipeline
+
+    brain_pipeline.search_recent_news = lambda *args, **kwargs: []
+    research_meta["news_search"] = "disabled_ddg_hang_guard"
+
+    print("[bootstrap] starting research-pack init (not the first event)", flush=True)
+    bootstrap_result = bootstrap_brain(
+        research,
+        TICKER,
+        store=store,
+        mechanical_completer=mechanical,
+        reasoning_completer=reasoning,
+        fetch_live=bool(research_meta.get("fetch_live")),
+    )
+    bootstrap_tokens = int((bootstrap_result.get("token_usage") or {}).get("total_tokens") or 0)
+    bootstrap_index = brain_index(store)
+    _write(
+        "bootstrap.json",
+        {
+            "path": bootstrap_result.get("path"),
+            "brain_initialized": bootstrap_result.get("brain_initialized"),
+            "lifecycle": bootstrap_result.get("lifecycle"),
+            "inventory": bootstrap_result.get("inventory"),
+            "recovered_graph": bootstrap_result.get("recovered_graph"),
+            "token_usage": bootstrap_result.get("token_usage"),
+            "phase0": bootstrap_result.get("phase0"),
+            "direct_llm_write": bootstrap_result.get("direct_llm_write"),
+            "research_meta": research_meta,
+            "evidence_set_id": bootstrap_result.get("evidence_set_id"),
+            "seeded_drivers_claims_graph": False,
+            "objects": {
+                "states": final_snapshot(store).get("states"),
+                "drivers": final_snapshot(store).get("drivers"),
+                "claims": final_snapshot(store).get("claims"),
+                "exposures": final_snapshot(store).get("exposures"),
+                "causal_edges": final_snapshot(store).get("causal_edges"),
+            },
+        },
+    )
+    print(
+        f"[bootstrap] initialized={bootstrap_result.get('brain_initialized')} "
+        f"inventory={bootstrap_result.get('inventory')} tokens={bootstrap_tokens}",
+        flush=True,
+    )
 
     timeline_rows: list[dict[str, Any]] = []
     traces: list[dict[str, Any]] = []
@@ -981,20 +1169,29 @@ def main() -> int:
         "memory_continuity": None,
         "hypothesis_continuity": None,
         "now_chain_coverage": "0/18",
+        "bootstrap_tokens": bootstrap_tokens,
+        "incremental_tape_tokens": 0,
+        "combined_tokens": bootstrap_tokens,
+        "tokens_per_material": 0,
     }
 
     prior = brain_index(store)
     prior_hyps = _hyp_by_key(store)
+    continuity_acc = {
+        "states": {"created": 0, "updated": 0, "reused_bootstrap": 0},
+        "drivers": {"created": 0, "updated": 0, "reused_bootstrap": 0},
+        "claims": {"created": 0, "updated": 0, "reused_bootstrap": 0},
+        "edges": {"created": 0, "updated": 0, "reused_bootstrap": 0},
+    }
 
     for idx, spec in enumerate(events):
         metrics["events_total"] += 1
         item = dict(spec["item"])
         item["published_at"] = spec["published_at"]
         item["event_id"] = spec["event_id"]
-        trigger = "first_run" if idx == 0 else None
         result: dict[str, Any] = {}
         try:
-            result = run_brain_update(ticker=TICKER, item=item, store=store, trigger=trigger)
+            result = run_brain_update(ticker=TICKER, item=item, store=store)
         except Exception as exc:  # noqa: BLE001 — record, do not patch
             anomalies.append(f"{spec['event_id']}: exception {exc}")
             result = {"path": "error", "error": str(exc), "stopped": True, "llm_calls": []}
@@ -1003,7 +1200,11 @@ def main() -> int:
         after = brain_index(store)
         after_hyps = _hyp_by_key(store)
         delta = diff_brain(prior, after)
-        diffs.append({"event_id": spec["event_id"], "diff": delta})
+        cont = continuity_delta(prior, after, bootstrap_index)
+        for kind, row in cont.items():
+            for field in ("created", "updated", "reused_bootstrap"):
+                continuity_acc[kind][field] += int(row.get(field) or 0)
+        diffs.append({"event_id": spec["event_id"], "diff": delta, "continuity": cont})
         path = str(result.get("path") or "")
         if path == "l0_stop" or result.get("duplicate"):
             metrics["duplicate_stop"] += 1
@@ -1136,8 +1337,11 @@ def main() -> int:
             "context_score": {k: score.get(k) for k in ("context_recall", "context_precision", "missed_count", "irrelevant_count")} if score else {},
             "context_misses": misses,
             "diff_counts": {k: len(v) for k, v in delta.items()},
+            "continuity": cont,
             "tokens": tokens,
             "brain_counts": snap["counts"],
+            "brain_initialized": result.get("brain_initialized"),
+            "lifecycle": result.get("lifecycle"),
         }
         timeline_rows.append(row_out)
         traces.append(
@@ -1175,6 +1379,11 @@ def main() -> int:
     metrics["hypothesis_continuity"] = round(hyp_update_events / denom, 4) if denom else None
     metrics["research_questions"] = len(store.list_questions(TICKER))
     metrics["now_chain_coverage"] = f"{now_n}/{metrics['events_total']}"
+    metrics["incremental_tape_tokens"] = metrics["total_tokens"]
+    metrics["combined_tokens"] = bootstrap_tokens + metrics["total_tokens"]
+    metrics["tokens_per_material"] = (
+        round(sum(incremental_tokens) / max(len(incremental_tokens), 1), 1) if incremental_tokens else 0
+    )
 
     overfit = scan_overfit(store, timeline_rows)
     arch = architecture_overfit(lite_brain, avgo_brain)
@@ -1187,7 +1396,19 @@ def main() -> int:
         "generated_at": _now(),
         "ticker": TICKER,
         "window": {"start": "2026-05-05", "end": "2026-09-16"},
-        "seed": {"mode": "empty", "prewritten_lite_objects": False, "avgo_copy": False},
+        "seed": {"mode": "empty_then_bootstrap", "prewritten_lite_objects": False, "avgo_copy": False, "manual_driver_claim_graph": False},
+        "research_meta": research_meta,
+        "bootstrap": {
+            "path": bootstrap_result.get("path"),
+            "brain_initialized": bootstrap_result.get("brain_initialized"),
+            "lifecycle": bootstrap_result.get("lifecycle"),
+            "inventory": bootstrap_result.get("inventory"),
+            "recovered_graph": bootstrap_result.get("recovered_graph"),
+            "token_usage": bootstrap_result.get("token_usage"),
+            "phase0": bootstrap_result.get("phase0"),
+            "direct_llm_write": bootstrap_result.get("direct_llm_write"),
+        },
+        "continuity": continuity_acc,
         "llm_ping": ping,
         "metrics": metrics,
         "timeline": timeline_rows,
@@ -1198,9 +1419,10 @@ def main() -> int:
         "avgo_brain": avgo_brain,
         "avgo_tokens": avgo_total,
         "cold_start_note": (
-            f"LITE total {metrics['total_tokens']} vs AVGO {avgo_total} "
-            f"({colder}% {'more' if (colder or 0) > 0 else 'less'}). "
-            "Cold-start Full Review plus empty prior graph is the expected cost driver. Not optimized this round."
+            f"Bootstrap {bootstrap_tokens} tokens once. Incremental tape {metrics['total_tokens']} "
+            f"(avg {metrics['tokens_per_incremental']}/event). Combined {metrics['combined_tokens']} "
+            f"vs AVGO {avgo_total} ({colder}% {'more' if (colder or 0) > 0 else 'less'}). "
+            "Bootstrap is supposed to be more expensive than a daily update."
         ),
         "overfit": overfit,
         "arch_overfit": arch,

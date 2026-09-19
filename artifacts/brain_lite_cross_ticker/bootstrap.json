@@ -1,0 +1,125 @@
+{
+  "path": "cold_start_bootstrap",
+  "brain_initialized": true,
+  "lifecycle": "BASELINE_READY",
+  "inventory": {
+    "ticker": "LITE",
+    "states": 3,
+    "drivers": 8,
+    "core_claims": 3,
+    "state_ids": [
+      "bst_fde1ffb642924bd0b79fd6474b09bcca",
+      "bst_0a25758c978d4cbc96fe6c24f95999c5",
+      "bst_bfbfe04eed5040d696eb4e0fee78028a"
+    ],
+    "driver_ids": [
+      "bdrv_f06c19951c68472192986c64aee99696",
+      "bdrv_935b99226d8f4ccbbf93f9aa04c80f8f",
+      "bdrv_2bc98a29307841fc9f074a82a031921e",
+      "bdrv_a994d4630afb4a53950440ac9d842eae",
+      "bdrv_ca74a05cc807485b8d56a45b8672a0f3",
+      "bdrv_b45a3fb198724fa9ae481f7c504472db",
+      "bdrv_d24ef268087f4103bda3198f59e0f09f",
+      "bdrv_7009186557a5416a80962ac59a7a7b6b"
+    ],
+    "claim_ids": [
+      "bclm_159183cf7f554312b14d0bef30e874c3",
+      "bclm_ffa3e1b43bc84d0ca3b7056f5ca75df7",
+      "bclm_872c3aa87d7441a5b0c31d1343e065e6"
+    ]
+  },
+  "recovered_graph": {
+    "edges": 24,
+    "exposures": 4
+  },
+  "token_usage": {
+    "input_tokens": 29531,
+    "output_tokens": 86802,
+    "total_tokens": 116333,
+    "calls": [
+      {
+        "model": "glm-5.3",
+        "call_type": "company_understanding",
+        "input_tokens": 2142,
+        "output_tokens": 5531,
+        "role": "company_understanding"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "value_drivers",
+        "input_tokens": 4304,
+        "output_tokens": 12268,
+        "role": "value_drivers"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "core_claims",
+        "input_tokens": 6209,
+        "output_tokens": 22236,
+        "role": "core_claims"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "news_interpretation",
+        "input_tokens": 639,
+        "output_tokens": 29,
+        "role": "news_interpretation"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "claim_reasoning",
+        "input_tokens": 1304,
+        "output_tokens": 16222,
+        "role": "claim_reasoning"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "claim_reasoning",
+        "input_tokens": 1259,
+        "output_tokens": 7078,
+        "role": "claim_reasoning"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "claim_reasoning",
+        "input_tokens": 1265,
+        "output_tokens": 8988,
+        "role": "claim_reasoning"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "independent_critic",
+        "input_tokens": 3917,
+        "output_tokens": 2677,
+        "role": "independent_critic"
+      },
+      {
+        "model": "glm-5.3",
+        "call_type": "pm_synthesis",
+        "input_tokens": 8492,
+        "output_tokens": 11773,
+        "role": "pm_synthesis"
+      }
+    ]
+  },
+  "phase0": {
+    "path": "historical_evidence_glm_filters",
+    "filters": [
+      "evidence_set_allowed_ids",
+      "normalize_state",
+      "select_driver_universe",
+      "select_core_max_5",
+      "claims_require_drivers",
+      "strip_unbound_facts"
+    ]
+  },
+  "direct_llm_write": false,
+  "research_meta": {
+    "live_db": false,
+    "fetch_live": false,
+    "seeded_brain_objects": false,
+    "news_search": "disabled_ddg_hang_guard"
+  },
+  "evidence_set_id": "bes_af38b824bde2413e89d28464fdb26444",
+  "seeded_drivers_claims_graph": false
+}

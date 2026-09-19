@@ -44,6 +44,9 @@ def full_review_reason(
     if str(mode or "").lower() == "full":
         return "manual"
     token = str(trigger or "").lower()
+    if token == "first_run":
+        # first_run is Cold-Start Bootstrap, not a recurring Full Review.
+        return None
     if token in FULL_TRIGGERS:
         return token
     item = event or {}

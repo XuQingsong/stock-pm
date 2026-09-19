@@ -6,6 +6,13 @@ import json
 import time
 from typing import Any
 
+from .bootstrap import (
+    LIFECYCLE_INCREMENTAL,
+    bootstrap_brain,
+    brain_has_baseline,
+    brain_has_slow_layer,
+    brain_lifecycle,
+)
 from .critic import critic_context, incremental_critic_context, proposal_critic_context, reconcile_critic
 from .incremental import critic_is_needed, critic_should_expand, full_review_reason
 from .l0 import process_l0
@@ -313,6 +320,14 @@ def run_brain_update(
     def _finish(payload: dict[str, Any]) -> dict[str, Any]:
         elapsed_ms = int(round((time.perf_counter() - started) * 1000))
         payload["event_id"] = item.get("event_id") or payload.get("event_id")
+        if "brain_initialized" not in payload:
+            payload["brain_initialized"] = brain_has_baseline(brain_store, symbol)
+        if "lifecycle" not in payload:
+            payload["lifecycle"] = (
+                LIFECYCLE_INCREMENTAL
+                if payload.get("brain_initialized") and str(payload.get("path") or "") not in {"cold_start_bootstrap", "needs_bootstrap"}
+                else brain_lifecycle(brain_store, symbol)
+            )
         payload["trace"] = build_runtime_trace(
             result=payload,
             item=item,
@@ -365,8 +380,34 @@ def run_brain_update(
             }
         )
 
+    initialized = brain_has_baseline(brain_store, symbol)
+    has_slow = brain_has_slow_layer(brain_store, symbol)
+    if not has_slow and research is not None:
+        boot = bootstrap_brain(
+            research,
+            symbol,
+            store=brain_store,
+            mechanical_completer=mechanical_completer,
+            reasoning_completer=reasoning_completer,
+            completer=completer,
+            fetch_live=False,
+        )
+        return _finish(
+            {
+                **boot,
+                "event_deferred": True,
+                "l0": l0,
+                "now_chain": build_now_chain(
+                    event=item,
+                    extract=None,
+                    material=False,
+                    stopped="cold_start_bootstrap",
+                ),
+            }
+        )
+
     full_reason = full_review_reason(trigger=trigger, event=item, mode=run_mode)
-    is_full_review = bool(full_reason)
+    is_full_review = bool(full_reason) and initialized
     if is_full_review and research is not None:
         try:
             from .pipeline import run_brain
@@ -500,6 +541,30 @@ def run_brain_update(
     if price_only:
         event["kind"] = "price"
         event["source_kind"] = "price"
+    if not has_slow and not price_only:
+        return _finish(
+            {
+                "ticker": symbol,
+                "path": "needs_bootstrap",
+                "run_mode": run_mode,
+                "bootstrap": False,
+                "brain_initialized": False,
+                "lifecycle": brain_lifecycle(brain_store, symbol),
+                "full_review": False,
+                "stopped": True,
+                "stop_reason": "needs_bootstrap",
+                "material": True,
+                "materiality": gate,
+                "glm52_called": glm52_called,
+                "glm53_called": False,
+                "critic_called": False,
+                "l0": l0,
+                "extract": extract,
+                "llm_calls": llm_calls,
+                "token_usage": _token_usage(llm_calls),
+                "now_chain": build_now_chain(event=event, extract=extract, material=True, stopped="needs_bootstrap"),
+            }
+        )
 
     affected = locate_affected_objects(
         extract=extract,
