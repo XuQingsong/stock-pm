@@ -1,0 +1,5290 @@
+[
+  {
+    "event_id": "e01_q3_filing",
+    "trace": {
+      "event_id": "e01_q3_filing",
+      "ticker": "LITE",
+      "path": "full_review",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_5edc464ec498a93cf2e1",
+        "source_tier": 1,
+        "event_type": "earnings"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 0,
+      "snapshot_reduction": null,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 6,
+      "proposal_decisions": {
+        "approve": 1,
+        "reject": 1,
+        "requires_review": 4,
+        "items": [
+          {
+            "proposal_id": "bcpr_f220b2499f9340f893a7a11e099895c5",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "lite_mdh_ai_datacenter_optical_demand",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Growth magnitude implies strong demand driver; AI/datacenter attribution plausible but not stated in fact; remains unconfirmed hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_927810f508c648498cb60802b374431a",
+            "object_type": "company_state",
+            "object_id": "lite_state_rev_growth_margin",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed filing establishes current growth/margin state; direct fact, no inference needed."
+          },
+          {
+            "proposal_id": "bcpr_adb87ac53f2544db8b1c082fd69777db",
+            "object_type": "exposure",
+            "object_id": "lite_exposure_optical_demand_rev",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Links growth state to revenue metric; 90% YoY move shows demand sensitivity, completing Event→State→Exposure chain."
+          },
+          {
+            "proposal_id": "bcpr_a7ba02a0a7c245c598cdddadddef4f27",
+            "object_type": "causal_edge",
+            "object_id": "edge_event_q3fy26_state",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Filing directly reports the state metrics; new edge starts as candidate per rules."
+          },
+          {
+            "proposal_id": "bcpr_c041b44801db44c29cd0552e6b1a1658",
+            "object_type": "causal_edge",
+            "object_id": "edge_state_exposure",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Observed growth magnitude calibrates revenue exposure level; candidate edge."
+          },
+          {
+            "proposal_id": "bcpr_f39e34b2946844c0a5707e1755fa8361",
+            "object_type": "causal_edge",
+            "object_id": "edge_driver_exposure",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Hypothesized driver would act on revenue via this exposure; candidate pending driver verification."
+          }
+        ]
+      },
+      "changed_objects": [],
+      "critic_scope": "expanded",
+      "full_review_triggered": true,
+      "full_review_reason": "first_run",
+      "token_usage": {
+        "input_tokens": 1769,
+        "output_tokens": 11709,
+        "critic_input": 349,
+        "critic_output": 539,
+        "total_tokens": 13478,
+        "latency_ms": 113589,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 597,
+            "output_tokens": 663,
+            "latency_ms": 10355,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 823,
+            "output_tokens": 10507,
+            "latency_ms": 96583,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 349,
+            "output_tokens": 539,
+            "latency_ms": 6651,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 113595,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Q3 FY2026 net revenue was $808.4 million, up 21.5% sequentially and 90.1% year over year. GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%. GAAP operating margin was 21.6% and non-GAAP operating margin was 32.2%. GAAP dilute…",
+      "extract_entities": [
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum reports fiscal Q3 FY2026 results",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…. Price / Peer Alignment: unknown Confidence: medium Price Feedback: current Brain explains the move"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 41,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 3
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "5b70fbdbb48fd6c18b22edebd3e0cd7e5d985d7eacec31f6857fc9eed3566b34",
+        "latency_ms": 10355,
+        "input_tokens": 597,
+        "output_tokens": 663,
+        "total_tokens": 1260,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "0eea66dd41a649ced95431c25f03654a9a911e109bfb1c3a6f19ab35d19ebfc6",
+        "latency_ms": 96583,
+        "input_tokens": 823,
+        "output_tokens": 10507,
+        "total_tokens": 11330,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "383f7e470d4e0a401d4213ad53f89577b2bdbb42d68932d13d93ef67814f1c6e",
+        "latency_ms": 6651,
+        "input_tokens": 349,
+        "output_tokens": 539,
+        "total_tokens": 888,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1769,
+      "output_tokens": 11709,
+      "critic_input": 349,
+      "critic_output": 539,
+      "reasoning_input": 823,
+      "reasoning_output": 10507,
+      "mechanical_input": 597,
+      "mechanical_output": 663,
+      "total_tokens": 13478,
+      "context_parts": {
+        "event": 126,
+        "state": 1,
+        "evidence": 1,
+        "causal": 41,
+        "market": 14,
+        "price": 37,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 597,
+          "output_tokens": 663,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 823,
+          "output_tokens": 10507,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 349,
+          "output_tokens": 539,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum reports fiscal Q3 FY2026 results",
+      "identity": "key:lite_q3_fy2026_release",
+      "fingerprint": "bevfp_5edc464ec498a93cf2e1",
+      "event_hash": "bevfp_5edc464ec498a93cf2e1",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "earnings",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "3",
+          "2026",
+          "3",
+          "2026",
+          "808.4",
+          "21.5%",
+          "90.1%",
+          "44.2%",
+          "47.9%",
+          "21.6%",
+          "32.2%",
+          "1.50",
+          "2.37",
+          "533.3",
+          "275.1",
+          "4",
+          "2026",
+          "960",
+          "1.01"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "filing",
+        "event_key": "lite_q3_fy2026_release",
+        "title": "Lumentum reports fiscal Q3 FY2026 results",
+        "fact": "Q3 FY2026 net revenue was $808.4 million, up 21.5% sequentially and 90.1% year over year. GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%. GAAP operating margin was 21.6% and non-GAAP operating margin was 32.2%. GAAP diluted EPS was $1.50; non-GAAP diluted EPS was $2.37. Components revenue was $533.3 million; systems revenue was $275.1 million. Management guided Q4 FY2026 revenue to $960 million to $1.01 billion.",
+        "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026030530/lite_ex991xq3fy26.htm",
+        "source": "Lumentum IR / SEC Exhibit 99.1",
+        "event_type": "earnings",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-05-05T21:05:00+00:00",
+        "event_id": "e01_q3_filing",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_5edc464ec498a93cf2e1",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Q3 FY2026 net revenue was $808.4 million, up 21.5% sequentially and 90.1% year over year. GAAP gross margin was 44.2% and non-GAAP gross margin was 47.9%. GAAP operating margin was 21.6% and non-GAAP operating margin was 32.2%. GAAP diluted EPS was $1.50; non-GAAP diluted EPS was $2.37. Components revenue was $533.3 million; systems revenue was $275.1 million. Management guided Q4 FY2026 revenue to $960 million to $1.01 billion.",
+      "event": "Lumentum reported fiscal Q3 FY2026 results with net revenue of $808.4M (+90.1% YoY, +21.5% QoQ), non-GAAP gross margin of 47.9%, non-GAAP diluted EPS of $2.37, and guided Q4 FY2026 revenue to $960M–$1.01B.",
+      "entities": [
+        "Lumentum"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE_revenue_base_case",
+        "LITE_margin_profile",
+        "LITE_q4_revenue_guidance",
+        "LITE_components_segment",
+        "LITE_systems_segment"
+      ],
+      "reason": "Primary-source SEC filing reporting actual Q3 FY2026 financial results and forward Q4 guidance. Revenue nearly doubled YoY and sequential growth was 21.5%, with strong margin expansion and guidance implying continued acceleration into Q4. This is a new, material, directly confirmed fact from the issuer."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e02_q3_print_vs_expect",
+    "trace": {
+      "event_id": "e02_q3_print_vs_expect",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_1b42a610fb399217e05a",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 1,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 5,
+      "proposal_decisions": {
+        "approve": 4,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_eeef2438d7184748a9d5fa6b5019b1c8",
+            "object_type": "exposure",
+            "object_id": "lite_exposure_gaap_to_excluded_items",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "GAAP miss alongside $2.37 non-GAAP suggests excluded-charge sensitivity, not confirmed demand weakness."
+          },
+          {
+            "proposal_id": "bcpr_7aa7c1e535cb471199eb3c7a0d9e5e60",
+            "object_type": "causal_edge",
+            "object_id": "lite_edge_q3state_to_gaap_exposure",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Links earnings state to exposure; starts Event→State→Exposure chain, stops before Driver."
+          },
+          {
+            "proposal_id": "bcpr_c7a31d01b568444d837f70be4817996e",
+            "object_type": "expectation",
+            "object_id": "lite_exp_street_q3_gaap_eps",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Records violated street expectation; basis for future divergence tracking."
+          },
+          {
+            "proposal_id": "bcpr_b0841c6777a6448494007927600fdf6e",
+            "object_type": "expectation",
+            "object_id": "bexpc_c6ebed9c200e41638464acbbb56b800e",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Actual 1.5 vs expected 1.81 (in_line)."
+          },
+          {
+            "proposal_id": "bcpr_3b12e5b08aed4dd1973e47a178170ce0",
+            "object_type": "company_state",
+            "object_id": "lite_state_q3_earnings_print",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Direct confirmed earnings fact; establishes State layer for any downstream transmission."
+          }
+        ]
+      },
+      "changed_objects": [
+        "exposure:lite_exposure_gaap_to_excluded_items",
+        "causal_edge:lite_edge_q3state_to_gaap_exposure",
+        "expectation:lite_exp_street_q3_gaap_eps",
+        "expectation:bexpc_c6ebed9c200e41638464acbbb56b800e"
+      ],
+      "critic_scope": "proposal",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 1840,
+        "output_tokens": 10642,
+        "critic_input": 474,
+        "critic_output": 3149,
+        "total_tokens": 12482,
+        "latency_ms": 115353,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 482,
+            "output_tokens": 428,
+            "latency_ms": 8212,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 884,
+            "output_tokens": 7065,
+            "latency_ms": 68403,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 474,
+            "output_tokens": 3149,
+            "latency_ms": 38738,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 115357,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "GAAP diluted EPS printed $1.50 versus street $1.81. Revenue printed $808.4 million. Non-GAAP EPS was $2.37.",
+      "extract_entities": [
+        "Lumentum",
+        "LITE"
+      ],
+      "now_chain": {
+        "what_happened": "LITE GAAP EPS printed 1.50 versus street 1.81",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…. Price / Peer Alignment: unknown Confidence: medium Price Feedback: current Brain explains the move"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 103,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 1
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "3a3e19f60609cb6b60c82f4e1a59d137d6b293a83032d392ff79e1cf006592f2",
+        "latency_ms": 8212,
+        "input_tokens": 482,
+        "output_tokens": 428,
+        "total_tokens": 910,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "aaad16dfc22426e3c19f1377d0f658f45c54072d7378bf8906bd8af17907aabb",
+        "latency_ms": 68403,
+        "input_tokens": 884,
+        "output_tokens": 7065,
+        "total_tokens": 7949,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "888fe5b6e7c9ae1c34a2c9f7b12f8853f791aa0eb4a183b056b580863884402c",
+        "latency_ms": 38738,
+        "input_tokens": 474,
+        "output_tokens": 3149,
+        "total_tokens": 3623,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1840,
+      "output_tokens": 10642,
+      "critic_input": 474,
+      "critic_output": 3149,
+      "reasoning_input": 884,
+      "reasoning_output": 7065,
+      "mechanical_input": 482,
+      "mechanical_output": 428,
+      "total_tokens": 12482,
+      "context_parts": {
+        "event": 106,
+        "state": 1,
+        "evidence": 1,
+        "causal": 103,
+        "market": 76,
+        "price": 37,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 482,
+          "output_tokens": 428,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 884,
+          "output_tokens": 7065,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 474,
+          "output_tokens": 3149,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "LITE GAAP EPS printed 1.50 versus street 1.81",
+      "identity": "key:lite_q3_gaap_eps_vs_street",
+      "fingerprint": "bevfp_1b42a610fb399217e05a",
+      "event_hash": "bevfp_1b42a610fb399217e05a",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "1.50",
+          "1.81",
+          "1.50",
+          "1.81",
+          "808.4",
+          "2.37"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q3_gaap_eps_vs_street",
+        "title": "LITE GAAP EPS printed 1.50 versus street 1.81",
+        "fact": "GAAP diluted EPS printed $1.50 versus street $1.81. Revenue printed $808.4 million. Non-GAAP EPS was $2.37.",
+        "source": "Company print / consensus comparison already in the public pack",
+        "event_type": "other",
+        "actual": 1.5,
+        "expected": 1.81,
+        "expectation_name": "Q3 GAAP EPS",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-05-05T22:10:00+00:00",
+        "event_id": "e02_q3_print_vs_expect",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_1b42a610fb399217e05a",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "GAAP diluted EPS printed $1.50 versus street $1.81. Revenue printed $808.4 million. Non-GAAP EPS was $2.37.",
+      "event": "Lumentum reported Q3 GAAP EPS of $1.50, missing street estimate of $1.81, on revenue of $808.4 million; non-GAAP EPS was $2.37.",
+      "entities": [
+        "Lumentum",
+        "LITE"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "lite_q3_gaap_eps_vs_street",
+        "lite_revenue_q3",
+        "lite_non_gaap_eps_q3"
+      ],
+      "reason": "Direct earnings print showing GAAP EPS miss vs. street ($1.50 vs $1.81) with confirmed revenue and non-GAAP EPS figures; materially relevant to forward estimates and thesis validation."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e03_q3_tape",
+    "trace": {
+      "event_id": "e03_q3_tape",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_93dcbd3bf8cc57107f06",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Abnormal Price Observation requires market-layer interpretation.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_99e7bd03a9184383820fb91147ec1c24"
+        ]
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_99e7bd03a9184383820fb91147ec1c24"
+        ],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 6,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 9,
+      "proposal_decisions": {
+        "approve": 9,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_3a199e47da76461ba12be3f1ef7dff05",
+            "object_type": "price_fundamental_divergence",
+            "object_id": "pfd_lite_q3_post_print",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Price fell 5.06% post-print while Q3 GAAP EPS printed in-line and no fundamental change is confirmed; move unexplained, so divergence stays unresolved."
+          },
+          {
+            "proposal_id": "bcpr_2255bade103c4db49d408d881d7b46a2",
+            "object_type": "shadow_state",
+            "object_id": "ss_lite_q3_post_print_positioning",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Low-confidence price signal only; capture possible positioning unwind after the +25.68% run as a shadow, not as state."
+          },
+          {
+            "proposal_id": "bcpr_d8b1cbf03ca549698c77ede19dcbe186",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Sector-wide pullback with LITE underperformance; price action neither confirms nor refutes the AI demand hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_b9af1e02b16d4cbf93ec617d027813b3",
+            "object_type": "causal_gap",
+            "object_id": "cgap_lite_q3_print_to_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Brain lacks states and drivers to connect print fundamentals to the hypothesis; no transmittable path can be invented."
+          },
+          {
+            "proposal_id": "bcpr_693fcc0b0516419d930530a80b85464f",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Price move is large, expectation did not clearly change, and peers do not support a driver."
+          },
+          {
+            "proposal_id": "bcpr_f9eeb35b57874f25966db8e513a4bf03",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Do not force a winner."
+          },
+          {
+            "proposal_id": "bcpr_3c7e996bc2f14cc185e2c2353756d9cc",
+            "object_type": "price_fundamental_divergence",
+            "object_id": "bpfd_089176228d584f728c6d7332b1e34ed9",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Current Brain cannot fully explain current price behavior."
+          },
+          {
+            "proposal_id": "bcpr_7210f6d708914c4fb46304426147980e",
+            "object_type": "market_attention",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Unexplained tape is a market attention signal, not a fundamental rewrite."
+          },
+          {
+            "proposal_id": "bcpr_7e4e34c414754e1b989bf2576bb27651",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Price move is unresolved. Research first; do not rewrite Claim."
+          }
+        ]
+      },
+      "changed_objects": [
+        "price_fundamental_divergence:pfd_lite_q3_post_print",
+        "shadow_state:ss_lite_q3_post_print_positioning",
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "causal_gap:cgap_lite_q3_print_to_driver",
+        "research_question:research_question",
+        "market_driver_hypothesis:market_driver_hypothesis",
+        "price_fundamental_divergence:bpfd_089176228d584f728c6d7332b1e34ed9",
+        "market_attention:market_attention",
+        "research_question:research_question",
+        "question:brq_7672f9034ba0482a931f624550554230"
+      ],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 1562,
+        "output_tokens": 6872,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 8434,
+        "latency_ms": 70947,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 454,
+            "output_tokens": 656,
+            "latency_ms": 11506,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1108,
+            "output_tokens": 6216,
+            "latency_ms": 59441,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 70949,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "LITE -5.06% the next session after the Q3 print, following a +25.68% five-day run into the report.",
+      "extract_entities": [
+        "LITE",
+        "COHR",
+        "FN",
+        "SOXX"
+      ],
+      "now_chain": {
+        "what_happened": "LITE shares move -5.06% after the Q3 print",
+        "why_it_affects_company": "LITE is exposed to",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: low Price Feedback: current Brain cannot explain the move Divergence: open Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 230,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 2
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "aebcda5b908ee382c2c189302c8b6a1eb392560d52e9bcb1601c4e4622d0ba58",
+        "latency_ms": 11506,
+        "input_tokens": 454,
+        "output_tokens": 656,
+        "total_tokens": 1110,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "bf2997fe0819629458b4a8ad1c88ce60855ae1aba28d99dae9a65fff42d07760",
+        "latency_ms": 59441,
+        "input_tokens": 1108,
+        "output_tokens": 6216,
+        "total_tokens": 7324,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1562,
+      "output_tokens": 6872,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 1108,
+      "reasoning_output": 6216,
+      "mechanical_input": 454,
+      "mechanical_output": 656,
+      "total_tokens": 8434,
+      "context_parts": {
+        "event": 114,
+        "state": 1,
+        "evidence": 1,
+        "causal": 230,
+        "market": 158,
+        "price": 76,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 454,
+          "output_tokens": 656,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1108,
+          "output_tokens": 6216,
+          "role": "reasoning"
+        }
+      ],
+      "critic_skipped": true
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "LITE shares move -5.06% after the Q3 print",
+      "identity": "key:lite_q3_post_print_tape",
+      "fingerprint": "bevfp_93dcbd3bf8cc57107f06",
+      "event_hash": "bevfp_93dcbd3bf8cc57107f06",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "-5.06%",
+          "3",
+          "-5.06%",
+          "3",
+          "+25.68%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "lite_q3_post_print_tape",
+        "title": "LITE shares move -5.06% after the Q3 print",
+        "fact": "LITE -5.06% the next session after the Q3 print, following a +25.68% five-day run into the report.",
+        "event_type": "other",
+        "price_change_pct": -5.06,
+        "peers": {
+          "COHR": -2.1,
+          "FN": -1.4,
+          "SOXX": -1.8
+        },
+        "fact_reliability": "signal",
+        "published_at": "2026-05-06T20:00:00+00:00",
+        "event_id": "e03_q3_tape",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_93dcbd3bf8cc57107f06",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "LITE -5.06% the next session after the Q3 print, following a +25.68% five-day run into the report.",
+      "event": "LITE shares fell 5.06% in the session following the Q3 earnings print, after rallying 25.68% in the five days leading into the report. Peers COHR (-2.1%), FN (-1.4%), and SOXX (-1.8%) also declined modestly.",
+      "entities": [
+        "LITE",
+        "COHR",
+        "FN",
+        "SOXX"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": true,
+      "possible_affected": [
+        "LITE_post_print_tape",
+        "LITE_earnings_reaction",
+        "LITE_relative_strength_vs_peers"
+      ],
+      "reason": "A -5.06% post-print move after a +25.68% pre-run is a material price signal suggesting profit-taking or a mixed reaction to the Q3 results. The modest peer weakness (-1.4% to -2.1%) indicates LITE's decline is partly sector-driven but the magnitude is notably larger, making it a meaningful signal for post-earnings sentiment. This is a new price-action event tied to the Q3 print."
+    },
+    "error": null,
+    "critic_skipped": true
+  },
+  {
+    "event_id": "e04_q3_call_cloud",
+    "trace": {
+      "event_id": "e04_q3_call_cloud",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_6083bfd0a58e9186e798",
+        "source_tier": 4,
+        "event_type": "customer"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 15,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 12,
+      "proposal_decisions": {
+        "approve": 7,
+        "reject": 1,
+        "requires_review": 4,
+        "items": [
+          {
+            "proposal_id": "bcpr_f1fba3cf61e943788da1a9ca36ffcae3",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Direct confirmed fact of demand exceeding supply strengthens AI-demand hypothesis; still a hypothesis, no winner picked."
+          },
+          {
+            "proposal_id": "bcpr_599b8e3df9204e539211d727cf917831",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_43b7825547ef40f6b0cb781b21fb31ad",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Candidate market driver hypothesis; not a fact."
+          },
+          {
+            "proposal_id": "bcpr_07337bbcf3e5451cb2d1239f8cfdfccb",
+            "object_type": "price_fundamental_divergence",
+            "object_id": "bpfd_e8386015023a42cba0c6af9a241262ee",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Later evidence can explain an earlier unexplained tape without rewriting what was known then."
+          },
+          {
+            "proposal_id": "bcpr_dd451e18633740b3b25a8d9f3947f053",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_e5ee9df314cd479c92f4a325f8eef371",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_3ea038f55cd4423383cf251fae2fdc18",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_ccb0a56cbb5f448aa5316382786cc2fd",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_e833ea7e8f0340df92528fbf1b25102e",
+            "object_type": "company_state",
+            "object_id": "cs_lite_cloud_transceiver_ramp",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed direct earnings fact: transceiver shipments up 40% sequentially yet below demand; Thailand expansion enabling ramp."
+          },
+          {
+            "proposal_id": "bcpr_f9863bccd6a3408b85f04bdcbbe1609a",
+            "object_type": "exposure",
+            "object_id": "exp_lite_systems_cloud_transceivers",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Systems revenue +121% YoY with transceivers as primary growth source; establishes exposure channel from datacenter demand to LITE revenue."
+          },
+          {
+            "proposal_id": "bcpr_9bd608a5c9154a9499f3582519a073dd",
+            "object_type": "financial_impact",
+            "object_id": "fi_lite_ai_demand_systems_revenue",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Links ai_demand driver to Systems revenue growth; candidate link only, Base Case not modified."
+          },
+          {
+            "proposal_id": "bcpr_bb382e00d3a54dda8bb24cb56268c24b",
+            "object_type": "causal_edge",
+            "object_id": "ce_lite_ramp_to_exposure",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Transmits event impact State→Exposure per required chain; new edge starts as candidate."
+          },
+          {
+            "proposal_id": "bcpr_65f1fafdd3dd45f5af52b74d06131b99",
+            "object_type": "causal_edge",
+            "object_id": "ce_lite_ai_demand_to_systems_revenue",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Driver→financial_metric edge, candidate only; does not modify Base Case."
+          }
+        ]
+      },
+      "changed_objects": [],
+      "critic_scope": "expanded",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 2064,
+        "output_tokens": 10153,
+        "critic_input": 358,
+        "critic_output": 645,
+        "total_tokens": 12217,
+        "latency_ms": 102073,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 548,
+            "output_tokens": 935,
+            "latency_ms": 16384,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1158,
+            "output_tokens": 8573,
+            "latency_ms": 77337,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 358,
+            "output_tokens": 645,
+            "latency_ms": 8352,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 102091,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Systems revenue reached $275 million, up 24% sequentially and 121% year over year. Cloud transceivers accounted for most of that growth, increasing over 40% sequentially as the company used expanded manufacturing in Thailand. Management sa…",
+      "extract_entities": [
+        "Lumentum",
+        "Thailand"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum said cloud transceiver shipments rose more than 40% sequentially and remain below customer demand",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 275,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 5
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "07bf8da34d09edb30ac892087f12c6e9eb0479a5d32b2c054234317d9f23301a",
+        "latency_ms": 16384,
+        "input_tokens": 548,
+        "output_tokens": 935,
+        "total_tokens": 1483,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "0e3ab27399e42bc42740fc5c9e4fdcb20a4c385350f6d53352a1b8f6a804aa5b",
+        "latency_ms": 77337,
+        "input_tokens": 1158,
+        "output_tokens": 8573,
+        "total_tokens": 9731,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "63a7015c567fc4ec4b52399366cab59f3ed48a4d6bab373e408a17a8150ed23d",
+        "latency_ms": 8352,
+        "input_tokens": 358,
+        "output_tokens": 645,
+        "total_tokens": 1003,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 2064,
+      "output_tokens": 10153,
+      "critic_input": 358,
+      "critic_output": 645,
+      "reasoning_input": 1158,
+      "reasoning_output": 8573,
+      "mechanical_input": 548,
+      "mechanical_output": 935,
+      "total_tokens": 12217,
+      "context_parts": {
+        "event": 146,
+        "state": 1,
+        "evidence": 1,
+        "causal": 275,
+        "market": 249,
+        "price": 93,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 548,
+          "output_tokens": 935,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1158,
+          "output_tokens": 8573,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 358,
+          "output_tokens": 645,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum said cloud transceiver shipments rose more than 40% sequentially and remain below customer demand",
+      "identity": "key:lite_q3_cloud_transceivers",
+      "fingerprint": "bevfp_6083bfd0a58e9186e798",
+      "event_hash": "bevfp_6083bfd0a58e9186e798",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "unknown",
+      "source_tier": 4,
+      "event_type": "customer",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "40%",
+          "275",
+          "24%",
+          "121%",
+          "40%",
+          "1.6",
+          "4"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q3_cloud_transceivers",
+        "title": "Lumentum said cloud transceiver shipments rose more than 40% sequentially and remain below customer demand",
+        "fact": "Systems revenue reached $275 million, up 24% sequentially and 121% year over year. Cloud transceivers accounted for most of that growth, increasing over 40% sequentially as the company used expanded manufacturing in Thailand. Management said it is poised to ramp 1.6T-speed transceiver shipments in fiscal Q4. Supply constraints on critical components keep shipments well below customer demand.",
+        "url": "https://www.theglobeandmail.com/investing/markets/stocks/LITE-Q/pressreleases/1746649/lumentum-lite-q3-2026-earnings-transcript/",
+        "source": "Q3 FY2026 call transcript",
+        "event_type": "customer",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum",
+          "Thailand"
+        ],
+        "published_at": "2026-05-06T22:00:00+00:00",
+        "event_id": "e04_q3_call_cloud",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_6083bfd0a58e9186e798",
+        "source_relationship": "unknown",
+        "source_tier": 4,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Systems revenue reached $275 million, up 24% sequentially and 121% year over year. Cloud transceivers accounted for most of that growth, increasing over 40% sequentially as the company used expanded manufacturing in Thailand. Management said it is poised to ramp 1.6T-speed transceiver shipments in fiscal Q4. Supply constraints on critical components keep shipments well below customer demand.",
+      "event": "Lumentum Q3 FY2026: cloud transceiver shipments rose >40% sequentially, supply constrained below demand, 1.6T ramp planned for Q4",
+      "entities": [
+        "Lumentum",
+        "Thailand"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE_cloud_transceivers_demand",
+        "LITE_1.6T_ramp",
+        "LITE_supply_constraints"
+      ],
+      "reason": "Direct transcript facts: Q3 systems revenue $275M (+24% QoQ, +121% YoY), cloud transceivers +40% QoQ, 1.6T ramp in Q4, supply constraints below demand. New quarterly disclosure with specific growth metrics and forward ramp signal."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e05_q3_call_capacity",
+    "trace": {
+      "event_id": "e05_q3_call_capacity",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_075e780f2abb81fbd8ff",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "supply",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 22,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 5,
+      "proposal_decisions": {
+        "approve": 4,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_269287c1d11e469b8ebeb5a368694c2f",
+            "object_type": "exposure",
+            "object_id": "exp_lite_eml_capacity_bound",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Fully allocated fab means revenue upside is supply-capped, not demand-capped; margin mix already benefiting."
+          },
+          {
+            "proposal_id": "bcpr_fa51b5f3464342d88ae2add13384973b",
+            "object_type": "causal_edge",
+            "object_id": "ce_lite_inp_state_to_exposure",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Supply tightness transmits to LITE via capacity-bound revenue and mix-driven margins."
+          },
+          {
+            "proposal_id": "bcpr_99bc04d2a8df47939d2c2dc183cb39cb",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Supply tightness corroborates AI demand thesis; remains a hypothesis, not a confirmed winner."
+          },
+          {
+            "proposal_id": "bcpr_70ffe13979034f838acd3ab166d76bfb",
+            "object_type": "causal_gap",
+            "object_id": "gap_lite_eml_capacity_to_financials",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Cannot transmit impact to financials without capacity expansion timeline and pricing assumptions."
+          },
+          {
+            "proposal_id": "bcpr_a7b4c98e4f094439aa74213e65f70da5",
+            "object_type": "company_state",
+            "object_id": "cs_lite_inp_eml_supply_tight",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Management directly confirmed >30% demand-supply gap and fully allocated Japan fab; direct, confirmed fact."
+          }
+        ]
+      },
+      "changed_objects": [
+        "exposure:exp_lite_eml_capacity_bound",
+        "causal_edge:ce_lite_inp_state_to_exposure",
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "causal_gap:gap_lite_eml_capacity_to_financials"
+      ],
+      "critic_scope": "proposal",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 2255,
+        "output_tokens": 9670,
+        "critic_input": 461,
+        "critic_output": 2956,
+        "total_tokens": 11925,
+        "latency_ms": 93866,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 473,
+            "output_tokens": 549,
+            "latency_ms": 11428,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1321,
+            "output_tokens": 6165,
+            "latency_ms": 52818,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 461,
+            "output_tokens": 2956,
+            "latency_ms": 29620,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 93870,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Management said EML and indium phosphide demand exceeds supply by more than 30%, and Japan wafer fabrication capacity is fully allocated. Margin mix was aided by laser chips, pump lasers, and narrow linewidth laser assemblies. Co-packaged…",
+      "extract_entities": [
+        "Lumentum",
+        "EML",
+        "indium phosphide",
+        "Japan wafer fabrication",
+        "co-packaged optics",
+        "optical circuit switches"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum said indium phosphide and EML demand exceeds supply by more than 30%",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 393,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "f13345c497bbd64dd55733034ed6247a7a99eb2fe67e81c87991a068d2c4e3d4",
+        "latency_ms": 11428,
+        "input_tokens": 473,
+        "output_tokens": 549,
+        "total_tokens": 1022,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "d45ddf7c008f4fa11db5e6a7cfac8288ff31bfda9d91e877a0090a49913d2aa0",
+        "latency_ms": 52818,
+        "input_tokens": 1321,
+        "output_tokens": 6165,
+        "total_tokens": 7486,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "7408503f434c28951456a6b4a6ade24abf42110f35b0915221cf325ab27cfda8",
+        "latency_ms": 29620,
+        "input_tokens": 461,
+        "output_tokens": 2956,
+        "total_tokens": 3417,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 2255,
+      "output_tokens": 9670,
+      "critic_input": 461,
+      "critic_output": 2956,
+      "reasoning_input": 1321,
+      "reasoning_output": 6165,
+      "mechanical_input": 473,
+      "mechanical_output": 549,
+      "total_tokens": 11925,
+      "context_parts": {
+        "event": 160,
+        "state": 1,
+        "evidence": 1,
+        "causal": 393,
+        "market": 366,
+        "price": 65,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 473,
+          "output_tokens": 549,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1321,
+          "output_tokens": 6165,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 461,
+          "output_tokens": 2956,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum said indium phosphide and EML demand exceeds supply by more than 30%",
+      "identity": "key:lite_q3_inp_capacity",
+      "fingerprint": "bevfp_075e780f2abb81fbd8ff",
+      "event_hash": "bevfp_075e780f2abb81fbd8ff",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "30%",
+          "30%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q3_inp_capacity",
+        "title": "Lumentum said indium phosphide and EML demand exceeds supply by more than 30%",
+        "fact": "Management said EML and indium phosphide demand exceeds supply by more than 30%, and Japan wafer fabrication capacity is fully allocated. Margin mix was aided by laser chips, pump lasers, and narrow linewidth laser assemblies. Co-packaged optics and optical circuit switches were described as beginning to contribute.",
+        "source": "Q3 FY2026 call",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-05-06T22:30:00+00:00",
+        "event_id": "e05_q3_call_capacity",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_075e780f2abb81fbd8ff",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Management said EML and indium phosphide demand exceeds supply by more than 30%, and Japan wafer fabrication capacity is fully allocated. Margin mix was aided by laser chips, pump lasers, and narrow linewidth laser assemblies. Co-packaged optics and optical circuit switches were described as beginning to contribute.",
+      "event": "Lumentum reported that EML and indium phosphide demand exceeds supply by over 30%, with Japan wafer fab capacity fully allocated; co-packaged optics and optical circuit switches are beginning to contribute to revenue.",
+      "entities": [
+        "Lumentum",
+        "EML",
+        "indium phosphide",
+        "Japan wafer fabrication",
+        "co-packaged optics",
+        "optical circuit switches"
+      ],
+      "event_type": "supply",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE_supply_constraint",
+        "LITE_capacity_allocation",
+        "LITE_product_mix",
+        "LITE_revenue_emerging_products"
+      ],
+      "reason": "Direct management commentary from Q3 FY2026 call disclosing a >30% supply-demand gap for key components (EML, InP) and fully allocated Japan wafer capacity, plus emerging revenue contribution from CPO and OCS. This is a new, material supply/capacity signal with implications for Lumentum's revenue trajectory and product mix."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e06_noise_etf",
+    "trace": {
+      "event_id": "e06_noise_etf",
+      "ticker": "LITE",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_6d3f146542e85b52b2ff",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "none",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 27,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 410,
+        "output_tokens": 440,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 850,
+        "latency_ms": 7836,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 410,
+            "output_tokens": 440,
+            "latency_ms": 7836,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 7837,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "An ETF outflow alert lists LITE among IYZ holdings. No new operating disclosure.",
+      "extract_entities": [
+        "LITE",
+        "IYZ"
+      ],
+      "now_chain": {
+        "what_happened": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "477ec86da22003cdfb0fed12feac7fb207ef470d4a80983a4970b6408e2f990c",
+        "latency_ms": 7836,
+        "input_tokens": 410,
+        "output_tokens": 440,
+        "total_tokens": 850,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 410,
+      "output_tokens": 440,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 410,
+      "mechanical_output": 440,
+      "total_tokens": 850,
+      "context_parts": {},
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 410,
+          "output_tokens": 440,
+          "role": "mechanical"
+        }
+      ]
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+      "identity": "key:lite_iyz_etf_outflow",
+      "fingerprint": "bevfp_6d3f146542e85b52b2ff",
+      "event_hash": "bevfp_6d3f146542e85b52b2ff",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_iyz_etf_outflow",
+        "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+        "fact": "An ETF outflow alert lists LITE among IYZ holdings. No new operating disclosure.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-06-16T14:00:00+00:00",
+        "event_id": "e06_noise_etf",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_6d3f146542e85b52b2ff",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "An ETF outflow alert lists LITE among IYZ holdings. No new operating disclosure.",
+      "event": "ETF outflow alert flags LITE as an IYZ holding with no new operating disclosure",
+      "entities": [
+        "LITE",
+        "IYZ"
+      ],
+      "event_type": "other",
+      "novelty": "none",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": false,
+      "possible_affected": [],
+      "reason": "This is a passive ETF-level flow signal with no new operating disclosure for LITE. It is a recap/noise item with no impact on Core Claims, Base Case, or PM synthesis. Source tier 5 aggregator confirms low materiality."
+    },
+    "error": null,
+    "critic_skipped": null
+  },
+  {
+    "event_id": "e07_cpo_rumor",
+    "trace": {
+      "event_id": "e07_cpo_rumor",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_0eb15737e6ab329e41f3",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "competition",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_396f6bae677f4a7d9b0d8cb866cd1fca"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 27,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 4,
+      "proposal_decisions": {
+        "approve": 4,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_dc0f9188845d40e5983ed57bfaa8c206",
+            "object_type": "shadow_state",
+            "object_id": "bshd_cpo_displacement_rumor",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Rumor only; per rules tracked as Shadow State, cannot modify State or Claim."
+          },
+          {
+            "proposal_id": "bcpr_2c9747f4390e4382b1ae47a06f6491cc",
+            "object_type": "research_question",
+            "object_id": "rq_cpo_vs_pluggable_demand",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Unverified rumor; requires evidence on CPO adoption pace, customer commitments, and volume impact."
+          },
+          {
+            "proposal_id": "bcpr_4e1f697553194a328800b260928fce38",
+            "object_type": "causal_gap",
+            "object_id": "gap_cpo_to_lite_revenue",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Brain lacks exposure/state objects; cannot invent a path from rumor to revenue."
+          },
+          {
+            "proposal_id": "bcpr_be2e78edb13c4ab584fd75e45436ae18",
+            "object_type": "expectation",
+            "object_id": "bexpc_a231747b881e4be18368ca299c9d7603",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Low-confidence expectation shift from an unconfirmed report; not a print."
+          }
+        ]
+      },
+      "changed_objects": [
+        "shadow_state:bshd_cpo_displacement_rumor",
+        "research_question:rq_cpo_vs_pluggable_demand",
+        "causal_gap:gap_cpo_to_lite_revenue",
+        "expectation:bexpc_a231747b881e4be18368ca299c9d7603",
+        "shadow:bshd_956d38aa07ec4f44ab7a4916ae90db7f",
+        "question:brq_3f650684d392470fa57f4294f0311dbe"
+      ],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 1733,
+        "output_tokens": 2905,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 4638,
+        "latency_ms": 33734,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 456,
+            "output_tokens": 481,
+            "latency_ms": 10671,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1277,
+            "output_tokens": 2424,
+            "latency_ms": 23063,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 33737,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "An unconfirmed rumor says co-packaged optics will displace pluggable transceiver demand and reduce Lumentum cloud-module volume.",
+      "extract_entities": [
+        "Lumentum",
+        "co-packaged optics",
+        "pluggable transceivers"
+      ],
+      "now_chain": {
+        "what_happened": "Unconfirmed rumor that co-packaged optics will displace Lumentum pluggable transceiver demand",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: no material price move to explain Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 337,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 1
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "f54f05392166a8507be41206fd62c43068597ccd8c088ba619339135c8ce356b",
+        "latency_ms": 10671,
+        "input_tokens": 456,
+        "output_tokens": 481,
+        "total_tokens": 937,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "9a94eff0484a9e72c3119d959aa0829a2e020c6b7dce2d8731f432f3090ee37c",
+        "latency_ms": 23063,
+        "input_tokens": 1277,
+        "output_tokens": 2424,
+        "total_tokens": 3701,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1733,
+      "output_tokens": 2905,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 1277,
+      "reasoning_output": 2424,
+      "mechanical_input": 456,
+      "mechanical_output": 481,
+      "total_tokens": 4638,
+      "context_parts": {
+        "event": 136,
+        "state": 1,
+        "evidence": 1,
+        "causal": 337,
+        "market": 310,
+        "price": 63,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 456,
+          "output_tokens": 481,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1277,
+          "output_tokens": 2424,
+          "role": "reasoning"
+        }
+      ],
+      "critic_skipped": true
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Unconfirmed rumor that co-packaged optics will displace Lumentum pluggable transceiver demand",
+      "identity": "key:lite_cpo_displaces_transceivers_rumor",
+      "fingerprint": "bevfp_0eb15737e6ab329e41f3",
+      "event_hash": "bevfp_0eb15737e6ab329e41f3",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "rumor",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "rumor",
+        "event_key": "lite_cpo_displaces_transceivers_rumor",
+        "subject": "CPO versus pluggable transceivers",
+        "title": "Unconfirmed rumor that co-packaged optics will displace Lumentum pluggable transceiver demand",
+        "fact": "An unconfirmed rumor says co-packaged optics will displace pluggable transceiver demand and reduce Lumentum cloud-module volume.",
+        "event_type": "other",
+        "entities": [
+          "Lumentum"
+        ],
+        "confirmed": false,
+        "confidence": "low",
+        "fact_reliability": "rumor",
+        "published_at": "2026-07-14T16:00:00+00:00",
+        "event_id": "e07_cpo_rumor",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_0eb15737e6ab329e41f3",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "An unconfirmed rumor says co-packaged optics will displace pluggable transceiver demand and reduce Lumentum cloud-module volume.",
+      "event": "Rumor that co-packaged optics (CPO) will displace pluggable transceiver demand, potentially reducing Lumentum cloud-module volume.",
+      "entities": [
+        "Lumentum",
+        "co-packaged optics",
+        "pluggable transceivers"
+      ],
+      "event_type": "competition",
+      "novelty": "new",
+      "confidence": "low",
+      "fact_reliability": "rumor",
+      "material": true,
+      "possible_affected": [
+        "LITE_cloud_module_volume",
+        "LITE_transceiver_demand",
+        "CPO_adoption_timeline"
+      ],
+      "reason": "Unconfirmed rumor of a potential technology displacement threat to Lumentum's pluggable transceiver / cloud-module business. Low confidence and rumor reliability, but if true it could materially affect Lumentum demand, so material=true. Classified as competition because it describes an alternative technology (CPO) potentially displacing Lumentum's current product segment."
+    },
+    "error": null,
+    "critic_skipped": true
+  },
+  {
+    "event_id": "e08_noise_token",
+    "trace": {
+      "event_id": "e08_noise_token",
+      "ticker": "LITE",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_eb46e4c14fe893744ea6",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 31,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 406,
+        "output_tokens": 590,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 996,
+        "latency_ms": 12037,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 406,
+            "output_tokens": 590,
+            "latency_ms": 12037,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 12038,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "A feature discusses a stock-tied token called LITEON associated with Lumentum Holdings (LITE). No issuer operating disclosure is provided.",
+      "extract_entities": [
+        "Lumentum Holdings",
+        "LITEON token"
+      ],
+      "now_chain": {
+        "what_happened": "What Is Lumentum Holdings (LITE) Stock Tied Token LITEON Really About? (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "c6acda8dac48ed9107682b72629232e389451b1bbd9500053ad4cd9474a41837",
+        "latency_ms": 12037,
+        "input_tokens": 406,
+        "output_tokens": 590,
+        "total_tokens": 996,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 406,
+      "output_tokens": 590,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 406,
+      "mechanical_output": 590,
+      "total_tokens": 996,
+      "context_parts": {},
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 406,
+          "output_tokens": 590,
+          "role": "mechanical"
+        }
+      ]
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "What Is Lumentum Holdings (LITE) Stock Tied Token LITEON Really About?",
+      "identity": "key:lite_liteon_token_feature",
+      "fingerprint": "bevfp_eb46e4c14fe893744ea6",
+      "event_hash": "bevfp_eb46e4c14fe893744ea6",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_liteon_token_feature",
+        "title": "What Is Lumentum Holdings (LITE) Stock Tied Token LITEON Really About?",
+        "fact": "A feature discusses a stock-tied token. No issuer operating disclosure.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-07-22T13:00:00+00:00",
+        "event_id": "e08_noise_token",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_eb46e4c14fe893744ea6",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "A feature discusses a stock-tied token called LITEON associated with Lumentum Holdings (LITE). No issuer operating disclosure is provided.",
+      "event": "Media feature discusses a stock-tied token named LITEON linked to Lumentum Holdings ticker LITE, with no operating business disclosure from the issuer.",
+      "entities": [
+        "Lumentum Holdings",
+        "LITEON token"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": false,
+      "possible_affected": [],
+      "reason": "This is a speculative feature about a stock-tied token with no issuer operating disclosure, no financial metrics, and no actionable business event for Lumentum. It constitutes noise rather than a material disclosure."
+    },
+    "error": null,
+    "critic_skipped": null
+  },
+  {
+    "event_id": "e09_q4_filing",
+    "trace": {
+      "event_id": "e09_q4_filing",
+      "ticker": "LITE",
+      "path": "full_review",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_2da33b045dbb7bcf8eef",
+        "source_tier": 1,
+        "event_type": "earnings"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_956d38aa07ec4f44ab7a4916ae90db7f"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 31,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 6,
+      "proposal_decisions": {
+        "approve": 5,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_8250d9b24411403eaa4e637632617ade",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Revenue doubling with margin expansion corroborates AI-driven optical demand hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_a93a6de12a224fcaa69b389b7e845e14",
+            "object_type": "exposure",
+            "object_id": "lite_exposure_ai_optical_demand",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Links reported revenue state to AI demand driver, completing Event→State→Exposure→Driver chain."
+          },
+          {
+            "proposal_id": "bcpr_fecf2aa2ab6f445297b61f9720f90d50",
+            "object_type": "causal_edge",
+            "object_id": "lite_edge_aidemand_q4revenue",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "AI demand plausibly caused revenue surge; segment and customer data needed before confirming."
+          },
+          {
+            "proposal_id": "bcpr_fa3bfeb1ebaf41f6a4b789cd91003419",
+            "object_type": "research_question",
+            "object_id": "lite_rq_q4_eps_guidance_segments",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Event fact is truncated; EPS, guidance, and segment mix are needed to update expectations and confirm drivers."
+          },
+          {
+            "proposal_id": "bcpr_ba67966eb1214139af4c8a95cfd0dd08",
+            "object_type": "research_question",
+            "object_id": "lite_rq_q4_customer_concentration",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Hyperscale AI customers may dominate growth; release excerpt does not disclose customer mix."
+          },
+          {
+            "proposal_id": "bcpr_661abf1ea85d447589312469835d5362",
+            "object_type": "company_state",
+            "object_id": "lite_state_q4_fy2026_financials",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed filing directly reports Q4 revenue and margins; establishes current fundamental state."
+          }
+        ]
+      },
+      "changed_objects": [
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "exposure:lite_exposure_ai_optical_demand",
+        "causal_edge:lite_edge_aidemand_q4revenue",
+        "research_question:lite_rq_q4_eps_guidance_segments",
+        "research_question:lite_rq_q4_customer_concentration"
+      ],
+      "critic_scope": "proposal",
+      "full_review_triggered": true,
+      "full_review_reason": "earnings",
+      "token_usage": {
+        "input_tokens": 2517,
+        "output_tokens": 14048,
+        "critic_input": 508,
+        "critic_output": 2073,
+        "total_tokens": 16565,
+        "latency_ms": 141697,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 618,
+            "output_tokens": 770,
+            "latency_ms": 16413,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1391,
+            "output_tokens": 11205,
+            "latency_ms": 100115,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 508,
+            "output_tokens": 2073,
+            "latency_ms": 25169,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 141702,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Q4 FY2026 net revenue was $1.0063 billion, up 24.5% sequentially and 109.3% year over year. GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%. GAAP operating margin was 27.8% and non-GAAP operating margin was 36.6%. Non-GAAP…",
+      "extract_entities": [
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum reports fiscal Q4 and full-year FY2026 results",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 383,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "9d42d6cdc35f1b6b831410586abb1e658e1c1adaffe747f300eb4211a2ed220f",
+        "latency_ms": 16413,
+        "input_tokens": 618,
+        "output_tokens": 770,
+        "total_tokens": 1388,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "978c1f1eef0cae18f8f94c4b20feef8c43a54f73a534526c0d45f044ecf1ada8",
+        "latency_ms": 100115,
+        "input_tokens": 1391,
+        "output_tokens": 11205,
+        "total_tokens": 12596,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "e36f2fd585c24e3bbcb58151fe860e61e96af983a138e41cc762ae8e4fb46037",
+        "latency_ms": 25169,
+        "input_tokens": 508,
+        "output_tokens": 2073,
+        "total_tokens": 2581,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 2517,
+      "output_tokens": 14048,
+      "critic_input": 508,
+      "critic_output": 2073,
+      "reasoning_input": 1391,
+      "reasoning_output": 11205,
+      "mechanical_input": 618,
+      "mechanical_output": 770,
+      "total_tokens": 16565,
+      "context_parts": {
+        "event": 130,
+        "state": 1,
+        "evidence": 1,
+        "causal": 383,
+        "market": 357,
+        "price": 65,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 618,
+          "output_tokens": 770,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1391,
+          "output_tokens": 11205,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 508,
+          "output_tokens": 2073,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum reports fiscal Q4 and full-year FY2026 results",
+      "identity": "key:lite_q4_fy2026_release",
+      "fingerprint": "bevfp_2da33b045dbb7bcf8eef",
+      "event_hash": "bevfp_2da33b045dbb7bcf8eef",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "earnings",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "4",
+          "2026",
+          "4",
+          "2026",
+          "1.0063",
+          "24.5%",
+          "109.3%",
+          "47.4%",
+          "50.4%",
+          "27.8%",
+          "36.6%",
+          "3.23",
+          "7.8",
+          "649.4",
+          "356.9",
+          "2026",
+          "3.014",
+          "83.2%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "filing",
+        "event_key": "lite_q4_fy2026_release",
+        "title": "Lumentum reports fiscal Q4 and full-year FY2026 results",
+        "fact": "Q4 FY2026 net revenue was $1.0063 billion, up 24.5% sequentially and 109.3% year over year. GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%. GAAP operating margin was 27.8% and non-GAAP operating margin was 36.6%. Non-GAAP diluted EPS was $3.23. GAAP net loss was driven by a one-time non-cash $7.8 billion loss on convertible-note equitization. Components revenue was $649.4 million; systems revenue was $356.9 million. Full-year FY2026 revenue was $3.014 billion, up 83.2%.",
+        "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source": "Lumentum IR / SEC Exhibit 99.1",
+        "event_type": "earnings",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-08-11T21:05:00+00:00",
+        "event_id": "e09_q4_filing",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_2da33b045dbb7bcf8eef",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Q4 FY2026 net revenue was $1.0063 billion, up 24.5% sequentially and 109.3% year over year. GAAP gross margin was 47.4% and non-GAAP gross margin was 50.4%. GAAP operating margin was 27.8% and non-GAAP operating margin was 36.6%. Non-GAAP diluted EPS was $3.23. GAAP net loss was driven by a one-time non-cash $7.8 billion loss on convertible-note equitization. Components revenue was $649.4 million; systems revenue was $356.9 million. Full-year FY2026 revenue was $3.014 billion, up 83.2%.",
+      "event": "Lumentum reports fiscal Q4 and full-year FY2026 results",
+      "entities": [
+        "Lumentum"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE Revenue",
+        "LITE Gross Margin",
+        "LITE Operating Margin",
+        "LITE EPS",
+        "LITE Components Revenue",
+        "LITE Systems Revenue",
+        "LITE Convertible Note Equitization"
+      ],
+      "reason": "Primary-source issuer filing reporting actual Q4 FY2026 and full-year financial results, including revenue, margins, EPS, segment breakdown, and a one-time non-cash loss on convertible-note equitization. Direct fact from SEC Exhibit 99.1 with high reliability and material to financial performance."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e10_q4_print_vs_guide",
+    "trace": {
+      "event_id": "e10_q4_print_vs_guide",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_03d5fc97d4541a83bca4",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_956d38aa07ec4f44ab7a4916ae90db7f"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 37,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 6,
+      "proposal_decisions": {
+        "approve": 5,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_6f710d7b82484116be9b5821a7de08ac",
+            "object_type": "expectation",
+            "object_id": "bexpc_1617f60e72734a5cad3c715aa6339213",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Q4 non-GAAP EPS printed $3.23, beating the $2.95 guide midpoint by $0.28."
+          },
+          {
+            "proposal_id": "bcpr_30c4bc07c9eb4ce6a366d59f24cebada",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Beat is consistent with demand strength, but segment attribution is unverified; hypothesis remains candidate."
+          },
+          {
+            "proposal_id": "bcpr_ded7fff3a61f4ea78d9d362582c88c6c",
+            "object_type": "causal_gap",
+            "object_id": "cgap_lite_q4beat_to_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "State-to-driver link is missing; cannot invent a transmittable path without segment disclosure."
+          },
+          {
+            "proposal_id": "bcpr_2ee2ea5828c7489dae606025f340ee89",
+            "object_type": "research_question",
+            "object_id": "rq_lite_q4_beat_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Driver attribution is needed before linking the results state to demand hypotheses or claims."
+          },
+          {
+            "proposal_id": "bcpr_e0fddaf6d7794b428f57e183f7af8f09",
+            "object_type": "expectation",
+            "object_id": "bexpc_7058b6ec49ea494783ad3aff47aa14a8",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Actual 3.23 vs expected 2.95 (in_line)."
+          },
+          {
+            "proposal_id": "bcpr_f0f29b1335814655a3eda0d582e594d5",
+            "object_type": "company_state",
+            "object_id": "cs_lite_q4_results_beat",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed direct fact: Q4 revenue and non-GAAP EPS exceeded guidance range."
+          }
+        ]
+      },
+      "changed_objects": [
+        "expectation:bexpc_1617f60e72734a5cad3c715aa6339213",
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "causal_gap:cgap_lite_q4beat_to_driver",
+        "research_question:rq_lite_q4_beat_driver",
+        "expectation:bexpc_7058b6ec49ea494783ad3aff47aa14a8"
+      ],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 1894,
+        "output_tokens": 8441,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 10335,
+        "latency_ms": 82757,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 508,
+            "output_tokens": 497,
+            "latency_ms": 10422,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1386,
+            "output_tokens": 7944,
+            "latency_ms": 72335,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 82759,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Q4 revenue printed $1.0063 billion versus the May guide of $960 million to $1.01 billion. Non-GAAP diluted EPS printed $3.23 versus the prior $2.85 to $3.05 guide.",
+      "extract_entities": [
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "LITE Q4 non-GAAP EPS printed 3.23 versus the prior 2.85 to 3.05 guide",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 383,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 1
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "4ab8e71eb939dbe5f2c6bde0b3ec4553c0496312c30e0893706feb1afe03d55b",
+        "latency_ms": 10422,
+        "input_tokens": 508,
+        "output_tokens": 497,
+        "total_tokens": 1005,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "05349ea0bd0862ab4222ffe7e64f3797a2661d4b47c7996e2eb5e35ae2db4308",
+        "latency_ms": 72335,
+        "input_tokens": 1386,
+        "output_tokens": 7944,
+        "total_tokens": 9330,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1894,
+      "output_tokens": 8441,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 1386,
+      "reasoning_output": 7944,
+      "mechanical_input": 508,
+      "mechanical_output": 497,
+      "total_tokens": 10335,
+      "context_parts": {
+        "event": 123,
+        "state": 1,
+        "evidence": 1,
+        "causal": 383,
+        "market": 356,
+        "price": 65,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 508,
+          "output_tokens": 497,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1386,
+          "output_tokens": 7944,
+          "role": "reasoning"
+        }
+      ],
+      "critic_skipped": true
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "LITE Q4 non-GAAP EPS printed 3.23 versus the prior 2.85 to 3.05 guide",
+      "identity": "key:lite_q4_eps_vs_guide",
+      "fingerprint": "bevfp_03d5fc97d4541a83bca4",
+      "event_hash": "bevfp_03d5fc97d4541a83bca4",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "4",
+          "3.23",
+          "2.85",
+          "3.05",
+          "4",
+          "1.0063",
+          "960",
+          "1.01",
+          "3.23",
+          "2.85",
+          "3.05"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q4_eps_vs_guide",
+        "title": "LITE Q4 non-GAAP EPS printed 3.23 versus the prior 2.85 to 3.05 guide",
+        "fact": "Q4 revenue printed $1.0063 billion versus the May guide of $960 million to $1.01 billion. Non-GAAP diluted EPS printed $3.23 versus the prior $2.85 to $3.05 guide.",
+        "source": "Q4 Exhibit 99.1 vs Q3 outlook",
+        "event_type": "other",
+        "actual": 3.23,
+        "expected": 2.95,
+        "expectation_name": "Q4 non-GAAP EPS",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-08-11T22:10:00+00:00",
+        "event_id": "e10_q4_print_vs_guide",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_03d5fc97d4541a83bca4",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Q4 revenue printed $1.0063 billion versus the May guide of $960 million to $1.01 billion. Non-GAAP diluted EPS printed $3.23 versus the prior $2.85 to $3.05 guide.",
+      "event": "Lumentum reported Q4 non-GAAP diluted EPS of $3.23, beating the prior guidance range of $2.85 to $3.05, on revenue of $1.0063 billion versus the May guide of $960 million to $1.01 billion.",
+      "entities": [
+        "Lumentum"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE Q4 EPS vs Guide",
+        "LITE Revenue vs Guide",
+        "LITE Base Case"
+      ],
+      "reason": "Q4 actual results printed above the prior guidance range for both revenue and non-GAAP EPS, confirming a material beat versus the May outlook. This is a new, directly reported fact from the Q4 exhibit compared against the Q3 outlook."
+    },
+    "error": null,
+    "critic_skipped": true
+  },
+  {
+    "event_id": "e11_q1_guide",
+    "trace": {
+      "event_id": "e11_q1_guide",
+      "ticker": "LITE",
+      "path": "full_review",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_957f5aec18564245f4d8",
+        "source_tier": 1,
+        "event_type": "guidance"
+      },
+      "duplicate": false,
+      "l1_event_type": "guidance",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_956d38aa07ec4f44ab7a4916ae90db7f"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 42,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 5,
+      "proposal_decisions": {
+        "approve": 4,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_9e3d79ca20e143c3bff4dcd3a93908cc",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Guide magnitude is consistent with AI-driven optical ramp, but CEO attribution is truncated; only small confidence increase, status unchanged."
+          },
+          {
+            "proposal_id": "bcpr_d1c2677eda6e4cc9bdc55a437374b999",
+            "object_type": "expectation",
+            "object_id": "bexpc_lite_q1fy27_revenue",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Guidance sets a measurable bar for next quarter's actuals, enabling future beat/miss tracking."
+          },
+          {
+            "proposal_id": "bcpr_3c10043af11d45eb815a9696b0870d0e",
+            "object_type": "research_question",
+            "object_id": "brq_lite_q1fy27_attribution",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "CEO attribution is truncated; needed to link guidance state to the ai_demand driver without inventing a transmittable path."
+          },
+          {
+            "proposal_id": "bcpr_cc2f87b37a804019830c20a3249433ff",
+            "object_type": "causal_gap",
+            "object_id": "bcg_lite_guidance_to_valuation",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Brain lacks exposure and claim objects; guidance impact cannot propagate, so flag the gap rather than invent a path."
+          },
+          {
+            "proposal_id": "bcpr_62d042553042460ab87427fe26b84f49",
+            "object_type": "company_state",
+            "object_id": "bstate_lite_q1fy27_guidance",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed filing guidance establishes forward revenue, margin, and EPS state; direct fact requiring no inference."
+          }
+        ]
+      },
+      "changed_objects": [
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "expectation:bexpc_lite_q1fy27_revenue",
+        "research_question:brq_lite_q1fy27_attribution",
+        "causal_gap:bcg_lite_guidance_to_valuation"
+      ],
+      "critic_scope": "skipped",
+      "full_review_triggered": true,
+      "full_review_reason": "guidance",
+      "token_usage": {
+        "input_tokens": 1942,
+        "output_tokens": 9839,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 11781,
+        "latency_ms": 93911,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 547,
+            "output_tokens": 503,
+            "latency_ms": 8560,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1395,
+            "output_tokens": 9336,
+            "latency_ms": 85351,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 93914,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Management expects Q1 FY2027 net revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35. The CEO said the Q1 midpoint of $1.25 billion reaches the target model m…",
+      "extract_entities": [
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum guided Q1 FY2027 revenue to 1.225 to 1.275 billion",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual 1.5 vs expected 1.81 (unknown, unchanged) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 383,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 1
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "dcce3e29451cfa29233277440cf30ff32d871d74aeac11494a3fc5105b71b868",
+        "latency_ms": 8560,
+        "input_tokens": 547,
+        "output_tokens": 503,
+        "total_tokens": 1050,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "ee379d617664673c0f6b886b3550a387ce79036ca0ca4105884e25d5380b22ac",
+        "latency_ms": 85351,
+        "input_tokens": 1395,
+        "output_tokens": 9336,
+        "total_tokens": 10731,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1942,
+      "output_tokens": 9839,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 1395,
+      "reasoning_output": 9336,
+      "mechanical_input": 547,
+      "mechanical_output": 503,
+      "total_tokens": 11781,
+      "context_parts": {
+        "event": 130,
+        "state": 1,
+        "evidence": 1,
+        "causal": 383,
+        "market": 356,
+        "price": 65,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 547,
+          "output_tokens": 503,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1395,
+          "output_tokens": 9336,
+          "role": "reasoning"
+        }
+      ],
+      "critic_skipped": true
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum guided Q1 FY2027 revenue to 1.225 to 1.275 billion",
+      "identity": "key:lite_q1_fy2027_guide",
+      "fingerprint": "bevfp_957f5aec18564245f4d8",
+      "event_hash": "bevfp_957f5aec18564245f4d8",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "guidance",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "1",
+          "2027",
+          "1.225",
+          "1.275",
+          "1",
+          "2027",
+          "1.225",
+          "1.275",
+          "39.5%",
+          "40.5%",
+          "4.05",
+          "4.35",
+          "1",
+          "1.25"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "filing",
+        "event_key": "lite_q1_fy2027_guide",
+        "title": "Lumentum guided Q1 FY2027 revenue to 1.225 to 1.275 billion",
+        "fact": "Management expects Q1 FY2027 net revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35. The CEO said the Q1 midpoint of $1.25 billion reaches the target model more than a quarter ahead of schedule.",
+        "url": "https://investor.lumentum.com/financial-news-releases/news-details/2026/Lumentum-Announces-Fourth-Quarter-and-Full-Fiscal-Year-2026-Results/default.aspx",
+        "source": "Lumentum IR",
+        "event_type": "guidance",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-08-11T22:25:00+00:00",
+        "event_id": "e11_q1_guide",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_957f5aec18564245f4d8",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Management expects Q1 FY2027 net revenue of $1.225 billion to $1.275 billion, non-GAAP operating margin of 39.5% to 40.5%, and non-GAAP diluted EPS of $4.05 to $4.35. The CEO said the Q1 midpoint of $1.25 billion reaches the target model more than a quarter ahead of schedule.",
+      "event": "Lumentum guided Q1 FY2027 revenue to 1.225 to 1.275 billion",
+      "entities": [
+        "Lumentum"
+      ],
+      "event_type": "guidance",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "Lumentum Q1 FY2027 revenue",
+        "Lumentum non-GAAP operating margin",
+        "Lumentum non-GAAP diluted EPS",
+        "Lumentum target model timeline"
+      ],
+      "reason": "Issuer-primary guidance provides explicit forward revenue, margin, and EPS ranges for Q1 FY2027, with the CEO noting the midpoint reaches the target model ahead of schedule. This is a new, material forward-looking financial metric set."
+    },
+    "error": null,
+    "critic_skipped": true
+  },
+  {
+    "event_id": "e12_q4_tape",
+    "trace": {
+      "event_id": "e12_q4_tape",
+      "ticker": "LITE",
+      "path": "l0_stop",
+      "l0": {
+        "duplicate": true,
+        "stop": true,
+        "stop_reason": "duplicate",
+        "fingerprint": "bevfp_9968677b56cacba82913",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": true,
+      "l1_event_type": "other",
+      "novelty": null,
+      "materiality": false,
+      "materiality_reason": "duplicate",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 46,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": {
+        "what_happened": "LITE shares move +13.63% after the Q4 print (duplicate)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unexplained Confidence: low"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "token_usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 0,
+      "mechanical_output": 0,
+      "total_tokens": 0,
+      "context_parts": {},
+      "calls": []
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "LITE shares move +13.63% after the Q4 print",
+      "identity": "key:lite_q4_post_print_tape",
+      "fingerprint": "bevfp_9968677b56cacba82913",
+      "event_hash": "bevfp_9968677b56cacba82913",
+      "duplicate": true,
+      "stop": true,
+      "stop_reason": "duplicate",
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "+13.63%",
+          "4",
+          "+13.63%",
+          "2.45",
+          "11.31"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "lite_q4_post_print_tape",
+        "title": "LITE shares move +13.63% after the Q4 print",
+        "fact": "LITE +13.63% the next session on about 2.45x average volume, outperforming SOXX by 11.31 points.",
+        "event_type": "other",
+        "price_change_pct": 13.63,
+        "peers": {
+          "COHR": 3.2,
+          "FN": 2.4,
+          "SOXX": 2.32
+        },
+        "fact_reliability": "signal",
+        "published_at": "2026-08-12T20:00:00+00:00",
+        "event_id": "e12_q4_tape",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_9968677b56cacba82913",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null,
+    "critic_skipped": null
+  },
+  {
+    "event_id": "e13_q4_call_confirm",
+    "trace": {
+      "event_id": "e13_q4_call_confirm",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_afe781b1e07b745d4064",
+        "source_tier": 1,
+        "event_type": "customer"
+      },
+      "duplicate": false,
+      "l1_event_type": "customer",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_956d38aa07ec4f44ab7a4916ae90db7f"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 46,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 7,
+      "proposal_decisions": {
+        "approve": 3,
+        "reject": 1,
+        "requires_review": 3,
+        "items": [
+          {
+            "proposal_id": "bcpr_a148330990784d0aa93ca427f3c091d6",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Direct CEO confirmation of cloud demand traction strengthens AI demand hypothesis; remains a hypothesis, not a winner."
+          },
+          {
+            "proposal_id": "bcpr_996f25f14d7f484f94eeb1cf33b0349e",
+            "object_type": "expectation",
+            "object_id": "bexpc_a231747b881e4be18368ca299c9d7603",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "CEO confirmed rising ultra-high-power CPO laser demand and an initial ELS order; CPO adoption trend improving."
+          },
+          {
+            "proposal_id": "bcpr_d97701ddbc1641f8b779a03718b2bf59",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_43b7825547ef40f6b0cb781b21fb31ad",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Update existing market driver hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_6ac2d4b9109d4fed94cca3a672da7d46",
+            "object_type": "company_state",
+            "object_id": "bcs_lite_datacom_traction",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed CEO statement establishes new datacom traction: OCS/1.6T layering in, initial ELS order, rising CPO laser demand."
+          },
+          {
+            "proposal_id": "bcpr_78be92dbb64e405095d238e6be85e908",
+            "object_type": "exposure",
+            "object_id": "bexp_lite_datacom_cloud",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "New product traction layering in raises revenue exposure to cloud/AI datacom optical demand."
+          },
+          {
+            "proposal_id": "bcpr_48967352aed144e182c9697fd2c349a3",
+            "object_type": "causal_edge",
+            "object_id": "bce_aidemand_to_traction",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "AI/datacenter capex demand plausibly drives the observed cloud product traction; edge starts candidate."
+          },
+          {
+            "proposal_id": "bcpr_3f91283518ba42e2b0d8c9a81816638f",
+            "object_type": "causal_edge",
+            "object_id": "bce_traction_to_exposure",
+            "decision": "requires_review",
+            "reason_code": "abnormal_change_scope_requires_review",
+            "reason": "Traction in OCS, 1.6T, ELS, and CPO lasers increases datacom revenue exposure."
+          }
+        ]
+      },
+      "changed_objects": [],
+      "critic_scope": "expanded",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 2319,
+        "output_tokens": 16002,
+        "critic_input": 369,
+        "critic_output": 945,
+        "total_tokens": 18321,
+        "latency_ms": 155039,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 548,
+            "output_tokens": 1260,
+            "latency_ms": 19170,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1402,
+            "output_tokens": 13797,
+            "latency_ms": 125287,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 369,
+            "output_tokens": 945,
+            "latency_ms": 10582,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 155043,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "The CEO said Q4 showed broad-based traction and that OCS solutions and the cloud module business, including 1.6T adoption, are beginning to layer in. He cited increasing demand for ultra-high-power CPO lasers, an initial order for ELS modu…",
+      "extract_entities": [
+        "Lumentum",
+        "OCS",
+        "CPO",
+        "ELS",
+        "NPO",
+        "1.6T"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum said OCS and 1.6T cloud modules are layering in, with an initial ELS order and rising CPO laser demand",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 383,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 2
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "a763de608a69d532094268c8c55eea53cd3b5e681e7d980a8b96572425db18ce",
+        "latency_ms": 19170,
+        "input_tokens": 548,
+        "output_tokens": 1260,
+        "total_tokens": 1808,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "634e152d3c608be2c9ef3597809a0ef6f625e3bbf98451a71729d8afa9ccd6a8",
+        "latency_ms": 125287,
+        "input_tokens": 1402,
+        "output_tokens": 13797,
+        "total_tokens": 15199,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "2915ecce435786f3504a1ba37ade2b54a9120a2bda1566648b721bc146157707",
+        "latency_ms": 10582,
+        "input_tokens": 369,
+        "output_tokens": 945,
+        "total_tokens": 1314,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 2319,
+      "output_tokens": 16002,
+      "critic_input": 369,
+      "critic_output": 945,
+      "reasoning_input": 1402,
+      "reasoning_output": 13797,
+      "mechanical_input": 548,
+      "mechanical_output": 1260,
+      "total_tokens": 18321,
+      "context_parts": {
+        "event": 152,
+        "state": 1,
+        "evidence": 1,
+        "causal": 383,
+        "market": 356,
+        "price": 65,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 548,
+          "output_tokens": 1260,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1402,
+          "output_tokens": 13797,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 369,
+          "output_tokens": 945,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum said OCS and 1.6T cloud modules are layering in, with an initial ELS order and rising CPO laser demand",
+      "identity": "key:lite_q4_ocs_cpo_els",
+      "fingerprint": "bevfp_afe781b1e07b745d4064",
+      "event_hash": "bevfp_afe781b1e07b745d4064",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "customer",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "1.6",
+          "4",
+          "1.6"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q4_ocs_cpo_els",
+        "title": "Lumentum said OCS and 1.6T cloud modules are layering in, with an initial ELS order and rising CPO laser demand",
+        "fact": "The CEO said Q4 showed broad-based traction and that OCS solutions and the cloud module business, including 1.6T adoption, are beginning to layer in. He cited increasing demand for ultra-high-power CPO lasers, an initial order for ELS modules, and NPO engagements as early signs that optics are entering in-rack connectivity.",
+        "url": "https://www.sec.gov/Archives/edgar/data/1633978/000162828026055726/lite_ex991xq4fy26.htm",
+        "source": "Q4 FY2026 Exhibit 99.1",
+        "event_type": "customer",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-08-12T22:00:00+00:00",
+        "event_id": "e13_q4_call_confirm",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_afe781b1e07b745d4064",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "The CEO said Q4 showed broad-based traction and that OCS solutions and the cloud module business, including 1.6T adoption, are beginning to layer in. He cited increasing demand for ultra-high-power CPO lasers, an initial order for ELS modules, and NPO engagements as early signs that optics are entering in-rack connectivity.",
+      "event": "Lumentum CEO confirmed Q4 traction in OCS and 1.6T cloud modules, with an initial ELS order and rising CPO laser demand",
+      "entities": [
+        "Lumentum",
+        "OCS",
+        "CPO",
+        "ELS",
+        "NPO",
+        "1.6T"
+      ],
+      "event_type": "customer",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE_cloud_optics_demand",
+        "LITE_CPO_laser_ramp",
+        "LITE_1.6T_adoption",
+        "LITE_in_rack_connectivity"
+      ],
+      "reason": "Direct CEO statement from Q4 FY2026 earnings exhibit confirming new customer traction signals: initial ELS order, rising CPO laser demand, and 1.6T module adoption — all materially relevant to Lumentum's datacom growth thesis."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e14_duplicate_q4",
+    "trace": {
+      "event_id": "e14_duplicate_q4",
+      "ticker": "LITE",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_b295b80eee0d75a0d236",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "repeat",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 49,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 423,
+        "output_tokens": 646,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 1069,
+        "latency_ms": 10872,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 423,
+            "output_tokens": 646,
+            "latency_ms": 10872,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 10873,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Q4 FY2026 net revenue was $1.01 billion.",
+      "extract_entities": [
+        "Lumentum",
+        "LITE"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum reports fiscal fourth quarter net revenue of 1.01 billion (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "6b46bb399901cb2e66c8259427de0b8be4bb4a2b2a9caff56b37d71590cbf840",
+        "latency_ms": 10872,
+        "input_tokens": 423,
+        "output_tokens": 646,
+        "total_tokens": 1069,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 423,
+      "output_tokens": 646,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 423,
+      "mechanical_output": 646,
+      "total_tokens": 1069,
+      "context_parts": {},
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 423,
+          "output_tokens": 646,
+          "role": "mechanical"
+        }
+      ]
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum reports fiscal fourth quarter net revenue of 1.01 billion",
+      "identity": "key:lite_q4_revenue_1_01b_reprint",
+      "fingerprint": "bevfp_b295b80eee0d75a0d236",
+      "event_hash": "bevfp_b295b80eee0d75a0d236",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "1.01",
+          "4",
+          "2026",
+          "1.01"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_q4_revenue_1_01b_reprint",
+        "title": "Lumentum reports fiscal fourth quarter net revenue of 1.01 billion",
+        "fact": "Q4 FY2026 net revenue was $1.01 billion.",
+        "source": "Reprint of Exhibit 99.1",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-08-13T15:00:00+00:00",
+        "event_id": "e14_duplicate_q4",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_b295b80eee0d75a0d236",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Q4 FY2026 net revenue was $1.01 billion.",
+      "event": "Lumentum reports fiscal fourth quarter net revenue of $1.01 billion",
+      "entities": [
+        "Lumentum",
+        "LITE"
+      ],
+      "event_type": "earnings",
+      "novelty": "repeat",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE Revenue",
+        "LITE Q4 FY2026 Results"
+      ],
+      "reason": "Direct reporting of quarterly revenue figure from Lumentum's Q4 FY2026 results. Marked as repeat because this is a reprint of Exhibit 99.1 (source_relationship=aggregator, source_tier=5), indicating the same fact has already been published via the primary source."
+    },
+    "error": null,
+    "critic_skipped": null
+  },
+  {
+    "event_id": "e15_aug26_tape",
+    "trace": {
+      "event_id": "e15_aug26_tape",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_e90aa5dd23a33d18b258",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Abnormal Price Observation requires market-layer interpretation.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_99e7bd03a9184383820fb91147ec1c24",
+          "bexp_8bbff3c52b5340b5840281f3029e108e",
+          "bexp_81c65bda4737480680d5c54dbe524a1d"
+        ]
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_99e7bd03a9184383820fb91147ec1c24",
+          "bexp_8bbff3c52b5340b5840281f3029e108e",
+          "bexp_81c65bda4737480680d5c54dbe524a1d"
+        ],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 49,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 5,
+      "proposal_decisions": {
+        "approve": 5,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_4a044354f11e4bce97829506cd5ad076",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_417319edb501499ea9bd619fea5024ad",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Large unexplained move with no filing; observation attaches to unresolved driver per rules."
+          },
+          {
+            "proposal_id": "bcpr_b80b9a53f3bd4b148acc41a18266947a",
+            "object_type": "shadow_state",
+            "object_id": "shadow_lite_20260826_price_signal",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Low-reliability price signal; record as shadow only, no state or claim changes."
+          },
+          {
+            "proposal_id": "bcpr_f111440c90a3401f877ee9170221a7c8",
+            "object_type": "price_fundamental_divergence",
+            "object_id": "pfd_lite_20260826",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Material price move without fundamental event; flag for resolution, no driver assumed."
+          },
+          {
+            "proposal_id": "bcpr_fc0e734e0fad4180ac7b7b08e532bc2a",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Price move is large, expectation did not clearly change, and peers do not support a driver."
+          },
+          {
+            "proposal_id": "bcpr_bd42549ca32748b190deac78ebd542ad",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Do not force a winner."
+          }
+        ]
+      },
+      "changed_objects": [
+        "market_driver_hypothesis:bmdh_417319edb501499ea9bd619fea5024ad",
+        "shadow_state:shadow_lite_20260826_price_signal",
+        "price_fundamental_divergence:pfd_lite_20260826",
+        "research_question:research_question",
+        "market_driver_hypothesis:market_driver_hypothesis",
+        "question:brq_7672f9034ba0482a931f624550554230"
+      ],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 1961,
+        "output_tokens": 7468,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 9429,
+        "latency_ms": 72228,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 434,
+            "output_tokens": 743,
+            "latency_ms": 14829,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1527,
+            "output_tokens": 6725,
+            "latency_ms": 57399,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 72232,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Shares moved +6.44% on 2026-08-26 without a new operating filing.",
+      "extract_entities": [
+        "LITE",
+        "COHR",
+        "SOXX"
+      ],
+      "now_chain": {
+        "what_happened": "LITE shares move +6.44% with no new filing",
+        "why_it_affects_company": "LITE is exposed to; LITE is exposed to LITE EML/InP capacity exposure; LITE is exposed to Optical revenue exposure to AI/datacenter demand",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: low Price Feedback: current Brain explains only part of the move Divergence: open Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 558,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 1
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "53abfb35b84c4d6b5adc251705b10eb170cfbf1a51c37f64a24d7c6c98348549",
+        "latency_ms": 14829,
+        "input_tokens": 434,
+        "output_tokens": 743,
+        "total_tokens": 1177,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "fc580c8fb634b52c84b1239ef3b03a89acd8f055a1c9d584b954f4e083f2cb4d",
+        "latency_ms": 57399,
+        "input_tokens": 1527,
+        "output_tokens": 6725,
+        "total_tokens": 8252,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 1961,
+      "output_tokens": 7468,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 1527,
+      "reasoning_output": 6725,
+      "mechanical_input": 434,
+      "mechanical_output": 743,
+      "total_tokens": 9429,
+      "context_parts": {
+        "event": 97,
+        "state": 1,
+        "evidence": 1,
+        "causal": 558,
+        "market": 355,
+        "price": 75,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 434,
+          "output_tokens": 743,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1527,
+          "output_tokens": 6725,
+          "role": "reasoning"
+        }
+      ],
+      "critic_skipped": true
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "LITE shares move +6.44% with no new filing",
+      "identity": "key:lite_aug26_tape",
+      "fingerprint": "bevfp_e90aa5dd23a33d18b258",
+      "event_hash": "bevfp_e90aa5dd23a33d18b258",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "+6.44%",
+          "+6.44%",
+          "2026",
+          "-08",
+          "-26"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "lite_aug26_tape",
+        "title": "LITE shares move +6.44% with no new filing",
+        "fact": "Shares moved +6.44% on 2026-08-26 without a new operating filing.",
+        "event_type": "other",
+        "price_change_pct": 6.44,
+        "peers": {
+          "COHR": 1.8,
+          "SOXX": 0.9
+        },
+        "fact_reliability": "signal",
+        "published_at": "2026-08-26T20:00:00+00:00",
+        "event_id": "e15_aug26_tape",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_e90aa5dd23a33d18b258",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Shares moved +6.44% on 2026-08-26 without a new operating filing.",
+      "event": "LITE shares moved +6.44% on 2026-08-26 with no new operating filing; peers COHR +1.8%, SOXX +0.9%.",
+      "entities": [
+        "LITE",
+        "COHR",
+        "SOXX"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": false,
+      "possible_affected": [
+        "LITE_tape_signal"
+      ],
+      "reason": "Price-only move with no new operating filing; source tier 5 aggregator signal, no fundamental catalyst identified. Not material absent a corroborating event."
+    },
+    "error": null,
+    "critic_skipped": true
+  },
+  {
+    "event_id": "e16_coherent_capacity",
+    "trace": {
+      "event_id": "e16_coherent_capacity",
+      "ticker": "LITE",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_3e5a3b33cd58db5f0ef1",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "competition",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [
+          "bshd_956d38aa07ec4f44ab7a4916ae90db7f"
+        ],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 54,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 11,
+      "proposal_decisions": {
+        "approve": 10,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_7537377e700c4a1a94ecd77e66c5d8f6",
+            "object_type": "exposure",
+            "object_id": "exp_lite_datacom_laser_revenue",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Creates transmission channel from peer supply expansion to Lumentum datacom laser revenue and pricing; magnitude unquantified pending segment data."
+          },
+          {
+            "proposal_id": "bcpr_3084ed9389b041f18a70c5ad8df72b34",
+            "object_type": "causal_edge",
+            "object_id": "cedge_inp_competition_to_datacom_exposure",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Links rising competitive intensity to revenue exposure; edge stays candidate until share or pricing impact is observed."
+          },
+          {
+            "proposal_id": "bcpr_a69a5c23928344d2aab5e90a6aff87da",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Peer capacity doubling signals demand pull, corroborating AI-driven optical demand; hypothesis remains open, not confirmed."
+          },
+          {
+            "proposal_id": "bcpr_e4785638b8754915935d34749418531e",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_lite_competitive_supply_expansion",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Peer supply expansion is a plausible bearish driver for Lumentum share and pricing; coexists with AI demand hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_9c7143a1678245f2b031a7ff6d1baf22",
+            "object_type": "causal_gap",
+            "object_id": "cgap_datacom_exposure_to_financials",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "No financial link exists to transmit datacom exposure to revenue or margin; gap flagged rather than inventing a path."
+          },
+          {
+            "proposal_id": "bcpr_0f53838628b04a98b82c65385a210781",
+            "object_type": "price_fundamental_divergence",
+            "object_id": "bpfd_23a9b9f0d8d243e9bc4d2557a2433ad4",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Later evidence can explain an earlier unexplained tape without rewriting what was known then."
+          },
+          {
+            "proposal_id": "bcpr_25f762537a6949388ffeb1ba8169576e",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_2ef30ff1d1124667aa1fa6c8a546b4c6",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_db5533e3e901467cbe2b3cf24dfad970",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_42905fc895e3482f9822bcf3d9e1896f",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Repeated unexplained price divergence. Proposal only; do not establish a causal edge."
+          },
+          {
+            "proposal_id": "bcpr_64b9dfd465f44bada1386b605eb8621e",
+            "object_type": "company_state",
+            "object_id": "cstate_lite_inp_datacom_competition",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "Confirmed peer 6-inch InP capacity doubling directly raises competitive intensity in Lumentum's core datacom laser market."
+          }
+        ]
+      },
+      "changed_objects": [
+        "exposure:exp_lite_datacom_laser_revenue",
+        "causal_edge:cedge_inp_competition_to_datacom_exposure",
+        "market_driver_hypothesis:bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "market_driver_hypothesis:bmdh_lite_competitive_supply_expansion",
+        "causal_gap:cgap_datacom_exposure_to_financials",
+        "price_fundamental_divergence:bpfd_23a9b9f0d8d243e9bc4d2557a2433ad4",
+        "research_question:research_question",
+        "research_question:research_question",
+        "research_question:research_question",
+        "research_question:research_question"
+      ],
+      "critic_scope": "proposal",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 2363,
+        "output_tokens": 14027,
+        "critic_input": 508,
+        "critic_output": 2658,
+        "total_tokens": 16390,
+        "latency_ms": 145493,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 482,
+            "output_tokens": 520,
+            "latency_ms": 11126,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1373,
+            "output_tokens": 10849,
+            "latency_ms": 101570,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 508,
+            "output_tokens": 2658,
+            "latency_ms": 32797,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 145497,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Peer Coherent said EMLs, CW lasers, and photodiodes are in production on a 6-inch indium phosphide line, that internal capacity would double by the end of the June quarter, and that data center and communications were 75% of revenue.",
+      "extract_entities": [
+        "Coherent",
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "Coherent said 6-inch indium phosphide EMLs and CW lasers are in production and capacity is doubling",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. AI/datacenter capex-driven optical demand is the primary market driver behind L…; 2. other; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unknown Confidence: low Price Feedback: current Brain explains the move Divergence: resolved Unresolved: What is the market pricing that the current Brain does not explain?"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 381,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 6
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "a33a9824de6a3c8b74ea3f6bd8d18b2cd11345263153dbd5dfd6c78e8c2305dc",
+        "latency_ms": 11126,
+        "input_tokens": 482,
+        "output_tokens": 520,
+        "total_tokens": 1002,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "6fc95985d44597f5551560f9770d90da60222fbfe086c96f9df3bcf77ce69e58",
+        "latency_ms": 101570,
+        "input_tokens": 1373,
+        "output_tokens": 10849,
+        "total_tokens": 12222,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning",
+        "call_type": "change_proposals"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "8152afca8ba9362b9e8dff628bb22227efb5da96af7b403af27a097c70316aee",
+        "latency_ms": 32797,
+        "input_tokens": 508,
+        "output_tokens": 2658,
+        "total_tokens": 3166,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic",
+        "call_type": "independent_critic"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 2363,
+      "output_tokens": 14027,
+      "critic_input": 508,
+      "critic_output": 2658,
+      "reasoning_input": 1373,
+      "reasoning_output": 10849,
+      "mechanical_input": 482,
+      "mechanical_output": 520,
+      "total_tokens": 16390,
+      "context_parts": {
+        "event": 144,
+        "state": 1,
+        "evidence": 1,
+        "causal": 381,
+        "market": 354,
+        "price": 122,
+        "history": 1
+      },
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 482,
+          "output_tokens": 520,
+          "role": "mechanical"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "change_proposals",
+          "input_tokens": 1373,
+          "output_tokens": 10849,
+          "role": "reasoning"
+        },
+        {
+          "model": "glm-5.3",
+          "call_type": "independent_critic",
+          "input_tokens": 508,
+          "output_tokens": 2658,
+          "role": "critic"
+        }
+      ],
+      "critic_skipped": false
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Coherent said 6-inch indium phosphide EMLs and CW lasers are in production and capacity is doubling",
+      "identity": "key:cohr_6inch_inp_capacity",
+      "fingerprint": "bevfp_3e5a3b33cd58db5f0ef1",
+      "event_hash": "bevfp_3e5a3b33cd58db5f0ef1",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "6",
+          "6",
+          "75%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "cohr_6inch_inp_capacity",
+        "title": "Coherent said 6-inch indium phosphide EMLs and CW lasers are in production and capacity is doubling",
+        "fact": "Peer Coherent said EMLs, CW lasers, and photodiodes are in production on a 6-inch indium phosphide line, that internal capacity would double by the end of the June quarter, and that data center and communications were 75% of revenue.",
+        "source": "Coherent commentary via 2026 industry coverage",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Coherent",
+          "Lumentum"
+        ],
+        "published_at": "2026-09-03T15:00:00+00:00",
+        "event_id": "e16_coherent_capacity",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_3e5a3b33cd58db5f0ef1",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Peer Coherent said EMLs, CW lasers, and photodiodes are in production on a 6-inch indium phosphide line, that internal capacity would double by the end of the June quarter, and that data center and communications were 75% of revenue.",
+      "event": "Coherent announced 6-inch InP production and capacity doubling",
+      "entities": [
+        "Coherent",
+        "Lumentum"
+      ],
+      "event_type": "competition",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "LITE_market_share_in_datacom",
+        "LITE_competitive_position_vs_coherent",
+        "LITE_inp_supply_chain"
+      ],
+      "reason": "Direct competitor capacity expansion on 6-inch InP directly threatens Lumentum's competitive position in datacom lasers; capacity doubling signals intensifying competition for LITE's core market."
+    },
+    "error": null,
+    "critic_skipped": false
+  },
+  {
+    "event_id": "e17_ecoc_noise",
+    "trace": {
+      "event_id": "e17_ecoc_noise",
+      "ticker": "LITE",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_efa9600e9704378c5cd7",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 64,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 408,
+        "output_tokens": 754,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 1162,
+        "latency_ms": 12622,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 408,
+            "output_tokens": 754,
+            "latency_ms": 12622,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 12623,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Lumentum published an ECOC 2026 speaker schedule. No new operating results or guidance.",
+      "extract_entities": [
+        "Lumentum",
+        "ECOC 2026"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum Sets ECOC 2026 Speaker Schedule (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "4f37fb57bdc691e02e13bf9d8fea6f50f2f2a41b8c1513504ec5fc6735358d1c",
+        "latency_ms": 12622,
+        "input_tokens": 408,
+        "output_tokens": 754,
+        "total_tokens": 1162,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 408,
+      "output_tokens": 754,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 408,
+      "mechanical_output": 754,
+      "total_tokens": 1162,
+      "context_parts": {},
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 408,
+          "output_tokens": 754,
+          "role": "mechanical"
+        }
+      ]
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum Sets ECOC 2026 Speaker Schedule",
+      "identity": "key:lite_ecoc_2026_schedule",
+      "fingerprint": "bevfp_efa9600e9704378c5cd7",
+      "event_hash": "bevfp_efa9600e9704378c5cd7",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "2026",
+          "2026"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_ecoc_2026_schedule",
+        "title": "Lumentum Sets ECOC 2026 Speaker Schedule",
+        "fact": "Lumentum published an ECOC 2026 speaker schedule. No new operating results or guidance.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-09-08T14:00:00+00:00",
+        "event_id": "e17_ecoc_noise",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_efa9600e9704378c5cd7",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Lumentum published an ECOC 2026 speaker schedule. No new operating results or guidance.",
+      "event": "Lumentum announced its ECOC 2026 speaker schedule.",
+      "entities": [
+        "Lumentum",
+        "ECOC 2026"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": false,
+      "possible_affected": [],
+      "reason": "This is a routine conference speaker schedule announcement with no new operating results, guidance, or material business facts. It is a promotional/calendar item and does not alter any Core Claims, Base Case, or PM synthesis."
+    },
+    "error": null,
+    "critic_skipped": null
+  },
+  {
+    "event_id": "e18_optics_group_tape",
+    "trace": {
+      "event_id": "e18_optics_group_tape",
+      "ticker": "LITE",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_7dffa75e62617d89ca8a",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "macro",
+      "novelty": "new",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 64,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 461,
+        "output_tokens": 523,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 984,
+        "latency_ms": 12940,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 461,
+            "output_tokens": 523,
+            "latency_ms": 12940,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 12940,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Lumentum shares moved with the AI-optics group after a peer financing headline. No new Lumentum operating filing. Last available print in the pack is $919.40 on 2026-09-16.",
+      "extract_entities": [
+        "Lumentum"
+      ],
+      "now_chain": {
+        "what_happened": "Lumentum shares fall as AI-optics group weakens after peer financing move (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price / Peer Alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "3f4eac841aadafb6a1cdd4874722dc9b8d9abf9b9e1533925f32161e8d626b33",
+        "latency_ms": 12940,
+        "input_tokens": 461,
+        "output_tokens": 523,
+        "total_tokens": 984,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical",
+        "call_type": "event_extract"
+      }
+    ],
+    "token_usage": {
+      "input_tokens": 461,
+      "output_tokens": 523,
+      "critic_input": 0,
+      "critic_output": 0,
+      "reasoning_input": 0,
+      "reasoning_output": 0,
+      "mechanical_input": 461,
+      "mechanical_output": 523,
+      "total_tokens": 984,
+      "context_parts": {},
+      "calls": [
+        {
+          "model": "glm-5.2",
+          "call_type": "event_extract",
+          "input_tokens": 461,
+          "output_tokens": 523,
+          "role": "mechanical"
+        }
+      ]
+    },
+    "l0": {
+      "ticker": "LITE",
+      "title": "Lumentum shares fall as AI-optics group weakens after peer financing move",
+      "identity": "key:lite_ai_optics_group_weakens",
+      "fingerprint": "bevfp_7dffa75e62617d89ca8a",
+      "event_hash": "bevfp_7dffa75e62617d89ca8a",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "919.40",
+          "2026",
+          "-09",
+          "-16"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "lite_ai_optics_group_weakens",
+        "title": "Lumentum shares fall as AI-optics group weakens after peer financing move",
+        "fact": "Lumentum shares moved with the AI-optics group after a peer financing headline. No new Lumentum operating filing. Last available print in the pack is $919.40 on 2026-09-16.",
+        "source": "Quiver Quantitative / pack header",
+        "event_type": "other",
+        "price_change_pct": null,
+        "fact_reliability": "signal",
+        "entities": [
+          "Lumentum"
+        ],
+        "published_at": "2026-09-16T19:30:00+00:00",
+        "event_id": "e18_optics_group_tape",
+        "ticker": "LITE",
+        "fingerprint": "bevfp_7dffa75e62617d89ca8a",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Lumentum shares moved with the AI-optics group after a peer financing headline. No new Lumentum operating filing. Last available print in the pack is $919.40 on 2026-09-16.",
+      "event": "Lumentum shares fall as AI-optics group weakens after peer financing move",
+      "entities": [
+        "Lumentum"
+      ],
+      "event_type": "macro",
+      "novelty": "new",
+      "confidence": "low",
+      "fact_reliability": "signal",
+      "material": false,
+      "possible_affected": [
+        "AI_optics_group_sentiment",
+        "LITE_share_price"
+      ],
+      "reason": "No new Lumentum-specific operating fact, filing, or contract. The item is a group-level tape move driven by a peer financing headline, sourced from an aggregator (tier 5). Price movement is a signal, not a direct operating event. Classified as macro (sector/group sentiment) rather than company-specific. Materiality is false because there is no new Lumentum operating fact; it is a recap of group-level price action."
+    },
+    "error": null,
+    "critic_skipped": null
+  }
+]

@@ -1,0 +1,1226 @@
+{
+  "lite": {
+    "states": [],
+    "drivers": [],
+    "claims": [],
+    "exposures": [
+      {
+        "exposure_id": "bexp_99e7bd03a9184383820fb91147ec1c24",
+        "exposure_type": "financial",
+        "subject": "LITE",
+        "object_name": "",
+        "reason": "LITE is exposed to"
+      },
+      {
+        "exposure_id": "bexp_8bbff3c52b5340b5840281f3029e108e",
+        "exposure_type": "financial",
+        "subject": "LITE",
+        "object_name": "LITE EML/InP capacity exposure",
+        "reason": "LITE is exposed to LITE EML/InP capacity exposure"
+      },
+      {
+        "exposure_id": "bexp_81c65bda4737480680d5c54dbe524a1d",
+        "exposure_type": "financial",
+        "subject": "LITE",
+        "object_name": "Optical revenue exposure to AI/datacenter demand",
+        "reason": "LITE is exposed to Optical revenue exposure to AI/datacenter demand"
+      },
+      {
+        "exposure_id": "bexp_35cbe41170ad4634a89989251412d18d",
+        "exposure_type": "financial",
+        "subject": "LITE",
+        "object_name": "Datacom/AI EML-CW laser revenue exposure",
+        "reason": "LITE is exposed to Datacom/AI EML-CW laser revenue exposure"
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_0e38cd418534498a8cd500c90d991cbf",
+        "from_node": "lite_state_q3_earnings_print",
+        "to_node": "lite_exposure_gaap_to_excluded_items",
+        "status": "candidate",
+        "mechanism": "lite_state_q3_earnings_print -> lite_exposure_gaap_to_excluded_items",
+        "statement": "lite_state_q3_earnings_print -> lite_exposure_gaap_to_excluded_items"
+      },
+      {
+        "edge_id": "bced_ce961cc114454a039e704d440c47d4e2",
+        "from_node": "cs_lite_inp_eml_supply_tight",
+        "to_node": "exp_lite_eml_capacity_bound",
+        "status": "candidate",
+        "mechanism": "cs_lite_inp_eml_supply_tight -> exp_lite_eml_capacity_bound",
+        "statement": "cs_lite_inp_eml_supply_tight -> exp_lite_eml_capacity_bound"
+      },
+      {
+        "edge_id": "bced_ba3c257198f5452e9c88eb114d945f88",
+        "from_node": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "to_node": "lite_state_q4_fy2026_financials",
+        "status": "candidate",
+        "mechanism": "bmdh_b0428e0125734c5194d59f0dadcfd420 -> lite_state_q4_fy2026_financials",
+        "statement": "bmdh_b0428e0125734c5194d59f0dadcfd420 -> lite_state_q4_fy2026_financials"
+      }
+    ],
+    "expectations": [
+      {
+        "expectation_id": "bexpc_1617f60e72734a5cad3c715aa6339213",
+        "name": "expectation",
+        "actual": null,
+        "expected": null,
+        "comparison": "unknown",
+        "trend": "rising",
+        "confidence": "medium",
+        "reason": "expectation: actual None vs expected None (unknown)"
+      },
+      {
+        "expectation_id": "bexpc_c6ebed9c200e41638464acbbb56b800e",
+        "name": "Q3 GAAP EPS",
+        "actual": 1.5,
+        "expected": 1.81,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "reason": "Actual 1.5 vs expected 1.81 (in_line)."
+      },
+      {
+        "expectation_id": "bexpc_a231747b881e4be18368ca299c9d7603",
+        "name": "CPO versus pluggable transceivers",
+        "actual": null,
+        "expected": null,
+        "comparison": "unknown",
+        "trend": "falling",
+        "confidence": "low",
+        "reason": "Low-confidence expectation shift from an unconfirmed report; not a print."
+      },
+      {
+        "expectation_id": "bexpc_e8f820359cb046acbd14db127e39526e",
+        "name": "Q4 non-GAAP EPS vs guide",
+        "actual": 3.23,
+        "expected": 2.95,
+        "comparison": "unknown",
+        "trend": "rising",
+        "confidence": "medium",
+        "reason": "Q4 non-GAAP EPS vs guide: actual 3.23 vs expected 2.95 (unknown)"
+      },
+      {
+        "expectation_id": "bexpc_7058b6ec49ea494783ad3aff47aa14a8",
+        "name": "Q4 non-GAAP EPS",
+        "actual": 3.23,
+        "expected": 2.95,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "reason": "Actual 3.23 vs expected 2.95 (in_line)."
+      },
+      {
+        "expectation_id": "bexpc_fdababf7b75b4a86b82303f63c3d98ee",
+        "name": "Q1 FY2027 net revenue vs guidance",
+        "actual": null,
+        "expected": 1.25,
+        "comparison": "unknown",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "reason": "Q1 FY2027 net revenue vs guidance: actual None vs expected 1.25 (unknown)"
+      }
+    ],
+    "attentions": [
+      {
+        "attention_id": "batt_a5c0069500bd499daa048e0c0bceae5b",
+        "name": "unexplained_price_vs_brain",
+        "statement": "Price behavior is not fully explained by the current Brain.",
+        "reason": "Price behavior is not fully explained by the current Brain."
+      }
+    ],
+    "hypotheses": [
+      {
+        "hypothesis_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "canonical_key": "ai_demand",
+        "kind": "ai_demand",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth",
+        "reason": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth"
+      },
+      {
+        "hypothesis_id": "bmdh_e7aa1aaed26742f5a91690d9f96aad79",
+        "canonical_key": "other",
+        "kind": "other",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "other"
+      },
+      {
+        "hypothesis_id": "bmdh_417319edb501499ea9bd619fea5024ad",
+        "canonical_key": "unresolved",
+        "kind": "other",
+        "status": "unresolved",
+        "confidence": "low",
+        "hypothesis": "Market driver is unresolved",
+        "reason": "Market driver is unresolved"
+      },
+      {
+        "hypothesis_id": "bmdh_43b7825547ef40f6b0cb781b21fb31ad",
+        "canonical_key": "customer_concentration",
+        "kind": "customer_concentration",
+        "status": "open",
+        "confidence": "medium",
+        "hypothesis": "Customer concentration concern is increasing",
+        "reason": "Customer concentration concern is increasing"
+      },
+      {
+        "hypothesis_id": "bmdh_71a96ad96c0242e2a036c74b125ab258",
+        "canonical_key": "competitive_supply_expansion",
+        "kind": "other",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "competitive supply expansion"
+      }
+    ],
+    "shadows": [
+      {
+        "shadow_id": "bshd_396f6bae677f4a7d9b0d8cb866cd1fca",
+        "name": "unconfirmed_signal",
+        "status": "watching",
+        "statement": ""
+      },
+      {
+        "shadow_id": "bshd_956d38aa07ec4f44ab7a4916ae90db7f",
+        "name": "CPO versus pluggable transceivers",
+        "status": "open",
+        "statement": "An unconfirmed rumor says co-packaged optics will displace pluggable transceiver demand and reduce Lumentum cloud-module volume."
+      },
+      {
+        "shadow_id": "bshd_6f15903b0a1840b29b456f8d8ed0415a",
+        "name": "cpo_displacement_rumor",
+        "status": "active",
+        "statement": ""
+      }
+    ],
+    "questions": [
+      {
+        "question_id": "brq_545c19ce2a174b8eb14da3e5a5275bbe",
+        "question": "What segment mix (datacom vs telecom) and customer concentration drove the 90.1% YoY revenue growth?",
+        "why_it_matters": "Fact lacks segment attribution; required to confirm or refute the AI/datacenter driver hypothesis.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_66a9c42028604c04ba658bd7ae0f1ccd",
+        "question": "Is the 47.9% non-GAAP gross margin sustainable, and what mix or pricing effects drove expansion?",
+        "why_it_matters": "Margin durability affects exposure magnitude and future financial impact; fact gives levels, not drivers.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_d8e38d5bab0646cb95da9085dcf15bb9",
+        "question": "What Q4 FY2026 guidance and non-GAAP operating margin did management provide?",
+        "why_it_matters": "Fact text truncated before non-GAAP operating margin and outlook; needed to assess growth trajectory.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_8385c1b29abe4a94b30bcab01b35b5de",
+        "question": "Did Q3 revenue ($808.4M) and non-GAAP EPS ($2.37) beat or miss street expectations, and how did AI/datacenter-exposed segments perform?",
+        "why_it_matters": "Required to connect the earnings print to the ai_demand hypothesis via a valid causal path.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_7672f9034ba0482a931f624550554230",
+        "question": "What is the market pricing that the current Brain does not explain?",
+        "why_it_matters": "Large price move is unresolved.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_c1675e4f9ea04a5d8275c3fa73eaedf8",
+        "question": "Brain lacks states and drivers to connect print fundamentals to the hypothesis; no transmittable path can be invented.",
+        "why_it_matters": "Brain lacks states and drivers to connect print fundamentals to the hypothesis; no transmittable path can be invented.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_04cf79d37b3f48e4b627249378745a4f",
+        "question": "What did LITE's Q3 guidance, revenue mix, and AI/datacenter commentary actually say, so the state→driver chain can be built and the post-print divergence resolved?",
+        "why_it_matters": "The Brain has no fundamental objects from the print; tape alone cannot explain the -5.06% move.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_10aa4409005f45119433b9853b1e8fb2",
+        "question": "Is there a missing Market Driver that would explain repeated unexplained LITE tape?",
+        "why_it_matters": "Repeated unexplained divergence.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_4c649969577c45abb280883261395026",
+        "question": "Is a missing Expectation variable leaving repeated unexplained LITE tape?",
+        "why_it_matters": "Repeated unexplained divergence.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_4cd1ecf4cb1c4927b246303f69fa81be",
+        "question": "Is a missing Exposure leaving repeated unexplained LITE price behavior?",
+        "why_it_matters": "Repeated unexplained divergence.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_39a3c3c5ffd3483099e23943bd362414",
+        "question": "Is a missing Causal Edge leaving repeated unexplained LITE tape?",
+        "why_it_matters": "Repeated unexplained divergence.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_d65a0a4506104e68bce6384e16a56a0e",
+        "question": "Does the Q3 transceiver ramp explain prior unexplained price action and resolve the unresolved market driver?",
+        "why_it_matters": "Unresolved driver hypothesis exists; this event offers explanatory evidence but no winner should be picked yet.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_d05ad16dc6e14c259a5031a5f289f47f",
+        "question": "Cannot transmit impact to financials without capacity expansion timeline and pricing assumptions.",
+        "why_it_matters": "Cannot transmit impact to financials without capacity expansion timeline and pricing assumptions.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_3f650684d392470fa57f4294f0311dbe",
+        "question": "Can we confirm: CPO versus pluggable transceivers?",
+        "why_it_matters": "Weak signal is a research question, not a conclusion.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_035e712bc6374964a793405e22e87473",
+        "question": "Is co-packaged optics adoption actually displacing pluggable transceiver demand at Lumentum's cloud customers, and over what timeline?",
+        "why_it_matters": "Unverified rumor; requires evidence on CPO adoption pace, customer commitments, and volume impact.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_ad5e5f70560544ac86fbc21dc5ef220d",
+        "question": "Brain lacks exposure/state objects; cannot invent a path from rumor to revenue.",
+        "why_it_matters": "Brain lacks exposure/state objects; cannot invent a path from rumor to revenue.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_3e200093052d46aaa29767682fce2b16",
+        "question": "What share of Lumentum revenue comes from pluggable transceivers and cloud modules that CPO could displace, and which customers are evaluating CPO?",
+        "why_it_matters": "Exposure data needed before the shadow risk can be sized or promoted.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_c4643029568c4902a148b09f41de2f36",
+        "question": "How did Q4 FY2026 EPS and FY2027 guidance compare to consensus, and what segment/customer mix drove the 109.3% YoY revenue growth?",
+        "why_it_matters": "Event fact is truncated; EPS, guidance, and segment mix are needed to update expectations and confirm drivers.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_3508b0982a54436ba2c1d6d0f96aaed7",
+        "question": "Did top-customer concentration increase with Q4's 109.3% YoY revenue growth?",
+        "why_it_matters": "Hyperscale AI customers may dominate growth; release excerpt does not disclose customer mix.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_4b05a0a9d3d641f3adcb20b77c72a63e",
+        "question": "State-to-driver link is missing; cannot invent a transmittable path without segment disclosure.",
+        "why_it_matters": "State-to-driver link is missing; cannot invent a transmittable path without segment disclosure.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_d3b3c20004c54d4893d4782a8e1f3a48",
+        "question": "What drove the Q4 beat — Datacom/AI optics, Telecom, or gross margin — and does next-quarter guidance confirm it?",
+        "why_it_matters": "Driver attribution is needed before linking the results state to demand hypotheses or claims.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_8aaadf2dd0004d58adcb6cee5e37b008",
+        "question": "Did management raise forward revenue/EPS guidance alongside the Q4 beat, and which segment (Datacom/AI vs Telecom) explains the upside?",
+        "why_it_matters": "Headline beat lacks attribution; needed before connecting state to driver, exposure, or claim.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_98527476d38f42698ecba9c386145497",
+        "question": "What does management attribute the Q1 FY2027 guidance strength to (AI/datacenter datacom vs telecom), and what segment/customer mix supports ~$1.25B quarterly revenue?",
+        "why_it_matters": "CEO attribution is truncated; needed to link guidance state to the ai_demand driver without inventing a transmittable path.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_6cb6e5d3e477437ab0dc3a6d088808ee",
+        "question": "Brain lacks exposure and claim objects; guidance impact cannot propagate, so flag the gap rather than invent a path.",
+        "why_it_matters": "Brain lacks exposure and claim objects; guidance impact cannot propagate, so flag the gap rather than invent a path.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_3bb476d52fd54980a7fd1a60e5be187a",
+        "question": "How does the Q1 FY2027 guidance midpoint compare to sell-side consensus for revenue and non-GAAP EPS?",
+        "why_it_matters": "Event carries no consensus comparison; needed to judge whether this guidance is a positive or negative surprise.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_758a5621937643f087c08c19500a7f4e",
+        "question": "Does rising CPO laser demand and the initial ELS order confirm CPO will displace pluggable transceivers?",
+        "why_it_matters": "Open shadow rumor gains directional corroboration from direct CEO evidence, but displacement itself remains unconfirmed.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_6e74e30488c74959a9a0957bd672d231",
+        "question": "Is the initial ELS order from a new customer, or does it deepen existing customer concentration?",
+        "why_it_matters": "Customer concentration hypothesis is at medium confidence; the ELS order source is undisclosed.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_7aca0df634f2478dac3ec8a6e84da9d1",
+        "question": "No financial link exists to transmit datacom exposure to revenue or margin; gap flagged rather than inventing a path.",
+        "why_it_matters": "No financial link exists to transmit datacom exposure to revenue or margin; gap flagged rather than inventing a path.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_9c70ecc88f864b209db78b020ec12adc",
+        "question": "Is AI datacenter laser demand currently supply-constrained, so Coherent's added capacity absorbs unmet demand, or share-competitive, pressuring Lumentum pricing and sockets?",
+        "why_it_matters": "Determines whether Coherent's capacity doubling is bullish demand confirmation or bearish share risk for Lumentum.",
+        "status": "open"
+      },
+      {
+        "question_id": "brq_92c5787fbe5f4f6199b38a666482d7e8",
+        "question": "What share of Lumentum revenue comes from EML/CW datacom lasers, and which customers overlap with Coherent?",
+        "why_it_matters": "Quantifies revenue at risk and connects the competitive exposure to the open customer concentration hypothesis.",
+        "status": "open"
+      }
+    ],
+    "divergences": [
+      {
+        "divergence_id": "bpfd_23a9b9f0d8d243e9bc4d2557a2433ad4",
+        "status": "resolved",
+        "explanation_grade": "well_explained",
+        "reason": "Current Brain cannot fully explain current price behavior."
+      },
+      {
+        "divergence_id": "bpfd_e8386015023a42cba0c6af9a241262ee",
+        "status": "resolved",
+        "explanation_grade": "well_explained",
+        "reason": "Current Brain cannot fully explain current price behavior."
+      }
+    ],
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "exposures": 4,
+      "edges": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 5,
+      "shadows": 3,
+      "questions": 30,
+      "divergences": 2
+    }
+  },
+  "avgo": {
+    "states": [
+      {
+        "state_id": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "name": "Q3 FY2026 results",
+        "direction": "positive",
+        "confidence": "high",
+        "statement": "Broadcom's Q3 FY2026 (period ended 2026-08-02) revenue was $29.6 billion, up 86% YoY, with GAAP operating income of $16.0 billion and non-GAAP operating income of $20.1 billion."
+      },
+      {
+        "state_id": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "name": "Q4 FY2026 guidance",
+        "direction": "positive",
+        "confidence": "high",
+        "statement": "Management guided Q4 FY2026 revenue to approximately $34.8 billion and expects to maintain non-GAAP operating margin at 66%, flat from a year ago (guidance text from the 2026-09-02 earnings exhibit)."
+      },
+      {
+        "state_id": "bst_6b43658a7e584a2a974d1c5a7a5c2cfe",
+        "name": "EPS estimate misses",
+        "direction": "negative",
+        "confidence": "high",
+        "statement": "Reported EPS came in below the estimate in each of the last three quarters (Q1 FY2026: 1.50 vs 1.67; Q2: 1.91 vs 2.02; Q3: 2.68 vs 2.83) despite strong revenue growth (from earnings history in report…"
+      },
+      {
+        "state_id": "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "name": "Negative post-earnings price reactions",
+        "direction": "negative",
+        "confidence": "high",
+        "statement": "Shares fell 12.59% the day after Q2 FY2026 earnings (2026-06-03, -12.11% vs QQQ, -10.49% vs sector) and 2.74% after Q3 (2026-09-02, -3.93% vs QQQ), with Q2 volume at 3.5x the 20-day average (from pri…"
+      },
+      {
+        "state_id": "bst_154e6e1ddc4f4970a61cdb2798b0fa51",
+        "name": "Valuation snapshot",
+        "direction": "neutral",
+        "confidence": "high",
+        "statement": "At $339.51 (2026-09-16) and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with TTM revenue growth of 48.69% and EPS growth of 215.29%; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable (re…"
+      }
+    ],
+    "drivers": [
+      {
+        "driver_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "canonical_key": "hyperscaler_customer_concentration",
+        "name": "Hyperscaler customer concentration",
+        "current_state": "AI accelerator and networking demand is described as 'very strong', but customer-level revenue, order pipeline, and concentration ratios are not disclosed in the available evidence."
+      },
+      {
+        "driver_id": "bdrv_4469e497110847e7a3961129f05e5a33",
+        "canonical_key": "ai_silicon_competitive_position",
+        "name": "Competitive position in AI accelerators and networking",
+        "current_state": "AI accelerator and networking demand is 'very strong' with revenue accelerating; no evidence in the pack on market share, competitor moves, or design win pipeline to distinguish share gains from overall market growth."
+      },
+      {
+        "driver_id": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "canonical_key": "ai_semiconductor_demand_durability",
+        "name": "AI semiconductor demand durability",
+        "current_state": "Management states AI accelerator and networking demand 'continues to be very strong'; Q3 FY2026 total revenue was $29.6B (+86% YoY) with AI the largest growth driver; Q4 AI semiconductor revenue guided to $21.7B, up 236%."
+      },
+      {
+        "driver_id": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+        "canonical_key": "ai_revenue_mix_concentration",
+        "name": "AI revenue mix concentration",
+        "current_state": "AI semiconductors are the largest growth driver; guided Q4 AI revenue of $21.7B versus ~$34.8B total implies ~62% AI mix. The exact current AI share and segment history are not disclosed (segment data flagged missing)."
+      },
+      {
+        "driver_id": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+        "canonical_key": "non_ai_revenue_durability",
+        "name": "Non-AI semiconductor and subscription revenue durability",
+        "current_state": "Implied non-AI revenue of ~$13.1B in Q4 guidance ($34.8B total minus $21.7B AI); growth rate and mix not disclosed. Filings reference subscriptions and services revenue alongside products, but no segment detail is available."
+      },
+      {
+        "driver_id": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "canonical_key": "non_gaap_operating_margin_sustainability",
+        "name": "Non-GAAP operating margin sustainability",
+        "current_state": "Q3 FY2026 non-GAAP operating income was $20.1B on $29.6B revenue (~68%); management guides Q4 non-GAAP operating margin flat at 66% versus a year ago, embedding no incremental operating leverage; GAAP operating margin was 53.92%."
+      },
+      {
+        "driver_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "canonical_key": "valuation_multiple_ai_dependency",
+        "name": "Valuation multiple dependence on AI growth persistence",
+        "current_state": "At $339.51 and ~$1.62T market cap, AVGO trades at 43.3x TTM EPS with 48.69% TTM revenue growth; forward PE, P/S, EV/EBITDA, and FCF yield are unavailable. Shares fell after each of the last two earnings reports despite strong results."
+      },
+      {
+        "driver_id": "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "canonical_key": "balance_sheet_leverage_deleveraging",
+        "name": "Balance sheet leverage and deleveraging path",
+        "current_state": "Broadcom priced cash tender offers for certain outstanding notes in June 2026, indicating active management of a leveraged balance sheet; total debt, leverage ratios, interest expense, and free cash flow are not quantified in the pack."
+      },
+      {
+        "driver_id": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "canonical_key": "gaap_non_gaap_earnings_gap",
+        "name": "GAAP to non-GAAP earnings gap",
+        "current_state": "Q3 GAAP operating income of $16.0B versus non-GAAP $20.1B (~$4.1B gap); GAAP operating margin 53.92% versus 66% non-GAAP guided. Reported EPS has come in below estimates in each of the last three quarters despite 85%+ revenue growth."
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "title": "AI semiconductor demand durability sets the length of the growth ramp",
+        "status": "partially_supported",
+        "is_core": true,
+        "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,…"
+      },
+      {
+        "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+        "status": "partially_supported",
+        "is_core": true,
+        "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan…"
+      },
+      {
+        "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "title": "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle",
+        "status": "unverified",
+        "is_core": true,
+        "statement": "Broadcom's Q3 FY2026 earnings release (Exhibit 99.1, dated 2026-09-02) reports quarterly revenue of $29.6 billion, with management characterizing AI accelerator and networking demand as 'very strong'…"
+      },
+      {
+        "claim_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "title": "The premium multiple is conditional on the AI ramp persisting",
+        "status": "unverified",
+        "is_core": true,
+        "statement": "Broadcom's Q3 FY2026 earnings release (primary) describes AI accelerator and networking demand as 'very strong' and references Q3 AI semiconductor revenue (the figure is truncated in the available ex…"
+      },
+      {
+        "claim_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "title": "AI is approaching a majority of revenue, tying company economics to one cycle",
+        "status": "partially_supported",
+        "is_core": true,
+        "statement": "Broadcom discloses AI semiconductor revenue as a distinct metric, and management characterized AI accelerators and networking demand as 'very strong' in the Q3 FY2026 earnings release; third-party re…"
+      }
+    ],
+    "exposures": [
+      {
+        "exposure_id": "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_3f107c1da7f0467bb2ba83912d388d89",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_25db7c2f39364759a7f60198472b2b8f",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_e75de5923e5447b0b611e14b918053eb",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_40f241303473423daddbe3edb63bd1e6",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_9fe3debab5b54cc592706f926c64aec0",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_103084ce2cc04f1cacebee746786872e",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_e8231e20f3df4268b988db9fc61a4ec3",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_8490202f2b9d4989b24db18812a59fbe",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_7be70cb38c28465cbd8ee3214ee615d3",
+        "exposure_type": "financial",
+        "subject": "AVGO",
+        "object_name": "",
+        "reason": "Issuer-linked exposure"
+      },
+      {
+        "exposure_id": "bexp_rec_e8dc5eb44bba",
+        "exposure_type": "customer",
+        "subject": "AVGO",
+        "object_name": "Hyperscaler customer concentration",
+        "reason": "Recovered customer exposure from Hyperscaler customer concentration."
+      },
+      {
+        "exposure_id": "bexp_rec_1129f05e5a33",
+        "exposure_type": "competitive",
+        "subject": "AVGO",
+        "object_name": "Competitive position in AI accelerators and networking",
+        "reason": "Recovered competitive exposure from Competitive position in AI accelerators and networking."
+      },
+      {
+        "exposure_id": "bexp_rec_50bd17106982",
+        "exposure_type": "customer",
+        "subject": "AVGO",
+        "object_name": "AI semiconductor demand durability",
+        "reason": "Recovered customer exposure from AI semiconductor demand durability."
+      },
+      {
+        "exposure_id": "bexp_rec_8ee44a5ea0d4",
+        "exposure_type": "customer",
+        "subject": "AVGO",
+        "object_name": "Non-AI semiconductor and subscription revenue durability",
+        "reason": "Recovered customer exposure from Non-AI semiconductor and subscription revenue durability."
+      }
+    ],
+    "causal_edges": [
+      {
+        "edge_id": "bced_e04fa93995f8452dbf2d6a0d28b820f5",
+        "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "status": "supported",
+        "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff."
+      },
+      {
+        "edge_id": "bced_c1d50b264ff4417c8c96975f277204f7",
+        "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "status": "supported",
+        "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8."
+      },
+      {
+        "edge_id": "bced_0481d7068b2244eb8b320c8710c1c319",
+        "from_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "status": "supported",
+        "statement": "AI revenue mix concentration informs core claim bclm_426dd93ffbfa4167ab49970c97da681f."
+      },
+      {
+        "edge_id": "bced_137f3d7165d34c22a8aa8065958fdb43",
+        "from_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+        "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
+        "status": "supported",
+        "statement": "Non-AI semiconductor and subscription revenue durability informs core claim bclm_426dd93ffbfa4167ab49970c97da681f."
+      },
+      {
+        "edge_id": "bced_a335339c96b64b77af017dea1857fa05",
+        "from_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "status": "supported",
+        "statement": "Non-GAAP operating margin sustainability informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24."
+      },
+      {
+        "edge_id": "bced_56b7220016484bd8ae2c67e25b7906fe",
+        "from_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "to_node": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "status": "supported",
+        "statement": "Valuation multiple dependence on AI growth persistence informs core claim bclm_a63762a2ab4f4410ad923ea9b1002c53."
+      },
+      {
+        "edge_id": "bced_aa4784fcfc8f4d7bba0e27450c77e2aa",
+        "from_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "status": "supported",
+        "statement": "GAAP to non-GAAP earnings gap informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24."
+      },
+      {
+        "edge_id": "bced_0d4281c592c64aad8fee710c16d17f4f",
+        "from_node": "bexp_rec_e8dc5eb44bba",
+        "to_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "status": "candidate",
+        "statement": "Hyperscaler customer concentration feeds Hyperscaler customer concentration."
+      },
+      {
+        "edge_id": "bced_a288739f287e401abd2218af20fbb092",
+        "from_node": "bexp_rec_1129f05e5a33",
+        "to_node": "bdrv_4469e497110847e7a3961129f05e5a33",
+        "status": "candidate",
+        "statement": "Competitive position in AI accelerators and networking feeds Competitive position in AI accelerators and networking."
+      },
+      {
+        "edge_id": "bced_887065d18f05472d8f2189c2c265603c",
+        "from_node": "bexp_rec_50bd17106982",
+        "to_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "status": "candidate",
+        "statement": "AI semiconductor demand durability feeds AI semiconductor demand durability."
+      },
+      {
+        "edge_id": "bced_de7143af73904cd59cb723fc124b0b8c",
+        "from_node": "bexp_rec_8ee44a5ea0d4",
+        "to_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+        "status": "candidate",
+        "statement": "Non-AI semiconductor and subscription revenue durability feeds Non-AI semiconductor and subscription revenue durability."
+      },
+      {
+        "edge_id": "bced_5130dfc009de49cebcc7c777a7a28d92",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bexp_rec_50bd17106982",
+        "status": "observed",
+        "statement": "Q3 FY2026 results reaches AI semiconductor demand durability."
+      },
+      {
+        "edge_id": "bced_58f72b58a0004701a264bccc095a22de",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "status": "observed",
+        "statement": "Q3 FY2026 results shares evidence with Non-GAAP operating margin sustainability."
+      },
+      {
+        "edge_id": "bced_f0d13f6aa5c54dd98a8aeb4acd87567d",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "status": "observed",
+        "statement": "Q3 FY2026 results shares evidence with Valuation multiple dependence on AI growth persistence."
+      },
+      {
+        "edge_id": "bced_97cbde6e8c7b44a898239819a1cd9a83",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+        "status": "observed",
+        "statement": "Q3 FY2026 results shares evidence with Balance sheet leverage and deleveraging path."
+      },
+      {
+        "edge_id": "bced_c0378a49478c430cb2fbb076c1997e6c",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "status": "observed",
+        "statement": "Q3 FY2026 results shares evidence with GAAP to non-GAAP earnings gap."
+      },
+      {
+        "edge_id": "bced_5f00f3ff214e4ff889c0228432d58138",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bexp_rec_e8dc5eb44bba",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance reaches Hyperscaler customer concentration."
+      },
+      {
+        "edge_id": "bced_8088ad5d37614e7ea9d661562ad4ddac",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bexp_rec_1129f05e5a33",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance reaches Competitive position in AI accelerators and networking."
+      },
+      {
+        "edge_id": "bced_1a523dbe135244658fedd95473791e3f",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bexp_rec_50bd17106982",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance reaches AI semiconductor demand durability."
+      },
+      {
+        "edge_id": "bced_17c7826eac594ddba997e36f68af31bf",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance shares evidence with AI revenue mix concentration."
+      },
+      {
+        "edge_id": "bced_e2d8449f1c0f43faac973d89cbb4f829",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bexp_rec_8ee44a5ea0d4",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance reaches Non-AI semiconductor and subscription revenue durability."
+      },
+      {
+        "edge_id": "bced_d32b5a081cc14003a6a9f21b08a98c8a",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance shares evidence with Non-GAAP operating margin sustainability."
+      },
+      {
+        "edge_id": "bced_fffe531760b34d579fc05cc3e35dd5ea",
+        "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+        "to_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "status": "observed",
+        "statement": "Q4 FY2026 guidance shares evidence with Valuation multiple dependence on AI growth persistence."
+      },
+      {
+        "edge_id": "bced_d0d3c1f60e924e258fe45e71cc7d8888",
+        "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+        "to_node": "bexp_rec_e8dc5eb44bba",
+        "status": "observed",
+        "statement": "Q3 FY2026 results reaches Hyperscaler customer concentration."
+      }
+    ],
+    "expectations": [
+      {
+        "expectation_id": "bexpc_89019d30a58549cf9d4fedbe29b7bdb2",
+        "name": "Q3 AI semiconductor revenue",
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium"
+      },
+      {
+        "expectation_id": "bexpc_1c92cc3ab4c44546a0b6618e19c6a325",
+        "name": "Google custom silicon volume",
+        "actual": null,
+        "expected": null,
+        "comparison": "unknown",
+        "trend": "falling",
+        "confidence": "low"
+      },
+      {
+        "expectation_id": "bexpc_8f770c83d567482292bf66aba8837599",
+        "name": "expectation",
+        "actual": 16.7,
+        "expected": null,
+        "comparison": "unknown",
+        "trend": "unchanged",
+        "confidence": "medium"
+      },
+      {
+        "expectation_id": "bexpc_810bc28cad0c4f65a83237528cc5d5f4",
+        "name": "Q3 EPS",
+        "actual": 2.68,
+        "expected": 2.83,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium"
+      },
+      {
+        "expectation_id": "bexpc_5e36754d5507439dbf4882cf2f151fd7",
+        "name": "FY2026 AI revenue",
+        "actual": 58.0,
+        "expected": 56.0,
+        "comparison": "above",
+        "trend": "rising",
+        "confidence": "medium"
+      },
+      {
+        "expectation_id": "bexpc_d694b9337bb448379b24f8c84ebf943e",
+        "name": "rumor_expectation",
+        "actual": null,
+        "expected": null,
+        "comparison": "unknown",
+        "trend": "falling",
+        "confidence": "low"
+      }
+    ],
+    "attentions": [
+      {
+        "attention_id": "batt_79b13cec0f4d43a2b3758c43d9512220",
+        "name": "market_attention",
+        "statement": ""
+      },
+      {
+        "attention_id": "batt_44250e52f7a544f6bff01ec9123d8d50",
+        "name": "unexplained_price_vs_brain",
+        "statement": "Price behavior is not fully explained by the current Brain."
+      }
+    ],
+    "hypotheses": [
+      {
+        "hypothesis_id": "bmdh_8dc71e3824584b429b95ecb153843fac",
+        "canonical_key": "ai_demand",
+        "kind": "ai_demand",
+        "status": "candidate",
+        "confidence": "medium",
+        "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+        "supporting_observations": [
+          "Hock Tan said Broadcom has six XPU customers and fiscal 2026 AI revenue of 58 billion versus prior 56 billion",
+          "Google confirmed a Broadcom custom-silicon order expansion for next-generation TPU",
+          "Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply"
+        ],
+        "counter_observations": [
+          "Unconfirmed rumor that Google may delay custom silicon volume",
+          "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+        ]
+      },
+      {
+        "hypothesis_id": "bmdh_a6c4a141c4c345f3b79c3437f4129538",
+        "canonical_key": "sector_wide_semiconductor_selloff",
+        "kind": "other",
+        "status": "unresolved",
+        "confidence": "low",
+        "hypothesis": "sector wide semiconductor selloff",
+        "supporting_observations": [],
+        "counter_observations": []
+      },
+      {
+        "hypothesis_id": "bmdh_c53be4729c9b4cd78afd69b7b8a60770",
+        "canonical_key": "sector_macro",
+        "kind": "sector_macro",
+        "status": "open",
+        "confidence": "low",
+        "hypothesis": "Sector / macro move",
+        "supporting_observations": [
+          "AVGO shares move -12.6% with semiconductor peers",
+          "AVGO shares move -2.74% after the latest print"
+        ],
+        "counter_observations": []
+      },
+      {
+        "hypothesis_id": "bmdh_4e3c26422d144e268b24e9ce442c8ab3",
+        "canonical_key": "unresolved",
+        "kind": "other",
+        "status": "unresolved",
+        "confidence": "low",
+        "hypothesis": "Market driver is unresolved",
+        "supporting_observations": [
+          "AVGO shares move -12.6% with semiconductor peers",
+          "AVGO shares move -6.2% with no new filing"
+        ],
+        "counter_observations": []
+      },
+      {
+        "hypothesis_id": "bmdh_ff48ce582fd347d0a931a328b183826b",
+        "canonical_key": "customer_concentration",
+        "kind": "customer_concentration",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "Customer concentration concern is increasing",
+        "supporting_observations": [
+          "Unconfirmed rumor that Google may delay custom silicon volume",
+          "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+        ],
+        "counter_observations": [
+          "Hock Tan said Broadcom has six XPU customers and fiscal 2026 AI revenue of 58 billion versus prior 56 billion",
+          "Google confirmed a Broadcom custom-silicon order expansion for next-generation TPU"
+        ]
+      },
+      {
+        "hypothesis_id": "bmdh_d2f7f82efe614a2da91b48c2fe4ea1f7",
+        "canonical_key": "other",
+        "kind": "other",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "other",
+        "supporting_observations": [],
+        "counter_observations": []
+      },
+      {
+        "hypothesis_id": "bmdh_46bcb32676ff4ecb9bcf2ec951404748",
+        "canonical_key": "avgo_post_print_ai_revenue_shortfall",
+        "kind": "other",
+        "status": "candidate",
+        "confidence": "low",
+        "hypothesis": "avgo post print ai revenue shortfall",
+        "supporting_observations": [],
+        "counter_observations": []
+      },
+      {
+        "hypothesis_id": "bmdh_5cb6165c37d440b4b3914c8aad96e691",
+        "canonical_key": "company_specific",
+        "kind": "company_specific",
+        "status": "candidate",
+        "confidence": "medium",
+        "hypothesis": "Company-specific concern",
+        "supporting_observations": [
+          "Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply"
+        ],
+        "counter_observations": []
+      }
+    ],
+    "shadows": [
+      {
+        "shadow_id": "bshd_c4a93348e1044714bfc887709ed32bad",
+        "name": "AVGO shares move -12.6% with semiconductor peers",
+        "status": "open",
+        "statement": "AVGO shares declined -12.59% with semiconductor peers also selling off: NVDA -8.0%, AMD -7.0%, and SOX index approximately -10.26%."
+      },
+      {
+        "shadow_id": "bshd_a57c1a734b82400ea6d30e4e0ffeb5d8",
+        "name": "Google custom silicon volume",
+        "status": "open",
+        "statement": "An unconfirmed rumor says Google may delay custom silicon volume with Broadcom as it expands in-house silicon."
+      },
+      {
+        "shadow_id": "bshd_7fa634720d574baca333b24f3461140e",
+        "name": "Rumor: Google may delay Broadcom custom silicon volume",
+        "status": "unverified",
+        "statement": ""
+      },
+      {
+        "shadow_id": "bshd_12267df105e34de8b45237eefebac1d0",
+        "name": "AVGO shares move -2.74% after the latest print",
+        "status": "open",
+        "statement": "AVGO shares moved -2.74% after the latest print, while MRVL was roughly flat (+0.2%) and SOX was roughly flat (-0.4%)."
+      },
+      {
+        "shadow_id": "bshd_dca1e28de1134014ab6825904dce565b",
+        "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+        "status": "open",
+        "statement": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed."
+      },
+      {
+        "shadow_id": "bshd_ca093bf68ccc40e3a3ec08ce7687fa83",
+        "name": "unconfirmed_signal",
+        "status": "open",
+        "statement": ""
+      },
+      {
+        "shadow_id": "bshd_bbb3144ea6b8445386b185ea15533baa",
+        "name": "Rumor: Google may delay or reduce Broadcom custom silicon volume",
+        "status": "unverified",
+        "statement": ""
+      },
+      {
+        "shadow_id": "bshd_d4ea68609bb9423f8201532858d12d55",
+        "name": "AVGO -6.2% with no new filing",
+        "status": "open",
+        "statement": ""
+      }
+    ],
+    "questions": [
+      {
+        "question_id": "brq_500e109c06314b50b6af9ee1d5a133cf",
+        "question": "Is 143% AI semiconductor growth sustainable (backlog, bookings, customer concentration)?",
+        "why_it_matters": "Driver durability is unproven; hypothesis remains candidate pending forward indicators."
+      },
+      {
+        "question_id": "brq_a1e522b331f548638e21f97b57e12797",
+        "question": "No core claim exists for AVGO; what claim should the AI driver ultimately support?",
+        "why_it_matters": "Transmission chain Event→State→Exposure→Driver→Claim is incomplete at the claim level; no claim should be invented from this event alone."
+      },
+      {
+        "question_id": "brq_b72277e410f14e3d8a70f2575e9476dd",
+        "question": "What is the market pricing that the current Brain does not explain?",
+        "why_it_matters": "Large price move is unresolved."
+      },
+      {
+        "question_id": "brq_ccb2894051ee4d9a840c64fef2bc20f9",
+        "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+        "why_it_matters": "unsupported_causal_edge:bced_0d4281c592c64aad8fee710c16d17f4f:candidate"
+      },
+      {
+        "question_id": "brq_60fa42e692fd4e16909a2a5761d10008",
+        "question": "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.2)?",
+        "why_it_matters": "Decomposition determines whether fundamental drivers need re-evaluation or the move is macro noise."
+      },
+      {
+        "question_id": "brq_d0f7d1852dff437694da47b8e90bf887",
+        "question": "Did the selloff reflect a shift in market sentiment on AI capex durability, and is there confirmed evidence bearing on the ai_demand hypothesis?",
+        "why_it_matters": "Sector-wide AI semi selling may signal sentiment change, but no confirmed evidence yet; avoid causal attribution from price alone."
+      },
+      {
+        "question_id": "brq_6086c19a80db403bad4d115904062a0f",
+        "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
+        "why_it_matters": "Weak signal is a research question, not a conclusion."
+      },
+      {
+        "question_id": "brq_fbf0df86a9264d4c9ff7271922168d2f",
+        "question": "Can we confirm: Google custom silicon volume?",
+        "why_it_matters": "Weak signal is a research question, not a conclusion."
+      },
+      {
+        "question_id": "brq_0f94bc5fab05484cbdc5f5c70e02bccd",
+        "question": "What share of Broadcom's AI semiconductor revenue depends on Google custom silicon, and is a volume delay actually confirmed?",
+        "why_it_matters": "Quantifying Google exposure is prerequisite before rumor can inform concentration driver."
+      },
+      {
+        "question_id": "brq_38bda41c2c7d49d9b8f10ec16750715a",
+        "question": "Is Google expanding in-house silicon in a way that would structurally displace Broadcom custom silicon volumes, versus a timing delay?",
+        "why_it_matters": "Distinguishes delay vs. displacement; needed before any competitive-position driver update."
+      },
+      {
+        "question_id": "brq_c17424300962455c9565e96dc9ff0415",
+        "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+        "why_it_matters": "unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate"
+      },
+      {
+        "question_id": "brq_d4e1ed369cd94c4ba10739269e6e5b2b",
+        "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+        "why_it_matters": "unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate"
+      },
+      {
+        "question_id": "brq_fd86360851f04d47b782b145c84af0a9",
+        "question": "Confirm or refute the Google volume-delay rumor and quantify Google's share of AVGO AI revenue.",
+        "why_it_matters": "Rumor cannot propagate to State, Driver, or Claim without confirmation; existing causal gaps from e07_google_rumor remain unsupported candidate edges."
+      },
+      {
+        "question_id": "brq_4ad6b01d06a84388a8ada1f06c621d2d",
+        "question": "Does Google's in-house silicon expansion change Broadcom's long-run custom silicon share at that customer?",
+        "why_it_matters": "Competitive displacement would affect AI accelerator competitive position and demand durability claims; currently rumor only."
+      },
+      {
+        "question_id": "brq_76460b88974f4ed4b2ee797f97384e24",
+        "question": "Is there a missing Market Driver that would explain repeated unexplained AVGO tape?",
+        "why_it_matters": "Repeated unexplained divergence."
+      },
+      {
+        "question_id": "brq_2fe2ff2f419649c990326feb664d12e0",
+        "question": "Is a missing Expectation variable leaving repeated unexplained AVGO tape?",
+        "why_it_matters": "Repeated unexplained divergence."
+      },
+      {
+        "question_id": "brq_80769b50a0a24445b356391c7ba3c668",
+        "question": "Is a missing Exposure leaving repeated unexplained AVGO price behavior?",
+        "why_it_matters": "Repeated unexplained divergence."
+      },
+      {
+        "question_id": "brq_f9b933518554413b95c48fdee4079c98",
+        "question": "Is a missing Causal Edge leaving repeated unexplained AVGO tape?",
+        "why_it_matters": "Repeated unexplained divergence."
+      },
+      {
+        "question_id": "brq_a3bb935751a644f2aa3827e1f84fc508",
+        "question": "What is the customer-level composition of the guided $21.7B Q4 AI semiconductor revenue (e.g., Google custom silicon share vs other hyperscalers)?",
+        "why_it_matters": "Guide implies +236% YoY AI growth concentrated among few hyperscalers, but the filing discloses no customer split; needed to size concentration risk."
+      },
+      {
+        "question_id": "brq_6a4864297507440682e4e4836a30f64e",
+        "question": "Why did Q3 AI semiconductor revenue ($16.7B) miss the ~$17.2B expectation despite 'very strong' demand commentary?",
+        "why_it_matters": "Confirmed shortfall contrasts with the demand narrative; identifying the source (customer timing vs product mix) tests AI demand durability."
+      },
+      {
+        "question_id": "brq_bedf31f9a3eb441c9d2a7f512c0abe53",
+        "question": "Can we confirm: AVGO shares move -2.74% after the latest print?",
+        "why_it_matters": "Weak signal is a research question, not a conclusion."
+      },
+      {
+        "question_id": "brq_939ae65153fd42acb603219dd8dcd140",
+        "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
+        "why_it_matters": "Weak signal is a research question, not a conclusion."
+      },
+      {
+        "question_id": "brq_16120780ea7a4e25ad4280c67dcf0db0",
+        "question": "What share of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B) is attributable to Google custom TPU/ASIC orders, and can the order-reduction rumor be corroborated?",
+        "why_it_matters": "Rumor unconfirmed; Google-specific exposure within hyperscaler concentration is unquantified, so no impact can transmit to claims."
+      },
+      {
+        "question_id": "brq_de65ec2d435b4cd7a8a688001c0334f8",
+        "question": "Can the Google order-reduction rumor be corroborated via supply-chain data, Google capex disclosures, or Broadcom commentary before any State, Driver, or Claim change?",
+        "why_it_matters": "Rumor-only signal; verification required before transmission into the causal graph, given existing causal gaps on Google-to-claim linkage."
+      },
+      {
+        "question_id": "brq_11652a4ee8bc4bf488874e63a41fad2a",
+        "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+        "why_it_matters": "unsupported_causal_edge:bced_de7143af73904cd59cb723fc124b0b8c:candidate"
+      },
+      {
+        "question_id": "brq_a834cefa8f91492abbc61bf0efc5c61f",
+        "question": "What drove AVGO's -6.2% move on 2026-09-16 given no new filing or operating disclosure — sector-wide semiconductor selloff, AVGO-specific flow, or unconfirmed information?",
+        "why_it_matters": "Unexplained large move; driver must be identified before any state or claim changes."
+      },
+      {
+        "question_id": "brq_4faacc75f5794c0f9d315ddd721af8e0",
+        "question": "What drove AVGO's -6.2% decline on 2026-09-16 in the absence of any new filing or operating disclosure (sector-wide semis move vs. AVGO-specific flow vs. unconfirmed information)?",
+        "why_it_matters": "Large unexplained price move; driver must be identified before any state or claim changes."
+      }
+    ],
+    "counts": {
+      "states": 5,
+      "drivers": 9,
+      "claims": 5,
+      "exposures": 15,
+      "edges": 24,
+      "expectations": 6,
+      "attentions": 2,
+      "hypotheses": 8,
+      "shadows": 8,
+      "questions": 27
+    }
+  },
+  "arch_overfit": {
+    "driver_jaccard": 0.0,
+    "claim_jaccard": 0.0,
+    "hypothesis_jaccard": 0.4444,
+    "shared_drivers": [],
+    "shared_claims": [],
+    "shared_hypotheses": [
+      "ai_demand",
+      "customer_concentration",
+      "other",
+      "unresolved"
+    ],
+    "flags": [
+      {
+        "flag": "ARCHITECTURE_OR_LLM_OVERFIT",
+        "layer": "hypothesis",
+        "shared": [
+          "ai_demand",
+          "customer_concentration",
+          "other",
+          "unresolved"
+        ],
+        "jaccard": 0.4444
+      }
+    ]
+  },
+  "lite_hits": {
+    "reference_terms_found": [
+      "ai datacenter",
+      "optical",
+      "datacom",
+      "transceiver",
+      "cpo",
+      "capacity",
+      "inp",
+      "pricing",
+      "gross margin"
+    ],
+    "count": 9
+  }
+}

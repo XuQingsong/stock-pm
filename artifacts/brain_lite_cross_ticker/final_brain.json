@@ -1,0 +1,405 @@
+{
+  "states": [],
+  "drivers": [],
+  "claims": [],
+  "exposures": [
+    {
+      "exposure_id": "bexp_99e7bd03a9184383820fb91147ec1c24",
+      "exposure_type": "financial",
+      "subject": "LITE",
+      "object_name": "",
+      "reason": "LITE is exposed to"
+    },
+    {
+      "exposure_id": "bexp_8bbff3c52b5340b5840281f3029e108e",
+      "exposure_type": "financial",
+      "subject": "LITE",
+      "object_name": "LITE EML/InP capacity exposure",
+      "reason": "LITE is exposed to LITE EML/InP capacity exposure"
+    },
+    {
+      "exposure_id": "bexp_81c65bda4737480680d5c54dbe524a1d",
+      "exposure_type": "financial",
+      "subject": "LITE",
+      "object_name": "Optical revenue exposure to AI/datacenter demand",
+      "reason": "LITE is exposed to Optical revenue exposure to AI/datacenter demand"
+    },
+    {
+      "exposure_id": "bexp_35cbe41170ad4634a89989251412d18d",
+      "exposure_type": "financial",
+      "subject": "LITE",
+      "object_name": "Datacom/AI EML-CW laser revenue exposure",
+      "reason": "LITE is exposed to Datacom/AI EML-CW laser revenue exposure"
+    }
+  ],
+  "causal_edges": [
+    {
+      "edge_id": "bced_0e38cd418534498a8cd500c90d991cbf",
+      "from_node": "lite_state_q3_earnings_print",
+      "to_node": "lite_exposure_gaap_to_excluded_items",
+      "status": "candidate",
+      "mechanism": "lite_state_q3_earnings_print -> lite_exposure_gaap_to_excluded_items",
+      "statement": "lite_state_q3_earnings_print -> lite_exposure_gaap_to_excluded_items"
+    },
+    {
+      "edge_id": "bced_ce961cc114454a039e704d440c47d4e2",
+      "from_node": "cs_lite_inp_eml_supply_tight",
+      "to_node": "exp_lite_eml_capacity_bound",
+      "status": "candidate",
+      "mechanism": "cs_lite_inp_eml_supply_tight -> exp_lite_eml_capacity_bound",
+      "statement": "cs_lite_inp_eml_supply_tight -> exp_lite_eml_capacity_bound"
+    },
+    {
+      "edge_id": "bced_ba3c257198f5452e9c88eb114d945f88",
+      "from_node": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+      "to_node": "lite_state_q4_fy2026_financials",
+      "status": "candidate",
+      "mechanism": "bmdh_b0428e0125734c5194d59f0dadcfd420 -> lite_state_q4_fy2026_financials",
+      "statement": "bmdh_b0428e0125734c5194d59f0dadcfd420 -> lite_state_q4_fy2026_financials"
+    }
+  ],
+  "expectations": [
+    {
+      "expectation_id": "bexpc_1617f60e72734a5cad3c715aa6339213",
+      "name": "expectation",
+      "actual": null,
+      "expected": null,
+      "comparison": "unknown",
+      "trend": "rising",
+      "confidence": "medium",
+      "reason": "expectation: actual None vs expected None (unknown)"
+    },
+    {
+      "expectation_id": "bexpc_c6ebed9c200e41638464acbbb56b800e",
+      "name": "Q3 GAAP EPS",
+      "actual": 1.5,
+      "expected": 1.81,
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "confidence": "medium",
+      "reason": "Actual 1.5 vs expected 1.81 (in_line)."
+    },
+    {
+      "expectation_id": "bexpc_a231747b881e4be18368ca299c9d7603",
+      "name": "CPO versus pluggable transceivers",
+      "actual": null,
+      "expected": null,
+      "comparison": "unknown",
+      "trend": "falling",
+      "confidence": "low",
+      "reason": "Low-confidence expectation shift from an unconfirmed report; not a print."
+    },
+    {
+      "expectation_id": "bexpc_e8f820359cb046acbd14db127e39526e",
+      "name": "Q4 non-GAAP EPS vs guide",
+      "actual": 3.23,
+      "expected": 2.95,
+      "comparison": "unknown",
+      "trend": "rising",
+      "confidence": "medium",
+      "reason": "Q4 non-GAAP EPS vs guide: actual 3.23 vs expected 2.95 (unknown)"
+    },
+    {
+      "expectation_id": "bexpc_7058b6ec49ea494783ad3aff47aa14a8",
+      "name": "Q4 non-GAAP EPS",
+      "actual": 3.23,
+      "expected": 2.95,
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "confidence": "medium",
+      "reason": "Actual 3.23 vs expected 2.95 (in_line)."
+    },
+    {
+      "expectation_id": "bexpc_fdababf7b75b4a86b82303f63c3d98ee",
+      "name": "Q1 FY2027 net revenue vs guidance",
+      "actual": null,
+      "expected": 1.25,
+      "comparison": "unknown",
+      "trend": "unchanged",
+      "confidence": "medium",
+      "reason": "Q1 FY2027 net revenue vs guidance: actual None vs expected 1.25 (unknown)"
+    }
+  ],
+  "attentions": [
+    {
+      "attention_id": "batt_a5c0069500bd499daa048e0c0bceae5b",
+      "name": "unexplained_price_vs_brain",
+      "statement": "Price behavior is not fully explained by the current Brain.",
+      "reason": "Price behavior is not fully explained by the current Brain."
+    }
+  ],
+  "hypotheses": [
+    {
+      "hypothesis_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+      "canonical_key": "ai_demand",
+      "kind": "ai_demand",
+      "status": "candidate",
+      "confidence": "low",
+      "hypothesis": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth",
+      "reason": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth"
+    },
+    {
+      "hypothesis_id": "bmdh_e7aa1aaed26742f5a91690d9f96aad79",
+      "canonical_key": "other",
+      "kind": "other",
+      "status": "candidate",
+      "confidence": "low",
+      "hypothesis": "other"
+    },
+    {
+      "hypothesis_id": "bmdh_417319edb501499ea9bd619fea5024ad",
+      "canonical_key": "unresolved",
+      "kind": "other",
+      "status": "unresolved",
+      "confidence": "low",
+      "hypothesis": "Market driver is unresolved",
+      "reason": "Market driver is unresolved"
+    },
+    {
+      "hypothesis_id": "bmdh_43b7825547ef40f6b0cb781b21fb31ad",
+      "canonical_key": "customer_concentration",
+      "kind": "customer_concentration",
+      "status": "open",
+      "confidence": "medium",
+      "hypothesis": "Customer concentration concern is increasing",
+      "reason": "Customer concentration concern is increasing"
+    },
+    {
+      "hypothesis_id": "bmdh_71a96ad96c0242e2a036c74b125ab258",
+      "canonical_key": "competitive_supply_expansion",
+      "kind": "other",
+      "status": "candidate",
+      "confidence": "low",
+      "hypothesis": "competitive supply expansion"
+    }
+  ],
+  "shadows": [
+    {
+      "shadow_id": "bshd_396f6bae677f4a7d9b0d8cb866cd1fca",
+      "name": "unconfirmed_signal",
+      "status": "watching",
+      "statement": ""
+    },
+    {
+      "shadow_id": "bshd_956d38aa07ec4f44ab7a4916ae90db7f",
+      "name": "CPO versus pluggable transceivers",
+      "status": "open",
+      "statement": "An unconfirmed rumor says co-packaged optics will displace pluggable transceiver demand and reduce Lumentum cloud-module volume."
+    },
+    {
+      "shadow_id": "bshd_6f15903b0a1840b29b456f8d8ed0415a",
+      "name": "cpo_displacement_rumor",
+      "status": "active",
+      "statement": ""
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "brq_545c19ce2a174b8eb14da3e5a5275bbe",
+      "question": "What segment mix (datacom vs telecom) and customer concentration drove the 90.1% YoY revenue growth?",
+      "why_it_matters": "Fact lacks segment attribution; required to confirm or refute the AI/datacenter driver hypothesis.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_66a9c42028604c04ba658bd7ae0f1ccd",
+      "question": "Is the 47.9% non-GAAP gross margin sustainable, and what mix or pricing effects drove expansion?",
+      "why_it_matters": "Margin durability affects exposure magnitude and future financial impact; fact gives levels, not drivers.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_d8e38d5bab0646cb95da9085dcf15bb9",
+      "question": "What Q4 FY2026 guidance and non-GAAP operating margin did management provide?",
+      "why_it_matters": "Fact text truncated before non-GAAP operating margin and outlook; needed to assess growth trajectory.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_8385c1b29abe4a94b30bcab01b35b5de",
+      "question": "Did Q3 revenue ($808.4M) and non-GAAP EPS ($2.37) beat or miss street expectations, and how did AI/datacenter-exposed segments perform?",
+      "why_it_matters": "Required to connect the earnings print to the ai_demand hypothesis via a valid causal path.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_7672f9034ba0482a931f624550554230",
+      "question": "What is the market pricing that the current Brain does not explain?",
+      "why_it_matters": "Large price move is unresolved.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_c1675e4f9ea04a5d8275c3fa73eaedf8",
+      "question": "Brain lacks states and drivers to connect print fundamentals to the hypothesis; no transmittable path can be invented.",
+      "why_it_matters": "Brain lacks states and drivers to connect print fundamentals to the hypothesis; no transmittable path can be invented.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_04cf79d37b3f48e4b627249378745a4f",
+      "question": "What did LITE's Q3 guidance, revenue mix, and AI/datacenter commentary actually say, so the state→driver chain can be built and the post-print divergence resolved?",
+      "why_it_matters": "The Brain has no fundamental objects from the print; tape alone cannot explain the -5.06% move.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_10aa4409005f45119433b9853b1e8fb2",
+      "question": "Is there a missing Market Driver that would explain repeated unexplained LITE tape?",
+      "why_it_matters": "Repeated unexplained divergence.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_4c649969577c45abb280883261395026",
+      "question": "Is a missing Expectation variable leaving repeated unexplained LITE tape?",
+      "why_it_matters": "Repeated unexplained divergence.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_4cd1ecf4cb1c4927b246303f69fa81be",
+      "question": "Is a missing Exposure leaving repeated unexplained LITE price behavior?",
+      "why_it_matters": "Repeated unexplained divergence.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_39a3c3c5ffd3483099e23943bd362414",
+      "question": "Is a missing Causal Edge leaving repeated unexplained LITE tape?",
+      "why_it_matters": "Repeated unexplained divergence.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_d65a0a4506104e68bce6384e16a56a0e",
+      "question": "Does the Q3 transceiver ramp explain prior unexplained price action and resolve the unresolved market driver?",
+      "why_it_matters": "Unresolved driver hypothesis exists; this event offers explanatory evidence but no winner should be picked yet.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_d05ad16dc6e14c259a5031a5f289f47f",
+      "question": "Cannot transmit impact to financials without capacity expansion timeline and pricing assumptions.",
+      "why_it_matters": "Cannot transmit impact to financials without capacity expansion timeline and pricing assumptions.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_3f650684d392470fa57f4294f0311dbe",
+      "question": "Can we confirm: CPO versus pluggable transceivers?",
+      "why_it_matters": "Weak signal is a research question, not a conclusion.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_035e712bc6374964a793405e22e87473",
+      "question": "Is co-packaged optics adoption actually displacing pluggable transceiver demand at Lumentum's cloud customers, and over what timeline?",
+      "why_it_matters": "Unverified rumor; requires evidence on CPO adoption pace, customer commitments, and volume impact.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_ad5e5f70560544ac86fbc21dc5ef220d",
+      "question": "Brain lacks exposure/state objects; cannot invent a path from rumor to revenue.",
+      "why_it_matters": "Brain lacks exposure/state objects; cannot invent a path from rumor to revenue.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_3e200093052d46aaa29767682fce2b16",
+      "question": "What share of Lumentum revenue comes from pluggable transceivers and cloud modules that CPO could displace, and which customers are evaluating CPO?",
+      "why_it_matters": "Exposure data needed before the shadow risk can be sized or promoted.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_c4643029568c4902a148b09f41de2f36",
+      "question": "How did Q4 FY2026 EPS and FY2027 guidance compare to consensus, and what segment/customer mix drove the 109.3% YoY revenue growth?",
+      "why_it_matters": "Event fact is truncated; EPS, guidance, and segment mix are needed to update expectations and confirm drivers.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_3508b0982a54436ba2c1d6d0f96aaed7",
+      "question": "Did top-customer concentration increase with Q4's 109.3% YoY revenue growth?",
+      "why_it_matters": "Hyperscale AI customers may dominate growth; release excerpt does not disclose customer mix.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_4b05a0a9d3d641f3adcb20b77c72a63e",
+      "question": "State-to-driver link is missing; cannot invent a transmittable path without segment disclosure.",
+      "why_it_matters": "State-to-driver link is missing; cannot invent a transmittable path without segment disclosure.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_d3b3c20004c54d4893d4782a8e1f3a48",
+      "question": "What drove the Q4 beat — Datacom/AI optics, Telecom, or gross margin — and does next-quarter guidance confirm it?",
+      "why_it_matters": "Driver attribution is needed before linking the results state to demand hypotheses or claims.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_8aaadf2dd0004d58adcb6cee5e37b008",
+      "question": "Did management raise forward revenue/EPS guidance alongside the Q4 beat, and which segment (Datacom/AI vs Telecom) explains the upside?",
+      "why_it_matters": "Headline beat lacks attribution; needed before connecting state to driver, exposure, or claim.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_98527476d38f42698ecba9c386145497",
+      "question": "What does management attribute the Q1 FY2027 guidance strength to (AI/datacenter datacom vs telecom), and what segment/customer mix supports ~$1.25B quarterly revenue?",
+      "why_it_matters": "CEO attribution is truncated; needed to link guidance state to the ai_demand driver without inventing a transmittable path.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_6cb6e5d3e477437ab0dc3a6d088808ee",
+      "question": "Brain lacks exposure and claim objects; guidance impact cannot propagate, so flag the gap rather than invent a path.",
+      "why_it_matters": "Brain lacks exposure and claim objects; guidance impact cannot propagate, so flag the gap rather than invent a path.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_3bb476d52fd54980a7fd1a60e5be187a",
+      "question": "How does the Q1 FY2027 guidance midpoint compare to sell-side consensus for revenue and non-GAAP EPS?",
+      "why_it_matters": "Event carries no consensus comparison; needed to judge whether this guidance is a positive or negative surprise.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_758a5621937643f087c08c19500a7f4e",
+      "question": "Does rising CPO laser demand and the initial ELS order confirm CPO will displace pluggable transceivers?",
+      "why_it_matters": "Open shadow rumor gains directional corroboration from direct CEO evidence, but displacement itself remains unconfirmed.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_6e74e30488c74959a9a0957bd672d231",
+      "question": "Is the initial ELS order from a new customer, or does it deepen existing customer concentration?",
+      "why_it_matters": "Customer concentration hypothesis is at medium confidence; the ELS order source is undisclosed.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_7aca0df634f2478dac3ec8a6e84da9d1",
+      "question": "No financial link exists to transmit datacom exposure to revenue or margin; gap flagged rather than inventing a path.",
+      "why_it_matters": "No financial link exists to transmit datacom exposure to revenue or margin; gap flagged rather than inventing a path.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_9c70ecc88f864b209db78b020ec12adc",
+      "question": "Is AI datacenter laser demand currently supply-constrained, so Coherent's added capacity absorbs unmet demand, or share-competitive, pressuring Lumentum pricing and sockets?",
+      "why_it_matters": "Determines whether Coherent's capacity doubling is bullish demand confirmation or bearish share risk for Lumentum.",
+      "status": "open"
+    },
+    {
+      "question_id": "brq_92c5787fbe5f4f6199b38a666482d7e8",
+      "question": "What share of Lumentum revenue comes from EML/CW datacom lasers, and which customers overlap with Coherent?",
+      "why_it_matters": "Quantifies revenue at risk and connects the competitive exposure to the open customer concentration hypothesis.",
+      "status": "open"
+    }
+  ],
+  "divergences": [
+    {
+      "divergence_id": "bpfd_23a9b9f0d8d243e9bc4d2557a2433ad4",
+      "status": "resolved",
+      "explanation_grade": "well_explained",
+      "reason": "Current Brain cannot fully explain current price behavior."
+    },
+    {
+      "divergence_id": "bpfd_e8386015023a42cba0c6af9a241262ee",
+      "status": "resolved",
+      "explanation_grade": "well_explained",
+      "reason": "Current Brain cannot fully explain current price behavior."
+    }
+  ],
+  "counts": {
+    "states": 0,
+    "drivers": 0,
+    "claims": 0,
+    "exposures": 4,
+    "edges": 3,
+    "expectations": 6,
+    "attentions": 1,
+    "hypotheses": 5,
+    "shadows": 3,
+    "questions": 30,
+    "divergences": 2
+  }
+}

@@ -1,0 +1,290 @@
+[
+  {
+    "event_id": "e01_q3_filing",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "exposures": 0,
+      "expectations": 0,
+      "attentions": 0,
+      "hypotheses": 1,
+      "shadows": 0,
+      "questions": 3,
+      "divergences": 0
+    }
+  },
+  {
+    "event_id": "e02_q3_print_vs_expect",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 1,
+      "exposures": 1,
+      "expectations": 2,
+      "attentions": 0,
+      "hypotheses": 1,
+      "shadows": 0,
+      "questions": 4,
+      "divergences": 0
+    }
+  },
+  {
+    "event_id": "e03_q3_tape",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 1,
+      "exposures": 1,
+      "expectations": 2,
+      "attentions": 1,
+      "hypotheses": 3,
+      "shadows": 1,
+      "questions": 7,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e04_q3_call_cloud",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 1,
+      "exposures": 1,
+      "expectations": 2,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 1,
+      "questions": 12,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e05_q3_call_capacity",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 2,
+      "exposures": 2,
+      "expectations": 2,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 1,
+      "questions": 13,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e06_noise_etf",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 2,
+      "exposures": 2,
+      "expectations": 2,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 1,
+      "questions": 13,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e07_cpo_rumor",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 2,
+      "exposures": 2,
+      "expectations": 3,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 17,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e08_noise_token",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 2,
+      "exposures": 2,
+      "expectations": 3,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 17,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e09_q4_filing",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 3,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 19,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e10_q4_print_vs_guide",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 5,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 22,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e11_q1_guide",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 25,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e12_q4_tape",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 25,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e13_q4_call_confirm",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 27,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e14_duplicate_q4",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 27,
+      "divergences": 1
+    }
+  },
+  {
+    "event_id": "e15_aug26_tape",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 3,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 4,
+      "shadows": 3,
+      "questions": 27,
+      "divergences": 2
+    }
+  },
+  {
+    "event_id": "e16_coherent_capacity",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 4,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 5,
+      "shadows": 3,
+      "questions": 30,
+      "divergences": 2
+    }
+  },
+  {
+    "event_id": "e17_ecoc_noise",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 4,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 5,
+      "shadows": 3,
+      "questions": 30,
+      "divergences": 2
+    }
+  },
+  {
+    "event_id": "e18_optics_group_tape",
+    "counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 3,
+      "exposures": 4,
+      "expectations": 6,
+      "attentions": 1,
+      "hypotheses": 5,
+      "shadows": 3,
+      "questions": 30,
+      "divergences": 2
+    }
+  }
+]

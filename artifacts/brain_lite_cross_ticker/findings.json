@@ -1,0 +1,31 @@
+{
+  "recorded_not_patched": true,
+  "primary": "Incremental first_run on an empty BrainStore does not persist State / Driver / Core Claim for LITE.",
+  "evidence": [
+    "GLM-5.3 proposed company_state on e01/e02/e04/e05/e09 (traces).",
+    "Final counts: states=0 drivers=0 claims=0.",
+    "RQs explicitly say the Brain lacks states/drivers and will not invent a transmittable path.",
+    "Now Chain why_company is usually 'No company exposure is linked yet.'"
+  ],
+  "fast_layer_did_grow": {
+    "expectations": 6,
+    "hypotheses": 5,
+    "shadows": 3,
+    "questions": 30,
+    "exposures": 4,
+    "candidate_edges": 3
+  },
+  "avgo_overfit": 0,
+  "architecture_or_llm_overfit": {
+    "layer": "hypothesis",
+    "shared_keys": ["ai_demand", "customer_concentration", "other", "unresolved"],
+    "note": "Shared market-hypothesis taxonomy, not copied AVGO ASIC/TPU/XPU language."
+  },
+  "other_observations": [
+    "Q3 GAAP EPS 1.50 vs 1.81 stored as comparison=in_line.",
+    "e12 Q4 +13.63% tape was L0-stopped (duplicate/fingerprint vs earlier tape).",
+    "Context recall/precision null because no leftover slow objects.",
+    "LITE tokens 151056 vs AVGO 223819 (-32.5%). Cheaper because empty snapshot, not because architecture was tuned.",
+    "run_brain research-pack initialization was not called."
+  ]
+}

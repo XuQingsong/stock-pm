@@ -1,0 +1,128 @@
+[
+  {
+    "event_id": "e01_q3_filing",
+    "published_at": "2026-05-05T21:05:00+00:00",
+    "role": "earnings",
+    "title": "Lumentum reports fiscal Q3 FY2026 results",
+    "source": "Lumentum Q3 FY2026 Exhibit 99.1, 2026-05-05"
+  },
+  {
+    "event_id": "e02_q3_print_vs_expect",
+    "published_at": "2026-05-05T22:10:00+00:00",
+    "role": "expectation_print",
+    "title": "LITE GAAP EPS printed 1.50 versus street 1.81",
+    "source": "Company print vs street EPS cited in prior LITE pack: $1.50 vs $1.81"
+  },
+  {
+    "event_id": "e03_q3_tape",
+    "published_at": "2026-05-06T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "LITE shares move -5.06% after the Q3 print",
+    "source": "Prior LITE pack: Q3 miss next-day -5.06% after a +25.68% five-day run"
+  },
+  {
+    "event_id": "e04_q3_call_cloud",
+    "published_at": "2026-05-06T22:00:00+00:00",
+    "role": "customer_demand",
+    "title": "Lumentum said cloud transceiver shipments rose more than 40% sequentially and remain below customer demand",
+    "source": "Q3 FY2026 call transcript, 2026-05-05/06"
+  },
+  {
+    "event_id": "e05_q3_call_capacity",
+    "published_at": "2026-05-06T22:30:00+00:00",
+    "role": "capacity_supply",
+    "title": "Lumentum said indium phosphide and EML demand exceeds supply by more than 30%",
+    "source": "Q3 FY2026 call: InP/EML shortage and mix commentary"
+  },
+  {
+    "event_id": "e06_noise_etf",
+    "published_at": "2026-06-16T14:00:00+00:00",
+    "role": "ordinary_news",
+    "title": "IYZ, CHTR, MSI, LITE: ETF Outflow Alert",
+    "source": "Existing LITE news corpus: IYZ ETF outflow alert"
+  },
+  {
+    "event_id": "e07_cpo_rumor",
+    "published_at": "2026-07-14T16:00:00+00:00",
+    "role": "rumor",
+    "title": "Unconfirmed rumor that co-packaged optics will displace Lumentum pluggable transceiver demand",
+    "source": "Unconfirmed CPO-displacement rumor pattern used in prior LITE counter-search, not issuer-confirmed"
+  },
+  {
+    "event_id": "e08_noise_token",
+    "published_at": "2026-07-22T13:00:00+00:00",
+    "role": "ordinary_news",
+    "title": "What Is Lumentum Holdings (LITE) Stock Tied Token LITEON Really About?",
+    "source": "Existing LITE news corpus"
+  },
+  {
+    "event_id": "e09_q4_filing",
+    "published_at": "2026-08-11T21:05:00+00:00",
+    "role": "earnings",
+    "title": "Lumentum reports fiscal Q4 and full-year FY2026 results",
+    "source": "Lumentum Q4 FY2026 Exhibit 99.1, 2026-08-11"
+  },
+  {
+    "event_id": "e10_q4_print_vs_guide",
+    "published_at": "2026-08-11T22:10:00+00:00",
+    "role": "expectation_print",
+    "title": "LITE Q4 non-GAAP EPS printed 3.23 versus the prior 2.85 to 3.05 guide",
+    "source": "Q4 print versus the May Q4 guide of $2.85–$3.05 non-GAAP EPS"
+  },
+  {
+    "event_id": "e11_q1_guide",
+    "published_at": "2026-08-11T22:25:00+00:00",
+    "role": "guidance",
+    "title": "Lumentum guided Q1 FY2027 revenue to 1.225 to 1.275 billion",
+    "source": "Q4 FY2026 Exhibit 99.1 Business Outlook"
+  },
+  {
+    "event_id": "e12_q4_tape",
+    "published_at": "2026-08-12T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "LITE shares move +13.63% after the Q4 print",
+    "source": "Prior LITE pack: Q4 next-day +13.63% on 2.45x volume, +11.31 vs SOXX"
+  },
+  {
+    "event_id": "e13_q4_call_confirm",
+    "published_at": "2026-08-12T22:00:00+00:00",
+    "role": "customer_demand",
+    "title": "Lumentum said OCS and 1.6T cloud modules are layering in, with an initial ELS order and rising CPO laser demand",
+    "source": "Q4 FY2026 CEO commentary in Exhibit 99.1"
+  },
+  {
+    "event_id": "e14_duplicate_q4",
+    "published_at": "2026-08-13T15:00:00+00:00",
+    "role": "duplicate",
+    "title": "Lumentum reports fiscal fourth quarter net revenue of 1.01 billion",
+    "source": "Secondary reprint of the Q4 $1.01 billion sentence"
+  },
+  {
+    "event_id": "e15_aug26_tape",
+    "published_at": "2026-08-26T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "LITE shares move +6.44% with no new filing",
+    "source": "Prior LITE pack: +6.44% on 2026-08-26"
+  },
+  {
+    "event_id": "e16_coherent_capacity",
+    "published_at": "2026-09-03T15:00:00+00:00",
+    "role": "competition",
+    "title": "Coherent said 6-inch indium phosphide EMLs and CW lasers are in production and capacity is doubling",
+    "source": "Coherent fiscal Q3 commentary reported in 2026 optical-capacity coverage"
+  },
+  {
+    "event_id": "e17_ecoc_noise",
+    "published_at": "2026-09-08T14:00:00+00:00",
+    "role": "ordinary_news",
+    "title": "Lumentum Sets ECOC 2026 Speaker Schedule",
+    "source": "Existing LITE news corpus"
+  },
+  {
+    "event_id": "e18_optics_group_tape",
+    "published_at": "2026-09-16T19:30:00+00:00",
+    "role": "unresolved_tape",
+    "title": "Lumentum shares fall as AI-optics group weakens after peer financing move",
+    "source": "Existing LITE news corpus: AI-optics group weakens after peer financing; header price 2026-09-16 $919.40"
+  }
+]

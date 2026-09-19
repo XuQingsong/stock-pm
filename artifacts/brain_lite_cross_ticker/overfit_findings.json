@@ -1,0 +1,32 @@
+{
+  "avgo": {
+    "avgo_overfit": [],
+    "count": 0
+  },
+  "architecture": {
+    "driver_jaccard": 0.0,
+    "claim_jaccard": 0.0,
+    "hypothesis_jaccard": 0.4444,
+    "shared_drivers": [],
+    "shared_claims": [],
+    "shared_hypotheses": [
+      "ai_demand",
+      "customer_concentration",
+      "other",
+      "unresolved"
+    ],
+    "flags": [
+      {
+        "flag": "ARCHITECTURE_OR_LLM_OVERFIT",
+        "layer": "hypothesis",
+        "shared": [
+          "ai_demand",
+          "customer_concentration",
+          "other",
+          "unresolved"
+        ],
+        "jaccard": 0.4444
+      }
+    ]
+  }
+}
