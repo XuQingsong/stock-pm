@@ -9,6 +9,8 @@ from stock_pm.brain import api as brain_api
 from stock_pm.brain.materialize_from_research import (
     GAPS,
     SOURCE_KIND,
+    _classify_market_theme,
+    _is_company_specific_trigger,
     materialize_from_research,
     parse_tickers,
 )
@@ -336,3 +338,191 @@ def test_materialize_and_page_paths_never_invoke_llm(monkeypatch) -> None:
     assert claim.json()["llm_invoked"] is False
     assert market.json()["dominant_drivers"]
     assert lite.json()["core_claims"] == []
+
+
+def test_classify_skips_issuer_triggers_but_keeps_market_framed_themes() -> None:
+    assert _is_company_specific_trigger({"title": "Meta raises AI capital expenditure", "event_type": "capex"}) is True
+    assert _classify_market_theme("Meta raises AI capital expenditure") is None
+    assert _classify_market_theme("Gross margin stays in a known band.") is None
+    assert (
+        _classify_market_theme(
+            "The tape is trading AI capex expectations after Meta raised capital expenditure."
+        )
+        == "ai_capex_expectations"
+    )
+    assert _classify_market_theme("Real yields and treasury rates are the live market variable.") == "real_yields"
+
+
+def test_agent_run_findings_write_market_hyp_and_attention() -> None:
+    research = InMemoryResearchStore()
+    research.upsert_pack({"ticker": "AVGO", "company_profile": {"legal_name": "Broadcom Inc."}})
+    research.insert_assumption(
+        {
+            "ticker": "AVGO",
+            "statement": "Gross margin stays in a known band.",
+            "thesis_role": "core",
+            "status": "unchanged",
+        }
+    )
+    research.insert_agent_run(
+        {
+            "ticker": "AVGO",
+            "agent_name": "industry",
+            "status": "success",
+            "output_json": {
+                "findings": [
+                    "Hyperscaler AI capex remains the industry demand variable.",
+                    "customer or industry capex language is present",
+                    "EPS beat 4 of last 6 estimated prints",
+                ],
+                "reasoning": {},
+            },
+        }
+    )
+    research.insert_agent_run(
+        {
+            "ticker": "AVGO",
+            "agent_name": "pm_judge",
+            "status": "success",
+            "output_json": {
+                "findings": [],
+                "pm_reasoning": {
+                    "decisive_variables": ["AI capex expectations across hyperscalers"],
+                    "competing_hypotheses": [],
+                },
+                "reasoning": {},
+            },
+        }
+    )
+    research.insert_agent_run(
+        {
+            "ticker": "AVGO",
+            "agent_name": "fundamental",
+            "status": "success",
+            "output_json": {
+                "findings": ["latest revenue beat versus consensus"],
+                "reasoning": {
+                    "key_economic_drivers": [
+                        {
+                            "driver": "AI infrastructure spend",
+                            "why_it_matters": "Custom silicon converts AI capex expectations into revenue.",
+                            "confidence": "high",
+                        }
+                    ]
+                },
+            },
+        }
+    )
+    brain = BrainStore()
+    result = materialize_from_research("AVGO", research=research, brain=brain)
+    assert result["llm_invoked"] is False
+    hyps = brain.list_hypotheses("AVGO")
+    assert hyps
+    assert all(row.get("kind") in {"ai_demand", "sector_macro", "real_yields"} for row in hyps)
+    assert any(row.get("kind") == "ai_demand" for row in hyps)
+    assert not any("Meta raises" in (row.get("hypothesis") or "") for row in hyps)
+    attentions = brain.list_market_attentions("AVGO")
+    assert attentions
+    assert any("AI capex" in (row.get("name") or "") for row in attentions)
+    overview = build_market_overview(brain)
+    # one ticker + no macro yet: cluster must not invent a global driver
+    assert overview["llm_invoked"] is False
+    assert overview["dominant_drivers"] == []
+
+
+def test_environment_struct_macro_helps_promote_overview() -> None:
+    research = InMemoryResearchStore()
+    research.upsert_pack({"ticker": "AVGO", "company_profile": {"legal_name": "Broadcom Inc."}})
+    research.insert_assumption(
+        {
+            "ticker": "AVGO",
+            "statement": "The tape is trading AI capex expectations after Meta raised capital expenditure.",
+            "thesis_role": "supporting",
+            "status": "strengthened",
+            "confidence": 0.7,
+        }
+    )
+    research.insert_assumption(
+        {
+            "ticker": "AVGO",
+            "statement": "Meta raises AI capital expenditure",
+            "thesis_role": "none",
+            "status": "unchanged",
+        }
+    )
+    brain = BrainStore()
+    market = _Market(
+        snapshots=[
+            {
+                "id": 9,
+                "scope": "market",
+                "one_liner": "环境信息暂缺，当前判断置信度有限。",
+                "row_thesis": "环境信息暂缺，当前判断置信度有限。",
+                "publishState": "published",
+                "struct": {
+                    "news": {
+                        "macro": {
+                            "clause": "盘面仍在交易AI资本开支预期",
+                            "headline": "AI capex remains the cross-asset variable",
+                            "themes": ["semis"],
+                        }
+                    },
+                    "synthesis": "Tape is still trading AI capex expectations across semis.",
+                },
+            }
+        ]
+    )
+    result = materialize_from_research("AVGO,COHR,XOM", research=research, brain=brain, market=market)
+    assert result["llm_invoked"] is False
+    assert result["market_environment"]["states_written"] >= 1
+    macros = [row for row in brain.list_all_states() if row.get("state_type") == "macro"]
+    assert macros
+    assert any(row.get("state_key") == "ai_capex_expectations" for row in macros)
+    assert any(row.get("ticker") in {None, ""} for row in macros)
+    hyps = brain.list_hypotheses("AVGO")
+    assert hyps
+    assert any(row.get("kind") == "ai_demand" for row in hyps)
+    assert not any("Meta raises AI capital expenditure" == (row.get("hypothesis") or "") for row in hyps)
+    overview = build_market_overview(brain)
+    assert overview["llm_invoked"] is False
+    assert overview["empty_state"] is None
+    assert overview["dominant_drivers"]
+    assert any(row.get("category") == "ai_capex_expectations" for row in overview["dominant_drivers"])
+
+
+def test_two_tickers_from_agent_findings_promote_without_env() -> None:
+    research = InMemoryResearchStore()
+    for symbol in ("AVGO", "COHR"):
+        research.upsert_pack({"ticker": symbol, "company_profile": {"legal_name": symbol}})
+        research.insert_assumption(
+            {
+                "ticker": symbol,
+                "statement": f"{symbol} gross margin stays in a known band.",
+                "thesis_role": "supporting",
+                "status": "unchanged",
+            }
+        )
+        research.insert_agent_run(
+            {
+                "ticker": symbol,
+                "agent_name": "industry",
+                "status": "success",
+                "output_json": {
+                    "findings": ["Optical and ASIC names are trading hyperscaler AI capex expectations, not one print."],
+                    "reasoning": {},
+                },
+            }
+        )
+    brain = BrainStore()
+    materialize_from_research("AVGO,COHR,XOM", research=research, brain=brain)
+    assert brain.list_hypotheses("AVGO")
+    assert brain.list_hypotheses("COHR")
+    assert brain.list_hypotheses("XOM") == []
+    overview = build_market_overview(brain)
+    assert overview["llm_invoked"] is False
+    assert overview["dominant_drivers"]
+    assert any(row.get("category") == "ai_capex_expectations" for row in overview["dominant_drivers"])
+    tickers = set()
+    for row in overview["dominant_drivers"]:
+        tickers.update(row.get("affected_tickers") or [])
+    assert {"AVGO", "COHR"} <= tickers

@@ -18,20 +18,22 @@ Production `brain_*` tables were empty. `product_read.build_market_overview` onl
 
 `MarketDominantDriver` still requires a **cluster** (2+ tickers on the same theme, or a macro/industry state plus a hypothesis/attention). A single ticker hypothesis alone will not promote.
 
+Claims / thesis / events can exist while `dominant_drivers` stays empty if `brain_market_hypotheses` and `brain_market_attention` were never written. This job now maps market-wide theme sentences (AI capex, rates, sector cycle) from assumptions, pack industry context, and `research_agent_runs.output_json` (`pm_judge` / `fundamental` / `industry` findings and reasoning). Issuer-action headlines (Meta raises capex) stay triggers. `environment_snapshots.struct` (macro/sector clause, themes) becomes ticker-less `brain_states` with a product_read theme key so `_should_promote` can fire.
+
 ## What is copied
 
 | Source | Brain target | Rule |
 | --- | --- | --- |
 | `research_packs.company_profile` | `brain_states` (company) | legal name / sector / existing summary only |
-| `research_packs.industry_context` | `brain_states` (industry) | existing text; theme via `product_read.theme_key` |
+| `research_packs.industry_context` | `brain_states` (industry) + market hyp/attention when the text is a market-wide theme | existing text; theme via the materialize classifier |
 | `research_packs.major_events` | `brain_events` | title/type already on the pack row |
 | `research_packs.earnings_history` / `guidance_history` | `brain_expectations` | only when actual **and** expected numbers already exist |
-| `research_assumptions` | `brain_claims` + market hyp/attention when the statement already matches a market-wide theme | status/role/confidence mapped; no rewrite |
+| `research_assumptions` | `brain_claims` + market hyp/attention when the statement already matches a market-wide theme | status/role/confidence mapped; no rewrite; issuer-action headlines are not hyps |
 | `assumption_evidence_links` | `brain_claim_evidence_links` | linked evidence ids only |
 | `investment_theses` (latest) | `brain_thesis_snapshots` | `core_thesis` and existing invalidation / monitor strings |
 | `research_valuations` | `brain_valuation_states.supporting_data` | cases copied as-is; direction left `uncertain` unless already present |
-| latest `research_snapshots` + latest success per `research_agent_runs.agent_name` | hypotheses / value drivers | only `statement` / `driver` / `why_it_matters` already in JSON |
-| `environment_snapshots` (latest per scope) | `brain_states` (macro, ticker-less for market scope) | skip `missing` / “环境信息暂缺” placeholders |
+| latest `research_snapshots` + latest success per `research_agent_runs.agent_name` | market hyp/attention when findings / competing hyps / drivers are market-wide; value drivers from `key_economic_drivers` | copies existing JSON strings only; no GLM; company-specific findings stay off the market tables |
+| `environment_snapshots` (latest per scope) | `brain_states` (ticker-less `macro`, `state_key` = theme) | skip `missing` / “环境信息暂缺” placeholders; read `struct.news.macro` / sector / themes when the one-liner is empty |
 | `market_events` | `brain_events` | recent titles only; issuer capex stays a trigger, not a dominant driver |
 
 LITE (or any ticker) without a pack / assumptions / thesis / snapshot returns `status=empty` and writes nothing ticker-specific.
