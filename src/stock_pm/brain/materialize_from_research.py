@@ -17,7 +17,7 @@ from typing import Any
 
 from stock_pm.research.llm_reason import compact_text
 
-from .product_read import ISSUER_ACTION, MARKET_WIDE_KEYS, is_trigger_event, theme_key
+from .product_read import ISSUER_ACTION, MARKET_WIDE_KEYS, THEME_DISPLAY_ZH, is_trigger_event, theme_key
 from .store import BrainStore
 
 
@@ -52,7 +52,7 @@ MARKET_THEME_LABELS = {
     "sector_macro": "sector / macro",
 }
 
-# Extra phrases already in research JSON that theme_key's tighter list misses.
+# Extra phrases already in research JSON / Chinese desk copy that theme_key's tighter list misses.
 MATERIALIZE_THEME_NEEDLES = (
     (
         "ai_capex_expectations",
@@ -69,14 +69,30 @@ MATERIALIZE_THEME_NEEDLES = (
             "asic",
             "xpu",
             "ai 资本",
+            "ai资本",
             "资本开支",
             "算力",
             "ai 开支",
+            "ai开支",
         ),
     ),
     (
         "real_yields",
-        ("real yield", "real yields", "treasury", "rates", "利率", "美债", "fed funds", "fomc", "国债收益率"),
+        (
+            "real yield",
+            "real yields",
+            "treasury",
+            "rates",
+            "利率",
+            "美债",
+            "fed funds",
+            "fomc",
+            "国债收益率",
+            "收益率",
+            "降息",
+            "加息",
+            "实际利率",
+        ),
     ),
     (
         "sector_macro",
@@ -94,9 +110,21 @@ ENV_THEME_TAGS = {
 MARKET_FRAME_RE = re.compile(
     r"market (is |are )?(trading|pricing)|live market|market variable|cross[- ]asset|"
     r"across (the )?(tape|semis|names|sector)|tape is (still )?trading|"
-    r"市场在交易|市场变量|市场主轴|盘面(仍)?在交易|资本开支预期|ai capex expectation",
+    r"市场在交易|市场变量|市场主轴|盘面(仍)?在交易|资本开支预期|ai capex expectation|"
+    r"降息预期|加息预期|收益率",
     re.I,
 )
+
+# Issuer execution / product-delivery language. Not a market-wide theme unless
+# the same sentence also names capex / rates / tape-pricing (see MARKET_FRAME_RE).
+COMPANY_EXECUTION_RE = re.compile(
+    r"management can deliver|management (is )?(executing|delivering)|"
+    r"\b(ai )?accelerators?\b|custom silicon (revenue|backlog|guide)|"
+    r"兑现(指引|指导|业绩)|管理层.{0,16}(兑现|交付|执行)",
+    re.I,
+)
+
+DESK_SPLIT_RE = re.compile(r"(?:盘面|消息|因此)[：:]")
 
 CLAIM_STATUS = {
     "unverified": "unverified",
@@ -249,6 +277,69 @@ def _theme_for(row: dict[str, Any]) -> str | None:
     )
 
 
+def _theme_needles(theme: str) -> tuple[str, ...]:
+    for token, needles in MATERIALIZE_THEME_NEEDLES:
+        if token == theme:
+            return needles
+    return ()
+
+
+def _desk_fragments(text: str) -> list[str]:
+    raw = compact_text(text, 400)
+    if not raw:
+        return []
+    parts = [compact_text(part.strip("；;，, "), 240) for part in DESK_SPLIT_RE.split(raw)]
+    return [part for part in parts if part] or [raw]
+
+
+def _extract_theme_copy(texts: list[str], theme: str) -> tuple[str, str]:
+    """Name/statement from existing desk text. No GLM paraphrase."""
+    needles = _theme_needles(theme)
+    hits: list[str] = []
+    for text in texts:
+        for fragment in _desk_fragments(text):
+            lowered = fragment.lower()
+            if needles and any(needle in lowered for needle in needles) and fragment not in hits:
+                hits.append(fragment)
+    statement = hits[0] if hits else compact_text(next((item for item in texts if compact_text(item, 8)), ""), 280)
+    name = compact_text(min(hits, key=len) if hits else statement, 40)
+    if not name:
+        name = THEME_DISPLAY_ZH.get(theme) or MARKET_THEME_LABELS.get(theme) or theme
+    return name, compact_text(statement, 280)
+
+
+def _is_company_execution_only(blob: str) -> bool:
+    """Issuer delivery / accelerator guidance — not a market-wide theme by itself."""
+    if not COMPANY_EXECUTION_RE.search(blob):
+        return False
+    if MARKET_FRAME_RE.search(blob):
+        return False
+    lowered = blob.lower()
+    market_wide = (
+        "ai capex",
+        "资本开支",
+        "降息",
+        "加息",
+        "收益率",
+        "利率",
+        "real yield",
+        "hyperscaler",
+        "market is trading",
+        "市场在交易",
+        "市场主轴",
+    )
+    return not any(token in lowered for token in market_wide)
+
+
+def _needle_themes(blob: str) -> list[str]:
+    lowered = blob.lower()
+    out: list[str] = []
+    for token, needles in MATERIALIZE_THEME_NEEDLES:
+        if any(needle in lowered for needle in needles) and token not in out:
+            out.append(token)
+    return out
+
+
 def _kind_for_theme(theme: str | None) -> tuple[str, str]:
     if not theme:
         return "other", "other"
@@ -280,11 +371,18 @@ def _is_company_specific_trigger(row: dict[str, Any] | None) -> bool:
 
 
 def _classify_market_theme(*texts: Any, extra: dict[str, Any] | None = None) -> str | None:
+    found = _classify_all_market_themes(*texts, extra=extra)
+    return found[0] if found else None
+
+
+def _classify_all_market_themes(*texts: Any, extra: dict[str, Any] | None = None) -> list[str]:
     extra = dict(extra or {})
     parts = [str(text).strip() for text in texts if text and str(text).strip()]
     blob = " ".join(parts + [str(extra.get(name) or "") for name in ("name", "statement", "hypothesis", "title")])
     if len(compact_text(blob, 400)) < 8:
-        return None
+        return []
+    if _is_company_execution_only(blob):
+        return []
     probe = {
         **extra,
         "name": extra.get("name") or blob,
@@ -292,20 +390,24 @@ def _classify_market_theme(*texts: Any, extra: dict[str, Any] | None = None) -> 
         "hypothesis": extra.get("hypothesis") or blob,
         "title": extra.get("title") or "",
     }
+    # Drop state_type so product_read.theme_key cannot slug the raw Chinese desk sentence.
+    probe.pop("state_type", None)
     if _is_company_specific_trigger(probe):
-        return None
+        return []
+    out: list[str] = []
     for tag in extra.get("theme_tags") or extra.get("themes") or []:
         mapped = ENV_THEME_TAGS.get(str(tag).lower())
-        if mapped:
-            return mapped
-    key = theme_key({k: v for k, v in probe.items() if k != "event_type"})
+        if mapped and mapped not in out:
+            out.append(mapped)
+    key = theme_key({k: v for k, v in probe.items() if k not in {"event_type", "state_type", "state_key"}})
     if key in MARKET_WIDE_KEYS:
-        return MARKET_WIDE_KEYS[key]
-    lowered = blob.lower()
-    for token, needles in MATERIALIZE_THEME_NEEDLES:
-        if any(needle in lowered for needle in needles):
-            return token
-    return None
+        mapped = MARKET_WIDE_KEYS[key]
+        if mapped not in out:
+            out.append(mapped)
+    for token in _needle_themes(blob):
+        if token not in out:
+            out.append(token)
+    return [token for token in out if token in MARKET_THEME_LABELS]
 
 
 def _theme_label(theme: str) -> str:
@@ -476,9 +578,22 @@ def _agent_statement_rows(run: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _is_placeholder_env(text: str) -> bool:
+    if not text:
+        return True
+    if MISSING_ENV in text and not _needle_themes(text):
+        return True
+    if any(token in text for token in PLACEHOLDER_ENV) and not _needle_themes(text):
+        return True
+    return False
+
+
 def _collect_env_texts(row: dict[str, Any]) -> list[str]:
     texts: list[str] = []
     for key in ("one_liner", "row_thesis", "synthesis"):
+        raw = compact_text(row.get(key) or "", 400)
+        if raw:
+            texts.append(raw)
         texts.extend(_collect_text(row.get(key), limit=4, min_len=8))
     struct = row.get("struct") if isinstance(row.get("struct"), dict) else {}
     texts.extend(_collect_text(struct.get("synthesis"), limit=2, min_len=8))
@@ -498,10 +613,14 @@ def _collect_env_texts(row: dict[str, Any]) -> list[str]:
             texts.extend(_collect_text(bullet.get("clause"), limit=2, min_len=8))
     out: list[str] = []
     for text in texts:
-        if MISSING_ENV in text:
+        if _is_placeholder_env(text):
             continue
         if text not in out:
             out.append(text)
+        for fragment in _desk_fragments(text):
+            if _is_placeholder_env(fragment) or fragment in out:
+                continue
+            out.append(fragment)
     return out
 
 
@@ -1266,7 +1385,12 @@ def _map_market_events(brain: BrainStore, ticker: str, events: list[dict[str, An
         )
 
 
-def _map_environment(brain: BrainStore, tickers: list[str], snapshots: list[dict[str, Any]], counts: dict[str, int]) -> None:
+def _map_environment(
+    brain: BrainStore,
+    tickers: list[str],
+    snapshots: list[dict[str, Any]],
+    counts: dict[str, int],
+) -> dict[str, dict[str, Any]]:
     del tickers
     by_theme: dict[str, dict[str, Any]] = {}
     for row in snapshots:
@@ -1276,26 +1400,32 @@ def _map_environment(brain: BrainStore, tickers: list[str], snapshots: list[dict
         tags = _env_theme_tags(row)
         if not texts and not tags:
             continue
-        statement = next((text for text in texts if MISSING_ENV not in text), "")
-        theme = None
-        for text in texts:
-            found = _classify_market_theme(text)
-            if found:
-                theme = found
-                statement = text
-                break
-        if not theme and tags:
-            theme = tags[0]
-        if not theme or not statement or MISSING_ENV in statement:
+        usable = [text for text in texts if MISSING_ENV not in text]
+        themes = _classify_all_market_themes(*usable, extra={"themes": tags, "theme_tags": tags})
+        if not themes and tags:
+            themes = list(tags)
+        if not themes or not usable:
             continue
         scope = str(row.get("scope") or "market")
-        prior = by_theme.get(theme)
-        if prior and scope != "market" and prior.get("scope") == "market":
-            continue
-        by_theme[theme] = {"theme": theme, "statement": statement, "scope": scope}
+        for theme in themes:
+            if theme not in MARKET_THEME_LABELS:
+                continue
+            name, statement = _extract_theme_copy(usable, theme)
+            if not statement or MISSING_ENV in statement:
+                continue
+            prior = by_theme.get(theme)
+            if prior and scope != "market" and prior.get("scope") == "market":
+                continue
+            by_theme[theme] = {
+                "theme": theme,
+                "name": name,
+                "statement": statement,
+                "scope": scope,
+            }
     for item in by_theme.values():
         theme = item["theme"]
         statement = _persistable_theme_text(item["statement"], theme)
+        name = item.get("name") or THEME_DISPLAY_ZH.get(theme) or _theme_label(theme)
         _add(
             counts,
             "states",
@@ -1305,13 +1435,48 @@ def _map_environment(brain: BrainStore, tickers: list[str], snapshots: list[dict
                     "ticker": None,
                     "state_type": "macro",
                     "state_key": theme,
-                    "name": _theme_label(theme),
+                    "name": name,
                     "statement": statement,
+                    "subject": _theme_label(theme),
                     "source": SOURCE_KIND,
                     "confidence": "medium",
                 },
             ),
         )
+    return by_theme
+
+
+def _apply_env_themes(
+    brain: BrainStore,
+    ticker: str,
+    env_themes: dict[str, dict[str, Any]],
+    counts: dict[str, int],
+) -> None:
+    """Ticker hyp/attention from already-classified env themes so promote can fire."""
+    if not env_themes:
+        return
+    hyp_acc: dict[str, dict[str, Any]] = {}
+    att_acc: dict[str, dict[str, Any]] = {}
+    for theme, item in env_themes.items():
+        label = _theme_label(theme)
+        statement = item.get("statement") or label
+        _note_market_theme(
+            hyp_acc,
+            att_acc,
+            ticker,
+            statement,
+            extra={
+                "name": label,
+                "kind": theme,
+                "canonical_key": theme,
+                "statement": statement,
+            },
+            confidence="medium",
+            status="active",
+            reason="mapped from environment_snapshots",
+            alignment="support",
+        )
+    _flush_market_themes(brain, hyp_acc, att_acc, counts)
 
 
 def materialize_ticker(
@@ -1320,6 +1485,7 @@ def materialize_ticker(
     research: Any,
     brain: BrainStore,
     market: Any | None = None,
+    env_themes: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
     store = _research_store(research)
@@ -1334,6 +1500,7 @@ def materialize_ticker(
         _map_thesis(brain, symbol, bundle.get("thesis"), claim_ids, counts)
         _map_valuation(brain, symbol, bundle.get("valuation"), counts)
         _map_market_events(brain, symbol, _load_market_events(market, symbol), counts)
+        _apply_env_themes(brain, symbol, env_themes or {}, counts)
     return {
         "ticker": symbol,
         "status": "written" if present else "empty",
@@ -1364,9 +1531,15 @@ def materialize_from_research(
     brain_store = brain or BrainStore(getattr(store, "database", None))
     env_counts = _empty_counts()
     snapshots = _load_environment(market, symbols)
-    _map_environment(brain_store, symbols, snapshots, env_counts)
+    env_themes = _map_environment(brain_store, symbols, snapshots, env_counts)
     results = [
-        materialize_ticker(ticker=symbol, research=research, brain=brain_store, market=market)
+        materialize_ticker(
+            ticker=symbol,
+            research=research,
+            brain=brain_store,
+            market=market,
+            env_themes=env_themes,
+        )
         for symbol in symbols
     ]
     return {
