@@ -1,0 +1,595 @@
+[
+  {
+    "event_id": "e02_q2_print_vs_expect",
+    "published_at": "2026-06-03T21:10:00+00:00",
+    "role": "expectation_print",
+    "title": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+    "source": "CNBC / company figures, 2026-06-03: revenue 22.19 vs 22.27; Q3 AI 16 vs expected 17.2; EPS 2.44 vs 2.40",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+      "why_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+      "path": "No complete causal path. Research first: How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% no…",
+      "market_understands": "Attention: How the market currently understands the print: Q2 revenue and EPS were roughly in line, yet shares fell 12.59% the day after on 3.5x the 20-day average volume… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other. Price alignment: unexplained Confidence: medium",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": null,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": ""
+      },
+      "attentions": [
+        {
+          "attention_id": null,
+          "name": null,
+          "statement": "How the market currently understands the print: Q2 revenue and EPS were roughly in line, yet shares fell 12.59% the day after on 3.5x the 20-day average volume (-12.11% vs QQQ, -10.49% vs sector — state bst_21b14d3978024a2b8a6e622e84d40fdc). The differentiator was the forward AI semiconductor revenue figure ($16B vs $17.2B street), indicating market attention concentrates on the AI guide as the p…",
+          "related_objects": [
+            "market_attention",
+            "matt_avgo_ai_semi_revenue_guidance"
+          ]
+        }
+      ],
+      "candidate_drivers": [
+        {
+          "canonical_key": "other",
+          "hypothesis": "other",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": false,
+      "research_questions": [
+        "Did Q3 FY2026 actual AI semiconductor revenue meet, beat, or miss the $16B guide (and the $17.2B street figure)?",
+        "Does the Q2 adjusted EPS beat ($2.44 vs $2.40 street) contradict driver bdrv_8dd8af15e6a84090b239eb0c00f6917f's assertion that reported EPS came in below estim…",
+        "Was the -12.59% one-day post-earnings reaction driven primarily by the AI guide miss, or did concurrent factors (positioning, sector AI de-rating, valuation) c…",
+        "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% no…"
+      ],
+      "confidence": "medium",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 1,
+      "hypotheses_created": 0,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 0,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "duplicates_prevented": 0,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 0
+    },
+    "causal_gaps": [
+      {
+        "from_node": "bexp_e75de5923e5447b0b611e14b918053eb",
+        "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "kind": "causal_gap",
+        "reason": "causal_gap",
+        "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle?",
+        "related_objects": [
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+          "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "question": "Did Q3 FY2026 actual AI semiconductor revenue meet, beat, or miss the $16B guide (and the $17.2B street figure)?",
+        "reason": "Q3 has since been reported (revenue $29.6B, +86% YoY; management characterized AI demand as 'very strong' per claim evidence rev_d608e3e7661a49dfb06a59bd5c45927b). The answer determines whether the June guide miss was conservatism or genuine AI deceleration, and whether the candidate edge from the guidance state to the margin driver should be supported or countered.",
+        "related_objects": [
+          "cs_avgo_q3fy26_ai_semi_guide_16b_vs_street",
+          "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+          "exp_avgo_q3fy26_ai_semi_revenue"
+        ]
+      },
+      {
+        "question": "Does the Q2 adjusted EPS beat ($2.44 vs $2.40 street) contradict driver bdrv_8dd8af15e6a84090b239eb0c00f6917f's assertion that reported EPS came in below estimates in each of the last three quarters, or does that assertion refer to GAAP EPS?",
+        "reason": "This confirmed event shows an adjusted EPS beat at Q2 FY2026. If the driver's miss streak is measured on adjusted EPS, its current_state needs correction, which would also change its weight against the core claim via edge bced_7f458841e2654bfa9a2ebb9f3f2b0c78.",
+        "related_objects": [
+          "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+          "e02_q2_print_vs_expect",
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+        ]
+      },
+      {
+        "question": "Was the -12.59% one-day post-earnings reaction driven primarily by the AI guide miss, or did concurrent factors (positioning, sector AI de-rating, valuation) contribute materially?",
+        "reason": "The move is consistent with the AI guide miss but not proven by it. Until decomposed, the market driver for the move should remain a hypothesis (or unresolved), keeping the Brain from writing a causal 'stock fell because X' statement.",
+        "related_objects": [
+          "bst_21b14d3978024a2b8a6e622e84d40fdc",
+          "mdh_avgo_ai_growth_deceleration",
+          "cs_avgo_q3fy26_ai_semi_guide_16b_vs_street"
+        ]
+      },
+      {
+        "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle?",
+        "reason": "causal_gap",
+        "related_objects": [
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+          "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 8,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "bced_7f458841e2654bfa9a2ebb9f3f2b0c78",
+        "bced_f85f1c4685e744c8984b93e401bd8f4f",
+        "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+        "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+        "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+        "bst_21b14d3978024a2b8a6e622e84d40fdc",
+        "gaap_non_gaap_earnings_gap",
+        "rev_d608e3e7661a49dfb06a59bd5c45927b"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.0,
+      "context_precision": 0.0,
+      "missed_count": 5,
+      "irrelevant_count": 3
+    },
+    "context_misses": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "label": "bdrv_e605ec342c0a4888bec050bd17106982",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "driver",
+        "object_id": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "label": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "label": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "label": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "support_evidence",
+        "object_id": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "label": "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 2,
+      "attentions": 1,
+      "hypotheses": 1,
+      "shadows": 0,
+      "questions": 6
+    },
+    "tokens": {
+      "glm53_calls": 2,
+      "glm53_input": 7349,
+      "glm53_output": 22776,
+      "all_input": 7873,
+      "all_output": 23461
+    },
+    "hypothesis_keys_after": [
+      "other"
+    ]
+  },
+  {
+    "event_id": "e03_q2_sector_tape",
+    "published_at": "2026-06-04T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "AVGO shares move -12.6% with semiconductor peers",
+    "source": "Golden Brain price-reaction state; SOX -10.26% and AVGO about -12.6% on 2026-06-04",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO shares move -12.6% with semiconductor peers",
+      "why_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+      "path": "No complete causal path. Research first: How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyp…",
+      "market_understands": "Attention: What happened: on 2026-06-04 AVGO fell -12.59% in the session after its Q2 print, with NVDA -8.0%, AMD -7.0%, and SOX -10.26% — a broad semiconductor selloff i… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved. Which driver dominates is not established. Price alignment: unexplained Confide…",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": null,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": ""
+      },
+      "attentions": [
+        {
+          "attention_id": null,
+          "name": null,
+          "statement": "What happened: on 2026-06-04 AVGO fell -12.59% in the session after its Q2 print, with NVDA -8.0%, AMD -7.0%, and SOX -10.26% — a broad semiconductor selloff in which AVGO was the worst performer of the named set. Why it affects this company: AVGO's decline exceeded SOX by ~2.3pp and NVDA by ~4.6pp, so attention splits between sector-wide AI risk-off and AVGO-specific disappointment with the belo…",
+          "related_objects": [
+            "market_attention",
+            "bmat_avgo_q2_post_print_sector_selloff"
+          ]
+        }
+      ],
+      "candidate_drivers": [
+        {
+          "canonical_key": "other",
+          "hypothesis": "other",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "How much of AVGO's -12.59% decline on 2026-06-04 is sector beta (SOX -10.26%) versus company-specific? The ~2.3pp excess decline versus SOX is currently unexpl…",
+        "Did any fundamental news (e.g., hyperscaler capex changes, AI demand data, competitive awards) accompany or trigger the sector-wide selloff, or is it sentiment…",
+        "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyp…",
+        "What is the market pricing that the current Brain does not explain?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 2,
+      "hypotheses_updated": 0,
+      "competing_hypotheses": 2,
+      "hypothesis_strengthened": 0,
+      "hypothesis_weakened": 0,
+      "duplicates_prevented": 0,
+      "unresolved_events": 1,
+      "research_questions": 1,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 0
+    },
+    "causal_gaps": [
+      {
+        "from_node": "e03_q2_sector_tape",
+        "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "kind": "causal_gap",
+        "reason": "causal_gap",
+        "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "AVGO shares move -12.6% with semiconductor peers"
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "question": "How much of AVGO's -12.59% decline on 2026-06-04 is sector beta (SOX -10.26%) versus company-specific? The ~2.3pp excess decline versus SOX is currently unexplained; Market Driver = unresolved until the move is decomposed.",
+        "reason": "A large price move with peers down 7-10% is only partially explained by the sector; per rules, an unexplained large move stays unresolved and no reason is invented. The decomposition determines whether the guide-miss, sector-beta, or concentration-fear hypothesis carries more weight.",
+        "related_objects": [
+          "bmdh_avgo_q2_ai_guide_miss",
+          "bmdh_avgo_sector_beta_riskoff",
+          "bmdh_avgo_concentration_competitive_fear",
+          "bexpc_10cfca240c914cf5b29216e0aba1e533",
+          "e03_q2_sector_tape"
+        ]
+      },
+      {
+        "question": "Did any fundamental news (e.g., hyperscaler capex changes, AI demand data, competitive awards) accompany or trigger the sector-wide selloff, or is it sentiment/positioning? If fundamental, it would enter the Brain through a hyperscaler capex/demand State feeding driver bdrv_414ad8bb (hyperscaler customer concentration) and then the existing edge to core claim bclm_2f3b.",
+        "reason": "The transmission path Event → State → Exposure → Driver → Claim is missing a State node; no fundamental trigger is identified in this price-only event, so a research question is proposed rather than an invented transmittable path. The existing causal_gap from e03_q2_sector_tape to the core claim remains open.",
+        "related_objects": [
+          "bss_avgo_sector_tape_fundamental_trigger",
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "e03_q2_sector_tape"
+        ]
+      },
+      {
+        "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+        "reason": "causal_gap",
+        "related_objects": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "AVGO shares move -12.6% with semiconductor peers"
+        ]
+      },
+      {
+        "question": "What is the market pricing that the current Brain does not explain?",
+        "reason": "Large price move is unresolved.",
+        "related_objects": [
+          "AVGO"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 8,
+      "historical_pool": 39,
+      "used": true,
+      "sample_ids": [
+        "ai_silicon_competitive_position",
+        "bced_03e1e04bc2e84313b86a0b7c2f8255f0",
+        "bclm_2f3b915b62064c8a98300c530fa331ff",
+        "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+        "bdrv_4469e497110847e7a3961129f05e5a33",
+        "hyperscaler_customer_concentration",
+        "rev_a65ae2866d404168b4b90236ae2f13a6",
+        "rev_marvell_hyperscaler_win_in_claim"
+      ]
+    },
+    "context_score": {
+      "context_recall": 0.0,
+      "context_precision": null,
+      "missed_count": 2,
+      "irrelevant_count": 0
+    },
+    "context_misses": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "label": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "label": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 0,
+      "hypotheses": 2,
+      "shadows": 1,
+      "questions": 7
+    },
+    "tokens": {
+      "glm53_calls": 2,
+      "glm53_input": 7146,
+      "glm53_output": 17357,
+      "all_input": 7593,
+      "all_output": 18634
+    },
+    "hypothesis_keys_after": [
+      "other",
+      "sector_macro",
+      "unresolved"
+    ]
+  },
+  {
+    "event_id": "e10_q3_company_tape",
+    "published_at": "2026-09-03T20:00:00+00:00",
+    "role": "peer_sector",
+    "title": "AVGO shares move -2.74% after the latest print",
+    "source": "Golden Brain: shares fell 2.74% after Q3 (2026-09-02 session reaction)",
+    "path": "incremental",
+    "full_review": false,
+    "stopped": false,
+    "stop_reason": null,
+    "material": true,
+    "glm52_called": true,
+    "glm53_called": true,
+    "core_claims_unchanged": true,
+    "current_state_unchanged": true,
+    "now_chain": {
+      "what_happened": "AVGO shares move -2.74% after the latest print",
+      "why_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+      "path": "No targeted causal path is available for this event.",
+      "market_understands": "Attention: avgo_q3_ai_guide_attention Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver.",
+      "can_affect_claim": false,
+      "alignment": "unexplained",
+      "expectation": {
+        "actual": 16.0,
+        "expected": null,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": ""
+      },
+      "attentions": [
+        {
+          "attention_id": null,
+          "name": "avgo_q3_ai_guide_attention",
+          "statement": "avgo_q3_ai_guide_attention",
+          "related_objects": [
+            "market_attention",
+            "bmat_avgo_q3_ai_guide"
+          ]
+        }
+      ],
+      "candidate_drivers": [
+        {
+          "canonical_key": "other",
+          "hypothesis": "other",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "sector_macro",
+          "hypothesis": "Sector / macro move",
+          "status": "open",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "unresolved",
+          "hypothesis": "Market driver is unresolved",
+          "status": "unresolved",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        },
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "AI demand expectations are weakening",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": true,
+      "research_questions": [
+        "What is the AVGO tape trading in this post-print session — the below-consensus AI semiconductor revenue guide (16.0 vs 17.2), the unconfirmed Google custom-sil…",
+        "Does the Q3 print or management commentary confirm or refute the unconfirmed rumor that Google may delay custom silicon volume?",
+        "What value driver and financial metric does AVGO's AI semiconductor revenue guidance feed, and does the below-consensus guide change the Base Case through that…",
+        "Can we confirm: AVGO shares move -2.74% after the latest print?"
+      ],
+      "confidence": "low",
+      "cannot_conclude_mispricing": true
+    },
+    "market_layer": {
+      "expectation_changes": 0,
+      "hypotheses_created": 0,
+      "hypotheses_updated": 1,
+      "competing_hypotheses": 1,
+      "hypothesis_strengthened": 1,
+      "hypothesis_weakened": 0,
+      "duplicates_prevented": 1,
+      "unresolved_events": 0,
+      "research_questions": 0,
+      "peer_observations_used": 0,
+      "price_fundamental_violations": 0,
+      "price_claim_violations": 0
+    },
+    "transmission": {
+      "successful": 0,
+      "blocked": 0
+    },
+    "causal_gaps": [],
+    "questions": [
+      {
+        "question": "What is the AVGO tape trading in this post-print session — the below-consensus AI semiconductor revenue guide (16.0 vs 17.2), the unconfirmed Google custom-silicon delay rumor, or another company-specific factor?",
+        "reason": "AVGO -2.74% with MRVL and SOX flat confirms a company-specific driver but not which one; both the guide miss and the Google rumor fit an idiosyncratic decline, and the tape alone cannot distinguish them. Post-print commentary, guidance detail, or analyst notes are needed before any hypothesis is upgraded or the unresolved marker is cleared.",
+        "related_objects": [
+          "bmdh_avgo_q3_ai_guide_miss",
+          "bexpc_10cfca240c914cf5b29216e0aba1e533",
+          "bmdh_e98230d249664c2b8810731359bcf1d2",
+          "bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+          "bmdh_6ef36523a9794c8da1decb560d5969df"
+        ]
+      },
+      {
+        "question": "Does the Q3 print or management commentary confirm or refute the unconfirmed rumor that Google may delay custom silicon volume?",
+        "reason": "The customer_concentration hypothesis rests on a low-confidence rumor. The Q3 print and earnings call are the natural confirmation or refutation source; until then the rumor must not modify Current State or Core Claim, and the price move cannot be attributed to it.",
+        "related_objects": [
+          "bmdh_e98230d249664c2b8810731359bcf1d2",
+          "bexpc_48150c169a804d3eb21a13a4f4bca0ea"
+        ]
+      },
+      {
+        "question": "What value driver and financial metric does AVGO's AI semiconductor revenue guidance feed, and does the below-consensus guide change the Base Case through that path?",
+        "reason": "This targeted snapshot has no drivers or claims, so the guide miss has no observable fundamental transmission. The path must be established by print processing; a price event cannot create it, and the Base Case cannot be modified from a tape move or a below-expectation print alone.",
+        "related_objects": [
+          "bcgap_avgo_ai_guide_to_driver",
+          "bexpc_10cfca240c914cf5b29216e0aba1e533"
+        ]
+      },
+      {
+        "question": "Can we confirm: AVGO shares move -2.74% after the latest print?",
+        "reason": "Weak signal is a research question, not a conclusion.",
+        "related_objects": [
+          "AVGO shares move -2.74% after the latest print"
+        ]
+      }
+    ],
+    "memory": {
+      "used_historical_objects": 0,
+      "historical_pool": 39,
+      "used": false,
+      "sample_ids": []
+    },
+    "context_score": {
+      "context_recall": 0.0,
+      "context_precision": null,
+      "missed_count": 2,
+      "irrelevant_count": 0
+    },
+    "context_misses": [
+      {
+        "kind": "driver",
+        "object_id": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "label": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+        "why": "Golden expected object was not in the targeted snapshot."
+      },
+      {
+        "kind": "claim",
+        "object_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "label": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+        "why": "Golden expected object was not in the targeted snapshot."
+      }
+    ],
+    "diff_counts": {
+      "states": 0,
+      "drivers": 0,
+      "claims": 0,
+      "edges": 0,
+      "expectations": 0,
+      "attentions": 1,
+      "hypotheses": 2,
+      "shadows": 1,
+      "questions": 6
+    },
+    "tokens": {
+      "glm53_calls": 2,
+      "glm53_input": 4507,
+      "glm53_output": 17299,
+      "all_input": 4945,
+      "all_output": 17840
+    },
+    "hypothesis_keys_after": [
+      "ai_demand",
+      "ai_guide_miss",
+      "customer_concentration",
+      "other",
+      "sector_macro",
+      "unresolved"
+    ]
+  }
+]

@@ -1,0 +1,8 @@
+[
+  "e01_q2_filing: Full Review path produced no Now Chain and did not run incremental reasoning.",
+  "e08_q3_filing: Full Review path produced no Now Chain and did not run incremental reasoning.",
+  "e09_q3_print_vs_expect: exception 'str' object has no attribute 'get'",
+  "e13_xpu_customers: exception 'str' object has no attribute 'get'",
+  "e14_google_confirm: exception 'str' object has no attribute 'get'",
+  "e16_marvell_win: exception 'str' object has no attribute 'get'"
+]

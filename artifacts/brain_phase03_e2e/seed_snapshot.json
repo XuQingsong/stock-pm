@@ -1,0 +1,25 @@
+{
+  "seed": {
+    "run_id": "brun_b1c268aae8b345559ac2dc93176a70ab",
+    "states": 5,
+    "drivers": 9,
+    "claims": 5,
+    "exposures": 11,
+    "edges": 7,
+    "evidence": 4,
+    "events_preloaded": 11,
+    "news_preloaded": 11
+  },
+  "leftover_counts": {
+    "states": 5,
+    "drivers": 9,
+    "claims": 5,
+    "exposures": 11,
+    "events": 11,
+    "history": 10,
+    "causal_edges": 7,
+    "evidence": 4,
+    "shadows": 0,
+    "links": 2
+  }
+}

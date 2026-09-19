@@ -1,0 +1,28 @@
+{
+  "event_id": "e09_q3_print_vs_expect",
+  "expectations": [
+    {
+      "name": "expectation",
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "actual": 16.0,
+      "expected": null
+    },
+    {
+      "name": "Q3 AI semiconductor revenue",
+      "comparison": "below",
+      "trend": "falling",
+      "actual": 16.0,
+      "expected": 17.2
+    },
+    {
+      "name": "Google custom silicon volume",
+      "comparison": "in_line",
+      "trend": "falling",
+      "actual": null,
+      "expected": null
+    }
+  ],
+  "claim_changed": false,
+  "state_changed": false
+}

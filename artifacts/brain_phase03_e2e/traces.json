@@ -1,0 +1,3508 @@
+[
+  {
+    "event_id": "e01_q2_filing",
+    "trace": {
+      "event_id": "e01_q2_filing",
+      "ticker": "AVGO",
+      "path": "full_review",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_c8fd630801b390eda480",
+        "source_tier": 1,
+        "event_type": "earnings"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": null,
+      "materiality": true,
+      "materiality_reason": "earnings",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 51,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": true,
+      "full_review_reason": "earnings",
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": null,
+      "market_alignment": null,
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Broadcom reports fiscal Q2 FY2026 earnings and quarterly dividend",
+      "identity": "key:avgo_q2_fy2026_release",
+      "fingerprint": "bevfp_c8fd630801b390eda480",
+      "event_hash": "bevfp_c8fd630801b390eda480",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "earnings",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "2",
+          "2026",
+          "2",
+          "2026",
+          "22.2",
+          "48%",
+          "10.8",
+          "143%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "filing",
+        "event_key": "avgo_q2_fy2026_release",
+        "title": "Broadcom reports fiscal Q2 FY2026 earnings and quarterly dividend",
+        "fact": "Q2 FY2026 revenue was $22.2 billion, up 48% year over year. AI semiconductor revenue was $10.8 billion, up 143%.",
+        "url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-second-quarter-fiscal-year-2026-financial",
+        "source": "Broadcom IR",
+        "event_type": "earnings",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-06-03T20:05:00+00:00",
+        "event_id": "e01_q2_filing",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_c8fd630801b390eda480",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null
+  },
+  {
+    "event_id": "e02_q2_print_vs_expect",
+    "trace": {
+      "event_id": "e02_q2_print_vs_expect",
+      "ticker": "AVGO",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_3db57c4c66598661e6e0",
+        "source_tier": 2,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Material operating or customer information.",
+      "affected_objects": {
+        "states": [
+          "bst_21b14d3978024a2b8a6e622e84d40fdc"
+        ],
+        "drivers": [
+          "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+        ],
+        "claims": [
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+        ],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ]
+      },
+      "snapshot_objects": {
+        "states": [
+          "bst_21b14d3978024a2b8a6e622e84d40fdc"
+        ],
+        "drivers": [
+          "bdrv_8dd8af15e6a84090b239eb0c00f6917f"
+        ],
+        "claims": [
+          "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+        ],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ],
+        "shadows": [],
+        "causal_edges": [
+          "bced_f85f1c4685e744c8984b93e401bd8f4f",
+          "bced_7f458841e2654bfa9a2ebb9f3f2b0c78"
+        ],
+        "causal_paths": [
+          {
+            "nodes": [
+              "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+              "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+            ],
+            "edge_ids": [
+              "bced_f85f1c4685e744c8984b93e401bd8f4f"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+          },
+          {
+            "nodes": [
+              "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+              "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+            ],
+            "edge_ids": [
+              "bced_7f458841e2654bfa9a2ebb9f3f2b0c78"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+          }
+        ],
+        "causal_gaps": [
+          {
+            "from_node": "bexp_e75de5923e5447b0b611e14b918053eb",
+            "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle?",
+            "related_objects": [
+              "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+              "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+            ]
+          }
+        ],
+        "financial_links": [
+          {
+            "from_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+            "to_node": "EPS",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "A ~12-point GAAP/non-GAAP margin gap and three consecutive EPS misses versus estimates despite 85%+ revenue growth raise earnings-quality and forecast-reliability questions, which can compress the multiple even when revenue delivers.",
+            "status": "supported"
+          }
+        ]
+      },
+      "snapshot_evidence_count": 1,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 1,
+      "snapshot_size": 7,
+      "full_brain_size": 51,
+      "snapshot_reduction": 0.8627,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 9,
+      "proposal_decisions": {
+        "approve": 8,
+        "reject": 1,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_d2fea01dc5d046c1be2bd3355fa4b9ff",
+            "object_type": "expectation",
+            "object_id": "exp_avgo_q3fy26_ai_semi_revenue",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Market prior vs print: street expected $17.2B of Q3 AI semiconductor revenue; the company guided $16.0B — below expectation by ~$1.2B (~7%). Secondary prints: Q2 revenue $22.19B vs $22.27B (slightly…"
+          },
+          {
+            "proposal_id": "bcpr_823e306d49604ce2bcfb7fb255054c63",
+            "object_type": "exposure",
+            "object_id": "bexp_prop_avgo_e02_ai_semi_guide",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Why it affects this company: the exposure is direct and financial — AVGO itself issued the $16B AI semiconductor revenue figure, so the ~7% shortfall vs street directly lowers expected near-term AI s…"
+          },
+          {
+            "proposal_id": "bcpr_4665499577a54e3084ca67cb210d4083",
+            "object_type": "causal_edge",
+            "object_id": "ced_prop_ai_guide_state_to_margin_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Proposed as status=candidate ONLY — not observed, supported, or established, and it cannot modify the Base Case. Mechanism: a ~7% below-street AI semiconductor revenue guide lowers the revenue scale…"
+          },
+          {
+            "proposal_id": "bcpr_62b30a0271874bbcac33db044438fe12",
+            "object_type": "market_attention",
+            "object_id": "matt_avgo_ai_semi_revenue_guidance",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "How the market currently understands the print: Q2 revenue and EPS were roughly in line, yet shares fell 12.59% the day after on 3.5x the 20-day average volume (-12.11% vs QQQ, -10.49% vs sector — st…"
+          },
+          {
+            "proposal_id": "bcpr_d914e2da844546a89c1f1cdd30790a65",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "mdh_avgo_ai_growth_deceleration",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Hypothesis only — what the tape MAY have been trading, not established: the $16B Q3 AI guide vs $17.2B street implies slower AI growth than the market priced, while in-line Q2 revenue/EPS isolate the…"
+          },
+          {
+            "proposal_id": "bcpr_28936035352a4233aa9cb4390c8b5e9b",
+            "object_type": "causal_gap",
+            "object_id": "cgap_avgo_missing_ai_semi_revenue_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Missing relationship: the event's most direct financial effect is on AI semiconductor revenue (~$1.2B below street for Q3) and total revenue guidance, but the targeted snapshot contains no value_driv…"
+          },
+          {
+            "proposal_id": "bcpr_415f4789b50043888aafc5b34fc77194",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_2e903ced55974dc39a9672601f4cf4ef",
+            "object_type": "expectation",
+            "object_id": "bexpc_10cfca240c914cf5b29216e0aba1e533",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Actual 16.0 vs expected 17.2 (below)."
+          },
+          {
+            "proposal_id": "bcpr_66055ae5f0e340fd86da8c77876bdc73",
+            "object_type": "company_state",
+            "object_id": "cs_avgo_q3fy26_ai_semi_guide_16b_vs_street",
+            "decision": "reject",
+            "reason_code": "state_slower_than_event",
+            "reason": "What happened: confirmed Q2 FY2026 print (2026-06-03, CNBC, direct fact, confirmed=true): revenue $22.19B vs street $22.27B and adjusted EPS $2.44 vs $2.40 — roughly in line — while next-quarter AI s…"
+          }
+        ]
+      },
+      "changed_objects": [
+        "expectation:exp_avgo_q3fy26_ai_semi_revenue",
+        "exposure:bexp_prop_avgo_e02_ai_semi_guide",
+        "causal_edge:ced_prop_ai_guide_state_to_margin_driver",
+        "market_attention:matt_avgo_ai_semi_revenue_guidance",
+        "market_driver_hypothesis:mdh_avgo_ai_growth_deceleration",
+        "causal_gap:cgap_avgo_missing_ai_semi_revenue_driver",
+        "research_question:research_question",
+        "expectation:bexpc_10cfca240c914cf5b29216e0aba1e533"
+      ],
+      "critic_scope": "incremental",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 7873,
+        "output_tokens": 23461,
+        "total_tokens": 31334,
+        "latency_ms": 243375,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 524,
+            "output_tokens": 685,
+            "latency_ms": 11928,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 6399,
+            "output_tokens": 18993,
+            "latency_ms": 195591,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 950,
+            "output_tokens": 3783,
+            "latency_ms": 35856,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 243380,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Broadcom reported Q2 revenue of $22.19 billion vs. street $22.27 billion and adjusted EPS of $2.44 vs. $2.40. The company's next-quarter AI semiconductor revenue figure of $16 billion was below the street expectation of $17.2 billion.",
+      "extract_entities": [
+        "Broadcom",
+        "AVGO"
+      ],
+      "now_chain": {
+        "what_happened": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+        "why_it_affects_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+        "path_to_driver_claim": "No complete causal path. Research first: How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% no…",
+        "what_market_is_trading": "Attention: How the market currently understands the print: Q2 revenue and EPS were roughly in line, yet shares fell 12.59% the day after on 3.5x the 20-day average volume… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other. Price alignment: unexplained Confidence: medium"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 2,
+      "causal_paths": [
+        {
+          "nodes": [
+            "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+            "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+          ],
+          "edge_ids": [
+            "bced_f85f1c4685e744c8984b93e401bd8f4f"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+        },
+        {
+          "nodes": [
+            "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+            "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+          ],
+          "edge_ids": [
+            "bced_7f458841e2654bfa9a2ebb9f3f2b0c78"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24"
+        }
+      ],
+      "causal_gaps": [
+        {
+          "from_node": "bexp_e75de5923e5447b0b611e14b918053eb",
+          "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle?",
+          "related_objects": [
+            "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+            "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion"
+          ]
+        }
+      ],
+      "glm53_causal_context_tokens": 1886,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 4
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "4de49100a5ecf5708321b48077ab2c3533f035a188d0865292fd2ad0afe0e8ae",
+        "latency_ms": 11928,
+        "input_tokens": 524,
+        "output_tokens": 685,
+        "total_tokens": 1209,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "d6be2582461a117a5ff70d64650d5eaa9c1cf59b1e86da5b7d40e0bdb04e2953",
+        "latency_ms": 195591,
+        "input_tokens": 6399,
+        "output_tokens": 18993,
+        "total_tokens": 25392,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "7b6d876b5d26c73258e858823049ef09ef4d1fc52289fb596215489756bb2694",
+        "latency_ms": 35856,
+        "input_tokens": 950,
+        "output_tokens": 3783,
+        "total_tokens": 4733,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+      "identity": "key:avgo_q2_ai_print_vs_street",
+      "fingerprint": "bevfp_3db57c4c66598661e6e0",
+      "event_hash": "bevfp_3db57c4c66598661e6e0",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "independent_media",
+      "source_tier": 2,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "16",
+          "17.2",
+          "22.19",
+          "22.27",
+          "2.44",
+          "2.40",
+          "16",
+          "17.2"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_q2_ai_print_vs_street",
+        "title": "AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion",
+        "fact": "Revenue printed 22.19 billion versus street 22.27 billion. Adjusted EPS printed 2.44 versus 2.40. The next-quarter AI semiconductor figure of 16 billion was below the street 17.2 billion.",
+        "url": "https://www.cnbc.com/2026/06/03/broadcom-avgo-earnings-report-q2-2026.html",
+        "source": "CNBC",
+        "event_type": "other",
+        "actual": 16.0,
+        "expected": 17.2,
+        "expectation_name": "Q3 AI semiconductor revenue",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "entities": [
+          "Broadcom"
+        ],
+        "published_at": "2026-06-03T21:10:00+00:00",
+        "event_id": "e02_q2_print_vs_expect",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_3db57c4c66598661e6e0",
+        "source_relationship": "independent_media",
+        "source_tier": 2,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Broadcom reported Q2 revenue of $22.19 billion vs. street $22.27 billion and adjusted EPS of $2.44 vs. $2.40. The company's next-quarter AI semiconductor revenue figure of $16 billion was below the street expectation of $17.2 billion.",
+      "event": "Broadcom Q2 earnings print and Q3 AI semiconductor revenue guidance",
+      "entities": [
+        "Broadcom",
+        "AVGO"
+      ],
+      "event_type": "earnings",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": true,
+      "possible_affected": [
+        "AVGO AI semiconductor revenue",
+        "AVGO Q3 revenue guidance",
+        "AVGO earnings"
+      ],
+      "reason": "Direct fact from CNBC reporting Broadcom's actual Q2 results and next-quarter AI semiconductor revenue guidance of $16B, which missed the street expectation of $17.2B. This is a new, material earnings event with both a confirmed print and forward guidance that could affect revenue and AI growth claims."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e03_q2_sector_tape",
+    "trace": {
+      "event_id": "e03_q2_sector_tape",
+      "ticker": "AVGO",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_8ef27ac894d23ad21049",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "macro",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Large price move requires market-layer interpretation.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_4469e497110847e7a3961129f05e5a33"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff"
+        ],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ]
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_4469e497110847e7a3961129f05e5a33"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff"
+        ],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ],
+        "shadows": [],
+        "causal_edges": [
+          "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+        ],
+        "causal_paths": [
+          {
+            "nodes": [
+              "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+              "bclm_2f3b915b62064c8a98300c530fa331ff"
+            ],
+            "edge_ids": [
+              "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+          }
+        ],
+        "causal_gaps": [
+          {
+            "from_node": "e03_q2_sector_tape",
+            "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+            "related_objects": [
+              "bclm_2f3b915b62064c8a98300c530fa331ff",
+              "AVGO shares move -12.6% with semiconductor peers"
+            ]
+          }
+        ],
+        "financial_links": [
+          {
+            "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon in-house would directly cut the growth trajectory the current valuation depends on.",
+            "status": "supported"
+          },
+          {
+            "from_node": "bdrv_4469e497110847e7a3961129f05e5a33",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "Long-run AI revenue depends on winning and retaining accelerator and networking sockets. Share loss or customer insourcing would cap growth well below the guided trajectory, hitting both revenue and the multiple paid for AI leadership.",
+            "status": "supported"
+          }
+        ]
+      },
+      "snapshot_evidence_count": 1,
+      "snapshot_counter_evidence_count": 1,
+      "snapshot_history_count": 1,
+      "snapshot_size": 7,
+      "full_brain_size": 59,
+      "snapshot_reduction": 0.8814,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 9,
+      "proposal_decisions": {
+        "approve": 9,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_aa2bf0048fd04fc683e78e25bec7f53b",
+            "object_type": "market_attention",
+            "object_id": "bmat_avgo_q2_post_print_sector_selloff",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: on 2026-06-04 AVGO fell -12.59% in the session after its Q2 print, with NVDA -8.0%, AMD -7.0%, and SOX -10.26% — a broad semiconductor selloff in which AVGO was the worst performer of…"
+          },
+          {
+            "proposal_id": "bcpr_199cfe04d11247d99138ddc457c8928e",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_avgo_q2_ai_guide_miss",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "HYPOTHESIS (what the tape MAY be trading, not a conclusion): AVGO's below-consensus next-quarter AI semiconductor guide — actual $16B vs street $17.2B (existing expectation, comparison 'below') — as…"
+          },
+          {
+            "proposal_id": "bcpr_986d5b26f0ab4492b45ef112783f0580",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_avgo_sector_beta_riskoff",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "HYPOTHESIS: a sector-wide AI semiconductor de-rating or macro risk-off, with most of AVGO's -12.59% being SOX beta rather than AVGO-specific news. Supporting observations: the selloff is broad-based…"
+          },
+          {
+            "proposal_id": "bcpr_96c09a9b02d34f5a9753c8025b1dd747",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_avgo_concentration_competitive_fear",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "HYPOTHESIS: heightened hyperscaler-concentration and competitive-share fear, per core claim bclm_2f3b915b62064c8a98300c530fa331ff (unquantified dependence on a few AI infrastructure buyers). Supporti…"
+          },
+          {
+            "proposal_id": "bcpr_4d0b01b267c746309a9693b3db9834d5",
+            "object_type": "shadow_state",
+            "object_id": "bss_avgo_sector_tape_fundamental_trigger",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "The -12.59% AVGO move alongside SOX -10.26% is a low-confidence price signal (fact_reliability 'signal', aggregator source, tier 5). Shadow (unconfirmed): the sector-wide selloff MIGHT reflect new fu…"
+          },
+          {
+            "proposal_id": "bcpr_f4b4222d624c45d7af86f2ed451d8656",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_28455d6f66c84ec8b26324c458d29f1a",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_70d772f188504a7ba61cfcef6deb1d94",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Candidate market driver hypothesis; not a fact."
+          },
+          {
+            "proposal_id": "bcpr_f295c46bc25847778047bf8f307c101c",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Price move is large, expectation did not clearly change, and peers do not support a driver."
+          },
+          {
+            "proposal_id": "bcpr_3b706a1d48434d7784e52f4761edafeb",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Do not force a winner."
+          }
+        ]
+      },
+      "changed_objects": [
+        "market_attention:bmat_avgo_q2_post_print_sector_selloff",
+        "market_driver_hypothesis:bmdh_avgo_q2_ai_guide_miss",
+        "market_driver_hypothesis:bmdh_avgo_sector_beta_riskoff",
+        "market_driver_hypothesis:bmdh_avgo_concentration_competitive_fear",
+        "shadow_state:bss_avgo_sector_tape_fundamental_trigger",
+        "research_question:research_question",
+        "market_driver_hypothesis:bmdh_70d772f188504a7ba61cfcef6deb1d94",
+        "research_question:research_question",
+        "market_driver_hypothesis:market_driver_hypothesis",
+        "question:brq_ead76388b8fe43769150ee9824b541ee"
+      ],
+      "critic_scope": "incremental",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 7593,
+        "output_tokens": 18634,
+        "total_tokens": 26227,
+        "latency_ms": 205194,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 447,
+            "output_tokens": 1277,
+            "latency_ms": 23788,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 6296,
+            "output_tokens": 15202,
+            "latency_ms": 159032,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 850,
+            "output_tokens": 2155,
+            "latency_ms": 22374,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 205200,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "AVGO shares fell -12.59% with semiconductor peers NVDA (-8.0%), AMD (-7.0%), and SOX index (-10.26%) also selling off.",
+      "extract_entities": [
+        "AVGO",
+        "NVDA",
+        "AMD",
+        "SOX"
+      ],
+      "now_chain": {
+        "what_happened": "AVGO shares move -12.6% with semiconductor peers",
+        "why_it_affects_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+        "path_to_driver_claim": "No complete causal path. Research first: How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyp…",
+        "what_market_is_trading": "Attention: What happened: on 2026-06-04 AVGO fell -12.59% in the session after its Q2 print, with NVDA -8.0%, AMD -7.0%, and SOX -10.26% — a broad semiconductor selloff i… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver."
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 1,
+      "causal_paths": [
+        {
+          "nodes": [
+            "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "bclm_2f3b915b62064c8a98300c530fa331ff"
+          ],
+          "edge_ids": [
+            "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+        }
+      ],
+      "causal_gaps": [
+        {
+          "from_node": "e03_q2_sector_tape",
+          "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+          "related_objects": [
+            "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "AVGO shares move -12.6% with semiconductor peers"
+          ]
+        }
+      ],
+      "glm53_causal_context_tokens": 2040,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 4
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "c120758768dcd15c720f98adb42d98a70f436c5b9149e218a4c4f0154dec6f72",
+        "latency_ms": 23788,
+        "input_tokens": 447,
+        "output_tokens": 1277,
+        "total_tokens": 1724,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "ecd382f22677c2a4020cbe2a9bd94bdaef3a611805b497b10a9433808380399b",
+        "latency_ms": 159032,
+        "input_tokens": 6296,
+        "output_tokens": 15202,
+        "total_tokens": 21498,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "29b3a628e2cba8227d47e9d3b5f36c8195a6b603c483dc55fbe8348023034ff8",
+        "latency_ms": 22374,
+        "input_tokens": 850,
+        "output_tokens": 2155,
+        "total_tokens": 3005,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "AVGO shares move -12.6% with semiconductor peers",
+      "identity": "key:avgo_q2_post_print_tape",
+      "fingerprint": "bevfp_8ef27ac894d23ad21049",
+      "event_hash": "bevfp_8ef27ac894d23ad21049",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "-12.6%",
+          "-12.59%",
+          "-10%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "avgo_q2_post_print_tape",
+        "title": "AVGO shares move -12.6% with semiconductor peers",
+        "fact": "AVGO -12.59%. NVDA and other semiconductor names also sold off. SOX about -10%.",
+        "event_type": "other",
+        "price_change_pct": -12.59,
+        "peers": {
+          "NVDA": -8.0,
+          "AMD": -7.0,
+          "SOX": -10.26
+        },
+        "fact_reliability": "signal",
+        "published_at": "2026-06-04T20:00:00+00:00",
+        "event_id": "e03_q2_sector_tape",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_8ef27ac894d23ad21049",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "AVGO shares fell -12.59% with semiconductor peers NVDA (-8.0%), AMD (-7.0%), and SOX index (-10.26%) also selling off.",
+      "event": "Broad-based semiconductor sector selloff with AVGO down 12.59% alongside NVDA, AMD, and SOX index",
+      "entities": [
+        "AVGO",
+        "NVDA",
+        "AMD",
+        "SOX"
+      ],
+      "event_type": "macro",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": true,
+      "possible_affected": [
+        "AVGO_share_price",
+        "semiconductor_sector_sentiment",
+        "AVGO_q2_post_print_tape"
+      ],
+      "reason": "Significant post-print price decline in AVGO with broad semiconductor peer selloff signals sector-level risk-off sentiment; the magnitude (-12.59%) and peer correlation suggest material market reaction that could affect valuation assumptions and sector exposure assessments."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e04_noise_druckenmiller",
+    "trace": {
+      "event_id": "e04_noise_druckenmiller",
+      "ticker": "AVGO",
+      "path": "l0_stop",
+      "l0": {
+        "duplicate": true,
+        "stop": true,
+        "stop_reason": "duplicate",
+        "fingerprint": "bevfp_d78376b947c438ba2af3",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": true,
+      "l1_event_type": "other",
+      "novelty": null,
+      "materiality": false,
+      "materiality_reason": "duplicate",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 68,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": {
+        "what_happened": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader (duplicate)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+      "identity": "key:avgo_druckenmiller_feature",
+      "fingerprint": "bevfp_d78376b947c438ba2af3",
+      "event_hash": "bevfp_d78376b947c438ba2af3",
+      "duplicate": true,
+      "stop": true,
+      "stop_reason": "duplicate",
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "11"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_druckenmiller_feature",
+        "title": "Billionaire Stanley Druckenmiller Dumped Broadcom and 11X'd His Fund's Stake in This Trillion-Dollar Dual-Industry Leader",
+        "fact": "A feature recap says Stanley Druckenmiller sold Broadcom and raised another fund stake. No new operating disclosure.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-06-15T14:00:00+00:00",
+        "event_id": "e04_noise_druckenmiller",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_d78376b947c438ba2af3",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null
+  },
+  {
+    "event_id": "e05_tender_notes",
+    "trace": {
+      "event_id": "e05_tender_notes",
+      "ticker": "AVGO",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_585ab91094306e0e904f",
+        "source_tier": 1,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 68,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 421,
+        "output_tokens": 586,
+        "total_tokens": 1007,
+        "latency_ms": 11821,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 421,
+            "output_tokens": 586,
+            "latency_ms": 11821,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 11822,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Broadcom priced cash tender offers for certain outstanding notes, an active balance-sheet item. No customer or AI demand update.",
+      "extract_entities": [
+        "Broadcom (AVGO)"
+      ],
+      "now_chain": {
+        "what_happened": "Broadcom priced cash tender offers for certain outstanding notes (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "fe8fadf00d450cc0992e132ccc7dd2a4f3db42ed44f82d5c92e19cf851bc0ffe",
+        "latency_ms": 11821,
+        "input_tokens": 421,
+        "output_tokens": 586,
+        "total_tokens": 1007,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Broadcom priced cash tender offers for certain outstanding notes",
+      "identity": "key:avgo_june_note_tender",
+      "fingerprint": "bevfp_585ab91094306e0e904f",
+      "event_hash": "bevfp_585ab91094306e0e904f",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_june_note_tender",
+        "title": "Broadcom priced cash tender offers for certain outstanding notes",
+        "fact": "Broadcom priced cash tender offers for certain outstanding notes, an active balance-sheet item. No customer or AI demand update.",
+        "url": "https://www.sec.gov/",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-06-20T16:00:00+00:00",
+        "event_id": "e05_tender_notes",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_585ab91094306e0e904f",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Broadcom priced cash tender offers for certain outstanding notes, an active balance-sheet item. No customer or AI demand update.",
+      "event": "Broadcom priced cash tender offers for certain outstanding notes",
+      "entities": [
+        "Broadcom (AVGO)"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": false,
+      "possible_affected": [
+        "AVGO Balance Sheet / Capital Structure"
+      ],
+      "reason": "Routine debt management activity (tender offer for outstanding notes) with no customer, demand, or earnings implications. No new fundamental fact relevant to Core Claims or Base Case."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e06_noise_arista",
+    "trace": {
+      "event_id": "e06_noise_arista",
+      "ticker": "AVGO",
+      "path": "l0_stop",
+      "l0": {
+        "duplicate": true,
+        "stop": true,
+        "stop_reason": "duplicate",
+        "fingerprint": "bevfp_d8a7cfb3bcd37559d8f7",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": true,
+      "l1_event_type": "other",
+      "novelty": null,
+      "materiality": false,
+      "materiality_reason": "duplicate",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 68,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": {
+        "what_happened": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day (duplicate)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+      "identity": "key:avgo_arista_zacks_roundup",
+      "fingerprint": "bevfp_d8a7cfb3bcd37559d8f7",
+      "event_hash": "bevfp_d8a7cfb3bcd37559d8f7",
+      "duplicate": true,
+      "stop": true,
+      "stop_reason": "duplicate",
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_arista_zacks_roundup",
+        "title": "Arista Networks highlighted as Zacks Bull and Yum! Brands Bear of the Day",
+        "fact": "A Zacks roundup names Arista and Yum. Broadcom is not the operating subject.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-07-20T13:30:00+00:00",
+        "event_id": "e06_noise_arista",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_d8a7cfb3bcd37559d8f7",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null
+  },
+  {
+    "event_id": "e07_google_rumor",
+    "trace": {
+      "event_id": "e07_google_rumor",
+      "ticker": "AVGO",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_e7ed1d41acc74da55ea1",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "customer",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_e605ec342c0a4888bec050bd17106982"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        ],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_e605ec342c0a4888bec050bd17106982"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        ],
+        "exposures": [],
+        "shadows": [
+          "bshd_361f117e45204609b3b1f2b780533573"
+        ],
+        "causal_edges": [
+          "bced_03e1e04bc2e84313b86a0b7c2f8255f0",
+          "bced_14cca97527d84268b1300fc7db3726f9"
+        ],
+        "causal_paths": [
+          {
+            "nodes": [
+              "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+              "bclm_2f3b915b62064c8a98300c530fa331ff"
+            ],
+            "edge_ids": [
+              "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+          },
+          {
+            "nodes": [
+              "bdrv_e605ec342c0a4888bec050bd17106982",
+              "bclm_f4454cfe04e94211a79b23116bcf5de8"
+            ],
+            "edge_ids": [
+              "bced_14cca97527d84268b1300fc7db3726f9"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+          }
+        ],
+        "causal_gaps": [
+          {
+            "from_node": "e07_google_rumor",
+            "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+            "related_objects": [
+              "bclm_2f3b915b62064c8a98300c530fa331ff",
+              "Unconfirmed rumor that Google may delay custom silicon volume"
+            ]
+          },
+          {
+            "from_node": "e07_google_rumor",
+            "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+            "related_objects": [
+              "bclm_f4454cfe04e94211a79b23116bcf5de8",
+              "Unconfirmed rumor that Google may delay custom silicon volume"
+            ]
+          }
+        ],
+        "financial_links": [
+          {
+            "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon in-house would directly cut the growth trajectory the current valuation depends on.",
+            "status": "supported"
+          },
+          {
+            "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any deceleration in AI accelerator/networking demand would simultaneously hit revenue, margins, and the valuation multiple.",
+            "status": "supported"
+          }
+        ]
+      },
+      "snapshot_evidence_count": 2,
+      "snapshot_counter_evidence_count": 1,
+      "snapshot_history_count": 2,
+      "snapshot_size": 11,
+      "full_brain_size": 68,
+      "snapshot_reduction": 0.8382,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 10,
+      "proposal_decisions": {
+        "approve": 10,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_cae922fffc214900bfcebd66fb3d865b",
+            "object_type": "shadow_state",
+            "object_id": "bshd_prop_avgo_google_tpu_delay_rumor",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: an unconfirmed, low-confidence aggregator rumor (source tier 5, no corroborating evidence, published 2026-08-12) claims Google may delay custom silicon (TPU) volume with Broadcom as it…"
+          },
+          {
+            "proposal_id": "bcpr_4df0ed11633c45139000a095ad50388b",
+            "object_type": "causal_edge",
+            "object_id": "bced_prop_e07_google_rumor_to_concentration_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Mechanism (candidate only, gated on confirmation): if the rumor is confirmed, a Google delay of custom silicon volume is a direct realization of the hyperscaler customer concentration risk — one larg…"
+          },
+          {
+            "proposal_id": "bcpr_a992bf451831482fa2837ce9c8ab8e2d",
+            "object_type": "research_question",
+            "object_id": "rq_prop_avgo_google_exposure_confirmation",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "The rumor's impact cannot be sized and the existing causal gaps from e07_google_rumor to both core claims cannot be closed without two facts: (1) what fraction of Broadcom's AI semiconductor / custom…"
+          },
+          {
+            "proposal_id": "bcpr_9e4a957d0e334ea7a2ed0b881cc019d8",
+            "object_type": "market_attention",
+            "object_id": "matt_prop_avgo_google_custom_silicon_watch",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: the Google TPU delay rumor is a hyperscaler custom-silicon allocation headline directly relevant to AVGO. Why it matters: the market demonstrably trades AVGO on news about which hypers…"
+          },
+          {
+            "proposal_id": "bcpr_154e454da2a241ad84bee1b29c747b20",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_prop_avgo_google_tpu_delay_concentration_risk",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Hypothesis only, not a conclusion: the tape may be trading AVGO on Google TPU delay / hyperscaler concentration risk following this rumor. It coexists with the existing candidate hypotheses — sector_…"
+          },
+          {
+            "proposal_id": "bcpr_3ecc133e6bad4ef495118afaa884162c",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_d015f48f37994a6784fadca033539520",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_f01b4a7998d14cbfa87311e2fe687901",
+            "object_type": "expectation",
+            "object_id": "bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Low-confidence expectation shift from an unconfirmed report; not a print."
+          },
+          {
+            "proposal_id": "bcpr_07bc670ddab04ed7806213601f6fe5d9",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_e98230d249664c2b8810731359bcf1d2",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Candidate market driver hypothesis; not a fact."
+          },
+          {
+            "proposal_id": "bcpr_0e2531c499324163b01d97cfb0fa8bc7",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_f54798b71a554d97a25e99750cdbb1da",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Candidate market driver hypothesis; not a fact."
+          }
+        ]
+      },
+      "changed_objects": [
+        "shadow_state:bshd_prop_avgo_google_tpu_delay_rumor",
+        "causal_edge:bced_prop_e07_google_rumor_to_concentration_driver",
+        "research_question:rq_prop_avgo_google_exposure_confirmation",
+        "market_attention:matt_prop_avgo_google_custom_silicon_watch",
+        "market_driver_hypothesis:bmdh_prop_avgo_google_tpu_delay_concentration_risk",
+        "research_question:research_question",
+        "research_question:research_question",
+        "expectation:bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+        "market_driver_hypothesis:bmdh_e98230d249664c2b8810731359bcf1d2",
+        "market_driver_hypothesis:bmdh_f54798b71a554d97a25e99750cdbb1da",
+        "shadow:bshd_c42122ce7b0749a79b84b66a177ac380",
+        "question:brq_ad6f486152ee40fc9da05c034f0d0aa7"
+      ],
+      "critic_scope": "incremental",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 8624,
+        "output_tokens": 17054,
+        "total_tokens": 25678,
+        "latency_ms": 168395,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 426,
+            "output_tokens": 591,
+            "latency_ms": 12878,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 7088,
+            "output_tokens": 14264,
+            "latency_ms": 132147,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1110,
+            "output_tokens": 2199,
+            "latency_ms": 23370,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 168400,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "An unconfirmed rumor says Google may delay custom silicon volume with Broadcom as it expands in-house silicon.",
+      "extract_entities": [
+        "Google",
+        "Broadcom"
+      ],
+      "now_chain": {
+        "what_happened": "Unconfirmed rumor that Google may delay custom silicon volume",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No complete causal path. Research first: How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence…",
+        "what_market_is_trading": "Attention: What happened: the Google TPU delay rumor is a hyperscaler custom-silicon allocation headline directly relevant to AVGO. Why it matters: the market demonstrabl… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver."
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 2,
+      "causal_paths": [
+        {
+          "nodes": [
+            "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "bclm_2f3b915b62064c8a98300c530fa331ff"
+          ],
+          "edge_ids": [
+            "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+        },
+        {
+          "nodes": [
+            "bdrv_e605ec342c0a4888bec050bd17106982",
+            "bclm_f4454cfe04e94211a79b23116bcf5de8"
+          ],
+          "edge_ids": [
+            "bced_14cca97527d84268b1300fc7db3726f9"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        }
+      ],
+      "causal_gaps": [
+        {
+          "from_node": "e07_google_rumor",
+          "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+          "related_objects": [
+            "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "Unconfirmed rumor that Google may delay custom silicon volume"
+          ]
+        },
+        {
+          "from_node": "e07_google_rumor",
+          "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+          "related_objects": [
+            "bclm_f4454cfe04e94211a79b23116bcf5de8",
+            "Unconfirmed rumor that Google may delay custom silicon volume"
+          ]
+        }
+      ],
+      "glm53_causal_context_tokens": 1782,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 5
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "e30c336f5b83b688145b8a114f2f0cabe1ac741479211310549166f9e4e25b39",
+        "latency_ms": 12878,
+        "input_tokens": 426,
+        "output_tokens": 591,
+        "total_tokens": 1017,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "cc4be8cda8d0d76fdd5725a568f4b59ce5d53c03ba8a1e1e92d1067332ed8fd0",
+        "latency_ms": 132147,
+        "input_tokens": 7088,
+        "output_tokens": 14264,
+        "total_tokens": 21352,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "f96e196d1a9e710a47e3fa9eed97806d03453528eb7c7cadbea66e4a10746edf",
+        "latency_ms": 23370,
+        "input_tokens": 1110,
+        "output_tokens": 2199,
+        "total_tokens": 3309,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Unconfirmed rumor that Google may delay custom silicon volume",
+      "identity": "key:google_may_delay_tpu_volume",
+      "fingerprint": "bevfp_e7ed1d41acc74da55ea1",
+      "event_hash": "bevfp_e7ed1d41acc74da55ea1",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": true,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "rumor",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "rumor",
+        "event_key": "google_may_delay_tpu_volume",
+        "subject": "Google custom silicon volume",
+        "title": "Unconfirmed rumor that Google may delay custom silicon volume",
+        "fact": "An unconfirmed rumor says Google may delay custom silicon volume with Broadcom as it expands in-house silicon.",
+        "event_type": "other",
+        "entities": [
+          "Google"
+        ],
+        "confirmed": false,
+        "confidence": "low",
+        "fact_reliability": "rumor",
+        "published_at": "2026-08-12T18:00:00+00:00",
+        "event_id": "e07_google_rumor",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_e7ed1d41acc74da55ea1",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "An unconfirmed rumor says Google may delay custom silicon volume with Broadcom as it expands in-house silicon.",
+      "event": "google_may_delay_tpu_volume",
+      "entities": [
+        "Google",
+        "Broadcom"
+      ],
+      "event_type": "customer",
+      "novelty": "new",
+      "confidence": "low",
+      "fact_reliability": "rumor",
+      "material": true,
+      "possible_affected": [
+        "AVGO_Custom_Silicon_Revenue",
+        "AVGO_Google_TPU_Exposure",
+        "AVGO_AI_Semiconductor_Driver"
+      ],
+      "reason": "Rumor of Google delaying custom silicon volume with Broadcom could materially impact AVGO's AI revenue trajectory, but is unconfirmed with low confidence and no evidence IDs."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e08_q3_filing",
+    "trace": {
+      "event_id": "e08_q3_filing",
+      "ticker": "AVGO",
+      "path": "full_review",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_cb4cb5b4274c963ef7ee",
+        "source_tier": 1,
+        "event_type": "earnings"
+      },
+      "duplicate": false,
+      "l1_event_type": "earnings",
+      "novelty": null,
+      "materiality": true,
+      "materiality_reason": "earnings",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 78,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": true,
+      "full_review_reason": "earnings",
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": null,
+      "market_alignment": null,
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Broadcom reports fiscal Q3 FY2026 earnings and guides Q4 AI semiconductor revenue to 21.7 billion",
+      "identity": "key:avgo_q3_fy2026_release",
+      "fingerprint": "bevfp_cb4cb5b4274c963ef7ee",
+      "event_hash": "bevfp_cb4cb5b4274c963ef7ee",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "issuer_primary",
+      "source_tier": 1,
+      "event_type": "earnings",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "3",
+          "2026",
+          "4",
+          "21.7",
+          "3",
+          "2026",
+          "29.6",
+          "86%",
+          "16.7",
+          "221%",
+          "4",
+          "21.7"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "filing",
+        "event_key": "avgo_q3_fy2026_release",
+        "title": "Broadcom reports fiscal Q3 FY2026 earnings and guides Q4 AI semiconductor revenue to 21.7 billion",
+        "fact": "Q3 FY2026 revenue was 29.6 billion, up 86%. AI semiconductor revenue was 16.7 billion, up 221%. Management expects Q4 AI semiconductor revenue of 21.7 billion.",
+        "url": "https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial",
+        "source": "Broadcom IR",
+        "event_type": "earnings",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-09-02T20:05:00+00:00",
+        "event_id": "e08_q3_filing",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_cb4cb5b4274c963ef7ee",
+        "source_relationship": "issuer_primary",
+        "source_tier": 1,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null
+  },
+  {
+    "event_id": "e09_q3_print_vs_expect",
+    "trace": null,
+    "llm_calls": [],
+    "l0": null,
+    "extract": null,
+    "error": "'str' object has no attribute 'get'"
+  },
+  {
+    "event_id": "e10_q3_company_tape",
+    "trace": {
+      "event_id": "e10_q3_company_tape",
+      "ticker": "AVGO",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_684344a09555b9fc4d48",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ]
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [
+          "bexp_daf5758db1734f7fadfd31db08c8bb5a",
+          "bexp_3b8fb1d0c67e43c3a508ad18d519a9e4",
+          "bexp_3f107c1da7f0467bb2ba83912d388d89",
+          "bexp_25db7c2f39364759a7f60198472b2b8f",
+          "bexp_e75de5923e5447b0b611e14b918053eb",
+          "bexp_40f241303473423daddbe3edb63bd1e6"
+        ],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 78,
+      "snapshot_reduction": 1.0,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 6,
+      "proposal_decisions": {
+        "approve": 6,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_d5fb106d87114f0794ff2d0fd3c2025f",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_avgo_q3_ai_guide_miss",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: AVGO fell 2.74% in the session after its Q3 print while MRVL (+0.2%) and SOX (-0.4%) were roughly flat, so the move is company-specific, not sector-wide. Why it may matter: the snapsho…"
+          },
+          {
+            "proposal_id": "bcpr_d6f18b4d177c44daa2dbde07764055e7",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_70d772f188504a7ba61cfcef6deb1d94",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: AVGO declined 2.74% while MRVL and SOX were flat. Why it affects the company: it does not change fundamentals; it only changes the evidence mix for existing market-driver hypotheses. P…"
+          },
+          {
+            "proposal_id": "bcpr_12955b7549ee460fb1c7c50fa6f98653",
+            "object_type": "market_attention",
+            "object_id": "bmat_avgo_q3_ai_guide",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: an idiosyncratic -2.74% AVGO move post-print with peers flat. Why it affects the company: the market's focus is on AVGO's own Q3 results — specifically the AI semiconductor revenue gui…"
+          },
+          {
+            "proposal_id": "bcpr_e6a6263e151843d1afe9967089aebb6d",
+            "object_type": "causal_gap",
+            "object_id": "bcgap_avgo_ai_guide_to_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: the tape points to company-specific content, and the only fundamental content visible in this snapshot is the below-consensus AI semiconductor revenue guide. Why it matters: for that c…"
+          },
+          {
+            "proposal_id": "bcpr_075a5ff9f83449d8980660f0e5b7b618",
+            "object_type": "shadow_state",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Unconfirmed material event belongs in Shadow State."
+          },
+          {
+            "proposal_id": "bcpr_6a3be1854f5f429594a19d88b8125620",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_70d772f188504a7ba61cfcef6deb1d94",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Update existing market driver hypothesis."
+          }
+        ]
+      },
+      "changed_objects": [
+        "market_driver_hypothesis:bmdh_avgo_q3_ai_guide_miss",
+        "market_driver_hypothesis:bmdh_70d772f188504a7ba61cfcef6deb1d94",
+        "market_attention:bmat_avgo_q3_ai_guide",
+        "causal_gap:bcgap_avgo_ai_guide_to_driver",
+        "shadow_state:shadow_state",
+        "market_driver_hypothesis:bmdh_70d772f188504a7ba61cfcef6deb1d94",
+        "question:brq_98678142476148718d2f5cf4fa88cf16"
+      ],
+      "critic_scope": "incremental",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 4945,
+        "output_tokens": 17840,
+        "total_tokens": 22785,
+        "latency_ms": 186341,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 438,
+            "output_tokens": 541,
+            "latency_ms": 9432,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 4137,
+            "output_tokens": 16048,
+            "latency_ms": 163300,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 370,
+            "output_tokens": 1251,
+            "latency_ms": 13609,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 186346,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "AVGO -2.74%. MRVL about 0. SOX about 0.",
+      "extract_entities": [
+        "AVGO",
+        "MRVL",
+        "SOX"
+      ],
+      "now_chain": {
+        "what_happened": "AVGO shares move -2.74% after the latest print",
+        "why_it_affects_company": "Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Attention: avgo_q3_ai_guide_attention Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver."
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 2082,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 4
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "91df2c95e27ce694b7117fea6bb2e33b9a52714d9f38083dbbac66f85ec633e5",
+        "latency_ms": 9432,
+        "input_tokens": 438,
+        "output_tokens": 541,
+        "total_tokens": 979,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "18a30d2213a4f47437fabc41fb9fda2d0ccc5d5023ea9637f8de3af1426fa57c",
+        "latency_ms": 163300,
+        "input_tokens": 4137,
+        "output_tokens": 16048,
+        "total_tokens": 20185,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "4973f4ffc7a04c762cbf0f35bdadf1165b5c385644c3950deca7d1f1f1d83c33",
+        "latency_ms": 13609,
+        "input_tokens": 370,
+        "output_tokens": 1251,
+        "total_tokens": 1621,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "AVGO shares move -2.74% after the latest print",
+      "identity": "key:avgo_q3_post_print_tape",
+      "fingerprint": "bevfp_684344a09555b9fc4d48",
+      "event_hash": "bevfp_684344a09555b9fc4d48",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "-2.74%",
+          "-2.74%",
+          "0",
+          "0"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "avgo_q3_post_print_tape",
+        "title": "AVGO shares move -2.74% after the latest print",
+        "fact": "AVGO -2.74%. MRVL about 0. SOX about 0.",
+        "event_type": "other",
+        "price_change_pct": -2.74,
+        "peers": {
+          "MRVL": 0.2,
+          "SOX": -0.4
+        },
+        "fact_reliability": "signal",
+        "published_at": "2026-09-03T20:00:00+00:00",
+        "event_id": "e10_q3_company_tape",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_684344a09555b9fc4d48",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "AVGO -2.74%. MRVL about 0. SOX about 0.",
+      "event": "AVGO shares move -2.74% after the latest print",
+      "entities": [
+        "AVGO",
+        "MRVL",
+        "SOX"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": true,
+      "possible_affected": [
+        "AVGO_post_print_tape",
+        "MRVL_relative_performance",
+        "SOX_relative_performance"
+      ],
+      "reason": "AVGO trades down -2.74% post-print while peers (MRVL) and the semiconductor index (SOX) are roughly flat, indicating a stock-specific reaction rather than a sector-wide move."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e11_duplicate_demand",
+    "trace": {
+      "event_id": "e11_duplicate_demand",
+      "ticker": "AVGO",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_1df0a7c5fb73aa78286c",
+        "source_tier": 2,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "guidance",
+      "novelty": "repeat",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 84,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 446,
+        "output_tokens": 684,
+        "total_tokens": 1130,
+        "latency_ms": 12105,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 446,
+            "output_tokens": 684,
+            "latency_ms": 12105,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 12106,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Management said demand for AI accelerators and networking continues to be very strong.",
+      "extract_entities": [
+        "Broadcom",
+        "AI accelerators",
+        "networking"
+      ],
+      "now_chain": {
+        "what_happened": "Broadcom says demand for AI accelerators and networking continues to be very strong (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "5fe3916d788b3f96df7905e4f6ec08303244572b246b9a0d48ada2206a63ad8f",
+        "latency_ms": 12105,
+        "input_tokens": 446,
+        "output_tokens": 684,
+        "total_tokens": 1130,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Broadcom says demand for AI accelerators and networking continues to be very strong",
+      "identity": "key:avgo_ai_demand_very_strong_q3",
+      "fingerprint": "bevfp_1df0a7c5fb73aa78286c",
+      "event_hash": "bevfp_1df0a7c5fb73aa78286c",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "independent_media",
+      "source_tier": 2,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_ai_demand_very_strong_q3",
+        "title": "Broadcom says demand for AI accelerators and networking continues to be very strong",
+        "fact": "Management said demand for AI accelerators and networking continues to be very strong.",
+        "url": "https://www.reuters.com/technology/broadcom-ai-demand-very-strong-2026-09-02/",
+        "source": "Reuters reprint",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-09-03T21:10:00+00:00",
+        "event_id": "e11_duplicate_demand",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_1df0a7c5fb73aa78286c",
+        "source_relationship": "independent_media",
+        "source_tier": 2,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Management said demand for AI accelerators and networking continues to be very strong.",
+      "event": "Broadcom management reaffirmed that demand for AI accelerators and networking continues to be very strong.",
+      "entities": [
+        "Broadcom",
+        "AI accelerators",
+        "networking"
+      ],
+      "event_type": "guidance",
+      "novelty": "repeat",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": false,
+      "possible_affected": [
+        "AVGO AI revenue driver",
+        "AVGO custom silicon demand",
+        "AVGO networking segment demand"
+      ],
+      "reason": "This is a repeat qualitative reaffirmation of ongoing strong AI demand with no new quantitative data, contract announcement, or changed outlook. The language ('continues to be very strong') signals a restatement of prior guidance rather than new information, so it is not material as a standalone event."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e12_conference_noise",
+    "trace": {
+      "event_id": "e12_conference_noise",
+      "ticker": "AVGO",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_c20722e647fce856dd6c",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "none",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 84,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 413,
+        "output_tokens": 339,
+        "total_tokens": 752,
+        "latency_ms": 6054,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 413,
+            "output_tokens": 339,
+            "latency_ms": 6054,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 6055,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+      "extract_entities": [
+        "Broadcom",
+        "Hock Tan",
+        "Goldman Sachs"
+      ],
+      "now_chain": {
+        "what_happened": "Broadcom CEO Hock Tan scheduled for Goldman Sachs conference appearance (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "09d5766fd22c0f09c915ae62c23094f86f9674a9c2317c60d305a0b4add3aa69",
+        "latency_ms": 6054,
+        "input_tokens": 413,
+        "output_tokens": 339,
+        "total_tokens": 752,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Broadcom CEO Hock Tan scheduled for Goldman Sachs conference appearance",
+      "identity": "key:avgo_gs_conference_appearance",
+      "fingerprint": "bevfp_c20722e647fce856dd6c",
+      "event_hash": "bevfp_c20722e647fce856dd6c",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "direct_fact",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_gs_conference_appearance",
+        "title": "Broadcom CEO Hock Tan scheduled for Goldman Sachs conference appearance",
+        "fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "direct_fact",
+        "published_at": "2026-09-08T14:00:00+00:00",
+        "event_id": "e12_conference_noise",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_c20722e647fce856dd6c",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Hock Tan will make a conference appearance at the Goldman Sachs Communacopia + Technology Conference. No operating update and no new information.",
+      "event": "Broadcom CEO Hock Tan scheduled for Goldman Sachs conference appearance",
+      "entities": [
+        "Broadcom",
+        "Hock Tan",
+        "Goldman Sachs"
+      ],
+      "event_type": "other",
+      "novelty": "none",
+      "confidence": "high",
+      "fact_reliability": "direct_fact",
+      "material": false,
+      "possible_affected": [],
+      "reason": "Routine conference appearance with no operating update or new information; no material impact on thesis."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e13_xpu_customers",
+    "trace": null,
+    "llm_calls": [],
+    "l0": null,
+    "extract": null,
+    "error": "'str' object has no attribute 'get'"
+  },
+  {
+    "event_id": "e14_google_confirm",
+    "trace": null,
+    "llm_calls": [],
+    "l0": null,
+    "extract": null,
+    "error": "'str' object has no attribute 'get'"
+  },
+  {
+    "event_id": "e15_google_rumor_again",
+    "trace": {
+      "event_id": "e15_google_rumor_again",
+      "ticker": "AVGO",
+      "path": "incremental",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": null,
+        "fingerprint": "bevfp_61f97bd7bdb448db3f91",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "customer",
+      "novelty": "new",
+      "materiality": true,
+      "materiality_reason": "Unconfirmed but potentially material; GLM-5.3 may only propose Shadow State / Research Questions.",
+      "affected_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_4469e497110847e7a3961129f05e5a33",
+          "bdrv_e605ec342c0a4888bec050bd17106982"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        ],
+        "exposures": []
+      },
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [
+          "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+          "bdrv_4469e497110847e7a3961129f05e5a33",
+          "bdrv_e605ec342c0a4888bec050bd17106982"
+        ],
+        "claims": [
+          "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        ],
+        "exposures": [],
+        "shadows": [
+          "bshd_361f117e45204609b3b1f2b780533573",
+          "bshd_c42122ce7b0749a79b84b66a177ac380"
+        ],
+        "causal_edges": [
+          "bced_03e1e04bc2e84313b86a0b7c2f8255f0",
+          "bced_14cca97527d84268b1300fc7db3726f9"
+        ],
+        "causal_paths": [
+          {
+            "nodes": [
+              "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+              "bclm_2f3b915b62064c8a98300c530fa331ff"
+            ],
+            "edge_ids": [
+              "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+          },
+          {
+            "nodes": [
+              "bdrv_e605ec342c0a4888bec050bd17106982",
+              "bclm_f4454cfe04e94211a79b23116bcf5de8"
+            ],
+            "edge_ids": [
+              "bced_14cca97527d84268b1300fc7db3726f9"
+            ],
+            "statuses": [
+              "supported"
+            ],
+            "stopped": false,
+            "reason": null,
+            "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+          }
+        ],
+        "causal_gaps": [
+          {
+            "from_node": "e15_google_rumor_again",
+            "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+            "related_objects": [
+              "bclm_2f3b915b62064c8a98300c530fa331ff",
+              "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+            ]
+          },
+          {
+            "from_node": "e15_google_rumor_again",
+            "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+            "kind": "causal_gap",
+            "reason": "causal_gap",
+            "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+            "related_objects": [
+              "bclm_f4454cfe04e94211a79b23116bcf5de8",
+              "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+            ]
+          }
+        ],
+        "financial_links": [
+          {
+            "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon in-house would directly cut the growth trajectory the current valuation depends on.",
+            "status": "supported"
+          },
+          {
+            "from_node": "bdrv_4469e497110847e7a3961129f05e5a33",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "Long-run AI revenue depends on winning and retaining accelerator and networking sockets. Share loss or customer insourcing would cap growth well below the guided trajectory, hitting both revenue and the multiple paid for AI leadership.",
+            "status": "supported"
+          },
+          {
+            "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+            "to_node": "revenue",
+            "relationship_type": "driver_to_financial",
+            "mechanism": "AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any deceleration in AI accelerator/networking demand would simultaneously hit revenue, margins, and the valuation multiple.",
+            "status": "supported"
+          }
+        ]
+      },
+      "snapshot_evidence_count": 2,
+      "snapshot_counter_evidence_count": 1,
+      "snapshot_history_count": 2,
+      "snapshot_size": 12,
+      "full_brain_size": 84,
+      "snapshot_reduction": 0.8571,
+      "glm53_called": true,
+      "glm52_called": true,
+      "proposal_count": 10,
+      "proposal_decisions": {
+        "approve": 10,
+        "reject": 0,
+        "requires_review": 0,
+        "items": [
+          {
+            "proposal_id": "bcpr_6792c50729684073ab6626dbd5f1b110",
+            "object_type": "shadow_state",
+            "object_id": "bshd_google_reduce_tpu_orders_e15",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: an unconfirmed, low-confidence, tier-5 aggregator rumor that Google may reduce Broadcom custom TPU orders as it expands in-house silicon. Why it affects this company: Google is one of…"
+          },
+          {
+            "proposal_id": "bcpr_d5b5fd7cc1cf4232b4fb30e187408ac1",
+            "object_type": "causal_edge",
+            "object_id": "bced_shadow_google_reduce_to_concentration_driver",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Mechanism, conditional only: if the Google order-reduction rumor is confirmed, reduced TPU order volumes from a top AI customer would directly lower revenue flowing through the hyperscaler customer c…"
+          },
+          {
+            "proposal_id": "bcpr_2957d911924e477a970ad0c342f79c76",
+            "object_type": "market_attention",
+            "object_id": "batt_avgo_google_tpu_concentration",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "What happened: a second unconfirmed report in the same direction pointing at Google reducing/delaying Broadcom custom silicon. Why it matters: the market has already demonstrated sensitivity to preci…"
+          },
+          {
+            "proposal_id": "bcpr_58eb3f34674f4496b0ffef29ced7a6c0",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_e98230d249664c2b8810731359bcf1d2",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "The existing candidate hypothesis 'customer concentration concern is increasing' (bmdh_e98230d2) already cites the prior Google delay rumor as its supporting observation. This event is a second, same…"
+          },
+          {
+            "proposal_id": "bcpr_f1f6ce89a43e43ec8f28690c2d02eda0",
+            "object_type": "expectation",
+            "object_id": "bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "The market prior on Google custom silicon volume already shifted negative on the prior unconfirmed rumor (bexpc_48150c, trend falling, confidence low). This second same-direction unconfirmed report r…"
+          },
+          {
+            "proposal_id": "bcpr_f17fec694108412381bffc7dede7f0d7",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_4d00f53590df4d489a0fff26d38d74ca",
+            "object_type": "research_question",
+            "object_id": "",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "causal_gap"
+          },
+          {
+            "proposal_id": "bcpr_b4422ec7b8fe47c6b2dd75884ddd7153",
+            "object_type": "expectation",
+            "object_id": "bexpc_1024f93aab184775917d441017cc4776",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Low-confidence expectation shift from an unconfirmed report; not a print."
+          },
+          {
+            "proposal_id": "bcpr_4c7d5fed53c24661b40d0640570f1f78",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_e98230d249664c2b8810731359bcf1d2",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Update existing market driver hypothesis."
+          },
+          {
+            "proposal_id": "bcpr_4172d048652944ae8367eb75bcdbe97b",
+            "object_type": "market_driver_hypothesis",
+            "object_id": "bmdh_f54798b71a554d97a25e99750cdbb1da",
+            "decision": "approve",
+            "reason_code": "",
+            "reason": "Update existing market driver hypothesis."
+          }
+        ]
+      },
+      "changed_objects": [
+        "shadow_state:bshd_google_reduce_tpu_orders_e15",
+        "causal_edge:bced_shadow_google_reduce_to_concentration_driver",
+        "market_attention:batt_avgo_google_tpu_concentration",
+        "market_driver_hypothesis:bmdh_e98230d249664c2b8810731359bcf1d2",
+        "expectation:bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+        "research_question:research_question",
+        "research_question:research_question",
+        "expectation:bexpc_1024f93aab184775917d441017cc4776",
+        "market_driver_hypothesis:bmdh_e98230d249664c2b8810731359bcf1d2",
+        "market_driver_hypothesis:bmdh_f54798b71a554d97a25e99750cdbb1da",
+        "shadow:bshd_afebc22a3bba42cfb7db41bedbc141f0",
+        "question:brq_bdaa43166b594dd59f419c00b3efd2d4"
+      ],
+      "critic_scope": "incremental",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 9992,
+        "output_tokens": 14438,
+        "total_tokens": 24430,
+        "latency_ms": 160626,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 431,
+            "output_tokens": 1426,
+            "latency_ms": 21663,
+            "error": null
+          },
+          {
+            "step": "change_proposals",
+            "role": "reasoning",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 8305,
+            "output_tokens": 11032,
+            "latency_ms": 117967,
+            "error": null
+          },
+          {
+            "step": "independent_critic",
+            "role": "critic",
+            "model": "glm-5.3",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 1256,
+            "output_tokens": 1980,
+            "latency_ms": 20996,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 160633,
+      "current_state_unchanged": true,
+      "core_claims_unchanged": true,
+      "extract_fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed.",
+      "extract_entities": [
+        "Google",
+        "Broadcom"
+      ],
+      "now_chain": {
+        "what_happened": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No complete causal path. Research first: How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on…",
+        "what_market_is_trading": "Attention: What happened: a second unconfirmed report in the same direction pointing at Google reducing/delaying Broadcom custom silicon. Why it matters: the market has a… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver."
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 2,
+      "causal_paths": [
+        {
+          "nodes": [
+            "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+            "bclm_2f3b915b62064c8a98300c530fa331ff"
+          ],
+          "edge_ids": [
+            "bced_03e1e04bc2e84313b86a0b7c2f8255f0"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff"
+        },
+        {
+          "nodes": [
+            "bdrv_e605ec342c0a4888bec050bd17106982",
+            "bclm_f4454cfe04e94211a79b23116bcf5de8"
+          ],
+          "edge_ids": [
+            "bced_14cca97527d84268b1300fc7db3726f9"
+          ],
+          "statuses": [
+            "supported"
+          ],
+          "stopped": false,
+          "reason": null,
+          "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8"
+        }
+      ],
+      "causal_gaps": [
+        {
+          "from_node": "e15_google_rumor_again",
+          "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+          "related_objects": [
+            "bclm_2f3b915b62064c8a98300c530fa331ff",
+            "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+          ]
+        },
+        {
+          "from_node": "e15_google_rumor_again",
+          "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+          "kind": "causal_gap",
+          "reason": "causal_gap",
+          "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+          "related_objects": [
+            "bclm_f4454cfe04e94211a79b23116bcf5de8",
+            "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+          ]
+        }
+      ],
+      "glm53_causal_context_tokens": 2264,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 5
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "b580eab9f233e45e1a5a043dbecb17dde38aa9a5adec863645acb8127b090d1b",
+        "latency_ms": 21663,
+        "input_tokens": 431,
+        "output_tokens": 1426,
+        "total_tokens": 1857,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "06a29b96b39979c515ac0b4d91dd07d7eb480325b18f1ebf19ddcde4c6f080fe",
+        "latency_ms": 117967,
+        "input_tokens": 8305,
+        "output_tokens": 11032,
+        "total_tokens": 19337,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "change_proposals",
+        "role": "reasoning"
+      },
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.3",
+        "prompt_hash": "2a03dca484e3962faf0f82a3b96b8a685e97ac4f0a84135c49c4316e72b8ace2",
+        "latency_ms": 20996,
+        "input_tokens": 1256,
+        "output_tokens": 1980,
+        "total_tokens": 3236,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "independent_critic",
+        "role": "critic"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+      "identity": "key:google_may_reduce_avgo_orders_rumor",
+      "fingerprint": "bevfp_61f97bd7bdb448db3f91",
+      "event_hash": "bevfp_61f97bd7bdb448db3f91",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "rumor",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "rumor",
+        "event_key": "google_may_reduce_avgo_orders_rumor",
+        "title": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
+        "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed.",
+        "event_type": "other",
+        "entities": [
+          "Google",
+          "Broadcom"
+        ],
+        "confirmed": false,
+        "confidence": "low",
+        "fact_reliability": "rumor",
+        "published_at": "2026-09-11T18:05:00+00:00",
+        "event_id": "e15_google_rumor_again",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_61f97bd7bdb448db3f91",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed.",
+      "event": "Unconfirmed rumor that Google may reduce Broadcom custom TPU orders",
+      "entities": [
+        "Google",
+        "Broadcom"
+      ],
+      "event_type": "customer",
+      "novelty": "new",
+      "confidence": "low",
+      "fact_reliability": "rumor",
+      "material": true,
+      "possible_affected": [
+        "Customer_Concentration_Exposure",
+        "Google_TPU_Revenue_Driver",
+        "Custom_Silicon_Competitive_Threat"
+      ],
+      "reason": "Although unconfirmed and low-confidence, a potential reduction in Google TPU orders directly threatens a major AVGO revenue driver and raises customer concentration risk. Classified as 'customer' rather than 'competition' because the core issue is order reduction from a key customer, though the driver is Google's in-house silicon expansion."
+    },
+    "error": null
+  },
+  {
+    "event_id": "e16_marvell_win",
+    "trace": null,
+    "llm_calls": [],
+    "l0": null,
+    "extract": null,
+    "error": "'str' object has no attribute 'get'"
+  },
+  {
+    "event_id": "e17_230b_feature",
+    "trace": {
+      "event_id": "e17_230b_feature",
+      "ticker": "AVGO",
+      "path": "l0_stop",
+      "l0": {
+        "duplicate": true,
+        "stop": true,
+        "stop_reason": "duplicate",
+        "fingerprint": "bevfp_05a18fb059ed78d780b5",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": true,
+      "l1_event_type": "other",
+      "novelty": null,
+      "materiality": false,
+      "materiality_reason": "duplicate",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 94,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": false,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+        "latency_ms": 0,
+        "calls": []
+      },
+      "latency_ms": 0,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "",
+      "extract_entities": [],
+      "now_chain": {
+        "what_happened": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him? (duplicate)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unknown Confidence: low"
+      },
+      "market_alignment": "unknown",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+      "identity": "key:avgo_230b_ai_2028_feature",
+      "fingerprint": "bevfp_05a18fb059ed78d780b5",
+      "event_hash": "bevfp_05a18fb059ed78d780b5",
+      "duplicate": true,
+      "stop": true,
+      "stop_reason": "duplicate",
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "opinion",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "230",
+          "2028",
+          "230",
+          "2028"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "news",
+        "event_key": "avgo_230b_ai_2028_feature",
+        "title": "Hock Tan Just Guided Broadcom's AI Revenue to Reach $230 Billion by 2028. Should You Believe Him?",
+        "fact": "A feature discusses management commentary that AI revenue could reach 230 billion by 2028. It is secondary commentary, not a new filing.",
+        "event_type": "other",
+        "confirmed": true,
+        "fact_reliability": "opinion",
+        "published_at": "2026-09-14T12:00:00+00:00",
+        "event_id": "e17_230b_feature",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_05a18fb059ed78d780b5",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": null,
+    "error": null
+  },
+  {
+    "event_id": "e18_unexplained_tape",
+    "trace": {
+      "event_id": "e18_unexplained_tape",
+      "ticker": "AVGO",
+      "path": "observation_memory",
+      "l0": {
+        "duplicate": false,
+        "stop": false,
+        "stop_reason": "non_material",
+        "fingerprint": "bevfp_3f787b4131d0fbe2ceea",
+        "source_tier": 5,
+        "event_type": "other"
+      },
+      "duplicate": false,
+      "l1_event_type": "other",
+      "novelty": "new",
+      "materiality": false,
+      "materiality_reason": "L1 marked the item non-material or not new.",
+      "affected_objects": {},
+      "snapshot_objects": {
+        "states": [],
+        "drivers": [],
+        "claims": [],
+        "exposures": [],
+        "shadows": [],
+        "causal_edges": [],
+        "causal_paths": [],
+        "causal_gaps": [],
+        "financial_links": []
+      },
+      "snapshot_evidence_count": 0,
+      "snapshot_counter_evidence_count": 0,
+      "snapshot_history_count": 0,
+      "snapshot_size": 0,
+      "full_brain_size": 94,
+      "snapshot_reduction": 1.0,
+      "glm53_called": false,
+      "glm52_called": true,
+      "proposal_count": 0,
+      "proposal_decisions": {
+        "approve": 0,
+        "reject": 0,
+        "requires_review": 0,
+        "items": []
+      },
+      "changed_objects": [],
+      "critic_scope": "skipped",
+      "full_review_triggered": false,
+      "full_review_reason": null,
+      "token_usage": {
+        "input_tokens": 411,
+        "output_tokens": 643,
+        "total_tokens": 1054,
+        "latency_ms": 11187,
+        "calls": [
+          {
+            "step": "event_extract",
+            "role": "mechanical",
+            "model": "glm-5.2",
+            "llm_called": true,
+            "llm_status": "ok",
+            "input_tokens": 411,
+            "output_tokens": 643,
+            "latency_ms": 11187,
+            "error": null
+          }
+        ]
+      },
+      "latency_ms": 11188,
+      "current_state_unchanged": null,
+      "core_claims_unchanged": null,
+      "extract_fact": "Shares moved -6.2% without a new operating disclosure.",
+      "extract_entities": [
+        "AVGO"
+      ],
+      "now_chain": {
+        "what_happened": "AVGO shares move -6.2% with no new filing (non_material)",
+        "why_it_affects_company": "No company exposure is linked yet.",
+        "path_to_driver_claim": "No targeted causal path is available for this event.",
+        "what_market_is_trading": "Price alignment: unexplained Confidence: low"
+      },
+      "market_alignment": "unexplained",
+      "causal_edges_read": 0,
+      "causal_paths": [],
+      "causal_gaps": [],
+      "glm53_causal_context_tokens": 0,
+      "transmission_successful": 0,
+      "transmission_blocked": 0,
+      "transmission_blocked_reasons": [],
+      "unsupported_jump_count": 0,
+      "unexpected_claim_change_count": 0,
+      "research_question_count": 0
+    },
+    "llm_calls": [
+      {
+        "llm_called": true,
+        "llm_status": "ok",
+        "provider": "openai",
+        "model": "glm-5.2",
+        "prompt_hash": "933365567bca9811bcc62ab634ab5643710e225e30368fc49b83169bad68b3f2",
+        "latency_ms": 11187,
+        "input_tokens": 411,
+        "output_tokens": 643,
+        "total_tokens": 1054,
+        "error": null,
+        "fallback_used": false,
+        "raw_status": "ok",
+        "step": "event_extract",
+        "role": "mechanical"
+      }
+    ],
+    "l0": {
+      "ticker": "AVGO",
+      "title": "AVGO shares move -6.2% with no new filing",
+      "identity": "key:avgo_sept16_tape_no_filing",
+      "fingerprint": "bevfp_3f787b4131d0fbe2ceea",
+      "event_hash": "bevfp_3f787b4131d0fbe2ceea",
+      "duplicate": false,
+      "stop": false,
+      "stop_reason": null,
+      "stale": false,
+      "source_relationship": "aggregator",
+      "source_tier": 5,
+      "event_type": "other",
+      "fact_reliability": "signal",
+      "evidence_ids": [],
+      "numbers": {
+        "numbers": [
+          "-6.2%",
+          "-6.2%"
+        ],
+        "invalid": [],
+        "ok": true
+      },
+      "history_hits": [],
+      "item": {
+        "kind": "price",
+        "event_key": "avgo_sept16_tape_no_filing",
+        "title": "AVGO shares move -6.2% with no new filing",
+        "fact": "Shares moved -6.2% without a new operating disclosure.",
+        "event_type": "other",
+        "price_change_pct": -6.2,
+        "fact_reliability": "signal",
+        "published_at": "2026-09-16T19:30:00+00:00",
+        "event_id": "e18_unexplained_tape",
+        "ticker": "AVGO",
+        "fingerprint": "bevfp_3f787b4131d0fbe2ceea",
+        "source_relationship": "aggregator",
+        "source_tier": 5,
+        "evidence_ids": []
+      },
+      "llm_called": false
+    },
+    "extract": {
+      "fact": "Shares moved -6.2% without a new operating disclosure.",
+      "event": "AVGO shares declined 6.2% with no new SEC filing or operating disclosure explaining the move.",
+      "entities": [
+        "AVGO"
+      ],
+      "event_type": "other",
+      "novelty": "new",
+      "confidence": "high",
+      "fact_reliability": "signal",
+      "material": false,
+      "possible_affected": [
+        "AVGO_share_price"
+      ],
+      "reason": "A price-only move with no accompanying filing or operating disclosure is a market signal, not a fundamental event. No new fact about operations, guidance, or contracts is present, so this is not material to Core Claims or Base Case."
+    },
+    "error": null
+  }
+]
