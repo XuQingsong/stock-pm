@@ -7,6 +7,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Body, HTTPException
 
 from .pipeline import run_brain
+from .pm_view import build_pm_view
 from .store import BrainStore
 from .types import GOLDEN_TICKERS
 from .view import build_brain_view, build_claim_detail, build_evidence_detail
@@ -28,6 +29,15 @@ def get_brain_deps() -> tuple[Any, BrainStore]:
 
 def _http(exc: Exception) -> HTTPException:
     return HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/{symbol}/pm-view")
+def get_pm_view(symbol: str) -> dict[str, Any]:
+    try:
+        research, store = get_brain_deps()
+        return build_pm_view(store, symbol, research=research)
+    except Exception as exc:
+        raise _http(exc) from exc
 
 
 @router.get("/{symbol}")

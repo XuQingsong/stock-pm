@@ -229,6 +229,12 @@ def brain_page(symbol: str) -> str:
     return _page("brain.html")
 
 
+@app.get("/brain/{symbol}/research", response_class=HTMLResponse, include_in_schema=False)
+def brain_research_page(symbol: str) -> str:
+    del symbol
+    return _page("brain.html")
+
+
 @app.get("/brain/{symbol}/claims/{claim_id}", response_class=HTMLResponse, include_in_schema=False)
 def brain_claim_page(symbol: str, claim_id: str) -> str:
     del symbol, claim_id

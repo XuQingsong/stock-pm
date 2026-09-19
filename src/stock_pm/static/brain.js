@@ -1,4 +1,4 @@
-const TICKERS = ["AVGO", "AAPL", "LITE"];
+const TICKERS = ["AVGO", "LITE", "AAPL"];
 
 function pathParts() {
   const parts = location.pathname.split("/").filter(Boolean);
@@ -26,6 +26,14 @@ function el(html) {
   const box = document.createElement("div");
   box.innerHTML = html.trim();
   return box.firstElementChild;
+}
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function renderNav(ticker) {
@@ -56,7 +64,224 @@ function evidenceLine(item) {
   const url = item.source_url
     ? `<a href="/brain/${pathParts().ticker}/evidence/${item.id}">${item.source || "source"} · ${item.source_time || ""}</a>`
     : `<span class="muted">${item.source || ""} · ${item.source_time || ""}</span>`;
-  return `<div class="ev"><div>${item.fact || item.excerpt || ""}</div>${url}</div>`;
+  return `<div class="ev"><div>${escapeHtml(item.fact || item.excerpt || "")}</div>${url}</div>`;
+}
+
+function pill(text) {
+  if (!text) return "";
+  return `<span class="pill">${escapeHtml(text)}</span>`;
+}
+
+function emptyLine(text) {
+  return `<p class="muted">${escapeHtml(text)}</p>`;
+}
+
+function evidenceBrief(item, fallback) {
+  if (!item) return emptyLine(fallback);
+  const href = item.id ? `/brain/${pathParts().ticker}/evidence/${item.id}` : "";
+  const source = item.source ? `${item.source}${item.source_time ? " · " + item.source_time : ""}` : "";
+  const body = escapeHtml(item.fact || item.reason || fallback);
+  const meta = [item.strength, source].filter(Boolean).join(" · ");
+  return `<div class="ev">${href ? `<a href="${href}">${body}</a>` : `<div>${body}</div>`}${
+    meta ? `<div class="muted">${escapeHtml(meta)}</div>` : ""
+  }</div>`;
+}
+
+function changeLine(change) {
+  if (!change) return emptyLine("no later revision");
+  const status =
+    change.from_status || change.to_status
+      ? `${change.from_status || "—"} → ${change.to_status || "—"}`
+      : "";
+  return `<div class="delta">${status ? `<b>${escapeHtml(status)}</b>` : ""}${
+    change.reason ? `<div>${escapeHtml(change.reason)}</div>` : ""
+  }<div class="muted">${escapeHtml(change.created_at || "")}</div></div>`;
+}
+
+function deltaBlock(item) {
+  const fields = (item.deltas || [])
+    .map(
+      (delta) =>
+        `<div class="delta-row"><span class="k">${escapeHtml(delta.field)}</span><span>${escapeHtml(
+          delta.from == null || delta.from === "" ? "—" : delta.from
+        )} → <b>${escapeHtml(delta.to == null || delta.to === "" ? "—" : delta.to)}</b></span></div>`
+    )
+    .join("");
+  return `
+    <div class="news">
+      <div class="row">${pill(item.family)}${pill(item.label)}</div>
+      ${fields}
+      ${item.reason ? `<div class="muted">${escapeHtml(item.reason)}</div>` : ""}
+    </div>`;
+}
+
+function nowBlock(chain) {
+  const answers = (chain && chain.answers) || {};
+  const blocks = [
+    ["what_happened", "发生了什么", chain && chain.what_happened],
+    ["why_it_affects_company", "为什么会影响公司", chain && chain.why_it_affects_company],
+    ["path_to_driver_claim", "通过什么路径影响 Driver / Claim", chain && chain.path_to_driver_claim],
+    ["what_market_is_trading", "市场现在怎么理解它", chain && chain.what_market_is_trading],
+  ];
+  return `
+    <div class="now">
+      ${blocks
+        .map(([key, fallback, node]) => {
+          const question = (node && node.question) || fallback;
+          const answer = (node && node.answer) || answers[key] || "No persisted event yet.";
+          return `<div class="now-q"><div class="k">${escapeHtml(question)}</div><p>${escapeHtml(answer)}</p></div>`;
+        })
+        .join("")}
+    </div>`;
+}
+
+function marketBlock(market) {
+  const expectations = (market && market.expectations) || [];
+  const hyps = (market && market.active_hypotheses) || [];
+  const unresolved = ((market && market.price_divergence) || {}).unresolved || [];
+  return `
+    <h3>Expectation</h3>
+    ${
+      expectations.length
+        ? expectations
+            .map(
+              (row) => `
+        <div class="card">
+          <div class="row">${pill(row.comparison)}${pill(row.trend)}${pill(row.confidence)}</div>
+          <h3>${escapeHtml(row.name || "Expectation")}</h3>
+          <p>actual <b>${escapeHtml(row.actual == null ? "—" : row.actual)}</b> vs expected <b>${escapeHtml(
+                row.expected == null ? "—" : row.expected
+              )}</b></p>
+          ${row.last_material_change ? `<p class="muted">${escapeHtml(row.last_material_change)}</p>` : ""}
+          ${row.reason ? `<p>${escapeHtml(row.reason)}</p>` : ""}
+        </div>`
+            )
+            .join("")
+        : emptyLine("No persisted Expectation.")
+    }
+    <h3>Active Market Driver Hypotheses</h3>
+    ${
+      hyps.length
+        ? hyps
+            .map(
+              (row) => `
+        <div class="news">
+          <div class="row">${pill(row.status)}${pill(row.confidence)}${pill(row.canonical_key)}</div>
+          <div>${escapeHtml(row.hypothesis || "")}</div>
+          ${row.reason ? `<div class="muted">${escapeHtml(row.reason)}</div>` : ""}
+        </div>`
+            )
+            .join("")
+        : emptyLine("No active Market Driver Hypothesis.")
+    }
+    <h3>Price Divergence / unresolved</h3>
+    ${
+      unresolved.length
+        ? unresolved
+            .map(
+              (row) => `
+        <div class="news">
+          <div class="row">${pill(row.status)}${pill(row.explanation_grade)}${pill(row.direction)}</div>
+          <div>${escapeHtml(row.unresolved_question || row.reason || "unresolved")}</div>
+          <div class="muted">${escapeHtml(row.as_of || "")}${
+                row.price_change_pct != null ? " · " + escapeHtml(row.price_change_pct) + "%" : ""
+              }</div>
+        </div>`
+            )
+            .join("")
+        : emptyLine("No open price divergence.")
+    }
+  `;
+}
+
+function renderPmView(data) {
+  const claims = data.core_claims || [];
+  const changed = data.what_changed || [];
+  const questions = data.open_research_questions || [];
+  document.title = `PM View · ${data.ticker}`;
+  const empty = data.status === "empty";
+  return `
+    <p class="muted">${escapeHtml(data.ticker)} · ${escapeHtml(data.company_name || "")} · persisted Brain · no new LLM · ${escapeHtml(
+      data.lifecycle || ""
+    )}</p>
+    <h1>${escapeHtml(data.company_name || data.ticker)}</h1>
+    <p class="view">Investment Snapshot — one page for the live thesis, the real delta, what the market may be trading, and what to verify next.</p>
+    ${
+      empty
+        ? `<div class="warnbox poor"><h3>No persisted Brain</h3><div>This ticker has no Slow-layer objects yet. The page will not invent claims or re-run research.</div></div>`
+        : ""
+    }
+    <section id="investment-logic">
+      <p class="eyebrow">现在最重要的投资逻辑是什么？</p>
+      <h2>Core Claims</h2>
+      <div class="cards">
+        ${
+          claims.length
+            ? claims
+                .map(
+                  (claim) => `
+          <article class="card">
+            <div class="row">
+              ${pill(claim.status)}
+              ${pill(claim.confidence)}
+              ${pill(claim.importance)}
+              ${claim.recent_change ? pill("changed") : ""}
+            </div>
+            <h3>${escapeHtml(claim.title || "")}</h3>
+            <p>${escapeHtml(claim.statement || "")}</p>
+            <div class="muted">Strongest support</div>
+            ${evidenceBrief(claim.strongest_support, "none persisted")}
+            <div class="muted">Strongest counter</div>
+            ${evidenceBrief(claim.strongest_counter, "none persisted")}
+            <div class="muted">Recent change</div>
+            ${changeLine(claim.recent_change)}
+            ${
+              claim.claim_id
+                ? `<a class="btn" href="/brain/${data.ticker}/claims/${claim.claim_id}">Claim detail</a>`
+                : ""
+            }
+          </article>`
+                )
+                .join("")
+            : emptyLine("No persisted Core Claims.")
+        }
+      </div>
+    </section>
+    <section id="what-changed">
+      <p class="eyebrow">最近什么真正变了？</p>
+      <h2>What Changed</h2>
+      ${changed.length ? changed.map(deltaBlock).join("") : emptyLine("No State / Driver / Expectation / Claim delta.")}
+    </section>
+    <section id="now-chain">
+      <p class="eyebrow">最新 Now Chain</p>
+      <h2>Now Chain</h2>
+      ${data.now_chain && data.now_chain.as_of ? `<p class="muted">as of ${escapeHtml(data.now_chain.as_of)}</p>` : ""}
+      ${nowBlock(data.now_chain)}
+    </section>
+    <section id="market-view">
+      <p class="eyebrow">市场可能在交易什么？</p>
+      <h2>Market View</h2>
+      ${marketBlock(data.market_view)}
+    </section>
+    <section id="open-questions">
+      <p class="eyebrow">我接下来最需要验证什么？</p>
+      <h2>Open Research Questions</h2>
+      ${
+        questions.length
+          ? questions
+              .map(
+                (row) => `
+        <div class="news">
+          <div class="row">${pill(row.priority)}${pill(row.status)}</div>
+          <div><b>${escapeHtml(row.question)}</b></div>
+          ${row.why_it_matters ? `<div class="muted">${escapeHtml(row.why_it_matters)}</div>` : ""}
+        </div>`
+              )
+              .join("")
+          : emptyLine("No open research question.")
+      }
+    </section>
+  `;
 }
 
 function renderHome(data) {
@@ -230,10 +455,17 @@ async function main() {
       root.innerHTML = renderEvidence(data, ticker);
       return;
     }
-    const res = await fetch(`/api/brain/${ticker}`);
+    if (kind === "research") {
+      const res = await fetch(`/api/brain/${ticker}`);
+      const data = await res.json();
+      status.textContent = data.status || "missing";
+      root.innerHTML = renderHome(data);
+      return;
+    }
+    const res = await fetch(`/api/brain/${ticker}/pm-view`);
     const data = await res.json();
-    status.textContent = data.status || "missing";
-    root.innerHTML = renderHome(data);
+    status.textContent = data.lifecycle || data.status || "missing";
+    root.innerHTML = renderPmView(data);
   } catch (err) {
     status.textContent = "error";
     root.innerHTML = `<div class="warnbox poor"><h3>BRAIN QUALITY WARNING</h3><div>${err}</div></div>`;
