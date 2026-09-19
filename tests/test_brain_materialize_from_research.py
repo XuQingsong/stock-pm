@@ -8,8 +8,10 @@ from stock_pm import api
 from stock_pm.brain import api as brain_api
 from stock_pm.brain.materialize_from_research import (
     GAPS,
+    MARKET_THEME_LABELS,
     SOURCE_KIND,
     _classify_market_theme,
+    _extract_theme_copy,
     _is_company_specific_trigger,
     materialize_from_research,
     parse_tickers,
@@ -351,6 +353,10 @@ def test_classify_skips_issuer_triggers_but_keeps_market_framed_themes() -> None
         == "ai_capex_expectations"
     )
     assert _classify_market_theme("Real yields and treasury rates are the live market variable.") == "real_yields"
+    assert _classify_market_theme("盘面：趋势健康；消息：非农强于预期 → 降息预期降温。") == "real_yields"
+    assert _classify_market_theme("收益率与利率仍是跨资产主轴") == "real_yields"
+    assert _classify_market_theme("盘面仍在交易AI资本开支预期") == "ai_capex_expectations"
+    assert _classify_market_theme("Management can deliver AI accelerators against current guidance.") is None
 
 
 def test_agent_run_findings_write_market_hyp_and_attention() -> None:
@@ -526,3 +532,93 @@ def test_two_tickers_from_agent_findings_promote_without_env() -> None:
     for row in overview["dominant_drivers"]:
         tickers.update(row.get("affected_tickers") or [])
     assert {"AVGO", "COHR"} <= tickers
+
+
+LIVE_CHINESE_DESK = (
+    "盘面：趋势健康；消息：非农强于预期 → 降息预期降温，利空高估值成长；"
+    "因此：盘面与消息同向，当前仅作为背景信息，不改变现有判断。"
+)
+AVGO_ACCELERATOR_ASSUMPTION = "Management can deliver AI accelerators against current guidance."
+
+
+def _live_prod_fixture(research: InMemoryResearchStore) -> _Market:
+    research.upsert_pack({"ticker": "AVGO", "company_profile": {"legal_name": "Broadcom Inc.", "sector": "Semiconductors"}})
+    research.insert_assumption(
+        {
+            "id": "rasm_avgo_accel",
+            "ticker": "AVGO",
+            "category": "execution",
+            "statement": AVGO_ACCELERATOR_ASSUMPTION,
+            "status": "unchanged",
+            "importance": "high",
+            "thesis_role": "core",
+            "confidence": 0.7,
+        }
+    )
+    return _Market(
+        snapshots=[
+            {
+                "id": 42,
+                "scope": "market",
+                "one_liner": LIVE_CHINESE_DESK,
+                "row_thesis": LIVE_CHINESE_DESK,
+                "synthesis": LIVE_CHINESE_DESK,
+                "publishState": "published",
+            }
+        ]
+    )
+
+
+def test_chinese_desk_env_uses_canonical_keys_not_raw_sentence() -> None:
+    name, statement = _extract_theme_copy([LIVE_CHINESE_DESK], "real_yields")
+    assert "降息" in name
+    assert "降息" in statement
+    assert "macro_env_" not in name
+    assert LIVE_CHINESE_DESK.startswith("盘面")
+
+    research = InMemoryResearchStore()
+    market = _live_prod_fixture(research)
+    brain = BrainStore()
+    first = materialize_from_research("AVGO,LITE", research=research, brain=brain, market=market)
+    assert first["llm_invoked"] is False
+    assert first["market_environment"]["states_written"] >= 1
+
+    macros = [row for row in brain.list_all_states() if row.get("state_type") == "macro"]
+    assert macros
+    assert all(row.get("state_key") in MARKET_THEME_LABELS for row in macros)
+    assert any(row.get("state_key") == "real_yields" for row in macros)
+    assert not any(str(row.get("state_key") or "").startswith("macro_env_") for row in macros)
+    assert not any("盘面" in str(row.get("state_key") or "") for row in macros)
+    rates = next(row for row in macros if row.get("state_key") == "real_yields")
+    assert rates.get("ticker") in {None, ""}
+    assert "降息" in (rates.get("name") or "") or "降息" in (rates.get("statement") or "")
+    assert (rates.get("subject") or "") == MARKET_THEME_LABELS["real_yields"]
+
+    claims = brain.list_active_claims("AVGO")
+    assert any(AVGO_ACCELERATOR_ASSUMPTION in (row.get("statement") or "") for row in claims)
+    hyps = brain.list_hypotheses("AVGO")
+    assert hyps
+    assert all(row.get("kind") in {"ai_demand", "sector_macro", "real_yields"} for row in hyps)
+    assert any(row.get("canonical_key") == "real_yields" for row in hyps)
+    assert any(row.get("name") == MARKET_THEME_LABELS["real_yields"] for row in hyps)
+    assert not any("accelerator" in (row.get("hypothesis") or "").lower() for row in hyps)
+    assert not any(AVGO_ACCELERATOR_ASSUMPTION == (row.get("hypothesis") or "") for row in hyps)
+    attentions = brain.list_market_attentions("AVGO")
+    assert attentions
+    assert any(row.get("name") == MARKET_THEME_LABELS["real_yields"] for row in attentions)
+
+    lite = next(row for row in first["results"] if row["ticker"] == "LITE")
+    assert lite["status"] == "empty"
+    assert lite["written"]["hypotheses"] == 0
+    assert lite["written"]["attentions"] == 0
+    assert brain.list_hypotheses("LITE") == []
+
+    overview = build_market_overview(brain)
+    assert overview["llm_invoked"] is False
+    assert overview["empty_state"] is None
+    assert any(row.get("category") == "real_yields" for row in overview["dominant_drivers"])
+
+    inv1 = _inventory(brain)
+    second = materialize_from_research(["AVGO", "LITE"], research=research, brain=brain, market=market)
+    assert second["llm_invoked"] is False
+    assert _inventory(brain) == inv1

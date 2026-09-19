@@ -33,7 +33,7 @@ Claims / thesis / events can exist while `dominant_drivers` stays empty if `brai
 | `investment_theses` (latest) | `brain_thesis_snapshots` | `core_thesis` and existing invalidation / monitor strings |
 | `research_valuations` | `brain_valuation_states.supporting_data` | cases copied as-is; direction left `uncertain` unless already present |
 | latest `research_snapshots` + latest success per `research_agent_runs.agent_name` | market hyp/attention when findings / competing hyps / drivers are market-wide; value drivers from `key_economic_drivers` | copies existing JSON strings only; no GLM; company-specific findings stay off the market tables |
-| `environment_snapshots` (latest per scope) | `brain_states` (ticker-less `macro`, `state_key` = theme) | skip `missing` / “环境信息暂缺” placeholders; read `struct.news.macro` / sector / themes when the one-liner is empty |
+| `environment_snapshots` (latest per scope) | ticker-less `brain_states` with canonical `state_key` in `{ai_capex_expectations, real_yields, sector_macro}` | Classify Chinese desk synthesis (`盘面` / `消息` / `因此`) by needles (`降息`/`收益率`/`利率` → `real_yields`; `AI资本开支`/`AI capex` → `ai_capex_expectations`). Name/statement are sliced from existing desk text — no GLM. Never persist the raw sentence as `state_key` (old `macro_env_盘面…` keys). Tickers that already have research also get `brain_market_attention` / hypothesis named with `MARKET_THEME_LABELS` so `_should_promote` can fire (macro + ticker). |
 | `market_events` | `brain_events` | recent titles only; issuer capex stays a trigger, not a dominant driver |
 
 LITE (or any ticker) without a pack / assumptions / thesis / snapshot returns `status=empty` and writes nothing ticker-specific.
