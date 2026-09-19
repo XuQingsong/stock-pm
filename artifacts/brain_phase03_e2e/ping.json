@@ -7,9 +7,9 @@
     "llm_called": true,
     "error": null,
     "input_tokens": 43,
-    "output_tokens": 111,
-    "latency_ms": 2958,
-    "elapsed_s": 2.958462
+    "output_tokens": 112,
+    "latency_ms": 3204,
+    "elapsed_s": 3.204401
   },
   "reasoning": {
     "ok": true,
@@ -19,8 +19,8 @@
     "llm_called": true,
     "error": null,
     "input_tokens": 42,
-    "output_tokens": 155,
-    "latency_ms": 3256,
-    "elapsed_s": 3.256362
+    "output_tokens": 151,
+    "latency_ms": 3130,
+    "elapsed_s": 3.12973
   }
 }

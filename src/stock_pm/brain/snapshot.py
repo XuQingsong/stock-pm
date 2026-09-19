@@ -364,11 +364,97 @@ def locate_affected_objects(
                 if driver_family(row) == "demand_side":
                     _add(hit_drivers, row, seen_d, "driver_id", "canonical_key")
 
+    return expand_related_objects(
+        {
+            "states": hit_states,
+            "drivers": hit_drivers,
+            "claims": hit_claims,
+            "exposures": hit_exposures,
+        },
+        states=current,
+        drivers=driver_rows,
+        claims=claim_rows,
+        exposures=exposure_rows,
+        links=links,
+        causal_edges=causal_edges,
+    )
+
+
+def expand_related_objects(
+    affected: dict[str, list[dict[str, Any]]],
+    *,
+    states: list[dict[str, Any]] | None = None,
+    drivers: list[dict[str, Any]] | None = None,
+    claims: list[dict[str, Any]] | None = None,
+    exposures: list[dict[str, Any]] | None = None,
+    links: list[dict[str, Any]] | None = None,
+    causal_edges: list[dict[str, Any]] | None = None,
+    hypotheses: list[dict[str, Any]] | None = None,
+    expectations: list[dict[str, Any]] | None = None,
+    limit: int = 4,
+) -> dict[str, list[dict[str, Any]]]:
+    """One-hop expansion from already-affected objects. Not a Full Brain dump."""
+    hit_states = list(affected.get("states") or [])
+    hit_drivers = list(affected.get("drivers") or [])
+    hit_claims = list(affected.get("claims") or [])
+    hit_exposures = list(affected.get("exposures") or [])
+    seen_s = {_row_id(row, "state_id", "name") for row in hit_states}
+    seen_d = {_row_id(row, "driver_id", "canonical_key") for row in hit_drivers}
+    seen_c = {_row_id(row, "claim_id", "title") for row in hit_claims}
+    seen_e = {_row_id(row, "exposure_id", "exposure_type") for row in hit_exposures}
+    driver_ids = set(seen_d)
+    claim_ids = set(seen_c)
+    state_ids = set(seen_s)
+    evidence_ids: set[str] = set()
+    for row in hit_states + hit_drivers + hit_claims + hit_exposures:
+        for eid in row.get("evidence_ids") or row.get("supporting_evidence_ids") or []:
+            evidence_ids.add(str(eid))
+    for row in drivers or []:
+        related = {str(item) for item in (row.get("related_claim_ids") or [])}
+        if _row_id(row, "driver_id", "canonical_key") in driver_ids or related & claim_ids:
+            _add(hit_drivers, row, seen_d, "driver_id", "canonical_key")
+            for cid in related:
+                match = next((item for item in (claims or []) if str(item.get("claim_id") or "") == cid), None)
+                if match:
+                    _add(hit_claims, match, seen_c, "claim_id", "title")
+        shared = {str(item) for item in (row.get("evidence_ids") or [])} & evidence_ids
+        if shared and len(hit_drivers) < len(seen_d) + limit:
+            _add(hit_drivers, row, seen_d, "driver_id", "canonical_key")
+    for row in claims or []:
+        related = {str(item) for item in (row.get("related_driver_ids") or [])}
+        if related & driver_ids:
+            _add(hit_claims, row, seen_c, "claim_id", "title")
+    for row in states or []:
+        shared = {str(item) for item in (row.get("evidence_ids") or [])} & evidence_ids
+        if shared and len(hit_states) < limit + 2:
+            _add(hit_states, row, seen_s, "state_id", "name")
+    for row in exposures or []:
+        if str(row.get("related_driver_id") or "") in driver_ids or str(row.get("related_claim_id") or "") in claim_ids:
+            _add(hit_exposures, row, seen_e, "exposure_id", "exposure_type")
+    object_ids = driver_ids | claim_ids | state_ids
+    for edge in causal_edges or []:
+        ends = {str(edge.get("from_node") or ""), str(edge.get("to_node") or "")}
+        if not (ends & object_ids):
+            continue
+        for token in ends:
+            match = next((item for item in (claims or []) if str(item.get("claim_id") or "") == token), None)
+            if match:
+                _add(hit_claims, match, seen_c, "claim_id", "title")
+            match = next((item for item in (drivers or []) if str(item.get("driver_id") or "") == token), None)
+            if match:
+                _add(hit_drivers, match, seen_d, "driver_id", "canonical_key")
+            match = next((item for item in (states or []) if str(item.get("state_id") or "") == token), None)
+            if match:
+                _add(hit_states, match, seen_s, "state_id", "name")
+    extra_hyps = list(hypotheses or [])[:4]
+    extra_exp = list(expectations or [])[:3]
     return {
-        "states": hit_states,
-        "drivers": hit_drivers,
-        "claims": hit_claims,
-        "exposures": hit_exposures,
+        "states": hit_states[: 4 + limit],
+        "drivers": hit_drivers[: 4 + limit],
+        "claims": hit_claims[: 4 + limit],
+        "exposures": hit_exposures[: 4 + limit],
+        "hypotheses": extra_hyps,
+        "expectations": extra_exp,
     }
 
 
@@ -487,4 +573,35 @@ def build_snapshot(
         "targeted": True,
         "full_brain": False,
         "causal_context_tokens": max(0, (len(json.dumps(causal_context, default=str, ensure_ascii=False)) + 3) // 4),
+        "context_part_tokens": _context_part_tokens(
+            event=event,
+            states=current_states_only(affected.get("states")),
+            evidence=support_rows[:16] + counter_rows[:12],
+            causal=causal_context,
+            market={"attentions": attention_rows, "expectations": expectation_rows, "hypotheses": hypothesis_rows},
+            history=relevant_history,
+        ),
+    }
+
+
+def _approx_tokens(payload: Any) -> int:
+    return max(0, (len(json.dumps(payload, default=str, ensure_ascii=False)) + 3) // 4)
+
+
+def _context_part_tokens(
+    *,
+    event: dict[str, Any],
+    states: list[dict[str, Any]],
+    evidence: list[dict[str, Any]],
+    causal: dict[str, Any],
+    market: dict[str, Any],
+    history: list[dict[str, Any]],
+) -> dict[str, int]:
+    return {
+        "event": _approx_tokens(event),
+        "state": _approx_tokens(states),
+        "evidence": _approx_tokens(evidence),
+        "causal": _approx_tokens(causal),
+        "market": _approx_tokens(market),
+        "history": _approx_tokens(history),
     }

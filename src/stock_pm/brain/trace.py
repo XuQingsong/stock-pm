@@ -31,6 +31,8 @@ def _usage(llm_calls: list[dict[str, Any]] | None) -> dict[str, Any]:
     return {
         "input_tokens": inp,
         "output_tokens": out,
+        "critic_input": sum(int(row.get("input_tokens") or 0) for row in calls if str(row.get("role") or "") == "critic"),
+        "critic_output": sum(int(row.get("output_tokens") or 0) for row in calls if str(row.get("role") or "") == "critic"),
         "total_tokens": inp + out,
         "latency_ms": latency,
         "calls": [

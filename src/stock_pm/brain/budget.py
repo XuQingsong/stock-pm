@@ -8,6 +8,28 @@ from .layers import object_layer
 from .snapshot import driver_family
 from .types import CHANGE_BUDGET, FAST_LAYERS
 
+_REWRITE_FIELDS = ("statement", "status", "current_state", "direction", "name", "title")
+
+
+def _is_evidence_only(row: dict[str, Any]) -> bool:
+    nxt = row.get("to_payload") if isinstance(row.get("to_payload"), dict) else row.get("to")
+    nxt = dict(nxt) if isinstance(nxt, dict) else {}
+    now = row.get("from_payload") if isinstance(row.get("from_payload"), dict) else row.get("from")
+    now = dict(now) if isinstance(now, dict) else {}
+    if any(field in nxt and str(nxt.get(field) or "") != str(now.get(field) or "") for field in _REWRITE_FIELDS):
+        return False
+    return any(
+        key in nxt
+        for key in (
+            "evidence_ids",
+            "supporting_evidence_ids",
+            "support_strength",
+            "counter_strength",
+            "uncertainty",
+            "confidence",
+        )
+    )
+
 
 def _payload(row: dict[str, Any]) -> dict[str, Any]:
     raw = row.get("to_payload") if isinstance(row.get("to_payload"), dict) else row.get("to")
@@ -69,9 +91,9 @@ def _drivers_related(rows: list[dict[str, Any]], *, brain: dict[str, Any] | None
 
 def change_scope(proposals: list[dict[str, Any]] | None, *, brain: dict[str, Any] | None = None) -> dict[str, Any]:
     rows = [row for row in (proposals or []) if isinstance(row, dict)]
-    claims = [row for row in rows if str(row.get("object_type") or "") in {"claim", "core_claim"}]
-    drivers = [row for row in rows if str(row.get("object_type") or "") in {"driver", "value_driver"}]
-    states = [row for row in rows if str(row.get("object_type") or "") in {"state", "company_state", "industry_state", "macro_state"}]
+    claims = [row for row in rows if str(row.get("object_type") or "") in {"claim", "core_claim"} and not _is_evidence_only(row)]
+    drivers = [row for row in rows if str(row.get("object_type") or "") in {"driver", "value_driver"} and not _is_evidence_only(row)]
+    states = [row for row in rows if str(row.get("object_type") or "") in {"state", "company_state", "industry_state", "macro_state"} and not _is_evidence_only(row)]
     edges = [row for row in rows if str(row.get("object_type") or "") in {"causal_edge", "causal_relationship"}]
     bases = [row for row in rows if _is_base(row)]
     slow_layers = {

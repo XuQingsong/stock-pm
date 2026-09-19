@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .causal import next_edge_status, shortest_path, transmission_stop_reason
+from .causal import coerce_causal_edges, next_edge_status, shortest_path, transmission_stop_reason
 from .claim_integrity import news_is_duplicate
 from .exposure import related_entity_cannot_prove_issuer
 from .hysteresis import next_claim_status
@@ -24,6 +24,62 @@ def _source_kind(proposal: dict[str, Any]) -> str:
 
 def _reliability(proposal: dict[str, Any]) -> str:
     return str(proposal.get("fact_reliability") or fact_reliability(proposal) or "")
+
+
+_STATEMENT_FIELDS = (
+    "statement",
+    "current_state",
+    "status",
+    "direction",
+    "name",
+    "title",
+    "qualitative_state",
+)
+
+
+def _evidence_only_update(current: dict[str, Any] | None, payload: dict[str, Any] | None) -> bool:
+    """Evidence / confidence / strength accumulation is allowed; statement jumps are not."""
+    now = current or {}
+    nxt = payload or {}
+    if not nxt:
+        return False
+    for field in _STATEMENT_FIELDS:
+        if field in nxt and str(nxt.get(field) or "") != str(now.get(field) or ""):
+            return False
+    allowed = {
+        "evidence_ids",
+        "supporting_evidence_ids",
+        "opposing_evidence_ids",
+        "support_strength",
+        "counter_strength",
+        "support_trend",
+        "counter_trend",
+        "uncertainty",
+        "confidence",
+        "last_material_change",
+        "last_reviewed_at",
+        "reasoning",
+    }
+    extra = {
+        key
+        for key in nxt
+        if key not in allowed
+        and key
+        not in {
+            "object_id",
+            "ticker",
+            "canonical_key",
+            "state_id",
+            "driver_id",
+            "claim_id",
+            "source_kind",
+            "fact_reliability",
+            "reason",
+        }
+    }
+    if extra:
+        return False
+    return any(key in nxt for key in allowed)
 
 
 def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] | None = None) -> list[dict[str, str]]:
@@ -79,11 +135,12 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         confidence = str(proposal.get("confidence") or payload.get("confidence") or current.get("confidence") or "")
         if should_enter_shadow(proposal) or _reliability(proposal) in LOW_RELIABILITY or confidence == "low":
             hits.append({"rule": "low_confidence_cannot_modify_current_state", "reason": "Low-confidence information must enter Shadow State."})
-        if source in {"news", "event", "signal", "rumor", "price"}:
+        if source in {"news", "event", "signal", "rumor", "price"} and not _evidence_only_update(current, payload):
             hits.append({"rule": "state_slower_than_event", "reason": "State must change slower than Event."})
 
     if target in {"driver", "value_driver"} and source in {"news", "event", "signal", "rumor", "price"}:
-        hits.append({"rule": "driver_slower_than_state", "reason": "Value Driver must change slower than State."})
+        if not _evidence_only_update(current, payload):
+            hits.append({"rule": "driver_slower_than_state", "reason": "Value Driver must change slower than State."})
 
     if target in conclusion_targets and is_weak_signal(proposal):
         hits.append({"rule": "weak_signal_becomes_research_question", "reason": "Weak signal produces a Research Question, not a conclusion."})
@@ -103,7 +160,7 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
     if target in {"causal_edge", "causal_relationship"}:
         requested = str(payload.get("status") or payload.get("requested_status") or current.get("status") or "candidate")
         existing = None
-        for edge in context.get("causal_edges") or []:
+        for edge in coerce_causal_edges(context.get("causal_edges") or []):
             if str(edge.get("edge_id") or "") == str(proposal.get("object_id") or "") or (
                 str(edge.get("from_node") or "") == str(payload.get("from_node") or current.get("from_node") or "")
                 and str(edge.get("to_node") or "") == str(payload.get("to_node") or current.get("to_node") or "")
@@ -126,9 +183,12 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
         elif source in {"news", "event", "signal", "price"} and requested in {"supported", "established"} and is_new:
             hits.append({"rule": "causal_slower_than_claim", "reason": "Causal Graph cannot jump to established from a single event."})
 
-    supplied_edges = list(proposal.get("causal_edges") or payload.get("causal_edges") or [])
+    supplied_edges = coerce_causal_edges(proposal.get("causal_edges") or payload.get("causal_edges") or [])
+    raw_supplied = proposal.get("causal_edges") or payload.get("causal_edges") or []
     impact_targets = {"claim", "core_claim", "driver", "value_driver"}
     if target in impact_targets | {"financial_impact", "scenario"}:
+        if raw_supplied and not supplied_edges:
+            hits.append({"rule": "unsupported_causal_cannot_transmit", "reason": "rejected_malformed_causal_edge"})
         if supplied_edges:
             stopped = transmission_stop_reason(supplied_edges)
             if stopped:
@@ -137,7 +197,7 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
             target_id = str(proposal.get("object_id") or payload.get("object_id") or "")
             if target_id:
                 walked = shortest_path(
-                    list(context.get("causal_edges") or []),
+                    coerce_causal_edges(context.get("causal_edges") or []),
                     start_ids={str(item) for item in (context.get("event_nodes") or []) if str(item)},
                     goal_ids={target_id},
                 )

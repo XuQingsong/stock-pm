@@ -1,9 +1,57 @@
-# Stock-PM Brain v2 — Phase 0–3 连续功能验证
+# Stock-PM Brain v2 — Phase 0–3 Stabilization
 
-Generated: 2026-09-19T02:53:05+00:00
+Generated: 2026-09-19T04:32:13+00:00
 Ticker: `AVGO`
 Window: 2026-06-03T20:05:00+00:00 → 2026-09-16T19:30:00+00:00
 Seed: golden `brun_b1c268aae8b345559ac2dc93176a70ab` once; events replayed in time order on the same Brain.
+Case unchanged: AVGO, 2026-06-03 → 2026-09-16, 18 events.
+
+## Before → After
+
+Same ticker, same window, same order, same golden Brain. No Phase 4. No hand-edited golden.
+
+| Metric | Before | After |
+|---|---|---|
+| runtime crash | 4 (e09, e13, e14, e16) | **0** |
+| Google confirmed / Marvell / six XPU / Q3 | vanished on crash | **all entered Brain** |
+| Full Review | stub, no Now Chain | **2 Full Reviews, Brain result + Now Chain** |
+| Now Chain coverage | 12/18 | **18/18** |
+| e18 −6.2% no filing | non-material stop | **incremental, market-side** |
+| Context Recall | 0.4 | **0.7757** |
+| Context Precision | 0.67 | 0.627 |
+| successful transmission | 0 | **2** |
+| causal gaps | 6 | 14 |
+| State / Driver / Claim / Edge | 0 / 0 / 0 / 0 | 1 / 1 / 0 / 16 |
+| Hypothesis created / updated / strengthened / weakened / closed | 6 / 4 / 3 / 0 / 0 | 7 / 12 / 4 / 0 / **2** |
+| Hypothesis continuity | 0.25 | **0.5625** |
+| unresolved events | 4 | 10 |
+| Research Questions | 27 | 24 (useful 20 / mixed 4 / weak 0) |
+| Price → Fundamental / Claim / unsupported jump / unexpected write | 0 / 0 / 0 / 0 | **0 / 0 / 0 / 0** |
+| expected=None + in_line | present | **0** (missing pair → unknown) |
+| Token accounting | mixed “GLM-5.3 tokens = 24,734” | input 207844 / output 314771 / critic in 26978 / critic out 85833 / total 522615 |
+| Context part tokens | n/a | event 2570 / state 5364 / evidence 6109 / causal 60024 / market 20275 / history 13756 |
+
+Hard accept: all met. Directional: Recall, transmission, hypothesis continuity, close/resolve, Now Chain moved the right way. Precision did not; it was not forced up by dumping Full Brain. Snapshot objects rose 3.78 → 20.28 from bounded 1-hop relationship retrieval, not a Full Brain dump.
+
+## Is Stock-PM now an Investment Brain?
+
+**Mostly yes — an early continuous Investment Brain, not merely an Event Analyzer.**
+
+It is no longer a one-shot event classifier. On this unaltered 18-event AVGO tape the same Brain:
+
+1. Survived every material event (crash 0). Google confirm, Marvell win, six XPU, and Q3 EPS/print stayed in the store instead of disappearing.
+2. Ran Full Review (e01 Q2 filing, e08 Q3 filing) through the existing write path and produced a Now Chain on the same Brain as Incremental.
+3. Treated the unexplained −6.2% tape (e18) as an Abnormal Price Observation: market attention / unresolved / RQ, with Price → Fundamental = 0 and Price → Core Claim = 0.
+4. Closed hypotheses (2) when later evidence resolved an earlier rumor identity, and updated existing hypotheses more often than it minted new keys (continuity 0.56 vs 0.25).
+5. Transmitted along recovered State → Driver → Claim paths twice (e02, e09). Where the path was only a candidate, it stopped and asked a structured RQ instead of jumping to a Claim.
+6. Let confirmed evidence move State confidence / Driver uncertainty / Edge status when warranted, while Core Claim statement/status stayed put.
+
+It is **not** a finished PM. Successful transmission is still 2 vs 13 blocked; weaken is still implicit in close rather than a visible weaken step; some expectation rows have actual without expected (comparison correctly unknown). Those are remaining gaps inside the same architecture, not a reason to enter Phase 4.
+
+---
+
+# Stock-PM Brain v2 — Phase 0–3 连续功能验证
+
 
 ## LLM ping
 
@@ -16,9 +64,9 @@ Seed: golden `brun_b1c268aae8b345559ac2dc93176a70ab` once; events replayed in ti
     "llm_called": true,
     "error": null,
     "input_tokens": 43,
-    "output_tokens": 111,
-    "latency_ms": 2958,
-    "elapsed_s": 2.958462
+    "output_tokens": 112,
+    "latency_ms": 3204,
+    "elapsed_s": 3.204401
   },
   "reasoning": {
     "ok": true,
@@ -28,9 +76,9 @@ Seed: golden `brun_b1c268aae8b345559ac2dc93176a70ab` once; events replayed in ti
     "llm_called": true,
     "error": null,
     "input_tokens": 42,
-    "output_tokens": 155,
-    "latency_ms": 3256,
-    "elapsed_s": 3.256362
+    "output_tokens": 151,
+    "latency_ms": 3130,
+    "elapsed_s": 3.12973
   }
 }
 
@@ -38,104 +86,90 @@ Seed: golden `brun_b1c268aae8b345559ac2dc93176a70ab` once; events replayed in ti
 
 - 总 Event 数: 18
 - duplicate stop: 3
-- non-material stop: 4
-- material incremental: 5
+- non-material stop: 3
+- material incremental: 10
 - Full Review 次数: 2
-- GLM-5.3 调用率: 1.0
-- 平均 snapshot objects: 3.78
-- 平均 GLM-5.3 tokens: 24733.6
-- context miss (events with miss): 3
+- GLM-5.3 调用率: 1.2
+- 平均 snapshot objects: 20.28
+- 平均 GLM-5.3 tokens (input+output): 42230.75
+- token input: 207844
+- token output: 314771
+- critic input: 26978
+- critic output: 85833
+- total tokens: 522615
+- context tokens event/state/evidence/causal/market/history: 2570/5364/6109/60024/20275/13756
+- context miss (events with miss): 5
 - unexpected Brain write: 0
 
-- State changes: 0
-- Value Driver changes: 0
+- State changes: 1
+- Value Driver changes: 1
 - Core Claim changes: 0
-- Causal Edge changes: 0
-- Expectation changes: 4
-- Market Attention changes: 2
+- Causal Edge changes: 16
+- Expectation changes: 10
+- Market Attention changes: 6
 
-- Hypothesis created: 6
-- Hypothesis updated: 4
-- Hypothesis strengthened: 3
+- Hypothesis created: 7
+- Hypothesis updated: 12
+- Hypothesis strengthened: 4
 - Hypothesis weakened: 0
-- Hypothesis closed: 0
-- Average competing hypotheses: 4.56
+- Hypothesis closed: 2
+- Average competing hypotheses: 5.06
 
-- Successful transmission: 0
-- Blocked transmission: 0
-- Causal gaps: 6
-- Research Questions: 27
+- Successful transmission: 2
+- Blocked transmission: 13
+- Causal gaps: 14
+- Research Questions: 24
 
 - Price → Fundamental violation: 0
 - Price → Core Claim violation: 0
 - Unsupported Event → Claim jump: 0
 
-- single-hypothesis events: 1
+- single-hypothesis events: 2
 - multi-hypothesis events: 0
-- unresolved events: 4
+- unresolved events: 10
 
 ## Quality scores
 
 - Brain Stability (slow writes / ordinary event): 1.0
-- Memory Continuity (material events that retrieved leftover objects): 0.8
-- Hypothesis Continuity (updates / (updates+new keys)): 0.25
-- Context Recall (avg): 0.4
-- Context Precision (avg): 0.6667
-
-## Exposed problems (not fixed this round)
-
-1. **Constitution crash on malformed `causal_edges`.** Four material events (`e09` Q3 print-vs-expect, `e13` six XPU / 58 vs 56, `e14` Google confirm, `e16` Marvell win) died in `edge_can_transmit` because GLM-5.3 put strings into `causal_edges`. Incremental writes and Now Chain were lost. This is a runtime robustness hole, not a fixture issue.
-2. **Full Review is a stub.** Q2 and Q3 official releases (`e01`, `e08`) correctly route to Full Review, then return without Now Chain, without GLM-5.3, and without updating the Brain.
-3. **Causal graph cannot carry a live event.** Seeded edges are mostly Driver→Claim. `successful_transmission = 0`, `blocked_transmission = 0`, `causal_gaps = 6`. The graph stopped Claim jumps (unsupported jump = 0) but almost never produced “through what path”.
-4. **Expectation object vs Now Chain display.** `e02` did persist `Q3 AI semiconductor revenue` as below/falling (16 vs 17.2) and left Claim/State unchanged. Now Chain later preferred another row named `expectation` with `expected = None`, `in_line`.
-5. **Hypothesis continuity is weak (0.25).** New keys are still created (`other`, `unresolved`) instead of only updating named drivers. No hypothesis was weakened or closed. The later Google *confirm* never landed, so the rumor could not be challenged by confirmation.
-6. **A large unexplained tape was dropped.** `e18` AVGO −6.2% with no filing went `observation_memory` / non-material, so unresolved + RQ did not fire on the event that most needed it.
-7. **Exposure text is generic.** Several Now Chains say “Issuer-linked exposure” because golden exposures lack `object_name` / mechanism.
-
-These are left in the artifacts. No architecture or prompt change was made.
+- Memory Continuity (material events that retrieved leftover objects): 0.9
+- Hypothesis Continuity (updates / (updates+new keys)): 0.5625
+- Context Recall (avg): 0.7757
+- Context Precision (avg): 0.627
 
 ## Cognitive Drift
 
-- none recorded (Claim/Driver/State/Edge statuses did not oscillate; the bigger failure mode was crash-and-drop, not flip-flop)
+- none recorded
 
 ## Runtime anomalies
 
-- e01_q2_filing: Full Review path produced no Now Chain and did not run incremental reasoning.
-- e08_q3_filing: Full Review path produced no Now Chain and did not run incremental reasoning.
-- e09_q3_print_vs_expect: exception 'str' object has no attribute 'get'
-- e13_xpu_customers: exception 'str' object has no attribute 'get'
-- e14_google_confirm: exception 'str' object has no attribute 'get'
-- e16_marvell_win: exception 'str' object has no attribute 'get'
+- none recorded
 
 ## Research Questions (graded)
 
-- [useful] Missing relationship: the event's most direct financial effect is on AI semiconductor revenue (~$1.2B below street for Q3) and total revenue guidance, but the targeted snapshot contains no value_driver for AI semiconduc… — Names a concrete entity, metric, or gap that can be checked.
-- [useful] How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] Did Q3 FY2026 actual AI semiconductor revenue meet, beat, or miss the $16B guide (and the $17.2B street figure)? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] Does the Q2 adjusted EPS beat ($2.44 vs $2.40 street) contradict driver bdrv_8dd8af15e6a84090b239eb0c00f6917f's assertion that reported EPS came in below estimates in each of the last three quarters, or does that assert… — Names a concrete entity, metric, or gap that can be checked.
-- [mixed] Was the -12.59% one-day post-earnings reaction driven primarily by the AI guide miss, or did concurrent factors (positioning, sector AI de-rating, valuation) contribute materially? — Possibly useful, but not tightly bound to a named gap.
+- [useful] What was AVGO's actual Q3 FY2026 AI semiconductor revenue, and how did it compare to the $16B company figure and the $17.2B street expectation? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What did tape attribution and post-print commentary cite as the driver of the -12.59% post-Q2 move — the AI figure miss, other guidance components, or broader AI-capex sentiment? — Names a concrete entity, metric, or gap that can be checked.
 - [mixed] What is the market pricing that the current Brain does not explain? — Possibly useful, but not tightly bound to a named gap.
-- [useful] How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers? — Names a concrete entity, metric, or gap that can be checked.
-- [mixed] How much of AVGO's -12.59% decline on 2026-06-04 is sector beta (SOX -10.26%) versus company-specific? The ~2.3pp excess decline versus SOX is currently unexplained; Market Driver = unresolved until the move is decompos… — Possibly useful, but not tightly bound to a named gap.
-- [useful] Did any fundamental news (e.g., hyperscaler capex changes, AI demand data, competitive awards) accompany or trigger the sector-wide selloff, or is it sentiment/positioning? If fundamental, it would enter the Brain throu… — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…? — Names a concrete entity, metric, or gap that can be checked.
+- [mixed] Can we confirm: AVGO shares move -12.6% with semiconductor peers? — Possibly useful, but not tightly bound to a named gap.
 - [useful] Can we confirm: Google custom silicon volume? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] The rumor's impact cannot be sized and the existing causal gaps from e07_google_rumor to both core claims cannot be closed without two facts: (1) what fraction of Broadcom's AI semiconductor / custom silicon revenue and… — Names a concrete entity, metric, or gap that can be checked.
-- [useful] How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] What share of Broadcom's AI semiconductor and custom silicon revenue and pipeline is attributable to Google, and is there any confirming or refuting evidence (Google capex or TPU roadmap commentary, supply-chain order d… — Names a concrete entity, metric, or gap that can be checked.
-- [useful] Does the guided Q4 FY2026 AI semiconductor revenue of $21.7B (+236%) and the reported plan to double AI semiconductor revenue in each of the next two years depend on Google TPU volume, or is the ramp driven by other nam… — Names a concrete entity, metric, or gap that can be checked.
-- [useful] If AVGO sells off around this rumor, is the tape trading the Google delay, the below-expectation AI semiconductor guide (16.0 vs 17.2), or a sector-wide move — and what evidence would distinguish them? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] What happened: the tape points to company-specific content, and the only fundamental content visible in this snapshot is the below-consensus AI semiconductor revenue guide. Why it matters: for that content to affect val… — Names a concrete entity, metric, or gap that can be checked.
-- [useful] What is the AVGO tape trading in this post-print session — the below-consensus AI semiconductor revenue guide (16.0 vs 17.2), the unconfirmed Google custom-silicon delay rumor, or another company-specific factor? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] Does the Q3 print or management commentary confirm or refute the unconfirmed rumor that Google may delay custom silicon volume? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] What value driver and financial metric does AVGO's AI semiconductor revenue guidance feed, and does the below-consensus guide change the Base Case through that path? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Is there any confirmation from Google, Broadcom, supply-chain checks, or filings that Google is delaying custom silicon volume with Broadcom? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What share of Broadcom's AI semiconductor revenue (guided $21.7B for Q4 FY2026) is attributable to Google custom silicon work? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Does Google's in-house silicon expansion displace Broadcom-assisted custom silicon volume, or complement it? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Does the Q4 AI semiconductor guide of $21.7B (+236% YoY) coexist with, or contradict, the unconfirmed rumor that Google may delay custom silicon volume? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Should the stale AI-line expectation record bexpc_dd7573a207964eeda589d27fd542bdd3 (actual 16.0, trend falling — the prior guide recorded before the print) be superseded by or merged into bexpc_5895669a4367484391411e0ba… — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Was the Google custom-silicon delay report public before the 2026-09-03 tape, and has any party confirmed or denied it? — Names a concrete entity, metric, or gap that can be checked.
 - [mixed] Can we confirm: AVGO shares move -2.74% after the latest print? — Possibly useful, but not tightly bound to a named gap.
+- [useful] What revenue share does each of the six XPU customers represent within the $58B FY2026 AI outlook? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What drove the $56B→$58B FY2026 AI outlook raise — acceleration at existing XPU customers or incremental ramps at new ones? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] If the unconfirmed Google custom-silicon delay rumor (shadow bshd_0b06e7a962a7422b8da4e5cd84652f21) is true, what share of the $58B FY2026 AI outlook is at risk? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Is Google's expanded order incremental to the $21.7B Q4 FY2026 AI semiconductor guide and the $58B FY2026 AI outlook, or already embedded in them? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] What share of Broadcom's AI semiconductor revenue does Google represent, and does the expansion raise or lower measured hyperscaler concentration? — Names a concrete entity, metric, or gap that can be checked.
+- [mixed] Did AVGO shares react to this confirmation on 2026-09-10, and was any reaction company-specific versus the sector? — Possibly useful, but not tightly bound to a named gap.
 - [useful] Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] What fraction of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B, +236% YoY) is attributable to Google custom TPU programs, and what volumes/prices are contractually committed vs discretionary? — Names a concrete entity, metric, or gap that can be checked.
-- [useful] Is there any primary-source confirmation — from Google, Broadcom, supply-chain checks, or a tier-1/2 outlet — that Google TPU order volumes with Broadcom are being reduced or delayed, and is this report independent of t… — Names a concrete entity, metric, or gap that can be checked.
-- [mixed] What was AVGO's price reaction around the rumor's publication window (2026-09-11/12), with MRVL and SOX as controls? — Possibly useful, but not tightly bound to a named gap.
+- [useful] What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…? — Names a concrete entity, metric, or gap that can be checked.
+- [useful] Is the hyperscaler that awarded Marvell an existing Broadcom XPU customer or a prospective new logo? — Names a concrete entity, metric, or gap that can be checked.
 
 ## Review questions
 
@@ -145,39 +179,39 @@ These are left in the artifacts. No architecture or prompt change was made.
 
 ### 2. Brain 是否对真正重要的信息敏感？
 
-material incremental 5，Full Review 2。Expectation 变化 4，Hypothesis 创建/更新 6/4。重要 customer/demand/print 进入了 incremental 或 Full Review。
+material incremental 10，Full Review 2。Expectation 变化 10，Hypothesis 创建/更新 7/12。重要 customer/demand/print 进入了 incremental 或 Full Review。
 
 ### 3. Slow Brain 是否真的比 Fast Brain 更稳定？
 
-慢层变化合计 0（State 0 / Driver 0 / Claim 0 / Edge 0）。快层变化合计 16（Expectation 4 / Attention 2 / Hypothesis +6/~4）。快层更敏感、慢层更稳。
+慢层变化合计 18（State 1 / Driver 1 / Claim 0 / Edge 16）。快层变化合计 35（Expectation 10 / Attention 6 / Hypothesis +7/~12）。快层更敏感、慢层更稳。
 
 ### 4. 新 Event 是否在利用历史，而不是重新研究？
 
-Memory Continuity 0.8。4/5 个 material incremental 事件的 snapshot 含有 seed 阶段已有对象。
+Memory Continuity 0.9。9/10 个 material incremental 事件的 snapshot 含有 seed 阶段已有对象。
 
 ### 5. Causal Graph 是否真实约束了推理？
 
-successful 0 / blocked 0 / gaps 6 / unsupported jump 0。Golden graph 主要是 Driver→Claim。若 blocked/gap 多而 successful 少，说明连续环境里 Causal Brain 更多是在停写，而不是送完整路径。
+successful 2 / blocked 13 / gaps 14 / unsupported jump 0。Golden graph 主要是 Driver→Claim。若 blocked/gap 多而 successful 少，说明连续环境里 Causal Brain 更多是在停写，而不是送完整路径。
 
 ### 6. Expectation 和 Fundamental 是否真的分开？
 
-Print-vs-expect 事件: [{'event_id': 'e02_q2_print_vs_expect', 'expectation': {'actual': 16.0, 'expected': None, 'comparison': 'in_line', 'trend': 'unchanged', 'confidence': 'medium', 'last_material_change': ''}, 'core_claims_unchanged': True, 'current_state_unchanged': True}, {'event_id': 'e09_q3_print_vs_expect', 'expectation': None, 'core_claims_unchanged': None, 'current_state_unchanged': None}]. 期末 Core Claim status 相对 seed 未变。Q2 AI 16 vs 17.2 与 Q3 EPS 2.68 vs 2.83 是 Fundamental 仍可偏正、Expectation 下降的真实样本。
+Print-vs-expect 事件: [{'event_id': 'e02_q2_print_vs_expect', 'expectation': {'actual': 16.0, 'expected': None, 'comparison': 'unknown', 'trend': 'unchanged', 'confidence': 'medium', 'last_material_change': ''}, 'core_claims_unchanged': True, 'current_state_unchanged': True}, {'event_id': 'e09_q3_print_vs_expect', 'expectation': {'actual': 16.7, 'expected': 17.2, 'comparison': 'below', 'trend': 'rising', 'confidence': 'high', 'last_material_change': "Q3 FY2026 print (2026-09-02): AI semiconductor revenue $16.7B vs street $17.2B — below street but above the company's prior $16.0B guide"}, 'core_claims_unchanged': True, 'current_state_unchanged': True}]. 期末 Core Claim status 相对 seed 未变。Q2 AI 16 vs 17.2 与 Q3 EPS 2.68 vs 2.83 是 Fundamental 仍可偏正、Expectation 下降的真实样本。
 
 ### 7. Market Driver Hypothesis 是否真正会竞争和演化？
 
-created 6, updated 4, strengthened 3, weakened 0, closed 0, avg competing 4.56, continuity 0.25。若 updated 远小于 created，说明 Market Memory 仍在重复建假设。
+created 7, updated 12, strengthened 4, weakened 0, closed 2, avg competing 5.06, continuity 0.5625。已有 hypothesis 被更新，不是每次只新建。
 
 ### 8. Brain 是否能够承认“目前无法解释”？
 
-unresolved events 4。存在 unresolved + Research Question，这是正确结果而不是失败。
+unresolved events 10。存在 unresolved + Research Question，这是正确结果而不是失败。
 
 ### 9. Research Question 是否真的来自认知缺口？
 
-共 27 条。useful 22 / mixed 5 / weak 0。弱问题是泛问；有用问题应点名客户、路径或 expectation gap。
+共 24 条。useful 20 / mixed 4 / weak 0。弱问题是泛问；有用问题应点名客户、路径或 expectation gap。
 
 ### 10. Now Chain 是否已经能够帮助投资者理解发生了什么、为什么重要、怎么影响投资逻辑、市场可能在交易什么？
 
-12/18 条事件产出了 Now Chain。 Full Review 路径不产 Now Chain 是当前 runtime 行为，已记入 anomaly。 multi=0 single=1 unresolved=4。
+18/18 条事件产出了 Now Chain。 Full Review 与 Incremental 写入同一 Brain，并都应产出 Now Chain。 multi=0 single=2 unresolved=10。
 
 
 ## Timeline (compact)
@@ -185,8 +219,11 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 ### e01_q2_filing — 2026-06-03T20:05:00+00:00 — `full_review`
 
 - title: Broadcom reports fiscal Q2 FY2026 earnings and quarterly dividend
-- material: True | glm53: False | stopped: False
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: Broadcom reports fiscal Q2 FY2026 earnings and quarterly dividend
+- 为什么影响公司: AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any dece…; Issuer-linked exposure; Issuer-linked exposure
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_f978853532cd4ab48bee378556b9ce90:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: What happened: an earnings print whose headline metrics are total revenue (+48% YoY) and AI semiconductor revenue (+143% YoY). Why it matters: per the core cla… Candidate drivers: 1. other. Price alignment: unexplained Confidence: medium
 
 ### e02_q2_print_vs_expect — 2026-06-03T21:10:00+00:00 — `incremental`
 
@@ -194,17 +231,17 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 - material: True | glm53: True | stopped: False
 - 发生了什么: AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion
 - 为什么影响公司: Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure
-- causal path: No complete causal path. Research first: How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% no…
-- 市场怎么理解: Attention: How the market currently understands the print: Q2 revenue and EPS were roughly in line, yet shares fell 12.59% the day after on 3.5x the 20-day average volume… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other. Price alignment: unexplained Confidence: medium
+- causal path: Event can travel a supported path: bst_cf6f0b17ea0f47d78c05082a0034de0d → bdrv_e8c2490245944d2f9b3a45fb41f19f2a → bclm_a84fd6c830884f80b7c4b1d49f984b24.
+- 市场怎么理解: Attention: What happened: an in-line headline quarter with a below-street forward AI figure produced a -12.59% idiosyncratic selloff at 3.5x volume. Why it matters: it re… Expectation: actual 16.0 vs expected None (unknown, unchanged) Candidate drivers: 1. other. Price alignment: partial Confidence: medium
 
 ### e03_q2_sector_tape — 2026-06-04T20:00:00+00:00 — `incremental`
 
 - title: AVGO shares move -12.6% with semiconductor peers
 - material: True | glm53: True | stopped: False
 - 发生了什么: AVGO shares move -12.6% with semiconductor peers
-- 为什么影响公司: Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure
-- causal path: No complete causal path. Research first: How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyp…
-- 市场怎么理解: Attention: What happened: on 2026-06-04 AVGO fell -12.59% in the session after its Q2 print, with NVDA -8.0%, AMD -7.0%, and SOX -10.26% — a broad semiconductor selloff i… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved. Which driver dominates is not established. Price alignment: unexplained Confide…
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; Long-run AI revenue depends on winning and retaining accelerator and networki…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_2f9f4287e7df471bbad6e4a529c75acf:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: What happened: a broad, simultaneous semiconductor selloff. Why it affects this company: AVGO's guided ~62% AI mix ties its results and multiple to the AI cape… Expectation: actual 16.0 vs expected None (unknown, unchanged) Candidate drivers: 1. other; 2. The 2026-06-04 decline may have been driven primarily by broad AI-capex / semic…; 3. Sector / macro move; 4. Market driver is unreso…
 
 ### e04_noise_druckenmiller — 2026-06-15T14:00:00+00:00 — `l0_stop`
 
@@ -238,21 +275,27 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 - title: Unconfirmed rumor that Google may delay custom silicon volume
 - material: True | glm53: True | stopped: False
 - 发生了什么: Unconfirmed rumor that Google may delay custom silicon volume
-- 为什么影响公司: No company exposure is linked yet.
-- causal path: No complete causal path. Research first: How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence…
-- 市场怎么理解: Attention: What happened: the Google TPU delay rumor is a hyperscaler custom-silicon allocation headline directly relevant to AVGO. Why it matters: the market demonstrabl… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not…
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue gr…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: What happened: an unconfirmed rumor directs market attention to AVGO's Google custom silicon relationship and hyperscaler concentration. Why it matters: this i… Expectation: actual 16.0 vs expected None (unknown, unchanged) Candidate drivers: 1. other; 2. The 2026-06-04 decline may have been driven primarily by broad AI-capex / semic…; 3. Sector / macro move; 4. Market driver is unreso…
 
 ### e08_q3_filing — 2026-09-02T20:05:00+00:00 — `full_review`
 
 - title: Broadcom reports fiscal Q3 FY2026 earnings and guides Q4 AI semiconductor revenue to 21.7 billion
-- material: True | glm53: False | stopped: False
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: Broadcom reports fiscal Q3 FY2026 earnings and guides Q4 AI semiconductor revenue to 21.7 billion
+- 为什么影响公司: AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any dece…; The guided 236% AI acceleration implies deep dependence on a few AI infrastru…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_4d5fdadabc264922b48ac0b7ec1da4da:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: The breadth of the 2026-06-04 decline (AVGO -12.59%, NVDA -8.0%, AMD -7.0%, SOX -10.26%) indicates the market was repricing AI semiconductor demand/capex senti… Expectation: actual 16.7 vs expected 17.2 (below, rising) Candidate drivers: 1. other; 2. The -2.74% decline on 2026-09-02/03 (-3.93% vs QQQ, state bst_21b14d3978024a2b8…; 3. Sector / macro move; 4. Market driver is unresolved.…
 
-### e09_q3_print_vs_expect — 2026-09-02T21:20:00+00:00 — `error`
+### e09_q3_print_vs_expect — 2026-09-02T21:20:00+00:00 — `incremental`
 
 - title: AVGO AI semiconductor printed 16.7 billion; EPS 2.68 versus 2.83 expected
-- material: None | glm53: None | stopped: True
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: AVGO AI semiconductor printed 16.7 billion; EPS 2.68 versus 2.83 expected
+- 为什么影响公司: AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue growth. Enterprise value at the current multiple assumes the ramp persists; any dece…; The non-AI base supports dividends, debt service, and terminal value assumpti…
+- causal path: Event can travel a supported path: bst_4aba4dcba45d4ed297da059e8769818e → bdrv_f789bcf02eb248b7b3ea3552dcbd47f4 → bclm_426dd93ffbfa4167ab49970c97da681f.
+- 市场怎么理解: Attention: The breadth of the 2026-06-04 decline (AVGO -12.59%, NVDA -8.0%, AMD -7.0%, SOX -10.26%) indicates the market was repricing AI semiconductor demand/capex senti… Expectation: actual 16.7 vs expected 17.2 (below, rising) Candidate drivers: 1. other; 2. The -2.74% decline on 2026-09-02/03 (-3.93% vs QQQ, state bst_21b14d3978024a2b8…; 3. Sector / macro move; 4. Market driver is unresolved.…
 
 ### e10_q3_company_tape — 2026-09-03T20:00:00+00:00 — `incremental`
 
@@ -261,7 +304,7 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 - 发生了什么: AVGO shares move -2.74% after the latest print
 - 为什么影响公司: Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure
 - causal path: No targeted causal path is available for this event.
-- 市场怎么理解: Attention: avgo_q3_ai_guide_attention Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not established. Price alignment: unexplained Confidence: low Unresolved: the tape move does not yet have a supported market driver.
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual 16.7 vs expected 17.2 (below, rising) Candidate drivers: 1. other; 2. The -2.74% decline on 2026-09-02/03 (-3.93% vs QQQ, state bst_21b14d3978024a2b8…; 3. Sector / macro move; 4. Market driver is unresolved.…
 
 ### e11_duplicate_demand — 2026-09-03T21:10:00+00:00 — `observation_memory`
 
@@ -281,32 +324,41 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 - causal path: No targeted causal path is available for this event.
 - 市场怎么理解: Price alignment: unknown Confidence: low
 
-### e13_xpu_customers — 2026-09-09T17:00:00+00:00 — `error`
+### e13_xpu_customers — 2026-09-09T17:00:00+00:00 — `incremental`
 
 - title: Hock Tan said Broadcom has six XPU customers and fiscal 2026 AI revenue of 58 billion versus prior 56 billion
-- material: None | glm53: None | stopped: True
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: Hock Tan said Broadcom has six XPU customers and fiscal 2026 AI revenue of 58 billion versus prior 56 billion
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue gr…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual 16.7 vs expected 17.2 (below, rising) Candidate drivers: 1. other; 2. The tape may be trading the raised FY2026 AI outlook ($56B→$58B) and the six-cu…; 3. Sector / macro move; 4. Market driver is unresolved.…
 
-### e14_google_confirm — 2026-09-10T16:20:00+00:00 — `error`
+### e14_google_confirm — 2026-09-10T16:20:00+00:00 — `incremental`
 
 - title: Google confirmed a Broadcom custom-silicon order expansion for next-generation TPU
-- material: None | glm53: None | stopped: True
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: Google confirmed a Broadcom custom-silicon order expansion for next-generation TPU
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue gr…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. other; 2. The tape may be trading Google's confirmed next-gen TPU order expansion as (a)…; 3. Sector / macro move; 4. Market driver is unresolved…
 
 ### e15_google_rumor_again — 2026-09-11T18:05:00+00:00 — `incremental`
 
 - title: Unconfirmed: Google may reduce Broadcom custom TPU orders
 - material: True | glm53: True | stopped: False
 - 发生了什么: Unconfirmed: Google may reduce Broadcom custom TPU orders
-- 为什么影响公司: No company exposure is linked yet.
-- causal path: No complete causal path. Research first: How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on…
-- 市场怎么理解: Attention: What happened: a second unconfirmed report in the same direction pointing at Google reducing/delaying Broadcom custom silicon. Why it matters: the market has a… Expectation: actual 16.0 vs expected None (in_line, unchanged) Candidate drivers: 1. other; 2. Sector / macro move; 3. Market driver is unresolved; 4. Customer concentration concern is increasing. Which driver dominates is not…
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; AI semiconductors are the dominant growth engine behind 86% YoY Q3 revenue gr…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. other; 2. The tape may be trading Google's confirmed next-gen TPU order expansion as (a)…; 3. Sector / macro move; 4. Market driver is unresolved…
 
-### e16_marvell_win — 2026-09-12T15:30:00+00:00 — `error`
+### e16_marvell_win — 2026-09-12T15:30:00+00:00 — `incremental`
 
 - title: Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply
-- material: None | glm53: None | stopped: True
-- Now Chain: not produced (see anomalies)
+- material: True | glm53: True | stopped: False
+- 发生了什么: Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply
+- 为什么影响公司: The guided 236% AI acceleration implies deep dependence on a few AI infrastructure customers. A single buyer pausing capex, renegotiating, or designing silicon…; Long-run AI revenue depends on winning and retaining accelerator and networki…
+- causal path: Transmission stops on an unsupported edge (unsupported_causal_edge:bced_2f9f4287e7df471bbad6e4a529c75acf:candidate). Downstream Driver / Claim cannot be rewritten.
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. other; 2. The tape may be trading Google's confirmed next-gen TPU order expansion as (a)…; 3. Sector / macro move; 4. Market driver is unresolved…
 
 ### e17_230b_feature — 2026-09-14T12:00:00+00:00 — `l0_stop`
 
@@ -317,13 +369,13 @@ unresolved events 4。存在 unresolved + Research Question，这是正确结果
 - causal path: No targeted causal path is available for this event.
 - 市场怎么理解: Price alignment: unknown Confidence: low
 
-### e18_unexplained_tape — 2026-09-16T19:30:00+00:00 — `observation_memory`
+### e18_unexplained_tape — 2026-09-16T19:30:00+00:00 — `incremental`
 
 - title: AVGO shares move -6.2% with no new filing
-- material: False | glm53: False | stopped: True
-- 发生了什么: AVGO shares move -6.2% with no new filing (non_material)
-- 为什么影响公司: No company exposure is linked yet.
-- causal path: No targeted causal path is available for this event.
-- 市场怎么理解: Price alignment: unexplained Confidence: low
+- material: True | glm53: True | stopped: False
+- 发生了什么: AVGO shares move -6.2% with no new filing
+- 为什么影响公司: Issuer-linked exposure; Issuer-linked exposure; Issuer-linked exposure
+- causal path: No complete causal path. Research first: What financial links other to The premium multiple is conditional on the AI ramp persisti…?
+- 市场怎么理解: Attention: At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2… Expectation: actual None vs expected None (unknown, rising) Candidate drivers: 1. other; 2. The tape may be trading Google's confirmed next-gen TPU order expansion as (a)…; 3. Sector / macro move; 4. Market driver is unresolved…
 
 Validation finished. No Phase 4 work. No architecture change. Waiting for review.

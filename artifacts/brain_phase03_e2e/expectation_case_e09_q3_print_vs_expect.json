@@ -3,10 +3,10 @@
   "expectations": [
     {
       "name": "expectation",
-      "comparison": "in_line",
-      "trend": "unchanged",
-      "actual": 16.0,
-      "expected": null
+      "comparison": "below",
+      "trend": "rising",
+      "actual": 16.7,
+      "expected": 17.2
     },
     {
       "name": "Q3 AI semiconductor revenue",
@@ -17,10 +17,24 @@
     },
     {
       "name": "Google custom silicon volume",
-      "comparison": "in_line",
+      "comparison": "unknown",
       "trend": "falling",
       "actual": null,
       "expected": null
+    },
+    {
+      "name": "Q3 FY2026 EPS",
+      "comparison": "below",
+      "trend": "falling",
+      "actual": 2.68,
+      "expected": 2.83
+    },
+    {
+      "name": "Q3 EPS",
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "actual": 2.68,
+      "expected": 2.83
     }
   ],
   "claim_changed": false,

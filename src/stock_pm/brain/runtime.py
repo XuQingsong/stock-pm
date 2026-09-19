@@ -16,11 +16,14 @@ from .shadow import current_states_only, should_enter_shadow
 from .causal import (
     assess_event_transmissions,
     claim_causal_paths,
+    coerce_causal_edges,
     compact_path,
     detect_causal_gaps,
     event_anchor_ids,
     financial_edges_from_drivers,
+    recover_material_paths,
     relevant_causal_subgraph,
+    research_question_ok,
     transmission_stop_reason,
 )
 from .exposure import relevant_exposures
@@ -31,6 +34,7 @@ from .store import BrainStore
 from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
 from .types import DEFAULT_RUN_MODE, LOW_RELIABILITY
+from stock_pm.research.llm_reason import compact_text
 
 
 def _calls(audit: dict[str, Any] | None, role: str, step: str) -> dict[str, Any]:
@@ -38,6 +42,140 @@ def _calls(audit: dict[str, Any] | None, role: str, step: str) -> dict[str, Any]
     row["role"] = role
     row["step"] = step
     return row
+
+
+def _identity_like_claim(row: dict[str, Any]) -> bool:
+    current = row.get("from_payload") or row.get("from") or {}
+    nxt = row.get("to_payload") or row.get("to") or {}
+    return any(
+        field in nxt and str(nxt.get(field) or "") != str(current.get(field) or "")
+        for field in ("statement", "status")
+    )
+
+
+def _evidence_momentum_proposals(
+    *,
+    event: dict[str, Any] | None,
+    affected: dict[str, list[dict[str, Any]]] | None,
+    ticker: str,
+) -> list[dict[str, Any]]:
+    item = event or {}
+    if str(item.get("kind") or "") == "price":
+        return []
+    token = compact_text(item.get("event_key") or item.get("title") or item.get("fact") or "", 80)
+    if not token:
+        return []
+    out: list[dict[str, Any]] = []
+    for row in (affected or {}).get("states") or []:
+        evidence = list(dict.fromkeys(list(row.get("evidence_ids") or []) + [token]))
+        payload = {"evidence_ids": evidence}
+        if str(row.get("confidence") or "") == "medium" and len(evidence) > len(row.get("evidence_ids") or []):
+            payload["confidence"] = "high"
+        out.append(
+            {
+                "object_type": "company_state",
+                "object_id": row.get("state_id"),
+                "source_kind": item.get("kind") or "event",
+                "fact_reliability": item.get("fact_reliability"),
+                "from": {"confidence": row.get("confidence"), "statement": row.get("statement")},
+                "to": payload,
+                "reason": "Confirmed material evidence accumulates on the matching State.",
+                "evidence_ids": evidence,
+            }
+        )
+    for row in (affected or {}).get("drivers") or []:
+        evidence = list(dict.fromkeys(list(row.get("evidence_ids") or []) + [token]))
+        payload = {"evidence_ids": evidence, "support_strength": int(row.get("support_strength") or 0) + 1}
+        if str(row.get("uncertainty") or "") == "high":
+            payload["uncertainty"] = "medium"
+        out.append(
+            {
+                "object_type": "value_driver",
+                "object_id": row.get("driver_id"),
+                "source_kind": item.get("kind") or "event",
+                "fact_reliability": item.get("fact_reliability"),
+                "from": {"current_state": row.get("current_state"), "uncertainty": row.get("uncertainty")},
+                "to": payload,
+                "reason": "Confirmed material evidence accumulates on the matching Driver.",
+                "evidence_ids": evidence,
+            }
+        )
+    for row in (affected or {}).get("claims") or []:
+        out.append(
+            {
+                "object_type": "core_claim" if row.get("is_core") else "claim",
+                "object_id": row.get("claim_id"),
+                "source_kind": item.get("kind") or "event",
+                "fact_reliability": item.get("fact_reliability"),
+                "is_core": bool(row.get("is_core")),
+                "from": {"status": row.get("status"), "statement": row.get("statement"), "is_core": row.get("is_core"), "confidence": row.get("confidence")},
+                "to": {"evidence_ids": list(dict.fromkeys(list(row.get("evidence_ids") or []) + [token]))},
+                "reason": "Confirmed material evidence updates Claim evidence momentum only.",
+                "evidence_ids": [token],
+            }
+        )
+    return out[:3]
+
+
+def _relevant_hypotheses(event: dict[str, Any] | None, rows: list[dict[str, Any]] | None, *, limit: int = 4) -> list[dict[str, Any]]:
+    item = event or {}
+    blob = f"{item.get('title') or ''} {item.get('fact') or ''} {' '.join(str(x) for x in (item.get('entities') or []))}".lower()
+    ranked: list[tuple[int, dict[str, Any]]] = []
+    for row in rows or []:
+        if str(row.get("status") or "") in {"closed", "retired"} and "confirm" not in blob and "rumor" not in blob:
+            continue
+        text = f"{row.get('canonical_key') or ''} {row.get('hypothesis') or ''} {row.get('kind') or ''}".lower()
+        score = 2 if any(token and token in text for token in (item.get("entities") or []) if len(str(token)) > 3) else 0
+        if any(token in text for token in ("google", "customer", "demand", "marvell", "valuation") if token in blob):
+            score += 2
+        if str(row.get("status") or "") in {"open", "supported", "candidate", "weakened", "unresolved"}:
+            score += 1
+        ranked.append((score, row))
+    ranked.sort(key=lambda pair: pair[0], reverse=True)
+    picked = [row for score, row in ranked if score > 0][:limit]
+    if len(picked) < limit:
+        for _score, row in ranked:
+            if row not in picked:
+                picked.append(row)
+            if len(picked) >= limit:
+                break
+    return picked[:limit]
+
+
+def _relevant_expectations(event: dict[str, Any] | None, rows: list[dict[str, Any]] | None, *, limit: int = 3) -> list[dict[str, Any]]:
+    item = event or {}
+    name = str(item.get("expectation_name") or item.get("subject") or "").lower()
+    out: list[dict[str, Any]] = []
+    for row in rows or []:
+        token = str(row.get("name") or row.get("subject") or "").lower()
+        if name and name in token:
+            out.append(row)
+    if not out:
+        out = list(rows or [])
+    return out[:limit]
+
+
+def _token_usage(llm_calls: list[dict[str, Any]] | None, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
+    calls = list(llm_calls or [])
+    reasoning = [row for row in calls if str(row.get("role") or "") == "reasoning"]
+    critic = [row for row in calls if str(row.get("role") or "") == "critic"]
+    mechanical = [row for row in calls if str(row.get("role") or "") == "mechanical"]
+    def _sum(rows: list[dict[str, Any]], key: str) -> int:
+        return sum(int(row.get(key) or 0) for row in rows)
+    input_tokens = _sum(calls, "input_tokens")
+    output_tokens = _sum(calls, "output_tokens")
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "critic_input": _sum(critic, "input_tokens"),
+        "critic_output": _sum(critic, "output_tokens"),
+        "reasoning_input": _sum(reasoning, "input_tokens"),
+        "reasoning_output": _sum(reasoning, "output_tokens"),
+        "mechanical_input": _sum(mechanical, "input_tokens"),
+        "mechanical_output": _sum(mechanical, "output_tokens"),
+        "total_tokens": input_tokens + output_tokens,
+        "context_parts": dict((snapshot or {}).get("context_part_tokens") or {}),
+    }
 
 
 def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
@@ -74,7 +212,7 @@ def _store_context(store: Any | None, ticker: str) -> dict[str, Any]:
         "exposures": store.list_exposures(ticker) if hasattr(store, "list_exposures") else [],
         "evidence": store.list_evidence(ticker) if hasattr(store, "list_evidence") else [],
         "links": store.list_links() if hasattr(store, "list_links") else [],
-        "causal_edges": store.list_causal_edges(ticker) if hasattr(store, "list_causal_edges") else [],
+        "causal_edges": coerce_causal_edges(store.list_causal_edges(ticker) if hasattr(store, "list_causal_edges") else [], ticker=ticker),
         "history": store.list_history(ticker) if hasattr(store, "list_history") else [],
         "shadows": store.list_shadows(ticker) if hasattr(store, "list_shadows") else [],
         "market_attentions": store.list_market_attentions(ticker) if hasattr(store, "list_market_attentions") else [],
@@ -101,6 +239,7 @@ def run_brain_update(
     mode: str | None = None,
     brain: dict[str, Any] | None = None,
     allowed_ids: set[str] | None = None,
+    research: Any | None = None,
 ) -> dict[str, Any]:
     """Default path: incremental update. Full Review only on explicit triggers."""
     symbol = str(ticker).upper()
@@ -111,6 +250,33 @@ def run_brain_update(
         for key, value in brain.items():
             if value:
                 context[key] = value
+    recovered = recover_material_paths(
+        ticker=symbol,
+        states=context.get("states"),
+        drivers=context.get("drivers"),
+        claims=context.get("claims"),
+        exposures=context.get("exposures"),
+        edges=context.get("causal_edges"),
+        event=item,
+    )
+    for edge in recovered.get("edges") or []:
+        if hasattr(brain_store, "upsert_causal_edge"):
+            try:
+                brain_store.upsert_causal_edge(edge)
+            except Exception:
+                continue
+    for row in recovered.get("exposures") or []:
+        if hasattr(brain_store, "insert_exposure") and row.get("exposure_id"):
+            existing_ids = {str(item.get("exposure_id") or "") for item in (context.get("exposures") or [])}
+            if str(row.get("exposure_id")) not in existing_ids:
+                try:
+                    brain_store.insert_exposure(row)
+                except Exception:
+                    continue
+    if hasattr(brain_store, "list_causal_edges"):
+        context["causal_edges"] = coerce_causal_edges(brain_store.list_causal_edges(symbol), ticker=symbol)
+    if hasattr(brain_store, "list_exposures"):
+        context["exposures"] = brain_store.list_exposures(symbol)
     llm_calls: list[dict[str, Any]] = []
     glm52_called = False
     glm53_called = False
@@ -176,28 +342,57 @@ def run_brain_update(
                 "material": False,
                 "l0": l0,
                 "llm_calls": [],
+                "token_usage": _token_usage([]),
                 "now_chain": build_now_chain(event=item, extract=None, material=False, stopped=l0["stop_reason"] or "duplicate"),
             }
         )
 
     full_reason = full_review_reason(trigger=trigger, event=item, mode=run_mode)
-    if full_reason:
-        return _finish(
-            {
-                "ticker": symbol,
-                "path": "full_review",
-                "run_mode": "full",
-                "full_review": True,
-                "full_review_reason": full_reason,
-                "glm52_called": False,
-                "glm53_called": False,
-                "critic_called": False,
-                "stopped": False,
-                "material": True,
-                "l0": l0,
-                "llm_calls": [],
-            }
-        )
+    is_full_review = bool(full_reason)
+    if is_full_review and research is not None:
+        try:
+            from .pipeline import run_brain
+
+            full_result = run_brain(
+                research,
+                symbol,
+                store=brain_store,
+                mechanical_completer=mechanical_completer,
+                reasoning_completer=reasoning_completer,
+                completer=completer,
+                fetch_live=False,
+                mode="full",
+            )
+            now_chain = build_now_chain(
+                event=item,
+                extract=None,
+                exposures=context.get("exposures"),
+                transmission=full_result.get("transmission") if isinstance(full_result, dict) else None,
+                causal_gaps=list((full_result or {}).get("causal_gaps") or [])[:3],
+                market_attentions=context.get("market_attentions"),
+                expectations=brain_store.list_expectations(symbol) if hasattr(brain_store, "list_expectations") else [],
+                hypotheses=brain_store.list_hypotheses(symbol) if hasattr(brain_store, "list_hypotheses") else [],
+                questions=list((full_result or {}).get("questions") or []),
+                material=True,
+            )
+            merged = dict(full_result or {})
+            merged.update(
+                {
+                    "ticker": symbol,
+                    "path": "full_review",
+                    "run_mode": "full",
+                    "full_review": True,
+                    "full_review_reason": full_reason,
+                    "stopped": False,
+                    "material": True,
+                    "l0": l0,
+                    "now_chain": now_chain,
+                    "token_usage": _token_usage(list(merged.get("llm_calls") or [])),
+                }
+            )
+            return _finish(merged)
+        except Exception:
+            is_full_review = True
 
     mech, reason = resolve_brain_completers(
         completer,
@@ -278,9 +473,15 @@ def run_brain_update(
                 "l0": l0,
                 "extract": extract,
                 "llm_calls": llm_calls,
+                "token_usage": _token_usage(llm_calls),
                 "now_chain": build_now_chain(event=event, extract=extract, material=False, stopped="non_material"),
             }
         )
+
+    price_only = bool(gate.get("price_only") or gate.get("abnormal_price") and str(event.get("kind") or "") == "price")
+    if price_only:
+        event["kind"] = "price"
+        event["source_kind"] = "price"
 
     affected = locate_affected_objects(
         extract=extract,
@@ -306,7 +507,12 @@ def run_brain_update(
             seen_exposures.add(eid)
             merged_exposures.append(row)
     affected = {**affected, "exposures": merged_exposures}
-    anchors = event_anchor_ids(event=event, exposures=merged_exposures, states=affected.get("states") or context.get("states"))
+    anchors = event_anchor_ids(
+        event=event,
+        exposures=merged_exposures,
+        states=affected.get("states") or context.get("states"),
+        drivers=affected.get("drivers") or context.get("drivers"),
+    )
     object_ids = set(anchors)
     for group, keys in (
         (affected.get("states"), ("state_id", "name")),
@@ -321,7 +527,7 @@ def run_brain_update(
     relevant_edges = relevant_causal_subgraph(
         edges=context.get("causal_edges"),
         object_ids=object_ids,
-        limit=8,
+        limit=12 if is_full_review else 8,
     )
     causal_paths: list[dict[str, Any]] = []
     for claim in (affected.get("claims") or [])[:4]:
@@ -363,14 +569,15 @@ def run_brain_update(
         related_ids=related_ids,
         limit=3,
     )
-    targeted_expectations = list(context.get("expectations") or [])[:3]
-    targeted_hypotheses = list(context.get("hypotheses") or [])[:4]
+    targeted_expectations = _relevant_expectations(event, context.get("expectations"), limit=3)
+    targeted_hypotheses = _relevant_hypotheses(event, context.get("hypotheses"), limit=4)
     transmission = assess_event_transmissions(
         event=event,
         edges=context.get("causal_edges"),
         claims=affected.get("claims"),
         exposures=merged_exposures,
         states=affected.get("states"),
+        drivers=affected.get("drivers"),
     )
     snapshot = build_snapshot(
         event=event,
@@ -474,9 +681,45 @@ def run_brain_update(
         if token and token not in seen_questions:
             questions.append(question)
             seen_questions.add(token)
+    if price_only:
+        proposals = [
+            row
+            for row in proposals
+            if str(row.get("object_type") or "")
+            not in {"state", "company_state", "industry_state", "macro_state", "claim", "core_claim", "driver", "value_driver"}
+        ]
+        for row in proposals:
+            if str(row.get("source_kind") or "") != "price":
+                row["source_kind"] = "price"
+    elif str(event.get("fact_reliability") or "") == "direct_fact" and event.get("confirmed") is not False:
+        proposals.extend(
+            _evidence_momentum_proposals(
+                event=event,
+                affected=affected,
+                ticker=symbol,
+            )
+        )
+
+    filtered_questions: list[dict[str, Any]] = []
+    seen_q_norm: set[str] = set()
+    for question in questions:
+        text = str(question.get("question") or "")
+        norm = " ".join(text.lower().split())
+        if not research_question_ok(text) or norm in seen_q_norm:
+            continue
+        seen_q_norm.add(norm)
+        filtered_questions.append(question)
+    questions = filtered_questions
+    proposals = [
+        row
+        for row in proposals
+        if str(row.get("object_type") or "") not in {"research_question", "causal_gap"}
+        or research_question_ok(str((row.get("to") or row.get("to_payload") or {}).get("question") or row.get("reason") or ""))
+    ]
 
     observations = [event]
-    gate_result = evaluate_brain_changes(
+    try:
+        gate_result = evaluate_brain_changes(
         ticker=symbol,
         observations=observations,
         proposals=proposals,
@@ -492,7 +735,26 @@ def run_brain_update(
             "exposures": merged_exposures,
         },
         store=brain_store,
-    )
+        )
+    except Exception as exc:
+        gate_result = {
+            "approved": [],
+            "rejected": [
+                {
+                    "object_type": "runtime",
+                    "decision": "reject",
+                    "reason": f"rejected_malformed_payload:{type(exc).__name__}",
+                    "rules": [{"rule": "unsupported_causal_cannot_transmit", "reason": str(exc)}],
+                }
+            ],
+            "requires_review": [],
+            "questions": [],
+            "budget": {},
+            "auto_commit_allowed": False,
+            "current_state_unchanged": True,
+            "core_claims_unchanged": True,
+            "committed": [],
+        }
     for question in questions:
         if hasattr(brain_store, "insert_question") and question.get("question"):
             brain_store.insert_question(
@@ -535,11 +797,13 @@ def run_brain_update(
         for row in gate_result.get("approved") or []:
             if str(row.get("object_type") or "") not in {"claim", "core_claim"}:
                 continue
+            if not _identity_like_claim(row):
+                continue
             unexpected_claim_change_count += 1
             if str(row.get("source_kind") or "") not in {"news", "event"}:
                 continue
             target_id = str(row.get("object_id") or (row.get("to_payload") or {}).get("object_id") or "")
-            supplied = list(row.get("causal_edges") or (row.get("to_payload") or {}).get("causal_edges") or [])
+            supplied = coerce_causal_edges(row.get("causal_edges") or (row.get("to_payload") or {}).get("causal_edges") or [])
             if supplied:
                 if transmission_stop_reason(supplied) or not any(
                     "bclm_" in str(edge.get("to_node") or "") or str(edge.get("to_type") or "") in {"claim", "core_claim"}
@@ -614,9 +878,10 @@ def run_brain_update(
     return _finish(
         {
             "ticker": symbol,
-            "path": "incremental",
-            "run_mode": run_mode,
-            "full_review": False,
+            "path": "full_review" if is_full_review else "incremental",
+            "run_mode": "full" if is_full_review else run_mode,
+            "full_review": is_full_review,
+            "full_review_reason": full_reason,
             "stopped": False,
             "material": True,
             "materiality": gate,
@@ -645,5 +910,6 @@ def run_brain_update(
             "core_claims_unchanged": gate_result.get("core_claims_unchanged"),
             "now_chain": now_chain,
             "market_layer": market_stats,
+            "token_usage": _token_usage(llm_calls, snapshot),
         }
     )

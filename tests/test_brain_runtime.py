@@ -358,8 +358,11 @@ def test_case5_earnings_may_enter_full_review() -> None:
     assert result["path"] == "full_review"
     assert result["full_review"] is True
     assert result["full_review_reason"] == "earnings"
-    assert result["glm53_called"] is False
-    assert fake.calls == []
+    assert result["stopped"] is False
+    assert result.get("now_chain")
+    assert result["now_chain"]["what_happened"]["answer"]
+    assert "token_usage" in result
+    assert set(result["token_usage"]) >= {"input_tokens", "output_tokens", "critic_input", "critic_output", "total_tokens"}
 
 
 def test_incremental_critic_does_not_reload_whole_brain() -> None:

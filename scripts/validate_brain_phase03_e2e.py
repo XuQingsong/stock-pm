@@ -578,15 +578,36 @@ def timeline() -> list[dict[str, Any]]:
 
 
 def _tokens(result: dict[str, Any]) -> dict[str, int]:
+    usage = dict(result.get("token_usage") or {})
     calls = list(result.get("llm_calls") or [])
-    glm53 = [row for row in calls if str(row.get("role") or "") in {"reasoning", "critic"}]
-    inp = [int(row.get("input_tokens") or 0) for row in glm53]
+    reasoning = [row for row in calls if str(row.get("role") or "") == "reasoning"]
+    critic = [row for row in calls if str(row.get("role") or "") == "critic"]
+    def _sum(rows: list[dict[str, Any]], key: str) -> int:
+        return sum(int(row.get(key) or 0) for row in rows)
+    input_tokens = int(usage.get("input_tokens") or _sum(calls, "input_tokens"))
+    output_tokens = int(usage.get("output_tokens") or _sum(calls, "output_tokens"))
+    critic_input = int(usage.get("critic_input") or _sum(critic, "input_tokens"))
+    critic_output = int(usage.get("critic_output") or _sum(critic, "output_tokens"))
+    parts = dict(usage.get("context_parts") or (result.get("snapshot") or {}).get("context_part_tokens") or {})
     return {
-        "glm53_calls": len(glm53),
-        "glm53_input": sum(inp),
-        "glm53_output": sum(int(row.get("output_tokens") or 0) for row in glm53),
-        "all_input": sum(int(row.get("input_tokens") or 0) for row in calls),
-        "all_output": sum(int(row.get("output_tokens") or 0) for row in calls),
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "critic_input": critic_input,
+        "critic_output": critic_output,
+        "total_tokens": int(usage.get("total_tokens") or (input_tokens + output_tokens)),
+        "reasoning_input": int(usage.get("reasoning_input") or _sum(reasoning, "input_tokens")),
+        "reasoning_output": int(usage.get("reasoning_output") or _sum(reasoning, "output_tokens")),
+        "glm53_calls": len(reasoning) + len(critic),
+        "glm53_input": int(usage.get("reasoning_input") or _sum(reasoning, "input_tokens")) + critic_input,
+        "glm53_output": int(usage.get("reasoning_output") or _sum(reasoning, "output_tokens")) + critic_output,
+        "all_input": input_tokens,
+        "all_output": output_tokens,
+        "context_event": int(parts.get("event") or 0),
+        "context_state": int(parts.get("state") or 0),
+        "context_evidence": int(parts.get("evidence") or 0),
+        "context_causal": int(parts.get("causal") or 0),
+        "context_market": int(parts.get("market") or 0),
+        "context_history": int(parts.get("history") or 0),
     }
 
 
@@ -765,7 +786,13 @@ def write_report(payload: dict[str, Any]) -> str:
         f"- Full Review 次数: {m['full_review']}",
         f"- GLM-5.3 调用率: {m['glm53_call_rate']}",
         f"- 平均 snapshot objects: {m['avg_snapshot_objects']}",
-        f"- 平均 GLM-5.3 tokens: {m['avg_glm53_tokens']}",
+        f"- 平均 GLM-5.3 tokens (input+output): {m['avg_glm53_tokens']}",
+        f"- token input: {m.get('token_input', 0)}",
+        f"- token output: {m.get('token_output', 0)}",
+        f"- critic input: {m.get('critic_input', 0)}",
+        f"- critic output: {m.get('critic_output', 0)}",
+        f"- total tokens: {m.get('total_tokens', 0)}",
+        f"- context tokens event/state/evidence/causal/market/history: {m.get('context_event', 0)}/{m.get('context_state', 0)}/{m.get('context_evidence', 0)}/{m.get('context_causal', 0)}/{m.get('context_market', 0)}/{m.get('context_history', 0)}",
         f"- context miss (events with miss): {m['context_miss_events']}",
         f"- unexpected Brain write: {m['unexpected_brain_write']}",
         "",
@@ -984,6 +1011,17 @@ def main() -> int:
         "glm53_call_rate": 0.0,
         "avg_snapshot_objects": 0,
         "avg_glm53_tokens": 0,
+        "token_input": 0,
+        "token_output": 0,
+        "critic_input": 0,
+        "critic_output": 0,
+        "total_tokens": 0,
+        "context_event": 0,
+        "context_state": 0,
+        "context_evidence": 0,
+        "context_causal": 0,
+        "context_market": 0,
+        "context_history": 0,
         "context_miss_events": 0,
         "unexpected_brain_write": 0,
         "state_changes": 0,
@@ -1056,6 +1094,20 @@ def main() -> int:
         tokens = _tokens(result)
         if tokens["glm53_input"] or tokens["glm53_output"]:
             glm53_token_vals.append(tokens["glm53_input"] + tokens["glm53_output"])
+        metrics["token_input"] += tokens.get("input_tokens") or 0
+        metrics["token_output"] += tokens.get("output_tokens") or 0
+        metrics["critic_input"] += tokens.get("critic_input") or 0
+        metrics["critic_output"] += tokens.get("critic_output") or 0
+        metrics["total_tokens"] += tokens.get("total_tokens") or 0
+        metrics["context_event"] += tokens.get("context_event") or 0
+        metrics["context_state"] += tokens.get("context_state") or 0
+        metrics["context_evidence"] += tokens.get("context_evidence") or 0
+        metrics["context_causal"] += tokens.get("context_causal") or 0
+        metrics["context_market"] += tokens.get("context_market") or 0
+        metrics["context_history"] += tokens.get("context_history") or 0
+        for row in store.list_expectations(TICKER):
+            if row.get("expected") is None and str(row.get("comparison") or "") in {"above", "in_line", "below"}:
+                anomalies.append(f"{spec['event_id']}: expectation {row.get('name')} has expected=None with comparison={row.get('comparison')}")
         shot = result.get("snapshot") or {}
         snapshot_sizes.append(
             len(shot.get("states") or [])
@@ -1098,7 +1150,7 @@ def main() -> int:
                     metrics["hypothesis_strengthened"] += 1
                 elif str(row.get("status") or "") == "weakened" and str(prev_row.get("status") or "") != "weakened":
                     metrics["hypothesis_weakened"] += 1
-                if str(row.get("status") or "") == "retired" and str(prev_row.get("status") or "") != "retired":
+                if str(row.get("status") or "") in {"retired", "closed"} and str(prev_row.get("status") or "") not in {"retired", "closed"}:
                     metrics["hypothesis_closed"] += 1
         metrics["hypothesis_created"] += len(created_keys)
         metrics["hypothesis_updated"] += len(updated_keys)
@@ -1312,7 +1364,7 @@ def main() -> int:
         "rq_note": "弱问题是泛问；有用问题应点名客户、路径或 expectation gap。",
         "now_chain_note": (
             f"{sum(1 for row in timeline_rows if row.get('now_chain'))}/{len(timeline_rows)} 条事件产出了 Now Chain。"
-            f" Full Review 路径不产 Now Chain 是当前 runtime 行为，已记入 anomaly。"
+            f" Full Review 与 Incremental 写入同一 Brain，并都应产出 Now Chain。"
             f" multi={metrics['multi_hypothesis_events']} single={metrics['single_hypothesis_events']} unresolved={metrics['unresolved_events']}。"
         ),
     }
@@ -1351,6 +1403,7 @@ def main() -> int:
 
 
 _STATUS_RANK = {
+    "closed": 0,
     "retired": 0,
     "unresolved": 1,
     "candidate": 2,

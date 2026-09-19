@@ -114,6 +114,7 @@ def interpret_market_layer(
             "competing_hypotheses": max(created + updated, 0),
             "hypothesis_strengthened": int(hyp.get("hypothesis_strengthened") or updated),
             "hypothesis_weakened": int(hyp.get("hypothesis_weakened") or 0),
+            "hypothesis_closed": int(hyp.get("hypothesis_closed") or 0),
             "duplicates_prevented": int(hyp.get("duplicates_prevented") or 0),
             "unresolved_events": 1 if unresolved else 0,
             "research_questions": len(questions),

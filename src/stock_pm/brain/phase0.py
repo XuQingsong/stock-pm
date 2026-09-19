@@ -11,7 +11,7 @@ from stock_pm.research.ids import new_id
 from stock_pm.research.llm_reason import compact_text
 
 from .budget import change_scope
-from .causal import accumulate_edge_evidence, next_edge_status, normalize_causal_edge
+from .causal import accumulate_edge_evidence, coerce_causal_edges, next_edge_status, normalize_causal_edge, research_question_ok
 from .exposure import normalize_exposure
 from .expectation import normalize_expectation
 from .hypothesis import normalize_hypothesis
@@ -23,7 +23,7 @@ from .hysteresis import accumulate_claim_evidence
 from .knowledge import fact_reliability
 from .layers import object_layer
 from .shadow import normalize_shadow, should_enter_shadow
-from .types import PROPOSAL_DECISIONS
+from .types import FAST_LAYERS, PROPOSAL_DECISIONS
 
 
 def _observation_identity(item: dict[str, Any]) -> str:
@@ -59,7 +59,7 @@ def normalize_proposal(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
         "title": raw.get("title"),
         "new_fact": raw.get("new_fact"),
         "duplicate": bool(raw.get("duplicate")),
-        "causal_edges": list(raw.get("causal_edges") or []),
+        "causal_edges": coerce_causal_edges(raw.get("causal_edges") or [], ticker=str(ticker).upper()),
         "evidence": raw.get("evidence") if isinstance(raw.get("evidence"), dict) else None,
         "is_core": bool(raw.get("is_core") or from_payload.get("is_core") or to_payload.get("is_core")),
         "independent_counter_count": int(raw.get("independent_counter_count") or 0),
@@ -73,11 +73,14 @@ def normalize_proposal(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
     }
 
 
-def _research_question(*, ticker: str, question: str, reason: str, related: list[str]) -> dict[str, Any]:
+def _research_question(*, ticker: str, question: str, reason: str, related: list[str]) -> dict[str, Any] | None:
+    text = compact_text(question, 240)
+    if not research_question_ok(text):
+        return None
     return {
         "question_id": new_id("brq"),
         "ticker": str(ticker).upper(),
-        "question": compact_text(question, 240),
+        "question": text,
         "reason": compact_text(reason, 400),
         "related_objects": related,
         "status": "open",
@@ -166,7 +169,10 @@ def evaluate_brain_changes(
             proposal["reason_code"] = "duplicate_news_cannot_version_claim"
             rejected.append(proposal)
             continue
-        hits = constitution_violations(proposal, brain=context)
+        try:
+            hits = constitution_violations(proposal, brain=context)
+        except Exception as exc:
+            hits = [{"rule": "unsupported_causal_cannot_transmit", "reason": f"rejected_malformed_payload:{type(exc).__name__}"}]
         if hits:
             proposal["decision"] = "reject"
             proposal["rules"] = hits
@@ -211,7 +217,9 @@ def evaluate_brain_changes(
 
     budget = change_scope(legal, brain=context)
     for proposal in legal:
-        if budget["requires_review"]:
+        layer = object_layer(proposal.get("object_type") or "")
+        slow_review = bool(budget["requires_review"]) and layer not in FAST_LAYERS and layer != "observation"
+        if slow_review:
             proposal["decision"] = "requires_review"
             proposal["rules"] = [
                 {
@@ -229,7 +237,7 @@ def evaluate_brain_changes(
     questions = _unique_by(questions, "question")
 
     committed: list[dict[str, Any]] = []
-    auto_commit = bool(budget["auto_commit_allowed"]) and not review
+    auto_commit_allowed = not bool(budget.get("requires_review"))
     if store is not None:
         for item in observations_kept:
             if hasattr(store, "insert_news"):
@@ -261,7 +269,7 @@ def evaluate_brain_changes(
                     }
                 )
                 committed.append({"kind": "question", "question_id": stored_q.get("question_id")})
-        persistable = approved if auto_commit else []
+        persistable = approved
         for proposal in persistable + rejected + review:
             if not proposal.get("related_objects"):
                 related = [proposal.get("object_type") or "", proposal.get("object_id") or ""]
@@ -277,7 +285,7 @@ def evaluate_brain_changes(
                         "reason_code": proposal.get("reason_code") or "",
                     }
                 )
-                if proposal.get("decision") == "approve" and auto_commit:
+                if proposal.get("decision") == "approve":
                     if proposal.get("object_type") in {"shadow_state", "shadow"} and hasattr(store, "upsert_shadow"):
                         payload = dict(proposal.get("to_payload") or {})
                         store.upsert_shadow({**payload, "ticker": symbol, "source_kind": proposal.get("source_kind")})
@@ -361,6 +369,43 @@ def evaluate_brain_changes(
                                 ticker=symbol,
                             )
                         )
+                    if proposal.get("object_type") in {"state", "company_state", "industry_state", "macro_state"} and hasattr(store, "upsert_state"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        current = dict(proposal.get("from_payload") or {})
+                        store.upsert_state(
+                            {
+                                **current,
+                                **payload,
+                                "ticker": symbol,
+                                "state_id": proposal.get("object_id") or payload.get("state_id") or current.get("state_id"),
+                            }
+                        )
+                    if proposal.get("object_type") in {"driver", "value_driver"} and hasattr(store, "upsert_driver"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        current = dict(proposal.get("from_payload") or {})
+                        store.upsert_driver(
+                            {
+                                **current,
+                                **payload,
+                                "ticker": symbol,
+                                "driver_id": proposal.get("object_id") or payload.get("driver_id") or current.get("driver_id"),
+                            }
+                        )
+                    if proposal.get("object_type") in {"claim", "core_claim"} and hasattr(store, "update_claim_pointer"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        current = dict(proposal.get("from_payload") or {})
+                        claim_id = str(proposal.get("object_id") or payload.get("claim_id") or current.get("claim_id") or "")
+                        if claim_id:
+                            merged = dict(current)
+                            merged["reasoning"] = {
+                                **dict(current.get("reasoning") or {}),
+                                "evidence_ids": list(payload.get("evidence_ids") or current.get("evidence_ids") or []),
+                                "support_strength": payload.get("support_strength") or current.get("support_strength"),
+                                "counter_strength": payload.get("counter_strength") or current.get("counter_strength"),
+                            }
+                            if payload.get("confidence"):
+                                merged["confidence"] = payload.get("confidence")
+                            store.update_claim_pointer(claim_id, merged)
                     if hasattr(store, "insert_history"):
                         store.insert_history(
                             {
@@ -389,23 +434,35 @@ def evaluate_brain_changes(
         "budget": budget,
         "duplicate_count": duplicate_count,
         "committed": committed,
-        "auto_commit_allowed": auto_commit,
+        "auto_commit_allowed": auto_commit_allowed,
         "current_state_unchanged": not any(
-            row.get("object_type") in {"state", "company_state", "industry_state", "macro_state"} and row.get("decision") == "approve"
-            for row in (approved if auto_commit else [])
+            row.get("object_type") in {"state", "company_state", "industry_state", "macro_state"}
+            and row.get("decision") == "approve"
+            and _identity_changed(row, ("statement", "direction", "name"))
+            for row in approved
         ),
         "core_claims_unchanged": not any(
-            row.get("object_type") in {"claim", "core_claim"} and row.get("decision") == "approve"
-            for row in (approved if auto_commit else [])
+            row.get("object_type") in {"claim", "core_claim"}
+            and row.get("decision") == "approve"
+            and _identity_changed(row, ("statement", "status"))
+            for row in approved
         ),
         "claim_versions_created": 0,
     }
+
+
+def _identity_changed(proposal: dict[str, Any], fields: tuple[str, ...]) -> bool:
+    current = proposal.get("from_payload") or {}
+    nxt = proposal.get("to_payload") or {}
+    return any(field in nxt and str(nxt.get(field) or "") != str(current.get(field) or "") for field in fields)
 
 
 def _unique_by(rows: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
     seen: set[str] = set()
     out: list[dict[str, Any]] = []
     for row in rows:
+        if not isinstance(row, dict):
+            continue
         token = str(row.get(key) or "")
         if token in seen:
             continue

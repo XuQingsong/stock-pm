@@ -3,7 +3,7 @@
   "expectations": [
     {
       "name": "expectation",
-      "comparison": "in_line",
+      "comparison": "unknown",
       "trend": "unchanged",
       "actual": 16.0,
       "expected": null
@@ -17,5 +17,5 @@
     }
   ],
   "claim_changed": false,
-  "state_changed": false
+  "state_changed": true
 }

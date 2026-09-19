@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from stock_pm.research.ids import new_id
@@ -10,13 +11,15 @@ from stock_pm.research.llm_reason import compact_text
 from .types import CONFIDENCE, HYPOTHESIS_KINDS, HYPOTHESIS_STATUSES, LOW_RELIABILITY
 
 _KIND_NEEDLES = (
-    ("customer_concentration", ("customer", "google", "meta", "concentration", "order")),
-    ("ai_demand", ("ai demand", "capex", "ai revenue", "hyperscaler", "custom silicon", "asic")),
+    ("customer_concentration", ("customer", "google", "meta", "concentration", "order", "tpu")),
+    ("ai_demand", ("ai demand", "capex", "ai revenue", "hyperscaler", "custom silicon", "asic", "xpu")),
+    ("company_specific", ("marvell", "design win", "lost socket", "share loss")),
     ("valuation", ("valuation", "multiple", "compression", "de-rate", "derate")),
     ("sector_macro", ("sector", "macro", "rates", "sox")),
 )
 
 _STATUS_RANK = {
+    "closed": 0,
     "retired": 0,
     "unresolved": 1,
     "candidate": 2,
@@ -24,6 +27,30 @@ _STATUS_RANK = {
     "open": 4,
     "supported": 5,
 }
+
+_RISK = ("delay", "reduce", "cut", "miss", "cancel", "weaker", "concern", "slow", "dump", "lose", "lost")
+_RELIEF = ("confirm", "confirmed", "expand", "beat", "win", "stronger", "accelerat", "printed")
+
+
+def _has_token(blob: str, tokens: tuple[str, ...]) -> bool:
+    return any(re.search(rf"\b{re.escape(token)}", blob) for token in tokens)
+
+
+def event_polarity(event: dict[str, Any] | None) -> str:
+    item = event or {}
+    blob = f"{item.get('title') or ''} {item.get('fact') or ''} {item.get('statement') or ''}".lower()
+    rumor = str(item.get("fact_reliability") or "") in LOW_RELIABILITY or str(item.get("kind") or "") == "rumor"
+    risk = _has_token(blob, _RISK)
+    relief = _has_token(blob, _RELIEF)
+    if "unconfirmed" in blob:
+        relief = False
+    if rumor and not relief:
+        return "risk"
+    if relief and not risk:
+        return "relief"
+    if risk and not relief:
+        return "risk"
+    return "mixed"
 
 
 def hypothesis_canonical_key(raw: dict[str, Any] | str) -> str:
@@ -61,8 +88,8 @@ def normalize_hypothesis(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
         confidence = "low"
     if str(raw.get("source_kind") or "") in {"rumor", "signal"} or str(raw.get("fact_reliability") or "") in LOW_RELIABILITY:
         confidence = "low"
-        if status not in {"candidate", "open", "unresolved"}:
-            status = "candidate"
+        if status in {"supported", "established"}:
+            status = "open"
     return {
         "hypothesis_id": raw.get("hypothesis_id") or new_id("bmdh"),
         "ticker": symbol,
@@ -79,6 +106,7 @@ def normalize_hypothesis(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
         "related_causal_path": list(raw.get("related_causal_path") or [])[:8],
         "source_kind": str(raw.get("source_kind") or "news"),
         "reason": compact_text(raw.get("reason") or statement, 240),
+        "polarity": str(raw.get("polarity") or "mixed"),
     }
 
 
@@ -107,7 +135,7 @@ def peer_pattern(issuer_pct: Any, peers: dict[str, Any] | None) -> str | None:
     return None
 
 
-def apply_observation(existing: dict[str, Any], *, observation: str, direction: str) -> dict[str, Any]:
+def apply_observation(existing: dict[str, Any], *, observation: str, direction: str, resolve: bool = False) -> dict[str, Any]:
     row = dict(existing)
     key = "supporting_observations" if direction == "support" else "counter_observations"
     items = list(row.get(key) or [])
@@ -116,11 +144,19 @@ def apply_observation(existing: dict[str, Any], *, observation: str, direction: 
     row[key] = items[:12]
     rank = _STATUS_RANK.get(str(row.get("status") or "candidate"), 2)
     if direction == "support":
-        row["status"] = "supported" if rank >= _STATUS_RANK["open"] else "open"
+        if str(row.get("status") or "") in {"closed", "retired"}:
+            row["status"] = "candidate"
+        else:
+            row["status"] = "supported" if rank >= _STATUS_RANK["open"] else "open"
         if str(row.get("confidence") or "low") == "low":
             row["confidence"] = "medium"
     else:
-        row["status"] = "weakened"
+        counters = list(row.get("counter_observations") or [])
+        if resolve or len(counters) >= 1:
+            row["status"] = "closed"
+            row["confidence"] = "low"
+        else:
+            row["status"] = "weakened"
     return row
 
 
@@ -147,10 +183,14 @@ def hypotheses_from_event(
     created: list[dict[str, Any]] = []
     updated: list[dict[str, Any]] = []
     duplicates = 0
+    closed = 0
     index = {str(row.get("canonical_key") or ""): row for row in (existing or [])}
     rumor = str(item.get("fact_reliability") or "") in LOW_RELIABILITY or str(item.get("kind") or "") == "rumor"
+    polarity = event_polarity(item)
     observation = compact_text(item.get("title") or item.get("fact") or "event", 160)
     for kind in wanted[:5]:
+        if kind == "other" and kind not in (item.get("candidate_hypotheses") or []):
+            continue
         payload = {
             "kind": kind if kind in HYPOTHESIS_KINDS else "other",
             "canonical_key": kind,
@@ -160,10 +200,22 @@ def hypotheses_from_event(
             "status": "candidate",
             "confidence": "low" if rumor else "medium",
             "supporting_observations": [observation] if observation else [],
+            "polarity": polarity,
         }
         if kind in index:
             duplicates += 1
-            merged = apply_observation(index[kind], observation=observation, direction="support")
+            prior = index[kind]
+            prior_polarity = str(prior.get("polarity") or event_polarity({"title": prior.get("hypothesis"), "fact": " ".join(prior.get("supporting_observations") or [])}))
+            oppose = prior_polarity in {"risk", "relief"} and polarity in {"risk", "relief"} and prior_polarity != polarity
+            direction = "weaken" if oppose else "support"
+            resolve = oppose and (not rumor) and str(item.get("confirmed") or "").lower() in {"1", "true", "yes"} or (
+                oppose and str(item.get("fact_reliability") or "") == "direct_fact"
+            )
+            merged = apply_observation(prior, observation=observation, direction=direction, resolve=bool(resolve))
+            merged["polarity"] = polarity if not oppose else prior_polarity
+            if not rumor:
+                merged["source_kind"] = item.get("kind") or "news"
+                merged["fact_reliability"] = item.get("fact_reliability")
             updated.append(normalize_hypothesis(merged, ticker=ticker))
         else:
             created.append(normalize_hypothesis(payload, ticker=ticker))
@@ -197,14 +249,23 @@ def hypotheses_from_event(
                 else:
                     updated[updated.index(row)] = weakened_row
                 weakened += 1
+    for row in updated:
+        status = str(row.get("status") or "")
+        if status == "weakened":
+            weakened += 1
+        elif status in {"closed", "retired"}:
+            closed += 1
+        elif status in {"supported", "open"}:
+            strengthened += 1
     return {
         "created": created,
         "updated": updated,
         "duplicates_prevented": duplicates,
         "peer_pattern": pattern,
         "peer_observations_used": 1 if pattern else 0,
-        "hypothesis_strengthened": strengthened + len(updated),
+        "hypothesis_strengthened": strengthened,
         "hypothesis_weakened": weakened,
+        "hypothesis_closed": closed,
     }
 
 

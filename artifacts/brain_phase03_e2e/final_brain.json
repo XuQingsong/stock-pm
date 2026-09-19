@@ -11,7 +11,7 @@
       "state_id": "bst_4aba4dcba45d4ed297da059e8769818e",
       "name": "Q4 FY2026 guidance",
       "direction": "positive",
-      "confidence": "medium",
+      "confidence": "high",
       "statement": "Management guided Q4 FY2026 revenue to approximately $34.8 billion and expects to maintain non-GAAP operating margin at 66%, flat from a year ago (guidance text from the 2026-09-02 earnings exhibit)."
     },
     {
@@ -208,7 +208,42 @@
       "reason": "Issuer-linked exposure"
     },
     {
-      "exposure_id": "bexp_5f46ed83f92a456a942ed485d67b8b2a",
+      "exposure_id": "bexp_rec_e8dc5eb44bba",
+      "exposure_type": "customer",
+      "subject": "AVGO",
+      "object_name": "Hyperscaler customer concentration",
+      "reason": "Recovered customer exposure from Hyperscaler customer concentration."
+    },
+    {
+      "exposure_id": "bexp_rec_1129f05e5a33",
+      "exposure_type": "competitive",
+      "subject": "AVGO",
+      "object_name": "Competitive position in AI accelerators and networking",
+      "reason": "Recovered competitive exposure from Competitive position in AI accelerators and networking."
+    },
+    {
+      "exposure_id": "bexp_rec_50bd17106982",
+      "exposure_type": "customer",
+      "subject": "AVGO",
+      "object_name": "AI semiconductor demand durability",
+      "reason": "Recovered customer exposure from AI semiconductor demand durability."
+    },
+    {
+      "exposure_id": "bexp_rec_8ee44a5ea0d4",
+      "exposure_type": "customer",
+      "subject": "AVGO",
+      "object_name": "Non-AI semiconductor and subscription revenue durability",
+      "reason": "Recovered customer exposure from Non-AI semiconductor and subscription revenue durability."
+    },
+    {
+      "exposure_id": "bexp_5036f26cedbb43839aa2b1d2513d8205",
+      "exposure_type": "financial",
+      "subject": "AVGO",
+      "object_name": "",
+      "reason": "Issuer-linked exposure: the company's own forward AI semiconductor guidance versus market expectations directly marks its AI revenue trajectory."
+    },
+    {
+      "exposure_id": "bexp_b8a2073b49974b3283fc45562f32f21c",
       "exposure_type": "financial",
       "subject": "AVGO",
       "object_name": "",
@@ -217,67 +252,179 @@
   ],
   "causal_edges": [
     {
-      "edge_id": "bced_03e1e04bc2e84313b86a0b7c2f8255f0",
+      "edge_id": "bced_55b1d853855d4a6fab481e2987543850",
       "from_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
       "to_node": "bclm_2f3b915b62064c8a98300c530fa331ff",
       "status": "supported",
       "statement": "Hyperscaler customer concentration informs core claim bclm_2f3b915b62064c8a98300c530fa331ff."
     },
     {
-      "edge_id": "bced_14cca97527d84268b1300fc7db3726f9",
+      "edge_id": "bced_aa5c5b387d2341058bc44b1f4c5ea3a6",
       "from_node": "bdrv_e605ec342c0a4888bec050bd17106982",
       "to_node": "bclm_f4454cfe04e94211a79b23116bcf5de8",
       "status": "supported",
       "statement": "AI semiconductor demand durability informs core claim bclm_f4454cfe04e94211a79b23116bcf5de8."
     },
     {
-      "edge_id": "bced_5d0f47efdeca45799b4198700d572738",
+      "edge_id": "bced_8ed21d8e290141b4b8b11aab2164557e",
       "from_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
       "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
       "status": "supported",
       "statement": "AI revenue mix concentration informs core claim bclm_426dd93ffbfa4167ab49970c97da681f."
     },
     {
-      "edge_id": "bced_64b535465c84465f8432b244819020cb",
+      "edge_id": "bced_33d5164b7bac482fb7f42cbf12331fde",
       "from_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
       "to_node": "bclm_426dd93ffbfa4167ab49970c97da681f",
       "status": "supported",
       "statement": "Non-AI semiconductor and subscription revenue durability informs core claim bclm_426dd93ffbfa4167ab49970c97da681f."
     },
     {
-      "edge_id": "bced_f85f1c4685e744c8984b93e401bd8f4f",
+      "edge_id": "bced_4dee8796c7044cefaa11c00917f644e9",
       "from_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
       "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
       "status": "supported",
       "statement": "Non-GAAP operating margin sustainability informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24."
     },
     {
-      "edge_id": "bced_e6bf3d432284414f9e1edfd5e7f8f004",
+      "edge_id": "bced_60baab539fb64a29bb170de439aeeb4b",
       "from_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
       "to_node": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
       "status": "supported",
       "statement": "Valuation multiple dependence on AI growth persistence informs core claim bclm_a63762a2ab4f4410ad923ea9b1002c53."
     },
     {
-      "edge_id": "bced_7f458841e2654bfa9a2ebb9f3f2b0c78",
+      "edge_id": "bced_2b5ee42f85384e56a311036dea9743da",
       "from_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
       "to_node": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
       "status": "supported",
       "statement": "GAAP to non-GAAP earnings gap informs core claim bclm_a84fd6c830884f80b7c4b1d49f984b24."
+    },
+    {
+      "edge_id": "bced_4d5fdadabc264922b48ac0b7ec1da4da",
+      "from_node": "bexp_rec_e8dc5eb44bba",
+      "to_node": "bdrv_414ad8bb1d8343bea291e8dc5eb44bba",
+      "status": "candidate",
+      "statement": "Hyperscaler customer concentration feeds Hyperscaler customer concentration."
+    },
+    {
+      "edge_id": "bced_2f9f4287e7df471bbad6e4a529c75acf",
+      "from_node": "bexp_rec_1129f05e5a33",
+      "to_node": "bdrv_4469e497110847e7a3961129f05e5a33",
+      "status": "candidate",
+      "statement": "Competitive position in AI accelerators and networking feeds Competitive position in AI accelerators and networking."
+    },
+    {
+      "edge_id": "bced_f978853532cd4ab48bee378556b9ce90",
+      "from_node": "bexp_rec_50bd17106982",
+      "to_node": "bdrv_e605ec342c0a4888bec050bd17106982",
+      "status": "candidate",
+      "statement": "AI semiconductor demand durability feeds AI semiconductor demand durability."
+    },
+    {
+      "edge_id": "bced_651e07bdfd334f22be8c45eda552a516",
+      "from_node": "bexp_rec_8ee44a5ea0d4",
+      "to_node": "bdrv_c169428477df40cd912d8ee44a5ea0d4",
+      "status": "candidate",
+      "statement": "Non-AI semiconductor and subscription revenue durability feeds Non-AI semiconductor and subscription revenue durability."
+    },
+    {
+      "edge_id": "bced_fa4dd5b565594a94b7306756d23a1e50",
+      "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "to_node": "bexp_rec_50bd17106982",
+      "status": "observed",
+      "statement": "Q3 FY2026 results reaches AI semiconductor demand durability."
+    },
+    {
+      "edge_id": "bced_7f37e9a1f1b24990a1119099d169638f",
+      "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "to_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+      "status": "observed",
+      "statement": "Q3 FY2026 results shares evidence with Non-GAAP operating margin sustainability."
+    },
+    {
+      "edge_id": "bced_7907431ce4ad4f589badfb92b6bbd8ee",
+      "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "to_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+      "status": "observed",
+      "statement": "Q3 FY2026 results shares evidence with Valuation multiple dependence on AI growth persistence."
+    },
+    {
+      "edge_id": "bced_b9dea59951dd4475b5097d4d946fe7c0",
+      "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "to_node": "bdrv_0b42bfa225df4760a06d0a81c9df0d12",
+      "status": "observed",
+      "statement": "Q3 FY2026 results shares evidence with Balance sheet leverage and deleveraging path."
+    },
+    {
+      "edge_id": "bced_cd0ef903730a45b581f7980737898cf8",
+      "from_node": "bst_cf6f0b17ea0f47d78c05082a0034de0d",
+      "to_node": "bdrv_8dd8af15e6a84090b239eb0c00f6917f",
+      "status": "observed",
+      "statement": "Q3 FY2026 results shares evidence with GAAP to non-GAAP earnings gap."
+    },
+    {
+      "edge_id": "bced_cab1e930e9ee484b909603eeee6ca64b",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bexp_rec_e8dc5eb44bba",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance reaches Hyperscaler customer concentration."
+    },
+    {
+      "edge_id": "bced_959b797386304fb0890bcdc72d951d22",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bexp_rec_1129f05e5a33",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance reaches Competitive position in AI accelerators and networking."
+    },
+    {
+      "edge_id": "bced_4ad0ad13cfb54061bb83cdc9dfc557bf",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bexp_rec_50bd17106982",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance reaches AI semiconductor demand durability."
+    },
+    {
+      "edge_id": "bced_3c4923af20e54005ae371997ad21ebc0",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bdrv_f789bcf02eb248b7b3ea3552dcbd47f4",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance shares evidence with AI revenue mix concentration."
+    },
+    {
+      "edge_id": "bced_9501d27717e64d4a9973ec367534a74b",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bexp_rec_8ee44a5ea0d4",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance reaches Non-AI semiconductor and subscription revenue durability."
+    },
+    {
+      "edge_id": "bced_d8471410f9bf45beb4fef8183feb32f4",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bdrv_e8c2490245944d2f9b3a45fb41f19f2a",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance shares evidence with Non-GAAP operating margin sustainability."
+    },
+    {
+      "edge_id": "bced_062d679033544d9195eb838cee8f0e68",
+      "from_node": "bst_4aba4dcba45d4ed297da059e8769818e",
+      "to_node": "bdrv_c65613d424614e7ba3e474bd1c3d4948",
+      "status": "observed",
+      "statement": "Q4 FY2026 guidance shares evidence with Valuation multiple dependence on AI growth persistence."
     }
   ],
   "expectations": [
     {
-      "expectation_id": "bexpc_1e43c7039cd0493fa05b99d4ab30a930",
+      "expectation_id": "bexpc_5895669a4367484391411e0bab0bb356",
       "name": "expectation",
-      "actual": 16.0,
+      "actual": null,
       "expected": null,
-      "comparison": "in_line",
-      "trend": "unchanged",
+      "comparison": "unknown",
+      "trend": "rising",
       "confidence": "medium"
     },
     {
-      "expectation_id": "bexpc_10cfca240c914cf5b29216e0aba1e533",
+      "expectation_id": "bexpc_dd7573a207964eeda589d27fd542bdd3",
       "name": "Q3 AI semiconductor revenue",
       "actual": 16.0,
       "expected": 17.2,
@@ -286,51 +433,151 @@
       "confidence": "medium"
     },
     {
-      "expectation_id": "bexpc_48150c169a804d3eb21a13a4f4bca0ea",
+      "expectation_id": "bexpc_e57ee76812f948358056963a0475cd0a",
       "name": "Google custom silicon volume",
       "actual": null,
       "expected": null,
-      "comparison": "in_line",
+      "comparison": "unknown",
       "trend": "falling",
       "confidence": "low"
     },
     {
-      "expectation_id": "bexpc_1024f93aab184775917d441017cc4776",
+      "expectation_id": "bexpc_b55f7a18e0da408e85d8647f9349b419",
+      "name": "Q3 FY2026 EPS",
+      "actual": 2.68,
+      "expected": 2.83,
+      "comparison": "below",
+      "trend": "falling",
+      "confidence": "high"
+    },
+    {
+      "expectation_id": "bexpc_977d7ad1d54b40bb990c7025801f7499",
+      "name": "Q3 EPS",
+      "actual": 2.68,
+      "expected": 2.83,
+      "comparison": "in_line",
+      "trend": "unchanged",
+      "confidence": "medium"
+    },
+    {
+      "expectation_id": "bexpc_0fe8a07f55e5494c91fc20a35f97d8e1",
+      "name": "FY2026 AI revenue",
+      "actual": 58.0,
+      "expected": 56.0,
+      "comparison": "above",
+      "trend": "rising",
+      "confidence": "high"
+    },
+    {
+      "expectation_id": "bexpc_ec9b21d38b66414cb357750d7fe9f901",
       "name": "rumor_expectation",
       "actual": null,
       "expected": null,
-      "comparison": "in_line",
+      "comparison": "unknown",
       "trend": "falling",
       "confidence": "low"
+    },
+    {
+      "expectation_id": "bexpc_946cf3d137be4193a8cdce7342870a46",
+      "name": "Custom ASIC design-win pipeline",
+      "actual": "Marvell announced the design win (2026-09-12)",
+      "expected": null,
+      "comparison": "unknown",
+      "trend": "unchanged",
+      "confidence": "medium"
     }
   ],
   "attentions": [
     {
-      "attention_id": "batt_38676868a5bc46b69707bb39d924b973",
+      "attention_id": "batt_29755d5063c0420a90ec9e2c93cf6fc0",
       "name": "market_attention",
       "statement": ""
     },
     {
-      "attention_id": "batt_3bac5c4342f94a209d775362f561850f",
-      "name": "avgo_q3_ai_guide_attention",
-      "statement": "avgo_q3_ai_guide_attention"
+      "attention_id": "batt_bf8557543dd141348325fe1da3aebffb",
+      "name": "The breadth of the 2026-06-04 decline (AVGO -12.59%, NVDA -8.0%, AMD -7.0%, SOX…",
+      "statement": "The breadth of the 2026-06-04 decline (AVGO -12.59%, NVDA -8.0%, AMD -7.0%, SOX -10.26%) indicates the market was repricing AI semiconductor demand/capex sentiment at sector scale, not only AVGO-spec…"
+    },
+    {
+      "attention_id": "batt_3ba0c1c0d9e64631a30a1ea2a314e303",
+      "name": "Q3 FY2026 print: both focal metrics (AI line, EPS) below street despite +86% he…",
+      "statement": "At the Q3 FY2026 print, the market's focal metrics were the AI semiconductor revenue line and street-basis EPS; both printed below street ($16.7B vs $17.2B; $2.68 vs $2.83) even as total revenue grew…"
+    },
+    {
+      "attention_id": "batt_d47f57bd861148a186b539c70fd27d2c",
+      "name": "Q3 FY2026 call: FY2026 AI outlook raised to $58B; six XPU customers disclosed",
+      "statement": "At the Q3 FY2026 call, the market's focal metrics were the forward AI revenue trajectory and the custom accelerator (XPU) customer base: management raised the FY2026 AI revenue figure to $58B from $5…"
+    },
+    {
+      "attention_id": "batt_9d7a954fa33b452e92146a371e9e5679",
+      "name": "Named XPU customer commitments: Google confirms next-gen TPU order expansion",
+      "statement": "After the Q3 FY2026 call raised the FY2026 AI outlook to $58B and disclosed six XPU customers, the market's focal metrics include named-customer order commitments as validation of the XPU base and th…"
+    },
+    {
+      "attention_id": "batt_93a195f8fb2043d0bea84517bb8a0e39",
+      "name": "Named-customer order commitments contested: confirmed Google TPU expansion vs.…",
+      "statement": "One day after Google's confirmed next-gen TPU order expansion (2026-09-10) was absorbed as validation of the six-XPU-customer base and the $58B FY2026 AI outlook, a second unconfirmed rumor (2026-09-…"
     }
   ],
   "hypotheses": [
     {
-      "hypothesis_id": "bmdh_68964a8b621344c9982d0b9e4fa9565b",
+      "hypothesis_id": "bmdh_573a98677e2d4ea383ed0e607c589010",
       "canonical_key": "other",
       "kind": "other",
       "status": "candidate",
       "confidence": "low",
       "hypothesis": "other",
-      "supporting_observations": [],
+      "supporting_observations": [
+        "Headline Q2 was roughly in-line (revenue -0.4% vs street; adjusted EPS +1.7% vs street), which alone does not explain a double-digit decline",
+        "Move was largely idiosyncratic: -12.11% vs QQQ, -10.49% vs sector, at 3.5x 20-day volume (state bst_21b14d3978024a2b8a6e622e84d40fdc)",
+        "The forward AI semiconductor figure is the metric the valuation multiple is anchored to (driver bdrv_c65613d424614e7ba3e474bd1c3d4948)"
+      ],
       "counter_observations": [
-        "AVGO -2.74% after the Q3 print while MRVL +0.2% and SOX -0.4% — peers flat, inconsistent with a sector/macro driver for this session's move"
+        "No direct tape attribution in evidence; other guidance components, positioning, or macro could have contributed",
+        "Sector was also down (~2%), so part of the move may be AI-capex sentiment rather than AVGO-specific",
+        "Q3 AI actuals vs the $16B figure are not in the snapshot, leaving the fundamental read of the figure unresolved"
       ]
     },
     {
-      "hypothesis_id": "bmdh_70d772f188504a7ba61cfcef6deb1d94",
+      "hypothesis_id": "bmdh_542d9fa5ff994260a704c6efa4bace1a",
+      "canonical_key": "ai_demand",
+      "kind": "ai_demand",
+      "status": "closed",
+      "confidence": "low",
+      "hypothesis": "The tape may be trading Google's confirmed next-gen TPU order expansion as (a) direct validation of AI ramp durability beyond the $58B FY2026 AI outlook and (b…",
+      "supporting_observations": [
+        "Same-day peer declines: SOX -10.26%, NVDA -8.0%, AMD -7.0% (event e03_q2_sector_tape; fact_reliability signal, aggregator tier 5)",
+        "AVGO's guided ~62% AI revenue mix ties its economics and multiple to the AI capex cycle (drivers bdrv_f789bcf02eb248b7b3ea3552dcbd47f4, bdrv_c65613d424614e7ba3e474bd1c3d4948)",
+        "Unconfirmed rumor that Google may delay custom silicon volume",
+        "Q3 AI semiconductor revenue $16.7B vs street $17.2B (expectation bexpc_dd7573a207964eeda589d27fd542bdd3, comparison below)",
+        "Prior pattern: shares fell after each of the last two prints despite strong headline results (state bst_21b14d3978024a2b8a6e622e84d40fdc)",
+        "The forward AI figure is the metric the valuation multiple is anchored to (driver bdrv_c65613d424614e7ba3e474bd1c3d4948)",
+        "FY2026 AI revenue outlook raised to $58B from the prior $56B figure (confirmed guidance)",
+        "Six XPU customers accelerating custom accelerators — a breadth datapoint against the concentration concern",
+        "The forward AI figure is the metric the valuation multiple is anchored to (bdrv_c65613d424614e7ba3e474bd1c3d4948)",
+        "Confirmed direct fact from a named customer (e14_google_confirm, 2026-09-10)",
+        "Directly contradicts the open Google delay rumor (shadow bshd_0b06e7a9)",
+        "Extends the six-XPU-customer breadth datapoint disclosed on the Q3 FY2026 call",
+        "The forward AI figure is the metric the valuation multiple is anchored to (bdrv_c65613d)"
+      ],
+      "counter_observations": [
+        "No macro, rates, or AI-capex catalyst for the sector-wide decline appears in the available evidence; the sector move itself is unexplained",
+        "Conflicts with the ~-2% sector benchmark cited in existing hypothesis bmdh_573a98677e2d4ea383ed0e607c589010",
+        "AVGO still underperformed SOX by ~2.3pp, leaving a company-specific residual that sector beta alone does not explain",
+        "No direct tape attribution in evidence; the move is modest (-2.74%) and could be sector, positioning, or macro",
+        "Headline revenue +86% YoY and the Q4 AI guide stepping up ~30% sequentially cut against a fundamental-deterioration reading",
+        "Q4 total/margin guide vs consensus is unknown, so a guide-driven explanation cannot be scored",
+        "No price data is attached to this event, so the hypothesis cannot be scored against the tape yet",
+        "The unconfirmed Google custom-silicon delay rumor (shadow bshd_0b06e7a962a7422b8da4e5cd84652f21) remains open and could offset a durability read",
+        "Prior pattern: shares fell after each of the last two prints despite strong headline results when the focal AI line missed street",
+        "Sector/macro moves or positioning could dominate any AVGO tape reaction",
+        "Order magnitude is unquantified and may already be embedded in the $21.7B Q4 AI guide and $58B FY2026 outlook",
+        "Sector/macro moves or positioning could dominate any AVGO reaction",
+        "Long-term in-house silicon risk at Google remains unquantified"
+      ]
+    },
+    {
+      "hypothesis_id": "bmdh_31d46b45f1604e9d90575f0f69b13d79",
       "canonical_key": "sector_macro",
       "kind": "sector_macro",
       "status": "open",
@@ -343,280 +590,353 @@
       "counter_observations": []
     },
     {
-      "hypothesis_id": "bmdh_6ef36523a9794c8da1decb560d5969df",
+      "hypothesis_id": "bmdh_acffdae5dd94491d97431e20fb314d75",
       "canonical_key": "unresolved",
       "kind": "other",
       "status": "unresolved",
       "confidence": "low",
       "hypothesis": "Market driver is unresolved",
       "supporting_observations": [
-        "AVGO shares move -12.6% with semiconductor peers"
+        "AVGO shares move -12.6% with semiconductor peers",
+        "AVGO shares move -6.2% with no new filing"
       ],
       "counter_observations": []
     },
     {
-      "hypothesis_id": "bmdh_e98230d249664c2b8810731359bcf1d2",
+      "hypothesis_id": "bmdh_c030180c636043479d263edc28aff73f",
       "canonical_key": "customer_concentration",
       "kind": "customer_concentration",
-      "status": "open",
+      "status": "candidate",
       "confidence": "low",
-      "hypothesis": "Customer concentration concern is increasing",
+      "hypothesis": "The tape MAY be trading the fresh Google reduce-orders rumor as renewed customer-concentration and insourcing risk that partially offsets the 2026-09-10 confir…",
       "supporting_observations": [
         "Unconfirmed rumor that Google may delay custom silicon volume",
-        "Unconfirmed: Google may reduce Broadcom custom TPU orders"
+        "Rumor directly targets a named XPU customer one day after that customer's confirmed order expansion",
+        "Prior customer-award news (hyperscaler awarding custom AI chip work to Marvell) moved AVGO shares 3.9%",
+        "Concentration driver bdrv_414ad8bb carries high importance with high uncertainty; Google's revenue share is unquantified",
+        "The valuation multiple is anchored to AI growth persistence (bdrv_c65613d424614e7ba3e474bd1c3d4948)"
       ],
-      "counter_observations": []
+      "counter_observations": [
+        "Hock Tan said Broadcom has six XPU customers and fiscal 2026 AI revenue of 58 billion versus prior 56 billion",
+        "Google confirmed a Broadcom custom-silicon order expansion for next-generation TPU",
+        "Google's order expansion is CONFIRMED (2026-09-10) and directly contradicts the rumor",
+        "Source is a tier-5 aggregator with no evidence IDs and no corroboration",
+        "No price data attached to this event; any AVGO move could be sector/macro (prior co-moves in SOX, NVDA, AMD) or positioning",
+        "Order magnitude is unquantified and may already be embedded in the $21.7B Q4 AI guide and $58B FY2026 outlook"
+      ]
     },
     {
-      "hypothesis_id": "bmdh_f54798b71a554d97a25e99750cdbb1da",
-      "canonical_key": "ai_demand",
-      "kind": "ai_demand",
-      "status": "open",
-      "confidence": "low",
-      "hypothesis": "AI demand expectations are weakening",
-      "supporting_observations": [
-        "Unconfirmed rumor that Google may delay custom silicon volume",
-        "Unconfirmed: Google may reduce Broadcom custom TPU orders"
-      ],
-      "counter_observations": []
-    },
-    {
-      "hypothesis_id": "bmdh_8230490d5047487c95634ff6370c7830",
-      "canonical_key": "ai_guide_miss",
+      "hypothesis_id": "bmdh_befce047813443e788a683d70aaefec5",
+      "canonical_key": "the_-2.74%_decline_on_2026-09-02/03_(-3…",
       "kind": "other",
       "status": "candidate",
       "confidence": "low",
-      "hypothesis": "Tape may be trading AVGO's below-consensus AI semiconductor revenue guide (16.0B vs 17.2B street) from the Q3 print",
+      "hypothesis": "The -2.74% decline on 2026-09-02/03 (-3.93% vs QQQ) despite headline revenue +86% YoY and the Q4 AI guide stepping up to $21.7B may reflect the focal AI semico…",
       "supporting_observations": [
-        "AVGO -2.74% after the Q3 print while MRVL +0.2% and SOX -0.4% — an idiosyncratic, company-specific move"
+        "Same-day peer declines: SOX -10.26%, NVDA -8.0%, AMD -7.0% (event e03_q2_sector_tape; fact_reliability signal, aggregator tier 5)",
+        "AVGO's guided ~62% AI revenue mix ties its economics and multiple to the AI capex cycle (drivers bdrv_f789bcf02eb248b7b3ea3552dcbd47f4, bdrv_c65613d424614e7ba3e474bd1c3d4948)",
+        "Unconfirmed rumor that Google may delay custom silicon volume",
+        "Q3 AI semiconductor revenue $16.7B vs street $17.2B (expectation bexpc_5895669a4367484391411e0bab0bb356, comparison below)",
+        "Q3 street-basis EPS $2.68 vs $2.83 expected, roughly 5.3% below street (expectation bexpc_avgo_q3_fy2026_eps) — a second focal metric below elevated expectations",
+        "Prior pattern: shares fell after each of the last two prints despite strong headline results (state bst_21b14d3978024a2b8a6e622e84d40fdc)",
+        "The forward AI figure is the metric the valuation multiple is anchored to (driver bdrv_c65613d424614e7ba3e474bd1c3d4948)"
+      ],
+      "counter_observations": [
+        "No macro, rates, or AI-capex catalyst for the sector-wide decline appears in the available evidence; the sector move itself is unexplained",
+        "Conflicts with the ~-2% sector benchmark cited in existing hypothesis bmdh_573a98677e2d4ea383ed0e607c589010",
+        "AVGO still underperformed SOX by ~2.3pp, leaving a company-specific residual that sector beta alone does not explain",
+        "No direct tape attribution in evidence; the move is modest (-2.74%) and could be sector, positioning, or macro",
+        "Headline revenue +86% YoY and the Q4 AI guide stepping up ~30% sequentially cut against a fundamental-deterioration reading",
+        "Q4 total/margin guide vs consensus is unknown, so a guide-driven explanation cannot be scored"
+      ]
+    },
+    {
+      "hypothesis_id": "bmdh_f88837b0919a490fbe80f68694a78f8d",
+      "canonical_key": "company_specific",
+      "kind": "company_specific",
+      "status": "candidate",
+      "confidence": "medium",
+      "hypothesis": "Company-specific concern",
+      "supporting_observations": [
+        "Marvell wins a hyperscaler custom ASIC program Broadcom had been expected to supply"
       ],
       "counter_observations": []
     }
   ],
   "shadows": [
     {
-      "shadow_id": "bshd_361f117e45204609b3b1f2b780533573",
+      "shadow_id": "bshd_80ac8c7a56d84b6494cf64b2d12cd153",
+      "name": "AVGO shares move -12.6% with semiconductor peers",
+      "status": "open",
+      "statement": "AVGO -12.59%. NVDA and other semiconductor names also sold off. SOX about -10%."
+    },
+    {
+      "shadow_id": "bshd_0b06e7a962a7422b8da4e5cd84652f21",
+      "name": "Google custom silicon volume",
+      "status": "open",
+      "statement": "A second unconfirmed rumor (2026-09-11, tier-5 aggregator, no evidence IDs) says Google may REDUCE Broadcom custom ASIC/TPU orders as it expands in-house silicon — arriving one day after Google's CON…"
+    },
+    {
+      "shadow_id": "bshd_6561dbdd0cbf4eaaab704bcc12404c27",
       "name": "unconfirmed_signal",
       "status": "open",
       "statement": ""
     },
     {
-      "shadow_id": "bshd_c42122ce7b0749a79b84b66a177ac380",
-      "name": "Google custom silicon volume",
-      "status": "open",
-      "statement": "An unconfirmed rumor says Google may delay custom silicon volume with Broadcom as it expands in-house silicon."
-    },
-    {
-      "shadow_id": "bshd_bd4964967a114631b4fbe4907aa97d67",
+      "shadow_id": "bshd_fe59cdfd7839475daeb5d3fda7e537ac",
       "name": "AVGO shares move -2.74% after the latest print",
       "status": "open",
-      "statement": "AVGO -2.74%. MRVL about 0. SOX about 0."
+      "statement": "AVGO shares move -2.74% after the latest print, while MRVL is about flat (+0.2%) and SOX is about flat (-0.4%)."
     },
     {
-      "shadow_id": "bshd_afebc22a3bba42cfb7db41bedbc141f0",
+      "shadow_id": "bshd_efdc33c83e5f48d1971b4c003886f9f9",
       "name": "Unconfirmed: Google may reduce Broadcom custom TPU orders",
       "status": "open",
       "statement": "Rumor that Google may reduce Broadcom ASIC / TPU orders as it expands in-house silicon. The report is unconfirmed."
-    },
-    {
-      "shadow_id": "bshd_a1a870e926b64172888da7111c9ce6c4",
-      "name": "Google may reduce Broadcom custom TPU orders",
-      "status": "open",
-      "statement": "An unconfirmed tier-5 aggregator report (2026-09-11) says Google may reduce Broadcom custom ASIC/TPU orders as it expands in-house silicon. This is a second same-direction unconfirmed report, distinc…"
     }
   ],
   "questions": [
     {
-      "question_id": "brq_16ecff23acc94024ab331431a5f979c0",
-      "question": "Missing relationship: the event's most direct financial effect is on AI semiconductor revenue (~$1.2B below street for Q3) and total revenue guidance, but the targeted snapshot contains no value_driv…",
-      "why_it_matters": "Missing relationship: the event's most direct financial effect is on AI semiconductor revenue (~$1.2B below street for Q3) and total revenue guidance, but the targeted snapshot contains no value_driver for AI semiconductor revenue growth — the only drivers are the GAAP/non-GAAP gap (bdrv_8dd8af15e6a84090b239eb0c00f6917f) and non-GAAP margin sustainability (bdrv_e8c2490245944d2f9b3a45fb41f19f2a).…"
+      "question_id": "brq_2fa10bd931674412b3defba14e461420",
+      "question": "What was AVGO's actual Q3 FY2026 AI semiconductor revenue, and how did it compare to the $16B company figure and the $17.2B street expectation?",
+      "why_it_matters": "The snapshot records Q3 FY2026 total revenue of $29.6B (+86% YoY) but not the AI semiconductor split. Resolving this determines whether the June figure was conservatism/timing (guide low, deliver high) or a genuine near-term demand signal later reversed by the Q4 AI guide of $21.7B (+236% YoY), and how much weight the candidate edge into bdrv_e605ec342c0a4888bec050bd17106982 should carry."
     },
     {
-      "question_id": "brq_3e35703712174a388778db07aca5a1af",
-      "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or…",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_3641699e033c41529723648fa7512570",
+      "question": "What did tape attribution and post-print commentary cite as the driver of the -12.59% post-Q2 move — the AI figure miss, other guidance components, or broader AI-capex sentiment?",
+      "why_it_matters": "The move is large and mostly idiosyncratic, and the market_driver_hypothesis remains unconfirmed without attribution evidence; until then the market driver for the Q2 selloff stays hypothesis-level, not established."
     },
     {
-      "question_id": "brq_bc3cc0bfa6084062b81dd19a2aa03b80",
-      "question": "Did Q3 FY2026 actual AI semiconductor revenue meet, beat, or miss the $16B guide (and the $17.2B street figure)?",
-      "why_it_matters": "Q3 has since been reported (revenue $29.6B, +86% YoY; management characterized AI demand as 'very strong' per claim evidence rev_d608e3e7661a49dfb06a59bd5c45927b). The answer determines whether the June guide miss was conservatism or genuine AI deceleration, and whether the candidate edge from the guidance state to the margin driver should be supported or countered."
-    },
-    {
-      "question_id": "brq_5344f52b3b3c481b848e8ec74a382b90",
-      "question": "Does the Q2 adjusted EPS beat ($2.44 vs $2.40 street) contradict driver bdrv_8dd8af15e6a84090b239eb0c00f6917f's assertion that reported EPS came in below estimates in each of the last three quarters,…",
-      "why_it_matters": "This confirmed event shows an adjusted EPS beat at Q2 FY2026. If the driver's miss streak is measured on adjusted EPS, its current_state needs correction, which would also change its weight against the core claim via edge bced_7f458841e2654bfa9a2ebb9f3f2b0c78."
-    },
-    {
-      "question_id": "brq_cc257d5c6f8f458ead307c413ccb89ff",
-      "question": "Was the -12.59% one-day post-earnings reaction driven primarily by the AI guide miss, or did concurrent factors (positioning, sector AI de-rating, valuation) contribute materially?",
-      "why_it_matters": "The move is consistent with the AI guide miss but not proven by it. Until decomposed, the market driver for the move should remain a hypothesis (or unresolved), keeping the Brain from writing a causal 'stock fell because X' statement."
-    },
-    {
-      "question_id": "brq_ec03352c4bd542b7b704b660ade3ad81",
-      "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or…",
-      "why_it_matters": "causal_gap"
-    },
-    {
-      "question_id": "brq_ead76388b8fe43769150ee9824b541ee",
+      "question_id": "brq_3ee4174bc346432aa86bbd7ad501e309",
       "question": "What is the market pricing that the current Brain does not explain?",
       "why_it_matters": "Price moved without new fundamental evidence."
     },
     {
-      "question_id": "brq_81a0c652297e496eabc7844777d8dad9",
-      "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_adde40f1368049109a9fb18d17169a16",
+      "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_2f9f4287e7df471bbad6e4a529c75acf:candidate"
     },
     {
-      "question_id": "brq_098cf220d2054f019cc104defd012ff9",
+      "question_id": "brq_321ce16999d54b868b71442f21e8fc3f",
       "question": "What is the market pricing that the current Brain does not explain?",
       "why_it_matters": "Price move is large, expectation did not clearly change, and peers do not support a driver."
     },
     {
-      "question_id": "brq_761ac4f3324d4a9b9baf561a37db7b95",
-      "question": "How much of AVGO's -12.59% decline on 2026-06-04 is sector beta (SOX -10.26%) versus company-specific? The ~2.3pp excess decline versus SOX is currently unexplained; Market Driver = unresolved until…",
-      "why_it_matters": "A large price move with peers down 7-10% is only partially explained by the sector; per rules, an unexplained large move stays unresolved and no reason is invented. The decomposition determines whether the guide-miss, sector-beta, or concentration-fear hypothesis carries more weight."
+      "question_id": "brq_9ce56982f5e749e8b739be84e6f3bbed",
+      "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
+      "why_it_matters": "Weak signal is a research question, not a conclusion."
     },
     {
-      "question_id": "brq_aa92fb8034974535a9431bbb6cc98e4a",
-      "question": "Did any fundamental news (e.g., hyperscaler capex changes, AI demand data, competitive awards) accompany or trigger the sector-wide selloff, or is it sentiment/positioning? If fundamental, it would e…",
-      "why_it_matters": "The transmission path Event → State → Exposure → Driver → Claim is missing a State node; no fundamental trigger is identified in this price-only event, so a research question is proposed rather than an invented transmittable path. The existing causal_gap from e03_q2_sector_tape to the core claim remains open."
+      "question_id": "brq_8403640a0802442892c943d48abfd6bd",
+      "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_2f9f4287e7df471bbad6e4a529c75acf:candidate"
     },
     {
-      "question_id": "brq_b1e82ec64e9f49dc8b761924a41daa96",
-      "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
-    },
-    {
-      "question_id": "brq_a5d9d9f295b54b02bce9c969e1ad063e",
+      "question_id": "brq_0e665e8a26e64077aed4669a1c2c54a3",
       "question": "What is the market pricing that the current Brain does not explain?",
       "why_it_matters": "Large price move is unresolved."
     },
     {
-      "question_id": "brq_ad6f486152ee40fc9da05c034f0d0aa7",
+      "question_id": "brq_b212efc4f92d419e91001ba96d926474",
       "question": "Can we confirm: Google custom silicon volume?",
       "why_it_matters": "Weak signal is a research question, not a conclusion."
     },
     {
-      "question_id": "brq_27fb7a4f520d49508cc0605bc60bdad2",
-      "question": "The rumor's impact cannot be sized and the existing causal gaps from e07_google_rumor to both core claims cannot be closed without two facts: (1) what fraction of Broadcom's AI semiconductor / custom…",
-      "why_it_matters": "The rumor's impact cannot be sized and the existing causal gaps from e07_google_rumor to both core claims cannot be closed without two facts: (1) what fraction of Broadcom's AI semiconductor / custom silicon revenue and pipeline is attributable to Google — customer-level revenue is not disclosed and the concentration claim explicitly states the exposure is unquantified; and (2) whether any confir…"
+      "question_id": "brq_042aea5b7e334c74aa497a0b2edb436a",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_ee460d1be54a4d3aa0d1281e23796e55",
-      "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_2908c4d86eeb49f69754d00bd6a753d9",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_23b85d5d024442f1b2a89620f27d353c",
-      "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_413d30b634804d1ba5ee1bf908b41c13",
+      "question": "Is there any confirmation from Google, Broadcom, supply-chain checks, or filings that Google is delaying custom silicon volume with Broadcom?",
+      "why_it_matters": "The event is an unconfirmed tier-5 aggregator rumor with no evidence_ids; per rules it cannot reach Current State, Value Driver, or Core Claim until confirmed, so it is held in a Shadow State with a candidate-only causal edge."
     },
     {
-      "question_id": "brq_de76a8cbf5174f60bbfc4484f8c3ffdd",
-      "question": "What share of Broadcom's AI semiconductor and custom silicon revenue and pipeline is attributable to Google, and is there any confirming or refuting evidence (Google capex or TPU roadmap commentary,…",
-      "why_it_matters": "Customer-level revenue is not disclosed, so the rumor's financial impact cannot be sized; this is required to close the existing causal gaps from e07_google_rumor to both core claims and to decide whether the candidate event→concentration-driver edge should be supported or dropped."
+      "question_id": "brq_0cd690a201ef491b9295ff36f3314c4a",
+      "question": "What share of Broadcom's AI semiconductor revenue (guided $21.7B for Q4 FY2026) is attributable to Google custom silicon work?",
+      "why_it_matters": "Customer-level revenue and concentration ratios are not disclosed in the available evidence; without this, the magnitude of any Google volume delay cannot be sized into a financial impact, and the existing core claim on hyperscaler dependence remains unquantified."
     },
     {
-      "question_id": "brq_bfff172c1e7747dcbb9ac093e95ef479",
-      "question": "Does the guided Q4 FY2026 AI semiconductor revenue of $21.7B (+236%) and the reported plan to double AI semiconductor revenue in each of the next two years depend on Google TPU volume, or is the ramp…",
-      "why_it_matters": "This determines whether a confirmed Google delay would travel only the concentration path (bdrv_414ad8bb → bclm_2f3b915b) or also the demand-durability path (bdrv_e605ec34 → bclm_f4454cfe), since the rumor describes in-sourcing (share shift) rather than demand destruction."
+      "question_id": "brq_091ffdd50c78463ab4a174c55f60d3cc",
+      "question": "Does Google's in-house silicon expansion displace Broadcom-assisted custom silicon volume, or complement it?",
+      "why_it_matters": "This determines whether the rumor, if true, is a competitive insourcing event (feeding bdrv_4469e497, which currently has no supported edge to any claim) or a volume-timing event (feeding bdrv_414ad8bb, which has a supported path to core claim bclm_2f3b915b) — the transmittable path differs materially."
     },
     {
-      "question_id": "brq_60ee3f29d9cd403ea4be2f16299c31e0",
-      "question": "If AVGO sells off around this rumor, is the tape trading the Google delay, the below-expectation AI semiconductor guide (16.0 vs 17.2), or a sector-wide move — and what evidence would distinguish the…",
-      "why_it_matters": "The -12.6% move with semiconductor peers is currently attributed to sector/macro or left unresolved; the rumor is a new candidate driver. Without confirmation, the market driver must remain unresolved and no attribution should be written."
+      "question_id": "brq_df5acce2d8ca439982126f8bfeb301e9",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_6e8a3e4eb43947138b6aebf045ec4a02",
-      "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_ff760058150141e38e12941d3f84fcdf",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_2164a1095d994c7caea2ec52f4496323",
-      "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_606c3f1935b04ff0842556da986cb963",
+      "question": "Does the Q4 AI semiconductor guide of $21.7B (+236% YoY) coexist with, or contradict, the unconfirmed rumor that Google may delay custom silicon volume?",
+      "why_it_matters": "The rumor (expectation bexpc_e57ee76812f948358056963a0475cd0a, low confidence) cannot be confirmed or refuted by this print directly, but a guide of this magnitude is in tension with a near-term material customer volume delay; resolving it requires customer-level disclosure the snapshot lacks. The rumor must not modify Current State or Core Claim."
     },
     {
-      "question_id": "brq_98678142476148718d2f5cf4fa88cf16",
+      "question_id": "brq_2fa24836fa06476c97bebcbe1f260d7f",
+      "question": "Should the stale AI-line expectation record bexpc_dd7573a207964eeda589d27fd542bdd3 (actual 16.0, trend falling — the prior guide recorded before the print) be superseded by or merged into bexpc_58956…",
+      "why_it_matters": "Two records now describe the same focal metric with conflicting actuals and trends; leaving both risks contradictory reads of whether the AI line is rising or falling versus expectations."
+    },
+    {
+      "question_id": "brq_c1062d3908c04e19a50bf546c0d2dbd0",
       "question": "What is the market pricing that the current Brain does not explain?",
       "why_it_matters": "Price moved without new fundamental evidence."
     },
     {
-      "question_id": "brq_22cbee552cfc40f8859b32b53118a939",
-      "question": "What happened: the tape points to company-specific content, and the only fundamental content visible in this snapshot is the below-consensus AI semiconductor revenue guide. Why it matters: for that c…",
-      "why_it_matters": "What happened: the tape points to company-specific content, and the only fundamental content visible in this snapshot is the below-consensus AI semiconductor revenue guide. Why it matters: for that content to affect valuation it must travel Event → State → Exposure → Driver → Claim. Path: this targeted snapshot contains no states, drivers, or claims, so no transmittable path from the AI revenue g…"
+      "question_id": "brq_1370e7c723c84bf3b6573bec105a3965",
+      "question": "Was the Google custom-silicon delay report public before the 2026-09-03 tape, and has any party confirmed or denied it?",
+      "why_it_matters": "The rumor exists only as a low-confidence expectation with no evidence ids and no timestamp relative to the tape; its timing determines whether the rumor-linked tape hypothesis is viable at all, and until confirmed it cannot touch Fundamental State or Core Claim."
     },
     {
-      "question_id": "brq_038856a2665242a8a5bafa883eeb2fee",
-      "question": "What is the AVGO tape trading in this post-print session — the below-consensus AI semiconductor revenue guide (16.0 vs 17.2), the unconfirmed Google custom-silicon delay rumor, or another company-spe…",
-      "why_it_matters": "AVGO -2.74% with MRVL and SOX flat confirms a company-specific driver but not which one; both the guide miss and the Google rumor fit an idiosyncratic decline, and the tape alone cannot distinguish them. Post-print commentary, guidance detail, or analyst notes are needed before any hypothesis is upgraded or the unresolved marker is cleared."
-    },
-    {
-      "question_id": "brq_6bd3fece34304f57815b1cd6530414cb",
-      "question": "Does the Q3 print or management commentary confirm or refute the unconfirmed rumor that Google may delay custom silicon volume?",
-      "why_it_matters": "The customer_concentration hypothesis rests on a low-confidence rumor. The Q3 print and earnings call are the natural confirmation or refutation source; until then the rumor must not modify Current State or Core Claim, and the price move cannot be attributed to it."
-    },
-    {
-      "question_id": "brq_4bc2ec27ce84487cbd99df9d12a8997d",
-      "question": "What value driver and financial metric does AVGO's AI semiconductor revenue guidance feed, and does the below-consensus guide change the Base Case through that path?",
-      "why_it_matters": "This targeted snapshot has no drivers or claims, so the guide miss has no observable fundamental transmission. The path must be established by print processing; a price event cannot create it, and the Base Case cannot be modified from a tape move or a below-expectation print alone."
-    },
-    {
-      "question_id": "brq_8b358e5f71d2438ebd0181fca5ff9680",
+      "question_id": "brq_49a661a290de437c994de7a34237b3da",
       "question": "Can we confirm: AVGO shares move -2.74% after the latest print?",
       "why_it_matters": "Weak signal is a research question, not a conclusion."
     },
     {
-      "question_id": "brq_bdaa43166b594dd59f419c00b3efd2d4",
+      "question_id": "brq_253a16c979144d17955e3fc8e57cbabd",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_61dcf2df3e5f43149db557d4cb76c298",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_a7fea6681f72458c997a7a11659ac833",
+      "question": "What revenue share does each of the six XPU customers represent within the $58B FY2026 AI outlook?",
+      "why_it_matters": "The six-customer count quantifies breadth but not magnitude; the concentration claim (bclm_2f3b915b62064c8a98300c530fa331ff) remains unquantified at the customer level, which is what is needed to score single-customer risk and the open Google rumor's materiality."
+    },
+    {
+      "question_id": "brq_aeee74dfa6f543b5bcb3bb1e0c8fdb52",
+      "question": "What drove the $56B→$58B FY2026 AI outlook raise — acceleration at existing XPU customers or incremental ramps at new ones?",
+      "why_it_matters": "The durability of the $2B increment differs by source: acceleration at existing customers extends the current ramp, while new customer ramps broaden the base. This distinguishes cyclical pull-forward from structural build-out, the central question of claim bclm_f4454cfe04e94211a79b23116bcf5de8."
+    },
+    {
+      "question_id": "brq_b06bf5e417354429bf516d22d4c4ab70",
+      "question": "If the unconfirmed Google custom-silicon delay rumor (shadow bshd_0b06e7a962a7422b8da4e5cd84652f21) is true, what share of the $58B FY2026 AI outlook is at risk?",
+      "why_it_matters": "The raised outlook increases the dollar exposure to any single large customer; the six-customer base may dilute but not eliminate single-customer risk, and Google's share is unknown. The rumor remains unconfirmed and must not modify Current State or Core Claim."
+    },
+    {
+      "question_id": "brq_d0989bf0565a49f1a5ba219ff3e9411e",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_06202fd63f4b45e7bcd416ea8291c1ef",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_6abc4836a2eb498aae6cec1b51e06183",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_9506262b65b54c8c90c89a213bb4db31",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_2a25c8c1b82a41fc8db40cfccb5d1274",
+      "question": "Is Google's expanded order incremental to the $21.7B Q4 FY2026 AI semiconductor guide and the $58B FY2026 AI outlook, or already embedded in them?",
+      "why_it_matters": "The confirmation lacks magnitude and timing; without this, no financial impact or Base Case change can be justified, and the durability claim cannot be upgraded."
+    },
+    {
+      "question_id": "brq_9e017c6eb516436e94d2ffc47ad88b3a",
+      "question": "What share of Broadcom's AI semiconductor revenue does Google represent, and does the expansion raise or lower measured hyperscaler concentration?",
+      "why_it_matters": "The concentration core claim (bclm_2f3b) remains unquantified; a named-customer confirmation without a revenue share deepens dependence while relieving defection risk, and the net read on concentration is unresolved."
+    },
+    {
+      "question_id": "brq_47cbc7e522a245e8ac404040425819bf",
+      "question": "Did AVGO shares react to this confirmation on 2026-09-10, and was any reaction company-specific versus the sector?",
+      "why_it_matters": "No price data is attached to this event; the market_driver_hypothesis cannot be scored and any large unexplained move would need to be left unresolved rather than attributed."
+    },
+    {
+      "question_id": "brq_c084c57e98354433910e8d0aa5d99f15",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_353d5ab3aad24c86816d53d8321ad758",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_e869a873af934282930567acf383a7f4",
       "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
       "why_it_matters": "Weak signal is a research question, not a conclusion."
     },
     {
-      "question_id": "brq_482c1fb5cd204cc9a32207499ab9bf91",
-      "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_0c5be82a44fe4908b9783d624b6d0f97",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_8fd4ae8ba4fd49749c01e83dcac89fd4",
-      "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_ead69222764349da977c51bb5832ed92",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_98c12b5f5754432ba12b54ece0de02af",
-      "question": "What fraction of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B, +236% YoY) is attributable to Google custom TPU programs, and what volumes/prices are contractually committed vs discret…",
-      "why_it_matters": "The causal gap from this rumor to the concentration claim exists precisely because customer-level revenue is not disclosed. Without a quantified Google exposure, the rumor's materiality cannot be sized and the proposed candidate shadow-to-driver edge cannot be evaluated. This is the single largest unknown in the concentration thesis."
+      "question_id": "brq_b8b3f935e2e0491abf3a21c4a48da3b7",
+      "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_c3700f58ac99428a91aef26f86b7822e",
-      "question": "Is there any primary-source confirmation — from Google, Broadcom, supply-chain checks, or a tier-1/2 outlet — that Google TPU order volumes with Broadcom are being reduced or delayed, and is this rep…",
-      "why_it_matters": "The event is a tier-5 aggregator rumor, unconfirmed. The existing shadow (bshd_c42122ce), expectation (bexpc_48150c), and hypothesis (bmdh_e98230d2) all rest on a similar prior unconfirmed report. Whether this is independent corroboration or repetition determines whether the shadow's weight rises at all; neither would confirm it."
+      "question_id": "brq_a7c9f5fc0ded4b998dad46770318fca4",
+      "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_98bb096e508d4bb4b6771ddd1b9d3488",
-      "question": "What was AVGO's price reaction around the rumor's publication window (2026-09-11/12), with MRVL and SOX as controls?",
-      "why_it_matters": "No price observation for this event exists in the snapshot. Without it, the market driver for any tape move around this rumor must remain unresolved, and the customer-concentration hypothesis cannot be strengthened or weakened versus the sector/macro alternatives. Price evidence would only support or weaken a hypothesis — it cannot write Fundamental State or Core Claim."
+      "question_id": "brq_09a9c27e5e9e4b919e388c2fcd8e2559",
+      "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
     },
     {
-      "question_id": "brq_61150f144c0f4602a0aafacefbe60d6c",
-      "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_db71dcfa99ca4d70a8d491de67a94855",
+      "question": "Is the hyperscaler that awarded Marvell an existing Broadcom XPU customer or a prospective new logo?",
+      "why_it_matters": "An existing-customer loss would be share loss within the base (directly worsening the concentration claim's mechanism); a new-logo loss would cap customer-breadth expansion (a softer read against the six-XPU-customer datapoint). The two readings transmit differently through the concentration driver."
     },
     {
-      "question_id": "brq_2d0c7d0e6a5d4e6280cf9a49be889c18",
-      "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
-      "why_it_matters": "causal_gap"
+      "question_id": "brq_d08269de219c47dea25d681e1e8aa317",
+      "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
+      "why_it_matters": "unsupported_causal_edge:bced_651e07bdfd334f22be8c45eda552a516:candidate"
+    },
+    {
+      "question_id": "brq_fc6409c6c89a457bb8ee8ff044ec648e",
+      "question": "What is the market pricing that the current Brain does not explain?",
+      "why_it_matters": "Price moved without new fundamental evidence."
+    },
+    {
+      "question_id": "brq_57c982657e854c2b839899c01f999e03",
+      "question": "What is the market pricing that the current Brain does not explain?",
+      "why_it_matters": "Price move is large, expectation did not clearly change, and peers do not support a driver."
+    },
+    {
+      "question_id": "brq_f04c2c02c5cb4047936016b40c9e9318",
+      "question": "What is the market pricing that the current Brain does not explain?",
+      "why_it_matters": "Large price move is unresolved."
     }
   ],
   "counts": {
     "states": 5,
     "drivers": 9,
     "claims": 5,
-    "exposures": 12,
-    "edges": 7,
-    "expectations": 4,
-    "attentions": 2,
-    "hypotheses": 6,
+    "exposures": 17,
+    "edges": 23,
+    "expectations": 8,
+    "attentions": 6,
+    "hypotheses": 7,
     "shadows": 5,
-    "questions": 36
+    "questions": 46
   }
 }

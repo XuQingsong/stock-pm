@@ -1,28 +1,13 @@
 [
   {
-    "question": "Missing relationship: the event's most direct financial effect is on AI semiconductor revenue (~$1.2B below street for Q3) and total revenue guidance, but the targeted snapshot contains no value_driver for AI semiconduc…",
+    "question": "What was AVGO's actual Q3 FY2026 AI semiconductor revenue, and how did it compare to the $16B company figure and the $17.2B street expectation?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How exposed is the issuer to AVGO AI semiconductor next-quarter figure 16 billion versus street 17.2 billion, such that it would move Whether the guided 66% non-GAAP operating margin is structural or peak-cycle?",
+    "question": "What did tape attribution and post-print commentary cite as the driver of the -12.59% post-Q2 move — the AI figure miss, other guidance components, or broader AI-capex sentiment?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "Did Q3 FY2026 actual AI semiconductor revenue meet, beat, or miss the $16B guide (and the $17.2B street figure)?",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "Does the Q2 adjusted EPS beat ($2.44 vs $2.40 street) contradict driver bdrv_8dd8af15e6a84090b239eb0c00f6917f's assertion that reported EPS came in below estimates in each of the last three quarters, or does that assert…",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "Was the -12.59% one-day post-earnings reaction driven primarily by the AI guide miss, or did concurrent factors (positioning, sector AI de-rating, valuation) contribute materially?",
-    "grade": "mixed",
-    "note": "Possibly useful, but not tightly bound to a named gap."
   },
   {
     "question": "What is the market pricing that the current Brain does not explain?",
@@ -30,19 +15,14 @@
     "note": "Possibly useful, but not tightly bound to a named gap."
   },
   {
-    "question": "How exposed is the issuer to AVGO shares move -12.6% with semiconductor peers, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+    "question": "What Hyperscaler customer concentration links NVDA to The AI ramp implies unquantified dependence on a few hypers…?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How much of AVGO's -12.59% decline on 2026-06-04 is sector beta (SOX -10.26%) versus company-specific? The ~2.3pp excess decline versus SOX is currently unexplained; Market Driver = unresolved until the move is decompos…",
+    "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?",
     "grade": "mixed",
     "note": "Possibly useful, but not tightly bound to a named gap."
-  },
-  {
-    "question": "Did any fundamental news (e.g., hyperscaler capex changes, AI demand data, competitive awards) accompany or trigger the sector-wide selloff, or is it sentiment/positioning? If fundamental, it would enter the Brain throu…",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
     "question": "Can we confirm: Google custom silicon volume?",
@@ -50,52 +30,42 @@
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "The rumor's impact cannot be sized and the existing causal gaps from e07_google_rumor to both core claims cannot be closed without two facts: (1) what fraction of Broadcom's AI semiconductor / custom silicon revenue and…",
+    "question": "What Hyperscaler customer concentration links Google to The AI ramp implies unquantified dependence on a few hypers…?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+    "question": "What Hyperscaler customer concentration links Google to AI semiconductor demand durability sets the length of the g…?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How exposed is the issuer to Unconfirmed rumor that Google may delay custom silicon volume, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+    "question": "Is there any confirmation from Google, Broadcom, supply-chain checks, or filings that Google is delaying custom silicon volume with Broadcom?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "What share of Broadcom's AI semiconductor and custom silicon revenue and pipeline is attributable to Google, and is there any confirming or refuting evidence (Google capex or TPU roadmap commentary, supply-chain order d…",
+    "question": "What share of Broadcom's AI semiconductor revenue (guided $21.7B for Q4 FY2026) is attributable to Google custom silicon work?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "Does the guided Q4 FY2026 AI semiconductor revenue of $21.7B (+236%) and the reported plan to double AI semiconductor revenue in each of the next two years depend on Google TPU volume, or is the ramp driven by other nam…",
+    "question": "Does Google's in-house silicon expansion displace Broadcom-assisted custom silicon volume, or complement it?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "If AVGO sells off around this rumor, is the tape trading the Google delay, the below-expectation AI semiconductor guide (16.0 vs 17.2), or a sector-wide move — and what evidence would distinguish them?",
+    "question": "Does the Q4 AI semiconductor guide of $21.7B (+236% YoY) coexist with, or contradict, the unconfirmed rumor that Google may delay custom silicon volume?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "What happened: the tape points to company-specific content, and the only fundamental content visible in this snapshot is the below-consensus AI semiconductor revenue guide. Why it matters: for that content to affect val…",
+    "question": "Should the stale AI-line expectation record bexpc_dd7573a207964eeda589d27fd542bdd3 (actual 16.0, trend falling — the prior guide recorded before the print) be superseded by or merged into bexpc_5895669a4367484391411e0ba…",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "What is the AVGO tape trading in this post-print session — the below-consensus AI semiconductor revenue guide (16.0 vs 17.2), the unconfirmed Google custom-silicon delay rumor, or another company-specific factor?",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "Does the Q3 print or management commentary confirm or refute the unconfirmed rumor that Google may delay custom silicon volume?",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "What value driver and financial metric does AVGO's AI semiconductor revenue guidance feed, and does the below-consensus guide change the Base Case through that path?",
+    "question": "Was the Google custom-silicon delay report public before the 2026-09-03 tape, and has any party confirmed or denied it?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
@@ -105,33 +75,48 @@
     "note": "Possibly useful, but not tightly bound to a named gap."
   },
   {
+    "question": "What revenue share does each of the six XPU customers represent within the $58B FY2026 AI outlook?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What drove the $56B→$58B FY2026 AI outlook raise — acceleration at existing XPU customers or incremental ramps at new ones?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "If the unconfirmed Google custom-silicon delay rumor (shadow bshd_0b06e7a962a7422b8da4e5cd84652f21) is true, what share of the $58B FY2026 AI outlook is at risk?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Is Google's expanded order incremental to the $21.7B Q4 FY2026 AI semiconductor guide and the $58B FY2026 AI outlook, or already embedded in them?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "What share of Broadcom's AI semiconductor revenue does Google represent, and does the expansion raise or lower measured hyperscaler concentration?",
+    "grade": "useful",
+    "note": "Names a concrete entity, metric, or gap that can be checked."
+  },
+  {
+    "question": "Did AVGO shares react to this confirmation on 2026-09-10, and was any reaction company-specific versus the sector?",
+    "grade": "mixed",
+    "note": "Possibly useful, but not tightly bound to a named gap."
+  },
+  {
     "question": "Can we confirm: Unconfirmed: Google may reduce Broadcom custom TPU orders?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move The AI ramp implies unquantified dependence on a few hyperscaler buyers?",
+    "question": "What Hyperscaler customer concentration links Marvell to The AI ramp implies unquantified dependence on a few hypers…?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
   },
   {
-    "question": "How exposed is the issuer to Unconfirmed: Google may reduce Broadcom custom TPU orders, such that it would move AI semiconductor demand durability sets the length of the growth ramp?",
+    "question": "Is the hyperscaler that awarded Marvell an existing Broadcom XPU customer or a prospective new logo?",
     "grade": "useful",
     "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "What fraction of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B, +236% YoY) is attributable to Google custom TPU programs, and what volumes/prices are contractually committed vs discretionary?",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "Is there any primary-source confirmation — from Google, Broadcom, supply-chain checks, or a tier-1/2 outlet — that Google TPU order volumes with Broadcom are being reduced or delayed, and is this report independent of t…",
-    "grade": "useful",
-    "note": "Names a concrete entity, metric, or gap that can be checked."
-  },
-  {
-    "question": "What was AVGO's price reaction around the rumor's publication window (2026-09-11/12), with MRVL and SOX as controls?",
-    "grade": "mixed",
-    "note": "Possibly useful, but not tightly bound to a named gap."
   }
 ]

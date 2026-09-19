@@ -221,7 +221,7 @@ LAYER_SPEED = {
 FAST_LAYERS = ("observation", "market")
 BRAIN_RUNTIME = "phase3"
 MARKET_ALIGNMENTS = ("aligned", "partial", "unexplained", "unknown")
-EXPECTATION_COMPARISONS = ("above", "in_line", "below")
+EXPECTATION_COMPARISONS = ("above", "in_line", "below", "unknown")
 EXPECTATION_TRENDS = ("rising", "falling", "unchanged")
 HYPOTHESIS_STATUSES = (
     "candidate",
@@ -230,6 +230,7 @@ HYPOTHESIS_STATUSES = (
     "weakened",
     "unresolved",
     "retired",
+    "closed",
 )
 HYPOTHESIS_KINDS = (
     "ai_demand",

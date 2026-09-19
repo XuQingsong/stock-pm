@@ -19,9 +19,17 @@ _PCT = re.compile(r"([+-]?\d+(?:\.\d+)?)\s*%")
 def normalize_expectation(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
     symbol = str(ticker or raw.get("ticker") or "").upper()
     name = compact_text(raw.get("name") or raw.get("subject") or "expectation", 80) or "expectation"
-    comparison = str(raw.get("comparison") or "in_line")
+    actual = raw.get("actual")
+    expected = raw.get("expected")
+    comparison = str(raw.get("comparison") or "")
+    if actual is None or expected is None:
+        comparison = "unknown"
+    elif comparison not in EXPECTATION_COMPARISONS or comparison in {"", "in_line"} and (actual is None or expected is None):
+        comparison = "unknown"
     if comparison not in EXPECTATION_COMPARISONS:
-        comparison = "in_line"
+        comparison = "unknown"
+    if comparison in {"above", "in_line", "below"} and (actual is None or expected is None):
+        comparison = "unknown"
     trend = str(raw.get("trend") or raw.get("delta") or "unchanged")
     if trend not in EXPECTATION_TRENDS:
         if comparison == "below":
@@ -35,8 +43,6 @@ def normalize_expectation(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]
         confidence = "medium"
     if str(raw.get("source_kind") or "") in {"rumor", "signal"} or str(raw.get("fact_reliability") or "") in LOW_RELIABILITY:
         confidence = "low"
-    actual = raw.get("actual")
-    expected = raw.get("expected")
     return {
         "expectation_id": raw.get("expectation_id") or new_id("bexpc"),
         "ticker": symbol,
@@ -111,7 +117,9 @@ def expectation_from_event(event: dict[str, Any] | None, *, ticker: str) -> dict
         {
             "name": compact_text(item.get("expectation_name") or item.get("subject") or "rumor_expectation", 80),
             "subject": compact_text(item.get("subject") or item.get("title") or "rumor_expectation", 80),
-            "comparison": "in_line",
+            "comparison": "unknown",
+            "actual": None,
+            "expected": None,
             "trend": trend,
             "confidence": "low",
             "source_kind": "rumor",
