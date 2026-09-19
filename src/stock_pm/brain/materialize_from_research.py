@@ -17,7 +17,7 @@ from typing import Any
 
 from stock_pm.research.llm_reason import compact_text
 
-from .product_read import MARKET_WIDE_KEYS, is_trigger_event, theme_key
+from .product_read import ISSUER_ACTION, MARKET_WIDE_KEYS, is_trigger_event, theme_key
 from .store import BrainStore
 
 
@@ -44,6 +44,59 @@ THEME_KIND = {
     "sector_macro": ("sector_macro", "sector_macro"),
     "real_yields": ("real_yields", "real_yields"),
 }
+
+# Stable labels that product_read.theme_key still clusters (needles in the name).
+MARKET_THEME_LABELS = {
+    "ai_capex_expectations": "AI capex expectations",
+    "real_yields": "real yields",
+    "sector_macro": "sector / macro",
+}
+
+# Extra phrases already in research JSON that theme_key's tighter list misses.
+MATERIALIZE_THEME_NEEDLES = (
+    (
+        "ai_capex_expectations",
+        (
+            "ai demand",
+            "ai capex",
+            "ai spend",
+            "ai spending",
+            "ai infrastructure",
+            "capital expenditure",
+            "hyperscaler",
+            "hyperscale",
+            "custom silicon",
+            "asic",
+            "xpu",
+            "ai 资本",
+            "资本开支",
+            "算力",
+            "ai 开支",
+        ),
+    ),
+    (
+        "real_yields",
+        ("real yield", "real yields", "treasury", "rates", "利率", "美债", "fed funds", "fomc", "国债收益率"),
+    ),
+    (
+        "sector_macro",
+        ("sector", "macro", "sox", "semiconductor cycle", "板块", "半导体周期", "sector rotation"),
+    ),
+)
+
+ENV_THEME_TAGS = {
+    "rates": "real_yields",
+    "real_yields": "real_yields",
+    "semis": "sector_macro",
+    "high_valuation_growth": "sector_macro",
+}
+
+MARKET_FRAME_RE = re.compile(
+    r"market (is |are )?(trading|pricing)|live market|market variable|cross[- ]asset|"
+    r"across (the )?(tape|semis|names|sector)|tape is (still )?trading|"
+    r"市场在交易|市场变量|市场主轴|盘面(仍)?在交易|资本开支预期|ai capex expectation",
+    re.I,
+)
 
 CLAIM_STATUS = {
     "unverified": "unverified",
@@ -188,11 +241,12 @@ def _theme_row(**fields: Any) -> dict[str, Any]:
 
 
 def _theme_for(row: dict[str, Any]) -> str | None:
-    key = theme_key(row)
-    if key:
-        return key
-    blob = " ".join(str(row.get(name) or "") for name in ("name", "statement", "hypothesis", "canonical_key", "kind"))
-    return theme_key({"name": blob, "statement": blob})
+    return _classify_market_theme(
+        row.get("name"),
+        row.get("statement"),
+        row.get("hypothesis"),
+        extra=row,
+    )
 
 
 def _kind_for_theme(theme: str | None) -> tuple[str, str]:
@@ -204,6 +258,263 @@ def _kind_for_theme(theme: str | None) -> tuple[str, str]:
         mapped = MARKET_WIDE_KEYS[theme]
         return THEME_KIND.get(mapped, (theme, theme))
     return "other", theme
+
+
+def _is_company_specific_trigger(row: dict[str, Any] | None) -> bool:
+    """Issuer print / capex headline. Market-framed theme statements that cite issuers stay themes."""
+    item = row or {}
+    if item.get("event_id") or str(item.get("event_type") or "").lower() in {
+        "capex",
+        "guidance",
+        "earnings",
+        "product",
+        "customer",
+    }:
+        return True
+    if str(item.get("kind") or "").lower() == "company_specific":
+        return True
+    blob = " ".join(str(item.get(name) or "") for name in ("name", "title", "statement", "hypothesis", "reason"))
+    if not ISSUER_ACTION.search(blob):
+        return False
+    return MARKET_FRAME_RE.search(blob) is None
+
+
+def _classify_market_theme(*texts: Any, extra: dict[str, Any] | None = None) -> str | None:
+    extra = dict(extra or {})
+    parts = [str(text).strip() for text in texts if text and str(text).strip()]
+    blob = " ".join(parts + [str(extra.get(name) or "") for name in ("name", "statement", "hypothesis", "title")])
+    if len(compact_text(blob, 400)) < 8:
+        return None
+    probe = {
+        **extra,
+        "name": extra.get("name") or blob,
+        "statement": extra.get("statement") or blob,
+        "hypothesis": extra.get("hypothesis") or blob,
+        "title": extra.get("title") or "",
+    }
+    if _is_company_specific_trigger(probe):
+        return None
+    for tag in extra.get("theme_tags") or extra.get("themes") or []:
+        mapped = ENV_THEME_TAGS.get(str(tag).lower())
+        if mapped:
+            return mapped
+    key = theme_key({k: v for k, v in probe.items() if k != "event_type"})
+    if key in MARKET_WIDE_KEYS:
+        return MARKET_WIDE_KEYS[key]
+    lowered = blob.lower()
+    for token, needles in MATERIALIZE_THEME_NEEDLES:
+        if any(needle in lowered for needle in needles):
+            return token
+    return None
+
+
+def _theme_label(theme: str) -> str:
+    return MARKET_THEME_LABELS.get(theme) or theme.replace("_", " ")
+
+
+def _persistable_theme_text(text: str, theme: str) -> str:
+    """Keep issuer-action headlines off hyp/attention fields so product_read.theme_key can cluster."""
+    label = _theme_label(theme)
+    if is_trigger_event({"name": text, "statement": text, "hypothesis": text, "reason": text}):
+        return label
+    return text
+
+
+def _walk_theme_tags(value: Any, out: list[str]) -> None:
+    if isinstance(value, dict):
+        raw = value.get("themes") if "themes" in value else value.get("theme")
+        if isinstance(raw, str) and raw.strip():
+            out.append(raw.strip())
+        elif isinstance(raw, list):
+            out.extend(str(item).strip() for item in raw if str(item).strip())
+        for nested in value.values():
+            if isinstance(nested, (dict, list)):
+                _walk_theme_tags(nested, out)
+        return
+    if isinstance(value, list):
+        for nested in value[:24]:
+            _walk_theme_tags(nested, out)
+
+
+def _note_market_theme(
+    hyp_acc: dict[str, dict[str, Any]],
+    att_acc: dict[str, dict[str, Any]],
+    ticker: str,
+    statement: str,
+    *,
+    confidence: str = "low",
+    status: str = "candidate",
+    supporting: list[str] | None = None,
+    counter: list[str] | None = None,
+    reason: str = "",
+    alignment: str = "unknown",
+    extra: dict[str, Any] | None = None,
+) -> str | None:
+    text = compact_text(statement, 400)
+    if len(text) < 8:
+        return None
+    theme = _classify_market_theme(text, extra=extra)
+    if not theme:
+        return None
+    kind, canonical = _kind_for_theme(theme)
+    if kind not in MARKET_WIDE_KEYS and theme not in MARKET_THEME_LABELS:
+        return None
+    label = _theme_label(theme)
+    persist = _persistable_theme_text(text, theme)
+    safe_reason = reason if reason and not is_trigger_event({"reason": reason, "statement": reason}) else (reason or persist)
+    if is_trigger_event({"reason": safe_reason, "statement": persist, "hypothesis": persist}):
+        persist = label
+        safe_reason = reason if reason and not is_trigger_event({"reason": reason}) else f"mapped from research {theme}"
+    support_ids = [str(item) for item in (supporting or []) if str(item).strip()]
+    oppose_ids = [str(item) for item in (counter or []) if str(item).strip()]
+    bucket = hyp_acc.setdefault(
+        canonical,
+        _hypothesis_payload(
+            ticker,
+            canonical_key=canonical,
+            kind=kind,
+            statement=persist,
+            name=label,
+            confidence=confidence,
+            status=status,
+            supporting=support_ids,
+            counter=oppose_ids,
+            reason=safe_reason,
+        ),
+    )
+    bucket["supporting_observations"] = list(dict.fromkeys(list(bucket.get("supporting_observations") or []) + support_ids))
+    bucket["counter_observations"] = list(dict.fromkeys(list(bucket.get("counter_observations") or []) + oppose_ids))
+    if confidence == "high":
+        bucket["confidence"] = "high"
+    elif confidence == "medium" and bucket.get("confidence") != "high":
+        bucket["confidence"] = "medium"
+    if status in {"supported", "active"} and bucket.get("status") == "candidate":
+        bucket["status"] = status
+    if persist != label and MARKET_FRAME_RE.search(text) and len(persist) >= len(str(bucket.get("hypothesis") or "")):
+        bucket["hypothesis"] = persist
+        bucket["reason"] = safe_reason
+    att = att_acc.setdefault(
+        label,
+        {
+            "ticker": ticker,
+            "name": label,
+            "statement": persist,
+            "source_kind": SOURCE_KIND,
+            "alignment": alignment,
+            "evidence_ids": support_ids + oppose_ids,
+            "reason": safe_reason,
+        },
+    )
+    att["evidence_ids"] = list(dict.fromkeys(list(att.get("evidence_ids") or []) + support_ids + oppose_ids))
+    if alignment != "unknown":
+        att["alignment"] = alignment
+    return theme
+
+
+def _flush_market_themes(
+    brain: BrainStore,
+    hyp_acc: dict[str, dict[str, Any]],
+    att_acc: dict[str, dict[str, Any]],
+    counts: dict[str, int],
+) -> None:
+    for payload in hyp_acc.values():
+        brain.upsert_hypothesis(payload)
+        _add(counts, "hypotheses", True)
+    for payload in att_acc.values():
+        brain.upsert_market_attention(payload)
+        _add(counts, "attentions", True)
+
+
+def _agent_statement_rows(run: dict[str, Any]) -> list[dict[str, Any]]:
+    payload = run.get("output_json") if isinstance(run.get("output_json"), dict) else {}
+    reasoning = payload.get("reasoning") if isinstance(payload.get("reasoning"), dict) else {}
+    pm = payload.get("pm_reasoning") if isinstance(payload.get("pm_reasoning"), dict) else {}
+    thesis = payload.get("thesis") if isinstance(payload.get("thesis"), dict) else {}
+    rows: list[dict[str, Any]] = []
+    agent = str(run.get("agent_name") or "agent")
+
+    def add(statement: Any, *, reason: str, confidence: Any = None) -> None:
+        text = compact_text(statement, 400)
+        if len(text) < 8:
+            return
+        rows.append({"statement": text, "reason": reason, "confidence": confidence})
+
+    for item in payload.get("findings") or []:
+        add(item, reason=f"mapped from research_agent_runs.{agent} findings")
+    for bucket in (payload, reasoning, pm):
+        for item in bucket.get("competing_hypotheses") or []:
+            if isinstance(item, dict):
+                add(
+                    item.get("statement") or item.get("hypothesis"),
+                    reason=f"mapped from research_agent_runs.{agent} competing_hypotheses",
+                    confidence=item.get("confidence") or item.get("probability_band"),
+                )
+            else:
+                add(item, reason=f"mapped from research_agent_runs.{agent} competing_hypotheses")
+        for item in bucket.get("key_economic_drivers") or bucket.get("economic_drivers") or []:
+            if not isinstance(item, dict):
+                add(item, reason=f"mapped from research_agent_runs.{agent} key_economic_drivers")
+                continue
+            add(
+                item.get("driver") or item.get("name") or item.get("why_it_matters") or item.get("statement"),
+                reason=f"mapped from research_agent_runs.{agent} key_economic_drivers",
+                confidence=item.get("confidence"),
+            )
+        for item in bucket.get("decisive_variables") or []:
+            if isinstance(item, dict):
+                add(item.get("name") or item.get("variable") or item.get("statement"), reason=f"mapped from research_agent_runs.{agent} decisive_variables")
+            else:
+                add(item, reason=f"mapped from research_agent_runs.{agent} decisive_variables")
+        add(bucket.get("core_thesis"), reason=f"mapped from research_agent_runs.{agent} core_thesis")
+        add(bucket.get("valuation_driver_judgment"), reason=f"mapped from research_agent_runs.{agent} valuation_driver_judgment")
+    for item in payload.get("proposed_assumption_changes") or reasoning.get("proposed_assumption_changes") or []:
+        if not isinstance(item, dict):
+            continue
+        add(item.get("statement"), reason=f"mapped from research_agent_runs.{agent} proposed_assumption_changes")
+        add(item.get("reason"), reason=f"mapped from research_agent_runs.{agent} proposed_assumption_changes.reason")
+    add(thesis.get("core_thesis"), reason=f"mapped from research_agent_runs.{agent} thesis")
+    return rows
+
+
+def _collect_env_texts(row: dict[str, Any]) -> list[str]:
+    texts: list[str] = []
+    for key in ("one_liner", "row_thesis", "synthesis"):
+        texts.extend(_collect_text(row.get(key), limit=4, min_len=8))
+    struct = row.get("struct") if isinstance(row.get("struct"), dict) else {}
+    texts.extend(_collect_text(struct.get("synthesis"), limit=2, min_len=8))
+    news = struct.get("news") if isinstance(struct.get("news"), dict) else {}
+    for layer in news.values():
+        if not isinstance(layer, dict):
+            continue
+        texts.extend(_collect_text(layer.get("clause") or layer.get("headline"), limit=4, min_len=6))
+        for item in list(layer.get("items") or [])[:8]:
+            if isinstance(item, dict):
+                texts.extend(_collect_text(item.get("headline") or item.get("name") or item.get("narrative"), limit=2, min_len=8))
+    funds = struct.get("fundamentals") if isinstance(struct.get("fundamentals"), dict) else {}
+    industry = funds.get("industry") if isinstance(funds.get("industry"), dict) else {}
+    texts.extend(_collect_text(industry.get("clause"), limit=2, min_len=8))
+    for bullet in list(struct.get("bullets") or [])[:8]:
+        if isinstance(bullet, dict):
+            texts.extend(_collect_text(bullet.get("clause"), limit=2, min_len=8))
+    out: list[str] = []
+    for text in texts:
+        if MISSING_ENV in text:
+            continue
+        if text not in out:
+            out.append(text)
+    return out
+
+
+def _env_theme_tags(row: dict[str, Any]) -> list[str]:
+    tags: list[str] = []
+    _walk_theme_tags(row.get("struct") if isinstance(row.get("struct"), dict) else {}, tags)
+    _walk_theme_tags(row.get("themes"), tags)
+    mapped: list[str] = []
+    for tag in tags:
+        theme = ENV_THEME_TAGS.get(str(tag).lower())
+        if theme and theme not in mapped:
+            mapped.append(theme)
+    return mapped
 
 
 def _empty_counts() -> dict[str, int]:
@@ -534,9 +845,11 @@ def _map_pack(brain: BrainStore, ticker: str, pack: dict[str, Any], counts: dict
             ),
         )
     industry_texts = _collect_text(pack.get("industry_context"))
+    hyp_acc: dict[str, dict[str, Any]] = {}
+    att_acc: dict[str, dict[str, Any]] = {}
     if industry_texts:
         statement = industry_texts[0]
-        theme = _theme_for({"name": statement, "statement": statement, "state_type": "industry"})
+        theme = _classify_market_theme(statement)
         _add(
             counts,
             "states",
@@ -546,13 +859,25 @@ def _map_pack(brain: BrainStore, ticker: str, pack: dict[str, Any], counts: dict
                     "ticker": ticker,
                     "state_type": "industry",
                     "state_key": theme or "industry_context",
-                    "name": compact_text(statement, 80),
-                    "statement": statement,
+                    "name": _theme_label(theme) if theme else compact_text(statement, 80),
+                    "statement": _persistable_theme_text(statement, theme) if theme else statement,
                     "source": SOURCE_KIND,
                     "confidence": "medium",
                 },
             ),
         )
+        for text in industry_texts:
+            _note_market_theme(
+                hyp_acc,
+                att_acc,
+                ticker,
+                text,
+                confidence="medium",
+                status="active",
+                reason="mapped from research_packs.industry_context",
+                alignment="support",
+            )
+    _flush_market_themes(brain, hyp_acc, att_acc, counts)
     for idx, event in enumerate(list(pack.get("major_events") or [])[:12]):
         if not isinstance(event, dict):
             title = compact_text(event, 160)
@@ -644,44 +969,21 @@ def _map_assumptions(
         role = str(row.get("thesis_role") or "supporting")
         status = str(row.get("status") or "unverified")
         confidence = _band_confidence(row.get("confidence"))
-        theme = _theme_for({"name": statement, "statement": statement, "hypothesis": statement})
-        kind, canonical = _kind_for_theme(theme)
         linked = by_assumption.get(aid) or []
         support_ids = [str(item.get("evidence_id")) for item in linked if item.get("direction") == "support" and item.get("evidence_id")]
         oppose_ids = [str(item.get("evidence_id")) for item in linked if item.get("direction") == "oppose" and item.get("evidence_id")]
-        if theme and kind in MARKET_WIDE_KEYS:
-            bucket = hyp_acc.setdefault(
-                canonical,
-                _hypothesis_payload(
-                    ticker,
-                    canonical_key=canonical,
-                    kind=kind,
-                    statement=statement,
-                    name=compact_text(statement, 80),
-                    confidence=confidence,
-                    status=HYP_STATUS.get(status, "candidate"),
-                    supporting=support_ids,
-                    counter=oppose_ids,
-                    reason=f"mapped from research_assumptions {aid}",
-                ),
-            )
-            bucket["supporting_observations"] = list(dict.fromkeys(list(bucket.get("supporting_observations") or []) + support_ids))
-            bucket["counter_observations"] = list(dict.fromkeys(list(bucket.get("counter_observations") or []) + oppose_ids))
-            if confidence == "high":
-                bucket["confidence"] = "high"
-            att_name = compact_text(statement, 80)
-            att_acc.setdefault(
-                att_name,
-                {
-                    "ticker": ticker,
-                    "name": att_name,
-                    "statement": statement,
-                    "source_kind": SOURCE_KIND,
-                    "alignment": "support" if status in {"strengthened", "unchanged"} else ("counter" if status in {"weakened", "broken"} else "unknown"),
-                    "evidence_ids": support_ids + oppose_ids,
-                    "reason": f"mapped from research_assumptions {aid}",
-                },
-            )
+        _note_market_theme(
+            hyp_acc,
+            att_acc,
+            ticker,
+            statement,
+            confidence=confidence,
+            status=HYP_STATUS.get(status, "candidate"),
+            supporting=support_ids,
+            counter=oppose_ids,
+            reason=f"mapped from research_assumptions {aid}",
+            alignment="support" if status in {"strengthened", "unchanged"} else ("counter" if status in {"weakened", "broken"} else "unknown"),
+        )
         if role == "none":
             continue
         claim = _write_claim(
@@ -727,12 +1029,7 @@ def _map_assumptions(
                     },
                 ),
             )
-    for payload in hyp_acc.values():
-        brain.upsert_hypothesis(payload)
-        _add(counts, "hypotheses", True)
-    for payload in att_acc.values():
-        brain.upsert_market_attention(payload)
-        _add(counts, "attentions", True)
+    _flush_market_themes(brain, hyp_acc, att_acc, counts)
     return claim_ids
 
 
@@ -742,11 +1039,23 @@ def _map_snapshot_and_agents(brain: BrainStore, ticker: str, bundle: dict[str, A
     snapshot = bundle.get("snapshot") or {}
     hyps.extend(snapshot.get("competing_hypotheses") or [])
     drivers.extend(snapshot.get("economic_drivers") or snapshot.get("key_economic_drivers") or [])
+    hyp_acc: dict[str, dict[str, Any]] = {}
+    att_acc: dict[str, dict[str, Any]] = {}
     for run in bundle.get("agent_runs") or []:
         payload = run.get("output_json") if isinstance(run.get("output_json"), dict) else {}
         reasoning = payload.get("reasoning") if isinstance(payload.get("reasoning"), dict) else {}
         hyps.extend(payload.get("competing_hypotheses") or reasoning.get("competing_hypotheses") or [])
         drivers.extend(payload.get("key_economic_drivers") or reasoning.get("key_economic_drivers") or [])
+        for row in _agent_statement_rows(run):
+            _note_market_theme(
+                hyp_acc,
+                att_acc,
+                ticker,
+                row["statement"],
+                confidence=_band_confidence(row.get("confidence")),
+                status="candidate",
+                reason=row.get("reason") or "mapped from research_agent_runs",
+            )
     seen_hyp: set[str] = set()
     for item in hyps:
         if isinstance(item, str):
@@ -758,26 +1067,21 @@ def _map_snapshot_and_agents(brain: BrainStore, ticker: str, bundle: dict[str, A
         if len(statement) < 8 or statement.lower() in seen_hyp:
             continue
         seen_hyp.add(statement.lower())
-        theme = _theme_for({**item, "name": statement, "statement": statement, "hypothesis": statement})
-        kind, canonical = _kind_for_theme(theme)
-        if kind == "other":
-            canonical = f"research_{_slug(statement, limit=32)}"
         support = [str(eid) for eid in (item.get("supporting_evidence_ids") or []) if str(eid).strip()]
         oppose = [str(eid) for eid in (item.get("opposing_evidence_ids") or item.get("counter_evidence_ids") or []) if str(eid).strip()]
-        brain.upsert_hypothesis(
-            _hypothesis_payload(
-                ticker,
-                canonical_key=canonical,
-                kind=kind,
-                statement=statement,
-                confidence=_band_confidence(item.get("confidence") or item.get("probability_band")),
-                status="candidate",
-                supporting=support,
-                counter=oppose,
-                reason="mapped from research competing_hypotheses",
-            )
+        noted = _note_market_theme(
+            hyp_acc,
+            att_acc,
+            ticker,
+            statement,
+            confidence=_band_confidence(item.get("confidence") or item.get("probability_band")),
+            status="candidate",
+            supporting=support,
+            counter=oppose,
+            reason="mapped from research competing_hypotheses",
         )
-        _add(counts, "hypotheses", True)
+        if not noted:
+            continue
         how = compact_text(item.get("how_to_test") or "", 240)
         if how:
             _add(
@@ -794,6 +1098,7 @@ def _map_snapshot_and_agents(brain: BrainStore, ticker: str, bundle: dict[str, A
                     },
                 ),
             )
+    _flush_market_themes(brain, hyp_acc, att_acc, counts)
     seen_drv: set[str] = set()
     for item in drivers:
         if not isinstance(item, dict):
@@ -963,30 +1268,44 @@ def _map_market_events(brain: BrainStore, ticker: str, events: list[dict[str, An
 
 def _map_environment(brain: BrainStore, tickers: list[str], snapshots: list[dict[str, Any]], counts: dict[str, int]) -> None:
     del tickers
+    by_theme: dict[str, dict[str, Any]] = {}
     for row in snapshots:
         if str(row.get("publishState") or row.get("publish_state") or "") == "missing":
             continue
-        statement = _first_text(row.get("one_liner"), row.get("row_thesis"), row.get("synthesis"), limit=280)
-        if not statement or MISSING_ENV in statement:
+        texts = _collect_env_texts(row)
+        tags = _env_theme_tags(row)
+        if not texts and not tags:
             continue
-        theme = _theme_for({"name": statement, "statement": statement, "state_type": "macro"})
+        statement = next((text for text in texts if MISSING_ENV not in text), "")
+        theme = None
+        for text in texts:
+            found = _classify_market_theme(text)
+            if found:
+                theme = found
+                statement = text
+                break
+        if not theme and tags:
+            theme = tags[0]
+        if not theme or not statement or MISSING_ENV in statement:
+            continue
         scope = str(row.get("scope") or "market")
-        symbol = str(row.get("symbol") or "").upper() or None
-        state_type = "macro" if scope == "market" else ("industry" if theme == "sector_macro" else "macro")
-        ticker = None if scope == "market" else symbol
-        key = theme or ("macro_env_market" if scope == "market" else "env_symbol")
-        if ticker is None:
-            key = f"macro_env_{key}"
+        prior = by_theme.get(theme)
+        if prior and scope != "market" and prior.get("scope") == "market":
+            continue
+        by_theme[theme] = {"theme": theme, "statement": statement, "scope": scope}
+    for item in by_theme.values():
+        theme = item["theme"]
+        statement = _persistable_theme_text(item["statement"], theme)
         _add(
             counts,
             "states",
             _write_state(
                 brain,
                 {
-                    "ticker": ticker,
-                    "state_type": state_type,
-                    "state_key": key,
-                    "name": compact_text(statement, 80),
+                    "ticker": None,
+                    "state_type": "macro",
+                    "state_key": theme,
+                    "name": _theme_label(theme),
                     "statement": statement,
                     "source": SOURCE_KIND,
                     "confidence": "medium",
