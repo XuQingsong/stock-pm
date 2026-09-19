@@ -16,19 +16,40 @@ from .types import CONFIDENCE, EXPECTATION_COMPARISONS, EXPECTATION_TRENDS, LOW_
 _PCT = re.compile(r"([+-]?\d+(?:\.\d+)?)\s*%")
 
 
+def _numeric(value: Any) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def coerce_expectation_comparison(actual: Any, expected: Any, comparison: Any | None = None) -> str:
+    """Numbers win. actual < expected is never in_line. Missing expected is unknown."""
+    actual_n = _numeric(actual)
+    expected_n = _numeric(expected)
+    if actual_n is not None and expected_n is not None:
+        if actual_n < expected_n:
+            return "below"
+        if actual_n > expected_n:
+            return "above"
+        return "in_line"
+    if expected is None or expected == "":
+        return "unknown"
+    incoming = str(comparison or "").strip()
+    if incoming in EXPECTATION_COMPARISONS:
+        return incoming
+    return "unknown"
+
+
 def normalize_expectation(raw: dict[str, Any], *, ticker: str) -> dict[str, Any]:
     symbol = str(ticker or raw.get("ticker") or "").upper()
     name = compact_text(raw.get("name") or raw.get("subject") or "expectation", 80) or "expectation"
     actual = raw.get("actual")
     expected = raw.get("expected")
-    comparison = str(raw.get("comparison") or "")
-    if actual is None or expected is None:
-        comparison = "unknown"
-    elif comparison not in EXPECTATION_COMPARISONS or comparison in {"", "in_line"} and (actual is None or expected is None):
-        comparison = "unknown"
+    comparison = coerce_expectation_comparison(actual, expected, raw.get("comparison"))
     if comparison not in EXPECTATION_COMPARISONS:
-        comparison = "unknown"
-    if comparison in {"above", "in_line", "below"} and (actual is None or expected is None):
         comparison = "unknown"
     trend = str(raw.get("trend") or raw.get("delta") or "unchanged")
     if trend not in EXPECTATION_TRENDS:
@@ -74,11 +95,11 @@ def parse_actual_expected(event: dict[str, Any] | None) -> dict[str, Any] | None
     return None
 
 
-def compare_actual_to_expectation(actual: float, expected: float, *, tolerance: float = 1.0) -> dict[str, str]:
-    delta = float(actual) - float(expected)
-    if delta > tolerance:
+def compare_actual_to_expectation(actual: float, expected: float, *, tolerance: float = 0.0) -> dict[str, str]:
+    comparison = coerce_expectation_comparison(actual, expected)
+    if comparison == "above":
         return {"comparison": "above", "trend": "rising"}
-    if delta < -tolerance:
+    if comparison == "below":
         return {"comparison": "below", "trend": "falling"}
     return {"comparison": "in_line", "trend": "unchanged"}
 

@@ -17,6 +17,7 @@ from typing import Any
 from stock_pm.research.llm_reason import compact_text
 
 from .bootstrap import brain_has_baseline, brain_lifecycle
+from .expectation import coerce_expectation_comparison
 from .now import build_now_chain
 from .types import CORE_CLAIM_MAX
 
@@ -425,8 +426,14 @@ def _usable_exposure(row: dict[str, Any]) -> bool:
     return True
 
 
+def _coerce_expectation_row(row: dict[str, Any]) -> dict[str, Any]:
+    item = dict(row)
+    item["comparison"] = coerce_expectation_comparison(item.get("actual"), item.get("expected"), item.get("comparison"))
+    return item
+
+
 def _select_expectations(store: Any, ticker: str) -> tuple[list[dict[str, Any]], int]:
-    raw = _rows(store, "list_expectations", ticker)
+    raw = [_coerce_expectation_row(row) for row in _rows(store, "list_expectations", ticker)]
     rows = _dedup_expectations([row for row in raw if not _placeholder_expectation(row)])
     rows.sort(key=_expectation_rank)
     return rows[:EXPECTATION_LIMIT], len(raw)

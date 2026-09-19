@@ -10,8 +10,9 @@ from __future__ import annotations
 from typing import Any
 
 from .causal import coerce_causal_edges, financial_edges_from_drivers, recover_material_paths
+from .history import persist_baseline_history
 from .pipeline import run_brain
-from .store import BrainStore
+from .store import BrainStore, durable_brain_store
 
 
 LIFECYCLE_NEW_TICKER = "NEW_TICKER"
@@ -198,7 +199,7 @@ def bootstrap_brain(
     filters (allowed_ids, driver universe, core cap, driver binding, unbound-fact strip).
     """
     symbol = str(ticker or "").upper()
-    brain_store = store or BrainStore()
+    brain_store = durable_brain_store(store, research)
     if brain_has_baseline(brain_store, symbol):
         inv = baseline_inventory(brain_store, symbol)
         return {
@@ -268,6 +269,7 @@ def bootstrap_brain(
         audit["llm_calls"] = result["llm_calls"]
         result["audit"] = audit
     graph = _persist_recovered_graph(brain_store, symbol)
+    persist_baseline_history(brain_store, symbol)
     initialized = brain_has_baseline(brain_store, symbol)
     lifecycle = LIFECYCLE_BASELINE_READY if initialized else LIFECYCLE_BOOTSTRAPPING
     calls = list((result or {}).get("llm_calls") or ((result or {}).get("audit") or {}).get("llm_calls") or [])

@@ -31,7 +31,7 @@ from .events import build_event
 from .exposure import infer_exposure, may_affect_company_claim
 from .financial_bridge import impacts_from_objects
 from .header import company_header
-from .history import history_row
+from .history import history_row, persist_baseline_history, record_history
 from .incremental import affected_scope, should_full_review
 from .integrity import assess_financial_integrity
 from .llm_steps import (
@@ -53,7 +53,7 @@ from .quality import assess_brain_quality
 from .routing import resolve_brain_completers
 from .scenario import apply_scenario_policy, qualifies_for_base
 from .state_layer import match_existing_state, normalize_state
-from .store import BrainStore
+from .store import BrainStore, durable_brain_store
 from .transmission import validate_transmission
 from .types import (
     EXA_SEARCH_BUDGET,
@@ -563,7 +563,7 @@ def run_brain(
     from stock_pm.external.layer import gather_external_intelligence, merge_intelligence
 
     symbol = str(ticker or "").upper()
-    brain = store or BrainStore(getattr(getattr(research, "store", None), "database", None))
+    brain = durable_brain_store(store, research)
     run_mode = str(mode or "full").strip().lower()
     if run_mode not in {"full", "incremental"}:
         run_mode = "full"
@@ -722,7 +722,27 @@ def run_brain(
             )
             if not item:
                 continue
-            brain.upsert_state({**item, "run_id": run_id, "ticker": symbol, "source": "llm_company_understanding"})
+            prior_state = next(
+                (
+                    row
+                    for row in brain.list_states(symbol)
+                    if row.get("state_id") == item.get("state_id") or row.get("state_key") == item.get("state_key")
+                ),
+                None,
+            )
+            stored_state = brain.upsert_state({**item, "run_id": run_id, "ticker": symbol, "source": "llm_company_understanding"})
+            record_history(
+                brain,
+                ticker=symbol,
+                object_type="company_state",
+                object_id=str(stored_state.get("state_id") or item.get("state_id") or ""),
+                from_payload={"name": (prior_state or {}).get("name"), "statement": (prior_state or {}).get("statement"), "confidence": (prior_state or {}).get("confidence")}
+                if prior_state
+                else {},
+                to_payload={"name": stored_state.get("name"), "statement": stored_state.get("statement"), "confidence": stored_state.get("confidence")},
+                reason="company_understanding",
+                run_id=run_id,
+            )
         for question in payload_a.get("candidate_questions") or []:
             text = compact_text(question, 240)
             if not text:
@@ -799,18 +819,18 @@ def run_brain(
                 )
                 stored_driver = brain.upsert_driver({**item, "run_id": run_id, "ticker": symbol})
                 persisted_drivers.append(stored_driver)
-                if prior_row:
-                    brain.insert_history(
-                        history_row(
-                            ticker=symbol,
-                            object_type="driver",
-                            object_id=str(stored_driver.get("driver_id")),
-                            from_payload={"current_state": prior_row.get("current_state"), "direction": prior_row.get("direction")},
-                            to_payload={"current_state": stored_driver.get("current_state"), "direction": stored_driver.get("direction")},
-                            reason="driver_universe_update",
-                            run_id=run_id,
-                        )
-                    )
+                record_history(
+                    brain,
+                    ticker=symbol,
+                    object_type="value_driver",
+                    object_id=str(stored_driver.get("driver_id")),
+                    from_payload={"name": (prior_row or {}).get("name"), "current_state": (prior_row or {}).get("current_state"), "canonical_key": (prior_row or {}).get("canonical_key")}
+                    if prior_row
+                    else {},
+                    to_payload={"name": stored_driver.get("name"), "current_state": stored_driver.get("current_state"), "canonical_key": stored_driver.get("canonical_key")},
+                    reason="driver_universe_update" if prior_row else "initial value driver",
+                    run_id=run_id,
+                )
         else:
             fallbacks.append("value_drivers")
             warnings.append(
@@ -983,6 +1003,16 @@ def run_brain(
             }
         else:
             claim = brain.insert_claim(payload)
+            record_history(
+                brain,
+                ticker=symbol,
+                object_type="core_claim",
+                object_id=str(claim.get("claim_id")),
+                from_payload={},
+                to_payload={"title": claim.get("title"), "statement": claim.get("statement"), "status": claim.get("status")},
+                reason="initial core claim",
+                run_id=run_id,
+            )
             version = brain.insert_version(
                 {
                     "claim_id": claim["claim_id"],
@@ -1540,6 +1570,9 @@ def run_brain(
         persisted_links = []
         for row in links:
             row["claim_version_id"] = claim.get("current_version_id") or version_id
+            ev = evidence_by_id.get(str(row.get("evidence_id") or ""))
+            if ev:
+                brain.upsert_evidence({**ev, "ticker": symbol, "id": ev.get("id") or row.get("evidence_id")})
             stored_link = brain.insert_link(row)
             persisted_links.append(stored_link)
         claim["evidence_links"] = persisted_links
@@ -1748,6 +1781,7 @@ def run_brain(
             "audit": audit,
         },
     )
+    persist_baseline_history(brain, symbol)
     return {
         "run": completed or run,
         "header": header,

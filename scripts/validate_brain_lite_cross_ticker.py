@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from stock_pm.brain.bootstrap import bootstrap_brain, brain_has_baseline
 from stock_pm.brain.context_miss import find_context_misses, score_snapshot_context
 from stock_pm.brain.runtime import run_brain_update
-from stock_pm.brain.store import BrainStore
+from stock_pm.brain.store import BrainStore, durable_brain_store
 from stock_pm.brain.routing import brain_completers
 from stock_pm.config import Settings
 from stock_pm.research.llm_reason import compact_text
@@ -170,7 +170,20 @@ def _make_research() -> tuple[Any, BrainStore, dict[str, Any]]:
             )
         except Exception:
             continue
-    return research, BrainStore(), meta
+    database = None
+    try:
+        from stock_pm.database import Database
+
+        db = Database()
+        if db.ping():
+            db.initialize()
+            database = db
+            meta["live_db"] = True
+        else:
+            db.close()
+    except Exception:
+        database = None
+    return research, durable_brain_store(None, research, database), meta
 
 
 def _object_signature(row: dict[str, Any]) -> tuple[str, str, str]:

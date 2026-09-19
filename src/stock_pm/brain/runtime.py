@@ -39,7 +39,7 @@ from .divergence import apply_divergence_lifecycle, explain_price_move, repeated
 from .market import relevant_market_attentions
 from .market_layer import interpret_market_layer, merge_market_proposals
 from .now import build_now_chain
-from .store import BrainStore
+from .store import BrainStore, durable_brain_store
 from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
 from .types import DEFAULT_RUN_MODE, LOW_RELIABILITY
@@ -268,7 +268,7 @@ def run_brain_update(
 ) -> dict[str, Any]:
     """Default path: incremental update. Full Review only on explicit triggers."""
     symbol = str(ticker).upper()
-    brain_store = store or BrainStore()
+    brain_store = durable_brain_store(store, research)
     run_mode = str(mode or DEFAULT_RUN_MODE).strip().lower() or DEFAULT_RUN_MODE
     context = _store_context(brain_store, symbol)
     if brain:

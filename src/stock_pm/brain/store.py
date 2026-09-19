@@ -47,6 +47,16 @@ def _copy(row: dict[str, Any]) -> dict[str, Any]:
     return deepcopy(row)
 
 
+def durable_brain_store(store: Any | None = None, research: Any | None = None, database: Any | None = None) -> "BrainStore":
+    """Use the caller store, else the research/API database. Never invent a second Brain."""
+    if store is not None:
+        return store
+    db = database
+    if db is None:
+        db = getattr(getattr(research, "store", None), "database", None)
+    return BrainStore(db)
+
+
 class BrainStore:
     def __init__(self, database: Any | None = None) -> None:
         self.database = database
@@ -695,10 +705,38 @@ class BrainStore:
             "statement": row.get("statement") or row.get("fact") or "",
             "excerpt": row.get("excerpt") or row.get("fact") or "",
             "source": row.get("source"),
+            "source_url": row.get("source_url") or row.get("url"),
+            "source_time": row.get("source_time") or row.get("published_at"),
             "direction": row.get("direction"),
-            "url": row.get("url"),
+            "url": row.get("url") or row.get("source_url"),
         }
         self.evidence_rows[eid] = stored
+        symbol = stored.get("ticker")
+        if symbol:
+            frozen = self.latest_evidence_set(symbol)
+            payload = dict((frozen or {}).get("payload") or {})
+            items = list(payload.get("evidence") or payload.get("rows") or payload.get("items") or [])
+            replaced = False
+            for idx, item in enumerate(items):
+                if str(item.get("id") or item.get("evidence_id") or "") == eid:
+                    items[idx] = {**item, **stored}
+                    replaced = True
+                    break
+            if not replaced:
+                items.append(stored)
+            payload["evidence"] = items
+            payload["rows"] = items
+            if frozen and not self._pg():
+                frozen["payload"] = payload
+                self.evidence_sets[frozen["evidence_set_id"]] = frozen
+            else:
+                self.insert_evidence_set(
+                    {
+                        "ticker": symbol,
+                        "run_id": (frozen or {}).get("run_id"),
+                        "payload": payload,
+                    }
+                )
         return _copy(stored)
 
     def list_evidence(self, ticker: str | None = None) -> list[dict[str, Any]]:
@@ -726,6 +764,8 @@ class BrainStore:
                     "statement": item.get("statement") or item.get("fact") or "",
                     "excerpt": item.get("excerpt") or item.get("fact") or "",
                     "source": item.get("source"),
+                    "source_url": item.get("source_url") or item.get("url"),
+                    "source_time": item.get("source_time"),
                 }
             )
             seen.add(eid)
@@ -1348,7 +1388,11 @@ class BrainStore:
             params["run_id"] = run_id
         return self._execute(query, params)
 
-    def insert_history(self, row: dict[str, Any]) -> dict[str, Any]:
+    def insert_history(self, row: dict[str, Any]) -> dict[str, Any] | None:
+        from .history import meaningful_delta
+
+        if not meaningful_delta(row.get("from_payload"), row.get("to_payload")):
+            return None
         stored = {
             "history_id": row.get("history_id") or new_id("bhis"),
             "ticker": str(row["ticker"]).upper(),
@@ -1735,14 +1779,20 @@ class BrainStore:
         )
 
     def upsert_expectation(self, row: dict[str, Any]) -> dict[str, Any]:
+        from .expectation import coerce_expectation_comparison
+        from .history import record_history
+
+        symbol = str(row["ticker"]).upper()
+        name = row.get("name") or ""
+        prior = next((item for item in self.list_expectations(symbol) if item.get("name") == name), None)
         stored = {
             "expectation_id": row.get("expectation_id") or new_id("bexpc"),
-            "ticker": str(row["ticker"]).upper(),
-            "name": row.get("name") or "",
-            "subject": row.get("subject") or row.get("name") or "",
+            "ticker": symbol,
+            "name": name,
+            "subject": row.get("subject") or name,
             "actual": row.get("actual"),
             "expected": row.get("expected"),
-            "comparison": row.get("comparison") or "in_line",
+            "comparison": coerce_expectation_comparison(row.get("actual"), row.get("expected"), row.get("comparison")),
             "trend": row.get("trend") or "unchanged",
             "confidence": row.get("confidence") or "medium",
             "supporting_evidence_ids": list(row.get("supporting_evidence_ids") or row.get("evidence_ids") or []),
@@ -1763,32 +1813,55 @@ class BrainStore:
                     )
                     break
             self.expectations[stored["expectation_id"]] = stored
-            return _copy(stored)
-        out = self._one(
-            """
-            INSERT INTO brain_expectations (
-                expectation_id, ticker, name, subject, actual, expected, comparison, trend, confidence,
-                supporting_evidence_ids, last_material_change, reason, source_kind, run_id, created_at, updated_at
-            ) VALUES (
-                %(expectation_id)s, %(ticker)s, %(name)s, %(subject)s, %(actual)s, %(expected)s, %(comparison)s,
-                %(trend)s, %(confidence)s, %(supporting_evidence_ids)s, %(last_material_change)s, %(reason)s,
-                %(source_kind)s, %(run_id)s, %(created_at)s, %(updated_at)s
+            out = _copy(stored)
+        else:
+            out = self._one(
+                """
+                INSERT INTO brain_expectations (
+                    expectation_id, ticker, name, subject, actual, expected, comparison, trend, confidence,
+                    supporting_evidence_ids, last_material_change, reason, source_kind, run_id, created_at, updated_at
+                ) VALUES (
+                    %(expectation_id)s, %(ticker)s, %(name)s, %(subject)s, %(actual)s, %(expected)s, %(comparison)s,
+                    %(trend)s, %(confidence)s, %(supporting_evidence_ids)s, %(last_material_change)s, %(reason)s,
+                    %(source_kind)s, %(run_id)s, %(created_at)s, %(updated_at)s
+                )
+                ON CONFLICT (ticker, name) DO UPDATE SET
+                    actual = EXCLUDED.actual,
+                    expected = EXCLUDED.expected,
+                    comparison = EXCLUDED.comparison,
+                    trend = EXCLUDED.trend,
+                    confidence = EXCLUDED.confidence,
+                    supporting_evidence_ids = EXCLUDED.supporting_evidence_ids,
+                    last_material_change = EXCLUDED.last_material_change,
+                    reason = EXCLUDED.reason,
+                    updated_at = EXCLUDED.updated_at
+                RETURNING *
+                """,
+                stored,
             )
-            ON CONFLICT (ticker, name) DO UPDATE SET
-                actual = EXCLUDED.actual,
-                expected = EXCLUDED.expected,
-                comparison = EXCLUDED.comparison,
-                trend = EXCLUDED.trend,
-                confidence = EXCLUDED.confidence,
-                supporting_evidence_ids = EXCLUDED.supporting_evidence_ids,
-                last_material_change = EXCLUDED.last_material_change,
-                reason = EXCLUDED.reason,
-                updated_at = EXCLUDED.updated_at
-            RETURNING *
-            """,
-            stored,
+            assert out is not None
+        record_history(
+            self,
+            ticker=symbol,
+            object_type="expectation",
+            object_id=str(out.get("expectation_id") or stored["expectation_id"]),
+            from_payload={
+                "actual": (prior or {}).get("actual"),
+                "expected": (prior or {}).get("expected"),
+                "comparison": (prior or {}).get("comparison"),
+                "trend": (prior or {}).get("trend"),
+            }
+            if prior
+            else {},
+            to_payload={
+                "actual": out.get("actual"),
+                "expected": out.get("expected"),
+                "comparison": out.get("comparison"),
+                "trend": out.get("trend"),
+            },
+            reason=out.get("reason") or "expectation_update",
+            run_id=out.get("run_id"),
         )
-        assert out is not None
         return out
 
     def list_expectations(self, ticker: str) -> list[dict[str, Any]]:

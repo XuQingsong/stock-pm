@@ -5,10 +5,11 @@ from .phase0 import evaluate_brain_changes
 from .pipeline import run_brain
 from .pm_view import build_pm_view
 from .runtime import run_brain_update
-from .store import BrainStore
+from .store import BrainStore, durable_brain_store
 
 __all__ = [
     "BrainStore",
+    "durable_brain_store",
     "bootstrap_brain",
     "brain_has_baseline",
     "brain_initialized",
