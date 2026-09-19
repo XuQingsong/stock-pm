@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>市场总览 · Stock-PM</title>
+  <link rel="stylesheet" href="/static/market.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-name">Stock-PM</span>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <a href="/market" class="active">市场总览</a>
+        <span class="muted">自选股</span>
+        <a href="/brain/AVGO">公司研究</a>
+        <span class="muted">待验证问题</span>
+        <span class="muted">研究档案</span>
+      </nav>
+      <div class="meta-time" id="as-of">数据时间读取中</div>
+    </header>
+
+    <div class="page-head">
+      <div class="page-head-row">
+        <div>
+          <h1>市场现在在交易什么？</h1>
+          <p class="lede">定价主轴优先 · 触发事件另层 · 非行情墙 · 非新闻流</p>
+        </div>
+        <span class="zone-badge fast">快变量区</span>
+      </div>
+    </div>
+
+    <div id="market-root">
+      <p class="lede">正在读取已落盘的市场定价主轴…</p>
+    </div>
+  </div>
+  <script src="/static/market.js"></script>
+</body>
+</html>

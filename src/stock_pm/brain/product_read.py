@@ -70,6 +70,18 @@ EVENT_NODE_TYPES = {"event", "observation", "news", "price", "signal"}
 TRIGGER_EVENT_TYPES = {"capex", "guidance", "earnings", "product", "customer"}
 ROLE_LABELS = ("主导", "次主导", "辅助")
 IMPORTANCE_FROM_COUNT = ((3, "very_high"), (2, "high"), (1, "medium"), (0, "low"))
+THEME_DISPLAY_ZH = {
+    "ai_capex_expectations": "AI 资本开支",
+    "real_yields": "美债收益率",
+    "sector_macro": "板块与宏观",
+}
+CHANGE_KIND_ZH = {
+    "market_driver_hypothesis": "主轴",
+    "market_attention": "主轴",
+    "expectation": "主轴",
+    "macro_state": "主轴",
+    "industry_state": "主轴",
+}
 
 
 def _rows(store: Any, method: str, *args: Any, **kwargs: Any) -> list[dict[str, Any]]:
@@ -446,9 +458,21 @@ def recent_driver_changes(store: Any, drivers: list[dict[str, Any]]) -> list[dic
     return out[:8]
 
 
+def driver_display_name(row: dict[str, Any] | None) -> str:
+    item = row or {}
+    theme = THEME_DISPLAY_ZH.get(str(item.get("category") or ""))
+    if theme:
+        return theme
+    return compact_text(item.get("name") or "", 80)
+
+
 def pricing_axis(drivers: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
-        {"role": ROLE_LABELS[idx] if idx < len(ROLE_LABELS) else "辅助", "driver_id": row.get("id"), "name": row.get("name")}
+        {
+            "role": ROLE_LABELS[idx] if idx < len(ROLE_LABELS) else "辅助",
+            "driver_id": row.get("id"),
+            "name": driver_display_name(row) or row.get("name"),
+        }
         for idx, row in enumerate(drivers)
     ]
 
@@ -594,11 +618,71 @@ def filter_core_claim_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [row for row in rows if is_fundamental_core_claim(row)][:CORE_CLAIM_MAX]
 
 
+def _has_cjk(text: Any) -> bool:
+    return bool(re.search(r"[\u4e00-\u9fff]", str(text or "")))
+
+
+def _label_lookup(store: Any, method: str, id_key: str, *text_keys: str) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for row in _collect(store, method):
+        sid = str(row.get(id_key) or "").strip()
+        if not sid:
+            continue
+        label = compact_text(next((row.get(key) for key in text_keys if row.get(key)), ""), 80)
+        if label:
+            out[sid] = label
+    return out
+
+
+def _labeled_items(ids: list[Any], lookup: dict[str, str], *, title_key: str = "label") -> list[dict[str, str]]:
+    out = []
+    for raw in ids or []:
+        sid = str(raw or "").strip()
+        if sid in lookup:
+            out.append({"id": sid, title_key: lookup[sid]})
+    return out
+
+
+def decorate_market_overview(payload: dict[str, Any], store: Any) -> dict[str, Any]:
+    """Attach display labels for the market page. Still a read-only view; no GLM."""
+    attentions = _label_lookup(store, "list_all_market_attentions", "attention_id", "name", "statement")
+    events = _label_lookup(store, "list_all_events", "event_id", "title", "subject")
+    layered_triggers: list[dict[str, str]] = []
+    seen_triggers: set[str] = set()
+    updated_at = ""
+    for row in payload.get("dominant_drivers") or []:
+        row["display_name"] = driver_display_name(row) or compact_text(row.get("name") or "", 80)
+        row["supporting_signals"] = _labeled_items(row.get("supporting_signal_ids") or [], attentions)
+        row["counter_signals"] = _labeled_items(row.get("counter_signal_ids") or [], attentions)
+        landing = row.get("display_name") or ""
+        row["trigger_events"] = []
+        for item in _labeled_items(row.get("trigger_event_ids") or [], events, title_key="title"):
+            item["lands_on"] = landing
+            row["trigger_events"].append(item)
+            if item["id"] not in seen_triggers:
+                seen_triggers.add(item["id"])
+                layered_triggers.append(item)
+        stamp = str(row.get("updated_at") or "")
+        if stamp > updated_at:
+            updated_at = stamp
+    payload["trigger_events"] = layered_triggers
+    payload["as_of"] = updated_at or None
+    for axis in payload.get("pricing_axis") or []:
+        match = next((row for row in (payload.get("dominant_drivers") or []) if row.get("id") == axis.get("driver_id")), None)
+        if match and match.get("display_name"):
+            axis["name"] = match["display_name"]
+    for change in payload.get("recent_driver_changes") or []:
+        change["kind_label"] = CHANGE_KIND_ZH.get(str(change.get("object_type") or ""), "主轴")
+        reason = compact_text(change.get("reason") or "", 160)
+        change["summary"] = reason if reason and _has_cjk(reason) else "近窗记录到实质变化"
+    return payload
+
+
 def build_market_overview(store: Any, *, research: Any | None = None) -> dict[str, Any]:
     del research
     drivers = aggregate_dominant_drivers(store)
     empty = not drivers
-    return {
+    payload = {
         "source": "persisted_brain",
         "llm_invoked": False,
         "market_state": "empty" if empty else "ready",
@@ -610,6 +694,7 @@ def build_market_overview(store: Any, *, research: Any | None = None) -> dict[st
         "sector_summary": [],
         "covered_tickers": list(GOLDEN_TICKERS),
     }
+    return decorate_market_overview(payload, store)
 
 
 def attach_company_overview(snapshot: dict[str, Any], store: Any, ticker: str, *, research: Any | None = None) -> dict[str, Any]:

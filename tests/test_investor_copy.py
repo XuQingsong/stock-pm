@@ -25,9 +25,12 @@ MAIN_PATH_STATIC = [
     Path("src/stock_pm/static/stock.html"),
     Path("src/stock_pm/static/stock.js"),
     Path("src/stock_pm/static/desk.js"),
+    Path("src/stock_pm/static/market.html"),
+    Path("src/stock_pm/static/market.js"),
     Path("design-hifi/overview.html"),
     Path("design-hifi/review.html"),
     Path("design-hifi/stock.html"),
+    Path("design-hifi-v1/market.html"),
 ]
 
 MAIN_PATH_PACK = [
