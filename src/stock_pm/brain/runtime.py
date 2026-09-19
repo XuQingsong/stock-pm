@@ -39,6 +39,7 @@ from .divergence import apply_divergence_lifecycle, explain_price_move, repeated
 from .market import relevant_market_attentions
 from .market_layer import interpret_market_layer, merge_market_proposals
 from .now import build_now_chain
+from .investment import apply_invalidation_evidence, run_downstream_reasoning, should_run_downstream
 from .store import BrainStore, durable_brain_store
 from .snapshot import build_snapshot, locate_affected_objects
 from .trace import build_runtime_trace
@@ -435,6 +436,12 @@ def run_brain_update(
                 material=True,
             )
             merged = dict(full_result or {})
+            downstream = run_downstream_reasoning(
+                brain_store,
+                symbol,
+                trigger="full_review",
+                research=research,
+            )
             merged.update(
                 {
                     "ticker": symbol,
@@ -446,6 +453,7 @@ def run_brain_update(
                     "material": True,
                     "l0": l0,
                     "now_chain": now_chain,
+                    "downstream": downstream,
                     "token_usage": _token_usage(list(merged.get("llm_calls") or [])),
                 }
             )
@@ -902,6 +910,30 @@ def run_brain_update(
             "core_claims_unchanged": True,
             "committed": [],
         }
+    invalidation_hits = []
+    if not price_only:
+        invalidation_hits = apply_invalidation_evidence(
+            brain_store,
+            symbol,
+            event=event,
+            claims=affected.get("claims") or context.get("claims") or [],
+        )
+    downstream = {"ran": False, "reason": "not_triggered"}
+    if should_run_downstream(
+        trigger=trigger,
+        price_only=price_only,
+        is_full_review=is_full_review,
+        gate_result=gate_result,
+        affected=affected,
+        invalidation_hit=bool(invalidation_hits),
+    ):
+        downstream = run_downstream_reasoning(
+            brain_store,
+            symbol,
+            trigger=trigger or ("full_review" if is_full_review else "material_claim_change"),
+            affected_claim_ids=[str(row.get("claim_id") or "") for row in (affected.get("claims") or []) if row.get("claim_id")],
+            research=research,
+        )
     for question in questions:
         if hasattr(brain_store, "insert_question") and question.get("question"):
             brain_store.insert_question(
@@ -1100,6 +1132,8 @@ def run_brain_update(
             "market_layer": market_stats,
             "explanation": explanation,
             "price_feedback": explanation.get("feedback"),
+            "downstream": downstream,
+            "invalidation_hits": invalidation_hits,
             "token_usage": {
                 **_token_usage(llm_calls, snapshot),
                 "critic_skipped": not need_critic,

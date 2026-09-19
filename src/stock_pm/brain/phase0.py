@@ -343,9 +343,21 @@ def evaluate_brain_changes(
                     if proposal.get("object_type") in {"exposure", "company_exposure"} and hasattr(store, "insert_exposure"):
                         payload = dict(proposal.get("to_payload") or {})
                         store.insert_exposure(normalize_exposure({**payload, "ticker": symbol}, ticker=symbol))
-                    if proposal.get("object_type") == "financial_impact" and hasattr(store, "insert_financial_impact"):
+                    if proposal.get("object_type") == "financial_impact":
                         payload = dict(proposal.get("to_payload") or {})
-                        store.insert_financial_impact({**payload, "ticker": symbol})
+                        writer = getattr(store, "upsert_financial_impact", None) or getattr(store, "insert_financial_impact", None)
+                        if writer:
+                            writer({**payload, "ticker": symbol, "reason": proposal.get("reason")})
+                    if proposal.get("object_type") == "scenario" and hasattr(store, "upsert_scenario"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        if payload.get("scenario_type"):
+                            store.upsert_scenario({**payload, "ticker": symbol, "reason": proposal.get("reason")})
+                    if proposal.get("object_type") == "valuation_state" and hasattr(store, "upsert_valuation_state"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_valuation_state({**payload, "ticker": symbol, "reason": proposal.get("reason")})
+                    if proposal.get("object_type") in {"thesis", "thesis_snapshot"} and hasattr(store, "upsert_thesis"):
+                        payload = dict(proposal.get("to_payload") or {})
+                        store.upsert_thesis({**payload, "ticker": symbol, "reason": proposal.get("reason")})
                     if proposal.get("object_type") in {"market_attention", "price_reaction"} and hasattr(store, "upsert_market_attention"):
                         payload = dict(proposal.get("to_payload") or {})
                         store.upsert_market_attention(

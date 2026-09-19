@@ -11,7 +11,7 @@ from .hysteresis import next_claim_status
 from .knowledge import fact_reliability
 from .shadow import should_enter_shadow
 from .divergence import price_as_evidence_forbidden
-from .types import FUNDAMENTAL_CLAIM_TYPES, LOW_RELIABILITY
+from .types import FUNDAMENTAL_CLAIM_TYPES, INVESTMENT_DOWNSTREAM, LOW_RELIABILITY
 
 
 def _payload(proposal: dict[str, Any]) -> dict[str, Any]:
@@ -238,6 +238,18 @@ def constitution_violations(proposal: dict[str, Any], *, brain: dict[str, Any] |
     if source == "price" and target in {"claim", "core_claim", "driver", "value_driver"}:
         if not proposal.get("fundamental_evidence_ids"):
             hits.append({"rule": "unexplained_price_is_not_mispricing", "reason": "Price without fundamental evidence cannot rewrite investment reasoning."})
+
+    investment_target = target in INVESTMENT_DOWNSTREAM
+    claim_linked_impact = target == "financial_impact" and bool(payload.get("claim_id") or (payload.get("object_type") in {"claim", "core_claim"} and payload.get("object_id")))
+    new_scenario = target == "scenario" and str(payload.get("scenario_type") or "") in {"bull", "base", "bear"}
+    if source in {"event", "news"} and (
+        target in {"valuation_state", "thesis", "thesis_snapshot"}
+        or claim_linked_impact
+        or new_scenario
+    ):
+        hits.append({"rule": "event_cannot_modify_investment_downstream", "reason": "Event cannot directly modify Financial Impact, Scenario, ValuationState, or Thesis."})
+    if source == "price" and (investment_target or claim_linked_impact):
+        hits.append({"rule": "price_cannot_modify_investment_downstream", "reason": "Price cannot directly modify Financial Impact, Scenario, ValuationState, or Thesis."})
 
     evidence_ids = [str(item) for item in (proposal.get("evidence_ids") or payload.get("evidence_ids") or []) if str(item).strip()]
     if target in conclusion_targets and price_as_evidence_forbidden(

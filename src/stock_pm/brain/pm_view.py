@@ -18,6 +18,7 @@ from stock_pm.research.llm_reason import compact_text
 
 from .bootstrap import brain_has_baseline, brain_lifecycle
 from .expectation import coerce_expectation_comparison
+from .investment import investment_snapshot
 from .now import build_now_chain
 from .types import CORE_CLAIM_MAX
 
@@ -305,6 +306,9 @@ def _core_claims(store: Any, ticker: str, evidence: dict[str, dict[str, Any]], h
                 "why_it_matters": compact_text(claim.get("why_it_matters") or "", 240) or None,
                 "strongest_support": _strongest_link(links, "support", evidence),
                 "strongest_counter": _strongest_link(links, "oppose", evidence),
+                "what_would_invalidate": compact_text(claim.get("what_would_invalidate") or (claim.get("reasoning") or {}).get("what_would_invalidate") or "", 240) or None,
+                "financial_impact_ids": list(claim.get("financial_impact_ids") or [])[:8],
+                "scenario_implication": compact_text(claim.get("scenario_implication") or "", 80) or None,
                 "recent_change": _claim_recent_change(store, ticker, claim, history),
             }
         )
@@ -627,5 +631,10 @@ def build_pm_view(store: Any, ticker: str, *, research: Any | None = None) -> di
             "what_changed_shown": len(changed),
         },
     }
+    invest = investment_snapshot(store, symbol)
+    snapshot["financial_impacts"] = invest.get("financial_impacts") or []
+    snapshot["base_scenario"] = invest.get("base_scenario")
+    snapshot["valuation_state"] = invest.get("valuation_state")
+    snapshot["current_thesis"] = invest.get("current_thesis")
     snapshot["can_answer"] = pm_questions_answerable(snapshot)
     return snapshot

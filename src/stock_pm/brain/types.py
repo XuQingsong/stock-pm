@@ -200,6 +200,9 @@ OBJECT_LAYER = {
     "core_claim": "investment_reasoning",
     "financial_impact": "investment_reasoning",
     "scenario": "investment_reasoning",
+    "valuation_state": "investment_reasoning",
+    "thesis": "investment_reasoning",
+    "thesis_snapshot": "investment_reasoning",
     "business_model": "structural_knowledge",
     "industry_structure": "structural_knowledge",
     "causal_edge": "structural_knowledge",
@@ -310,6 +313,28 @@ CONSTITUTION_RULES = (
     "price_cannot_modify_fundamental_state",
     "market_hypothesis_is_not_fact",
     "price_cannot_create_established_causal_edge",
+    "event_cannot_modify_investment_downstream",
+    "price_cannot_modify_investment_downstream",
+)
+IMPACT_METRICS = ("revenue", "gross_margin", "operating_margin", "EPS", "FCF", "capex")
+IMPACT_DIRECTIONS = ("positive", "negative", "neutral", "uncertain")
+MAGNITUDE_BANDS = ("small", "medium", "large", "unknown")
+SCENARIO_TYPES = ("bull", "base", "bear")
+PROBABILITY_BANDS = ("low", "medium", "high", "unknown")
+VALUATION_DIRECTIONS = ("supports_expansion", "neutral", "compression_risk", "uncertain")
+INVESTMENT_DOWNSTREAM = (
+    "financial_impact",
+    "scenario",
+    "valuation_state",
+    "thesis",
+    "thesis_snapshot",
+)
+DOWNSTREAM_TRIGGERS = (
+    "material_claim_change",
+    "material_driver_change",
+    "full_review",
+    "thesis_refresh",
+    "manual_thesis_refresh",
 )
 CHANGE_BUDGET = {
     "max_auto_claims": 1,

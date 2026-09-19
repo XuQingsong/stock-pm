@@ -84,6 +84,9 @@ class BrainStore:
         self.expectations: dict[str, dict[str, Any]] = {}
         self.hypotheses: dict[str, dict[str, Any]] = {}
         self.divergences: dict[str, dict[str, Any]] = {}
+        self.scenarios: dict[str, dict[str, Any]] = {}
+        self.valuation_states: dict[str, dict[str, Any]] = {}
+        self.thesis_snapshots: dict[str, dict[str, Any]] = {}
 
     def _pg(self) -> bool:
         return self.database is not None
@@ -343,6 +346,9 @@ class BrainStore:
             "counter_search": dict(row.get("counter_search") or {}),
             "match_action": row.get("match_action"),
             "related_driver_ids": list(row.get("related_driver_ids") or []),
+            "what_would_invalidate": row.get("what_would_invalidate") or "",
+            "financial_impact_ids": list(row.get("financial_impact_ids") or []),
+            "scenario_implication": row.get("scenario_implication") or "",
             "created_at": row.get("created_at") or _now(),
             "updated_at": row.get("updated_at") or _now(),
         }
@@ -358,6 +364,7 @@ class BrainStore:
                 reasoning, run_id, snapshot_id, claim_key, claim_subject, claim_dimension,
                 proposed_status, lifecycle, why_core, evidence_set_id, last_reviewed_at,
                 unverified_detail, counter_search, match_action, related_driver_ids,
+                what_would_invalidate, financial_impact_ids, scenario_implication,
                 created_at, updated_at
             ) VALUES (
                 %(claim_id)s, %(ticker)s, %(title)s, %(statement)s, %(claim_type)s, %(status)s,
@@ -366,7 +373,8 @@ class BrainStore:
                 %(run_id)s, %(snapshot_id)s, %(claim_key)s, %(claim_subject)s, %(claim_dimension)s,
                 %(proposed_status)s, %(lifecycle)s, %(why_core)s, %(evidence_set_id)s,
                 %(last_reviewed_at)s, %(unverified_detail)s, %(counter_search)s, %(match_action)s,
-                %(related_driver_ids)s, %(created_at)s, %(updated_at)s
+                %(related_driver_ids)s, %(what_would_invalidate)s, %(financial_impact_ids)s,
+                %(scenario_implication)s, %(created_at)s, %(updated_at)s
             ) RETURNING *
             """,
             payload,
@@ -402,6 +410,9 @@ class BrainStore:
             "claim_dimension",
             "claim_key",
             "related_driver_ids",
+            "what_would_invalidate",
+            "financial_impact_ids",
+            "scenario_implication",
         )
         if not self._pg():
             current = dict(self.claims.get(claim_id) or {})
@@ -438,6 +449,9 @@ class BrainStore:
             "claim_dimension": row.get("claim_dimension"),
             "claim_key": row.get("claim_key"),
             "related_driver_ids": row.get("related_driver_ids"),
+            "what_would_invalidate": row.get("what_would_invalidate"),
+            "financial_impact_ids": row.get("financial_impact_ids"),
+            "scenario_implication": row.get("scenario_implication"),
             "updated_at": _now(),
         }
         out = self._one(
@@ -468,6 +482,9 @@ class BrainStore:
                 claim_dimension = COALESCE(%(claim_dimension)s, claim_dimension),
                 claim_key = COALESCE(%(claim_key)s, claim_key),
                 related_driver_ids = COALESCE(%(related_driver_ids)s, related_driver_ids),
+                what_would_invalidate = COALESCE(%(what_would_invalidate)s, what_would_invalidate),
+                financial_impact_ids = COALESCE(%(financial_impact_ids)s, financial_impact_ids),
+                scenario_implication = COALESCE(%(scenario_implication)s, scenario_implication),
                 updated_at = %(updated_at)s
             WHERE claim_id = %(claim_id)s
             RETURNING *
@@ -1338,21 +1355,28 @@ class BrainStore:
         return self._execute(query, params)
 
     def insert_financial_impact(self, row: dict[str, Any]) -> dict[str, Any]:
+        claim_id = row.get("claim_id") or (row.get("object_id") if row.get("object_type") in {"claim", "core_claim"} else "")
         stored = {
             "impact_id": row.get("impact_id") or new_id("bfi"),
             "ticker": str(row["ticker"]).upper(),
-            "object_type": row.get("object_type") or "driver",
-            "object_id": row.get("object_id") or "",
-            "metric": row.get("metric") or "",
+            "object_type": row.get("object_type") or ("claim" if claim_id else "driver"),
+            "object_id": row.get("object_id") or claim_id or "",
+            "claim_id": claim_id or "",
+            "metric": row.get("metric") or row.get("financial_metric") or "",
+            "financial_metric": row.get("financial_metric") or row.get("metric") or "",
             "direction": row.get("direction"),
             "magnitude_range": row.get("magnitude_range"),
+            "magnitude_band": row.get("magnitude_band") or "unknown",
             "time_horizon": row.get("time_horizon"),
             "confidence": row.get("confidence"),
             "mechanism": row.get("mechanism") or "",
-            "evidence_ids": list(row.get("evidence_ids") or []),
+            "evidence_ids": list(row.get("evidence_ids") or row.get("support_evidence_ids") or []),
+            "support_evidence_ids": list(row.get("support_evidence_ids") or row.get("evidence_ids") or []),
+            "counter_evidence_ids": list(row.get("counter_evidence_ids") or []),
             "direction_only": bool(row.get("direction_only", True)),
             "run_id": row.get("run_id"),
             "created_at": row.get("created_at") or _now(),
+            "updated_at": row.get("updated_at") or _now(),
         }
         if not self._pg():
             self.financial_impacts[stored["impact_id"]] = stored
@@ -1362,16 +1386,19 @@ class BrainStore:
             """
             INSERT INTO brain_financial_impacts (
                 impact_id, ticker, object_type, object_id, metric, direction, magnitude_range,
-                time_horizon, confidence, mechanism, evidence_ids, direction_only, run_id, created_at
+                time_horizon, confidence, mechanism, evidence_ids, direction_only, run_id, created_at,
+                claim_id, magnitude_band, support_evidence_ids, counter_evidence_ids, updated_at
             ) VALUES (
                 %(impact_id)s, %(ticker)s, %(object_type)s, %(object_id)s, %(metric)s, %(direction)s,
                 %(magnitude_range)s, %(time_horizon)s, %(confidence)s, %(mechanism)s, %(evidence_ids)s,
-                %(direction_only)s, %(run_id)s, %(created_at)s
+                %(direction_only)s, %(run_id)s, %(created_at)s, %(claim_id)s, %(magnitude_band)s,
+                %(support_evidence_ids)s, %(counter_evidence_ids)s, %(updated_at)s
             ) RETURNING *
             """,
             payload,
         )
         assert out is not None
+        out["financial_metric"] = out.get("financial_metric") or out.get("metric")
         return out
 
     def list_financial_impacts(self, ticker: str, *, run_id: str | None = None) -> list[dict[str, Any]]:
@@ -1380,13 +1407,316 @@ class BrainStore:
             rows = [row for row in self.financial_impacts.values() if row.get("ticker") == symbol]
             if run_id:
                 rows = [row for row in rows if row.get("run_id") == run_id]
-            return [_copy(row) for row in rows]
-        query = "SELECT * FROM brain_financial_impacts WHERE ticker = %(ticker)s"
-        params: dict[str, Any] = {"ticker": symbol}
-        if run_id:
-            query += " AND run_id = %(run_id)s"
-            params["run_id"] = run_id
-        return self._execute(query, params)
+            out = [_copy(row) for row in rows]
+        else:
+            query = "SELECT * FROM brain_financial_impacts WHERE ticker = %(ticker)s"
+            params: dict[str, Any] = {"ticker": symbol}
+            if run_id:
+                query += " AND run_id = %(run_id)s"
+                params["run_id"] = run_id
+            out = self._execute(query, params)
+        for row in out:
+            row["financial_metric"] = row.get("financial_metric") or row.get("metric")
+            row["claim_id"] = row.get("claim_id") or (row.get("object_id") if row.get("object_type") in {"claim", "core_claim"} else row.get("claim_id"))
+        return out
+
+    def upsert_financial_impact(self, row: dict[str, Any]) -> dict[str, Any]:
+        from .history import record_history
+
+        symbol = str(row["ticker"]).upper()
+        claim_id = str(row.get("claim_id") or (row.get("object_id") if row.get("object_type") in {"claim", "core_claim"} else "") or "")
+        metric = str(row.get("metric") or row.get("financial_metric") or "")
+        prior = next(
+            (
+                item
+                for item in self.list_financial_impacts(symbol)
+                if (str(item.get("claim_id") or "") == claim_id and str(item.get("metric") or item.get("financial_metric") or "") == metric)
+                or str(item.get("impact_id") or "") == str(row.get("impact_id") or "")
+            ),
+            None,
+        )
+        payload = {**dict(prior or {}), **dict(row), "ticker": symbol, "claim_id": claim_id, "metric": metric}
+        if prior:
+            payload["impact_id"] = prior.get("impact_id")
+            if not self._pg():
+                stored = self.insert_financial_impact(payload)
+            else:
+                stored = self._one(
+                    """
+                    UPDATE brain_financial_impacts SET
+                        direction = %(direction)s,
+                        magnitude_band = %(magnitude_band)s,
+                        magnitude_range = %(magnitude_range)s,
+                        time_horizon = %(time_horizon)s,
+                        confidence = %(confidence)s,
+                        mechanism = %(mechanism)s,
+                        evidence_ids = %(evidence_ids)s,
+                        support_evidence_ids = %(support_evidence_ids)s,
+                        counter_evidence_ids = %(counter_evidence_ids)s,
+                        claim_id = %(claim_id)s,
+                        updated_at = %(updated_at)s
+                    WHERE impact_id = %(impact_id)s
+                    RETURNING *
+                    """,
+                    {
+                        "impact_id": payload["impact_id"],
+                        "direction": payload.get("direction"),
+                        "magnitude_band": payload.get("magnitude_band") or "unknown",
+                        "magnitude_range": _jsonb(payload.get("magnitude_range")),
+                        "time_horizon": payload.get("time_horizon"),
+                        "confidence": payload.get("confidence"),
+                        "mechanism": payload.get("mechanism") or "",
+                        "evidence_ids": list(payload.get("evidence_ids") or payload.get("support_evidence_ids") or []),
+                        "support_evidence_ids": list(payload.get("support_evidence_ids") or payload.get("evidence_ids") or []),
+                        "counter_evidence_ids": list(payload.get("counter_evidence_ids") or []),
+                        "claim_id": claim_id,
+                        "updated_at": _now(),
+                    },
+                ) or self.insert_financial_impact(payload)
+                stored["financial_metric"] = stored.get("financial_metric") or stored.get("metric")
+        else:
+            stored = self.insert_financial_impact(payload)
+        record_history(
+            self,
+            ticker=symbol,
+            object_type="financial_impact",
+            object_id=str(stored.get("impact_id") or ""),
+            from_payload={
+                "direction": (prior or {}).get("direction"),
+                "magnitude_band": (prior or {}).get("magnitude_band"),
+                "metric": (prior or {}).get("metric") or (prior or {}).get("financial_metric"),
+            }
+            if prior
+            else {},
+            to_payload={
+                "direction": stored.get("direction"),
+                "magnitude_band": stored.get("magnitude_band"),
+                "metric": stored.get("financial_metric") or stored.get("metric"),
+            },
+            reason=row.get("reason") or "financial_impact_update",
+        )
+        return stored
+
+    def upsert_scenario(self, row: dict[str, Any]) -> dict[str, Any]:
+        from .history import record_history
+
+        symbol = str(row["ticker"]).upper()
+        kind = str(row.get("scenario_type") or "")
+        prior = next((item for item in self.list_scenarios(symbol) if item.get("scenario_type") == kind), None)
+        stored = {
+            "scenario_id": row.get("scenario_id") or (prior or {}).get("scenario_id") or new_id("bscn"),
+            "ticker": symbol,
+            "scenario_type": kind,
+            "assumptions": list(row.get("assumptions") or []),
+            "linked_claim_ids": list(row.get("linked_claim_ids") or []),
+            "financial_impact_ids": list(row.get("financial_impact_ids") or []),
+            "probability_band": row.get("probability_band") or "unknown",
+            "confidence": row.get("confidence") or "medium",
+            "key_upside_conditions": list(row.get("key_upside_conditions") or []),
+            "key_downside_conditions": list(row.get("key_downside_conditions") or []),
+            "invalidation_conditions": list(row.get("invalidation_conditions") or []),
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": (prior or {}).get("created_at") or row.get("created_at") or _now(),
+            "updated_at": _now(),
+        }
+        if not self._pg():
+            if prior:
+                stored["scenario_id"] = prior["scenario_id"]
+            self.scenarios[stored["scenario_id"]] = stored
+            out = _copy(stored)
+        else:
+            out = self._one(
+                """
+                INSERT INTO brain_scenarios (
+                    scenario_id, ticker, scenario_type, assumptions, linked_claim_ids, financial_impact_ids,
+                    probability_band, confidence, key_upside_conditions, key_downside_conditions,
+                    invalidation_conditions, reason, run_id, created_at, updated_at
+                ) VALUES (
+                    %(scenario_id)s, %(ticker)s, %(scenario_type)s, %(assumptions)s, %(linked_claim_ids)s,
+                    %(financial_impact_ids)s, %(probability_band)s, %(confidence)s, %(key_upside_conditions)s,
+                    %(key_downside_conditions)s, %(invalidation_conditions)s, %(reason)s, %(run_id)s,
+                    %(created_at)s, %(updated_at)s
+                )
+                ON CONFLICT (ticker, scenario_type) DO UPDATE SET
+                    assumptions = EXCLUDED.assumptions,
+                    linked_claim_ids = EXCLUDED.linked_claim_ids,
+                    financial_impact_ids = EXCLUDED.financial_impact_ids,
+                    probability_band = EXCLUDED.probability_band,
+                    confidence = EXCLUDED.confidence,
+                    key_upside_conditions = EXCLUDED.key_upside_conditions,
+                    key_downside_conditions = EXCLUDED.key_downside_conditions,
+                    invalidation_conditions = EXCLUDED.invalidation_conditions,
+                    reason = EXCLUDED.reason,
+                    updated_at = EXCLUDED.updated_at
+                RETURNING *
+                """,
+                stored,
+            )
+            assert out is not None
+        record_history(
+            self,
+            ticker=symbol,
+            object_type="scenario",
+            object_id=str(out.get("scenario_id") or stored["scenario_id"]),
+            from_payload={"probability_band": (prior or {}).get("probability_band"), "assumptions": (prior or {}).get("assumptions")} if prior else {},
+            to_payload={"probability_band": out.get("probability_band"), "assumptions": out.get("assumptions")},
+            reason=out.get("reason") or "scenario_update",
+        )
+        return out
+
+    def list_scenarios(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [_copy(row) for row in self.scenarios.values() if row.get("ticker") == symbol]
+            rows.sort(key=lambda item: str(item.get("scenario_type") or ""))
+            return rows
+        return self._execute(
+            "SELECT * FROM brain_scenarios WHERE ticker = %(ticker)s ORDER BY scenario_type",
+            {"ticker": symbol},
+        )
+
+    def upsert_valuation_state(self, row: dict[str, Any]) -> dict[str, Any]:
+        from .history import record_history
+
+        symbol = str(row["ticker"]).upper()
+        prior = self.latest_valuation_state(symbol)
+        stored = {
+            "valuation_id": row.get("valuation_id") or (prior or {}).get("valuation_id") or new_id("bval"),
+            "ticker": symbol,
+            "valuation_context": row.get("valuation_context") or "",
+            "scenario_id": row.get("scenario_id"),
+            "valuation_direction": row.get("valuation_direction") or "uncertain",
+            "confidence": row.get("confidence") or "low",
+            "valuation_data_missing": bool(row.get("valuation_data_missing", True)),
+            "supporting_data": dict(row.get("supporting_data") or {}),
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": (prior or {}).get("created_at") or row.get("created_at") or _now(),
+            "updated_at": _now(),
+        }
+        if not self._pg():
+            if prior:
+                stored["valuation_id"] = prior["valuation_id"]
+            self.valuation_states[stored["valuation_id"]] = stored
+            out = _copy(stored)
+        else:
+            out = self._one(
+                """
+                INSERT INTO brain_valuation_states (
+                    valuation_id, ticker, valuation_context, scenario_id, valuation_direction, confidence,
+                    valuation_data_missing, supporting_data, reason, run_id, created_at, updated_at
+                ) VALUES (
+                    %(valuation_id)s, %(ticker)s, %(valuation_context)s, %(scenario_id)s, %(valuation_direction)s,
+                    %(confidence)s, %(valuation_data_missing)s, %(supporting_data)s, %(reason)s, %(run_id)s,
+                    %(created_at)s, %(updated_at)s
+                )
+                ON CONFLICT (ticker) DO UPDATE SET
+                    valuation_context = EXCLUDED.valuation_context,
+                    scenario_id = EXCLUDED.scenario_id,
+                    valuation_direction = EXCLUDED.valuation_direction,
+                    confidence = EXCLUDED.confidence,
+                    valuation_data_missing = EXCLUDED.valuation_data_missing,
+                    supporting_data = EXCLUDED.supporting_data,
+                    reason = EXCLUDED.reason,
+                    updated_at = EXCLUDED.updated_at
+                RETURNING *
+                """,
+                {**stored, "supporting_data": _jsonb(stored["supporting_data"])},
+            )
+            assert out is not None
+        record_history(
+            self,
+            ticker=symbol,
+            object_type="valuation_state",
+            object_id=str(out.get("valuation_id") or stored["valuation_id"]),
+            from_payload={"valuation_direction": (prior or {}).get("valuation_direction"), "valuation_data_missing": (prior or {}).get("valuation_data_missing")} if prior else {},
+            to_payload={"valuation_direction": out.get("valuation_direction"), "valuation_data_missing": out.get("valuation_data_missing")},
+            reason=out.get("reason") or "valuation_update",
+        )
+        return out
+
+    def list_valuation_states(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [_copy(row) for row in self.valuation_states.values() if row.get("ticker") == symbol]
+            rows.sort(key=lambda item: str(item.get("updated_at") or ""), reverse=True)
+            return rows
+        return self._execute(
+            "SELECT * FROM brain_valuation_states WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
+            {"ticker": symbol},
+        )
+
+    def latest_valuation_state(self, ticker: str) -> dict[str, Any] | None:
+        rows = self.list_valuation_states(ticker)
+        return rows[0] if rows else None
+
+    def upsert_thesis(self, row: dict[str, Any]) -> dict[str, Any]:
+        from .history import record_history
+
+        symbol = str(row["ticker"]).upper()
+        prior = self.latest_thesis(symbol)
+        stored = {
+            "thesis_id": row.get("thesis_id") or new_id("bths"),
+            "ticker": symbol,
+            "current_thesis": row.get("current_thesis") or "",
+            "top_supporting_claim_ids": list(row.get("top_supporting_claim_ids") or []),
+            "top_risk_claim_ids": list(row.get("top_risk_claim_ids") or []),
+            "base_scenario_id": row.get("base_scenario_id"),
+            "key_upside_condition": row.get("key_upside_condition") or "",
+            "key_downside_condition": row.get("key_downside_condition") or "",
+            "what_would_change_thesis": row.get("what_would_change_thesis") or "",
+            "confidence": row.get("confidence") or "medium",
+            "reason": row.get("reason") or "",
+            "run_id": row.get("run_id"),
+            "created_at": row.get("created_at") or datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        if not self._pg():
+            self.thesis_snapshots[stored["thesis_id"]] = stored
+            out = _copy(stored)
+        else:
+            out = self._one(
+                """
+                INSERT INTO brain_thesis_snapshots (
+                    thesis_id, ticker, current_thesis, top_supporting_claim_ids, top_risk_claim_ids,
+                    base_scenario_id, key_upside_condition, key_downside_condition, what_would_change_thesis,
+                    confidence, reason, run_id, created_at, updated_at
+                ) VALUES (
+                    %(thesis_id)s, %(ticker)s, %(current_thesis)s, %(top_supporting_claim_ids)s,
+                    %(top_risk_claim_ids)s, %(base_scenario_id)s, %(key_upside_condition)s,
+                    %(key_downside_condition)s, %(what_would_change_thesis)s, %(confidence)s, %(reason)s,
+                    %(run_id)s, %(created_at)s, %(updated_at)s
+                ) RETURNING *
+                """,
+                stored,
+            )
+            assert out is not None
+        record_history(
+            self,
+            ticker=symbol,
+            object_type="thesis_snapshot",
+            object_id=str(out.get("thesis_id") or stored["thesis_id"]),
+            from_payload={"current_thesis": (prior or {}).get("current_thesis"), "key_downside_condition": (prior or {}).get("key_downside_condition")} if prior else {},
+            to_payload={"current_thesis": out.get("current_thesis"), "key_downside_condition": out.get("key_downside_condition")},
+            reason=out.get("reason") or "thesis_update",
+        )
+        return out
+
+    def list_theses(self, ticker: str) -> list[dict[str, Any]]:
+        symbol = ticker.upper()
+        if not self._pg():
+            rows = [_copy(row) for row in self.thesis_snapshots.values() if row.get("ticker") == symbol]
+            rows.sort(key=lambda item: (str(item.get("updated_at") or ""), str(item.get("created_at") or ""), str(item.get("thesis_id") or "")), reverse=True)
+            return rows
+        return self._execute(
+            "SELECT * FROM brain_thesis_snapshots WHERE ticker = %(ticker)s ORDER BY updated_at DESC",
+            {"ticker": symbol},
+        )
+
+    def latest_thesis(self, ticker: str) -> dict[str, Any] | None:
+        rows = self.list_theses(ticker)
+        return rows[0] if rows else None
 
     def insert_history(self, row: dict[str, Any]) -> dict[str, Any] | None:
         from .history import meaningful_delta
