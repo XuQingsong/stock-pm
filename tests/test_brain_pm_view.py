@@ -400,9 +400,49 @@ def test_avgo_artifact_answers_four_pm_questions() -> None:
     assert snapshot["market_view"]["active_hypotheses"]
     assert any("AI" in (row["hypothesis"] or "") for row in snapshot["market_view"]["active_hypotheses"])
     assert snapshot["open_research_questions"]
-    assert any("sustainable" in (row["question"] or "").lower() for row in snapshot["open_research_questions"])
+    assert len(snapshot["open_research_questions"]) <= 5
+    assert snapshot["display"]["questions_total"] >= 20
+    assert any("sustainable" in (row["question"] or "").lower() or "21.7" in (row["question"] or "") for row in snapshot["open_research_questions"])
+    assert all("can we confirm" not in (row["question"] or "").lower() for row in snapshot["open_research_questions"])
+    assert all("missing market driver" not in (row["question"] or "").lower() for row in snapshot["open_research_questions"])
+    assert all(row.get("canonical_key") not in {"other", "unresolved"} for row in snapshot["market_view"]["active_hypotheses"])
+    assert all((row.get("name") or "").lower() != "expectation" for row in snapshot["market_view"]["expectations"])
     coverage = pm_questions_answerable(snapshot)
     assert coverage["investment_logic"] is True
     assert coverage["what_changed"] is True
     assert coverage["market"] is True
     assert coverage["next_verify"] is True
+
+
+def test_pm_view_hides_low_value_display_noise() -> None:
+    store = BrainStore()
+    store.insert_state({"ticker": "AVGO", "state_type": "company", "name": "AI demand", "statement": "Demand is elevated."})
+    store.insert_driver({"ticker": "AVGO", "canonical_key": "demand", "name": "Demand", "current_state": "Strong."})
+    store.insert_claim(
+        {
+            "ticker": "AVGO",
+            "title": "AI revenue durability",
+            "statement": "Durability is the live debate.",
+            "status": "partially_supported",
+            "is_core": True,
+        }
+    )
+    store.upsert_hypothesis({"ticker": "AVGO", "canonical_key": "ai_demand", "hypothesis": "AI demand is what the tape is trading.", "status": "candidate", "confidence": "medium"})
+    store.upsert_hypothesis({"ticker": "AVGO", "canonical_key": "other", "hypothesis": "other", "status": "candidate"})
+    store.upsert_hypothesis({"ticker": "AVGO", "canonical_key": "unresolved", "hypothesis": "Market driver is unresolved", "status": "unresolved"})
+    store.upsert_expectation({"ticker": "AVGO", "name": "Q3 EPS", "actual": 2.68, "expected": 2.83, "comparison": "below"})
+    store.upsert_expectation({"ticker": "AVGO", "name": "expectation", "actual": None, "expected": None, "comparison": "unknown"})
+    store.insert_question({"ticker": "AVGO", "question": "Is 143% AI semiconductor growth sustainable?", "priority": "high"})
+    store.insert_question({"ticker": "AVGO", "question": "Can we confirm: AVGO shares move -12.6% with semiconductor peers?"})
+    store.insert_question({"ticker": "AVGO", "question": "Is a missing Market Driver leaving repeated unexplained AVGO tape?"})
+    store.insert_question({"ticker": "AVGO", "question": "Brain lacks states and drivers to connect print fundamentals to the hypothesis."})
+    store.insert_question({"ticker": "AVGO", "question": "No core claim exists for AVGO; what claim should the AI driver ultimately support?"})
+    snapshot = build_pm_view(store, "AVGO")
+    questions = [row["question"] for row in snapshot["open_research_questions"]]
+    assert questions == ["Is 143% AI semiconductor growth sustainable?"]
+    keys = [row["canonical_key"] for row in snapshot["market_view"]["active_hypotheses"]]
+    assert keys == ["ai_demand"]
+    names = [row["name"] for row in snapshot["market_view"]["expectations"]]
+    assert names == ["Q3 EPS"]
+    assert snapshot["display"]["questions_total"] == 5
+    assert snapshot["display"]["questions_shown"] == 1

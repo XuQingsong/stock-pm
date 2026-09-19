@@ -1,0 +1,242 @@
+{
+  "ticker": "LITE",
+  "company_name": "LITE",
+  "status": "partial",
+  "lifecycle": "NEW_TICKER",
+  "brain_initialized": false,
+  "source": "persisted_brain",
+  "llm_invoked": false,
+  "as_of": null,
+  "core_claims": [],
+  "what_changed": [],
+  "now_chain": {
+    "what_happened": {
+      "question": "发生了什么",
+      "answer": "No event.",
+      "fact": "",
+      "event_type": null,
+      "entities": [],
+      "fact_reliability": "",
+      "material": false,
+      "stopped": null
+    },
+    "why_it_affects_company": {
+      "question": "为什么会影响公司",
+      "answer": "LITE is exposed to LITE EML/InP capacity exposure; LITE is exposed to Optical revenue exposure to AI/datacenter demand; LITE is exposed to Datacom/AI EML-CW laser revenue exposure",
+      "exposures": [
+        {
+          "exposure_id": "bexp_8bbff3c52b5340b5840281f3029e108e",
+          "subject": "LITE",
+          "object_name": "LITE EML/InP capacity exposure",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "LITE is exposed to LITE EML/InP capacity exposure"
+        },
+        {
+          "exposure_id": "bexp_81c65bda4737480680d5c54dbe524a1d",
+          "subject": "LITE",
+          "object_name": "Optical revenue exposure to AI/datacenter demand",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "LITE is exposed to Optical revenue exposure to AI/datacenter demand"
+        },
+        {
+          "exposure_id": "bexp_35cbe41170ad4634a89989251412d18d",
+          "subject": "LITE",
+          "object_name": "Datacom/AI EML-CW laser revenue exposure",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "LITE is exposed to Datacom/AI EML-CW laser revenue exposure"
+        }
+      ]
+    },
+    "path_to_driver_claim": {
+      "question": "通过什么路径影响 Driver / Claim",
+      "answer": "No targeted causal path is available for this event.",
+      "can_affect_driver": false,
+      "can_affect_claim": false,
+      "successful": [],
+      "blocked": [],
+      "gaps": []
+    },
+    "what_market_is_trading": {
+      "question": "市场现在怎么理解它",
+      "answer": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 1.5 vs expected 1.81 (in_line, unchanged) Candidate drivers: 1. Customer concentration concern is increasing; 2. AI/datacenter capex-driven optical demand is the primary market driver behind L…. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: medium",
+      "alignment": "unexplained",
+      "cannot_conclude_mispricing": true,
+      "confidence": "medium",
+      "attentions": [
+        {
+          "attention_id": "batt_a5c0069500bd499daa048e0c0bceae5b",
+          "name": "unexplained_price_vs_brain",
+          "statement": "Price behavior is not fully explained by the current Brain.",
+          "related_objects": []
+        }
+      ],
+      "expectation": {
+        "actual": 1.5,
+        "expected": 1.81,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": ""
+      },
+      "candidate_drivers": [
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "open",
+          "confidence": "medium"
+        },
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": false,
+      "price_feedback": null,
+      "explanation_grade": null,
+      "price_peer_alignment": "unexplained",
+      "divergence": null,
+      "research_questions": [
+        "What segment mix (datacom vs telecom) and customer concentration drove the 90.1% YoY revenue growth?",
+        "What Q4 FY2026 guidance and non-GAAP operating margin did management provide?",
+        "Did Q3 revenue ($808.4M) and non-GAAP EPS ($2.37) beat or miss street expectations, and how did AI/datacenter-exposed segments perform?",
+        "What did LITE's Q3 guidance, revenue mix, and AI/datacenter commentary actually say, so the state→driver chain can be built and the post-print divergence resol…"
+      ]
+    },
+    "answers": {
+      "what_happened": "No event.",
+      "why_it_affects_company": "LITE is exposed to LITE EML/InP capacity exposure; LITE is exposed to Optical revenue exposure to AI/datacenter demand; LITE is exposed to Datacom/AI EML-CW laser revenue exposure",
+      "path_to_driver_claim": "No targeted causal path is available for this event.",
+      "what_market_is_trading": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 1.5 vs expected 1.81 (in_line, unchanged) Candidate drivers: 1. Customer concentration concern is increasing; 2. AI/datacenter capex-driven optical demand is the primary market driver behind L…. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: medium"
+    },
+    "event_id": null,
+    "as_of": null
+  },
+  "market_view": {
+    "expectations": [
+      {
+        "expectation_id": "bexpc_c6ebed9c200e41638464acbbb56b800e",
+        "name": "Q3 GAAP EPS",
+        "actual": 1.5,
+        "expected": 1.81,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": "Actual 1.5 vs expected 1.81 (in_line)."
+      },
+      {
+        "expectation_id": "bexpc_7058b6ec49ea494783ad3aff47aa14a8",
+        "name": "Q4 non-GAAP EPS",
+        "actual": 3.23,
+        "expected": 2.95,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": "Actual 3.23 vs expected 2.95 (in_line)."
+      },
+      {
+        "expectation_id": "bexpc_fdababf7b75b4a86b82303f63c3d98ee",
+        "name": "Q1 FY2027 net revenue vs guidance",
+        "actual": null,
+        "expected": 1.25,
+        "comparison": "unknown",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": "Q1 FY2027 net revenue vs guidance: actual None vs expected 1.25 (unknown)"
+      }
+    ],
+    "active_hypotheses": [
+      {
+        "hypothesis_id": "bmdh_43b7825547ef40f6b0cb781b21fb31ad",
+        "canonical_key": "customer_concentration",
+        "hypothesis": "Customer concentration concern is increasing",
+        "status": "open",
+        "confidence": "medium",
+        "kind": "customer_concentration",
+        "reason": "Customer concentration concern is increasing"
+      },
+      {
+        "hypothesis_id": "bmdh_b0428e0125734c5194d59f0dadcfd420",
+        "canonical_key": "ai_demand",
+        "hypothesis": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth",
+        "status": "candidate",
+        "confidence": "low",
+        "kind": "ai_demand",
+        "reason": "AI/datacenter capex-driven optical demand is the primary market driver behind LITE's ~90% YoY revenue growth"
+      }
+    ],
+    "price_divergence": {
+      "unresolved": [],
+      "latest": null
+    }
+  },
+  "open_research_questions": [
+    {
+      "question_id": "brq_545c19ce2a174b8eb14da3e5a5275bbe",
+      "question": "What segment mix (datacom vs telecom) and customer concentration drove the 90.1% YoY revenue growth?",
+      "why_it_matters": "Fact lacks segment attribution; required to confirm or refute the AI/datacenter driver hypothesis.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_d8e38d5bab0646cb95da9085dcf15bb9",
+      "question": "What Q4 FY2026 guidance and non-GAAP operating margin did management provide?",
+      "why_it_matters": "Fact text truncated before non-GAAP operating margin and outlook; needed to assess growth trajectory.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_8385c1b29abe4a94b30bcab01b35b5de",
+      "question": "Did Q3 revenue ($808.4M) and non-GAAP EPS ($2.37) beat or miss street expectations, and how did AI/datacenter-exposed segments perform?",
+      "why_it_matters": "Required to connect the earnings print to the ai_demand hypothesis via a valid causal path.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_04cf79d37b3f48e4b627249378745a4f",
+      "question": "What did LITE's Q3 guidance, revenue mix, and AI/datacenter commentary actually say, so the state→driver chain can be built and the post-print divergence resolved?",
+      "why_it_matters": "The Brain has no fundamental objects from the print; tape alone cannot explain the -5.06% move.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_d65a0a4506104e68bce6384e16a56a0e",
+      "question": "Does the Q3 transceiver ramp explain prior unexplained price action and resolve the unresolved market driver?",
+      "why_it_matters": "Unresolved driver hypothesis exists; this event offers explanatory evidence but no winner should be picked yet.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    }
+  ],
+  "display": {
+    "questions_shown": 5,
+    "questions_total": 30,
+    "hypotheses_shown": 2,
+    "hypotheses_total": 5,
+    "expectations_shown": 3,
+    "expectations_total": 6,
+    "what_changed_shown": 0
+  },
+  "can_answer": {
+    "investment_logic": false,
+    "what_changed": true,
+    "market": true,
+    "next_verify": true
+  }
+}

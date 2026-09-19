@@ -1,0 +1,308 @@
+{
+  "ticker": "AVGO",
+  "company_name": "AVGO",
+  "status": "ready",
+  "lifecycle": "BASELINE_READY",
+  "brain_initialized": true,
+  "source": "persisted_brain",
+  "llm_invoked": false,
+  "as_of": null,
+  "core_claims": [
+    {
+      "claim_id": "bclm_f4454cfe04e94211a79b23116bcf5de8",
+      "claim_key": null,
+      "title": "AI semiconductor demand durability sets the length of the growth ramp",
+      "statement": "Broadcom's growth outlook rests on the durability of AI accelerator and networking demand: management's Q3 FY2026 earnings release describes demand for AI accelerators and networking as 'very strong,…",
+      "status": "partially_supported",
+      "confidence": "low",
+      "importance": "medium",
+      "why_it_matters": null,
+      "strongest_support": null,
+      "strongest_counter": null,
+      "recent_change": null
+    },
+    {
+      "claim_id": "bclm_2f3b915b62064c8a98300c530fa331ff",
+      "claim_key": null,
+      "title": "The AI ramp implies unquantified dependence on a few hyperscaler buyers",
+      "statement": "Broadcom's guided AI acceleration is attributed by secondary reporting to a small number of AI infrastructure customers — Anthropic and OpenAI are named as major demand drivers, with a reported plan…",
+      "status": "partially_supported",
+      "confidence": "low",
+      "importance": "medium",
+      "why_it_matters": null,
+      "strongest_support": null,
+      "strongest_counter": null,
+      "recent_change": null
+    },
+    {
+      "claim_id": "bclm_426dd93ffbfa4167ab49970c97da681f",
+      "claim_key": null,
+      "title": "AI is approaching a majority of revenue, tying company economics to one cycle",
+      "statement": "Broadcom discloses AI semiconductor revenue as a distinct metric, and management characterized AI accelerators and networking demand as 'very strong' in the Q3 FY2026 earnings release; third-party re…",
+      "status": "partially_supported",
+      "confidence": "low",
+      "importance": "medium",
+      "why_it_matters": null,
+      "strongest_support": null,
+      "strongest_counter": null,
+      "recent_change": null
+    },
+    {
+      "claim_id": "bclm_a84fd6c830884f80b7c4b1d49f984b24",
+      "claim_key": null,
+      "title": "Whether the guided 66% non-GAAP operating margin is structural or peak-cycle",
+      "statement": "Broadcom's Q3 FY2026 earnings release (Exhibit 99.1, dated 2026-09-02) reports quarterly revenue of $29.6 billion, with management characterizing AI accelerator and networking demand as 'very strong'…",
+      "status": "unverified",
+      "confidence": "low",
+      "importance": "medium",
+      "why_it_matters": null,
+      "strongest_support": null,
+      "strongest_counter": null,
+      "recent_change": null
+    },
+    {
+      "claim_id": "bclm_a63762a2ab4f4410ad923ea9b1002c53",
+      "claim_key": null,
+      "title": "The premium multiple is conditional on the AI ramp persisting",
+      "statement": "Broadcom's Q3 FY2026 earnings release (primary) describes AI accelerator and networking demand as 'very strong' and references Q3 AI semiconductor revenue (the figure is truncated in the available ex…",
+      "status": "unverified",
+      "confidence": "low",
+      "importance": "medium",
+      "why_it_matters": null,
+      "strongest_support": null,
+      "strongest_counter": null,
+      "recent_change": null
+    }
+  ],
+  "what_changed": [],
+  "now_chain": {
+    "what_happened": {
+      "question": "发生了什么",
+      "answer": "No event.",
+      "fact": "",
+      "event_type": null,
+      "entities": [],
+      "fact_reliability": "",
+      "material": false,
+      "stopped": null
+    },
+    "why_it_affects_company": {
+      "question": "为什么会影响公司",
+      "answer": "Recovered customer exposure from Hyperscaler customer concentration.; Recovered competitive exposure from Competitive position in AI accelerators and networking.; Recovered customer exposure from AI semiconductor demand durability.",
+      "exposures": [
+        {
+          "exposure_id": "bexp_rec_e8dc5eb44bba",
+          "subject": "AVGO",
+          "object_name": "Hyperscaler customer concentration",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "Recovered customer exposure from Hyperscaler customer concentration."
+        },
+        {
+          "exposure_id": "bexp_rec_1129f05e5a33",
+          "subject": "AVGO",
+          "object_name": "Competitive position in AI accelerators and networking",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "Recovered competitive exposure from Competitive position in AI accelerators and networking."
+        },
+        {
+          "exposure_id": "bexp_rec_50bd17106982",
+          "subject": "AVGO",
+          "object_name": "AI semiconductor demand durability",
+          "direction": null,
+          "magnitude": null,
+          "mechanism": "Recovered customer exposure from AI semiconductor demand durability."
+        }
+      ]
+    },
+    "path_to_driver_claim": {
+      "question": "通过什么路径影响 Driver / Claim",
+      "answer": "No targeted causal path is available for this event.",
+      "can_affect_driver": false,
+      "can_affect_claim": false,
+      "successful": [],
+      "blocked": [],
+      "gaps": []
+    },
+    "what_market_is_trading": {
+      "question": "市场现在怎么理解它",
+      "answer": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: medium",
+      "alignment": "unexplained",
+      "cannot_conclude_mispricing": true,
+      "confidence": "medium",
+      "attentions": [
+        {
+          "attention_id": "batt_44250e52f7a544f6bff01ec9123d8d50",
+          "name": "unexplained_price_vs_brain",
+          "statement": "Price behavior is not fully explained by the current Brain.",
+          "related_objects": []
+        }
+      ],
+      "expectation": {
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": ""
+      },
+      "candidate_drivers": [
+        {
+          "canonical_key": "ai_demand",
+          "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+          "status": "candidate",
+          "confidence": "medium"
+        },
+        {
+          "canonical_key": "customer_concentration",
+          "hypothesis": "Customer concentration concern is increasing",
+          "status": "candidate",
+          "confidence": "low"
+        }
+      ],
+      "unresolved": false,
+      "price_feedback": null,
+      "explanation_grade": null,
+      "price_peer_alignment": "unexplained",
+      "divergence": null,
+      "research_questions": [
+        "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.…",
+        "What is the customer-level composition of the guided $21.7B Q4 AI semiconductor revenue (e.g., Google custom silicon share vs other hyperscalers)?",
+        "Why did Q3 AI semiconductor revenue ($16.7B) miss the ~$17.2B expectation despite 'very strong' demand commentary?",
+        "What share of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B) is attributable to Google custom TPU/ASIC orders, and can the order-reduction rumor…"
+      ]
+    },
+    "answers": {
+      "what_happened": "No event.",
+      "why_it_affects_company": "Recovered customer exposure from Hyperscaler customer concentration.; Recovered competitive exposure from Competitive position in AI accelerators and networking.; Recovered customer exposure from AI semiconductor demand durability.",
+      "path_to_driver_claim": "No targeted causal path is available for this event.",
+      "what_market_is_trading": "Attention: Price behavior is not fully explained by the current Brain. Expectation: actual 16.0 vs expected 17.2 (below, falling) Candidate drivers: 1. Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growt…; 2. Customer concentration concern is increasing. Which driver dominates is not established. Price / Peer Alignment: unexplained Confidence: medium"
+    },
+    "event_id": null,
+    "as_of": null
+  },
+  "market_view": {
+    "expectations": [
+      {
+        "expectation_id": "bexpc_89019d30a58549cf9d4fedbe29b7bdb2",
+        "name": "Q3 AI semiconductor revenue",
+        "actual": 16.0,
+        "expected": 17.2,
+        "comparison": "below",
+        "trend": "falling",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": null
+      },
+      {
+        "expectation_id": "bexpc_810bc28cad0c4f65a83237528cc5d5f4",
+        "name": "Q3 EPS",
+        "actual": 2.68,
+        "expected": 2.83,
+        "comparison": "in_line",
+        "trend": "unchanged",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": null
+      },
+      {
+        "expectation_id": "bexpc_5e36754d5507439dbf4882cf2f151fd7",
+        "name": "FY2026 AI revenue",
+        "actual": 58.0,
+        "expected": 56.0,
+        "comparison": "above",
+        "trend": "rising",
+        "confidence": "medium",
+        "last_material_change": null,
+        "reason": null
+      }
+    ],
+    "active_hypotheses": [
+      {
+        "hypothesis_id": "bmdh_8dc71e3824584b429b95ecb153843fac",
+        "canonical_key": "ai_demand",
+        "hypothesis": "Hyperscaler demand for AI accelerators / custom ASICs drives AVGO revenue growth and mix shift toward AI silicon.",
+        "status": "candidate",
+        "confidence": "medium",
+        "kind": "ai_demand",
+        "reason": null
+      },
+      {
+        "hypothesis_id": "bmdh_ff48ce582fd347d0a931a328b183826b",
+        "canonical_key": "customer_concentration",
+        "hypothesis": "Customer concentration concern is increasing",
+        "status": "candidate",
+        "confidence": "low",
+        "kind": "customer_concentration",
+        "reason": null
+      }
+    ],
+    "price_divergence": {
+      "unresolved": [],
+      "latest": null
+    }
+  },
+  "open_research_questions": [
+    {
+      "question_id": "brq_60fa42e692fd4e16909a2a5761d10008",
+      "question": "How much of AVGO's -12.59% decline is sector beta (SOX -10.26%) vs stock-specific repricing after Q3 AI semiconductor revenue came in below street (16.0 vs 17.2)?",
+      "why_it_matters": "Decomposition determines whether fundamental drivers need re-evaluation or the move is macro noise.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_a3bb935751a644f2aa3827e1f84fc508",
+      "question": "What is the customer-level composition of the guided $21.7B Q4 AI semiconductor revenue (e.g., Google custom silicon share vs other hyperscalers)?",
+      "why_it_matters": "Guide implies +236% YoY AI growth concentrated among few hyperscalers, but the filing discloses no customer split; needed to size concentration risk.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_6a4864297507440682e4e4836a30f64e",
+      "question": "Why did Q3 AI semiconductor revenue ($16.7B) miss the ~$17.2B expectation despite 'very strong' demand commentary?",
+      "why_it_matters": "Confirmed shortfall contrasts with the demand narrative; identifying the source (customer timing vs product mix) tests AI demand durability.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_16120780ea7a4e25ad4280c67dcf0db0",
+      "question": "What share of Broadcom's AI semiconductor revenue (Q4 FY2026 guided $21.7B) is attributable to Google custom TPU/ASIC orders, and can the order-reduction rumor be corroborated?",
+      "why_it_matters": "Rumor unconfirmed; Google-specific exposure within hyperscaler concentration is unquantified, so no impact can transmit to claims.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    },
+    {
+      "question_id": "brq_500e109c06314b50b6af9ee1d5a133cf",
+      "question": "Is 143% AI semiconductor growth sustainable (backlog, bookings, customer concentration)?",
+      "why_it_matters": "Driver durability is unproven; hypothesis remains candidate pending forward indicators.",
+      "priority": "medium",
+      "status": "open",
+      "related_claim_id": null,
+      "related_objects": []
+    }
+  ],
+  "display": {
+    "questions_shown": 5,
+    "questions_total": 27,
+    "hypotheses_shown": 2,
+    "hypotheses_total": 8,
+    "expectations_shown": 3,
+    "expectations_total": 6,
+    "what_changed_shown": 0
+  },
+  "can_answer": {
+    "investment_logic": true,
+    "what_changed": true,
+    "market": true,
+    "next_verify": true
+  }
+}

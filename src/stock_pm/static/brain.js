@@ -194,18 +194,38 @@ function marketBlock(market) {
   `;
 }
 
+function shownOf(shown, total, label) {
+  if (total == null || shown == null || total <= shown) return "";
+  return `<p class="muted">Showing ${shown} of ${total} persisted ${label}.</p>`;
+}
+
+function claimEvidence(claim) {
+  const parts = [];
+  if (claim.strongest_support) {
+    parts.push(`<div class="muted">Strongest support</div>${evidenceBrief(claim.strongest_support, "")}`);
+  }
+  if (claim.strongest_counter) {
+    parts.push(`<div class="muted">Strongest counter</div>${evidenceBrief(claim.strongest_counter, "")}`);
+  }
+  if (claim.recent_change) {
+    parts.push(`<div class="muted">Recent change</div>${changeLine(claim.recent_change)}`);
+  }
+  return parts.join("");
+}
+
 function renderPmView(data) {
   const claims = data.core_claims || [];
   const changed = data.what_changed || [];
   const questions = data.open_research_questions || [];
+  const display = data.display || {};
   document.title = `PM View · ${data.ticker}`;
   const empty = data.status === "empty";
+  const missingEvidence = claims.length && claims.every((claim) => !claim.strongest_support && !claim.strongest_counter);
   return `
     <p class="muted">${escapeHtml(data.ticker)} · ${escapeHtml(data.company_name || "")} · persisted Brain · no new LLM · ${escapeHtml(
       data.lifecycle || ""
     )}</p>
     <h1>${escapeHtml(data.company_name || data.ticker)}</h1>
-    <p class="view">Investment Snapshot — one page for the live thesis, the real delta, what the market may be trading, and what to verify next.</p>
     ${
       empty
         ? `<div class="warnbox poor"><h3>No persisted Brain</h3><div>This ticker has no Slow-layer objects yet. The page will not invent claims or re-run research.</div></div>`
@@ -229,12 +249,7 @@ function renderPmView(data) {
             </div>
             <h3>${escapeHtml(claim.title || "")}</h3>
             <p>${escapeHtml(claim.statement || "")}</p>
-            <div class="muted">Strongest support</div>
-            ${evidenceBrief(claim.strongest_support, "none persisted")}
-            <div class="muted">Strongest counter</div>
-            ${evidenceBrief(claim.strongest_counter, "none persisted")}
-            <div class="muted">Recent change</div>
-            ${changeLine(claim.recent_change)}
+            ${claimEvidence(claim)}
             ${
               claim.claim_id
                 ? `<a class="btn" href="/brain/${data.ticker}/claims/${claim.claim_id}">Claim detail</a>`
@@ -246,10 +261,12 @@ function renderPmView(data) {
             : emptyLine("No persisted Core Claims.")
         }
       </div>
+      ${missingEvidence ? emptyLine("Claim support / counter is not persisted on this Brain, so the page does not invent it.") : ""}
     </section>
     <section id="what-changed">
       <p class="eyebrow">最近什么真正变了？</p>
       <h2>What Changed</h2>
+      ${shownOf(display.what_changed_shown, display.what_changed_total, "deltas")}
       ${changed.length ? changed.map(deltaBlock).join("") : emptyLine("No State / Driver / Expectation / Claim delta.")}
     </section>
     <section id="now-chain">
@@ -261,11 +278,14 @@ function renderPmView(data) {
     <section id="market-view">
       <p class="eyebrow">市场可能在交易什么？</p>
       <h2>Market View</h2>
+      ${shownOf(display.hypotheses_shown, display.hypotheses_total, "hypotheses")}
+      ${shownOf(display.expectations_shown, display.expectations_total, "expectations")}
       ${marketBlock(data.market_view)}
     </section>
     <section id="open-questions">
       <p class="eyebrow">我接下来最需要验证什么？</p>
       <h2>Open Research Questions</h2>
+      ${shownOf(display.questions_shown, display.questions_total, "questions")}
       ${
         questions.length
           ? questions
