@@ -76,26 +76,39 @@
     return out;
   }
 
-  function axisRows(axis) {
+  function roleChipClass(role) {
+    if (role === "主导") return "intensity-strong";
+    if (role === "次主导") return "intensity-mid";
+    return "intensity-weak";
+  }
+
+  function axisRows(axis, drivers) {
     if (!axis.length) return "";
-    return `<div class="axis-rows">${axis
+    const byId = Object.fromEntries((drivers || []).map((row) => [row.id, row]));
+    return `<ul class="axis-lines">${axis
       .map((row) => {
         const role = displayText(row.role, "");
         const name = displayText(row.name, "");
         if (!role || !name) return "";
+        const driver = byId[row.driver_id] || {};
+        const bits = [
+          zhMap(IMPORTANCE_ZH, driver.importance, ""),
+          zhMap(TREND_ZH, driver.trend, ""),
+        ].filter(Boolean);
+        const meta = bits.join(" · ");
         const klass = ROLE_CLASS[role] || "assist";
-        return `<div class="axis-row ${klass}"><span class="role">${esc(role)}</span><span class="name">${esc(
+        return `<li class="axis-line ${klass}">${chip(role, roleChipClass(role))}<strong>${esc(
           name
-        )}</span></div>`;
+        )}</strong>${meta ? `<span class="axis-meta">${esc(meta)}</span>` : ""}</li>`;
       })
-      .join("")}</div>`;
+      .join("")}</ul>`;
   }
 
   function statusChips(data, drivers) {
     if (!drivers.length) return "";
     const top = drivers[0] || {};
     const chips = [];
-    chips.push(chip("主轴清晰", "status-ok"));
+    chips.push(chip("主轴可分条", "status-ok"));
     const cred = zhMap(CONFIDENCE_ZH, top.confidence, "");
     if (cred) chips.push(chip(`可信度 ${cred}`, cred === "低" ? "cred-low" : "cred-mid"));
     const triggers = data.trigger_events || [];
@@ -114,6 +127,8 @@
     const direction = zhMap(DIRECTION_ZH, row.direction, "");
     const whyRaw = displayText(row.why_it_matters, "");
     const why = hasCjk(whyRaw) ? whyRaw : "";
+    const whyTitle =
+      index === 0 ? "为什么它比其他变量更重要" : `为什么排在 Top ${index + 1}`;
     const sectors = (row.affected_sectors || []).map((item) => displayText(item, "")).filter(Boolean);
     const tickers = (row.affected_tickers || []).map((item) => String(item || "").toUpperCase()).filter(Boolean);
     const impact = [...sectors, ...tickers].join(" · ");
@@ -124,15 +139,15 @@
       <div class="var-meta">
         ${importance ? chip(`主导程度 ${importance}`, importance === "很高" || importance === "高" ? "intensity-strong" : importance === "中" ? "intensity-mid" : "intensity-weak") : ""}
         ${confidence ? chip(`可信度 ${confidence}`, confidence === "低" ? "cred-low" : "cred-mid") : ""}
-        ${trend ? chip(`趋势 ${trend}`, trend === "正在增强" ? "status-watch" : trend === "高位持续" ? "status-ok" : "status-weak") : ""}
-        ${status ? chip(status, status === "持续中" ? "status-ok" : status === "观察中" ? "status-watch" : "status-weak") : ""}
+        ${trend ? chip(trend, trend === "正在增强" ? "status-watch" : trend === "高位持续" ? "status-ok" : "status-weak") : ""}
+        ${status && !trend ? chip(status, status === "持续中" ? "status-ok" : status === "观察中" ? "status-watch" : "status-weak") : ""}
       </div>
       ${direction ? `<p class="var-dir">方向：${esc(direction)}</p>` : ""}
       ${listBlock("支持信号", "support", row.supporting_signals)}
       ${listBlock("反向信号", "oppose", row.counter_signals)}
       ${
         why
-          ? `<div class="axis-why"><strong>为什么它比其他变量更重要</strong>${esc(why)}</div>`
+          ? `<div class="axis-why"><strong>${esc(whyTitle)}</strong>${esc(why)}</div>`
           : `<p class="muted-empty">重要性质暂未写入</p>`
       }
       <div class="var-impact"><strong>主要影响</strong> ${impact ? esc(impact) : "暂无已关联行业或标的"}</div>
@@ -166,18 +181,29 @@
   function renderEmpty() {
     return `
       <section class="status-bar empty-axis">
+        <h2 class="axis-title">当前市场定价主轴</h2>
         <p class="status-line">${EMPTY_DOMINANT}</p>
-        <p class="status-hint">定价主轴只来自已落盘、且已跨标的成立的变量。现有数据尚未形成可展示的主轴。</p>
+        <p class="status-hint">跨资产与截面尚未收到可命名的定价轴。很高 / 高 / 中 只在真实主轴形成后出现，也不用空卡占满 Top 1–3。</p>
+        <div class="status-meta">
+          ${chip("证据不足", "status-weak")}
+          ${chip("继续观察", "status-watch")}
+        </div>
       </section>
       <section class="layer-zone axis-zone">
         <div class="layer-label">
-          <h2>当前定价主轴</h2>
-          <span class="zone-badge fast">主导变量 · 定价轴</span>
+          <h2>主导变量</h2>
         </div>
         <div class="driver-empty">
-          <strong>${EMPTY_DOMINANT}</strong>
-          不会为填满三条而补判断。
+          <strong>暂无主导变量卡片</strong>
+          触发事件若单独出现，先进观察，不升格为定价主轴。
         </div>
+      </section>
+      <section class="layer-zone trigger-zone">
+        <div class="layer-label">
+          <h2>触发事件</h2>
+          <span class="chip tag-multi">可为空</span>
+        </div>
+        <p class="layer-hint">近窗暂无足够可信的触发事件进入观察队列。</p>
       </section>`;
   }
 
@@ -188,17 +214,18 @@
     const changes = data.recent_driver_changes || [];
     const tickers = relatedTickers(data);
     const hint = triggers.length
-      ? "近窗触发事件另层阅读，不与定价主轴并列。"
+      ? "触发事件（如近窗发行人开支上修）不进本条列表，见下方「触发事件」层"
       : "近窗暂无改写主轴的触发事件。";
     return `
       <section class="status-bar">
-        ${axisRows(axis)}
+        <h2 class="axis-title">当前市场定价主轴</h2>
+        ${axisRows(axis, drivers)}
         ${statusChips(data, drivers)}
         <p class="status-hint">※ ${esc(hint)}</p>
       </section>
       <section class="layer-zone axis-zone">
         <div class="layer-label">
-          <h2>当前定价主轴</h2>
+          <h2>当前定价主轴 · Top 1–3</h2>
           <span class="zone-badge fast">主导变量 · 定价轴</span>
         </div>
         <p class="layer-hint">定价轴 = 市场用什么在给资产定价。主导程度 / 方向 / 可信度 / 趋势 · 支持与反向对称</p>
@@ -264,7 +291,12 @@
       }
       asOf.textContent = formatAsOf(data.as_of);
       const drivers = Array.isArray(data.dominant_drivers) ? data.dominant_drivers : [];
-      root.innerHTML = !drivers.length || data.empty_state === EMPTY_DOMINANT ? renderEmpty() : renderReady(data);
+      const empty = !drivers.length || data.empty_state === EMPTY_DOMINANT;
+      const lede = document.querySelector(".page-head .lede");
+      const badge = document.querySelector(".page-head .zone-badge");
+      if (lede) lede.textContent = empty ? "证据不足 · 如实空状态 · 非行情墙" : "定价主轴优先 · 触发事件另层 · 非行情墙 · 非新闻流";
+      if (badge) badge.textContent = empty ? "证据不足" : "快变量区";
+      root.innerHTML = empty ? renderEmpty() : renderReady(data);
     } catch (err) {
       showError();
     }

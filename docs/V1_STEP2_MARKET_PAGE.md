@@ -10,8 +10,8 @@ Browser /market → GET /api/market/overview → product_read.build_market_overv
 
 - `llm_invoked` must stay `false`. The page refuses to render if it is true.
 - No `run_brain` / GLM on open. No company / claim / graph / events pages.
-- Visual baseline: `design-hifi-v1/market.html` + `hifi-market.png` + `shared.css`.
-- Product delta vs the long-sentence mock: pricing axis is **主导 / 次主导 / 辅助** rows, never one concatenated conclusion.
+- Visual baseline: locked `design-hifi-v1/market.html` (主导/次主导/辅助 rows) + empty-state copy.
+- Product page only renders real `pricing_axis` / `dominant_drivers`. No padded Top 3.
 
 ## Display rules
 

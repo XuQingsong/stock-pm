@@ -99,6 +99,8 @@ def test_market_page_is_wired_to_overview_only() -> None:
     assert "/api/brain" not in js
     assert "run_brain" not in js
     assert "主导程度" in js
+    assert "主轴可分条" in js
+    assert "axis-lines" in js
     assert "正在增强" in js
     assert "高位持续" in js
     assert "影响减弱" in js

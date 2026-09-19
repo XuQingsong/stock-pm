@@ -1388,41 +1388,35 @@ a:hover { text-decoration: underline; }
 }
 
 /* ---------- Market overview: 主导 / 次主导 / 辅助 rows ---------- */
-.axis-rows {
+.axis-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.axis-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 10px;
 }
-.axis-row {
+.axis-line {
   display: flex;
+  gap: 10px;
   align-items: baseline;
-  gap: 14px;
-  line-height: 1.45;
+  flex-wrap: wrap;
 }
-.axis-row .role {
-  flex-shrink: 0;
-  min-width: 52px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-}
-.axis-row.primary .name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-}
-.axis-row.secondary .name {
+.axis-line strong {
   font-size: 15px;
-  font-weight: 600;
   color: var(--text);
 }
-.axis-row.assist .name {
-  font-size: 14px;
-  font-weight: 500;
+.axis-line.primary strong { font-size: 16px; }
+.axis-line .axis-meta {
   color: var(--text-secondary);
+  font-size: 13px;
 }
+.status-bar .status-meta { margin-top: 12px; }
 .status-bar.empty-axis {
   border-style: dashed;
   background: var(--surface);

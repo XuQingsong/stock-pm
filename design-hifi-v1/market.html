@@ -34,14 +34,19 @@
 
     <!-- 市场状态 -->
     <section class="status-bar">
-      <p class="status-line">当前定价主轴：美债收益率（折现）+ AI 资本开支（主题预期）。</p>
-      <div class="status-meta">
-        <span class="chip status-ok">主轴清晰</span>
+      <h2 class="axis-title" style="margin:0 0 10px;font-size:15px;">当前市场定价主轴</h2>
+      <ul class="axis-lines" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;">
+        <li style="display:flex;gap:10px;align-items:baseline;"><span class="chip intensity-strong">主导</span><strong>美债收益率</strong><span style="color:var(--text-secondary);font-size:13px;">折现率重定价 · 很高 · 正在增强</span></li>
+        <li style="display:flex;gap:10px;align-items:baseline;"><span class="chip intensity-mid">次主导</span><strong>AI 资本开支预期</strong><span style="color:var(--text-secondary);font-size:13px;">主题预期 · 高 · 高位持续</span></li>
+        <li style="display:flex;gap:10px;align-items:baseline;"><span class="chip">辅助</span><strong>风险偏好 / 成长估值带</strong><span style="color:var(--text-secondary);font-size:13px;">随主轴波动 · 中 · 影响减弱</span></li>
+      </ul>
+      <div class="status-meta" style="margin-top:12px;">
+        <span class="chip status-ok">主轴可分条</span>
         <span class="chip cred-mid">可信度 中</span>
         <span class="chip status-watch">近窗有触发</span>
         <span class="chip tag-multi">多解释并存</span>
       </div>
-      <p class="status-hint">※ Meta 资本开支上修是「触发事件」，不是与利率并列的定价主轴</p>
+      <p class="status-hint">※ 触发事件（如 Meta 资本开支上修）不进本条列表，见下方「触发事件」层</p>
     </section>
 
     <!-- ■ 层一：当前定价主轴 Top 1–3 -->
@@ -58,9 +63,9 @@
           <span class="rank-badge">Top 1</span>
           <h3>美债收益率 <span class="zone-badge fast">快</span></h3>
           <div class="var-meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-            <span class="chip intensity-strong">强度 强</span>
+            <span class="chip intensity-strong">主导程度 很高</span>
             <span class="chip cred-mid">可信度 中</span>
-            <span class="chip status-ok">持续中</span>
+            <span class="chip status-ok">正在增强</span>
           </div>
           <p class="var-dir" style="margin:0;font-size:13px;color:var(--text-secondary);">方向：压制长久期估值</p>
           <div class="signal-block support" style="margin-top:8px;font-size:12px;">
@@ -87,9 +92,9 @@
           <span class="rank-badge">Top 2</span>
           <h3>AI 资本开支 <span class="zone-badge fast">快</span></h3>
           <div class="var-meta" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-            <span class="chip intensity-mid">强度 中</span>
+            <span class="chip intensity-mid">主导程度 高</span>
             <span class="chip cred-mid">可信度 中</span>
-            <span class="chip status-watch">刚强化</span>
+            <span class="chip status-watch">高位持续</span>
           </div>
           <p class="var-dir" style="margin:0;font-size:13px;color:var(--text-secondary);">方向：预期分化中</p>
           <div class="signal-block support" style="margin-top:8px;font-size:12px;">
@@ -176,7 +181,7 @@
         </li>
         <li>
           <span class="date">09-17</span>
-          <span class="body"><strong>主轴 · 美债收益率加速上行</strong> → 强度 中→强；反向信号仍在</span>
+          <span class="body"><strong>主轴 · 美债收益率加速上行</strong> → 主导程度 高→强；反向信号仍在</span>
         </li>
       </ul>
     </section>
