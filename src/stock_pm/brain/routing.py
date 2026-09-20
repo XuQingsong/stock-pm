@@ -28,6 +28,10 @@ _MODEL_ALIASES = {
     "glm_5_3": "glm-5.3",
     "zhipu-glm-5.3": "glm-5.3",
     "zhipu/glm-5.3": "glm-5.3",
+    "glm-5.3flash": "ZHIPU/GLM-5.3-Flash",
+    "glm-5.3-flash": "ZHIPU/GLM-5.3-Flash",
+    "glm5.3flash": "ZHIPU/GLM-5.3-Flash",
+    "zhipu/glm-5.3-flash": "ZHIPU/GLM-5.3-Flash",
 }
 
 _DEFAULT_BY_ROLE = {

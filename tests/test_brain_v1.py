@@ -134,6 +134,11 @@ def test_brain_routing_uses_env_not_deepseek_default() -> None:
     assert mechanical.llm_max_tokens >= 2048
 
 
+def test_mechanical_flash_alias_uses_official_model_id() -> None:
+    settings = replace(Settings(), mechanical_model_name="glm-5.3flash")
+    assert layer_settings(settings, role=ROLE_MECHANICAL).llm_model == "ZHIPU/GLM-5.3-Flash"
+
+
 def test_parse_json_object_skips_thinking_preamble() -> None:
     from stock_pm.llm import parse_json_object
 
@@ -498,7 +503,6 @@ def test_pm_cannot_read_rejected_fact() -> None:
     assert assert_pm_cannot_see_rejected(payload, {"rev_rejected"})
     assert payload["evidence"][0]["id"] == "rev_ok"
     assert "rev_rejected" not in payload["core_claims"][0]["supporting_evidence_ids"]
-
 
 
 
