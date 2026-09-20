@@ -188,6 +188,32 @@ def test_bootstrap_once_then_incremental(monkeypatch) -> None:
     assert result["lifecycle"] == LIFECYCLE_INCREMENTAL
 
 
+def test_bootstrap_defers_material_event_transmission(monkeypatch) -> None:
+    svc = _service()
+    svc.ensure_issuer("ZZZT", legal_name="Test Co", sector="半导体")
+    _seed_evidence(svc)
+    monkeypatch.setattr(
+        "stock_pm.brain.pipeline.search_recent_news",
+        lambda *args, **kwargs: [{
+            "title": "Demand update",
+            "url": "https://www.reuters.com/test-demand",
+            "snippet": "A high-quality source reported a demand update.",
+            "source": "reuters.com",
+            "published_at": "2026-09-15T00:00:00+00:00",
+            "query": "ZZZT demand",
+        }],
+    )
+    completer = FakeBrainCompleter()
+    result = bootstrap_brain(svc, "ZZZT", store=BrainStore(), completer=completer, fetch_live=False)
+    assert result["brain_initialized"] is True
+    assert "event_transmission" not in completer.calls
+    assert any(
+        call.get("step") == "event_transmission"
+        and call.get("reason") == "bootstrap_defers_event_transmission"
+        for call in result["llm_calls"]
+    )
+
+
 def test_partial_slow_layer_allows_incremental() -> None:
     store = BrainStore()
     store.insert_state(

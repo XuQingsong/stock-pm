@@ -365,6 +365,23 @@ def test_pm_view_http_and_page(monkeypatch) -> None:
     brain_api._override = None
 
 
+def test_uninitialized_page_does_not_claim_to_answer_missing_sections() -> None:
+    answers = pm_questions_answerable({
+        "brain_initialized": False,
+        "core_claims": [],
+        "what_changed": [],
+        "market_view": {"expectations": [{"name": "rates"}]},
+        "now_chain": {"answers": {"what_market_is_trading": "rates"}},
+        "open_research_questions": [],
+    })
+    assert answers == {
+        "investment_logic": False,
+        "what_changed": False,
+        "market": False,
+        "next_verify": False,
+    }
+
+
 def _hydrate_artifact(store: BrainStore, ticker: str, payload: dict) -> None:
     symbol = ticker.upper()
     for row in payload.get("states") or []:
@@ -409,7 +426,7 @@ def test_avgo_artifact_answers_four_pm_questions() -> None:
     assert all((row.get("name") or "").lower() != "expectation" for row in snapshot["market_view"]["expectations"])
     coverage = pm_questions_answerable(snapshot)
     assert coverage["investment_logic"] is True
-    assert coverage["what_changed"] is True
+    assert coverage["what_changed"] is bool(snapshot["what_changed"])
     assert coverage["market"] is True
     assert coverage["next_verify"] is True
 

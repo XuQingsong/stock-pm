@@ -20,6 +20,7 @@ services:
     environment:
       DATABASE_URL: postgresql://stock_pm:${POSTGRES_PASSWORD}@postgres:5432/stock_pm
       DATABASE_POOL_SIZE: 8
+      BRAIN_RUN_TOKEN: ${INGEST_TOKEN:-}
       ALPACA_API_KEY_ID: ${ALPACA_API_KEY_ID:?Set ALPACA_API_KEY_ID in .env.server}
       ALPACA_API_SECRET_KEY: ${ALPACA_API_SECRET_KEY:?Set ALPACA_API_SECRET_KEY in .env.server}
       ALPACA_DATA_FEED: ${ALPACA_DATA_FEED:-iex}

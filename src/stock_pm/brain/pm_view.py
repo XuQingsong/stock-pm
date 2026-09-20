@@ -577,9 +577,9 @@ def pm_questions_answerable(snapshot: dict[str, Any]) -> dict[str, bool]:
     now = ((snapshot.get("now_chain") or {}).get("answers") or {})
     market_text = compact_text(now.get("what_market_is_trading") or "", 20)
     return {
-        "investment_logic": bool(claims),
-        "what_changed": True,
-        "market": bool(
+        "investment_logic": bool(claims) and snapshot.get("brain_initialized") is True,
+        "what_changed": bool(snapshot.get("what_changed")),
+        "market": snapshot.get("brain_initialized") is True and bool(
             market.get("expectations")
             or market.get("active_hypotheses")
             or (market.get("price_divergence") or {}).get("unresolved")

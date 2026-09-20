@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import secrets
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Header, HTTPException
 
 from .pipeline import run_brain
 from .pm_view import build_pm_view
@@ -50,7 +52,14 @@ def get_brain(symbol: str) -> dict[str, Any]:
 
 
 @router.post("/{symbol}/runs", status_code=201)
-def create_brain_run(symbol: str, body: Annotated[dict, Body()] | None = None) -> dict[str, Any]:
+def create_brain_run(
+    symbol: str,
+    body: Annotated[dict, Body()] | None = None,
+    x_brain_run_token: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    expected = os.getenv("BRAIN_RUN_TOKEN", "").strip()
+    if not expected or not secrets.compare_digest(x_brain_run_token or "", expected):
+        raise HTTPException(status_code=403, detail="Brain run requires a valid X-Brain-Run-Token")
     payload = body or {}
     try:
         research, store = get_brain_deps()

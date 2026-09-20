@@ -558,6 +558,7 @@ def run_brain(
     fetch_live: bool = True,
     days: int = NEWS_WINDOW_DAYS,
     mode: str = "full",
+    bootstrap_mode: bool = False,
 ) -> dict[str, Any]:
     from stock_pm.external.clients import SearchBudget, exa_configured, tavily_configured
     from stock_pm.external.layer import gather_external_intelligence, merge_intelligence
@@ -1269,7 +1270,7 @@ def run_brain(
 
     transmissions: list[dict[str, Any]] = []
     material_events = [row for row in persisted_events if str(row.get("materiality") or "") == "material" and not row.get("duplicate")]
-    if material_events:
+    if material_events and not bootstrap_mode:
         by_event_exp = {str(row.get("event_id")): row for row in persisted_exposures if row.get("event_id")}
         allowed_transmission = allowed | {str(row.get("event_id")) for row in material_events} | {
             str(row.get("driver_id")) for row in persisted_drivers if row.get("driver_id")
@@ -1342,7 +1343,12 @@ def run_brain(
                 )
             )
     elif persisted_events:
-        llm_calls.append({"step": "event_transmission", "llm_called": False, "llm_status": "skipped"})
+        llm_calls.append({
+            "step": "event_transmission",
+            "llm_called": False,
+            "llm_status": "skipped",
+            "reason": "bootstrap_defers_event_transmission" if bootstrap_mode else "no_material_events",
+        })
 
     counter_created: list[dict[str, Any]] = []
     for claim in list(persisted_claims):

@@ -251,6 +251,7 @@ def bootstrap_brain(
         completer=None,
         fetch_live=fetch_live,
         mode="full",
+        bootstrap_mode=True,
     )
     first_calls = list((result or {}).get("llm_calls") or ((result or {}).get("audit") or {}).get("llm_calls") or [])
     if not brain_has_baseline(brain_store, symbol):
@@ -263,6 +264,7 @@ def bootstrap_brain(
             completer=None,
             fetch_live=False,
             mode="full",
+            bootstrap_mode=True,
         )
         retry_calls = list((retry or {}).get("llm_calls") or ((retry or {}).get("audit") or {}).get("llm_calls") or [])
         result = {**(retry or {}), "baseline_retry": True}
