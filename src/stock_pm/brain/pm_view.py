@@ -577,7 +577,7 @@ def pm_questions_answerable(snapshot: dict[str, Any]) -> dict[str, bool]:
     now = ((snapshot.get("now_chain") or {}).get("answers") or {})
     market_text = compact_text(now.get("what_market_is_trading") or "", 20)
     return {
-        "investment_logic": bool(claims) and snapshot.get("brain_initialized") is True,
+        "investment_logic": bool(claims) and snapshot.get("brain_initialized") is True and snapshot.get("pm_validated") is not False,
         "what_changed": bool(snapshot.get("what_changed")),
         "market": snapshot.get("brain_initialized") is True and bool(
             market.get("expectations")
@@ -593,6 +593,8 @@ def build_pm_view(store: Any, ticker: str, *, research: Any | None = None) -> di
     """Assemble the Investment Snapshot from persisted Brain objects only."""
     symbol = str(ticker or "").upper()
     latest = store.latest_run(symbol) if store is not None and hasattr(store, "latest_run") else None
+    pm_consistency = ((latest or {}).get("pm_synthesis") or {}).get("pm_consistency") or ((latest or {}).get("audit") or {}).get("pm_consistency") or {}
+    pm_failed = pm_consistency.get("passed") is False
     header = (latest or {}).get("header") or {}
     history = _rows(store, "list_history", symbol)
     history.sort(key=lambda row: _sort_time(row, "created_at"))
@@ -616,9 +618,11 @@ def build_pm_view(store: Any, ticker: str, *, research: Any | None = None) -> di
     snapshot = {
         "ticker": symbol,
         "company_name": header.get("company_name") or symbol,
-        "status": "ready" if initialized else ("partial" if claims or changed or question_cards else "empty"),
+        "status": "ready" if initialized and not pm_failed else ("partial" if initialized or claims or changed or question_cards else "empty"),
         "lifecycle": lifecycle,
         "brain_initialized": initialized,
+        "pm_validated": not pm_failed,
+        "pm_validation_reasons": list(pm_consistency.get("reasons") or []) if pm_failed else [],
         "source": "persisted_brain",
         "llm_invoked": False,
         "as_of": (latest or {}).get("completed_at") or (latest or {}).get("created_at"),
@@ -645,5 +649,8 @@ def build_pm_view(store: Any, ticker: str, *, research: Any | None = None) -> di
     from .product_read import attach_company_overview
 
     snapshot = attach_company_overview(snapshot, store, symbol, research=research)
+    if pm_failed:
+        snapshot["current_thesis"] = None
+        snapshot["thesis"] = {"current_thesis": None, "empty": True}
     snapshot["can_answer"] = pm_questions_answerable(snapshot)
     return snapshot

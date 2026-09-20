@@ -382,6 +382,33 @@ def test_uninitialized_page_does_not_claim_to_answer_missing_sections() -> None:
     }
 
 
+def test_failed_pm_consistency_hides_unvalidated_thesis() -> None:
+    store = BrainStore()
+    _seed_ticker(
+        store,
+        "AVGO",
+        claim_title="AI revenue durability",
+        support_fact="Reported AI demand remains strong.",
+        counter_fact="Customer concentration is unresolved.",
+    )
+    store.insert_run({
+        "ticker": "AVGO",
+        "status": "partial",
+        "pm_synthesis": {
+            "status": "inconsistent",
+            "pm_consistency": {"passed": False, "reasons": ["unbound number"]},
+        },
+    })
+    snapshot = build_pm_view(store, "AVGO")
+    assert snapshot["brain_initialized"] is True
+    assert snapshot["core_claims"]
+    assert snapshot["status"] == "partial"
+    assert snapshot["pm_validated"] is False
+    assert snapshot["current_thesis"] is None
+    assert snapshot["thesis"]["empty"] is True
+    assert snapshot["can_answer"]["investment_logic"] is False
+
+
 def _hydrate_artifact(store: BrainStore, ticker: str, payload: dict) -> None:
     symbol = ticker.upper()
     for row in payload.get("states") or []:

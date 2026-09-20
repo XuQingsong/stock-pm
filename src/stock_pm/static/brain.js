@@ -237,6 +237,7 @@ function renderPmView(data) {
   const thesis = data.thesis || {};
   const attribution = data.price_attribution || {};
   const ready = data.brain_initialized === true;
+  const thesisReady = ready && data.pm_validated !== false;
   const driverById = Object.fromEntries(drivers.map((item) => [item.id, item]));
   document.title = `投资总览 · ${data.ticker}`;
   return `
@@ -246,9 +247,10 @@ function renderPmView(data) {
       <p class="muted">Brain 更新：${escapeHtml(timeLabel(freshness.brain_run_at || data.as_of))} · 市场判断：${escapeHtml(timeLabel(freshness.market_updated_at))}</p>
     </div>
     ${ready ? "" : `<div class="warnbox"><strong>正式 Brain 基线尚未完成</strong><p>现有研究资料已落盘，但公司状态、价值驱动与核心判断尚未全部通过正式 Brain 验证。以下缺失处会如实显示。</p></div>`}
+    ${ready && !thesisReady ? `<div class="warnbox"><strong>PM 投资结论尚未通过一致性检查</strong><p>核心判断仍可查看，正式投资逻辑暂不展示。</p></div>` : ""}
     <section id="investment-logic" class="lead-panel">
       <p class="eyebrow">当前投资逻辑</p>
-      ${ready && !thesis.empty && thesis.current_thesis
+      ${thesisReady && !thesis.empty && thesis.current_thesis
         ? `<p class="thesis-text">${escapeHtml(thesis.current_thesis)}</p>${thesis.what_would_change_thesis ? `<p class="muted">需要重新评估的条件：${escapeHtml(thesis.what_would_change_thesis)}</p>` : ""}`
         : `<p class="muted">正式投资逻辑尚未形成。最近研究材料不能替代 Brain 的完整判断。</p>`}
     </section>
