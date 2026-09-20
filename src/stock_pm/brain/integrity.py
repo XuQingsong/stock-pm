@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from stock_pm.research.extract import to_number
@@ -119,6 +120,12 @@ def assess_financial_integrity(pack: dict[str, Any] | None, header: dict[str, An
     header_rev = _header_metric(header, "latest_quarter", "revenue") or to_number(latest.get("revenue"))
     header_eps = _header_metric(header, "latest_quarter", "eps") or to_number(latest.get("eps"))
     period_end = str(latest.get("period_end") or "")[:10] or None
+    report_date = str(latest.get("report_date") or "")[:10] or None
+    try:
+        report_lag_days = (date.fromisoformat(report_date) - date.fromisoformat(period_end)).days if report_date and period_end else None
+    except ValueError:
+        report_lag_days = None
+    period_mismatch = report_lag_days is not None and (report_lag_days < 0 or report_lag_days > 180)
     fiscal_year = latest.get("fiscal_year") or (header.get("latest_quarter") or {}).get("fiscal_year")
     fiscal_period = latest.get("fiscal_period") or (header.get("latest_quarter") or {}).get("fiscal_period")
     source = str(latest.get("source") or ((header.get("latest_quarter") or {}).get("source") or ""))
@@ -135,7 +142,7 @@ def assess_financial_integrity(pack: dict[str, Any] | None, header: dict[str, An
         mismatch_status="warning",
         mismatch_reason="GAAP companyfacts EPS vs Nasdaq print (often non-GAAP) differ; companyfacts GAAP is the Brain number. This does not block Core Claims.",
     )
-    inconsistent = rev_bad
+    inconsistent = rev_bad or period_mismatch
     ttm = _header_metric(header, "growth", "revenue_ttm") or to_number((payload.get("company_profile") or {}).get("revenue_ttm"))
     eps_ttm = _header_metric(header, "growth", "eps_ttm") or to_number((payload.get("company_profile") or {}).get("eps_ttm"))
     price = _header_metric(header, "price")
@@ -145,7 +152,9 @@ def assess_financial_integrity(pack: dict[str, Any] | None, header: dict[str, An
     pe_value = pe_calc if pe_calc is not None else pe_header
     missing_core = header_rev is None or ttm is None or eps_ttm is None
     if inconsistent:
-        warnings.append({"code": "financial_input_inconsistent", "reason": "Latest-quarter companyfacts and earnings-release revenue disagree beyond tolerance."})
+        warnings.append({"code": "financial_input_inconsistent", "reason": "Latest-quarter revenue sources disagree or the reported quarter end does not match its report date."})
+    if period_mismatch:
+        warnings.append({"code": "financial_period_mismatch", "reason": "Earnings report date and quarter end are more than 180 days apart or out of order."})
     if eps_gap:
         warnings.append({"code": "eps_gaap_vs_nongaap", "reason": str(eps.get("reason") or "EPS sources differ")})
         eps["status"] = "warning"
@@ -173,6 +182,7 @@ def assess_financial_integrity(pack: dict[str, Any] | None, header: dict[str, An
         "fiscal_year": fiscal_year,
         "fiscal_period": fiscal_period,
         "inconsistent": inconsistent,
+        "period_mismatch": period_mismatch,
         "block_core_claims": inconsistent,
         "data_poor": missing_core and not inconsistent,
         "warnings": warnings,

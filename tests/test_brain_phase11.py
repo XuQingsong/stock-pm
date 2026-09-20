@@ -281,6 +281,24 @@ def test_two_companyfacts_prints_do_not_fake_nasdaq_cross_check() -> None:
     assert (rows[0].get("provider_fields") or {}).get("nasdaq_revenue") is None
 
 
+def test_report_date_far_from_quarter_end_blocks_core_claims() -> None:
+    pack = {
+        "ticker": "AVGO",
+        "earnings_history": [{
+            "period_end": "2025-08-03",
+            "report_date": "2026-09-10",
+            "revenue": 15_952_000_000,
+            "eps": 0.88,
+            "source": "sec.companyfacts",
+        }],
+        "company_profile": {"revenue_ttm": 87_041_000_000, "eps_ttm": 8.57},
+    }
+    integrity = assess_financial_integrity(pack, company_header(pack))
+    assert integrity["period_mismatch"] is True
+    assert integrity["block_core_claims"] is True
+    assert any(item["code"] == "financial_period_mismatch" for item in integrity["warnings"])
+
+
 def test_eps_gaap_vs_nongaap_does_not_block_claims() -> None:
     pack = {
         "ticker": "AVGO",
