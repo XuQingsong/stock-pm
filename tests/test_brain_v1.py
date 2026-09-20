@@ -148,6 +148,14 @@ def test_injected_completer_is_shared_for_tests() -> None:
     assert reason is fake
 
 
+def test_role_override_wins_over_generic_injected_completer() -> None:
+    generic = FakeBrainCompleter()
+    reasoning = FakeBrainCompleter()
+    mechanical, chosen = resolve_brain_completers(generic, reasoning=reasoning)
+    assert mechanical.role == ROLE_MECHANICAL
+    assert chosen is reasoning
+
+
 def test_canonical_key_is_stable_across_wording() -> None:
     assert make_canonical_key({"canonical_key": "customer_concentration"}) == "customer_concentration"
     assert make_canonical_key({"name": "Customer Concentration"}) == "customer_concentration"
@@ -490,7 +498,6 @@ def test_pm_cannot_read_rejected_fact() -> None:
     assert assert_pm_cannot_see_rejected(payload, {"rev_rejected"})
     assert payload["evidence"][0]["id"] == "rev_ok"
     assert "rev_rejected" not in payload["core_claims"][0]["supporting_evidence_ids"]
-
 
 
 

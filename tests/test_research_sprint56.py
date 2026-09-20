@@ -100,6 +100,19 @@ def test_fixture_cannot_overwrite_production_pack() -> None:
     assert still["is_fixture"] is False
 
 
+def test_incomplete_refresh_preserves_persisted_financial_pack() -> None:
+    svc = production_service("AVGO", revenue=87_000_000_000, eps=8.57, spot=345.0, sector="半导体")
+    previous = svc.build_pack("AVGO")
+    svc.store.raw_fundamentals["AVGO"] = {"source": "nasdaq", "captured_at": "2026-09-20T00:00:00+00:00"}
+    svc.store.raw_earnings["AVGO"] = [
+        {"report_date": "2026-09-19", "eps_actual": 1.0, "source": "nasdaq"}
+    ]
+    refreshed = svc.build_pack("AVGO")
+    assert refreshed["pack_id"] == previous["pack_id"]
+    assert refreshed["company_profile"]["revenue_ttm"] == 87_000_000_000
+    assert svc.get_pack("AVGO")["pack_id"] == previous["pack_id"]
+
+
 def test_production_snapshot_excludes_fixture_rows() -> None:
     svc = production_service("AVGO", revenue=87_000_000_000, eps=8.57, spot=345.0, sector="半导体")
     svc.build_pack("AVGO")

@@ -32,8 +32,12 @@ services:
       LLM_MODEL: ${LLM_MODEL:-glm-5.3}
       LLM_BASE_URL: ${LLM_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      MECHANICAL_MODEL_PROVIDER: ${MECHANICAL_MODEL_PROVIDER:-openai}
       MECHANICAL_MODEL_NAME: ${MECHANICAL_MODEL_NAME:-glm-5.2}
+      MECHANICAL_MODEL_BASE_URL: ${MECHANICAL_MODEL_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      REASONING_MODEL_PROVIDER: ${REASONING_MODEL_PROVIDER:-openai}
       REASONING_MODEL_NAME: ${REASONING_MODEL_NAME:-glm-5.3}
+      REASONING_MODEL_BASE_URL: ${REASONING_MODEL_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
     ports:
       - "${BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8000}:8000"
     depends_on:

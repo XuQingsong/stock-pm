@@ -1162,10 +1162,11 @@ def _absorb_print_fields(winner: dict[str, Any], loser: dict[str, Any]) -> dict[
         out["period_end"] = loser.get("period_end")
     fields = dict(out.get("provider_fields") or {})
     other = loser.get("provider_fields") if isinstance(loser.get("provider_fields"), dict) else {}
+    loser_is_nasdaq = "nasdaq" in str(loser.get("source") or "").lower()
     if fields.get("nasdaq_revenue") is None:
-        fields["nasdaq_revenue"] = other.get("nasdaq_revenue") or loser.get("revenue_actual") or loser.get("revenue")
+        fields["nasdaq_revenue"] = other.get("nasdaq_revenue") or ((loser.get("revenue_actual") or loser.get("revenue")) if loser_is_nasdaq else None)
     if fields.get("nasdaq_eps") is None:
-        fields["nasdaq_eps"] = other.get("nasdaq_eps") or loser.get("eps_actual") or loser.get("eps")
+        fields["nasdaq_eps"] = other.get("nasdaq_eps") or ((loser.get("eps_actual") or loser.get("eps")) if loser_is_nasdaq else None)
     if fields.get("companyfacts_revenue") is None:
         fields["companyfacts_revenue"] = other.get("companyfacts_revenue")
     if fields.get("companyfacts_eps") is None:

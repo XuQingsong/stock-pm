@@ -142,8 +142,9 @@ def resolve_brain_completers(
     settings: Settings | None = None,
 ) -> tuple[Any, Any]:
     """Tests may inject a single completer for both roles. Production splits layers."""
-    if mechanical is not None and reasoning is not None:
-        return mechanical, reasoning
+    if mechanical is not None or reasoning is not None:
+        default_mechanical, default_reasoning = brain_completers(settings)
+        return mechanical if mechanical is not None else default_mechanical, reasoning if reasoning is not None else default_reasoning
     if injected is not None:
         return injected, injected
     return brain_completers(settings)

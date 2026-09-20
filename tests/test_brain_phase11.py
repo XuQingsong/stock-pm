@@ -272,6 +272,15 @@ def test_same_period_nasdaq_month_label_does_not_keep_nongaap_eps() -> None:
     assert header["latest_quarter"]["eps"]["value"] == 2.02
 
 
+def test_two_companyfacts_prints_do_not_fake_nasdaq_cross_check() -> None:
+    rows = dedupe_earnings_prints([
+        {"period_end": "2025-08-03", "report_date": "2026-09-10", "source": "sec.companyfacts", "revenue": 15_952_000_000},
+        {"period_end": "2025-08-03", "report_date": "2025-09-10", "source": "sec.companyfacts", "revenue": 13_072_000_000},
+    ])
+    assert len(rows) == 1
+    assert (rows[0].get("provider_fields") or {}).get("nasdaq_revenue") is None
+
+
 def test_eps_gaap_vs_nongaap_does_not_block_claims() -> None:
     pack = {
         "ticker": "AVGO",

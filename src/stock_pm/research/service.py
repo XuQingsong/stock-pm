@@ -190,6 +190,26 @@ class ResearchService:
         snapshot["source"] = "fixture" if is_fixture else (snapshot.get("source") or "production")
         existing = self.store.get_pack(symbol)
         reject_fixture_write(symbol, is_fixture=is_fixture, existing=existing)
+        existing_profile = (existing or {}).get("company_profile") or {}
+        rebuilt_profile = snapshot.get("company_profile") or {}
+        existing_has_financials = existing_profile.get("revenue_ttm") is not None and any(
+            isinstance(row, dict) and (row.get("revenue") is not None or row.get("revenue_actual") is not None)
+            for row in (existing or {}).get("earnings_history") or []
+        )
+        rebuilt_has_financials = rebuilt_profile.get("revenue_ttm") is not None and any(
+            isinstance(row, dict) and (row.get("revenue") is not None or row.get("revenue_actual") is not None)
+            for row in snapshot.get("earnings_history") or []
+        )
+        if existing_has_financials and not rebuilt_has_financials:
+            self._audit(
+                ticker=symbol,
+                agent_name="pack_builder",
+                workflow_run_id=workflow_run_id,
+                payload={"op": "build_pack", "is_fixture": is_fixture},
+                output={"pack_id": existing.get("pack_id"), "reason": "financial_coverage_regressed"},
+                status="partial",
+            )
+            return existing
         stored = self.store.upsert_pack(snapshot)
         self._audit(
             ticker=symbol,
