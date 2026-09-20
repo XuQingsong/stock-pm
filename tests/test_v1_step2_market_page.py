@@ -99,7 +99,7 @@ def test_market_page_is_wired_to_overview_only() -> None:
     assert "/api/brain" not in js
     assert "run_brain" not in js
     assert "主导程度" in js
-    assert "主轴可分条" in js
+    assert "待跨资产验证" in js
     assert "axis-lines" in js
     assert "正在增强" in js
     assert "高位持续" in js
@@ -154,8 +154,8 @@ def test_overview_display_keeps_trigger_layered_and_no_fake_top3(monkeypatch) ->
     drivers = body["dominant_drivers"]
     assert drivers
     assert len(drivers) <= 3
-    assert len(body["pricing_axis"]) == len(drivers)
-    assert [row["role"] for row in body["pricing_axis"]] == ["主导", "次主导", "辅助"][: len(drivers)]
+    assert body["market_state"] == "provisional"
+    assert body["pricing_axis"] == []
     assert all(row.get("display_name") == "AI 资本开支" for row in drivers)
     assert all("meta" not in str(row.get("display_name") or "").lower() for row in drivers)
     assert all("meta" not in str(row.get("name") or "").lower() for row in drivers)

@@ -28,36 +28,42 @@ Set these in gitignored `/opt/stock-pm/.env.server` (see `.env.server.example`):
 
 The UI must show 「数据暂缺」 / hide the card rather than invent a deep-green featured event.
 
-## Tip-tar pattern (private git / server cannot `git pull`)
+## Deploy the Brain changes from the existing repository
 
-On the build machine, from the merged commit:
-
-```bash
-git archive --format=tar --prefix=stock-pm/ HEAD | gzip > stock-pm-tip.tar.gz
-scp stock-pm-tip.tar.gz root@43.166.2.31:/tmp/
-ssh root@43.166.2.31
-```
-
-On the server (layout already used: `/opt/stock-pm` + docker compose + `.env.server`):
+The server has a code-only `/opt/stock-pm` directory and no `.git`. Connect as
+`ubuntu` with the configured SSH key; `sudo` is available. After testing and
+committing locally, archive the revision and transfer it. Extraction preserves
+the untracked `/opt/stock-pm/.env.server` and the Postgres volume.
 
 ```bash
-cd /opt
-cp -a stock-pm/stock-pm/.env.server /tmp/stock-pm.env.server
-# keep postgres volume; replace code only
-rm -rf /opt/stock-pm
-mkdir -p /opt/stock-pm
-tar -xzf /tmp/stock-pm-tip.tar.gz -C /opt
-# git archive prefix=stock-pm/ extracts into /opt/stock-pm
-cp /tmp/stock-pm.env.server /opt/stock-pm/.env.server
+# On the local work machine, from the repository root:
+git archive --format=tar.gz -o /tmp/stock-pm-release.tar.gz HEAD
+scp /tmp/stock-pm-release.tar.gz ubuntu@43.166.2.31:/tmp/
+ssh ubuntu@43.166.2.31
+
+# On the server:
+sudo tar -czf /tmp/stock-pm-pre-release.tar.gz -C /opt stock-pm
+sudo tar -xzf /tmp/stock-pm-release.tar.gz -C /opt/stock-pm
 cd /opt/stock-pm
-docker compose --env-file .env.server build app
-docker compose --env-file .env.server up -d postgres app
-python -m stock_pm.migrate   # or: docker compose run --rm app python -m stock_pm.migrate
-docker compose --env-file .env.server restart app
+sudo docker compose --env-file .env.server build app
+sudo docker compose --env-file .env.server up -d app
+sudo docker compose --env-file .env.server run --rm app python -m stock_pm.brain.materialize_from_research --tickers AVGO,LITE,AAPL
+sudo docker compose --env-file .env.server run --rm app python -m stock_pm.brain.bootstrap_job --tickers AVGO,LITE,AAPL
 ```
 
-If the host already reverse-proxies `127.0.0.1:8000` to `http://43.166.2.31/`,
-leave `BIND_ADDRESS=127.0.0.1` and `WEB_PORT=8000` unchanged.
+The bootstrap command calls the existing evidence-gated Brain pipeline and can
+consume LLM tokens. It reports each ticker as ready, incomplete, or missing
+research; an incomplete run exits nonzero. Run it explicitly once. The
+incremental runtime exists in code but is not yet attached to the daily timer;
+page reads remain read-only.
+
+The updated daily service materializes new research and market environment rows
+without invoking an LLM. Install its unit as shown below. The intraday timer
+continues to collect delayed price data every five minutes; it does not rerun
+Market Brain. The web pages reread persisted API data every five minutes.
+
+The current host publishes port 80 directly through Docker Compose. Preserve
+its `.env.server` network settings during upgrades.
 
 Re-enable timers (unchanged unit names; daily job now also runs `stock-pm-events`):
 

@@ -1491,3 +1491,6 @@ a:hover { text-decoration: underline; }
   padding: 6px 12px;
   font-size: 13px;
 }
+:root { --market-caveat: #fff7e8; }
+.market-caveat { margin: 18px 0; padding: 14px 18px; background: var(--market-caveat); border: 1px solid #e8d8b3; }
+.market-caveat p { margin: 6px 0 0; }

@@ -43,7 +43,9 @@ def value_drivers(store: Any, ticker: str) -> list[dict[str, Any]]:
 
 def core_claims(store: Any, ticker: str) -> list[dict[str, Any]]:
     rows = _rows(store, "list_active_claims", ticker)
-    return [row for row in rows if row.get("is_core")]
+    # Research assumptions copied by the offline materializer have not passed
+    # the Brain's evidence-gated Core Claim selection.
+    return [row for row in rows if row.get("is_core") and not str(row.get("claim_key") or "").startswith("rasm:")]
 
 
 def baseline_inventory(store: Any, ticker: str) -> dict[str, Any]:

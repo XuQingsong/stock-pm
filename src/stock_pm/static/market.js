@@ -12,7 +12,7 @@
     weakening: "影响减弱",
     fading: "基本消退",
   };
-  const STATUS_ZH = { active: "持续中", watching: "观察中", resolved: "已消退" };
+  const STATUS_ZH = { active: "持续中", watching: "观察中", candidate: "待验证", resolved: "已消退" };
   const DIRECTION_ZH = { up: "上行", down: "下行", mixed: "方向分化" };
 
   const esc = (value) =>
@@ -47,7 +47,7 @@
   }
 
   function listBlock(title, klass, items) {
-    const rows = (items || []).map((item) => displayText(item.label || item.title || item, "")).filter(Boolean);
+    const rows = [...new Set((items || []).map((item) => displayText(item.label || item.title || item, "")).filter(Boolean))];
     if (!rows.length) {
       return `<div class="signal-block ${klass}"><h4>${esc(title)}</h4><p class="muted-empty">暂无已记录条目</p></div>`;
     }
@@ -58,9 +58,9 @@
 
   function formatAsOf(stamp) {
     const raw = String(stamp || "").trim();
-    const match = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (!match) return "数据时间暂缺";
-    return `数据截至 ${match[2]}-${match[3]}`;
+    const date = new Date(raw);
+    if (!raw || Number.isNaN(date.getTime())) return "市场判断时间未记录";
+    return `市场判断更新：${date.toLocaleString("zh-CN", { hour12: false })}`;
   }
 
   function relatedTickers(data) {
@@ -108,7 +108,7 @@
     if (!drivers.length) return "";
     const top = drivers[0] || {};
     const chips = [];
-    chips.push(chip("主轴可分条", "status-ok"));
+    chips.push(chip(data.market_state === "provisional" ? "待跨资产验证" : "主轴已验证", "status-watch"));
     const cred = zhMap(CONFIDENCE_ZH, top.confidence, "");
     if (cred) chips.push(chip(`可信度 ${cred}`, cred === "低" ? "cred-low" : "cred-mid"));
     const triggers = data.trigger_events || [];
@@ -117,7 +117,7 @@
     return `<div class="status-meta">${chips.join("")}</div>`;
   }
 
-  function driverCard(row, index) {
+  function driverCard(row, index, provisional) {
     const name = displayText(row.display_name || row.name, "");
     if (!name) return "";
     const importance = zhMap(IMPORTANCE_ZH, row.importance, "");
@@ -127,17 +127,16 @@
     const direction = zhMap(DIRECTION_ZH, row.direction, "");
     const whyRaw = displayText(row.why_it_matters, "");
     const why = hasCjk(whyRaw) ? whyRaw : "";
-    const whyTitle =
-      index === 0 ? "为什么它比其他变量更重要" : `为什么排在 Top ${index + 1}`;
+    const whyTitle = provisional ? "这条线索来自什么" : (index === 0 ? "为什么它比其他变量更重要" : `为什么排在 Top ${index + 1}`);
     const sectors = (row.affected_sectors || []).map((item) => displayText(item, "")).filter(Boolean);
     const tickers = (row.affected_tickers || []).map((item) => String(item || "").toUpperCase()).filter(Boolean);
     const impact = [...sectors, ...tickers].join(" · ");
     const rankClass = index === 0 ? " rank-1" : "";
     return `<article class="axis-rank-card${rankClass}">
-      <span class="rank-badge">Top ${index + 1}</span>
+      <span class="rank-badge">${provisional ? "候选" : `Top ${index + 1}`}</span>
       <h3>${esc(name)} <span class="zone-badge fast">快</span></h3>
       <div class="var-meta">
-        ${importance ? chip(`主导程度 ${importance}`, importance === "很高" || importance === "高" ? "intensity-strong" : importance === "中" ? "intensity-mid" : "intensity-weak") : ""}
+        ${importance && !provisional ? chip(`主导程度 ${importance}`, importance === "很高" || importance === "高" ? "intensity-strong" : importance === "中" ? "intensity-mid" : "intensity-weak") : ""}
         ${confidence ? chip(`可信度 ${confidence}`, confidence === "低" ? "cred-low" : "cred-mid") : ""}
         ${trend ? chip(trend, trend === "正在增强" ? "status-watch" : trend === "高位持续" ? "status-ok" : "status-weak") : ""}
         ${status && !trend ? chip(status, status === "持续中" ? "status-ok" : status === "观察中" ? "status-watch" : "status-weak") : ""}
@@ -160,19 +159,19 @@
     const land = displayText(item.lands_on, "");
     return `<article class="trigger-card">
       <h3>${esc(title)}</h3>
-      <span class="muted-empty">影响链暂未展开</span>
+      <span class="muted-empty">传导路径尚未验证</span>
       <div class="trigger-meta">
         ${chip("触发事件", "status-watch")}
         ${land ? chip(`落点 → ${land}`, "intensity-mid") : ""}
       </div>
-      <p class="trigger-note">作用：改写或强化「${esc(land || "当前主轴")}」。本身不是独立定价主轴。</p>
+      <p class="trigger-note">可能关联「${esc(land || "当前主轴")}」；仍需结合市场反应验证。</p>
     </article>`;
   }
 
   function changeRow(item) {
     const kind = displayText(item.kind_label, "主轴");
     const summary = displayText(item.summary, "近窗记录到实质变化");
-    const stamp = formatAsOf(item.created_at).replace("数据截至 ", "").replace("数据时间暂缺", "");
+    const stamp = item.created_at ? new Date(item.created_at).toLocaleDateString("zh-CN") : "";
     return `<li><span class="date">${esc(stamp || "—")}</span><span class="body"><strong>${esc(kind)}</strong> · ${esc(
       summary
     )}</span></li>`;
@@ -213,23 +212,25 @@
     const triggers = data.trigger_events || [];
     const changes = data.recent_driver_changes || [];
     const tickers = relatedTickers(data);
+    const provisional = data.market_state === "provisional";
     const hint = triggers.length
       ? "触发事件（如近窗发行人开支上修）不进本条列表，见下方「触发事件」层"
       : "近窗暂无改写主轴的触发事件。";
     return `
+      ${data.market_state === "provisional" ? `<div class="market-caveat"><strong>当前为候选市场判断</strong><p>已从现有 Brain 记录中聚合主题；跨资产与行业横截面证据尚未接入，排序不能视为已验证的市场主导程度。</p></div>` : ""}
       <section class="status-bar">
-        <h2 class="axis-title">当前市场定价主轴</h2>
-        ${axisRows(axis, drivers)}
+        <h2 class="axis-title">${data.market_state === "provisional" ? "候选市场定价主轴" : "当前市场定价主轴"}</h2>
+        ${provisional ? "" : axisRows(axis, drivers)}
         ${statusChips(data, drivers)}
         <p class="status-hint">※ ${esc(hint)}</p>
       </section>
       <section class="layer-zone axis-zone">
         <div class="layer-label">
-          <h2>当前定价主轴 · Top 1–3</h2>
-          <span class="zone-badge fast">主导变量 · 定价轴</span>
+          <h2>${provisional ? "候选市场变量" : "当前定价主轴 · Top 1–3"}</h2>
+          <span class="zone-badge fast">${provisional ? "待验证" : "主导变量 · 定价轴"}</span>
         </div>
-        <p class="layer-hint">定价轴 = 市场用什么在给资产定价。主导程度 / 方向 / 可信度 / 趋势 · 支持与反向对称</p>
-        <div class="axis-rank">${drivers.map(driverCard).join("")}</div>
+        <p class="layer-hint">${provisional ? "当前只有主题线索；需要跨资产价格和行业截面证据确认市场在交易什么。" : "定价轴 = 市场用什么在给资产定价。主导程度 / 方向 / 可信度 / 趋势 · 支持与反向对称"}</p>
+        <div class="axis-rank">${drivers.map((row, index) => driverCard(row, index, provisional)).join("")}</div>
       </section>
       <section class="layer-zone trigger-zone">
         <div class="layer-label">
@@ -303,4 +304,5 @@
   }
 
   boot();
+  setInterval(boot, 5 * 60 * 1000);
 })();

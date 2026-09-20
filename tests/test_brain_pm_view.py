@@ -351,7 +351,7 @@ def test_pm_view_http_and_page(monkeypatch) -> None:
     page = client.get("/brain/AVGO")
     assert page.status_code == 200
     assert "brain.js" in page.text
-    assert "PM View" in page.text
+    assert "投资总览" in page.text
     payload = client.get("/api/brain/AVGO/pm-view")
     assert payload.status_code == 200
     body = payload.json()

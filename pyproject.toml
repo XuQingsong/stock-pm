@@ -18,6 +18,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<9",
+  "httpx2>=2,<3",
 ]
 
 [project.scripts]
@@ -36,6 +37,7 @@ stock-pm-migrate = "stock_pm.migrate:main"
 stock-pm-persist-live = "stock_pm.persist_live:main"
 stock-pm-events = "stock_pm.events.job:main"
 stock-pm-materialize-brain = "stock_pm.brain.materialize_from_research:main"
+stock-pm-bootstrap-brain = "stock_pm.brain.bootstrap_job:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

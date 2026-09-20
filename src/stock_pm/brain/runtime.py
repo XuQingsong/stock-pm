@@ -383,7 +383,10 @@ def run_brain_update(
 
     initialized = brain_has_baseline(brain_store, symbol)
     has_slow = brain_has_slow_layer(brain_store, symbol)
-    if not has_slow and research is not None:
+    # A research materialization may leave only part of the slow layer behind.
+    # Such a ticker still needs the real evidence-gated bootstrap before events
+    # can be processed incrementally.
+    if not initialized and research is not None:
         boot = bootstrap_brain(
             research,
             symbol,

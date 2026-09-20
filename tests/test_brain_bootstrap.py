@@ -23,6 +23,15 @@ def test_empty_brain_is_not_initialized() -> None:
     assert brain_initialized(store, "ZZZT") is False
 
 
+def test_imported_research_assumption_cannot_complete_baseline() -> None:
+    store = BrainStore()
+    _seed_brain(store)
+    for row in store.list_active_claims("AVGO"):
+        if row.get("is_core"):
+            store.update_claim_pointer(row["claim_id"], {"claim_key": "rasm:legacy", "is_core": True})
+    assert brain_has_baseline(store, "AVGO") is False
+
+
 def test_seeded_brain_is_initialized() -> None:
     store = BrainStore()
     _seed_brain(store)
@@ -120,6 +129,30 @@ def test_bootstrap_from_research_pack_not_from_event(monkeypatch) -> None:
     assert any(row.get("is_core") for row in store.list_active_claims("ZZZT"))
     titles = " ".join(str(row.get("title") or "") for row in store.list_active_claims("ZZZT"))
     assert "one-off headline" not in titles.lower()
+
+
+def test_partial_materialized_brain_completes_baseline_before_event(monkeypatch) -> None:
+    svc = _service()
+    svc.ensure_issuer("ZZZT", legal_name="Test Co", sector="半导体")
+    _seed_evidence(svc)
+    monkeypatch.setattr("stock_pm.brain.pipeline.search_recent_news", lambda *args, **kwargs: [])
+    store = BrainStore()
+    store.insert_claim({
+        "ticker": "ZZZT", "claim_id": "bclm_partial", "claim_key": "partial",
+        "title": "Imported research assumption", "statement": "An imported assumption.",
+        "claim_type": "operating", "is_core": True,
+    })
+    assert brain_has_baseline(store, "ZZZT") is False
+    result = run_brain_update(
+        ticker="ZZZT",
+        item={"kind": "news", "title": "Material customer update", "fact": "Customer demand changed."},
+        store=store,
+        research=svc,
+        completer=svc.completer,
+    )
+    assert result["path"] == "cold_start_bootstrap"
+    assert result["event_deferred"] is True
+    assert result["brain_initialized"] is True
 
 
 def test_bootstrap_once_then_incremental(monkeypatch) -> None:

@@ -12,12 +12,13 @@ Page paths never invoke GLM.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from typing import Any
 
 from stock_pm.research.llm_reason import compact_text
 
 from .investment import investment_snapshot
-from .types import CORE_CLAIM_MAX, FUNDAMENTAL_CLAIM_TYPES, GOLDEN_TICKERS
+from .types import CORE_CLAIM_MAX, FUNDAMENTAL_CLAIM_TYPES
 
 RETIRED_HYPOTHESIS = {"retired", "rejected", "closed"}
 UNRESOLVED_DIVERGENCE = {"open", "partially_explained"}
@@ -34,6 +35,7 @@ EMPTY_DOMINANT = "当前尚未形成明确主导变量"
 PRICE_EXPLAINED = "基本能够解释"
 PRICE_PARTIAL = "部分能够解释"
 PRICE_UNEXPLAINED = "目前难以充分解释"
+PRICE_NOT_ASSESSED = "尚无价格归因证据"
 
 MARKET_WIDE_KINDS = {"ai_demand", "sector_macro"}
 MARKET_WIDE_KEYS = {
@@ -69,7 +71,6 @@ MARKET_PRICING_CLAIM = re.compile(
 EVENT_NODE_TYPES = {"event", "observation", "news", "price", "signal"}
 TRIGGER_EVENT_TYPES = {"capex", "guidance", "earnings", "product", "customer"}
 ROLE_LABELS = ("主导", "次主导", "辅助")
-IMPORTANCE_FROM_COUNT = ((3, "very_high"), (2, "high"), (1, "medium"), (0, "low"))
 THEME_DISPLAY_ZH = {
     "ai_capex_expectations": "AI 资本开支",
     "real_yields": "美债收益率",
@@ -171,9 +172,6 @@ def theme_key(row: dict[str, Any] | None) -> str | None:
     for token, needles in THEME_NEEDLES:
         if any(needle in blob for needle in needles):
             return token
-    if str(item.get("state_type") or "").lower() in {"macro", "industry", "market_expectation"}:
-        name = compact_text(item.get("name") or item.get("state_key") or "", 40)
-        return name.lower().replace(" ", "_") if name else None
     return None
 
 
@@ -194,22 +192,14 @@ def is_fundamental_core_claim(row: dict[str, Any] | None) -> bool:
     item = row or {}
     if not item.get("is_core"):
         return False
+    if str(item.get("claim_key") or "").startswith("rasm:"):
+        return False
     if is_market_pricing_or_valuation_claim(item):
         return False
     claim_type = str(item.get("claim_type") or "operating").lower()
     if claim_type and claim_type not in FUNDAMENTAL_CLAIM_TYPES and claim_type != "operating":
         return False
     return True
-
-
-def _importance(support_count: int, ticker_count: int, confidence: str) -> str:
-    score = support_count + ticker_count
-    if confidence == "high":
-        score += 1
-    for threshold, label in IMPORTANCE_FROM_COUNT:
-        if score >= threshold:
-            return label
-    return "low"
 
 
 def _trend(statuses: list[str], expectation_trends: list[str]) -> str:
@@ -291,11 +281,10 @@ def _related_triggers(store: Any, key: str) -> list[dict[str, Any]]:
 def _should_promote(bucket: dict[str, list[dict[str, Any]]]) -> bool:
     hyps = bucket.get("hypotheses") or []
     tickers = {str(row.get("ticker") or "").upper() for row in hyps if row.get("ticker")}
-    has_macro = bool(bucket.get("states"))
-    has_attention = bool(bucket.get("attentions") or bucket.get("expectations"))
-    if len(tickers) >= 2:
+    has_global_state = any(not row.get("ticker") for row in bucket.get("states") or [])
+    if has_global_state:
         return True
-    if has_macro and (hyps or has_attention):
+    if len(tickers) >= 2:
         return True
     return False
 
@@ -310,7 +299,8 @@ def aggregate_dominant_drivers(store: Any) -> list[dict[str, Any]]:
         members = (bucket.get("hypotheses") or []) + (bucket.get("attentions") or []) + (bucket.get("expectations") or []) + (bucket.get("states") or [])
         if not members:
             continue
-        named = next((row for row in members if compact_text(row.get("name") or row.get("hypothesis") or row.get("statement") or "", 8)), None)
+        global_states = [row for row in bucket.get("states") or [] if not row.get("ticker")]
+        named = next((row for row in global_states + members if compact_text(row.get("name") or row.get("hypothesis") or row.get("statement") or "", 8)), None)
         name = compact_text(
             (named or {}).get("name")
             or (named or {}).get("hypothesis")
@@ -332,7 +322,9 @@ def aggregate_dominant_drivers(store: Any) -> list[dict[str, Any]]:
         ]
         updated = max((_sort_time(row, "updated_at", "created_at") for row in members), default="")
         started = min((_sort_time(row, "created_at", "started_at") for row in members if _sort_time(row, "created_at", "started_at")), default=updated)
-        importance = _importance(len(support_ids), len(tickers), confidence)
+        basis = "global_environment" if global_states else "ticker_cluster"
+        # Ticker coverage says nothing about the market importance of a theme.
+        importance = "medium" if global_states else "low"
         why = compact_text(
             next((row.get("why_it_matters") or row.get("reason") or row.get("statement") or "" for row in members if row.get("why_it_matters") or row.get("reason") or row.get("statement")), ""),
             240,
@@ -343,6 +335,7 @@ def aggregate_dominant_drivers(store: Any) -> list[dict[str, Any]]:
                 "name": name,
                 "category": key,
                 "importance": importance,
+                "assessment_basis": basis,
                 "direction": _direction(members),
                 "confidence": confidence,
                 "trend": _trend(statuses, trends),
@@ -354,7 +347,7 @@ def aggregate_dominant_drivers(store: Any) -> list[dict[str, Any]]:
                 "affected_tickers": tickers,
                 "started_at": started or None,
                 "updated_at": updated or None,
-                "status": "active" if any(str(item).lower() in {"active", "supported", "open", "candidate"} for item in statuses) or bool(members) else "watching",
+                "status": "candidate",
                 "why_it_matters": why or None,
                 "source_object_ids": [str(row.get("hypothesis_id") or row.get("attention_id") or row.get("expectation_id") or row.get("state_id") or "") for row in members if row.get("hypothesis_id") or row.get("attention_id") or row.get("expectation_id") or row.get("state_id")][:16],
             }
@@ -368,7 +361,7 @@ def _sensitivity_band(exposures: list[dict[str, Any]], drivers: list[dict[str, A
         return "high"
     if exposures or drivers:
         return "medium"
-    return "low"
+    return "unknown"
 
 
 def _relevance_band(hypotheses: list[dict[str, Any]], attentions: list[dict[str, Any]], events: list[dict[str, Any]]) -> str:
@@ -440,6 +433,8 @@ def recent_driver_changes(store: Any, drivers: list[dict[str, Any]]) -> list[dic
             continue
         before = dict(row.get("from_payload") or {})
         after = dict(row.get("to_payload") or {})
+        if not before:
+            continue
         skip = {"updated_at", "created_at", "last_reviewed_at", "run_id", "snapshot_id", "history_id"}
         deltas = [{"field": key, "from": before.get(key), "to": after.get(key)} for key in sorted(set(before) | set(after)) if key not in skip and before.get(key) != after.get(key)]
         if not deltas:
@@ -551,11 +546,14 @@ def price_attribution(
             )
     latest = divergences[0] if divergences else None
     unresolved_q = compact_text((latest or {}).get("unresolved_question") or "", 200) or None
-    status = _price_status((latest or {}).get("explanation_grade"), bool(unresolved_q or divergences), len(explanations))
+    status = (
+        _price_status((latest or {}).get("explanation_grade"), bool(unresolved_q or divergences), len(explanations))
+        if latest else PRICE_NOT_ASSESSED
+    )
     return {
         "status": status,
         "explanations": explanations,
-        "explained": [row for row in explanations if row.get("kind") in {"global_driver", "ticker_hypothesis", "sensitivity"}],
+        "explained": [row for row in explanations if row.get("kind") in {"global_driver", "ticker_hypothesis", "sensitivity"}] if latest else [],
         "unexplained": [{"question": unresolved_q, "divergence_id": (latest or {}).get("divergence_id")}] if unresolved_q else [],
         "forced_single_cause": False,
         "price_is_not_claim_invalidation": True,
@@ -628,7 +626,8 @@ def _label_lookup(store: Any, method: str, id_key: str, *text_keys: str) -> dict
         sid = str(row.get(id_key) or "").strip()
         if not sid:
             continue
-        label = compact_text(next((row.get(key) for key in text_keys if row.get(key)), ""), 80)
+        options = [row.get(key) for key in text_keys if row.get(key)]
+        label = compact_text(next((value for value in options if _has_cjk(value)), options[0] if options else ""), 160)
         if label:
             out[sid] = label
     return out
@@ -645,7 +644,7 @@ def _labeled_items(ids: list[Any], lookup: dict[str, str], *, title_key: str = "
 
 def decorate_market_overview(payload: dict[str, Any], store: Any) -> dict[str, Any]:
     """Attach display labels for the market page. Still a read-only view; no GLM."""
-    attentions = _label_lookup(store, "list_all_market_attentions", "attention_id", "name", "statement")
+    attentions = _label_lookup(store, "list_all_market_attentions", "attention_id", "statement", "name")
     events = _label_lookup(store, "list_all_events", "event_id", "title", "subject")
     layered_triggers: list[dict[str, str]] = []
     seen_triggers: set[str] = set()
@@ -682,17 +681,23 @@ def build_market_overview(store: Any, *, research: Any | None = None) -> dict[st
     del research
     drivers = aggregate_dominant_drivers(store)
     empty = not drivers
+    # The current read model has no persisted cross-asset or sector observations.
+    # A promoted ticker cluster is therefore a candidate, not a verified market conclusion.
     payload = {
         "source": "persisted_brain",
         "llm_invoked": False,
-        "market_state": "empty" if empty else "ready",
+        "market_state": "empty" if empty else "provisional",
+        "assessment_basis": "global_environment" if any(row.get("assessment_basis") == "global_environment" for row in drivers) else ("ticker_cluster" if drivers else None),
+        "coverage_gaps": [] if empty else ["cross_asset", "sector_breadth"],
+        "served_at": datetime.now(timezone.utc).isoformat(),
         "empty_state": EMPTY_DOMINANT if empty else None,
-        "pricing_axis": pricing_axis(drivers),
+        # A ranked pricing axis requires independent cross-asset confirmation.
+        "pricing_axis": [],
         "dominant_drivers": drivers,
         "recent_driver_changes": recent_driver_changes(store, drivers),
         "cross_asset_summary": [],
         "sector_summary": [],
-        "covered_tickers": list(GOLDEN_TICKERS),
+        "covered_tickers": sorted({ticker for row in drivers for ticker in row.get("affected_tickers") or []}),
     }
     return decorate_market_overview(payload, store)
 
@@ -716,10 +721,18 @@ def attach_company_overview(snapshot: dict[str, Any], store: Any, ticker: str, *
     snapshot["thesis"] = _thesis_card(store, symbol, snapshot["core_claims"])
     snapshot["quote"] = _quote(store, symbol, research)
     snapshot["market_environment"] = {
-        "dominant_drivers": drivers,
+        "dominant_drivers": decorate_market_overview({"dominant_drivers": drivers, "pricing_axis": [], "recent_driver_changes": []}, store)["dominant_drivers"],
         "sensitivities": sensitivities,
         "empty": not drivers,
         "empty_state": EMPTY_DOMINANT if not drivers else None,
+    }
+    claim_stamps = [str(row.get("updated_at") or row.get("created_at") or "") for row in raw_cores]
+    snapshot["freshness"] = {
+        "brain_run_at": snapshot.get("as_of"),
+        "claims_updated_at": max(claim_stamps, default="") or None,
+        "market_updated_at": max((str(row.get("updated_at") or "") for row in drivers), default="") or None,
+        "quote_updated_at": None,
+        "served_at": datetime.now(timezone.utc).isoformat(),
     }
     snapshot["price_attribution"] = price_attribution(
         store,

@@ -14,7 +14,7 @@ Alpaca 延迟行情 -> 云端定时采集 -> PostgreSQL -> FastAPI / 分析程�
 
 | 页面 | 范围 | 内容 |
 | --- | --- | --- |
-| `/market` 市场总览 | V1 第一阶段 | 已落盘定价主轴（主导/次主导/辅助分条）· 主导变量卡片 · 触发事件另层；只读 `GET /api/market/overview` |
+| `/market` 市场总览 | V1 第一阶段 | 从已落盘市场环境与 Brain 读取候选变量；跨资产和行业截面未验证前不标为正式主导变量；只读 `GET /api/market/overview` |
 | `/` 总览 | 全部自选 | 市场主事件（依据默认折叠）、「今日重点关注」三档白话、其余事件轮播、未映射头条折叠 |
 | `/stock/{symbol}` 个股 | 单标的 | 五段：当前判断 · 昨→今/中期 · 三个驱动 · 风险反证 · 观察/失效；材料与诊断默认折叠 |
 | `/review` 复盘 | 全部自选 | 正式预测（计入命中）与观察分家；错误归因/学习；不倾倒全市场 |
@@ -126,7 +126,7 @@ FMP 可提供：公司资料、PE/PB/PS、毛利率等 TTM 比率、季度利润
 
 ETF（例如 QQQ）或供应商未覆盖的字段同样显示为空。
 
-云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → `stock-pm-events`（可信事件增量入库） → 复盘 → 环境快照 → 昨盘/复盘笔记 → 预测与打脸检查。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。
+云服务器使用 `deploy/stock-pm-daily.timer` 每天 23:30 UTC（北京时间次日 07:30）依次运行：Alpaca 日线与期权 → 基本面/财报/新闻 → `stock-pm-flow --days 1`（当日大额成交与分段） → `stock-pm-macro`（宏观日历） → `stock-pm-cboe`（Cboe 期权市场概览） → `stock-pm-events`（可信事件增量入库） → 复盘 → 环境快照 → Brain 候选资料映射 → 昨盘/复盘笔记 → 预测与打脸检查。`deploy/stock-pm-intraday.timer` 每 5 分钟触发一次，只在美股交易日 09:45–16:30（纽约时间）写入约 15 分钟延迟的分钟线。Market Brain 目前只在每日环境快照后更新候选资料；页面每 5 分钟重读持久化数据，不在打开页面时调用 LLM。初次建立公司 Brain 基线需要单独运行 `stock-pm-bootstrap-brain --tickers AVGO,LITE,AAPL`。
 
 ## 个股页指标定义
 

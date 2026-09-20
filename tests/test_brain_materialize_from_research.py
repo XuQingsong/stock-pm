@@ -213,7 +213,8 @@ def test_materialize_maps_existing_research_without_llm() -> None:
     assert any(row.get("source_kind") == SOURCE_KIND for row in hyps)
     assert brain.latest_thesis("AVGO")["current_thesis"].startswith("AVGO remains")
     claims = brain.list_active_claims("AVGO")
-    assert any(row.get("is_core") and "AI capex" in (row.get("statement") or "") for row in claims)
+    assert any(not row.get("is_core") and "AI capex" in (row.get("statement") or "") for row in claims)
+    assert build_pm_view(brain, "AVGO")["core_claims"] == []
     assert any(row.get("what_would_invalidate") for row in claims)
     assert brain.list_expectations("AVGO")
     assert any(row.get("state_type") == "industry" for row in brain.list_states("AVGO"))
@@ -338,7 +339,8 @@ def test_materialize_and_page_paths_never_invoke_llm(monkeypatch) -> None:
     assert company.json()["llm_invoked"] is False
     assert lite.json()["llm_invoked"] is False
     assert claim.json()["llm_invoked"] is False
-    assert market.json()["dominant_drivers"]
+    assert market.json()["dominant_drivers"] == []
+    assert market.json()["market_state"] == "empty"
     assert lite.json()["core_claims"] == []
 
 
@@ -597,15 +599,11 @@ def test_chinese_desk_env_uses_canonical_keys_not_raw_sentence() -> None:
     claims = brain.list_active_claims("AVGO")
     assert any(AVGO_ACCELERATOR_ASSUMPTION in (row.get("statement") or "") for row in claims)
     hyps = brain.list_hypotheses("AVGO")
-    assert hyps
-    assert all(row.get("kind") in {"ai_demand", "sector_macro", "real_yields"} for row in hyps)
-    assert any(row.get("canonical_key") == "real_yields" for row in hyps)
-    assert any(row.get("name") == MARKET_THEME_LABELS["real_yields"] for row in hyps)
+    assert not hyps  # Global environment observations do not create ticker hypotheses.
     assert not any("accelerator" in (row.get("hypothesis") or "").lower() for row in hyps)
     assert not any(AVGO_ACCELERATOR_ASSUMPTION == (row.get("hypothesis") or "") for row in hyps)
     attentions = brain.list_market_attentions("AVGO")
-    assert attentions
-    assert any(row.get("name") == MARKET_THEME_LABELS["real_yields"] for row in attentions)
+    assert not attentions
 
     lite = next(row for row in first["results"] if row["ticker"] == "LITE")
     assert lite["status"] == "empty"
@@ -617,6 +615,7 @@ def test_chinese_desk_env_uses_canonical_keys_not_raw_sentence() -> None:
     assert overview["llm_invoked"] is False
     assert overview["empty_state"] is None
     assert any(row.get("category") == "real_yields" for row in overview["dominant_drivers"])
+    assert overview["assessment_basis"] == "global_environment"
 
     inv1 = _inventory(brain)
     second = materialize_from_research(["AVGO", "LITE"], research=research, brain=brain, market=market)

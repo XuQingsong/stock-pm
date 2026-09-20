@@ -836,6 +836,9 @@ def _write_state(brain: BrainStore, row: dict[str, Any]) -> bool:
     ticker = row.get("ticker")
     existing = _find_state(brain, str(ticker) if ticker else None, key) if key else None
     if existing:
+        compared = ("state_type", "name", "statement", "subject", "source", "confidence", "direction", "current_value")
+        if all(existing.get(field) == row.get(field) for field in compared):
+            return False
         updated = brain.upsert_state({**row, "state_id": existing.get("state_id")})
         return bool(updated)
     brain.insert_state(row)
@@ -1117,10 +1120,12 @@ def _map_assumptions(
                 "status": CLAIM_STATUS.get(status, "unverified"),
                 "importance": _importance(row.get("importance")),
                 "confidence": confidence,
-                "is_core": role in {"core", "risk"},
+                # An imported research assumption is a candidate. Only the
+                # evidence-gated Brain pipeline may promote a Core Claim.
+                "is_core": False,
                 "why_it_matters": compact_text(row.get("why_it_matters") or "", 240),
                 "what_would_invalidate": compact_text(row.get("invalidation_condition") or "", 240),
-                "lifecycle": "core" if role in {"core", "risk"} else "emerging",
+                "lifecycle": "emerging",
             },
         )
         cid = str(claim.get("claim_id") or "")
@@ -1387,13 +1392,15 @@ def _map_market_events(brain: BrainStore, ticker: str, events: list[dict[str, An
 
 def _map_environment(
     brain: BrainStore,
-    tickers: list[str],
     snapshots: list[dict[str, Any]],
     counts: dict[str, int],
 ) -> dict[str, dict[str, Any]]:
-    del tickers
     by_theme: dict[str, dict[str, Any]] = {}
     for row in snapshots:
+        # A symbol environment describes a company. Only the independent
+        # market snapshot may seed a global market observation.
+        if str(row.get("scope") or "") != "market":
+            continue
         if str(row.get("publishState") or row.get("publish_state") or "") == "missing":
             continue
         texts = _collect_env_texts(row)
@@ -1406,21 +1413,17 @@ def _map_environment(
             themes = list(tags)
         if not themes or not usable:
             continue
-        scope = str(row.get("scope") or "market")
         for theme in themes:
             if theme not in MARKET_THEME_LABELS:
                 continue
             name, statement = _extract_theme_copy(usable, theme)
             if not statement or MISSING_ENV in statement:
                 continue
-            prior = by_theme.get(theme)
-            if prior and scope != "market" and prior.get("scope") == "market":
-                continue
             by_theme[theme] = {
                 "theme": theme,
                 "name": name,
                 "statement": statement,
-                "scope": scope,
+                "scope": "market",
             }
     for item in by_theme.values():
         theme = item["theme"]
@@ -1446,46 +1449,12 @@ def _map_environment(
     return by_theme
 
 
-def _apply_env_themes(
-    brain: BrainStore,
-    ticker: str,
-    env_themes: dict[str, dict[str, Any]],
-    counts: dict[str, int],
-) -> None:
-    """Ticker hyp/attention from already-classified env themes so promote can fire."""
-    if not env_themes:
-        return
-    hyp_acc: dict[str, dict[str, Any]] = {}
-    att_acc: dict[str, dict[str, Any]] = {}
-    for theme, item in env_themes.items():
-        label = _theme_label(theme)
-        statement = item.get("statement") or label
-        _note_market_theme(
-            hyp_acc,
-            att_acc,
-            ticker,
-            statement,
-            extra={
-                "name": label,
-                "kind": theme,
-                "canonical_key": theme,
-                "statement": statement,
-            },
-            confidence="medium",
-            status="active",
-            reason="mapped from environment_snapshots",
-            alignment="support",
-        )
-    _flush_market_themes(brain, hyp_acc, att_acc, counts)
-
-
 def materialize_ticker(
     *,
     ticker: str,
     research: Any,
     brain: BrainStore,
     market: Any | None = None,
-    env_themes: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     symbol = str(ticker or "").upper()
     store = _research_store(research)
@@ -1500,7 +1469,6 @@ def materialize_ticker(
         _map_thesis(brain, symbol, bundle.get("thesis"), claim_ids, counts)
         _map_valuation(brain, symbol, bundle.get("valuation"), counts)
         _map_market_events(brain, symbol, _load_market_events(market, symbol), counts)
-        _apply_env_themes(brain, symbol, env_themes or {}, counts)
     return {
         "ticker": symbol,
         "status": "written" if present else "empty",
@@ -1531,14 +1499,13 @@ def materialize_from_research(
     brain_store = brain or BrainStore(getattr(store, "database", None))
     env_counts = _empty_counts()
     snapshots = _load_environment(market, symbols)
-    env_themes = _map_environment(brain_store, symbols, snapshots, env_counts)
+    _map_environment(brain_store, snapshots, env_counts)
     results = [
         materialize_ticker(
             ticker=symbol,
             research=research,
             brain=brain_store,
             market=market,
-            env_themes=env_themes,
         )
         for symbol in symbols
     ]

@@ -108,6 +108,8 @@ def test_case1_meta_capex_is_trigger_not_dominant_driver() -> None:
     overview = build_market_overview(store)
     assert overview["llm_invoked"] is False
     assert overview["empty_state"] is None
+    assert overview["market_state"] == "provisional"
+    assert "cross_asset" in overview["coverage_gaps"]
     assert all("meta" not in str(row.get("name") or "").lower() for row in overview["dominant_drivers"])
 
 
@@ -315,6 +317,16 @@ def test_unresolved_price_never_forces_single_cause() -> None:
     assert attr["status"] in {PRICE_PARTIAL, PRICE_UNEXPLAINED}
     assert len(attr["explanations"]) >= 2
     assert attr["unexplained"]
+
+
+def test_market_candidates_do_not_become_price_attribution_without_feedback() -> None:
+    store = BrainStore()
+    _seed_global_ai_driver(store)
+    snapshot = build_pm_view(store, "AVGO")
+    assert snapshot["price_attribution"]["status"] == "尚无价格归因证据"
+    assert snapshot["price_attribution"]["explained"] == []
+    assert snapshot["freshness"]["brain_run_at"] is None
+    assert snapshot["freshness"]["quote_updated_at"] is None
 
 
 def test_http_market_and_company_and_claim_use_same_store(monkeypatch) -> None:

@@ -361,6 +361,10 @@ def _what_changed(store: Any, ticker: str, history: list[dict[str, Any]]) -> lis
             continue
         from_payload = dict(row.get("from_payload") or {})
         to_payload = dict(row.get("to_payload") or {})
+        # Initial materialization/baseline creation is not a later change in
+        # the investment judgment.
+        if not from_payload:
+            continue
         deltas = _field_deltas(from_payload, to_payload, family)
         if not deltas:
             continue

@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Brain</title>
-  <link rel="stylesheet" href="/static/brain.css?v=pm2" />
+  <title>投资总览 · Stock-PM</title>
+  <link rel="stylesheet" href="/static/brain.css?v=pm3" />
 </head>
 <body>
   <header class="br-top">
-    <div class="br-brand">PM View</div>
+    <a class="br-brand" href="/market">Stock-PM</a>
+    <a class="br-market" href="/market">市场总览</a>
     <nav id="ticker-nav" class="br-tickers" aria-label="标的"></nav>
     <div id="br-status" class="br-status">载入中</div>
   </header>
   <main id="root" class="br-main">
-    <p class="muted">正在读取持久化 Brain…</p>
+    <p class="muted">正在读取已保存的投资判断…</p>
   </main>
-  <script src="/static/brain.js?v=pm2"></script>
+  <script src="/static/brain.js?v=pm3"></script>
 </body>
 </html>

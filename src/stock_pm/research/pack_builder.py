@@ -165,10 +165,9 @@ class PackBuilder:
         volumes = index_volumes(stock_rows)
 
         deduped_earnings = dedupe_earnings_prints(earnings_rows)
-        dated_earnings = [row for row in deduped_earnings if row.get("period_end")]
         earnings_history = [
             _earnings_item(row, fundamentals=fundamentals)
-            for row in (dated_earnings or deduped_earnings)
+            for row in deduped_earnings
         ]
         earnings_history.sort(
             key=lambda row: str(row.get("period_end") or row.get("report_date") or ""),

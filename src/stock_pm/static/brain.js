@@ -199,6 +199,19 @@ function shownOf(shown, total, label) {
   return `<p class="muted">Showing ${shown} of ${total} persisted ${label}.</p>`;
 }
 
+function timeLabel(value) {
+  if (!value) return "尚无记录";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "时间未标明" : date.toLocaleString("zh-CN", { hour12: false });
+}
+
+const BAND_ZH = { very_high: "很高", high: "高", medium: "中", low: "低", unknown: "待验证" };
+const CLAIM_ZH = {
+  strongly_supported: "强支持", partially_supported: "部分支持", challenged: "受到挑战",
+  contradicted: "已受反证", unverified: "待验证",
+};
+const band = (value) => BAND_ZH[value] || "待验证";
+
 function claimEvidence(claim) {
   const parts = [];
   if (claim.strongest_support) {
@@ -216,90 +229,60 @@ function claimEvidence(claim) {
 function renderPmView(data) {
   const claims = data.core_claims || [];
   const changed = data.what_changed || [];
-  const questions = data.open_research_questions || [];
-  const display = data.display || {};
-  document.title = `PM View · ${data.ticker}`;
-  const empty = data.status === "empty";
-  const missingEvidence = claims.length && claims.every((claim) => !claim.strongest_support && !claim.strongest_counter);
+  const questions = (data.open_research_questions || []).slice(0, 5);
+  const market = data.market_environment || {};
+  const drivers = market.dominant_drivers || [];
+  const sensitivity = market.sensitivities || [];
+  const freshness = data.freshness || {};
+  const thesis = data.thesis || {};
+  const attribution = data.price_attribution || {};
+  const ready = data.brain_initialized === true;
+  const driverById = Object.fromEntries(drivers.map((item) => [item.id, item]));
+  document.title = `投资总览 · ${data.ticker}`;
   return `
-    <p class="muted">${escapeHtml(data.ticker)} · ${escapeHtml(data.company_name || "")} · persisted Brain · no new LLM · ${escapeHtml(
-      data.lifecycle || ""
-    )}</p>
-    <h1>${escapeHtml(data.company_name || data.ticker)}</h1>
-    ${
-      empty
-        ? `<div class="warnbox poor"><h3>No persisted Brain</h3><div>This ticker has no Slow-layer objects yet. The page will not invent claims or re-run research.</div></div>`
-        : ""
-    }
-    <section id="investment-logic">
-      <p class="eyebrow">现在最重要的投资逻辑是什么？</p>
-      <h2>Core Claims</h2>
-      <div class="cards">
-        ${
-          claims.length
-            ? claims
-                .map(
-                  (claim) => `
-          <article class="card">
-            <div class="row">
-              ${pill(claim.status)}
-              ${pill(claim.confidence)}
-              ${pill(claim.importance)}
-              ${claim.recent_change ? pill("changed") : ""}
-            </div>
-            <h3>${escapeHtml(claim.title || "")}</h3>
-            <p>${escapeHtml(claim.statement || "")}</p>
-            ${claimEvidence(claim)}
-            ${
-              claim.claim_id
-                ? `<a class="btn" href="/brain/${data.ticker}/claims/${claim.claim_id}">Claim detail</a>`
-                : ""
-            }
-          </article>`
-                )
-                .join("")
-            : emptyLine("No persisted Core Claims.")
-        }
-      </div>
-      ${missingEvidence ? emptyLine("Claim support / counter is not persisted on this Brain, so the page does not invent it.") : ""}
+    <div class="company-head">
+      <p class="eyebrow">公司研究 / ${escapeHtml(data.ticker)}</p>
+      <h1>${escapeHtml(data.company_name || data.ticker)}</h1>
+      <p class="muted">Brain 更新：${escapeHtml(timeLabel(freshness.brain_run_at || data.as_of))} · 市场判断：${escapeHtml(timeLabel(freshness.market_updated_at))}</p>
+    </div>
+    ${ready ? "" : `<div class="warnbox"><strong>正式 Brain 基线尚未完成</strong><p>现有研究资料已落盘，但公司状态、价值驱动与核心判断尚未全部通过正式 Brain 验证。以下缺失处会如实显示。</p></div>`}
+    <section id="investment-logic" class="lead-panel">
+      <p class="eyebrow">当前投资逻辑</p>
+      ${ready && !thesis.empty && thesis.current_thesis
+        ? `<p class="thesis-text">${escapeHtml(thesis.current_thesis)}</p>${thesis.what_would_change_thesis ? `<p class="muted">需要重新评估的条件：${escapeHtml(thesis.what_would_change_thesis)}</p>` : ""}`
+        : `<p class="muted">正式投资逻辑尚未形成。最近研究材料不能替代 Brain 的完整判断。</p>`}
+    </section>
+    <section id="core-claims">
+      <div class="section-heading"><h2>基本面核心判断</h2><span>目标 3–5 条</span></div>
+      <div class="cards">${ready && claims.length ? claims.slice(0, 5).map((claim) => `
+        <article class="card">
+          <div class="row">${pill(CLAIM_ZH[claim.status] || "待验证")}${pill(`可信度 ${band(claim.confidence)}`)}</div>
+          <h3>${escapeHtml(claim.title || "未命名判断")}</h3>
+          <p>${escapeHtml(claim.statement || "")}</p>
+          ${claim.strongest_support ? `<div class="claim-evidence"><strong>主要支持</strong>${escapeHtml(claim.strongest_support.fact || "")}</div>` : `<p class="muted">支持证据尚未关联</p>`}
+          ${claim.strongest_counter ? `<div class="claim-evidence"><strong>主要反证</strong>${escapeHtml(claim.strongest_counter.fact || "")}</div>` : ""}
+          ${claim.claim_id ? `<a class="text-link" href="/brain/${escapeHtml(data.ticker)}/claims/${escapeHtml(claim.claim_id)}">查看判断依据 →</a>` : ""}
+        </article>`).join("") : `<p class="empty-panel">尚无经过正式 Brain 选择的核心判断。</p>`}</div>
     </section>
     <section id="what-changed">
-      <p class="eyebrow">最近什么真正变了？</p>
-      <h2>What Changed</h2>
-      ${shownOf(display.what_changed_shown, display.what_changed_total, "deltas")}
-      ${changed.length ? changed.map(deltaBlock).join("") : emptyLine("No State / Driver / Expectation / Claim delta.")}
-    </section>
-    <section id="now-chain">
-      <p class="eyebrow">最新 Now Chain</p>
-      <h2>Now Chain</h2>
-      ${data.now_chain && data.now_chain.as_of ? `<p class="muted">as of ${escapeHtml(data.now_chain.as_of)}</p>` : ""}
-      ${nowBlock(data.now_chain)}
+      <div class="section-heading"><h2>最近真正发生的变化</h2><span>只显示已有判断的实质修订</span></div>
+      ${changed.length ? changed.slice(0, 5).map((row) => `<div class="change-item"><time>${escapeHtml(timeLabel(row.created_at))}</time><strong>${escapeHtml(row.label || "判断变化")}</strong><p>${escapeHtml(row.reason || "相关字段发生变化，原因尚未记录")}</p></div>`).join("") : `<p class="empty-panel">暂无已记录的实质判断变化。初次导入资料不计为变化。</p>`}
     </section>
     <section id="market-view">
-      <p class="eyebrow">市场可能在交易什么？</p>
-      <h2>Market View</h2>
-      ${shownOf(display.hypotheses_shown, display.hypotheses_total, "hypotheses")}
-      ${shownOf(display.expectations_shown, display.expectations_total, "expectations")}
-      ${marketBlock(data.market_view)}
+      <div class="section-heading"><h2>当前市场变量对公司的影响</h2><a href="/market">查看市场总览 →</a></div>
+      ${sensitivity.length ? `<div class="market-table-wrap"><table class="market-table"><thead><tr><th>市场变量</th><th>市场重要性</th><th>公司敏感度</th><th>当前相关性</th></tr></thead><tbody>${sensitivity.map((row) => {
+        const driver = driverById[row.market_driver_id] || {};
+        return `<tr><th>${escapeHtml(driver.display_name || driver.name || "未命名变量")}</th><td>待跨资产验证</td><td>${escapeHtml(band(row.sensitivity))}</td><td>${escapeHtml(band(row.current_relevance))}</td></tr>`;
+      }).join("")}</tbody></table></div>` : `<p class="empty-panel">尚无经过结构性暴露验证的市场变量映射。</p>`}
+      ${sensitivity.some((row) => !row.mechanism) ? `<p class="muted">部分传导机制尚未建立，敏感度不能视为已验证结论。</p>` : ""}
+      <div class="price-panel"><h3>当前股价可能在交易什么</h3>
+        <p>${escapeHtml(attribution.status || "尚无价格归因证据")}</p>
+        ${attribution.status === "尚无价格归因证据" ? `<p class="muted">还没有价格反馈记录，暂不把市场变量当作已证实的股价原因。</p>` : `<p class="muted">这些是可并存的解释假设，未解释部分继续保留。</p>`}
+      </div>
     </section>
     <section id="open-questions">
-      <p class="eyebrow">我接下来最需要验证什么？</p>
-      <h2>Open Research Questions</h2>
-      ${shownOf(display.questions_shown, display.questions_total, "questions")}
-      ${
-        questions.length
-          ? questions
-              .map(
-                (row) => `
-        <div class="news">
-          <div class="row">${pill(row.priority)}${pill(row.status)}</div>
-          <div><b>${escapeHtml(row.question)}</b></div>
-          ${row.why_it_matters ? `<div class="muted">${escapeHtml(row.why_it_matters)}</div>` : ""}
-        </div>`
-              )
-              .join("")
-          : emptyLine("No open research question.")
-      }
+      <div class="section-heading"><h2>下一步最值得验证</h2><span>Top ${questions.length}</span></div>
+      ${questions.length ? `<ol class="question-list">${questions.map((row) => `<li>${escapeHtml(row.question || "")}</li>`).join("")}</ol>` : `<p class="empty-panel">尚无待验证问题。</p>`}
     </section>
   `;
 }
@@ -484,7 +467,7 @@ async function main() {
     }
     const res = await fetch(`/api/brain/${ticker}/pm-view`);
     const data = await res.json();
-    status.textContent = data.lifecycle || data.status || "missing";
+    status.textContent = data.brain_initialized ? "判断已建立" : "基线待完成";
     root.innerHTML = renderPmView(data);
   } catch (err) {
     status.textContent = "error";
@@ -493,3 +476,6 @@ async function main() {
 }
 
 main();
+setInterval(() => {
+  if (pathParts().kind === "") main();
+}, 5 * 60 * 1000);
