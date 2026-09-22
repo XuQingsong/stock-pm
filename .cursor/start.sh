@@ -6,6 +6,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# Put the project venv first on PATH so scripts/start-postgres.sh — which shells
+# out to `python3` for its psycopg readiness/provisioning probes — uses the
+# interpreter that actually has psycopg installed (system python3 does not).
+if [[ -d .venv/bin ]]; then
+  export PATH="$ROOT/.venv/bin:$PATH"
+fi
+
 # Start the local PostgreSQL cluster and ensure the role/db exist (idempotent).
 bash scripts/start-postgres.sh
 
