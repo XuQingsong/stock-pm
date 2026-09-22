@@ -1,0 +1,12 @@
+{
+  "name": "stock-pm",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "app",
+      "command": "bash .cursor/start.sh && .venv/bin/uvicorn stock_pm.api:app --host 0.0.0.0 --port 8000"
+    }
+  ],
+  "ports": [8000]
+}
