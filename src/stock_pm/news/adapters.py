@@ -168,6 +168,7 @@ def from_discovery_document(doc: dict[str, Any]) -> RawArticle:
     """
     url = str(doc.get("url") or "")
     ticker = doc.get("ticker")
+    vendor_id = (doc.get("metadata") or {}).get("exa_id")
     return RawArticle(
         source=str(doc.get("provider") or "discovery"),
         source_kind="discovery",
@@ -180,6 +181,8 @@ def from_discovery_document(doc: dict[str, Any]) -> RawArticle:
         authors=[str(doc["author"])] if doc.get("author") else [],
         published=normalize_published(doc.get("published_at")),
         fetched_at=_parse_stamp(doc.get("fetched_at")) or utc_now(),
+        external_id=str(vendor_id) if vendor_id else None,
+        external_id_kind="vendor_id" if vendor_id else None,
         vendor_tickers=_tickers([ticker]) if ticker else [],
         company_scoped=bool(ticker),
         native={"query": doc.get("query"), "query_type": doc.get("query_type"), "source_tier": doc.get("source_tier")},

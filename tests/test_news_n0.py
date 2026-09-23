@@ -274,6 +274,10 @@ def test_discovery_adapter_marks_day_precision():
     assert article.source_kind == "discovery"
     assert article.published.precision == "day"
     assert article.fetched_at == FETCHED
+    assert article.external_id is None
+
+    exa = from_discovery_document({**doc, "provider": "exa", "metadata": {"exa_id": "https://exa.ai/id/abc"}})
+    assert (exa.external_id, exa.external_id_kind) == ("https://exa.ai/id/abc", "vendor_id")
 
 
 # --- dedupe -----------------------------------------------------------------
