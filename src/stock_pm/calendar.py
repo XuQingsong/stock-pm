@@ -87,6 +87,22 @@ def is_trading_day(day: date) -> bool:
     return day.weekday() < 5 and holiday_name(day) is None
 
 
+def is_early_close(day: date) -> bool:
+    """NYSE 13:00 ET close: July 3, day after Thanksgiving, Christmas Eve.
+
+    July 3 and December 24 only close early when they are Monday–Thursday;
+    on a Friday they are either the observed holiday or a normal session.
+    Unscheduled closures (national mourning days) are not modelled.
+    """
+    if not is_trading_day(day):
+        return False
+    if day == _nth_weekday(day.year, 11, 3, 4) + timedelta(days=1):
+        return True
+    if (day.month, day.day) in {(7, 3), (12, 24)}:
+        return day.weekday() <= 3
+    return False
+
+
 def last_trading_day(as_of: date) -> date:
     cursor = as_of
     while not is_trading_day(cursor):

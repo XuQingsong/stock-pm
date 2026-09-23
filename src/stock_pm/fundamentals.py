@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 
+from .calendar import NY_TZ
 from .database import Database
 from .impact import news_sentiment, tag_news
 from .providers import get_fundamentals_provider
@@ -71,8 +72,10 @@ def _news(symbol: str) -> list[dict]:
     articles = []
     for row in (response.get("data") or {}).get("rows") or []:
         try:
+            # Nasdaq gives an ET calendar date only; anchoring at UTC midnight
+            # would move it to the previous ET day in news_on_date.
             published = datetime.strptime(row["created"], "%b %d, %Y").replace(
-                tzinfo=timezone.utc
+                tzinfo=NY_TZ
             )
         except (KeyError, ValueError):
             published = None
@@ -88,6 +91,7 @@ def _news(symbol: str) -> list[dict]:
                 "url": path if path.startswith("http") else f"https://www.nasdaq.com{path}",
                 "sentiment": news_sentiment(text),
                 "themes": tag_news(text),
+                "vendor_row": row,
             }
         )
     return articles

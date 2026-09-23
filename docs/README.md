@@ -25,6 +25,8 @@
 | [V1_STEP2_MARKET_PAGE.md](V1_STEP2_MARKET_PAGE.md) | V1 第一阶段 Step 2：市场总览页 `/market` 只读 overview API；空状态与分层自验 |
 | [BRAIN_MATERIALIZE_FROM_RESEARCH.md](BRAIN_MATERIALIZE_FROM_RESEARCH.md) | 一次性离线：research_* → brain_*；零 LLM；不调度重跑；页路径只读已落盘 Brain |
 | [DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md](DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md) | 市场总览对齐锁：分条主轴、触发分层、空状态、中文枚举 |
+| [NEWS_LAYER_N0_对接评估_2026-09-23.md](NEWS_LAYER_N0_对接评估_2026-09-23.md) | 新闻层 N0：现有美股数据源清单、RawArticle 对接缺口、冗余缺口、调度问题、`schema/news.sql` 并入规则 |
+| [NEWS_LAYER_四个核心问题_2026-09-23.md](NEWS_LAYER_四个核心问题_2026-09-23.md) | 新闻层四个核心问题（覆盖与实时、分类、重要度、关联）的解决方案、生产指标、动态探索闭环与 N1–N4 落地顺序 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |
