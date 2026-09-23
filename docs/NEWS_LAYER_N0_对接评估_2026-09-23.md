@@ -44,7 +44,7 @@ N0 的适配器（`src/stock_pm/news/adapters.py`）都是纯函数：输入是�
 | 契约字段 | Nasdaq 新闻 | AV NEWS_SENTIMENT | SEC 8-K Atom | Fed / EIA RSS | Tavily / Exa |
 | --- | --- | --- | --- | --- | --- |
 | 发布时间（带时区） | ❌ 只有日期 → `precision=day`，`session=unknown` | ⚠️ 精确到分/秒，但**不带时区**，按 UTC 假定（`tz_basis=assumed:UTC`，待核实） | ✅ `updated` 自带偏移（待核实：它是否等于 acceptance time） | ✅ RFC 2822 带时区 | ❌ 只有日期 |
-| `external_id` | ⚠️ 行里有 `id` 时用（待核实：该接口是否总返回 id） | ❌ 无 → 退回 canonical URL | ✅ accession number | ⚠️ 只有 URL（RSS guid 没保留到 `EventDocument`） | ❌ URL |
+| `external_id` | ⚠️ 行里有 `id` 时用（待核实：该接口是否总返回 id） | ❌ 无 → 退回 canonical URL | ✅ accession number | ⚠️ 只有 URL（RSS guid 没保留到 `EventDocument`） | Exa 有 `id`（`metadata.exa_id`）；Tavily 没有 |
 | `vendor_tickers` | ⚠️ `primarysymbol`、`related_symbols`（此前入库时丢掉了） | ✅ `ticker_sentiment[].ticker` 及 relevance（此前丢掉了） | ⚠️ 只覆盖写死的 9 个 CIK（`WATCHLIST_CIKS`），其余标 `UNMAPPED_FILER` | 不适用（市场级） | 只有查询时用的 ticker |
 | SEC 表单 / Item | — | — | ✅ 表单来自标题（`8-K`、`8-K/A`）；Item 来自 index 页，拿不到时为空并标缺 | — | — |
 | publisher | ✅ | ✅ `source` | ✅ | ✅ | 域名 |
@@ -59,12 +59,18 @@ N0 的适配器（`src/stock_pm/news/adapters.py`）都是纯函数：输入是�
 5. SEC 的 accession 和 CIK 混在 `EventDocument.entities` 列表里，没有独立字段；适配器负责拆出来。CIK→ticker 映射是写死的，应改用已经在用的 `company_tickers.json`（`research/live_fetch.py`）。
 6. `events/dedupe._published_day` 取的是 UTC 日期，美东盘后的公告会被算到下一天。聚类窗口只有 45 天，影响有限，但事件 ID 里用了这个日期。
 7. `earnings_reports.report_timing` 恒为 `unknown`。不知道财报是盘前还是盘后发布，价格反应就对不上交易日。
+8. `events/earnings.documents_from_evidence` 遇到只有日期的 AV 财报，会补成 `T16:00:00+00:00`，即美东中午 12 点。这个时刻是编出来的，应改成标注 `precision=day`。
+9. `events/policy.classify_source` 给二级媒体来源（路透、彭博、美联社）的 `fact_or_opinion` 是 `"reported"`，但 `trusted_event_sources` 的 CHECK 只允许 `'fact','opinion'`。目前的实时源都是官方源，所以还没触发；一旦媒体来源写库，整批写入会失败，事件任务被标为 `degraded`。修法是在迁移里放宽这个 CHECK，建议和 news.sql 一起并入。
+10. 交易日判断有两套：`calendar.is_trading_day` 会看 NYSE 节假日，而 `bars.is_us_trading_day`、`alpaca.market_is_collectible` 和 `flow` 的取日逻辑只判断周一到周五。节假日当天，日内采集会空跑；「最近完成的交易日」也会指向休市日。
+11. 外部检索结果（Tavily、Exa、AV、DuckDuckGo）只在内存里用，**不入库**。只有抽取出的事实会写进 `research_evidence`，这与 docs/08「外部检索结果先入库、处理后再返回」的要求不符。
+12. Cboe 抓取失败时直接抛 `RuntimeError`，没有状态记录；`job_runs` 只由 tape、environment、prediction、review 这几个任务写入，数据采集任务都不写。
 
 ## 3. 冗余缺口（对照 §3.2 的要求）
 
 | 类别 | 现有来源 | 备用源 | 缺口与建议 |
 | --- | --- | --- | --- |
 | 个股新闻（带时刻） | 无。Nasdaq 只有日期，AV 只用在研究链路 | 无 | **最大缺口**。建议：主源用 Alpaca News API（key 已有；有 `id`、UTC 的 `created_at/updated_at`、`symbols`），AV NEWS_SENTIMENT 作备用源，Nasdaq 降级为只补日期 |
+| 公司新闻稿 | FMP `press-releases`（`research/live_fetch.py`，只在研究回填时用，落 `research_source_documents`） | 8-K Item 7.01 / 8.01 的附件 EX-99.1 | 可以接入新闻层作为一手源；时间精度待核实 |
 | SEC 8-K | current Atom 加 4 家公司 Atom | 无 | 备用源用 `data.sec.gov/submissions/CIK*.json`（已在研究链路里用）按自选股逐个对账；两者按 accession 对齐 |
 | 财报发布时刻 | FMP / Nasdaq / AV 只有日期 | — | 缺盘前/盘后标记。建议用 AV `EARNINGS_CALENDAR` 或 FMP earnings-calendar 的时段字段，并用 8-K Item 2.02 的时间戳交叉验证 |
 | 美联储 | Fed RSS | 无 | FOMC 日程仍是手工估计（`confirmed:false`）。建议抓 federalreserve.gov 的 FOMC calendar 页，按固定日程生成事件键 |
