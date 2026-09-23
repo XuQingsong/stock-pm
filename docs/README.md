@@ -27,6 +27,7 @@
 | [DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md](DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md) | 市场总览对齐锁：分条主轴、触发分层、空状态、中文枚举 |
 | [STOCK_PM_目标差距评估_2026-09-23.md](STOCK_PM_目标差距评估_2026-09-23.md) | 对照「动态 Investment Brain」目标：生产实测、逐层成熟度、根因、P0–P7 优先级与生产可观察验收 |
 | [SESSION_决策链_2026-09-23.md](SESSION_决策链_2026-09-23.md) | 2026-09-23 美股现金盘：进场状态、决定性依据、盘前/盘中改口条件；可复用的当场决策协议 |
+| [SESSION_市场模块与缺口_2026-09-23.md](SESSION_市场模块与缺口_2026-09-23.md) | 从决策链反推：市场在交易的四个模块、系统缺的五块、先做的三件 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |
