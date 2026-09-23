@@ -25,6 +25,7 @@
 | [V1_STEP2_MARKET_PAGE.md](V1_STEP2_MARKET_PAGE.md) | V1 第一阶段 Step 2：市场总览页 `/market` 只读 overview API；空状态与分层自验 |
 | [BRAIN_MATERIALIZE_FROM_RESEARCH.md](BRAIN_MATERIALIZE_FROM_RESEARCH.md) | 一次性离线：research_* → brain_*；零 LLM；不调度重跑；页路径只读已落盘 Brain |
 | [DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md](DESIGN_NOTE_V1_市场总览对齐_2026-09-19.md) | 市场总览对齐锁：分条主轴、触发分层、空状态、中文枚举 |
+| [STOCK_PM_目标差距评估_2026-09-23.md](STOCK_PM_目标差距评估_2026-09-23.md) | 对照「动态 Investment Brain」目标：生产实测、逐层成熟度、根因、P0–P7 优先级与生产可观察验收 |
 | [canvases/product-fit-evaluation.canvas.tsx](canvases/product-fit-evaluation.canvas.tsx) | Product Fit Evaluation：对照「基本面 / 隔日盘面 / 复盘迭代」三块目标 |
 | [canvases/redesign-plan.canvas.tsx](canvases/redesign-plan.canvas.tsx) | 重构方案：四页信息架构、分段量价、事件→板块、自选入库 |
 | [canvases/code-review.canvas.tsx](canvases/code-review.canvas.tsx) | 早期代码评估与必须先修的问题 |
